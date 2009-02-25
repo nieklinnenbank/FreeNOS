@@ -1,0 +1,47 @@
+[bugs]
+* "Cursor pointer" in the VGA screen isn't updated...
+* MemoryServer::doGrow() allocated a whole page, if e.g. only 1 byte is requested...
+* fix parallel make (LD of the kernel that is, which races against $(subdirs)!)
+* remove IRQ hooks in ~x86Process().
+
+[libraries]
+* libparse, map which defines which priviledges each server/driver has...
+    --> including phys -> virtual memory maps, I/O ports, IPC from/to permissions etc.
+    --> just a simple configuration file should be sufficient
+* libposix: define malloc() ?
+
+[programs]
+* Nicer /bin/sh:
+    --> BACKSPACE should be supported.
+    --> ShellCommand class, and allow it to be derived.
+	--> INIT's!!! --> libcrt should support this too ofcourse.
+
+[servers]
+* /srv/storage, with a ramdisk and scsi (lsi's)
+    --> Test it using, e.g. a dosfs dump of the project root
+* /srv/filesystem, simple dosfs first
+* /srv/memory: per process virtual memory stats.
+    --> PROCESS_FOOTPRINT on initialization
+    --> Use modEnd-modStart to calculate addition number of pages for boot modules
+    --> then, for each MemoryMessage, just add it to the counter! :)
+* Process server, including various POSIX calls (using messages ofcourse).
+* Reincarnation server, a la minix 3.
+* Inet server.
+* Terminal server: make sure to have a something like: Vector<Terminal>, using ProcessID as index?
+    --> so, this way, also a pseudo terminal, like for SSH, can work! :)
+
+[sources]
+* strlcpy() in libc!!! (instead of strncpy)
+* Automatic copying of every file in the project to boot.iso!
+* SVN's $headURL inside debug()?
+* use #define ArchXXX etc
+* void Memory::releasePhysical(Address addr)  <--- include size here?
+* Don't send MemoryError, but just send an value from <Error.h>! :)
+
+[kernel]
+* perhaps we should allow multiple messages to be fetched in IPCMessage()! (speed++)
+* Improve scheduler: don't put a Process on the queue if it isn't Ready!
+    --> Also, fix the timer interval to switch processes --> currently a bit too fast...?
+    --> Can we actually put the scheduler in userspace? Maybe a task gate? Is this slow?
+* how to IPC using CPU registers only?
+* SMP support!
