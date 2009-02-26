@@ -15,6 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+ * Copyright (c) 1998 Todd C. Miller <Todd.Miller@courtesan.com>
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
 #include "string.h"
 
 int strcmp( char *dest, char *src )
@@ -39,7 +55,7 @@ int strncmp( char *dest, char *src, Size count )
     return (*dest - *src);
 }
 
-void * memset(void *dest, int ch, u32 count)
+void * memset(void *dest, int ch, Size count)
 {
     char *temp;
 
@@ -50,7 +66,7 @@ void * memset(void *dest, int ch, u32 count)
     return (dest);
 }
 
-void * memcpy(void *dest, const void *src, u32 count)
+void * memcpy(void *dest, const void *src, Size count)
 {
     const char *sp = (const char *)src;
     char *dp = (char *)dest;
@@ -61,13 +77,13 @@ void * memcpy(void *dest, const void *src, u32 count)
     return (dest);
 }
 
-void * memmove(void *dest, const void *src, u32 count)
+void * memmove(void *dest, const void *src, Size count)
 {
     // TODO
     return (void *)(0);
 }
 
-int memcmp(const void *s1, const void *s2, u32 count)
+int memcmp(const void *s1, const void *s2, Size count)
 {
     // TODO
     return 0;
@@ -96,7 +112,7 @@ int strcpy(char *dest, char *src)
     return (count);
 }
 
-int strncpy(char *dest, char *src, u32 sz)
+int strncpy(char *dest, char *src, Size sz)
 {
     char *d, *s;
     int val = 0;
@@ -123,4 +139,29 @@ char * strcat(char *dest, char *src)
 
     strcpy(s, src);
     return dest;
+}
+
+Size strlcpy(char *dst, const char *src, Size siz)
+{
+	char *d = dst;
+	const char *s = src;
+	Size n = siz;
+
+	/* Copy as many bytes as will fit */
+	if (n != 0) {
+		while (--n != 0) {
+			if ((*d++ = *s++) == '\0')
+				break;
+		}
+	}
+
+	/* Not enough room in dst, add NUL and traverse rest of src */
+	if (n == 0) {
+		if (siz != 0)
+			*d = '\0';		/* NUL-terminate dst */
+		while (*s++)
+			;
+	}
+
+	return(s - src - 1);	/* count does not include NUL */
 }

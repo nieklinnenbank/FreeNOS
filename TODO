@@ -1,20 +1,41 @@
+[first]
+* libposix: define malloc() ?
+    --> for this we also require:
+
+* Terminal server: perhaps, TerminalMessage.buffer is always copied into the reply...
+  this way, asynchroneous msg > reply can work safely, as the caller can malloc()/new() it on the
+  heap, then free after the message is processed by the terminal server.
+  
+    --> So, filesystem, storage, process, memory server can also log messages! :)
+    --> Problem: how then to identify the TerminalMessage from ProcessMessage...
+
+* Process server, including various POSIX calls (using messages ofcourse).
+
+* Faults -> process manager must receive the IRQ message!
+    --> e.g. use faultPID or so??? (may be configurable in boot.conf)
+
+* remove IRQ hooks in ~x86Process().
+    --> simply keep a list with the copy of InterruptHook in each Process...
+	--> Maybe also output this in ProcessInfo! :)
+
+* Nicer /bin/sh:
+    --> BACKSPACE should be supported. (low prio)
+    --> ShellCommand class, and allow it to be derived. (high prio)
+	--> INIT's!!! --> libcrt should support this too ofcourse.
+
+* libparse, map which defines which priviledges each server/driver has...
+    --> including phys -> virtual memory maps, I/O ports, IPC from/to permissions etc.
+    --> just a simple configuration file should be sufficient
+
 [bugs]
 * "Cursor pointer" in the VGA screen isn't updated...
 * MemoryServer::doGrow() allocated a whole page, if e.g. only 1 byte is requested...
 * fix parallel make (LD of the kernel that is, which races against $(subdirs)!)
-* remove IRQ hooks in ~x86Process().
 
 [libraries]
-* libparse, map which defines which priviledges each server/driver has...
-    --> including phys -> virtual memory maps, I/O ports, IPC from/to permissions etc.
-    --> just a simple configuration file should be sufficient
-* libposix: define malloc() ?
+* libc: %NUMs formats support
 
 [programs]
-* Nicer /bin/sh:
-    --> BACKSPACE should be supported.
-    --> ShellCommand class, and allow it to be derived.
-	--> INIT's!!! --> libcrt should support this too ofcourse.
 
 [servers]
 * /srv/storage, with a ramdisk and scsi (lsi's)
@@ -24,13 +45,17 @@
     --> PROCESS_FOOTPRINT on initialization
     --> Use modEnd-modStart to calculate addition number of pages for boot modules
     --> then, for each MemoryMessage, just add it to the counter! :)
-* Process server, including various POSIX calls (using messages ofcourse).
+
 * Reincarnation server, a la minix 3.
 * Inet server.
 * Terminal server: make sure to have a something like: Vector<Terminal>, using ProcessID as index?
     --> so, this way, also a pseudo terminal, like for SSH, can work! :)
 
 [sources]
+* Perhaps, find a clean way to build libc and libposix using gcc and .c, instead of g++ and .cpp
+    --> maybe, an extern C function in C++, which then can be used from pure C code, to send
+        IPC messages...
+* /boot directory, containing the grub.conf (instead of inside image.mk)
 * strlcpy() in libc!!! (instead of strncpy)
 * Automatic copying of every file in the project to boot.iso!
 * SVN's $headURL inside debug()?

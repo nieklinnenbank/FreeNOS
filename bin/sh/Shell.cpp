@@ -21,6 +21,7 @@
 #include <MemoryServer.h>
 #include <Config.h>
 #include <stdio.h>
+#include <sys/utsname.h>
 #include "Shell.h"
 
 int Shell::run()
@@ -36,7 +37,7 @@ int Shell::run()
 	if (strcmp(cmd, "ps") == 0)
 	    ps();
 	else if (strcmp(cmd, "uname") == 0)
-	    uname();
+	    doUname();
 	else if (strcmp(cmd, "memstat") == 0)
 	    memstat();
 	else if (strcmp(cmd, "help") == 0)
@@ -90,9 +91,19 @@ void Shell::ps()
     }
 }
 
-void Shell::uname()
+void Shell::doUname()
 {
-    printf("FreeNOS\n");
+    struct utsname info;
+    
+    if (uname(&info) >= 0)
+    {
+	printf("%s %s %s %s %s\n",
+		info.sysname,
+		info.nodename,
+		info.release,
+		info.version,
+		info.machine);
+    }
 }
 
 void Shell::memstat()

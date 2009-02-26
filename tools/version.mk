@@ -20,7 +20,7 @@ VERSION      = 0
 PATCHLEVEL   = 0
 SUBLEVEL     = 1
 EXTRAVERSION =
-SVNVERSION   = r$(shell svn info 2> /dev/null | grep '^Revision' | awk '{print $NF}')
+SVNVERSION   = r$(shell svn info 2> /dev/null | grep '^Revision' | awk '{print $$NF}')
 FULLVERSION  = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)-$(SVNVERSION)
 
 # Update Version.h
@@ -34,6 +34,7 @@ include/Version.h: include/Config.h
 	echo -ne '#define VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))\n' >> $@
 	echo -ne '#define BUILDUSER "$(shell whoami)"\n' >> $@
 	echo -ne '#define BUILDHOST "$(shell hostname)"\n' >> $@
+	echo -ne '#define ARCH "$(shell readlink include/arch)"\n' >> $@
 	echo -ne '#define COMPILER "$(shell $(CC) --version|head -n 1)"\n' >> $@
 	echo -ne '#define DATETIME "$(shell date)"\n' >> $@
 	echo -ne '#define COPYRIGHT "Copyright (C) 2009 Niek Linnenbank\\n" \\\n' >> $@

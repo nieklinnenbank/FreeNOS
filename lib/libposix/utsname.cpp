@@ -15,54 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SH_SHELL
-#define __SH_SHELL
+#include <Version.h>
+#include <string.h>
+#include "utsname.h"
 
-/**
- * Very basic command shell.
- */
-class Shell
+int uname(struct utsname *name)
 {
-    public:
+    /* Fill in the struct. */
+    strlcpy(name->sysname, "FreeNOS", UTSBUF);
+    strlcpy(name->nodename, "localhost", UTSBUF);
+    strlcpy(name->release, RELEASE, UTSBUF);
+    strlcpy(name->version, COMPILER DATETIME, UTSBUF);
+    strlcpy(name->machine, ARCH, UTSBUF);
 
-	/**
-	 * Executes the Shell by entering an infinite loop.
-	 * @return Never.
-	 */
-	int run();
-
-    private:
-    
-	/**
-	 * Fetch a command from standard input.
-	 * @return Pointer to a command.
-	 */
-	char * getCommand();
-    
-	/**
-	 * Output a prompt.
-	 */
-	void prompt();
-    
-	/**
-	 * Simple builtin ps(1) equivalent.
-	 */
-	void ps();
-	
-	/**
-	 * Uname(1) function.
-	 */
-	void doUname();
-	
-	/**
-	 * memstat function.
-	 */
-	void memstat();
-	
-	/**
-	 * Displays program help.
-	 */
-	void help();
-};
-
-#endif /* __SH_SHELL */
+    /* Success. */
+    return 0;
+}

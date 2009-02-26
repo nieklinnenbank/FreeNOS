@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-program   += idle
-libraries += libc libcrt liballoc
+library  := libposix.a
+includes := lib/libc
 
 include ../../tools/rules.mk
