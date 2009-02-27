@@ -15,10 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "TerminalServer.h"
+#include "ProcessServer.h"
 
 int main(int argc, char **argv)
 {
-    TerminalServer server;
+    ProcessServer server;
     return server.run();
 }

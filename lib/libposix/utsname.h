@@ -20,6 +20,11 @@
 
 #include <Macros.h>
 
+/**
+ * @defgroup posix POSIX.1-2008
+ * @{
+ */
+
 /** Size of each buffer in the utsname structure fields. */
 #define UTSBUF 64
 
@@ -54,5 +59,9 @@ struct utsname
  *         Otherwise, -1 shall be returned and errno set to indicate the error.
  */
 extern C int uname(struct utsname *name);
+
+/**
+ * @}
+ */
 
 #endif /* __LIBPOSIX_UTSNAME_H */

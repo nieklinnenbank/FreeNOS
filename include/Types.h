@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2009 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -23,6 +23,12 @@ typedef unsigned int uint;
 
 /** Unsigned long integer. */
 typedef unsigned long ulong;
+
+/** Signed integer. */
+typedef signed int sint;
+
+/** Signed long integer. */
+typedef signed long slong;
 
 /** Unsigned 64 bits. */
 typedef unsigned long long u64;

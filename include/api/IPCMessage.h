@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2009 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -129,7 +129,6 @@ class InterruptMessage : public Message
 	    Message(IRQType, KERNEL_PID), vector(v)
 	{
 	}
-	
 	/** Interrupt vector. */
 	ulong vector;
 	

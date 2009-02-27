@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2009 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -19,7 +19,7 @@
 #define __CONFIG_H
 
 /**
- * @defgroup pids Temporary hardcoded PIDS.
+ * @brief Temporary hardcoded PIDS.
  * @{
  */
 
@@ -29,6 +29,7 @@
 #define IDLE_PID	2
 #define SH_PID		3
 #define MEMORY_PID	4
+#define PROCESS_PID	5
 
 /**
  * @}

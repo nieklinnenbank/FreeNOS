@@ -9,6 +9,8 @@
     --> So, filesystem, storage, process, memory server can also log messages! :)
     --> Problem: how then to identify the TerminalMessage from ProcessMessage...
 
+* --> generalize the ::run() function!!! It's the same for almost all servers!
+
 * Process server, including various POSIX calls (using messages ofcourse).
 
 * Faults -> process manager must receive the IRQ message!
@@ -28,6 +30,7 @@
     --> just a simple configuration file should be sufficient
 
 [bugs]
+* fix Assert.h
 * "Cursor pointer" in the VGA screen isn't updated...
 * MemoryServer::doGrow() allocated a whole page, if e.g. only 1 byte is requested...
 * fix parallel make (LD of the kernel that is, which races against $(subdirs)!)

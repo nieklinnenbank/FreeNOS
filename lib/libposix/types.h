@@ -15,10 +15,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "TerminalServer.h"
+#ifndef __LIBPOSIX_TYPES_H
+#define __LIBPOSIX_TYPES_H
 
-int main(int argc, char **argv)
-{
-    TerminalServer server;
-    return server.run();
-}
+#include <arch/Process.h>
+#include <Types.h>
+
+/**
+ * @defgroup posix POSIX.1-2008
+ * @{
+ */
+
+/** Used for process IDs and process group IDs. */
+typedef ProcessID pid_t;
+
+/** Used for sizes of objects. */
+typedef Size size_t;
+
+/** Used for a count of bytes or an error indication. */
+typedef slong ssize_t;
+
+/**
+ * @}
+ */
+
+#endif /* __LIBPOSIX_TYPES_H */

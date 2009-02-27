@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2009 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -24,6 +24,11 @@
 class Shell
 {
     public:
+
+	/**
+	 * Constructor function.
+	 */
+	Shell();
 
 	/**
 	 * Executes the Shell by entering an infinite loop.

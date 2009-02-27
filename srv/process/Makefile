@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-subdirs := terminal idle memory process
+program   += process
+libraries += libc libcrt liballoc
 
-include ../tools/rules.mk
+include ../../tools/rules.mk

@@ -15,10 +15,41 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "TerminalServer.h"
+#include "ProcessServer.h"
 
-int main(int argc, char **argv)
+ProcessServer::ProcessServer()
 {
-    TerminalServer server;
-    return server.run();
+}
+	
+int ProcessServer::run()
+{
+    ProcessMessage msg, reply;
+
+    /* Enter loop. */
+    while (true)
+    {
+	/* Now wait for a message. */
+	IPCMessage(ZERO, Receive, &msg);
+	
+	/* Handle incoming request. */
+	switch (msg.action)
+	{
+	    case GetID:
+		doGetID(&msg, &reply);
+		break;
+
+	    default:
+		continue;
+	}
+	/* Send reply. */
+	IPCMessage(msg.from, Send, &reply);
+    }
+    /* Satify compiler. */
+    return 0;
+}
+
+void ProcessServer::doGetID(ProcessMessage *msg, ProcessMessage *reply)
+{
+    reply->number = msg->from;
+    reply->action = ProcessOK;
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2009 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,7 @@ int uname(struct utsname *name)
     strlcpy(name->sysname, "FreeNOS", UTSBUF);
     strlcpy(name->nodename, "localhost", UTSBUF);
     strlcpy(name->release, RELEASE, UTSBUF);
-    strlcpy(name->version, COMPILER DATETIME, UTSBUF);
+    strlcpy(name->version, COMPILER " " DATETIME, UTSBUF);
     strlcpy(name->machine, ARCH, UTSBUF);
 
     /* Success. */

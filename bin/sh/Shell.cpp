@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2009 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -22,7 +22,13 @@
 #include <Config.h>
 #include <stdio.h>
 #include <sys/utsname.h>
+#include <unistd.h>
 #include "Shell.h"
+
+Shell::Shell()
+{
+    printf("Shell(): PID %u\n", getpid());
+}
 
 int Shell::run()
 {

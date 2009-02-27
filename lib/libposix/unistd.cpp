@@ -15,10 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "TerminalServer.h"
+#include <api/IPCMessage.h>
+#include <ProcessServer.h>
+#include <Config.h>
+#include "unistd.h"
 
-int main(int argc, char **argv)
+pid_t getpid()
 {
-    TerminalServer server;
-    return server.run();
+    ProcessMessage msg;
+    
+    msg.action = GetID;
+    IPCMessage(PROCESS_PID, SendReceive, &msg);
+    
+    return msg.number;
 }
