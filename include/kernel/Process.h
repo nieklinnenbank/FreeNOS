@@ -22,7 +22,6 @@
 #include <arch/Interrupt.h>
 #include <Types.h>
 #include <Vector.h>
-#include <Queue.h>
 #include <List.h>
 #include "Scheduler.h"
 
@@ -52,7 +51,6 @@ typedef Size ProcessID;
  */
 class Process
 {
-//    friend class Scheduler;
     public:
     
 	/**
@@ -113,12 +111,12 @@ class Process
 	}
 
 	/**
-	 * Retrieve the Message queue for this Process.
+	 * Retrieve the list of Messages for this Process.
 	 * @return Pointer to the message queue.
 	 */
-	Queue<UserMessage> * getMessageQueue()
+	List<UserMessage> * getMessages()
 	{
-	    return &messageQueue;
+	    return &messages;
 	}
 
 	/**
@@ -158,14 +156,14 @@ class Process
 
     private:
     
-	/** Current process status. */    
+	/** Current process status. */
 	ProcessState status;
 	
 	/** Unique ID number. */
 	ProcessID pid;
 	
-	/** Message queue. */
-	Queue<UserMessage> messageQueue;
+	/** Incoming messages. */
+	List<UserMessage> messages;
 
 	/** Processes waiting to be woken up. */
 	static List<Process> wakeups;

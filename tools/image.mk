@@ -42,6 +42,7 @@ $(TMPDIR):
 	cp bin/sh/sh.bin $(TMPDIR)/boot/sh.bin
 	cp srv/memory/memory.bin $(TMPDIR)/boot/memory.bin
 	cp srv/process/process.bin $(TMPDIR)/boot/process.bin
+	cp srv/filesystem/filesystem.bin $(TMPDIR)/boot/filesystem.bin
 	echo 'timeout 0' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'title Kernel' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'root (cd)' >> $(TMPDIR)/boot/grub/menu.lst
@@ -52,6 +53,7 @@ $(TMPDIR):
 	echo 'module /boot/sh.bin' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'module /boot/memory.bin' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'module /boot/process.bin' >> $(TMPDIR)/boot/grub/menu.lst
+	echo 'module /boot/filesystem.bin' >> $(TMPDIR)/boot/grub/menu.lst
 
 #
 # Generate ISO image.

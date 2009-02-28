@@ -15,6 +15,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-subdirs := terminal idle memory process
+subdirs := terminal idle memory process filesystem
 
 include ../tools/rules.mk

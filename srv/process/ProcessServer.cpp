@@ -29,7 +29,7 @@ int ProcessServer::run()
     while (true)
     {
 	/* Now wait for a message. */
-	IPCMessage(ZERO, Receive, &msg);
+	IPCMessage(ANY, Receive, &msg);
 	
 	/* Handle incoming request. */
 	switch (msg.action)

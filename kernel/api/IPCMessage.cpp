@@ -20,12 +20,12 @@
 #include <arch/Init.h>
 #include <arch/Memory.h>
 #include <arch/Scheduler.h>
+#include <Config.h>
 #include <Error.h>
 
 int IPCMessageHandler(ProcessID id, Action action, UserMessage *msg)
 {
     ArchProcess *proc;
-    UserMessage *newMessage;
 
     /* Verify memory read/write access. */
     if (!memory->access(scheduler->current(), (Address) msg, sizeof(UserMessage)))
@@ -47,27 +47,34 @@ int IPCMessageHandler(ProcessID id, Action action, UserMessage *msg)
 	    {
 		return ENOSUCH;
 	    }
-	    proc->getMessageQueue()->enqueue(new UserMessage(msg));
+	    proc->getMessages()->insertTail(new UserMessage(msg));
 	    proc->wakeup();
 	    if (action == Send) break;
 
 	case Receive:
 
-	    /* Wait until we have a message. */
+	    /* Block until we have a message. */
 	    while (true)
 	    {
-		if ((newMessage = scheduler->current()->getMessageQueue()->dequeue()))
+		/* Look for a message, with origin 'id'. */
+		for (ListIterator<UserMessage> i(scheduler->current()->getMessages());
+		     i.hasNext(); i++)
 		{
-		    *msg = *newMessage;
-		    delete newMessage;
-		    break;
+		    if (i.current()->from == id || id == ANY)
+		    {
+			*msg = *i.current();
+			scheduler->current()->getMessages()->remove(i.current());
+			delete i.current();
+			return 0;
+		    }
 		}
 		/* Let some other process run while we wait. */
 		scheduler->current()->setState(Sleeping);
 		scheduler->executeNext();
 	    }
+
 	default:
-	    ;
+	    return ENOSUPPORT;
     }
     /* Success. */
     return 0;

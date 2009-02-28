@@ -15,25 +15,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <api/IPCMessage.h>
-#include <FileSystemServer.h>
-#include <Config.h>
 #include <stdio.h>
+#include "FileSystemServer.h"
 
-int main(int argc, char **argv)
+FileSystemServer::FileSystemServer()
+    : IPCServer<FileSystemServer, FileSystemMessage>(this)
 {
-    FileSystemMessage msg;
-    
-    msg.action = OpenFile;
-    msg.buffer = "/dev/console";
-    
-    IPCMessage(FILESYSTEM_PID, SendReceive, &msg);
+    addIPCHandler(OpenFile,  &FileSystemServer::doOpenFile);
+    addIPCHandler(ReadFile,  &FileSystemServer::doReadFile);
+    addIPCHandler(WriteFile, &FileSystemServer::doWriteFile);
+}
 
-    printf("Init: starting\n");
+void FileSystemServer::doOpenFile(FileSystemMessage *msg,
+				  FileSystemMessage *reply)
+{
+    reply->result = EACCESS;
+}
 
-    /* Lockup. */    
-    for (;;);
+void FileSystemServer::doReadFile(FileSystemMessage *msg,
+				  FileSystemMessage *reply)
+{
+    reply->result = EACCESS;
+}
 
-    /* Satify compiler. */
-    return 0;
+void FileSystemServer::doWriteFile(FileSystemMessage *msg,
+				   FileSystemMessage *reply)
+{
+    reply->result = EACCESS;
 }

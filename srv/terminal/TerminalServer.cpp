@@ -62,7 +62,7 @@ int TerminalServer::run()
     while (true)
     {
 	/* Now wait for a message. */
-	IPCMessage(ZERO, Receive, &msg);
+	IPCMessage(ANY, Receive, &msg);
 
 	/* Handle various message types. */
 	switch (msg.type)

@@ -24,7 +24,7 @@
 void interruptNotify(CPUState *st, ArchProcess *p)
 {
     UserMessage *m = (UserMessage *) new InterruptMessage(IRQ_REG(st));
-    p->getMessageQueue()->enqueue(m);
+    p->getMessages()->insertHead(m);
     p->wakeup();
 }
 

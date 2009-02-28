@@ -23,13 +23,15 @@
  * @{
  */
 
-#define KERNEL_PID	-1
+#define ANY		65534
+#define KERNEL_PID	65533
 #define TERMINAL_PID	0
 #define INIT_PID	1
 #define IDLE_PID	2
 #define SH_PID		3
 #define MEMORY_PID	4
 #define PROCESS_PID	5
+#define FILESYSTEM_PID	6
 
 /**
  * @}

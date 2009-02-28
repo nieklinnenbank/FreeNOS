@@ -15,25 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <api/IPCMessage.h>
-#include <FileSystemServer.h>
-#include <Config.h>
-#include <stdio.h>
+#include "FileSystemServer.h"
 
 int main(int argc, char **argv)
 {
-    FileSystemMessage msg;
-    
-    msg.action = OpenFile;
-    msg.buffer = "/dev/console";
-    
-    IPCMessage(FILESYSTEM_PID, SendReceive, &msg);
-
-    printf("Init: starting\n");
-
-    /* Lockup. */    
-    for (;;);
-
-    /* Satify compiler. */
-    return 0;
+    FileSystemServer server;
+    return server.run();
 }

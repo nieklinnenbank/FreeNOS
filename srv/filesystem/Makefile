@@ -15,8 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-program   += init
+program   += filesystem
 libraries += libc libcrt liballoc
-includes  += srv srv/filesystem
+includes  += srv
 
 include ../../tools/rules.mk

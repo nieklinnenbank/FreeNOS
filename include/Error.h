@@ -33,4 +33,7 @@
 /** Memory address protection fault. */
 #define EFAULT		-4
 
+/** Permission denied. */
+#define EACCESS		-5
+
 #endif /* __ERROR_H */

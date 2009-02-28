@@ -59,7 +59,6 @@
     --> maybe, an extern C function in C++, which then can be used from pure C code, to send
         IPC messages...
 * /boot directory, containing the grub.conf (instead of inside image.mk)
-* strlcpy() in libc!!! (instead of strncpy)
 * Automatic copying of every file in the project to boot.iso!
 * SVN's $headURL inside debug()?
 * use #define ArchXXX etc

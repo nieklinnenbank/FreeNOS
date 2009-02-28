@@ -60,4 +60,10 @@ typedef unsigned int Size;
 /** A memory address. */
 typedef unsigned long Address;
 
+/**
+ * Error code defined in Error.h
+ * @see Error.h
+ */
+typedef slong Error;
+
 #endif /* __TYPES_H */
