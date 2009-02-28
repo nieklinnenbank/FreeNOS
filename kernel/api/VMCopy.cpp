@@ -69,6 +69,7 @@ int VMCopyHandler(ProcessID procID, Action how, Address ours, Address theirs, Si
 	/* Remove mapping. */
 	memory->mapVirtual((Address) 0, (Address) tmpAddr, 0);
 	ours   += bytes;
+	theirs += bytes;
 	total  += bytes;
     }
     /* Success. */
