@@ -23,7 +23,9 @@
 #include <api/SystemInfo.h>
 #include <arch/Process.h>
 #include <arch/Memory.h>
+#include <IPCServer.h>
 #include <Types.h>
+#include <Error.h>
 
 /** Starting address of the heap. */
 #define HEAP_START	0xe0000000
@@ -42,8 +44,6 @@ typedef enum MemoryAction
     HeapGrow    = 0,
     HeapShrink  = 1,
     MemoryUsage = 2,
-    MemoryOK    = 3,
-    MemoryError = 4,
 }
 MemoryAction;
 
@@ -55,7 +55,7 @@ typedef struct MemoryMessage : public Message
     /**
      * Default constructor.
      */
-    MemoryMessage() : action(MemoryError), bytes(ZERO)
+    MemoryMessage() : action(HeapGrow), bytes(ZERO)
     {
     }
 
@@ -71,8 +71,14 @@ typedef struct MemoryMessage : public Message
 	bytes  = m->bytes;
     }
 
-    /** Action to perform. */
-    MemoryAction action;
+    union
+    {
+	/** Action to perform. */
+        MemoryAction action;
+	
+	/** Result code. */
+	Error result;
+    };
 
     /** Indicates a number of bytes. */
     Size bytes, bytesFree;
@@ -85,7 +91,7 @@ MemoryMessage;
 /**
  * Memory management server.
  */
-class MemoryServer
+class MemoryServer : public IPCServer<MemoryServer, MemoryMessage>
 {
     public:
     
@@ -93,13 +99,7 @@ class MemoryServer
 	 * Class constructor function.
 	 */
 	MemoryServer();
-	
-	/**
-	 * Enters an infinite loop, serving incoming memory requests.
-	 * @return Never.
-	 */
-	int run();
-	
+
     private:
     
 	/**

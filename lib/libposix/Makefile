@@ -16,6 +16,6 @@
 #
 
 library  := libposix.a
-includes := lib/libc srv/process
+includes := lib/libc srv srv/process
 
 include ../../tools/rules.mk

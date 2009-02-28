@@ -17,6 +17,7 @@
 
 #include <api/VMCtl.h>
 #include <Error.h>
+#include <Config.h>
 
 int VMCtlHandler(ProcessID procID, Address paddr, Address vaddr,
 		 ulong prot = PAGE_PRESENT|PAGE_USER|PAGE_RW)
@@ -24,7 +25,8 @@ int VMCtlHandler(ProcessID procID, Address paddr, Address vaddr,
     ArchProcess *proc;
     
     /* Find the given process. */
-    if (!(proc = Process::byID(procID)))
+    if (!(proc = Process::byID(procID)) &&
+        !(procID == SELF && (proc = scheduler->current())))
     {
 	return ENOSUCH;
     }

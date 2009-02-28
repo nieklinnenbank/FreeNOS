@@ -16,6 +16,6 @@
 #
 
 library  := liballoc.a
-includes := lib/libc srv/memory
+includes := lib/libc srv srv/memory
 
 include ../../tools/rules.mk

@@ -17,51 +17,18 @@
 
 #include "MemoryServer.h"
 
-MemoryServer::MemoryServer()
+MemoryServer::MemoryServer() : IPCServer<MemoryServer, MemoryMessage>(this)
 {
+    /* Register message handlers. */
+    addIPCHandler(HeapGrow,    &MemoryServer::doGrow);
+    addIPCHandler(HeapShrink,  &MemoryServer::doShrink);
+    addIPCHandler(MemoryUsage, &MemoryServer::doUsage);
+
+    /* Initialize heaps. */
     for (Size i = 0; i < MAX_PROCS; i++)
     {
 	heaps[i] = HEAP_START;
     }
-}
-	
-int MemoryServer::run()
-{
-    MemoryMessage msg, reply;
-
-    /* Enter loop. */
-    while (true)
-    {
-	/* Now wait for a message. */
-	IPCMessage(ANY, Receive, &msg);
-	
-	/* Handle incoming request. */
-	switch (msg.action)
-	{
-	    case HeapGrow:
-		doGrow(&msg, &reply);
-		break;
-	
-	    case HeapShrink:
-		doShrink(&msg, &reply);
-		break;
-	
-	    case MemoryUsage:
-		doUsage(&msg, &reply);
-		break;
-	
-	    default:
-		continue;
-	}
-	/* Fill in reply. */
-	reply.startAddr = HEAP_START;
-	reply.endAddr   = heaps[msg.from];
-	
-	/* Send reply. */
-	IPCMessage(msg.from, Send, &reply);
-    }
-    /* Satify compiler. */
-    return 0;
 }
 
 void MemoryServer::doGrow(MemoryMessage *msg, MemoryMessage *reply)
@@ -76,8 +43,10 @@ void MemoryServer::doGrow(MemoryMessage *msg, MemoryMessage *reply)
 	num += PAGESIZE;
     }
     /* Update reply. */
-    reply->bytes  = num;
-    reply->action = MemoryOK;
+    reply->bytes     = num;
+    reply->result    = ESUCCESS;
+    reply->startAddr = HEAP_START;
+    reply->endAddr   = heaps[msg->from];
 }
 
 void MemoryServer::doShrink(MemoryMessage *msg, MemoryMessage *reply)
@@ -92,8 +61,10 @@ void MemoryServer::doShrink(MemoryMessage *msg, MemoryMessage *reply)
 	num += PAGESIZE;
     }
     /* Update reply. */
-    reply->bytes  = num;
-    reply->action = MemoryOK;
+    reply->bytes     = num;
+    reply->result    = ESUCCESS;
+    reply->startAddr = HEAP_START;
+    reply->endAddr   = heaps[msg->from];
 }
 
 void MemoryServer::doUsage(MemoryMessage *msg, MemoryMessage *reply)

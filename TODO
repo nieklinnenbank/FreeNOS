@@ -1,17 +1,22 @@
 [first]
-* libposix: define malloc() ?
-    --> for this we also require:
+* libcrt + memoryserver fix: memoryserver should have it's own crt... (to setup initial heap)!
 
-* Terminal server: perhaps, TerminalMessage.buffer is always copied into the reply...
-  this way, asynchroneous msg > reply can work safely, as the caller can malloc()/new() it on the
-  heap, then free after the message is processed by the terminal server.
-  
-    --> So, filesystem, storage, process, memory server can also log messages! :)
-    --> Problem: how then to identify the TerminalMessage from ProcessMessage...
+* shared memory @ memoryserver: let process server + filesystem server map the
+  userprocess table.
 
-* --> generalize the ::run() function!!! It's the same for almost all servers!
+* Setup initial NetworkServer (map userprocess table also)
 
-* Process server, including various POSIX calls (using messages ofcourse).
+* libposix: open(), read(), write(), close()
+
+    --> map read only the user process table, to select the correct server
+
+* /srv/storage/ram -> register to FileSystemServer
+
+* Ext2FileSystem in FileSystemServer
+
+* /dev/tty0-8 in /dev!!!!!
+
+    --> shell moet deze openen, de servers gebruiken /dev/log oid.
 
 * Faults -> process manager must receive the IRQ message!
     --> e.g. use faultPID or so??? (may be configurable in boot.conf)

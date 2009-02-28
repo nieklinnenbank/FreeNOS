@@ -23,7 +23,8 @@
  * @{
  */
 
-#define ANY		65534
+#define ANY		65535
+#define SELF		65534
 #define KERNEL_PID	65533
 #define TERMINAL_PID	0
 #define INIT_PID	1

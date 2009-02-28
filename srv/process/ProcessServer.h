@@ -19,6 +19,7 @@
 #define __PROCESS_PROCESSSERVER_H
 
 #include <api/IPCMessage.h>
+#include <IPCServer.h>
 #include <Types.h>
 
 /**
@@ -55,8 +56,14 @@ typedef struct ProcessMessage : public Message
 	number  = m->number;
     }
 
-    /** Action to perform. */
-    ProcessAction action;
+    union
+    {
+	/** Action to perform. */
+	ProcessAction action;
+	
+	/** Result code. */
+	Error result;
+    };
 
     /** Used to store somekind of number (e.g. PID's). */
     ulong number;
@@ -69,7 +76,7 @@ ProcessMessage;
 /**
  * Process management server.
  */
-class ProcessServer
+class ProcessServer : public IPCServer<ProcessServer, ProcessMessage>
 {
     public:
     
@@ -77,13 +84,7 @@ class ProcessServer
 	 * Class constructor function.
 	 */
 	ProcessServer();
-	
-	/**
-	 * Enters an infinite loop, serving incoming memory requests.
-	 * @return Never.
-	 */
-	int run();
-	
+
     private:
     
 	/**

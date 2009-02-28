@@ -15,10 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <api/ProcessCtl.h>
 #include <arch/Memory.h>
 #include <Types.h>
-#include <Config.h>
 #include <Macros.h>
 #include <Init.h>
 #include <PageAllocator.h>
@@ -44,27 +42,25 @@ extern C void SECTION(".entry") _entry()
     char *argv[] = {"main", ZERO };
 
     /* Setup heap. */
-    if (ProcessCtl(ZERO, GetPID, ZERO) != MEMORY_PID)
-    {
-	PageAllocator pa(PAGESIZE * 4), *p;
-        ListAllocator *li;
-	Address heapAddr = pa.getHeapStart(), heapOff;
+    PageAllocator pa(PAGESIZE * 4), *p;
+    ListAllocator *li;
+    Address heapAddr = pa.getHeapStart(), heapOff;
     
-        /* Allocate instance copy on vm pages itself. */
-        p  = new (heapAddr) PageAllocator(&pa);
-        li = new (heapAddr + sizeof(PageAllocator)) ListAllocator();
+    /* Allocate instance copy on vm pages itself. */
+    p  = new (heapAddr) PageAllocator(&pa);
+    li = new (heapAddr + sizeof(PageAllocator)) ListAllocator();
     
-        /* Point to the next free space. */
-        heapOff   = sizeof(PageAllocator) + sizeof(ListAllocator);
-        heapAddr += heapOff;
+    /* Point to the next free space. */
+    heapOff   = sizeof(PageAllocator) + sizeof(ListAllocator);
+    heapAddr += heapOff;
 
-        /* Setup the userspace heap allocator region. */
-        li->region(heapAddr, (PAGESIZE * 4) - heapOff);
-        li->setParent(p);
+    /* Setup the userspace heap allocator region. */
+    li->region(heapAddr, (PAGESIZE * 4) - heapOff);
+    li->setParent(p);
 
-	/* Set default allocator. */
-        Allocator::setDefault(li);
-    }
+    /* Set default allocator. */
+    Allocator::setDefault(li);
+
     /* Run constructors. */
     for (ctor = &CTOR_LIST; ctor && *ctor; ctor++)
     {

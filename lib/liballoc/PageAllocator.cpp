@@ -50,10 +50,7 @@ Address PageAllocator::allocate(Size *size)
         msg.bytes  = *size;
 
 	/* Grow heap. */
-        if (ProcessCtl(ZERO, GetPID, ZERO) != MEMORY_PID)
-	    IPCMessage(MEMORY_PID, SendReceive, &msg);
-	else
-    	    IPCMessage(MEMORY_PID, Send, &msg);
+        IPCMessage(MEMORY_PID, SendReceive, &msg);
 
 	/* Update heap pointers. */
 	heapStart  = msg.startAddr;

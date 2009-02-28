@@ -46,11 +46,11 @@
 #include <Types.h>
 
 /**
- * Retrieve the interrupt vector register field from CPUState.
- * @return Interrupt vector.
+ * Retrieve the IRQ number from CPUState.
+ * @return IRQ number.
  */
 #define IRQ_REG(state) \
-    ((state)->vector)
+    ((state)->vector - 0x20)
 
 /**  
  * Puts the CPU in a lower power consuming state. 
