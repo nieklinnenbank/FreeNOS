@@ -114,7 +114,7 @@ Address x86Memory::findFree(Address pageTabFrom, Address *pageDirPtr)
     return vaddr;
 }
 
-Address x86Memory::virtualToPhysical(x86Process *p, Address vaddr)
+Address x86Memory::lookupVirtual(x86Process *p, Address vaddr)
 {
     Address ret = ZERO;
 
@@ -125,7 +125,7 @@ Address x86Memory::virtualToPhysical(x86Process *p, Address vaddr)
     if (remPageDir[DIRENTRY(vaddr)] & PAGE_PRESENT &&
         remPageTab[TABENTRY(vaddr)] & PAGE_PRESENT)
     {
-	ret = remPageTab[TABENTRY(vaddr)] & PAGEMASK;
+	ret = remPageTab[TABENTRY(vaddr)];
     }
     return ret;
 }

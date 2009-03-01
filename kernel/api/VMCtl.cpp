@@ -19,10 +19,11 @@
 #include <Error.h>
 #include <Config.h>
 
-int VMCtlHandler(ProcessID procID, Address paddr, Address vaddr,
-		 ulong prot = PAGE_PRESENT|PAGE_USER|PAGE_RW)
+Address VMCtlHandler(Action action, ProcessID procID, Address paddr,
+		     Address vaddr, ulong prot = PAGE_PRESENT|PAGE_USER|PAGE_RW)
 {
-    ArchProcess *proc;
+    ArchProcess *proc = ZERO;
+    Address page = ZERO;
     
     /* Find the given process. */
     if (!(proc = Process::byID(procID)) &&
@@ -30,19 +31,32 @@ int VMCtlHandler(ProcessID procID, Address paddr, Address vaddr,
     {
 	return ENOSUCH;
     }
-    /* Map the memory page. */
-    if (prot & PAGE_PRESENT)
+    switch (action)
     {
-	memory->mapVirtual(proc, paddr ? paddr : memory->allocatePhysical(PAGESIZE),
-			   vaddr, prot & ~PAGEMASK);
-    }
-    /* Release memory page (if not pinned). */
-    else if (!memory->access(proc, vaddr, PAGE_PINNED))
-    {
-	memory->releasePhysical(memory->virtualToPhysical(proc, vaddr));
+	case Lookup:    
+	    return memory->lookupVirtual(proc, vaddr);
+
+	case Map:
+	    /* Map the memory page. */
+	    if (prot & PAGE_PRESENT)
+	    {
+		page = paddr ? paddr : memory->allocatePhysical(PAGESIZE);
+		memory->mapVirtual(proc, page, vaddr, prot & ~PAGEMASK);
+	    }
+	    /* Release memory page (if not pinned). */
+	    else if (!memory->access(proc, vaddr, PAGE_PINNED))
+	    {
+		page = memory->lookupVirtual(proc, vaddr) & PAGEMASK;
+		memory->releasePhysical(page);
+	    }
+	    break;
+	    
+	default:
+	    return ENOSUPPORT;
+	
     }
     /* Success. */
-    return (0);
+    return (page);
 }
 
 INITAPI(VMCTL, VMCtlHandler)

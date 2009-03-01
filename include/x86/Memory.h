@@ -162,12 +162,12 @@ class x86Memory : public Memory, public Singleton<x86Memory>
 			   Address vaddr, ulong prot = PAGE_PRESENT | PAGE_RW);
 
         /**
-         * Convert an (remote) virtual address to a physical address.
+         * Lookup a pagetable entry for the given (remote) virtual address.
          * @param p Target process.
-	 * @param vaddr Virtual address to convert.
-	 * @return Physical address, if vaddr is mapped, or ZERO if not.
+	 * @param vaddr Virtual address to lookup.
+	 * @return Page table entry if vaddr is mapped, or ZERO if not.
 	 */
-	Address virtualToPhysical(x86Process *p, Address vaddr);
+	Address lookupVirtual(x86Process *p, Address vaddr);
 
 	/**
 	 * Verify protection access flags in the page directory and page table.

@@ -1,5 +1,17 @@
 [first]
-* libcrt + memoryserver fix: memoryserver should have it's own crt... (to setup initial heap)!
+
+* Let fs do pm->getID() to avoid race condition in mapping the process table?
+    --> or let MM have the fs block until the pm maps the table right.
+
+* procfs/ps: we need to map the kernel process table *readonly* into virtual memory
+
+    --> this means effectively mapping kernel heap r/o, and returning a pointer
+        to Process::procs.
+	
+    --> procfs (inside FileSystemServer), exports the process table to userspace :)
+	(including kernel's)
+
+* why not fill SELF in ::byID()!!! (so we can remove ugly code in api/*)
 
 * shared memory @ memoryserver: let process server + filesystem server map the
   userprocess table.

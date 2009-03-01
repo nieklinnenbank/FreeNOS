@@ -109,12 +109,12 @@ class Memory
 				   Address vaddr, ulong prot) = 0;
 
 	/**
-	 * Convert an (remote) virtual address to a physical address.
+	 * Lookup a pagetable entry for the given (remote) virtual address.
 	 * @param p Target process.
-	 * @param vaddr Virtual address to convert.
-	 * @return Physical address, if vaddr is mapped, or ZERO if not.
+	 * @param vaddr Virtual address to lookup.
+	 * @return Page table entry if vaddr is mapped, or ZERO if not.
 	 */
-	virtual Address virtualToPhysical(ArchProcess *p, Address vaddr) = 0;
+	virtual Address lookupVirtual(ArchProcess *p, Address vaddr) = 0;
 
         /** 
          * Verify protection access flags.

@@ -15,19 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <api/IPCMessage.h>
-#include <FileSystemServer.h>
-#include <Config.h>
 #include <stdio.h>
 
 int main(int argc, char **argv)
 {
-    FileSystemMessage msg;
-    
-    msg.action = OpenFile;
-    msg.buffer = "/dev/console";
-    
-    IPCMessage(FILESYSTEM_PID, SendReceive, &msg);
+    /*
+     * TODO: give up all priviledges:
+     *
+     *  - first, unmap the read-only kernel.
+     *  - give up all system call privs, except IPCMessage()
+     *  - set our IPC level to the lowest priviledged.
+     */
 
     printf("Init: starting\n");
 

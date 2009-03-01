@@ -17,6 +17,5 @@
 
 program   += init
 libraries += libc libcrt liballoc
-includes  += srv srv/filesystem
 
 include ../../tools/rules.mk

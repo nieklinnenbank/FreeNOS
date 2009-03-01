@@ -27,16 +27,18 @@
 #define VMCTL 5
 
 /**
- * Prototype for user applications. Modifies virtual memory pages.
+ * Prototype for user applications. Examines and modifies virtual memory pages.
+ * @param action Determines which action to perform.
  * @param proc Remote process.
  * @param paddr Physical address which we map. ZERO to pick a free paddr.
  * @param vaddr Virtual address to map paddr.
  * @param prot Protection bits. Set PAGE_PRESENT to allocate, ~PAGE_PRESENT to release.
+ * @return New physical address for of the mapping.
  */
-inline int VMCtl(ProcessID proc, Address paddr, Address vaddr,
-		 ulong prot = PAGE_PRESENT|PAGE_USER|PAGE_RW)
+inline Address VMCtl(Action action, ProcessID proc, Address paddr,
+		     Address vaddr, ulong prot = PAGE_PRESENT|PAGE_USER|PAGE_RW)
 {
-    return trapKernel4(VMCTL, proc, paddr, vaddr, prot);
+    return trapKernel5(VMCTL, action, proc, paddr, vaddr, prot);
 }
 
 #endif /* __API_VMCTL_H */

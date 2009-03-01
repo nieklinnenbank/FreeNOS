@@ -15,10 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "ProcessServer.h"
 #include "MemoryServer.h"
+#include <stdio.h>
+
+/** Userland process table. */
+UserProcess processTable[MAX_PROCS] ALIGN(PAGESIZE);
 
 MemoryServer::MemoryServer() : IPCServer<MemoryServer, MemoryMessage>(this)
 {
+    SystemInformation info;
+
     /* Register message handlers. */
     addIPCHandler(HeapGrow,    &MemoryServer::doGrow);
     addIPCHandler(HeapShrink,  &MemoryServer::doShrink);
@@ -29,6 +36,22 @@ MemoryServer::MemoryServer() : IPCServer<MemoryServer, MemoryMessage>(this)
     {
 	heaps[i] = HEAP_START;
     }
+    /* Retrieve system information. */
+    SystemInfo(&info);
+    
+    /* Initialize process table. */
+    for (Size i = 0; i < info.moduleCount; i++)
+    {
+	snprintf(processTable[i].command, COMMANDLEN,
+		 "[%s]", info.modules[i].string);
+    }
+    /* Map process table. */
+    for (Size i = 0, paddr = 0; i < sizeof(processTable); i += PAGESIZE)
+    {
+	paddr = VMCtl(Lookup, SELF, ZERO, ((Address)&processTable) + i) & PAGEMASK;
+	VMCtl(Map, PROCESS_PID, paddr, PROCTABLE + i);
+	VMCtl(Map, FILESYSTEM_PID, paddr, PROCTABLE + i);
+    }
 }
 
 void MemoryServer::doGrow(MemoryMessage *msg, MemoryMessage *reply)
@@ -38,7 +61,7 @@ void MemoryServer::doGrow(MemoryMessage *msg, MemoryMessage *reply)
     /* Allocate virtual memory pages. */
     while (num < msg->bytes && heaps[msg->from] < HEAP_END)
     {
-	VMCtl(msg->from, ZERO, heaps[msg->from]);
+	VMCtl(Map, msg->from, ZERO, heaps[msg->from]);
 	heaps[msg->from] += PAGESIZE;
 	num += PAGESIZE;
     }
@@ -51,12 +74,12 @@ void MemoryServer::doGrow(MemoryMessage *msg, MemoryMessage *reply)
 
 void MemoryServer::doShrink(MemoryMessage *msg, MemoryMessage *reply)
 {
-    Size num;
+    Size num = 0;
     
     /* Release virtual memory pages. */
     while (num < msg->bytes && heaps[msg->from] > HEAP_END)
     {
-	VMCtl(msg->from, ZERO, heaps[msg->from] - MEMALIGN, ZERO);
+	VMCtl(Map, msg->from, ZERO, heaps[msg->from] - MEMALIGN, ZERO);
 	heaps[msg->from] -= PAGESIZE;
 	num += PAGESIZE;
     }

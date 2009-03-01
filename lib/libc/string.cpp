@@ -101,7 +101,7 @@ int strcpy(char *dest, char *src)
 {
     char *d = dest;
     char *s = src;
-    int count;
+    int count = 0;
 
     while (*s)
     {

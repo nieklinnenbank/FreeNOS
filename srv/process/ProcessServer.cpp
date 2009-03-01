@@ -16,11 +16,21 @@
  */
 
 #include "ProcessServer.h"
+#include "MemoryServer.h"
+#include <stdio.h>
 
 ProcessServer::ProcessServer()
-    : IPCServer<ProcessServer, ProcessMessage>(this)
+    : IPCServer<ProcessServer, ProcessMessage>(this), procs((UserProcess *)PROCTABLE)
 {
+    /* Register message handlers. */
     addIPCHandler(GetID, &ProcessServer::doGetID);
+    
+    /* Debug out boot modules. */
+    printf("Boot Modules:\n");
+    
+    for (Size i = 0; i < MAX_PROCS; i++)
+	if (procs[i].command[0])
+	    printf("%u: %s\n", i, procs[i].command);
 }
 
 void ProcessServer::doGetID(ProcessMessage *msg, ProcessMessage *reply)

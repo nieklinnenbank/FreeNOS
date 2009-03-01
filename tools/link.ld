@@ -25,10 +25,6 @@ SECTIONS
     {
 	*(.entry)
 	*(.text)
-    }
-
-    .data :
-    {
 	*(.data)
 
         CTOR_LIST = .;
@@ -47,10 +43,6 @@ SECTIONS
 	initStart = .;
 	KEEP (*(SORT(.init*)))
 	initEnd   = .;
-    }
-
-    .bss :
-    {
 	*(.bss)
     }
 }

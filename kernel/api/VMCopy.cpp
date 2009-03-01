@@ -42,7 +42,7 @@ int VMCopyHandler(ProcessID procID, Action how, Address ours, Address theirs, Si
     while (total < sz)
     {
 	/* Update variables. */
-	paddr   = memory->virtualToPhysical(proc, theirs);
+	paddr   = memory->lookupVirtual(proc, theirs) & PAGEMASK;
 	pageOff = theirs & ~PAGEMASK;
 	bytes   = (PAGESIZE - pageOff) < sz ? (PAGESIZE - pageOff) : sz;
 		

@@ -33,10 +33,12 @@
 #define ZERO		0
 
 /** Stringfies the given input. */
-#define QUOTE(x)	#x
+#define QUOTE(x) \
+    #x
 
 /** Calculates offsets in data structures. */
-#define offsetof(TYPE, MEMBER) ((Size) &((TYPE *)0)->MEMBER)
+#define offsetof(TYPE, MEMBER) \
+    ((Size) &((TYPE *)0)->MEMBER)
 
 /** Used to define external C functions. */
 #ifdef __cplusplus
@@ -44,5 +46,23 @@
 #else
 #define C
 #endif /* c_plusplus */
+
+/**
+ * Can be used to link a symbol inside a specific section.
+ * @param s Section name.
+ */
+#define SECTION(s) \
+    __attribute__((__section__(s)))
+
+/** Declares an symbol to be forcibly "used". */
+#define USED \
+    __attribute__((__used__))
+
+/**
+ * Aligns a symbol at the given boundary.
+ * @param n Boundary to align.
+ */
+#define ALIGN(n) \
+    __attribute__((aligned(n)))
 
 #endif /* __MACROS_H */

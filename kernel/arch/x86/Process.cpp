@@ -64,7 +64,7 @@ x86Process::x86Process(Address entry) : Process(entry)
     }
     /* Map kernel stack. */
     tmpStack = (Address *) memory->mapVirtual(
-				memory->virtualToPhysical(this, kernelStackAddr));
+				memory->lookupVirtual(this, kernelStackAddr) & PAGEMASK);
 	
     /* Setup initial registers. */
     regs = (CPUState *) (((u32)tmpStack) + PAGESIZE - sizeof(CPUState));

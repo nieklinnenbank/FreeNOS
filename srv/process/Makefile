@@ -17,6 +17,6 @@
 
 program   += process
 libraries += libc libcrt liballoc
-includes  += srv
+includes  += srv srv/memory
 
 include ../../tools/rules.mk

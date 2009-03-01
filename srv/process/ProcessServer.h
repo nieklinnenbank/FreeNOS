@@ -19,8 +19,12 @@
 #define __PROCESS_PROCESSSERVER_H
 
 #include <api/IPCMessage.h>
+#include <arch/Memory.h>
 #include <IPCServer.h>
 #include <Types.h>
+
+/** Maximum length of a command (as saved in the user process table). */
+#define COMMANDLEN 64
 
 /**
  * Actions which can be specified in an ProcessMessage.
@@ -74,6 +78,23 @@ typedef struct ProcessMessage : public Message
 ProcessMessage;
 
 /**
+ * Userlevel process information.
+ */
+typedef struct UserProcess
+{
+    /** Command string. */
+    char command[COMMANDLEN];
+
+    /** User and Group ID. */
+    u16 uid, gid;
+    
+    /** Open files.
+     FileHandler files[MAX_FILES];
+     */
+}
+UserProcess;
+
+/**
  * Process management server.
  */
 class ProcessServer : public IPCServer<ProcessServer, ProcessMessage>
@@ -91,6 +112,9 @@ class ProcessServer : public IPCServer<ProcessServer, ProcessMessage>
 	 * Retrieves the PID of the caller.
 	 */
 	void doGetID(ProcessMessage *msg, ProcessMessage *reply);
+	
+	/** User Process table. */
+	UserProcess *procs;
 };
 
 #endif /* __PROCESS_PROCESSSERVER_H */

@@ -54,6 +54,7 @@ typedef enum Action
     SendReceive = 5,
     Read 	= 6,
     Write 	= 7,
+    Lookup      = 8,
 }
 Action;
 

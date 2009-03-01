@@ -25,16 +25,20 @@
 #include <arch/Memory.h>
 #include <IPCServer.h>
 #include <Types.h>
+#include <Macros.h>
 #include <Error.h>
 
 /** Starting address of the heap. */
-#define HEAP_START	0xe0000000
+#define HEAP_START	(0xe0000000)
 
 /** Maximum size of the heap (256 MB). */
 #define HEAP_MAX	(1024 * 1024 * 256)
 
 /** Ending address of the heap. */
 #define HEAP_END	(HEAP_START + HEAP_MAX - MEMALIGN)
+
+/** Virtual address, at which we map the process table. */
+#define PROCTABLE	(0xf0000000)
 
 /**
  * Actions which can be specified in an MemoryMessage.

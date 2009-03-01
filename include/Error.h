@@ -36,4 +36,7 @@
 /** Permission denied. */
 #define EACCESS		-5
 
+/** Not enough memory. */
+#define ENOMEM		-6
+
 #endif /* __ERROR_H */

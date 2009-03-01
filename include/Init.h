@@ -19,15 +19,7 @@
 #define __INIT_H
 
 #include "Types.h"
-
-/**
- * Can be used to link a symbol inside a specific section.
- * @param s Section name.
- */
-#define SECTION(s)	__attribute__((__section__(s)))
-
-/** Declares an symbol to be forcibly "used". */
-#define USED		__attribute__((__used__))
+#include "Macros.h"
 
 /**
  * Defines a class function for initialization.

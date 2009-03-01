@@ -46,7 +46,7 @@ extern C void SECTION(".entry") _entry()
     /* Allocate our own heap. */
     for (Size i = 0; i < 4; i++)
     {
-	VMCtl(SELF, ZERO, HEAP_START + (PAGESIZE * i));
+	VMCtl(Map, SELF, ZERO, HEAP_START + (PAGESIZE * i));
     }
     /* Create allocator instance. */
     ListAllocator *li = new (HEAP_START) ListAllocator();
