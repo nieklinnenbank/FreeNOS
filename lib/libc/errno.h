@@ -15,19 +15,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
+#ifndef __LIBC_ERRNO_H
+#define __LIBC_ERRNO_H
 
-int main(int argc, char **argv)
-{
-    /*
-     * TODO: give up all priviledges: run us in priviledge level 0.
-     */
+#include <Macros.h>
+#include <Types.h>
+#include <Error.h>
 
-    printf("Init: starting\n");
+/**
+ * @defgroup ansic ISO/IEC 9899:1999
+ * @{
+ */
 
-    /* Lockup. */    
-    for (;;);
+/**
+ * Expands to a modifiable lvalue that has type int,
+ * the value of which is set to a posivite error number
+ * by several library functions.
+ */
+extern C Size errno;
 
-    /* Satify compiler. */
-    return 0;
-}
+/**
+ * Contains a array of character strings, representing errno values.
+ */
+extern C char *error_map[];
+
+/**
+ * @}
+ */
+
+#endif /* __LIBC_ERRNO_H */

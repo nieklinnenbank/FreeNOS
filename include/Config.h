@@ -19,20 +19,21 @@
 #define __CONFIG_H
 
 /**
- * @brief Temporary hardcoded PIDS.
+ * @brief Static PIDS.
  * @{
  */
 
 #define ANY		65535
 #define SELF		65534
 #define KERNEL_PID	65533
-#define TERMINAL_PID	0
-#define INIT_PID	1
-#define IDLE_PID	2
-#define SH_PID		3
-#define MEMORY_PID	4
-#define PROCESS_PID	5
-#define FILESYSTEM_PID	6
+
+#define PROCSRV_PID	0
+#define VFSSRV_PID	1
+#define MEMSRV_PID	2
+// #define NAMESRV_PID	3
+
+// TEMP:
+#define TERMINAL_PID	3
 
 /**
  * @}

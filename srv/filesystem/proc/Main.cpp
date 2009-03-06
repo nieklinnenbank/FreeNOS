@@ -15,19 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
+#include "ProcFileSystem.h"
 
 int main(int argc, char **argv)
 {
-    /*
-     * TODO: give up all priviledges: run us in priviledge level 0.
-     */
-
-    printf("Init: starting\n");
-
-    /* Lockup. */    
-    for (;;);
-
-    /* Satify compiler. */
-    return 0;
+    ProcFileSystem server("/proc/");
+    return server.run();
 }

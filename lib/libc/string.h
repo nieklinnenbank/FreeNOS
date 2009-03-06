@@ -22,6 +22,11 @@
 #include <Types.h>
 
 /**
+ * @defgroup ansic ISO/IEC 9899:1999
+ * @{
+ */
+
+/**
  * Compare two strings.
  * @param dest Destination string to compare.
  * @param src Source string to compare.
@@ -115,5 +120,19 @@ extern C Size strlcpy(char *dst, const char *src, Size siz);
  * @return Pointer to the resulting string.
  */
 extern C char * strcat(char *dest, char *src);
+
+/**
+ * The strerror function maps the number in errnum to a message string.
+ * @param errnum Error number to convert.
+ * @return The strerror function returns a pointer to the string, the contents
+ *         of which are locale specific. The array pointed to shall not be modified
+ *         by the program, but may be overwritten by a subsequent call to the
+ *         strerror function.
+ */
+extern C char * strerror(int errnum);
+
+/**
+ * @}
+ */
 
 #endif /* __LIBC_STRING_H */

@@ -33,7 +33,9 @@ void Scheduler::executeNext()
     {
 	queue.enqueue(currentProcess);
 	oldProcess = currentProcess;
-    }
+    } else
+	oldProcess = ZERO;
+
     /* Process any pending wakeups. */
     for (ListIterator<Process> i(Process::getWakeups()); i.hasNext(); i++)
     {

@@ -15,13 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __FILESYSTEM_FILESYSTEMSERVER_H
-#define __FILESYSTEM_FILESYSTEMSERVER_H
+#ifndef __FILESYSTEM_FILESYSTEMMESSAGE_H
+#define __FILESYSTEM_FILESYSTEMMESSAGE_H
 
 #include <api/IPCMessage.h>
 #include <IPCServer.h>
 #include <Types.h>
 #include <Error.h>
+#include "File.h"
 
 /**
  * Actions which may be performed on the filesystem.
@@ -32,7 +33,14 @@ typedef enum FileSystemAction
     OpenFile    = 1,
     ReadFile    = 2,
     WriteFile   = 3,
-    CloseFile   = 4,
+    StatFile    = 4,
+    ChangeFile  = 5,
+    CloseFile   = 6,
+    Mount	= 7,
+    Unmount	= 8,
+    MountInfo   = 9,
+    NewProcess  = 10,
+    KillProcess = 11,
 }
 FileSystemAction;
 
@@ -44,8 +52,7 @@ typedef struct FileSystemMessage : public Message
     /**
      * Default constructor.
      */
-    FileSystemMessage() : action(ReadFile), buffer(ZERO), size(ZERO),
-			  fd(ZERO), major(ZERO), minor(ZERO), mode(ZERO)
+    FileSystemMessage() : action(ReadFile)
     {
     }
 
@@ -61,9 +68,22 @@ typedef struct FileSystemMessage : public Message
 	buffer = m->buffer;
 	size   = m->size;
 	fd     = m->fd;
-	major  = m->major;
-	minor  = m->minor;
-	mode   = m->mode;
+	filetype = m->filetype;
+	procID   = m->procID;
+    }
+
+    /**
+     * Introduce a new process to VFS.
+     * @param pid Process ID number.
+     * @param uid User ID number.
+     * @param gid Group ID number.
+     */
+    void newProcess(ProcessID pid, u16 uid, u16 gid)
+    {
+	this->procID  = pid;
+	this->userID  = uid;
+	this->groupID = gid;
+	this->ipc(VFSSRV_PID, SendReceive);
     }
 
     union
@@ -74,7 +94,7 @@ typedef struct FileSystemMessage : public Message
 	/** Result code. */
 	Error result;
     };
-    
+
     union
     {
 	/** Points to a buffer for I/O. */
@@ -84,60 +104,33 @@ typedef struct FileSystemMessage : public Message
 	char *path;
     };
     
-    /** Size of the buffer. */
-    Size size;
+    union
+    {
+	/** Size of the buffer. */
+	Size size;
+	
+	/** User ID and group ID. */
+	u16 userID, groupID;
+    };
+
+    union
+    {
+	/** Filetype. */
+        FileType filetype;
+
+        /** Unique identifier. */
+	Address ident;
+    };
 
     /** File descriptor. */
     u16 fd;
-    
-    /** Used for device files. */
-    u8 major, minor;
-    
-    /** File permissions. */
-    u16 mode;
 
-    /** Not used. */
-    u16 unused[2];
+    /** Process id number. */
+    ProcessID procID;
+
+    /** Offset in the file to read. */
+    Size offset;
 }
 FileSystemMessage;
-
-/**
- * Manages system terminals.
- */
-class FileSystemServer : public IPCServer<FileSystemServer, FileSystemMessage>
-{
-    public:
-    
-	/**
-	 * Class constructor function.
-	 */
-	FileSystemServer();
-	
-    private:
-
-	/**
-	 * Opens a file.
-	 * @param msg Input FileSystemMessage pointer.
-	 * @param reply Output FileSystemMessage pointer.
-	 */
-	void doOpenFile(FileSystemMessage *msg,
-			FileSystemMessage *reply);
-    
-	/**
-	 * Process a read request.
-	 * @param msg Input FileSystemMessage pointer.
-	 * @param reply Output FileSystemMessage pointer.
-	 */
-	void doReadFile(FileSystemMessage *msg,
-			FileSystemMessage *reply);
-	
-	/**
-	 * Process a write request.
-	 * @param msg Input FileSystemMessage pointer.
-	 * @param reply Output FileSystemMessage pointer.
-	 */
-	void doWriteFile(FileSystemMessage *msg,
-			 FileSystemMessage *reply);
-};
 
 #endif /* __FILESYSTEM_FILESYSTEMSERVER_H */

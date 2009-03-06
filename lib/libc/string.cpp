@@ -31,6 +31,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "errno.h"
 #include "string.h"
 
 int strcmp( char *dest, char *src )
@@ -45,12 +46,12 @@ int strcmp( char *dest, char *src )
 
 int strncmp( char *dest, char *src, Size count )
 {
-    Size num = 0;
-
-    while ( num++ < count && *dest && *src && *dest == *src )
+    while (*dest && *src && *dest == *src && count)
     {
-	dest++;
-	src++;
+	if (--count)
+	{
+	    dest++, src++;
+	}
     }
     return (*dest - *src);
 }
@@ -164,4 +165,9 @@ Size strlcpy(char *dst, const char *src, Size siz)
 	}
 
 	return(s - src - 1);	/* count does not include NUL */
+}
+
+char * strerror(int errnum)
+{
+    return error_map[-errnum % -ELAST];
 }

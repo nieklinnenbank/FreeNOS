@@ -15,19 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
+#include "errno.h"
 
-int main(int argc, char **argv)
+Size errno = 0;
+
+char * error_map[] =
 {
-    /*
-     * TODO: give up all priviledges: run us in priviledge level 0.
-     */
-
-    printf("Init: starting\n");
-
-    /* Lockup. */    
-    for (;;);
-
-    /* Satify compiler. */
-    return 0;
-}
+    [-ESUCCESS]   = "Success",
+    [-ENOSUCH]    = "No such file or directory",
+    [-EINVALID]   = "Invalid argument",
+    [-ENOSUPPORT] = "Operating is not supported",
+    [-EFAULT]     = "Memory fault",
+    [-EACCESS]    = "Permission denied",
+    [-ENOMEM]     = "Not enough memory",
+};

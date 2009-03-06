@@ -22,10 +22,30 @@
 #include <arch/API.h>
 #include <Macros.h>
 #include <Types.h>
+#include <Error.h>
 #include <Config.h>
 
 /** SystemCall number for IPCMessage(). */
 #define IPCMESSAGE 1
+
+/**
+ * Forward declaration.
+ * @see Message
+ */
+class Message;
+
+/**
+ * Prototype for user applications.
+ * @param proc Remote process to send/receive from.
+ * @param action Either Send or Receive.
+ * @param msg Message buffer.
+ * @return Instance of a SystemInfo object.
+ */
+inline int IPCMessage(ProcessID proc, Action action, Message *msg)
+{
+    return trapKernel3(IPCMESSAGE, proc, action, (ulong) msg);
+}
+
 
 /**
  * Determines the type a Message can be.
@@ -40,7 +60,7 @@ MessageType;
 
 /**
  * Inter Process Communication (IPC) message.
- * Derived classes must have 5 ulong data members.
+ * Derived classes must have 6 ulong data members.
  */
 class Message
 {
@@ -68,6 +88,16 @@ class Message
 	Message(Message *m) : from(m->from), type(m->type)
 	{
 	}
+	
+	/**
+	 * Perform IPC operation to a given process.
+	 * @param pid Process to IPC to/from.
+	 * @param action Determines the action to perform.
+	 */
+	Error ipc(ProcessID pid, Action action = SendReceive)
+	{
+	    return IPCMessage(pid, action, this);
+	}
 
 	/** At minimum, we must know the origin. */
 	ProcessID from;
@@ -86,8 +116,8 @@ class UserMessage : public Message
 	/**
 	 * Default constructor function.
 	 */
-	UserMessage()
-	    : Message(IPCType, ZERO), d1(0), d2(0), d3(0), d4(0), d5(0)
+	UserMessage() : Message(IPCType, ZERO), d1(0), d2(0), d3(0),
+						d4(0), d5(0), d6(0)
 	{
 	}
 	
@@ -95,8 +125,8 @@ class UserMessage : public Message
 	 * Copy constructor.
 	 * @param u UserMessage instance pointer.
 	 */
-	UserMessage(UserMessage *u)
-	    : Message(u), d1(u->d1), d2(u->d2), d3(u->d3), d4(u->d4), d5(u->d5)
+	UserMessage(UserMessage *u) : Message(u), d1(u->d1), d2(u->d2), d3(u->d3),
+						  d4(u->d4), d5(u->d5), d6(u->d6)
 	{
 	}
 
@@ -108,11 +138,11 @@ class UserMessage : public Message
 	bool operator == (UserMessage *u)
 	{
 	    return d1 == u->d1 && d2 == u->d2 && d3 == u->d3 &&
-		   d4 == u->d4 && d5 == u->d5;
+		   d4 == u->d4 && d5 == u->d5 && d6 == u->d6;
 	}
 
-	/** User messages have exactly five ulong's as data. */
-        ulong d1, d2, d3, d4, d5;
+	/** User messages have exactly six ulong's as data. */
+        ulong d1, d2, d3, d4, d5, d6;
 };
 
 /**
@@ -129,23 +159,13 @@ class InterruptMessage : public Message
 	    Message(IRQType, KERNEL_PID), vector(v)
 	{
 	}
+
 	/** Interrupt vector. */
 	ulong vector;
 	
 	/** Not used. */
-	ulong unused[4];
+	ulong unused[5];
 };
 
-/**
- * Prototype for user applications.
- * @param proc Remote process to send/receive from.
- * @param action Either Send or Receive.
- * @param msg Message buffer.
- * @return Instance of a SystemInfo object.
- */
-inline int IPCMessage(ProcessID proc, Action action, Message *msg)
-{
-    return trapKernel3(IPCMESSAGE, proc, action, (ulong) msg);
-}
 
 #endif /* __API_IPCMESSAGE_H */

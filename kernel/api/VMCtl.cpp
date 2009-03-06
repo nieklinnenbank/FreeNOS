@@ -26,8 +26,7 @@ Address VMCtlHandler(Action action, ProcessID procID, Address paddr,
     Address page = ZERO;
     
     /* Find the given process. */
-    if (!(proc = Process::byID(procID)) &&
-        !(procID == SELF && (proc = scheduler->current())))
+    if (!(proc = Process::byID(procID)))
     {
 	return ENOSUCH;
     }

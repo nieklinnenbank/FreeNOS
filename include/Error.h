@@ -39,4 +39,7 @@
 /** Not enough memory. */
 #define ENOMEM		-6
 
+/** Last defined error value (do not use). */
+#define ELAST		ENOMEM
+
 #endif /* __ERROR_H */

@@ -116,6 +116,7 @@ x86Process::~x86Process()
     /* Clear current/old pointer, if it is us. */
     if (scheduler->current() == this)
 	scheduler->setCurrent(ZERO);
+
     if (scheduler->old() == this)
 	scheduler->setOld(ZERO);
 

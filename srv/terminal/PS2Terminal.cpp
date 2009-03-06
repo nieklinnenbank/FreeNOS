@@ -19,6 +19,39 @@
 #include <arch/CPU.h>
 #include "PS2Terminal.h"
 
+const char PS2Terminal::keymap[] = { /* unshifted keys */
+    0,    0x1B,  '1',    '2',   '3',   '4',   '5',   '6',
+    '7',  '8',   '9',    '0',   '-',   '=',   '\b',  '\t',
+    'q',  'w',   'e',    'r',   't',   'y',   'u',   'i',
+    'o',  'p',   '[',    ']',   '\r',  0,     'a',   's',
+    'd',  'f',   'g',    'h',   'j',   'k',   'l',   ';',
+    '\'', '`',   0,      '\\',  'z',   'x',   'c',   'v',
+    'b',  'n',   'm',    ',',   '.',   '/',   0,    '*',
+    0,    ' ',   0,      0x89,  0x8A,  0x8B,  0x8C,  0x8D,
+    0x8E,  0x8F,  0x90,  0x91,  0x92,  0,     0,     0x81,
+    0x85,  0x82,  '-',   0x87,  0,     0x88,  '+',   0x83,
+    0x86,  0x84,  0x80,  0x7F,  0,     0,     0,     0x93,
+    0x94,  0,     0,     0,     0,     0,     0,     0,
+    0,     0,     0,     0,     0,     0,     0,     0
+};
+
+const char PS2Terminal::shiftmap[] = { /* shifted keys */
+    0,    0x1B,  '!',    '@',   '#',   '$',   '%',   '^',
+    '&',  '*',   '(',    ')',   '_',   '+',   '\b',  '\t',
+    'Q',  'W',   'E',    'R',   'T',   'Y',   'U',   'I',
+    'O',  'P',   '{',    '}',   '\r',  0,     'A',   'S',
+    'D',  'F',   'G',    'H',   'J',   'K',   'L',   ':',
+    '"',  '~',   0,      '|',   'Z',   'X',   'C',   'V',
+    'B',  'N',   'M',    '<',   '>',   '?',   0,     '*',
+    0,    ' ',   0,      0x95,  0x96,  0x97,  0x98,  0x99,
+    0x9A, 0x9B,  0x9C,   0x9D,  0x9E,  0,     0,     '7',
+    '8',  '9',   '-',    '4',   '5',   '6',   '+',   '1',
+    '2',  '3',   '0',    '.',   0,     0,     0,     0x9F,
+    0xA0, 0,     0,      0,     0,     0,     0,     0,
+    0,    0,     0,      0,     0,     0,     0,     0
+};
+
+#if 0
 /**
  * Temporary hardcoded keyboard map, from kb.c in SkelixOS.
  * @see http://www.skelix.org
@@ -41,6 +74,7 @@ const char PS2Terminal::keymap[0x3a][2] =
     /*34*/{'.', '>'}, {'/', '?'}, {0x0, 0x0}, {'*', '*'},
     /*38*/{0x0, 0x0}, {' ', ' '}
 };
+#endif
 
 PS2Terminal::PS2Terminal() : shiftState(ZERO)
 {
@@ -64,7 +98,7 @@ int PS2Terminal::read(s8 *buffer, Size size)
 	return 0;
     }
     /* Write to buffer. */
-    buffer[0] = keymap[keycode & 0x7f][shiftState];
+    buffer[0] = shiftState ? shiftmap[keycode & 0x7f] : keymap[keycode & 0x7f];
     
     /* Success. */
     return 1;

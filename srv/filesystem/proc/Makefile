@@ -15,8 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-program   += sh
-libraries += libc libcrt liballoc libposix
-includes  += srv srv/memory srv/filesystem srv/filesystem/virtual
+program   += proc
+libraries += libc libcrt liballoc
+includes  += srv srv/filesystem srv/process lib/libposix
 
-include ../../tools/rules.mk
+include ../../../tools/rules.mk

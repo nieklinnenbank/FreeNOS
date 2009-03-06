@@ -15,19 +15,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
+#ifndef __FILESYSTEM_PROCFILESYSTEM_H
+#define __FILESYSTEM_PROCFILESYSTEM_H
 
-int main(int argc, char **argv)
+#include <File.h>
+#include <FileSystem.h>
+#include <FileSystemMessage.h>
+#include <Types.h>
+#include <Error.h>
+
+/**
+ * Process filesystem (procfs). Maps processes into a pseudo filesystem.
+ */
+class ProcFileSystem : public FileSystem
 {
-    /*
-     * TODO: give up all priviledges: run us in priviledge level 0.
-     */
+    public:
+    
+	/**
+	 * Class constructor function.
+	 * @param path Path to which we are mounted.
+	 */
+	ProcFileSystem(const char *path);
+};
 
-    printf("Init: starting\n");
-
-    /* Lockup. */    
-    for (;;);
-
-    /* Satify compiler. */
-    return 0;
-}
+#endif /* __FILESYSTEM_PROCFILESYSTEM_H */

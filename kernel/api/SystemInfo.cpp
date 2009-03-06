@@ -30,8 +30,7 @@ int SystemInfoHandler(SystemInformation *info)
     info->memorySize  = memory->getTotalMemory();
     info->memoryAvail = memory->getAvailableMemory();
     info->moduleCount = multibootInfo.modsCount;
-    info->cmdline[63] = ZERO;
-    strncpy(info->cmdline, (char *)multibootInfo.cmdline, 64);
+    strlcpy(info->cmdline, (char *)multibootInfo.cmdline, 64);
     
     /* Include multiboot modules information. */
     for (Size i = 0; i < info->moduleCount; i++)

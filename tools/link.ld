@@ -26,6 +26,7 @@ SECTIONS
 	*(.entry)
 	*(.text)
 	*(.data)
+	*(.rodata)
 
         CTOR_LIST = .;
 	KEEP (*(SORT(.ctors.*)))

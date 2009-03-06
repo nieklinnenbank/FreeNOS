@@ -109,8 +109,8 @@ void ListAllocator::release(Address addr)
     else if (b->next && b->next->free)
     {
         b->size += (b->next->size + sizeof(MemBlock));
-        b->next  = b->next->next;
         if (b->next->next) b->next->prev = b;
+        b->next  = b->next->next;
     }
     /* Mark free. */
     b->free = TRUE;

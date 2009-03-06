@@ -15,31 +15,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
-#include "FileSystemServer.h"
+#ifndef __HASH_FUNCTION_H
+#define __HASH_FUNCTION_H
 
-FileSystemServer::FileSystemServer()
-    : IPCServer<FileSystemServer, FileSystemMessage>(this)
+#include "Types.h"
+#include "Comparable.h"
+#include "Assert.h"
+
+/** Prime number used by FNV hashing. */
+#define FNV_PRIME 16777619
+
+/** Initial value of the FNV internal state. */
+#define FNV_INIT  0x811c9dc5
+
+/**
+ * Compute a hash using the FNV algorithm.
+ * @param key Comparable object.
+ * @param mod Modulo value.
+ * @return Computed hash.
+ */
+template <class T> Size FNVHash(Comparable<T> *key, Size mod)
 {
-    addIPCHandler(OpenFile,  &FileSystemServer::doOpenFile);
-    addIPCHandler(ReadFile,  &FileSystemServer::doReadFile);
-    addIPCHandler(WriteFile, &FileSystemServer::doWriteFile);
+    Size ret = FNV_INIT;
+    
+    assertRead(key);
+    assert(mod > 0);
+
+    for (Size i = 0; i < key->size(); i++)
+    {
+	ret *= FNV_PRIME;
+	ret ^= key->valueAt(i);
+    }
+    return (ret % mod);
 }
 
-void FileSystemServer::doOpenFile(FileSystemMessage *msg,
-				  FileSystemMessage *reply)
-{
-    reply->result = EACCESS;
-}
-
-void FileSystemServer::doReadFile(FileSystemMessage *msg,
-				  FileSystemMessage *reply)
-{
-    reply->result = EACCESS;
-}
-
-void FileSystemServer::doWriteFile(FileSystemMessage *msg,
-				   FileSystemMessage *reply)
-{
-    reply->result = EACCESS;
-}
+#endif /* __HASH_FUNCTION_H */

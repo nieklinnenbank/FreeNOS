@@ -15,74 +15,42 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SH_SHELL
-#define __SH_SHELL
+#ifndef __COMPARABLE_H
+#define __COMPARABLE_H
+
+#include "Types.h"
 
 /**
- * Very basic command shell.
+ * Objects which can be compared to eachother.
  */
-class Shell
+template <class T> class Comparable
 {
     public:
 
 	/**
-	 * Constructor function.
+	 * Class destructor.
 	 */
-	Shell();
+	virtual ~Comparable() {}
 
 	/**
-	 * Executes the Shell by entering an infinite loop.
-	 * @return Never.
+	 * Test if an object is equal to an other object.
+	 * @param t Object instance.
+	 * @return True if equal, false otherwise.
 	 */
-	int run();
-
-    private:
-    
-	/**
-	 * Fetch a command from standard input.
-	 * @return Pointer to a command.
-	 */
-	char * getCommand();
-    
-	/**
-	 * Output a prompt.
-	 */
-	void prompt();
-    
-	/**
-	 * Simple builtin ps(1) equivalent.
-	 */
-	void ps();
+	virtual bool equals(const T &t) = 0;
 	
 	/**
-	 * Uname(1) function.
+	 * Get the size of the object.
+	 * @return Size in bytes.
 	 */
-	void doUname();
+	virtual Size size() const = 0;
 	
 	/**
-	 * memstat function.
+	 * Read an object byte-wise (e.g. for hashing).
+	 * @param index Offset to read.
+	 * @return Unsigned byte.
 	 */
-	void memstat();
-	
-	/**
-	 * mount(1) function.
-	 */
-	void mount();
-	
-	/**
-	 * cat(1) function.
-	 */
-	void cat(char *file);
-	
-	/**
-	 * ls(1) function.
-	 */
-	void ls(char *dir);
-	
-	/**
-	 * Displays program help.
-	 */
-	void help();
+	virtual u8 valueAt(Size index) const = 0;
 };
 
-#endif /* __SH_SHELL */
+#endif /* __COMPARABLE_H */

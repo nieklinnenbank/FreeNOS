@@ -54,7 +54,7 @@ class PS2Terminal : public Terminal
     private:
     
 	/** Keyboard mapping. */
-	static const char keymap[0x3a][2];
+	static const char keymap[], shiftmap[];
 	
 	/** Current state of the shift key. */
 	u8 shiftState;

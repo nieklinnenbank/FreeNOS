@@ -43,6 +43,7 @@
 /** Used to define external C functions. */
 #ifdef __cplusplus
 #define C "C"
+#define CPP
 #else
 #define C
 #endif /* c_plusplus */

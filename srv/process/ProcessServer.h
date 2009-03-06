@@ -19,20 +19,37 @@
 #define __PROCESS_PROCESSSERVER_H
 
 #include <api/IPCMessage.h>
+#include <api/SystemInfo.h>
+#include <api/VMCopy.h>
 #include <arch/Memory.h>
 #include <IPCServer.h>
+#include <FileSystemMessage.h>
 #include <Types.h>
+#include <Error.h>
 
 /** Maximum length of a command (as saved in the user process table). */
 #define COMMANDLEN 64
+
+/**
+ * Userlevel process information.
+ */
+typedef struct UserProcess
+{
+    /** Command string. */
+    char command[COMMANDLEN];
+
+    /** User and Group ID. */
+    u16 uid, gid;
+}
+UserProcess;
 
 /**
  * Actions which can be specified in an ProcessMessage.
  */
 typedef enum ProcessAction
 {
-    GetID     = 0,
-    ProcessOK = 1,
+    GetID       = 0,
+    ReadProcess = 1,
 }
 ProcessAction;
 
@@ -44,7 +61,7 @@ typedef struct ProcessMessage : public Message
     /**
      * Default constructor.
      */
-    ProcessMessage() : action(GetID), number(ZERO)
+    ProcessMessage() : action(GetID), number(ZERO), buffer(ZERO)
     {
     }
 
@@ -58,6 +75,7 @@ typedef struct ProcessMessage : public Message
 	type    = m->type;
 	action  = m->action;
 	number  = m->number;
+	buffer  = m->buffer;
     }
 
     union
@@ -71,28 +89,14 @@ typedef struct ProcessMessage : public Message
 
     /** Used to store somekind of number (e.g. PID's). */
     ulong number;
+    
+    /** Input/Output buffer for ReadProcess. */
+    UserProcess *buffer;
 
     /** Unused. */
     ulong unused[3];
 }
 ProcessMessage;
-
-/**
- * Userlevel process information.
- */
-typedef struct UserProcess
-{
-    /** Command string. */
-    char command[COMMANDLEN];
-
-    /** User and Group ID. */
-    u16 uid, gid;
-    
-    /** Open files.
-     FileHandler files[MAX_FILES];
-     */
-}
-UserProcess;
 
 /**
  * Process management server.
@@ -110,11 +114,20 @@ class ProcessServer : public IPCServer<ProcessServer, ProcessMessage>
     
 	/**
 	 * Retrieves the PID of the caller.
+	 * @param msg Incoming message.
+	 * @param reply Response message.
 	 */
-	void doGetID(ProcessMessage *msg, ProcessMessage *reply);
-	
+	void getIDHandler(ProcessMessage *msg, ProcessMessage *reply);
+
+	/**
+	 * Read the user process table.
+	 * @param msg Incoming message.
+	 * @param reply Response message.
+	 */
+	void readProcessHandler(ProcessMessage *msg, ProcessMessage *reply);
+
 	/** User Process table. */
-	UserProcess *procs;
+	static UserProcess procs[MAX_PROCS];
 };
 
 #endif /* __PROCESS_PROCESSSERVER_H */

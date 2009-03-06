@@ -49,6 +49,30 @@
 extern C pid_t getpid();
 
 /**
+ * Read from a file
+ * @param fildes The read() function shall attempt to read nbyte bytes from the file
+ *               associated with the open file descriptor, fildes, into the buffer
+ *               pointed to by buf.
+ * @param buf The read() function shall attempt to read nbyte bytes from the file
+ *            associated with the open file descriptor, fildes, into the buffer
+ *            pointed to by buf.
+ * @param nbyte If the value of nbyte is greater than {SSIZE_MAX}, the result is implementation-defined.
+ * @return Upon successful completion, these functions shall return a non-negative integer
+ *         indicating the number of bytes actually read. Otherwise, the functions shall
+ *         return -1 and set errno to indicate the error.
+ */
+extern C ssize_t read(int fildes, void *buf, size_t nbyte);
+
+/**
+ * Close a file descriptor
+ * @param fildes The close() function shall deallocate the file descriptor indicated by fildes.
+ * @return Upon successful completion, 0 shall be returned; otherwise, -1 shall
+ *         be returned and errno set to indicate the error.
+ *
+ */
+extern C int close(int fildes);
+
+/**
  * @}
  */
 

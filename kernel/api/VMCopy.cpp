@@ -73,7 +73,7 @@ int VMCopyHandler(ProcessID procID, Action how, Address ours, Address theirs, Si
 	total  += bytes;
     }
     /* Success. */
-    return 0;
+    return total;
 }
 
 INITAPI(VMCOPY, VMCopyHandler)

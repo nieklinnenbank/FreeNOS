@@ -19,10 +19,16 @@
 #include <api/ProcessCtl.h>
 #include <arch/Process.h>
 #include <MemoryServer.h>
+#include <FileSystemMessage.h>
+#include <VirtualFileSystem.h>
 #include <Config.h>
 #include <stdio.h>
+#include <string.h>
+#include <errno.h>
+#include <dirent.h>
 #include <sys/utsname.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include "Shell.h"
 
 Shell::Shell()
@@ -46,6 +52,12 @@ int Shell::run()
 	    doUname();
 	else if (strcmp(cmd, "memstat") == 0)
 	    memstat();
+	else if (strcmp(cmd, "mount") == 0)
+	    mount();
+	else if (strncmp(cmd, "cat ", 3) == 0)
+	    cat(cmd + 4);
+	else if (strncmp(cmd, "ls", 2) == 0)
+	    ls(cmd + 3);
 	else if (strcmp(cmd, "help") == 0)
 	    help();
 	else
@@ -82,6 +94,7 @@ void Shell::prompt()
     printf("# ");
 }
 
+// TODO: use /proc!
 void Shell::ps()
 {
     ProcessInfo info;
@@ -120,7 +133,7 @@ void Shell::memstat()
     msg.action = MemoryUsage;
     
     /* Ask memory server for memory stats. */
-    IPCMessage(MEMORY_PID, SendReceive, &msg);
+    IPCMessage(MEMSRV_PID, SendReceive, &msg);
     
     /* Print it. */
     printf("Total:     %u KB\n"
@@ -128,10 +141,81 @@ void Shell::memstat()
 	   msg.bytes / 1024, msg.bytesFree / 1024);
 }
 
+void Shell::mount()
+{
+    FileSystemMessage msg;
+    FileSystemMount mounts[MAX_MOUNTS];
+    
+    /* Ask filesystem for active mounts. */
+    msg.action = MountInfo;
+    msg.buffer = (char *) &mounts;
+    msg.size   = sizeof(mounts);
+    
+    /* Trap. */
+    IPCMessage(VFSSRV_PID, SendReceive, &msg);
+    
+    /* Print out. */
+    for (Size i = 0; i < MAX_MOUNTS; i++)
+    {
+	if (mounts[i].path[0])
+	    printf("%s\n", mounts[i].path);
+    }
+}
+
+void Shell::cat(char *file)
+{
+    char buf[1024];
+    int fd;
+    
+    /* Attempt to open the file first. */
+    if ((fd = open(file, ZERO)) < 0)
+    {
+	printf("Failed to open '%s': %s\n",
+	        file, strerror(errno));
+	return;
+    }
+    /* Read contents. */
+    if (read(fd, buf, sizeof(buf)) < 0)
+    {
+	printf("Failed to read '%s': %s\n",
+		file, strerror(errno));
+	close(fd);
+	return;
+    }
+    /* Success! Print out results. */
+    printf("%s\n", buf);
+    close(fd);
+}
+
+void Shell::ls(char *dir)
+{
+    DIR *d;
+    struct dirent *dent;
+    
+    /* Attempt to open the directory. */
+    if (!(d = opendir(dir)))
+    {
+	printf("Failed to open '%s': %s\n",
+		dir, strerror(errno));
+	return;
+    }
+    /* Read directory. */
+    while ((dent = readdir(d)))
+    {
+	printf("%s ", dent->d_name);
+    }
+    printf("\n");
+    /* Close it. */
+    closedir(d);
+}
+
 void Shell::help()
 {
-    printf("ps      - Output list of Processes\n"
-	   "uname   - Print UNIX name\n"
-	   "memstat - Memory statistics\n"
-	   "help    - This message\n");
+    printf("ps         - Output list of Processes\n"
+	   "uname      - Print UNIX name\n"
+	   "memstat    - Memory statistics\n"
+	   "mount      - Shows active mount information\n"
+	   "cat <file> - Print contents of a file\n"
+	   "ls <dir>   - List directory contents\n"
+	   "help       - This message\n");
 }

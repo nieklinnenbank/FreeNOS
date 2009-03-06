@@ -15,19 +15,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
+#include <api/IPCMessage.h>
+#include <FileSystemMessage.h>
+#include <Config.h>
+#include <errno.h>
+#include "fcntl.h"
 
-int main(int argc, char **argv)
+int open(const char *path, int oflag, ...)
 {
-    /*
-     * TODO: give up all priviledges: run us in priviledge level 0.
-     */
-
-    printf("Init: starting\n");
-
-    /* Lockup. */    
-    for (;;);
-
-    /* Satify compiler. */
-    return 0;
+    FileSystemMessage msg;
+    
+    /* Fill message. */
+    msg.action = OpenFile;
+    msg.buffer = (char *) path;
+    
+    /* Ask VFS. */
+    IPCMessage(VFSSRV_PID, SendReceive, &msg);
+    
+    /* Set errno. */
+    errno = msg.result;
+    
+    /* Success. */
+    return msg.result == ESUCCESS ? msg.fd : -1;
 }

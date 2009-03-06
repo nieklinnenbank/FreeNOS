@@ -15,10 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "FileSystemServer.h"
+#include "ProcFile.h"
+#include "ProcFileSystem.h"
 
-int main(int argc, char **argv)
+ProcFileSystem::ProcFileSystem(const char *path) : FileSystem(path)
 {
-    FileSystemServer server;
-    return server.run();
+    insertFileCache("/",        new ProcRootFile);
+    insertFileCache("/cmdline", new ProcCmdLineFile);
+    insertFileCache("/version", new ProcVersionFile);
 }

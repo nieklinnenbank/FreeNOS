@@ -72,7 +72,7 @@ typedef struct TerminalMessage : public Message
     Size size;
     
     /** Not used. */
-    ulong unused[2];
+    ulong unused[3];
 }
 TerminalMessage;
 

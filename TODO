@@ -1,52 +1,51 @@
 [first]
-
-* Let fs do pm->getID() to avoid race condition in mapping the process table?
-    --> or let MM have the fs block until the pm maps the table right.
-
-* procfs/ps: we need to map the kernel process table *readonly* into virtual memory
-
-    --> this means effectively mapping kernel heap r/o, and returning a pointer
-        to Process::procs.
+* /proc/version, /proc/cmdline are only temporary!!! (remove them)
+    --> /proc/ should ONLY contain PID directories!
+    -->'/proc/cmdline' crashes the kernel (should not happen)
 	
-    --> procfs (inside FileSystemServer), exports the process table to userspace :)
-	(including kernel's)
+* VMCtl() : maybe pass two Address pointers!!! Then write the actual used paddr + vaddr there!!!
 
-* why not fill SELF in ::byID()!!! (so we can remove ugly code in api/*)
+* Don't use ugly unions!!! Perhapse we can modify ::run() to customize
+  messages even more for handlers!
+  
+    FileReadMessage  ] FileIOMessage
+    FileWriteMessage ]
+    FileCloseMessage ...
 
-* shared memory @ memoryserver: let process server + filesystem server map the
-  userprocess table.
+* IPCServer: maybe let handlers return a bool, to determine whether to send/not send a reply. :)
 
-* Setup initial NetworkServer (map userprocess table also)
+* devpts filesystem, for terminals!
 
-* libposix: open(), read(), write(), close()
+* libteken voor de terminal server!!!
 
-    --> map read only the user process table, to select the correct server
-
-* /srv/storage/ram -> register to FileSystemServer
-
-* Ext2FileSystem in FileSystemServer
-
-* /dev/tty0-8 in /dev!!!!!
-
-    --> shell moet deze openen, de servers gebruiken /dev/log oid.
-
-* Faults -> process manager must receive the IRQ message!
-    --> e.g. use faultPID or so??? (may be configurable in boot.conf)
-
-* remove IRQ hooks in ~x86Process().
-    --> simply keep a list with the copy of InterruptHook in each Process...
-	--> Maybe also output this in ProcessInfo! :)
+    --> BlockMessage, for VGA driver (libteken)
+        CharacterMessage, for i8250 driver (raw)
 
 * Nicer /bin/sh:
     --> BACKSPACE should be supported. (low prio)
     --> ShellCommand class, and allow it to be derived. (high prio)
 	--> INIT's!!! --> libcrt should support this too ofcourse.
 
-* libparse, map which defines which priviledges each server/driver has...
-    --> including phys -> virtual memory maps, I/O ports, IPC from/to permissions etc.
-    --> just a simple configuration file should be sufficient
+* procfs/ps: we *probably* need to map the kernel process table *readonly* into virtual memory,
+             if we don't want ProcessCtl(Info, ...) anymore
+
+* Setup initial NetworkServer (maps userprocess table also)
+
+* /srv/storage/ram -> register to FileSystemServer
+
+* Ext2FileSystem in FileSystemServer
+
+* Faults -> process manager must receive the Fault message!
+    --> e.g. use faultPID or so???
+
+* remove IRQ hooks in ~x86Process().
+    --> simply keep a list with the copy of InterruptHook in each Process...
+	--> Maybe also output this in ProcessInfo! :)
+
+* Let init drop it's priviledges (syscalls, ipc, etc)
 
 [bugs]
+* Keyboard controller: real hardware, and in Virtualbox, doesn't respond! (keymapping problem?)
 * fix Assert.h
 * "Cursor pointer" in the VGA screen isn't updated...
 * MemoryServer::doGrow() allocated a whole page, if e.g. only 1 byte is requested...
@@ -65,7 +64,8 @@
     --> PROCESS_FOOTPRINT on initialization
     --> Use modEnd-modStart to calculate addition number of pages for boot modules
     --> then, for each MemoryMessage, just add it to the counter! :)
-
+* Do we need a nameserver?
+* Login server: allocate a pseudo tty? 
 * Reincarnation server, a la minix 3.
 * Inet server.
 * Terminal server: make sure to have a something like: Vector<Terminal>, using ProcessID as index?
@@ -73,14 +73,14 @@
 
 [sources]
 * Perhaps, find a clean way to build libc and libposix using gcc and .c, instead of g++ and .cpp
-    --> maybe, an extern C function in C++, which then can be used from pure C code, to send
-        IPC messages...
+    --> maybe, an extern C function in C++, which then can be used from pure C code, to send IPC messages...
 * /boot directory, containing the grub.conf (instead of inside image.mk)
 * Automatic copying of every file in the project to boot.iso!
 * SVN's $headURL inside debug()?
 * use #define ArchXXX etc
 * void Memory::releasePhysical(Address addr)  <--- include size here?
 * Don't send MemoryError, but just send an value from <Error.h>! :)
+* FooMessage.doBar() wrapper functions?
 
 [kernel]
 * perhaps we should allow multiple messages to be fetched in IPCMessage()! (speed++)

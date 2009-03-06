@@ -30,10 +30,33 @@
 #define SYSTEMINFO 6
 
 /**
+ * Forward declaration.
+ * @see SystemInformation
+ */
+class SystemInformation;
+
+/**
+ * Prototype for user applications. Retrieves system information.
+ * @param buf Target buffer.
+ */
+inline int SystemInfo(SystemInformation *info)
+{
+    return trapKernel1(SYSTEMINFO, (Address) info);
+}
+
+/**
  * System information structure.
  */
 typedef struct SystemInformation
 {
+    /**
+     * Constructor function.
+     */
+    SystemInformation()
+    {
+	SystemInfo(this);
+    }
+
     /** System version. */
     ulong version;
     
@@ -60,14 +83,5 @@ typedef struct SystemInformation
     Size moduleCount;
 }
 SystemInformation;
-
-/**
- * Prototype for user applications. Retrieves system information.
- * @param buf Target buffer.
- */
-inline int SystemInfo(SystemInformation *info)
-{
-    return trapKernel1(SYSTEMINFO, (Address) info);
-}
 
 #endif /* __API_SYSTEMINFO_H */

@@ -50,7 +50,7 @@ Address PageAllocator::allocate(Size *size)
         msg.bytes  = *size;
 
 	/* Grow heap. */
-        IPCMessage(MEMORY_PID, SendReceive, &msg);
+        IPCMessage(MEMSRV_PID, SendReceive, &msg);
 
 	/* Update heap pointers. */
 	heapStart  = msg.startAddr;
@@ -77,7 +77,7 @@ void PageAllocator::release(Address addr)
 	    msg.bytes  =  PAGESIZE;
 	    
 	    /* Shrink heap. */
-	    IPCMessage(MEMORY_PID, SendReceive, &msg);
+	    IPCMessage(MEMSRV_PID, SendReceive, &msg);
 	}
     }
     /* Update counter. */

@@ -15,16 +15,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ProcessServer.h"
-#include "MemoryServer.h"
 #include <stdio.h>
+#include "ProcessServer.h"
+
+UserProcess ProcessServer::procs[MAX_PROCS];
 
 ProcessServer::ProcessServer()
-    : IPCServer<ProcessServer, ProcessMessage>(this), procs((UserProcess *)PROCTABLE)
+    : IPCServer<ProcessServer, ProcessMessage>(this)
 {
+    SystemInformation info;
+    FileSystemMessage vfs;
+
     /* Register message handlers. */
-    addIPCHandler(GetID, &ProcessServer::doGetID);
-    
+    addIPCHandler(GetID, &ProcessServer::getIDHandler);
+    addIPCHandler(ReadProcess, &ProcessServer::readProcessHandler);
+
+    /* Fixup process table, with boot modules. */
+    for (Size i = 0; i < info.moduleCount; i++)
+    {
+	/* Write commandline and identities. */
+	snprintf(procs[i].command, COMMANDLEN,
+		"[%s]", info.modules[i].string);
+	procs[i].uid = 0;
+	procs[i].gid = 0;
+	
+	/* Inform VFS. */
+	vfs.newProcess(i, procs[i].uid, procs[i].gid);
+    }
     /* Debug out boot modules. */
     printf("Boot Modules:\n");
     
@@ -33,8 +50,22 @@ ProcessServer::ProcessServer()
 	    printf("%u: %s\n", i, procs[i].command);
 }
 
-void ProcessServer::doGetID(ProcessMessage *msg, ProcessMessage *reply)
+void ProcessServer::getIDHandler(ProcessMessage *msg, ProcessMessage *reply)
 {
     reply->number = msg->from;
-    reply->action = ProcessOK;
+    reply->result = ESUCCESS;
+}
+
+void ProcessServer::readProcessHandler(ProcessMessage *msg, ProcessMessage *reply)
+{
+    /* Copy only active entries. */
+    for (Size i = 0; i < MAX_PROCS; i++)
+    {
+	if (procs[i].command[0])
+	{
+	    VMCopy(msg->from, Write, (Address) (&procs[i]),
+				     (Address) (msg->buffer + i), sizeof(UserProcess));
+	}
+    }
+    reply->result = ESUCCESS;
 }

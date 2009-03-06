@@ -89,6 +89,9 @@ typedef struct MemoryMessage : public Message
 
     /** Start and end addresses (e.g. of the heap). */
     Address startAddr, endAddr;
+    
+    /** Unused. */
+    ulong unused;
 }
 MemoryMessage;
 

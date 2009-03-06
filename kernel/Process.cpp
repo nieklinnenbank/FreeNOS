@@ -18,6 +18,7 @@
 #include <arch/Process.h>
 #include <Vector.h>
 #include <Types.h>
+#include <Config.h>
 #include <ListIterator.h>
 
 Vector<Process> Process::procs(MAX_PROCS);
@@ -35,7 +36,10 @@ Process::~Process()
 
 ArchProcess * Process::byID(ProcessID id)
 {
-    return (ArchProcess *) procs[id];
+    if (id == SELF && scheduler->current())
+	return scheduler->current();
+    else
+	return (ArchProcess *) procs[id];
 }
 
 bool Process::operator == (Process *p)

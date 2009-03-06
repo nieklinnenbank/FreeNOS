@@ -22,6 +22,11 @@
 #include <Macros.h>
 
 /**
+ * @defgroup ansic ISO/IEC 9899:1999
+ * @{
+ */
+
+/**
  * Output a debug message using printf().
  * @param fmt Formatted string.
  * @param ... Argument list.
@@ -88,5 +93,9 @@ extern C char * gets(char *buffer, Size size);
  * @return Character.
  */
 extern C char getc(char *buffer);
+
+/**
+ * @}
+ */
 
 #endif /* __LIBC_STDIO_H */

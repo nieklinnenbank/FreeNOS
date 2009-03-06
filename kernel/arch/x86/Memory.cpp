@@ -154,7 +154,7 @@ bool x86Memory::access(x86Process *p, Address vaddr, Size sz, ulong prot)
 	   bytes < sz)
     {
 	vaddr += PAGESIZE;
-	bytes += vaddr & ~PAGEMASK;
+	bytes += ~PAGEMASK - (vaddr & ~PAGEMASK);
 	remPageTab = PAGETABADDR(vaddr); 
     }
     /* Do we have a match? */
