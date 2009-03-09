@@ -17,10 +17,12 @@
 
 #include <arch/Scheduler.h>
 #include <arch/Init.h>
-#include <Queue.h>
+#include <List.h>
+#include <ListIterator.h>
 #include <Macros.h>
 
-Scheduler::Scheduler() : currentProcess(ZERO), oldProcess(ZERO)
+Scheduler::Scheduler()
+    : currentProcess(ZERO), oldProcess(ZERO), idleProcess(ZERO)
 {
 }
 
@@ -50,10 +52,18 @@ void Scheduler::executeNext()
     next = queue.dequeue();
     
     /* Find the next ready Process in line. */
-    while (next->getState() != Ready)
+    while (next->getState() != Ready && next != idleProcess)
     {
+	/* Push back on. */
 	queue.enqueue(next);
-	next = queue.dequeue();
+	
+	/* We've walked the entire queue already. */
+	if ((next = queue.dequeue()) == currentProcess)
+	{
+	    if (idleProcess)
+		next = idleProcess;
+	    break;
+	}
     }
     /* Update current. */
     currentProcess = next;

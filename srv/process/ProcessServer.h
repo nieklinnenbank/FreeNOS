@@ -18,14 +18,10 @@
 #ifndef __PROCESS_PROCESSSERVER_H
 #define __PROCESS_PROCESSSERVER_H
 
-#include <api/IPCMessage.h>
-#include <api/SystemInfo.h>
-#include <api/VMCopy.h>
-#include <arch/Memory.h>
 #include <IPCServer.h>
-#include <FileSystemMessage.h>
 #include <Types.h>
 #include <Error.h>
+#include "ProcessMessage.h"
 
 /** Maximum length of a command (as saved in the user process table). */
 #define COMMANDLEN 64
@@ -40,63 +36,11 @@ typedef struct UserProcess
 
     /** User and Group ID. */
     u16 uid, gid;
+    
+    /** Process state. */
+    ProcessState state;
 }
 UserProcess;
-
-/**
- * Actions which can be specified in an ProcessMessage.
- */
-typedef enum ProcessAction
-{
-    GetID       = 0,
-    ReadProcess = 1,
-}
-ProcessAction;
-
-/**
- * Process operation message.
- */
-typedef struct ProcessMessage : public Message
-{
-    /**
-     * Default constructor.
-     */
-    ProcessMessage() : action(GetID), number(ZERO), buffer(ZERO)
-    {
-    }
-
-    /**
-     * Assignment operator.
-     * @param m ProcessMessage pointer to copy from.
-     */
-    void operator = (ProcessMessage *m)
-    {
-	from    = m->from;
-	type    = m->type;
-	action  = m->action;
-	number  = m->number;
-	buffer  = m->buffer;
-    }
-
-    union
-    {
-	/** Action to perform. */
-	ProcessAction action;
-	
-	/** Result code. */
-	Error result;
-    };
-
-    /** Used to store somekind of number (e.g. PID's). */
-    ulong number;
-    
-    /** Input/Output buffer for ReadProcess. */
-    UserProcess *buffer;
-
-    /** Unused. */
-    ulong unused[3];
-}
-ProcessMessage;
 
 /**
  * Process management server.
@@ -123,8 +67,16 @@ class ProcessServer : public IPCServer<ProcessServer, ProcessMessage>
 	 * Read the user process table.
 	 * @param msg Incoming message.
 	 * @param reply Response message.
+	 * @return True (sends reply).
 	 */
 	void readProcessHandler(ProcessMessage *msg, ProcessMessage *reply);
+
+	/**
+	 * Terminate a process.
+	 * @param msg Incoming message.
+	 * @param reply Response message.
+	 */
+	void exitProcessHandler(ProcessMessage *msg, ProcessMessage *reply);
 
 	/** User Process table. */
 	static UserProcess procs[MAX_PROCS];

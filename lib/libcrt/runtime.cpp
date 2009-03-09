@@ -42,7 +42,7 @@ extern C void SECTION(".entry") _entry()
     char *argv[] = {"main", ZERO };
 
     /* Setup heap. */
-    PageAllocator pa(PAGESIZE * 4), *p;
+    PageAllocator pa(PAGESIZE * 8), *p;
     ListAllocator *li;
     Address heapAddr = pa.getHeapStart(), heapOff;
     

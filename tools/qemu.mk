@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-QEMU := qemu -nographic
+QEMU := qemu
 
 #
 # Run qemu in debugging mode.

@@ -1,52 +1,54 @@
+[DEFERRED]
+++ FIX: Keyboard controller: real hardware, and in Virtualbox, doesn't respond! (keymapping problem?)
+    --> THE PROBLEM IS THE COM1 PORT!!!!!!!
+	--> DETECT IT PROPERLY
+
+--> ps is slow!!! (isn't the whole vfs slow?)
+    --> we need a timer function to identify the problem.
+    --> I suspect open() to be the bottleneck.
+
+--> fix Assert.h
+    --> we COULD map page tables + dirs READONLY in every proces.. this way, assertRead/Write is very
+        efficient!!! (define inline/macros in arch/ for this)
+	--> the same *COULD* be done for remotes, but be VERY carefull (NOT r/w too).
+	--> /proc/maps!	
+    --> perhaps, memory server can then do more management of virtual memory?
+
 [first]
-* /proc/version, /proc/cmdline are only temporary!!! (remove them)
-    --> /proc/ should ONLY contain PID directories!
-    -->'/proc/cmdline' crashes the kernel (should not happen)
-	
-* VMCtl() : maybe pass two Address pointers!!! Then write the actual used paddr + vaddr there!!!
 
-* Don't use ugly unions!!! Perhapse we can modify ::run() to customize
-  messages even more for handlers!
-  
-    FileReadMessage  ] FileIOMessage
-    FileWriteMessage ]
-    FileCloseMessage ...
-
-* IPCServer: maybe let handlers return a bool, to determine whether to send/not send a reply. :)
-
-* devpts filesystem, for terminals!
-
-* libteken voor de terminal server!!!
-
-    --> BlockMessage, for VGA driver (libteken)
+[6] --> devpts filesystem, for terminals!
+[7] --> Nameserver for lookups! Do we need a nameserver? (YES)
+[8] --> BlockMessage, for VGA driver (libteken)
         CharacterMessage, for i8250 driver (raw)
-
-* Nicer /bin/sh:
-    --> BACKSPACE should be supported. (low prio)
-    --> ShellCommand class, and allow it to be derived. (high prio)
-	--> INIT's!!! --> libcrt should support this too ofcourse.
-
-* procfs/ps: we *probably* need to map the kernel process table *readonly* into virtual memory,
-             if we don't want ProcessCtl(Info, ...) anymore
-
-* Setup initial NetworkServer (maps userprocess table also)
-
-* /srv/storage/ram -> register to FileSystemServer
-
-* Ext2FileSystem in FileSystemServer
-
-* Faults -> process manager must receive the Fault message!
-    --> e.g. use faultPID or so???
-
-* remove IRQ hooks in ~x86Process().
-    --> simply keep a list with the copy of InterruptHook in each Process...
+[9] --> libteken voor de terminal server!!!
+[10] -->  Nicer /bin/sh:
+        --> BACKSPACE should be supported. (low prio)
+        --> ShellCommand class, and allow it to be derived. (high prio)
+	    --> INIT's!!! --> libcrt should support this too ofcourse.
+[11] --> remove IRQ hooks in ~x86Process(). Also, cleanup pending messages?
+     --> simply keep a list with the copy of InterruptHook in each Process...
 	--> Maybe also output this in ProcessInfo! :)
+[12] --> Implement the notion of "current directory" in VirtualFileSystem.
 
-* Let init drop it's priviledges (syscalls, ipc, etc)
+[second]
+[13] --> Faults -> process manager must receive the Fault message!
+	--> e.g. use faultPID or so???
+[15] --> Don't use ugly unions!!! Perhapse we can modify ::run() to customize
+	 messages even more for handlers!
+  
+	  --> Better: just use FileMessage as a base class, derive the others :) (simple, works with current IPCServer too! :)
+  
+	    FileReadMessage  ] FileIOMessage
+	    FileWriteMessage ]
+	    FileCloseMessage ...
+
+[16] --> /srv/storage/ram -> register to FileSystemServer
+[17] --> Ext2FileSystem
+[18] --> Let init drop it's priviledges (syscalls, ipc, etc)
+[19] --> VMCtl() : maybe pass two Address pointers!!! Then write the actual used paddr + vaddr there!!!
+[20] --> kernel messages/logging...
 
 [bugs]
-* Keyboard controller: real hardware, and in Virtualbox, doesn't respond! (keymapping problem?)
-* fix Assert.h
 * "Cursor pointer" in the VGA screen isn't updated...
 * MemoryServer::doGrow() allocated a whole page, if e.g. only 1 byte is requested...
 * fix parallel make (LD of the kernel that is, which races against $(subdirs)!)
@@ -55,6 +57,8 @@
 * libc: %NUMs formats support
 
 [programs]
+* Random stack, heap and program text!!!
+* We DON'T want setuid/setgid bits! (and we really don't need them either).
 
 [servers]
 * /srv/storage, with a ramdisk and scsi (lsi's)
@@ -64,12 +68,9 @@
     --> PROCESS_FOOTPRINT on initialization
     --> Use modEnd-modStart to calculate addition number of pages for boot modules
     --> then, for each MemoryMessage, just add it to the counter! :)
-* Do we need a nameserver?
 * Login server: allocate a pseudo tty? 
 * Reincarnation server, a la minix 3.
 * Inet server.
-* Terminal server: make sure to have a something like: Vector<Terminal>, using ProcessID as index?
-    --> so, this way, also a pseudo terminal, like for SSH, can work! :)
 
 [sources]
 * Perhaps, find a clean way to build libc and libposix using gcc and .c, instead of g++ and .cpp
@@ -79,7 +80,6 @@
 * SVN's $headURL inside debug()?
 * use #define ArchXXX etc
 * void Memory::releasePhysical(Address addr)  <--- include size here?
-* Don't send MemoryError, but just send an value from <Error.h>! :)
 * FooMessage.doBar() wrapper functions?
 
 [kernel]

@@ -135,8 +135,6 @@ void VirtualFileSystem::closeFileHandler(FileSystemMessage *msg,
 	reply->result = ENOSUCH;
 }
 
-
-
 void VirtualFileSystem::mountHandler(FileSystemMessage *msg,
 				     FileSystemMessage *reply)
 {
@@ -181,6 +179,8 @@ void VirtualFileSystem::killProcessHandler(FileSystemMessage *msg,
     /* Clear process entry. */
     procs[msg->procID].userID  = 0;
     procs[msg->procID].groupID = 0;
+    
+    // TODO: don't forget to delete files themselves!!!
     delete procs[msg->procID].files;
     
     /* Success. */
@@ -207,11 +207,14 @@ FileSystemMount * VirtualFileSystem::findMount(char *path)
     /* Find a match. */
     for (Size i = 0; i < MAX_MOUNTS; i++)
     {
-	Size len = strlen(mounts[i].path);
-    
-	if (strncmp(path, mounts[i].path, len) == 0)
+	if (mounts[i].path[0])
 	{
-	    return &mounts[i];
+	    Size len = strlen(mounts[i].path);
+    
+	    if (strncmp(path, mounts[i].path, len) == 0)
+	    {
+		return &mounts[i];
+	    }
 	}
     }
     return (FileSystemMount *) ZERO;

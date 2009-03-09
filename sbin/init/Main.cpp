@@ -16,6 +16,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 
 int main(int argc, char **argv)
 {
@@ -25,8 +26,8 @@ int main(int argc, char **argv)
 
     printf("Init: starting\n");
 
-    /* Lockup. */    
-    for (;;);
+    /* Exit immediately. */
+    exit(EXIT_SUCCESS); 
 
     /* Satify compiler. */
     return 0;

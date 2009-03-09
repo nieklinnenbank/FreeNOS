@@ -29,16 +29,16 @@
  * Available operation to perform using PrivExec().
  * @see PrivExec
  */
-typedef enum ProcessAction
+typedef enum ProcessOperation
 {
     Spawn    = 0,
-    Kill     = 1,
+    KillPID  = 1,
     GetPID   = 2,
     AllowIO  = 3,
     WatchIRQ = 4,
-    Info     = 5,
+    InfoPID  = 5,
 }
-ProcessAction;
+ProcessOperation;
 
 /**
  * Process information structure, used for Info.
@@ -57,7 +57,7 @@ typedef struct ProcessInfo
  *             ProcessInfo pointer for Info.
  * @return Never.
  */
-inline int ProcessCtl(ProcessID proc, ProcessAction op, Address addr = 0)
+inline int ProcessCtl(ProcessID proc, ProcessOperation op, Address addr = 0)
 {
     return trapKernel3(PROCESSCTL, proc, op, addr);
 }

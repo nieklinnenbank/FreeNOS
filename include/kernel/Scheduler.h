@@ -77,6 +77,15 @@ class Scheduler : public Singleton<Scheduler>
 	{
 	    oldProcess = p;
 	}
+	
+	/**
+	 * Determines which process to run if nothing to do.
+	 * @param p Process to run if no other processes ready.
+	 */
+	void setIdle(ArchProcess *p)
+	{
+	    idleProcess = p;
+	}
 
 	/**
 	 * Puts the given Process in the scheduler queue.
@@ -100,6 +109,9 @@ class Scheduler : public Singleton<Scheduler>
 
         /** Previous executing Process. */
         ArchProcess *oldProcess;
+	
+	/** Process to execute if nothing to do. */
+	ArchProcess *idleProcess;
 };
 
 /** Scheduler instance. */

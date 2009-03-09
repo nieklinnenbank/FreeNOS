@@ -150,6 +150,7 @@ void x86Kernel::enableIRQ(uint irq, bool enabled)
 
 void x86Kernel::exception(CPUState *state, ulong param)
 {
+    assert(scheduler->current() != ZERO);
     delete scheduler->current();
     scheduler->executeNext();
 }

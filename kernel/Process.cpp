@@ -31,6 +31,7 @@ Process::Process(Address addr) : status(Stopped)
     
 Process::~Process()
 {
+    wakeups.remove(this);
     procs.remove(pid);
 }
 

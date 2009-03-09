@@ -40,14 +40,17 @@ PageAllocator::PageAllocator(PageAllocator *p)
 Address PageAllocator::allocate(Size *size)
 {
     MemoryMessage msg;
-    Address ret = heapStart + allocated;
+    Address ret  = heapStart + allocated;
+    Size bytes = *size > PAGEALLOC_MINIMUM ? *size : PAGEALLOC_MINIMUM;
 
     /* Do we need to allocate more pages? */
+#if 0
     if (heapEnd - (heapStart + allocated) < *size)
     {
+#endif
 	/* Fill in the message. */
 	msg.action =  HeapGrow;
-        msg.bytes  = *size;
+        msg.bytes  =  bytes;
 
 	/* Grow heap. */
         IPCMessage(MEMSRV_PID, SendReceive, &msg);
@@ -55,9 +58,11 @@ Address PageAllocator::allocate(Size *size)
 	/* Update heap pointers. */
 	heapStart  = msg.startAddr;
 	heapEnd    = msg.endAddr;
+#if 0
     }
+#endif
     /* Update count. */
-    allocated += *size;
+    allocated += bytes;
 
     /* Success. */
     return ret;

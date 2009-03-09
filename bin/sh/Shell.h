@@ -75,6 +75,11 @@ class Shell
 	void cat(char *file);
 	
 	/**
+	 * Formatted cat(1) function.
+	 */
+	void catFmt(char *fmt, ...);
+	
+	/**
 	 * ls(1) function.
 	 */
 	void ls(char *dir);

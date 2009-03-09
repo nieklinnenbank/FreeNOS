@@ -30,12 +30,16 @@ template <class Func> struct MessageHandler
     /**
      * Constructor function.
      * @param f Function to execute.
+     * @param r Send a reply?
      */
-    MessageHandler(Func f) : exec(f)
+    MessageHandler(Func f, bool r) : exec(f), sendReply(r)
     {}
     
     /** Handler function. */
     Func exec;
+    
+    /** Whether to send a reply or not. */
+    bool sendReply;
 };
 
 /**
@@ -80,6 +84,7 @@ template <class Base, class MsgType> class IPCServer
 	{
 	    MsgType msg, reply;
 	    InterruptMessage *imsg = (InterruptMessage *) &msg;
+	    bool sendReply = true;
 
     	    /* Enter loop. */
 	    while (true)
@@ -92,9 +97,10 @@ template <class Base, class MsgType> class IPCServer
 		{			
 		    case IPCType:
 			if ((*ipcHandlers)[msg.action])
+			{
+			    sendReply =  (*ipcHandlers)[msg.action]->sendReply;
 			    (instance->*((*ipcHandlers)[msg.action])->exec) (&msg, &reply);
-			else
-			    reply.result = ENOSUPPORT;
+			}
 			break;
 
 		    case FaultType:
@@ -102,13 +108,19 @@ template <class Base, class MsgType> class IPCServer
 
 		    case IRQType:
 			if ((*irqHandlers)[imsg->vector])
+			{
+			    sendReply =  (*ipcHandlers)[msg.action]->sendReply;
 			    (instance->*((*irqHandlers)[imsg->vector])->exec) (imsg);
-
+			}
+			
 		    default:
 			continue;
 		}
 		/* Send Reply. */
-		IPCMessage(msg.from, Send, &reply);
+		if (sendReply)
+		{
+		    IPCMessage(msg.from, Send, &reply);
+		}
 	    }
     	    /* Satify compiler. */
 	    return 0;
@@ -118,10 +130,11 @@ template <class Base, class MsgType> class IPCServer
 	 * Register a new IPC message action handler.
 	 * @param slot Action value to trigger h.
 	 * @param h Handler to execute.
+	 * @param r Does the handler need to send a reply?
 	 */
-	void addIPCHandler(Size slot, IPCHandlerFunction h)
+	void addIPCHandler(Size slot, IPCHandlerFunction h, bool sendReply = true)
 	{
-	    ipcHandlers->insert(slot, new MessageHandler<IPCHandlerFunction>(h));
+	    ipcHandlers->insert(slot, new MessageHandler<IPCHandlerFunction>(h, sendReply));
 	}
 	
 	/**

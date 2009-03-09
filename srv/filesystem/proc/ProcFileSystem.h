@@ -36,6 +36,17 @@ class ProcFileSystem : public FileSystem
 	 * @param path Path to which we are mounted.
 	 */
 	ProcFileSystem(const char *path);
+	
+    private:
+
+	/**
+	 * Refreshes the cache completely.
+	 * @param cache Input FileCache which has caused a hit.
+	 */
+	FileCache * cacheHit(FileCache *cache);
+	
+	/** String representation of process states. */
+	static char *states[];
 };
 
 #endif /* __FILESYSTEM_PROCFILESYSTEM_H */

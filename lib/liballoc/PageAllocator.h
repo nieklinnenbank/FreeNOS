@@ -18,8 +18,12 @@
 #ifndef __LIBALLOC_PAGEALLOCATOR_H
 #define __LIBALLOC_PAGEALLOCATOR_H
 
+#include <arch/Memory.h>
 #include <Types.h>
 #include "Allocator.h"
+
+/** Minimum size required to allocate. */
+#define PAGEALLOC_MINIMUM (PAGESIZE * 2)
 
 /**
  * Allocates virtual memory using the memory server.

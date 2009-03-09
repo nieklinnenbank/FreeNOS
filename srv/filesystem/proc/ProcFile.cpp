@@ -15,68 +15,35 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <api/SystemInfo.h>
-#include <Version.h>
-#include <ProcessServer.h>
 #include <stdio.h>
-#include <dirent.h>
 #include "ProcFile.h"
 
-UserProcess procs[MAX_PROCS];
-
-Error ProcRootFile::read(u8 *buffer, Size sz, Size offset)
+ProcFile::ProcFile(char *buf, Size sz)
 {
-    ProcessMessage msg;
-    Size bytes = 0;
-    Dirent *dirent = (Dirent *) buffer;
-    
-    /* Fill message. */
-    msg.action = ReadProcess;
-    msg.buffer = procs;
-    
-    /* Request process server. */
-    IPCMessage(PROCSRV_PID, SendReceive, &msg);
-    
-    /* Fill in dirent entries. */
-    for (Size i = offset / sizeof(Dirent); i < MAX_PROCS && bytes + sizeof(Dirent) < sz; i++)
+    buffer = new char[sz + 1];
+    size   = strlcpy(buffer, buf, sz + 1);
+}
+
+ProcFile::~ProcFile()
+{
+    delete buffer;
+}
+
+Error ProcFile::read(u8 *buf, Size sz, Size offset)
+{
+    Size bytes;
+
+    /* Bounds checking. */
+    if (offset >= size)
     {
-	/* Is this entry filled? */
-	if (procs[i].command[0])
-	{
-	    snprintf(dirent->d_name, DIRLEN, "%u", i);
-	    dirent->d_type = DT_DIR;
-	    dirent++;
-	    bytes += sizeof(Dirent);
-	}
+	return 0;
     }
+    else
+	bytes = size - offset > sz ? sz : size - offset;
+    
+    /* Copy the buffers. */
+    memcpy(buf, buffer + offset, bytes);
+    
+    /* Success. */
     return bytes;
-}
-
-Error ProcVersionFile::read(u8 *buffer, Size sz, Size offset)
-{
-    char *version = "FreeNOS " RELEASE;
-    Size len = strlen(version);
-    
-    /* End of file reached? */
-    if (offset >= len)
-    {
-	return 0;
-    }
-    memcpy((char *) buffer, version + offset, sz);
-    return sz;
-}
-
-Error ProcCmdLineFile::read(u8 *buffer, Size sz, Size offset)
-{
-    SystemInformation info;
-    Size len = strlen(info.cmdline);
-
-    /* End of file reached? */
-    if (offset >= len)
-    {
-	return 0;
-    }    
-    /* Write kernel commandline. */
-    memcpy((char *) buffer, info.cmdline + offset, sz);
-    return sz;
 }

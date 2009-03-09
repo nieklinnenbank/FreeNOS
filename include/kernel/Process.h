@@ -62,7 +62,7 @@ class Process
 	/**
 	 * Destructor function.
 	 */
-	~Process();
+	virtual ~Process();
 
 	/**
 	 * Retrieve our ID number.

@@ -44,7 +44,7 @@ typedef ulong APIHandler(ulong, ulong, ulong, ulong, ulong);
 /**
  * Various actions which may be performed inside an APIHandler.
  */
-typedef enum Action
+typedef enum Operation
 {
     Create 	= 0,
     Delete 	= 1,

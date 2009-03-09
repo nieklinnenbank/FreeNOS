@@ -28,13 +28,13 @@ void interruptNotify(CPUState *st, ArchProcess *p)
     p->wakeup();
 }
 
-int ProcessCtlHandler(ProcessID procID, ProcessAction action, Address addr)
+int ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
 {
     ArchProcess *proc = ZERO;
     ProcessInfo *info = (ProcessInfo *) addr;
 
     /* Verify memory address. */
-    if (action == Info)
+    if (action == InfoPID)
     {
 	if (!memory->access(scheduler->current(), addr, sizeof(ProcessInfo)))
 	{
@@ -42,7 +42,7 @@ int ProcessCtlHandler(ProcessID procID, ProcessAction action, Address addr)
 	}
     }
     /* Does the target process exist? */
-    else if(action != GetPID && !(proc = Process::byID(procID)))
+    if(action != GetPID && !(proc = Process::byID(procID)))
     {
 	return ENOSUCH;
     }
@@ -52,7 +52,7 @@ int ProcessCtlHandler(ProcessID procID, ProcessAction action, Address addr)
 	case Spawn:
 	    return EINVALID;
 	
-	case Kill:
+	case KillPID:
 	    delete proc;
 	    break;
 
@@ -69,15 +69,7 @@ int ProcessCtlHandler(ProcessID procID, ProcessAction action, Address addr)
 	    kernel->enableIRQ(addr, true);
 	    break;
 	
-	case Info:
-	    
-	    /* Find next. */
-	    while (procID < MAX_PROCS && !(proc = Process::byID(procID)))
-		procID++;
-	    
-	    if (!proc)
-		return ENOSUCH;
-	
+	case InfoPID:
 	    info->id    = proc->getID();
 	    info->state = proc->getState();
     }

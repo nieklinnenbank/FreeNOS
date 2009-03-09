@@ -21,10 +21,9 @@
 #include <Types.h>
 #include <string.h>
 
-x86Memory::x86Memory()
-    : Memory(),
-      remPageDir(PAGEDIRADDR_REMOTE), remPageTab(ZERO),
-      myPageDir(PAGEDIRADDR), myPageTab(ZERO)
+x86Memory::x86Memory() : Memory(), remPageDir(PAGEDIRADDR_REMOTE),
+			 remPageTab(ZERO), myPageDir(PAGEDIRADDR),
+			 myPageTab(ZERO)
 {
 }
 
@@ -133,7 +132,7 @@ Address x86Memory::lookupVirtual(x86Process *p, Address vaddr)
 void x86Memory::mapRemote(x86Process *p, Address vaddr)
 {
     /* Map remote page directory and page table. */
-    myPageDir[DIRENTRY(PAGETABFROM_REMOTE)] = p->getPageDirectory() | (PAGE_PRESENT|PAGE_RW);
+    myPageDir[DIRENTRY(PAGETABFROM_REMOTE)] = p->getPageDirectory() | (PAGE_PRESENT|PAGE_RW|PAGE_PINNED);
     remPageTab = PAGETABADDR_FROM(vaddr, PAGETABFROM_REMOTE);
     
     /* Refresh cache. */
@@ -159,6 +158,33 @@ bool x86Memory::access(x86Process *p, Address vaddr, Size sz, ulong prot)
     }
     /* Do we have a match? */
     return (bytes >= sz);    
+}
+
+void x86Memory::releaseAll(x86Process *p)
+{
+    /* Map page tables. */
+    mapRemote(p, 0x0);
+
+    /* Mark all our physical pages free. */
+    for (Size i = 0; i < 1024; i++)
+    {
+	/* May we release these physical pages? */
+        if (remPageDir[i] & PAGE_PRESENT && !(remPageDir[i] & PAGE_PINNED))
+        {
+	    /* Repoint page table. */
+            remPageTab = PAGETABADDR_FROM(i * PAGESIZE * 1024,
+					  PAGETABFROM_REMOTE);
+
+	    /* Scan page table. */
+            for (Size j = 0; j < 1024; j++)
+            {
+                if (remPageTab[j] & PAGE_PRESENT && !(remPageTab[j] & PAGE_PINNED))
+                {
+                    memory->releasePhysical(remPageTab[j]);
+                }
+            }
+        }
+    }
 }
 
 INITOBJ(x86Memory, memory, VMEMORY)

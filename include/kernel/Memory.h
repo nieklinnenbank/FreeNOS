@@ -126,6 +126,12 @@ class Memory
         virtual bool access(ArchProcess *p, Address vaddr, Size sz,
                 	    ulong prot = PAGE_PRESENT|PAGE_RW|PAGE_USER) = 0;
 
+	/**
+	 * Marks all physical pages used by a process as free (if not pinned).
+	 * @param p Target process.
+	 */
+	virtual void releaseAll(ArchProcess *p) = 0;
+
     protected:
 
 	/** Total and available amount of memory. */

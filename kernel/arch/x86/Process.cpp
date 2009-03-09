@@ -55,7 +55,7 @@ x86Process::x86Process(Address entry) : Process(entry)
     kernelStackAddr = 0xd0000000 - MEMALIGN;
 
     /* Allocate stacks. */
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 8; i++)
     {
         memory->allocateVirtual(this, stackAddr - (i * PAGESIZE),
                                 PAGE_PRESENT | PAGE_USER | PAGE_RW);
@@ -94,25 +94,9 @@ x86Process::x86Process(Address entry) : Process(entry)
 
 x86Process::~x86Process()
 {
-    Address *pd = PAGEDIRADDR;
-    Address *pt = 0;
-    
-    /* Mark all our physical pages free. */
-    for (Size i = 0; i < 1024; i++)
-    {
-	if (pd[i] & PAGE_PRESENT)
-	{
-	    pt = PAGETABADDR(i * PAGESIZE * 1024);
-	    
-	    for (Size i = 0; i < 1024; i++)
-	    {
-		if (pt[i] & PAGE_PRESENT && !(pt[i] & PAGE_PINNED))
-		{
-		    memory->releasePhysical(pt[i]);
-		}
-	    }
-	}
-    }
+    /* Mark all our pages free. */
+    memory->releaseAll(this);
+
     /* Clear current/old pointer, if it is us. */
     if (scheduler->current() == this)
 	scheduler->setCurrent(ZERO);
@@ -166,9 +150,9 @@ void x86Process::execute()
     asm volatile
     (
 	"movl %%eax, %%cr3\n"
-	"movl %%ebx, %%esp\n"
 	"movl %%edx, 4(%%ecx)\n"
 	"movl $0x10, 8(%%ecx)\n"
+	"movl %%ebx, %%esp\n"
 	:: "a"(pageDirAddr),
 	   "b"(stackAddr),
 	   "c"(&kernelTss),

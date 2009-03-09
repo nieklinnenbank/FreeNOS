@@ -23,7 +23,7 @@
 #include <Config.h>
 #include <Error.h>
 
-int IPCMessageHandler(ProcessID id, Action action, UserMessage *msg)
+int IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg)
 {
     ArchProcess *proc;
 

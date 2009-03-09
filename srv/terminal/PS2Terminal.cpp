@@ -80,6 +80,7 @@ PS2Terminal::PS2Terminal() : shiftState(ZERO)
 {
     ProcessCtl(TERMINAL_PID, AllowIO,  PS2_PORT);
     ProcessCtl(TERMINAL_PID, WatchIRQ, PS2_IRQ);
+    vga = ZERO;
 }
 
 int PS2Terminal::read(s8 *buffer, Size size)
@@ -99,7 +100,7 @@ int PS2Terminal::read(s8 *buffer, Size size)
     }
     /* Write to buffer. */
     buffer[0] = shiftState ? shiftmap[keycode & 0x7f] : keymap[keycode & 0x7f];
-    
+
     /* Success. */
     return 1;
 }

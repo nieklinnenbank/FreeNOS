@@ -103,7 +103,7 @@ void TerminalServer::doIRQ(InterruptMessage *msg)
 {
     vga.flush();
     ps2.flush();
-    uart.flush();
+//    uart.flush();
     
     if (reading)
 	doRead(&lastRead);
@@ -116,7 +116,7 @@ void TerminalServer::doRead(TerminalMessage *msg)
     Size sz = msg->size > sizeof(buf) ? sizeof(buf) : msg->size;
     
     /* Attempt to read a message. */
-    if ((reply.size = uart.bufferedRead(buf, sz)) > 0 ||
+    if (/*(reply.size = uart.bufferedRead(buf, sz)) > 0 ||*/
         (reply.size = ps2.bufferedRead(buf, sz)) > 0)
     {
 	/* Copy to remote process. */
@@ -145,8 +145,8 @@ void TerminalServer::doWrite(TerminalMessage *msg)
     VMCopy(msg->from, Read, (Address) &buf, (Address) msg->buffer, sz);
 	
     /* Write to our Terminals. */
-    vga.bufferedWrite(buf, sz);
-    reply.size   = uart.bufferedWrite(buf, sz);
+    
+    reply.size   = vga.bufferedWrite(buf, sz);//uart.bufferedWrite(buf, sz);
     reply.action = TerminalOK;
 
     /* Send Reply. */
@@ -154,6 +154,6 @@ void TerminalServer::doWrite(TerminalMessage *msg)
 
     /* Flush buffers. */
     vga.flush();
-    uart.flush();
+    //uart.flush();
 }
 

@@ -27,20 +27,20 @@
  * Available operations to perform using PrivExec().
  * @see PrivExec
  */
-typedef enum PrivAction
+typedef enum PrivOperation
 {
     Idle,
     Reboot,
     Shutdown,
 }
-PrivAction;
+PrivOperation;
 
 /**
  * Prototype for user applications. Performs various priviledged operations.
  * @param op The operation to perform.
  * @return Never.
  */
-inline int PrivExec(PrivAction op)
+inline int PrivExec(PrivOperation op)
 {
     return trapKernel1(PRIVEXEC, op);
 }

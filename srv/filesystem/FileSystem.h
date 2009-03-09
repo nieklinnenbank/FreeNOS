@@ -43,6 +43,15 @@ typedef struct FileCache
 	: file(f), path(p), parent(ZERO)
     {
     }
+    /**
+     * Comparision operator.
+     * @param fc Instance to compare us with.
+     * @return True if equal, false otherwise.
+     */
+    bool operator == (FileCache *fc)
+    {
+	return file == fc->file && path == fc->path && parent == fc->parent;
+    }
     
     /** File pointer. */
     File *file;
@@ -55,6 +64,9 @@ typedef struct FileCache
     
     /** Possible childs. */
     List<FileCache> childs;
+    
+    /** Number of times opened. */
+    Size count;
 }
 FileCache;
 
@@ -70,7 +82,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	 * @param path Path to which we are mounted.
 	 */
 	FileSystem(const char *path)
-	    : IPCServer<FileSystem, FileSystemMessage>(this), root(ZERO)
+	    : IPCServer<FileSystem, FileSystemMessage>(this)
 	{
 	    FileSystemMessage msg;
 	    
@@ -84,6 +96,10 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	    
 	    /* Request VFS mount. */
 	    IPCMessage(VFSSRV_PID, SendReceive, &msg);
+	    
+	    /* Create dummy root. */
+	    root = new FileCache(ZERO, ZERO);
+	    root->count++;
 	}
     
 	/**
@@ -91,6 +107,16 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	 */
 	virtual ~FileSystem()
 	{
+	}
+
+	/**
+	 * Load a file corresponding to the given path from underlying storage.
+	 * @param path Full path to the file to load.
+	 * @return Pointer to FileCache object if the file exists, or ZERO otherwise.
+	 */
+	virtual FileCache * lookupFile(FileSystemPath *path)
+	{
+	    return (FileCache *) ZERO;
 	}
 
 	/**
@@ -116,14 +142,16 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	    path.parse(buf);
 	    
 	    /* Do we have this file cached? */
-	    if ((entry = cache[path.full()]))			// TODO: allow the filesystem too lookup it on "storage" (provide virtual lookupFile()).
+	    if ((entry = findFileCache(&path)) || (entry = lookupFile(&path)))
 	    {
+		entry->count++;
 		reply->result = ESUCCESS;
 		reply->ident  = (Address) entry;
 	    }
 	    else
 		reply->result = ENOSUCH;
 	}
+
 
 	/**
          * Read an opened file.
@@ -158,19 +186,49 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	    }
 	}
 
+	/**
+	 * Closes a file.
+	 * @param msg Incoming message.
+	 * @param reply Response message.
+	 */
+	void closeFileHandler(FileSystemMessage *msg,
+			      FileSystemMessage *reply)
+	{
+	    FileCache *file = (FileCache *) msg->ident;
+	    
+	    /* Decrement count. */
+	    file->count--;
+	}
+
     protected:
 
 	/**
 	 * Inserts a file into the in-memory filesystem tree.
-	 * @param path Full path to the file to insert.
 	 * @param file File to insert.
+	 * @param pathFormat Formatted full path to the file to insert.
+	 * @param ... Argument list.
 	 * @return Pointer to the newly created FileCache, or NULL on failure.
 	 */
-	FileCache * insertFileCache(char *path, File *file)
+	FileCache * insertFileCache(File *file, char *pathFormat, ...)
 	{
+	    char path[PATHLEN];
+	    va_list args;
+	    
+	    /* Format the path first. */
+	    va_start(args, pathFormat);
+	    vsnprintf(path, sizeof(path), pathFormat, args);
+	    va_end(args);
+	    
+	    /* Create objects. */
 	    FileSystemPath *p = new FileSystemPath(path);
 	    FileCache *entry  = (FileCache *) ZERO;
-	    FileCache *parent = findFileCache(p->parent());
+	    FileCache *parent = ZERO;
+	    
+	    /* Set parent. */
+	    if (p->parent() && cache[p->parent()])
+		parent = cache[p->parent()];
+	    else
+		parent = root;
 	    
     	    /* Create new cache. */
 	    entry = new FileCache(file, p);
@@ -178,9 +236,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
     	    cache.insert(p->full(), entry);
 		
 	    /* Add it to parent. */
-	    if (parent)
-		parent->childs.insertTail(entry);
-
+	    parent->childs.insertTail(entry);
 	    return entry;
 	}
 
@@ -192,7 +248,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	FileCache * findFileCache(char *path)
 	{
     	    FileSystemPath p(path);
-	    return cache[p.full()];
+	    return findFileCache(&p);
 	}
 
 	/**
@@ -204,8 +260,61 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	{
 	    return path ? findFileCache(**path) : ZERO;
 	}
+
+	/**
+	 * Search the cache for an entry.
+	 * @param path Full path of the file to find.
+	 * @return Pointer to FileCache object on success, NULL on failure.
+	 */
+	FileCache * findFileCache(FileSystemPath *p)
+	{
+	    FileCache *c = cache[p->full()];
+
+	    /* Perform a implementation defined cache hit. */	    
+	    return cacheHit(c);
+	}
+
+	/**
+	 * Process a cache hit.
+	 * @param cache FileCache object which has just been referenced.
+	 * @return FileCache object pointer.
+	 */
+	virtual FileCache * cacheHit(FileCache *cache)
+	{
+	    return cache;
+	}
+
+	/**
+	 * Cleans up the entire file cache (except opened file caches).
+	 * @param cache Input FileCache object. ZERO to start from root.
+	 */
+	void clearFileCache(FileCache *cache = ZERO)
+	{
+	    /* Start from root? */
+	    if (!cache)
+	    {
+		cache = root;
+	    }
+	    /* Walk all our childs. */
+	    for (ListIterator<FileCache> i(&cache->childs); i.hasNext(); i++)
+	    {
+		clearFileCache(i.current());
+	    }
+	    /* May we clear this entry? */
+	    if (cache->count == 0)
+	    {
+		/* Remove us from our parent. */
+		if (cache->parent)
+		    cache->parent->childs.remove(cache);
+		
+		/* Release allocated memory. */
+		delete cache->path;
+		delete cache->file;
+		delete cache;
+	    }
+	}
     
-	/** Root entry. */
+	/** Dummy root entry. */
 	FileCache *root;
 	
 	/** Quick path -> FileCache mapping. */

@@ -121,7 +121,7 @@ class TerminalServer
 	PS2Terminal ps2;
 	
 	/** Intel 8250 UART terminal. */
-	i8250Terminal uart;
+	//i8250Terminal uart;
 	
 	/** Last read message received. */
 	TerminalMessage lastRead;

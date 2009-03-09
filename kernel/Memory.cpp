@@ -20,7 +20,6 @@
 #include <arch/Init.h>
 #include <arch/Kernel.h>
 #include <Allocator.h>
-#include <BubbleAllocator.h>
 #include <ListAllocator.h>
 #include <Types.h>
 
@@ -51,10 +50,10 @@ void Memory::initialize()
     Address page = 0x00300000;
     
     /* Setup the dynamic memory heap. */
-    Allocator *heap = new (page) ListAllocator(); //BubbleAllocator();
+    Allocator *heap = new (page) ListAllocator();
 		    
     /* Point to the next free space. */
-    page += sizeof(ListAllocator); //BubbleAllocator);
+    page += sizeof(ListAllocator);
 			    
     /* Setup the heap region (1MB). */
     heap->region(page, 1024 * 1024);

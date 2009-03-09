@@ -19,58 +19,45 @@
 #define __FILESYSTEM_PROCFILE_H
 
 #include <File.h>
+#include <Directory.h>
 #include <Types.h>
 #include <Error.h>
 
 /**
  * Maps running processes into the filesystem.
  */
-class ProcRootFile : public File
+class ProcFile : public File
 {
     public:
 
 	/**
-	 * Return processes as directories.
+	 * Constructor function.
+	 * @param buffer Input buffer.
+	 * @param size Size of the buffer.
+	 */
+	ProcFile(char *buffer, Size size);
+
+	/**
+	 * Destructor function, which releases the buffer.
+	 */
+	~ProcFile();
+
+	/**
+	 * Reads out the buffer.
 	 * @param buffer Output buffer.
 	 * @param size Maximum number of bytes to write.
 	 * @param offset Offset to read.
 	 * @return Number of bytes read, or Error number.
 	 */
 	Error read(u8 *buffer, Size size, Size offset);
-};
 
-/**
- * Outputs the system version.
- */
-class ProcVersionFile : public File
-{
-    public:
-
-	/**
-	 * Read out version into buffer.
-	 * @param buffer Output buffer.
-	 * @param size Maximum number of bytes to write.
-	 * @param offset Offset to read.
-	 * @return Number of bytes read, or Error number.
-	 */
-	Error read(u8 *buffer, Size size, Size offset);
-};
-
-/**
- * Fetches GRUB kernel commandline.
- */
-class ProcCmdLineFile : public File
-{
-    public:
+    private:
     
-	/**
-	 * Kernel GRUB boot commandline.
-	 * @param buffer Output buffer.
-	 * @param size Maximum number of bytes to write.
-	 * @param offset Offset to read.
-	 * @return Number of bytes read, or Error number.
-	 */
-	Error read(u8 *buffer, Size size, Size offset);
+	/** Buffer from which we read. */
+	char *buffer;
+	
+	/** Size of the buffer. */
+	Size size;
 };
 
-#endif /* __FILESYSTEM_PROCFILESYSTEM_H */
+#endif /* __FILESYSTEM_PROCFILE_H */

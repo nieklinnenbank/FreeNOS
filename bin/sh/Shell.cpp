@@ -16,7 +16,6 @@
  */
 
 #include <api/IPCMessage.h>
-#include <api/ProcessCtl.h>
 #include <arch/Process.h>
 #include <MemoryServer.h>
 #include <FileSystemMessage.h>
@@ -94,20 +93,31 @@ void Shell::prompt()
     printf("# ");
 }
 
-// TODO: use /proc!
 void Shell::ps()
 {
-    ProcessInfo info;
-    ProcessID   pid = 0;
-    char *states[] = { "Running", "Ready", "Stopped", "Sleeping" };
+    DIR *d;
+    struct dirent *dent;
     
-    printf("PID STATE\n");
-    
-    while (!ProcessCtl(pid, Info, (Address) &info))
+    /* Attempt to open the directory. */
+    if (!(d = opendir("/proc/")))
     {
-	printf("%u %s\n", info.id, states[info.state % 4]);
-	pid = info.id + 1;
+	printf("Failed to open '/proc/': %s\n",
+		strerror(errno));
+	return;
     }
+    printf("PID STATUS CMD\n");
+    
+    /* Read directory. */
+    while ((dent = readdir(d)))
+    {
+	printf("%s ", dent->d_name);
+	catFmt("/proc/%s/status",  dent->d_name);
+	printf(" ");
+	catFmt("/proc/%s/cmdline", dent->d_name);
+	printf("\n");
+    }
+    /* Close it. */
+    closedir(d);
 }
 
 void Shell::doUname()
@@ -162,10 +172,27 @@ void Shell::mount()
     }
 }
 
+void Shell::catFmt(char *fmt, ...)
+{
+    char path[128];
+    va_list args;
+    
+    /* Format the path. */
+    va_start(args, fmt);
+    vsnprintf(path, sizeof(path), fmt, args);
+    va_end(args);
+    
+    /* Invoke cat. */
+    cat(path);
+}
+
 void Shell::cat(char *file)
 {
     char buf[1024];
     int fd;
+    
+    /* Clear buffer. */
+    memset(buf, 0, sizeof(buf));
     
     /* Attempt to open the file first. */
     if ((fd = open(file, ZERO)) < 0)
@@ -183,7 +210,7 @@ void Shell::cat(char *file)
 	return;
     }
     /* Success! Print out results. */
-    printf("%s\n", buf);
+    printf("%s", buf);
     close(fd);
 }
 

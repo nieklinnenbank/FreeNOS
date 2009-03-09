@@ -15,23 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <api/PrivExec.h>
-#include <arch/Init.h>
-#include <arch/Interrupt.h>
-#include <Error.h>
+#include <api/IPCMessage.h>
+#include <api/ProcessCtl.h>
+#include <ProcessServer.h>
+#include <Config.h>
+#include "stdlib.h"
 
-int PrivExecHandler(PrivOperation op)
+void exit(int status)
 {
-    switch (op)
-    {
-	case Idle:
-	    irq_enable();
-	    while (true) idle();
-	    
-	default:
-	    ;
-    }
-    return EINVALID;
-}
+//    ProcessCtl(SELF, KillPID);
+    
+//    for (;;);
 
-INITAPI(PRIVEXEC, PrivExecHandler)
+    ProcessMessage msg;
+    
+    /* Fill in the message. */
+    msg.action = ExitProcess;
+    msg.number = status;
+    
+    /* Request termination. */
+    IPCMessage(PROCSRV_PID, SendReceive, &msg);
+}

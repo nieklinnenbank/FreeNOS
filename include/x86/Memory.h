@@ -179,6 +179,12 @@ class x86Memory : public Memory, public Singleton<x86Memory>
 	bool access(x86Process *p, Address vaddr, Size sz,
 		    ulong prot = PAGE_PRESENT|PAGE_RW|PAGE_USER);
 
+        /** 
+         * Marks all physical pages used by a process as free (if not pinned). 
+         * @param p Target process. 
+         */
+	void releaseAll(ArchProcess *p);
+
     private:
     
 	/**

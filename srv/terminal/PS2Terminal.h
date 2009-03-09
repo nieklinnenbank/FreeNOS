@@ -22,6 +22,8 @@
 #include <Types.h>
 #include "Terminal.h"
 
+#include "VGATerminal.h"
+
 /** PS2 Keyboard input port. */
 #define PS2_PORT	0x60
 
@@ -52,6 +54,8 @@ class PS2Terminal : public Terminal
 	int read(s8 *buffer, Size size);
 	
     private:
+    
+	VGATerminal *vga;
     
 	/** Keyboard mapping. */
 	static const char keymap[], shiftmap[];

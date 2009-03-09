@@ -68,7 +68,9 @@ extern bool __assertWrite(Address addr);
     assert(__assertWrite((Address)addr))
 
 #else
-#define assert(exp)
+#define assert(exp) \
+    if (!(exp)) \
+	for (;;);
 #define assertRead(exp)
 #define assertWrite(exp)
 #endif /* defined(CONFIG_ASSERT) && !defined(HOST) */

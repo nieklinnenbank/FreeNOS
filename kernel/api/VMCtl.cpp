@@ -19,7 +19,7 @@
 #include <Error.h>
 #include <Config.h>
 
-Address VMCtlHandler(Action action, ProcessID procID, Address paddr,
+Address VMCtlHandler(Operation action, ProcessID procID, Address paddr,
 		     Address vaddr, ulong prot = PAGE_PRESENT|PAGE_USER|PAGE_RW)
 {
     ArchProcess *proc = ZERO;
