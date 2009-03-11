@@ -18,6 +18,8 @@
 #include <api/PrivExec.h>
 #include <arch/Init.h>
 #include <arch/Interrupt.h>
+#include <arch/Scheduler.h>
+#include <arch/CPU.h>
 #include <Error.h>
 
 int PrivExecHandler(PrivOperation op)
@@ -25,8 +27,15 @@ int PrivExecHandler(PrivOperation op)
     switch (op)
     {
 	case Idle:
+	    
+	    scheduler->setIdle(scheduler->current());
 	    irq_enable();
-	    while (true) idle();
+	    
+	    while (true)
+		idle();
+	
+	case Reboot:
+	    reboot();
 	    
 	default:
 	    ;

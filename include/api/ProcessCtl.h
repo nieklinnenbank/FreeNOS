@@ -37,6 +37,7 @@ typedef enum ProcessOperation
     AllowIO  = 3,
     WatchIRQ = 4,
     InfoPID  = 5,
+    Schedule = 6,
 }
 ProcessOperation;
 

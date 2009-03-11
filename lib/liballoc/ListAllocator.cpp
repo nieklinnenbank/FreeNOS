@@ -21,7 +21,7 @@
 #include <Types.h>
 #include "ListAllocator.h"
 
-#if 0
+#if 1
 #define REVALIDATE() \
     /* Search all available regions. */ \
     for (MemRegion *reg = regions; reg; reg = reg->next) \

@@ -47,9 +47,12 @@ int IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg)
 	    {
 		return ENOSUCH;
 	    }
+	    /* Put our message on their list, and try to let them execute! */
 	    proc->getMessages()->insertTail(new UserMessage(msg));
-	    proc->wakeup();
-	    if (action == Send) break;
+	    scheduler->executeAttempt(proc);
+
+	    if (action == Send)
+		break;
 
 	case Receive:
 

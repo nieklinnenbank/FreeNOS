@@ -20,7 +20,8 @@
 #ifndef __ASSEMBLER__
 
 #include <arch/Process.h>
-#include <Queue.h>
+#include <List.h>
+#include <ListIterator.h>
 #include <Macros.h>
 #include <Singleton.h>
 #include "Process.h"
@@ -41,6 +42,12 @@ class Scheduler : public Singleton<Scheduler>
 	 * Let the next Process run on a CPU.
 	 */
 	void executeNext();
+	
+	/**
+	 * Try to execute the given process.
+	 * @param p Process pointer.
+	 */
+	void executeAttempt(ArchProcess *p);
 
 	/**
 	 * Fetch the current process being executed.
@@ -61,30 +68,13 @@ class Scheduler : public Singleton<Scheduler>
         }
 
 	/**
-	 * Hard override the current process.
-	 * @param p New current process.
-	 */
-	void setCurrent(ArchProcess *p)
-	{
-	    currentProcess = p;
-	}
-
-	/**
-	 * Hard override the old process.
-	 * @param p New old process.
-	 */
-	void setOld(ArchProcess *p)
-	{
-	    oldProcess = p;
-	}
-	
-	/**
 	 * Determines which process to run if nothing to do.
 	 * @param p Process to run if no other processes ready.
 	 */
 	void setIdle(ArchProcess *p)
 	{
 	    idleProcess = p;
+	    queue.remove(p);
 	}
 
 	/**
@@ -101,8 +91,17 @@ class Scheduler : public Singleton<Scheduler>
 
     private:
     
+	/**
+	 * Look for the next Ready process.
+	 * @return Pointer to a Ready process, or ZERO if none is Ready yet.
+	 */
+	ArchProcess * findNextReady();
+    
 	/** Contains processes waiting to be scheduled. */
-	Queue<ArchProcess> queue;
+	List<ArchProcess> queue;
+	
+	/** Points to the next process to be scheduled. */
+	ListIterator<ArchProcess> queuePtr;
 	
 	/** Currently executing Process. */
 	ArchProcess *currentProcess;

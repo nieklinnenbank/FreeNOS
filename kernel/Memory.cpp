@@ -56,7 +56,7 @@ void Memory::initialize()
     page += sizeof(ListAllocator);
 			    
     /* Setup the heap region (1MB). */
-    heap->region(page, 1024 * 1024);
+    heap->region(page, (1024 * 1024) - sizeof(ListAllocator));
 				    
     /* Use the heap as default allocator. */
     Allocator::setDefault(heap);
@@ -103,7 +103,7 @@ Address Memory::allocatePhysical(Size sz, Address paddr)
 
 void Memory::releasePhysical(Address addr)
 {
-    setMark(addr, false);
+    setMark(addr & PAGEMASK, false);
     memoryAvail += PAGESIZE;
 }
 
@@ -139,9 +139,9 @@ void Memory::setMark(Address addr, bool marked)
     Size bit   = (addr >> PAGESHIFT) % 8;
 
     if (marked)
-	memoryMap[index] |= 1 << bit;
+	memoryMap[index] |=  (1 << bit);
     else
-	memoryMap[index] &= ~(0xff & bit);
+	memoryMap[index] &= ~(1 << bit);
 }
 
 INITCLASS(Memory, initialize, PMEMORY)

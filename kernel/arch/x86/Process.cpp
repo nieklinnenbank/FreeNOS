@@ -94,18 +94,11 @@ x86Process::x86Process(Address entry) : Process(entry)
 
 x86Process::~x86Process()
 {
-    /* Mark all our pages free. */
-    memory->releaseAll(this);
-
-    /* Clear current/old pointer, if it is us. */
-    if (scheduler->current() == this)
-	scheduler->setCurrent(ZERO);
-
-    if (scheduler->old() == this)
-	scheduler->setOld(ZERO);
-
     /* Remove ourselves from the scheduler. */	
     scheduler->dequeue(this);
+
+    /* Mark all our pages free. */
+    memory->releaseAll(this);
 }
 
 void x86Process::IOPort(u16 port, bool enabled)

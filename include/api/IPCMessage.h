@@ -46,7 +46,6 @@ inline int IPCMessage(ProcessID proc, Action action, Message *msg)
     return trapKernel3(IPCMESSAGE, proc, action, (ulong) msg);
 }
 
-
 /**
  * Determines the type a Message can be.
  */
@@ -166,6 +165,5 @@ class InterruptMessage : public Message
 	/** Not used. */
 	ulong unused[5];
 };
-
 
 #endif /* __API_IPCMESSAGE_H */

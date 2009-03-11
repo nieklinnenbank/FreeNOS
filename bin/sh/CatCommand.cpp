@@ -53,4 +53,4 @@ int CatCommand::execute(Size nparams, char **params)
     return 0;
 }
 
-INITOBJ(CatCommand, catCmd, NORMAL)
+INITOBJ(CatCommand, catCmd, DEFAULT)

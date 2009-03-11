@@ -24,19 +24,15 @@
 Scheduler::Scheduler()
     : currentProcess(ZERO), oldProcess(ZERO), idleProcess(ZERO)
 {
+    queuePtr.reset(&queue);
 }
 
 void Scheduler::executeNext()
 {
     ArchProcess *next;
 
-    /* Push current process back on the queue. */
-    if (currentProcess)
-    {
-	queue.enqueue(currentProcess);
-	oldProcess = currentProcess;
-    } else
-	oldProcess = ZERO;
+    /* Save the old process. */
+    oldProcess = currentProcess ? currentProcess : ZERO;
 
     /* Process any pending wakeups. */
     for (ListIterator<Process> i(Process::getWakeups()); i.hasNext(); i++)
@@ -48,22 +44,10 @@ void Scheduler::executeNext()
 	    Process::getWakeups()->remove(i.current());
 	}
     }
-    /* Grab first process. */
-    next = queue.dequeue();
-    
     /* Find the next ready Process in line. */
-    while (next->getState() != Ready && next != idleProcess)
+    if (!(next = findNextReady()))
     {
-	/* Push back on. */
-	queue.enqueue(next);
-	
-	/* We've walked the entire queue already. */
-	if ((next = queue.dequeue()) == currentProcess)
-	{
-	    if (idleProcess)
-		next = idleProcess;
-	    break;
-	}
+	next = idleProcess;
     }
     /* Update current. */
     currentProcess = next;
@@ -75,14 +59,67 @@ void Scheduler::executeNext()
     }
 }
 
+void Scheduler::executeAttempt(ArchProcess *p)
+{
+    if (p->getState() == Sleeping)
+    {
+	p->setState(Ready);
+        Process::getWakeups()->remove(p);
+    }
+    oldProcess = currentProcess;
+    currentProcess = p;
+    p->execute();
+}
+
 void Scheduler::enqueue(ArchProcess *proc)
 {
-    queue.enqueue(proc);
+    queue.insertTail(proc);
 }
 
 void Scheduler::dequeue(ArchProcess *proc)
 {
-    queue.dequeue(proc);
+    queue.remove(proc);
+    queuePtr.reset(&queue);
+
+    if (currentProcess == proc)
+	currentProcess = ZERO;
+
+    if (oldProcess == proc)
+	oldProcess = ZERO;
+}
+
+ArchProcess * Scheduler::findNextReady()
+{
+    ArchProcess *ret = ZERO, *saved = ZERO;
+
+    while (!ret)
+    {
+	/* Search the whole list. */
+	while (queuePtr.hasNext())
+	{
+	    /* Save the current. */
+	    if (!saved)
+		saved = queuePtr.current();
+	
+	    /* We walked the whole list already. */
+	    else if (queuePtr.current() == saved)
+	    {
+		return ret;
+	    }
+	    /* Is this process ready? */
+	    if (queuePtr.current()->getState() == Ready)
+	    {
+		ret = queuePtr.current();
+		queuePtr++;
+		return ret;
+	    }
+	    /* Try the next. */
+	    queuePtr++;
+	}
+	/* Start again at the front. */
+	queuePtr.reset(&queue);
+    }
+    return ret;
 }
 
 INITOBJ(Scheduler, scheduler, SCHEDULER)

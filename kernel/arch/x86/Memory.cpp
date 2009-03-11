@@ -169,7 +169,7 @@ void x86Memory::releaseAll(x86Process *p)
     for (Size i = 0; i < 1024; i++)
     {
 	/* May we release these physical pages? */
-        if (remPageDir[i] & PAGE_PRESENT && !(remPageDir[i] & PAGE_PINNED))
+        if ((remPageDir[i] & PAGE_PRESENT) && !(remPageDir[i] & PAGE_PINNED))
         {
 	    /* Repoint page table. */
             remPageTab = PAGETABADDR_FROM(i * PAGESIZE * 1024,

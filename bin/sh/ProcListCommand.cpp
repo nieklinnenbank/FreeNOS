@@ -70,4 +70,4 @@ void ProcListCommand::catFmt(char *fmt, ...)
     }
 }
 
-INITOBJ(ProcListCommand, procListCmd, NORMAL)
+INITOBJ(ProcListCommand, procListCmd, DEFAULT)

@@ -21,8 +21,14 @@
 #include <Macros.h>
 #include <Init.h>
 
-/** The normal initialization level. */
-#define NORMAL	"0"
+/** Setup the dynamic memory heap. */
+#define HEAP "0"
+
+/** Constructors must be called. */
+#define CTOR "1"
+
+/** The default initialization level. */
+#define DEFAULT	"2"
 
 /** Start of initialization routines. */
 extern Address initStart;

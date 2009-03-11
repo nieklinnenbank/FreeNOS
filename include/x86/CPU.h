@@ -68,6 +68,12 @@
 	(u64) (high << 32) | (low); \
     })
 
+/**
+ * Reboot the system (by sending the a reset signal on the keyboard I/O port)
+ */
+#define reboot() \
+    outb(0x64, 0xfe)
+
 /**  
  * Puts the CPU in a lower power consuming state. 
  */

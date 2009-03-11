@@ -129,7 +129,9 @@ void VirtualFileSystem::closeFileHandler(FileSystemMessage *msg,
 	/* Release file. */
 	procs[msg->from].files->remove(msg->fd);
 	procs[msg->from].fileCount--;
-	// TODO: crash??? delete fd;
+	
+	/* Free memory. */
+	delete fd;
     }
     else
 	reply->result = ENOSUCH;

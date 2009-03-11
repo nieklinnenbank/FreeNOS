@@ -45,4 +45,4 @@ int MountCommand::execute(Size nparams, char **params)
     return 0;
 }
 
-INITOBJ(MountCommand, mountCmd, NORMAL)
+INITOBJ(MountCommand, mountCmd, DEFAULT)

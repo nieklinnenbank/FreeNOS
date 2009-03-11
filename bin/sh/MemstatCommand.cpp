@@ -39,4 +39,4 @@ int MemstatCommand::execute(Size nparams, char **params)
     return 0;
 }
 
-INITOBJ(MemstatCommand, memstatCmd, NORMAL)
+INITOBJ(MemstatCommand, memstatCmd, DEFAULT)

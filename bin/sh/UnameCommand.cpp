@@ -50,4 +50,4 @@ int UnameCommand::execute(Size nparams, char **params)
     return 0;
 }
 
-INITOBJ(UnameCommand, unameCmd, NORMAL)
+INITOBJ(UnameCommand, unameCmd, DEFAULT)

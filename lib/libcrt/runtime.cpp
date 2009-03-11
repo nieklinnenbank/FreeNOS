@@ -36,13 +36,25 @@ extern C void __dso_handle()
 {
 }
 
-extern C void SECTION(".entry") _entry() 
+void constructors()
 {
-    void (**ctor)(), (**dtor)();
-    char *argv[] = {"main", ZERO };
+    for (void (**ctor)() = &CTOR_LIST; ctor && *ctor; ctor++)
+    {
+        (*ctor)();
+    }
+}
 
-    /* Setup heap. */
-    PageAllocator pa(PAGESIZE * 8), *p;
+void destructors()
+{
+    for (void (**dtor)() = &DTOR_LIST; dtor && *dtor; dtor++)
+    {
+        (*dtor)();
+    }
+}
+
+void heap()
+{
+    PageAllocator pa(PAGESIZE * 4), *p;
     ListAllocator *li;
     Address heapAddr = pa.getHeapStart(), heapOff;
     
@@ -55,26 +67,23 @@ extern C void SECTION(".entry") _entry()
     heapAddr += heapOff;
 
     /* Setup the userspace heap allocator region. */
-    li->region(heapAddr, (PAGESIZE * 8) - heapOff);
+    li->region(heapAddr, (PAGESIZE * 4) - heapOff);
     li->setParent(p);
 
     /* Set default allocator. */
     Allocator::setDefault(li);
+}
 
-    /* Run constructors. */
-    for (ctor = &CTOR_LIST; ctor && *ctor; ctor++)
-    {
-        (*ctor)();
-    }
+extern C void SECTION(".entry") _entry() 
+{
+    char *argv[] = { "main", ZERO };
+
     /* Run initialization. */
-    INITRUN(&initStart, &initEnd);	// TODO: make ctors part of this too, like in the kernel!!!
+    INITRUN(&initStart, &initEnd);
     
     /* Pass control to the program. */
     main(1, argv);
-
-    /* Run destructors. */
-    for (dtor = &DTOR_LIST; dtor && *dtor; dtor++)
-    {
-        (*dtor)();
-    }
 }
+
+INITFUNC(heap, HEAP)
+INITFUNC(constructors, CTOR)

@@ -58,6 +58,10 @@ int ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
 
 	case GetPID:
 	    return scheduler->current()->getID();
+
+	case Schedule:
+	    scheduler->executeNext();
+	    break;
 	
 	case AllowIO:
 	    proc->IOPort(addr, true);

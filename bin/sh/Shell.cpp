@@ -51,6 +51,10 @@ int Shell::run()
 	/* Wait for a command string. */
 	cmdStr = getCommand();
 	
+	/* Enough input? */
+	if (strlen(cmdStr) == 0)
+	    continue;
+	
 	/* Attempt to extract arguments. */
 	argc = parse(cmdStr, argv, MAX_ARGV);
 	
@@ -60,7 +64,7 @@ int Shell::run()
 	    printf("Command not found: '%s'\n", cmdStr);
 	}
 	/* Enough arguments given? */
-	else if (argc < cmd->getMinimumParams())
+	else if (argc - 1 < cmd->getMinimumParams())
 	{
 	    printf("%s: not enough arguments (%u required)\n",
 		    cmd->getName(), cmd->getMinimumParams());
@@ -87,7 +91,10 @@ char * Shell::getCommand()
 	
 	/* End of line reached? */
 	if (line[total] != '\r' && line[total] != '\n')
-	    printf("%c", line[total++]);
+	{
+	    printf("%c", line[total]);
+	    total++;
+	}
 	else
 	{
 	    printf("\n"); break;
