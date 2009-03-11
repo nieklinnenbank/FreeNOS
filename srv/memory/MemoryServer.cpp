@@ -16,6 +16,7 @@
  */
 
 #include "MemoryServer.h"
+#include "MemoryMessage.h"
 
 MemoryServer::MemoryServer() : IPCServer<MemoryServer, MemoryMessage>(this)
 {

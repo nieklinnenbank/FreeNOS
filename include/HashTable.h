@@ -119,7 +119,7 @@ template <class Key, class Value> class HashTable
 	 * Fetch the internal array.
 	 * @return Pointer to the internal array.
 	 */
-	List<Value> * map() const
+	List<HashBucket<Key, Value> > * map() const
 	{
 	    return _map;
 	}

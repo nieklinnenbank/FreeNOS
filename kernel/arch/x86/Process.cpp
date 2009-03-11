@@ -55,7 +55,7 @@ x86Process::x86Process(Address entry) : Process(entry)
     kernelStackAddr = 0xd0000000 - MEMALIGN;
 
     /* Allocate stacks. */
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < 4; i++)
     {
         memory->allocateVirtual(this, stackAddr - (i * PAGESIZE),
                                 PAGE_PRESENT | PAGE_USER | PAGE_RW);

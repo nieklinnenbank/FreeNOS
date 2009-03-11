@@ -15,33 +15,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBCRT_RUNTIME_H
-#define __LIBCRT_RUNTIME_H
+#include <api/IPCMessage.h>
+#include <MemoryMessage.h>
+#include <Config.h>
+#include <stdio.h>
+#include "MemstatCommand.h"
 
-#include <Macros.h>
-#include <Init.h>
+int MemstatCommand::execute(Size nparams, char **params)
+{
+    MemoryMessage msg;
+        
+    /* Query stats. */
+    msg.action = MemoryUsage;
+    
+    /* Ask memory server for memory stats. */
+    IPCMessage(MEMSRV_PID, SendReceive, &msg);
+    
+    /* Print it. */
+    printf("Total:     %u KB\n"
+           "Available: %u KB\n",
+           msg.bytes / 1024, msg.bytesFree / 1024);
 
-/** The normal initialization level. */
-#define NORMAL	"0"
+    return 0;
+}
 
-/** Start of initialization routines. */
-extern Address initStart;
-
-/** Marks the end of all initialization functions. */
-extern Address initEnd;
-
-/**
- * C(++) program entry point.
- * @param argc Argument count.
- * @param argv Argument values.
- * @return Exit status.
- */
-extern C int main(int argc, char **argv);
-
-/** List of constructors. */
-extern void (*CTOR_LIST)();
-
-/** List of destructors. */
-extern void (*DTOR_LIST)();
-
-#endif /* __LIBCRT_RUNTIME_H */
+INITOBJ(MemstatCommand, memstatCmd, NORMAL)

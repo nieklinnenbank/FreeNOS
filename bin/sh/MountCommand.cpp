@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2009 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -15,37 +15,34 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-ENTRY(_entry)
+#include <api/IPCMessage.h>
+#include <FileSystemMessage.h>
+#include <VirtualFileSystem.h>
+#include <Config.h>
+#include <stdio.h>
+#include "MountCommand.h"
 
-SECTIONS
+int MountCommand::execute(Size nparams, char **params)
 {
-    . = 0x80000000;
+    FileSystemMessage msg;
+    FileSystemMount mounts[MAX_MOUNTS];
+    
+    /* Ask filesystem for active mounts. */
+    msg.action = MountInfo;
+    msg.buffer = (char *) &mounts;
+    msg.size   = sizeof(mounts);
+        
+    /* Trap. */
+    IPCMessage(VFSSRV_PID, SendReceive, &msg);
 
-    .text :
+    /* Print out. */
+    for (Size i = 0; i < MAX_MOUNTS; i++)
     {
-	*(.entry)
-	*(.text)
-	*(.data)
-	*(.rodata)
-
-	. = ALIGN(4);
-        CTOR_LIST = .;
-	KEEP (*(SORT(.ctors.*)))
-	KEEP (*(.ctors))
-	LONG(0)
-        CTOR_END = .;
-	
-        DTOR_LIST = .;
-	KEEP (*(SORT(.dtors.*)))
-	KEEP (*(.dtors))
-        LONG(0)
-        DTOR_END = .;
-	. += 4;
-	
-	initStart = .;
-	KEEP (*(SORT(.init*)))
-	KEEP (*(.init*))
-	initEnd   = .;
-	*(.bss)
+        if (mounts[i].path[0])
+            printf("%s\n", mounts[i].path);
     }
+    /* Success. */
+    return 0;
 }
+
+INITOBJ(MountCommand, mountCmd, NORMAL)

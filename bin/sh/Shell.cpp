@@ -17,6 +17,7 @@
 
 #include <api/IPCMessage.h>
 #include <arch/Process.h>
+#include <arch/CPU.h>
 #include <MemoryServer.h>
 #include <FileSystemMessage.h>
 #include <VirtualFileSystem.h>
@@ -37,30 +38,38 @@ Shell::Shell()
 
 int Shell::run()
 {
-    char *cmd;
+    char *cmdStr, *argv[MAX_ARGV];
+    ShellCommand *cmd;
+    Size argc;
 
     /* Read commands. */    
     while (true)
     {
+	/* Print the prompt. */
 	prompt();
-	cmd = getCommand();
-
-	if (strcmp(cmd, "ps") == 0)
-	    ps();
-	else if (strcmp(cmd, "uname") == 0)
-	    doUname();
-	else if (strcmp(cmd, "memstat") == 0)
-	    memstat();
-	else if (strcmp(cmd, "mount") == 0)
-	    mount();
-	else if (strncmp(cmd, "cat ", 3) == 0)
-	    cat(cmd + 4);
-	else if (strncmp(cmd, "ls", 2) == 0)
-	    ls(cmd + 3);
-	else if (strcmp(cmd, "help") == 0)
-	    help();
+	
+	/* Wait for a command string. */
+	cmdStr = getCommand();
+	
+	/* Attempt to extract arguments. */
+	argc = parse(cmdStr, argv, MAX_ARGV);
+	
+	/* Do we have a matching ShellCommand? */
+	if (!(cmd = ShellCommand::byName(argv[0])))
+	{
+	    printf("Command not found: '%s'\n", cmdStr);
+	}
+	/* Enough arguments given? */
+	else if (argc < cmd->getMinimumParams())
+	{
+	    printf("%s: not enough arguments (%u required)\n",
+		    cmd->getName(), cmd->getMinimumParams());
+	}
+	/* Execute it. */
 	else
-	    printf("Command not found: '%s'\n", cmd);
+	{
+	    cmd->execute(argc - 1, argv + 1);
+	}
     }
     return 0;
 }
@@ -93,156 +102,21 @@ void Shell::prompt()
     printf("# ");
 }
 
-void Shell::ps()
+Size Shell::parse(char *cmdline, char **argv, Size maxArgv)
 {
-    DIR *d;
-    struct dirent *dent;
+    Size argc;
     
-    /* Attempt to open the directory. */
-    if (!(d = opendir("/proc/")))
+    for (argc = 0; argc < maxArgv && *cmdline; argc++)
     {
-	printf("Failed to open '/proc/': %s\n",
-		strerror(errno));
-	return;
+	while (*cmdline && *cmdline == ' ')
+	    cmdline++;
+	
+	argv[argc] = cmdline;
+	
+	while (*cmdline && *cmdline != ' ')
+	    cmdline++;
+	
+	if (*cmdline) *cmdline++ = ZERO;
     }
-    printf("PID STATUS CMD\n");
-    
-    /* Read directory. */
-    while ((dent = readdir(d)))
-    {
-	printf("%s ", dent->d_name);
-	catFmt("/proc/%s/status",  dent->d_name);
-	printf(" ");
-	catFmt("/proc/%s/cmdline", dent->d_name);
-	printf("\n");
-    }
-    /* Close it. */
-    closedir(d);
-}
-
-void Shell::doUname()
-{
-    struct utsname info;
-    
-    if (uname(&info) >= 0)
-    {
-	printf("%s %s %s %s %s\n",
-		info.sysname,
-		info.nodename,
-		info.release,
-		info.version,
-		info.machine);
-    }
-}
-
-void Shell::memstat()
-{
-    MemoryMessage msg;
-    
-    /* Query stats. */
-    msg.action = MemoryUsage;
-    
-    /* Ask memory server for memory stats. */
-    IPCMessage(MEMSRV_PID, SendReceive, &msg);
-    
-    /* Print it. */
-    printf("Total:     %u KB\n"
-	   "Available: %u KB\n",
-	   msg.bytes / 1024, msg.bytesFree / 1024);
-}
-
-void Shell::mount()
-{
-    FileSystemMessage msg;
-    FileSystemMount mounts[MAX_MOUNTS];
-    
-    /* Ask filesystem for active mounts. */
-    msg.action = MountInfo;
-    msg.buffer = (char *) &mounts;
-    msg.size   = sizeof(mounts);
-    
-    /* Trap. */
-    IPCMessage(VFSSRV_PID, SendReceive, &msg);
-    
-    /* Print out. */
-    for (Size i = 0; i < MAX_MOUNTS; i++)
-    {
-	if (mounts[i].path[0])
-	    printf("%s\n", mounts[i].path);
-    }
-}
-
-void Shell::catFmt(char *fmt, ...)
-{
-    char path[128];
-    va_list args;
-    
-    /* Format the path. */
-    va_start(args, fmt);
-    vsnprintf(path, sizeof(path), fmt, args);
-    va_end(args);
-    
-    /* Invoke cat. */
-    cat(path);
-}
-
-void Shell::cat(char *file)
-{
-    char buf[1024];
-    int fd;
-    
-    /* Clear buffer. */
-    memset(buf, 0, sizeof(buf));
-    
-    /* Attempt to open the file first. */
-    if ((fd = open(file, ZERO)) < 0)
-    {
-	printf("Failed to open '%s': %s\n",
-	        file, strerror(errno));
-	return;
-    }
-    /* Read contents. */
-    if (read(fd, buf, sizeof(buf)) < 0)
-    {
-	printf("Failed to read '%s': %s\n",
-		file, strerror(errno));
-	close(fd);
-	return;
-    }
-    /* Success! Print out results. */
-    printf("%s", buf);
-    close(fd);
-}
-
-void Shell::ls(char *dir)
-{
-    DIR *d;
-    struct dirent *dent;
-    
-    /* Attempt to open the directory. */
-    if (!(d = opendir(dir)))
-    {
-	printf("Failed to open '%s': %s\n",
-		dir, strerror(errno));
-	return;
-    }
-    /* Read directory. */
-    while ((dent = readdir(d)))
-    {
-	printf("%s ", dent->d_name);
-    }
-    printf("\n");
-    /* Close it. */
-    closedir(d);
-}
-
-void Shell::help()
-{
-    printf("ps         - Output list of Processes\n"
-	   "uname      - Print UNIX name\n"
-	   "memstat    - Memory statistics\n"
-	   "mount      - Shows active mount information\n"
-	   "cat <file> - Print contents of a file\n"
-	   "ls <dir>   - List directory contents\n"
-	   "help       - This message\n");
+    return argc;
 }

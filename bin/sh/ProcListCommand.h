@@ -15,54 +15,53 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SH_SHELL
-#define __SH_SHELL
+#ifndef __SH_PROCLISTCOMMAND
+#define __SH_PROCLISTCOMMAND
 
-/** Maximum number of supported command arguments. */
-#define MAX_ARGV 16
-
+#include <Factory.h>
 #include <Types.h>
 #include "ShellCommand.h"
 
 /**
- * Very basic command shell.
+ * Output a list of processes.
  */
-class Shell
+class ProcListCommand : public ShellCommand, public Factory<ProcListCommand>
 {
     public:
 
 	/**
 	 * Constructor function.
 	 */
-	Shell();
+	ProcListCommand() : ShellCommand("ps", 0)
+	{
+	}
 
 	/**
-	 * Executes the Shell by entering an infinite loop.
-	 * @return Never.
+	 * Get the help string for this command.
+	 * @return Pointer to character string describing what the command does.
 	 */
-	int run();
+	const char * help()
+	{
+	    return "Output a list of processes";
+	}
+
+	/**
+	 * Executes the command.
+	 * @param nparams Number of parameters given.
+	 * @param params Array of parameters.
+	 * @return Error code or zero on success.
+	 */
+	int execute(Size nparams, char **params);
 
     private:
     
 	/**
-	 * Fetch a command from standard input.
-	 * @return Pointer to a command.
+	 * Invoke CatCommand, using a formatted string as argument.
+	 * @param fmt Formatted string.
+	 * @param ... Argument list.
+	 * @see CatCommand
 	 */
-	char * getCommand();
-    
-	/**
-	 * Output a prompt.
-	 */
-	void prompt();
-
-	/**
-	 * Parses an input string into seperate pieces.
-	 * @param cmdline Command input string.
-	 * @param argv Argument list buffer.
-	 * @param maxArgv Maximum number of entries in argv.
-	 * @return Number of parsed arguments.
-	 */	
-	Size parse(char *cmdline, char **argv, Size maxArgv);
+	void catFmt(char *fmt, ...);
 };
 
-#endif /* __SH_SHELL */
+#endif /* __SH_PROCLISTCOMMAND */

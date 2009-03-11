@@ -155,6 +155,11 @@ _start:
 	movl %cr0, %eax
 	orl  $(CR0_PG), %eax
 	movl %eax, %cr0
+	
+	/* Enable timestamp counter. */
+	movl %cr4, %eax
+	andl  $(~CR4_TSD), %eax
+	movl %eax, %cr4
 
 	/* Invoke kernel. */
 	call kmain

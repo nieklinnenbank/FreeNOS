@@ -15,33 +15,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBCRT_RUNTIME_H
-#define __LIBCRT_RUNTIME_H
+#include <stdio.h>
+#include <dirent.h>
+#include <string.h>
+#include <errno.h>
+#include "DirListCommand.h"
 
-#include <Macros.h>
-#include <Init.h>
+int DirListCommand::execute(Size nparams, char **params)
+{
+    DIR *d;
+    struct dirent *dent;
+    
+    /* Attempt to open the directory. */
+    if (!(d = opendir(params[0])))
+    {
+	printf("Failed to open '%s': %s\n",
+		params[0], strerror(errno));
+	return errno;
+    }
+    /* Read directory. */
+    while ((dent = readdir(d)))
+    {
+	printf("%s ", dent->d_name);
+    }
+    printf("\n");
 
-/** The normal initialization level. */
-#define NORMAL	"0"
+    /* Close it. */
+    closedir(d);
+    
+    /* Success. */
+    return 0;
+}
 
-/** Start of initialization routines. */
-extern Address initStart;
-
-/** Marks the end of all initialization functions. */
-extern Address initEnd;
-
-/**
- * C(++) program entry point.
- * @param argc Argument count.
- * @param argv Argument values.
- * @return Exit status.
- */
-extern C int main(int argc, char **argv);
-
-/** List of constructors. */
-extern void (*CTOR_LIST)();
-
-/** List of destructors. */
-extern void (*DTOR_LIST)();
-
-#endif /* __LIBCRT_RUNTIME_H */
+INITOBJ(DirListCommand, dirListCmd, NORMAL)

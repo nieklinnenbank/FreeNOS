@@ -15,11 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <Macros.h>
 #include "errno.h"
 
-Size errno = 0;
+Size errno USED = 0;
 
-char * error_map[] =
+char * error_map[] USED =
 {
     [-ESUCCESS]   = "Success",
     [-ENOSUCH]    = "No such file or directory",

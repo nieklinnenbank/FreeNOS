@@ -21,6 +21,9 @@
 /** Paged Mode. */
 #define CR0_PG		0x80000000
 
+/** Timestamp Counter Disable. */
+#define CR4_TSD		0x00000004
+
 /** Kernel Code Segment. */
 #define KERNEL_CS       1 
 #define KERNEL_CS_SEL   0x8 
@@ -51,6 +54,19 @@
  */
 #define IRQ_REG(state) \
     ((state)->vector - 0x20)
+
+/**
+ * Reads the CPU's timestamp counter.
+ * @return 64-bit integer.
+ */
+#define timestamp() \
+    ({ \
+	u64 low = 0, high = 0; \
+	asm volatile ("rdtsc\n" \
+		      "movl %%eax, %0\n" \
+		      "movl %%edx, %1\n" : "=r"(low), "=r"(high)); \
+	(u64) (high << 32) | (low); \
+    })
 
 /**  
  * Puts the CPU in a lower power consuming state. 

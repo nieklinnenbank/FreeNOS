@@ -15,54 +15,43 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SH_SHELL
-#define __SH_SHELL
+#ifndef __SH_CATCOMMAND
+#define __SH_CATCOMMAND
 
-/** Maximum number of supported command arguments. */
-#define MAX_ARGV 16
-
+#include <Factory.h>
 #include <Types.h>
 #include "ShellCommand.h"
 
 /**
- * Very basic command shell.
+ * Output the contents of a file.
  */
-class Shell
+class CatCommand : public ShellCommand, public Factory<CatCommand>
 {
     public:
-
+    
 	/**
 	 * Constructor function.
 	 */
-	Shell();
+	CatCommand() : ShellCommand("cat", 1)
+	{
+	}
 
 	/**
-	 * Executes the Shell by entering an infinite loop.
-	 * @return Never.
+	 * Get the help string for this command.
+	 * @return Pointer to character string describing what the command does.
 	 */
-	int run();
-
-    private:
+	const char * help()
+	{
+	    return "Print contents of a file";
+	}
     
 	/**
-	 * Fetch a command from standard input.
-	 * @return Pointer to a command.
+	 * Executes the command.
+	 * @param nparams Number of parameters given.
+	 * @param params Array of parameters.
+	 * @return Error code or zero on success.
 	 */
-	char * getCommand();
-    
-	/**
-	 * Output a prompt.
-	 */
-	void prompt();
-
-	/**
-	 * Parses an input string into seperate pieces.
-	 * @param cmdline Command input string.
-	 * @param argv Argument list buffer.
-	 * @param maxArgv Maximum number of entries in argv.
-	 * @return Number of parsed arguments.
-	 */	
-	Size parse(char *cmdline, char **argv, Size maxArgv);
+	int execute(Size nparams, char **params);
 };
 
-#endif /* __SH_SHELL */
+#endif /* __SH_CATCOMMAND */

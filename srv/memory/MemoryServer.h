@@ -27,6 +27,7 @@
 #include <Types.h>
 #include <Macros.h>
 #include <Error.h>
+#include "MemoryMessage.h"
 
 /** Starting address of the heap. */
 #define HEAP_START	(0xe0000000)
@@ -39,61 +40,6 @@
 
 /** Virtual address, at which we map the process table. */
 #define PROCTABLE	(0xf0000000)
-
-/**
- * Actions which can be specified in an MemoryMessage.
- */
-typedef enum MemoryAction
-{
-    HeapGrow    = 0,
-    HeapShrink  = 1,
-    MemoryUsage = 2,
-}
-MemoryAction;
-
-/**
- * Memory operation message.
- */
-typedef struct MemoryMessage : public Message
-{
-    /**
-     * Default constructor.
-     */
-    MemoryMessage() : action(HeapGrow), bytes(ZERO)
-    {
-    }
-
-    /**
-     * Assignment operator.
-     * @param m MemoryMessage pointer to copy from.
-     */
-    void operator = (MemoryMessage *m)
-    {
-	from   = m->from;
-	type   = m->type;
-	action = m->action;
-	bytes  = m->bytes;
-    }
-
-    union
-    {
-	/** Action to perform. */
-        MemoryAction action;
-	
-	/** Result code. */
-	Error result;
-    };
-
-    /** Indicates a number of bytes. */
-    Size bytes, bytesFree;
-
-    /** Start and end addresses (e.g. of the heap). */
-    Address startAddr, endAddr;
-    
-    /** Unused. */
-    ulong unused;
-}
-MemoryMessage;
 
 /**
  * Memory management server.

@@ -52,7 +52,6 @@ template <class T> class ListNode
  */
 template <class T> class List
 {
-    
     public:
 
 	/**

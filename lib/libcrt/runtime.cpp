@@ -55,7 +55,7 @@ extern C void SECTION(".entry") _entry()
     heapAddr += heapOff;
 
     /* Setup the userspace heap allocator region. */
-    li->region(heapAddr, (PAGESIZE * 4) - heapOff);
+    li->region(heapAddr, (PAGESIZE * 8) - heapOff);
     li->setParent(p);
 
     /* Set default allocator. */
@@ -66,6 +66,9 @@ extern C void SECTION(".entry") _entry()
     {
         (*ctor)();
     }
+    /* Run initialization. */
+    INITRUN(&initStart, &initEnd);	// TODO: make ctors part of this too, like in the kernel!!!
+    
     /* Pass control to the program. */
     main(1, argv);
 
