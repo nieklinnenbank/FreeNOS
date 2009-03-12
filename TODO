@@ -12,16 +12,6 @@
 
 [first]
 
-    1) if Init doesn't die, everything seems to work...
-    
-    2) but if Init does die:
-    
-	*) ps fails
-	
-    --> bughunt the crash... when multiple 'ps' are executed the kernel seems to crash eventually...
-    
-    --> then, (IF STABLE!!!) TERMINALS!!! :D :D :D
-
 [6] --> devpts filesystem, for terminals!
 [7] --> Nameserver for lookups! Do we need a nameserver? (YES)
 [8] --> BlockMessage, for VGA driver (libteken)

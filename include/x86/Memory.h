@@ -118,9 +118,8 @@
  * Flushes the Translation Lookaside Buffers (TLB).
  * @param addr Memory address to flush.
  */
-#define INVALIDATE(addr) \
-    asm volatile ("movl %cr3, %eax;\n" \
-		  "movl %eax, %cr3");
+#define invalidate(addr) \
+    asm volatile("invlpg (%0)" ::"r" (addr) : "memory")
 
 #include <kernel/Memory.h>
 #include <Singleton.h>

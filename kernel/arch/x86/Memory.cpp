@@ -46,15 +46,14 @@ Address x86Memory::mapVirtual(Address paddr, Address vaddr, ulong prot)
 
 	/* Map the new page table into memory. */
 	myPageDir[DIRENTRY(vaddr)] = newPageTab;
+	invalidate(myPageTab);
 
 	/* Zero the new page table. */
 	memset(myPageTab, 0, PAGESIZE);
     }
     /* Map physical to virtual address. */
     myPageTab[TABENTRY(vaddr)] = (paddr & PAGEMASK) | prot;
-
-    /* Invalidate caches. */
-    INVALIDATE(vaddr);    
+    invalidate(vaddr);
 
     /* Success. */
     return vaddr;
@@ -85,13 +84,14 @@ Address x86Memory::mapVirtual(x86Process *p, Address paddr,
 	remPageDir[DIRENTRY(vaddr)] = newPageTab;
 	
 	/* Update caches. */
-	INVALIDATE(vaddr);
+	invalidate(remPageTab);
 	
 	/* Zero the new page. */
 	memset(remPageTab, 0, PAGESIZE);
     }
     /* Map physical address to remote virtual address. */
     remPageTab[TABENTRY(vaddr)] = (paddr & PAGEMASK) | prot;
+    invalidate(vaddr);
 
     /* Success. */
     return (Address) vaddr;
@@ -136,8 +136,8 @@ void x86Memory::mapRemote(x86Process *p, Address vaddr)
     remPageTab = PAGETABADDR_FROM(vaddr, PAGETABFROM_REMOTE);
     
     /* Refresh cache. */
-    INVALIDATE(PAGETABFROM_REMOTE);
-    INVALIDATE(remPageTab);
+    invalidate(PAGETABFROM_REMOTE);
+    invalidate(remPageTab);
 }
 
 bool x86Memory::access(x86Process *p, Address vaddr, Size sz, ulong prot)
