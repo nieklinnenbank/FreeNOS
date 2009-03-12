@@ -24,6 +24,9 @@
 #include "i8250Terminal.h"
 #include "PS2Terminal.h"
 
+/** Memory address of the VGA terminal to use. */
+#define VGA_ADDR ((u16 *) 0x70000000)
+
 /**
  * Actions which may be performed on an Terminal.
  */

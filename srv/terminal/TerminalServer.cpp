@@ -17,6 +17,7 @@
 
 #include <api/IPCMessage.h>
 #include <api/VMCopy.h>
+#include <api/VMCtl.h>
 #include <Types.h>
 #include <Version.h>
 #include "TerminalServer.h"
@@ -44,8 +45,12 @@
     IPCMessage(TERMINAL_PID, Send, &msg); \
 })
 
-TerminalServer::TerminalServer() : reading(false)
+TerminalServer::TerminalServer() : vga(VGA_ADDR), reading(false)
 {
+    /* Request VGA memory. */
+    VMCtl(Map, SELF, 0xb8000, 0x70000000,
+	  PAGE_PRESENT | PAGE_USER | PAGE_RW | PAGE_PINNED);
+
     /* Clear VGA. */
     vga.clear();
 

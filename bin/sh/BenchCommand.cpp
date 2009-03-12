@@ -20,6 +20,7 @@
 #include <api/IPCMessage.h>
 #include <MemoryMessage.h>
 #include <Config.h>
+#include <unistd.h>
 #include "BenchCommand.h"
 #include "ShellCommand.h"
 
@@ -28,7 +29,6 @@ int BenchCommand::execute(Size nparams, char **params)
     u64 t1 = 0, t2 = 0;
     ProcessID pid = 0;
     ShellCommand *cmd;
-    MemoryMessage msg;
     ProcessInfo info;
     
     if (nparams == 0)
@@ -51,10 +51,8 @@ int BenchCommand::execute(Size nparams, char **params)
 
 	printf("SystemCall (Schedule) Ticks: %u\n", t2 - t1);
 
-        msg.action = MemoryUsage;
-	
 	t1 = timestamp();
-	IPCMessage(MEMSRV_PID, Send, &msg);
+	getpid();
 	t2 = timestamp();
 
 	printf("IPC Ticks: %u\n", t2 - t1);

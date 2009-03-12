@@ -18,9 +18,9 @@
 #include <Types.h>
 #include "VGATerminal.h"
 
-VGATerminal::VGATerminal()
+VGATerminal::VGATerminal(u16 *addr)
 {
-    this->mem    = (u16 *) 0x70000000;
+    this->mem    = addr;
     this->width  = 80;
     this->height = 25;
     this->x      = 0;

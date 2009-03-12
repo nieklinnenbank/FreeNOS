@@ -31,8 +31,9 @@ class VGATerminal : public Terminal
 
 	/**
 	 * Class constructor.
+	 * @param addr Memory address to write to.
 	 */
-	VGATerminal();
+	VGATerminal(u16 *addr);
 
 	/**
 	 * Class destructor.

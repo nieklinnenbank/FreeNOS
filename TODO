@@ -10,6 +10,13 @@
 	--> /proc/maps!	
     --> perhaps, memory server can then do more management of virtual memory?
 
+--> TLB invalidation doesn't seem to work on real hardware :\
+
+--> Improve IPC performance!!!
+    --> Don't use the heap
+    --> IPC via registers (avoid memory checking)
+    --> benchmark!!!
+
 [first]
 
 [6] --> devpts filesystem, for terminals!

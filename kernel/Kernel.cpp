@@ -40,10 +40,6 @@ Kernel::Kernel()
 	    memory->mapVirtual(modProc, mod->modStart + i, vstart + i,
 			       PAGE_PRESENT|PAGE_USER|PAGE_RW);
 	}
-	/* HACK: allow VGA access. */
-	memory->mapVirtual(modProc, 0xb8000, 0x70000000,
-			   PAGE_PRESENT|PAGE_USER|PAGE_RW|PAGE_PINNED);
-	
 	/* Schedule the process. */
 	modProc->setState(Ready);
 	scheduler->enqueue(modProc);
