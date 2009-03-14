@@ -61,13 +61,17 @@ void Scheduler::executeNext()
 
 void Scheduler::executeAttempt(ArchProcess *p)
 {
+    /* Wakeup process if needed. */
     if (p->getState() == Sleeping)
     {
 	p->setState(Ready);
         Process::getWakeups()->remove(p);
     }
+    /* Update pointers. */
     oldProcess = currentProcess;
     currentProcess = p;
+    
+    /* Execute it. */
     p->execute();
 }
 

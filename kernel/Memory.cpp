@@ -20,7 +20,8 @@
 #include <arch/Init.h>
 #include <arch/Kernel.h>
 #include <Allocator.h>
-#include <ListAllocator.h>
+#include <BubbleAllocator.h>
+#include <PoolAllocator.h>
 #include <Types.h>
 
 Size Memory::memorySize, Memory::memoryAvail;
@@ -33,6 +34,10 @@ Memory::Memory()
 
 void Memory::initialize()
 {
+    Address page = 0x00300000;
+    Size meta = sizeof(BubbleAllocator) + sizeof(PoolAllocator);
+    Allocator *bubble, *pool;
+
     /* Save memory size. */
     memorySize  = (multibootInfo.memLower + multibootInfo.memUpper) * 1024;
     memoryAvail = memorySize;
@@ -46,20 +51,16 @@ void Memory::initialize()
     {
 	*p = 0;
     }
-    /* Allocate the initial heap. */
-    Address page = 0x00300000;
-    
     /* Setup the dynamic memory heap. */
-    Allocator *heap = new (page) ListAllocator();
-		    
-    /* Point to the next free space. */
-    page += sizeof(ListAllocator);
-			    
+    bubble = new (page) BubbleAllocator();
+    pool   = new (page + sizeof(BubbleAllocator)) PoolAllocator();
+    pool->setParent(bubble);
+    
     /* Setup the heap region (1MB). */
-    heap->region(page, (1024 * 1024) - sizeof(ListAllocator));
-				    
-    /* Use the heap as default allocator. */
-    Allocator::setDefault(heap);
+    bubble->region(page + meta, (1024 * 1024) - meta);
+
+    /* Set default allocator. */
+    Allocator::setDefault(pool);
 }
 
 Address Memory::allocatePhysical(Size sz, Address paddr)

@@ -48,8 +48,8 @@ FileCache * ProcFileSystem::cacheHit(FileCache *ch)
     String slash("/");
     char tmp[PATHLEN];
 
-    if (!done) done = true;
-    else return ch;
+//    if (!done) done = true;
+//    else return ch;
 
     /* Clear the current cache. */
     if (ch) ch->count++;

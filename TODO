@@ -10,30 +10,53 @@
 	--> /proc/maps!	
     --> perhaps, memory server can then do more management of virtual memory?
 
---> TLB invalidation doesn't seem to work on real hardware :\
-
---> Improve IPC performance!!!
+++ Improve IPC performance!!!
+    --> problem is: memory allocator!!!
     --> Don't use the heap
     --> IPC via registers (avoid memory checking)
     --> benchmark!!!
+    --> optimize x86Memory::*(); try to avoid mapRemote() if possible!!!
+
+--> PoolAllocator: make sure minimize wasted space for large chunks: penatilize
+    a bit for larger blocks, e.g. don't allocate 64 times 4096, but e.g. only 8 or 32 times 4096 or so.
+
+--> We could merge the two mapVirtual() overloads into one, then check for p == this :)
 
 [first]
 
-[6] --> devpts filesystem, for terminals!
-[7] --> Nameserver for lookups! Do we need a nameserver? (YES)
-[8] --> BlockMessage, for VGA driver (libteken)
-        CharacterMessage, for i8250 driver (raw)
+[5] --> ram filesystem, make sure we can read/write files right.
+
+    --> make VFS aware of character/block files!!!
+	--> then put them in '/dev' on the ram file system!!!
+	
+[6] --> Terminals! Mknod to /dev/tty0..7
+	--> character device for this :)
+	    --> try to use libteken.
+	    --> use PID as major
+	        use TermID as minor
+
+--> just create e.g. /dev/serial0 for the serial port?
+    --> run it as a different server i think, maybe /srv/serial
+    
+    --> if we have the main() argc/argv thingies, we could do configure
+        the boot modules to use /dev/serial0 as the system console! :)
+	    
 [9] --> libteken voor de terminal server!!!
 [10] -->  Nicer /bin/sh:
         --> BACKSPACE should be supported. (low prio)
-        --> ShellCommand class, and allow it to be derived. (high prio)
-	    --> INIT's!!! --> libcrt should support this too ofcourse.
 [11] --> remove IRQ hooks in ~x86Process(). Also, cleanup pending messages?
      --> simply keep a list with the copy of InterruptHook in each Process...
 	--> Maybe also output this in ProcessInfo! :)
 [12] --> Implement the notion of "current directory" in VirtualFileSystem.
 
 [second]
+     --> How are we going to let filesystems know, which mountpoint to use?
+         argv[1] seems most appropriate, but then again, how can we set argc/argv
+	 for the boot modules?
+	 
+	    --> Use GRUB's boot module line, then parse it into argc/argv! :)
+		--> most probably, we have to push it on the user stack... then let _entry() find it?
+
 [13] --> Faults -> process manager must receive the Fault message!
 	--> e.g. use faultPID or so???
 [15] --> Don't use ugly unions!!! Perhapse we can modify ::run() to customize
@@ -52,12 +75,14 @@
 [20] --> kernel messages/logging...
 
 [bugs]
+* Running 'ps' a couple of times, reveales a memory leak somewhere... (memstat shows this)
 * "Cursor pointer" in the VGA screen isn't updated...
 * MemoryServer::doGrow() allocated a whole page, if e.g. only 1 byte is requested...
 * fix parallel make (LD of the kernel that is, which races against $(subdirs)!)
 
 [libraries]
 * libc: %NUMs formats support
+* libparse: generic parser library, usefull for the Shell too! :)
 
 [programs]
 * Random stack, heap and program text!!!

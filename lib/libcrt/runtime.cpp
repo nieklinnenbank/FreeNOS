@@ -20,7 +20,7 @@
 #include <Macros.h>
 #include <Init.h>
 #include <PageAllocator.h>
-#include <ListAllocator.h>
+#include <PoolAllocator.h>
 #include "runtime.h"
 
 extern C int __cxa_atexit(void (*func) (void *), void * arg, void * dso_handle)
@@ -55,15 +55,15 @@ void destructors()
 void heap()
 {
     PageAllocator pa(PAGESIZE * 4), *p;
-    ListAllocator *li;
+    PoolAllocator *li;
     Address heapAddr = pa.getHeapStart(), heapOff;
     
     /* Allocate instance copy on vm pages itself. */
     p  = new (heapAddr) PageAllocator(&pa);
-    li = new (heapAddr + sizeof(PageAllocator)) ListAllocator();
+    li = new (heapAddr + sizeof(PageAllocator)) PoolAllocator();
     
     /* Point to the next free space. */
-    heapOff   = sizeof(PageAllocator) + sizeof(ListAllocator);
+    heapOff   = sizeof(PageAllocator) + sizeof(PoolAllocator);
     heapAddr += heapOff;
 
     /* Setup the userspace heap allocator region. */

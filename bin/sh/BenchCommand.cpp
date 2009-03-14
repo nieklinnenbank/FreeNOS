@@ -18,6 +18,7 @@
 #include <arch/CPU.h>
 #include <api/ProcessCtl.h>
 #include <api/IPCMessage.h>
+#include <api/VMCtl.h>
 #include <MemoryMessage.h>
 #include <Config.h>
 #include <unistd.h>
@@ -30,6 +31,7 @@ int BenchCommand::execute(Size nparams, char **params)
     ProcessID pid = 0;
     ShellCommand *cmd;
     ProcessInfo info;
+    char *foo[128];
     
     if (nparams == 0)
     {
@@ -50,12 +52,33 @@ int BenchCommand::execute(Size nparams, char **params)
 	t2 = timestamp();
 
 	printf("SystemCall (Schedule) Ticks: %u\n", t2 - t1);
+	
+	t1 = timestamp();
+	VMCtl(Lookup, SELF, ZERO, 0x80000000);
+	t2 = timestamp();
+	
+	printf("SystemCall (VMCtl) Ticks: %u\n", t2 - t1);
 
 	t1 = timestamp();
 	getpid();
 	t2 = timestamp();
 
 	printf("IPC Ticks: %u\n", t2 - t1);
+	
+	t1 = timestamp();
+	for (int i = 0; i < 128; i++)
+	    foo[i] = new char[16];
+	t2 = timestamp();
+	
+	printf("allocate() Ticks: %u (%u AVG)\n",
+		(u32)(t2 - t1), (u32)(t2 - t1) / 128);
+	
+	t1 = timestamp();
+	for (int i = 0; i < 128; i++)
+	    delete foo[i];
+	t2 = timestamp();
+	printf("release() Ticks: %u (%u AVG)\n",
+		(u32)(t2 - t1), (u32)(t2 - t1) / 128);
     }
     else
     {

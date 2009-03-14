@@ -115,11 +115,18 @@
 #ifndef __ASSEMBLER__
 
 /**
- * Flushes the Translation Lookaside Buffers (TLB).
+ * Flushes the Translation Lookaside Buffers (TLB) for a single page.
  * @param addr Memory address to flush.
  */
-#define invalidate(addr) \
+#define tlb_flush(addr) \
     asm volatile("invlpg (%0)" ::"r" (addr) : "memory")
+
+/**
+ * Flushes all Translation Lookaside Buffers (TLB).
+ */
+#define tlb_flush_all() \
+    asm volatile("mov %cr3, %eax\n" \
+	         "mov %eax, %cr3\n")
 
 #include <kernel/Memory.h>
 #include <Singleton.h>

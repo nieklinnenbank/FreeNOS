@@ -60,6 +60,7 @@ int IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg)
 	    while (true)
 	    {
 		/* Look for a message, with origin 'id'. */
+		
 		for (ListIterator<UserMessage> i(scheduler->current()->getMessages());
 		     i.hasNext(); i++)
 		{

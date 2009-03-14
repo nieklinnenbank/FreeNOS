@@ -45,7 +45,7 @@
 #define PIC_IRQ_BASE	0x20
 
 /** PIT maximum frequency. */
-#define PIT_FREQUENCY   1193180
+#define PIT_FREQUENCY   1193182
 
 /** PIT IRQ interval. */
 #define PIT_HZ		250
