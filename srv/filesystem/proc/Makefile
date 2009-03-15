@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-program   += proc
+program   += procfs
 libraries += libc libcrt liballoc
 includes  += srv srv/filesystem srv/process lib/libposix
 

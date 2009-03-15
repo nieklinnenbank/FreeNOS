@@ -15,44 +15,43 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __FILESYSTEM_PROCFILESYSTEM_H
-#define __FILESYSTEM_PROCFILESYSTEM_H
+#ifndef __FILESYSTEM_PROCROOTDIRECTORY_H
+#define __FILESYSTEM_PROCROOTDIRECTORY_H
 
-#include <File.h>
-#include <FileSystem.h>
-#include <FileSystemMessage.h>
+#include <Directory.h>
 #include <Types.h>
 #include <Error.h>
-#include "ProcRootDirectory.h"
+#include "ProcFileSystem.h"
 
-/** @see ProcRootDirectory */
-class ProcRootDirectory;
+/** @see ProcFileSystem */
+class ProcFileSystem;
 
 /**
- * Process filesystem (procfs). Maps processes into a pseudo filesystem.
+ * Lists running processes as directory entries.
  */
-class ProcFileSystem : public FileSystem
+class ProcRootDirectory : public Directory
 {
     public:
-    
-	/**
-	 * Class constructor function.
-	 * @param path Path to which we are mounted.
-	 */
-	ProcFileSystem(const char *path);
 
 	/**
-	 * Refreshes the entire process file tree.
+	 * Constructor function.
+	 * @param proc ProcFileSystem instance.
 	 */
-	void refresh();
+	ProcRootDirectory(ProcFileSystem *p);
+
+	/**
+	 * Reads out the buffer.
+	 * @param buffer Output buffer.
+	 * @param size Maximum number of bytes to write.
+	 * @param offset Offset to read.
+	 * @return Number of bytes read, or Error number.
+	 */
+	Error read(u8 *buffer, Size size, Size offset);
 
     private:
-	
-	/** Root directory file. */
-	ProcRootDirectory *rootDir;
-	
-	/** String representation of process states. */
-	static char *states[];
+
+	/** ProcFS instance for which we are spawned. */
+	ProcFileSystem *proc;    
 };
 
-#endif /* __FILESYSTEM_PROCFILESYSTEM_H */
+#endif /* __FILESYSTEM_PROCROOTDIRECTORY_H */

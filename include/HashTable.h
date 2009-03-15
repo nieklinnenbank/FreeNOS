@@ -49,6 +49,15 @@ template <class Key, class Value> class HashBucket
 	    value = v;
 	}
 
+	/**
+	 * Comparision operator.
+	 * @param b HashBucket instance to compare us with.
+	 */
+	bool operator == (HashBucket *b)
+	{
+	    return key == b->key && value == b->value;
+	}
+
 	/** Unique key. */
 	Key *key;
 	
@@ -93,8 +102,11 @@ template <class Key, class Value> class HashTable
 	/**
 	 * Remove an item.
 	 * @param k Associated key.
+	 * @param deleteKey Perform an delete() on the key if found.
+	 * @param deleteValue Perform an delete() on value if found.
 	 */
-	void remove(Key *k)
+	void remove(Key *k, bool deleteKey   = false,
+			    bool deleteValue = false)
 	{
 	    HashBucket<Key,Value> *b;
 	    
@@ -103,6 +115,10 @@ template <class Key, class Value> class HashTable
 	    if ((b = findBucket(k)))
 	    {
 		_map[_hash(k,_size)].remove(b);
+		
+		if (deleteKey) delete b->key;
+		if (deleteValue) delete b->value;
+		delete b;
 	    }
 	}
 

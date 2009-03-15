@@ -15,12 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <api/IPCMessage.h>
 #include <arch/Process.h>
 #include <ProcessMessage.h>
 #include <ProcessServer.h>
-#include "ProcFile.h"
-#include "ProcFileSystem.h"
+#include <FileSystemPath.h>
 #include <Error.h>
+#include "ProcFile.h"
+#include "ProcRootDirectory.h"
+#include "ProcFileSystem.h"
 
 char * ProcFileSystem::states[] =
 {
@@ -30,33 +33,26 @@ char * ProcFileSystem::states[] =
     "Sleeping",
 };
 
-bool done = false;
-
 ProcFileSystem::ProcFileSystem(const char *path)
     : FileSystem(path)
 {
-    cacheHit(ZERO);
+    FileSystemPath slash("/");
+
+    rootDir = new ProcRootDirectory(this);
+    root    = new FileCache(&slash, rootDir, ZERO);
 }
 
-FileCache * ProcFileSystem::cacheHit(FileCache *ch)
+void ProcFileSystem::refresh()
 {
     ProcessMessage msg;
     ProcessID pid = 0;
     UserProcess uproc;    
-    Directory *rootDir = new Directory;
     Directory *procPidDir;
     String slash("/");
     char tmp[PATHLEN];
 
-//    if (!done) done = true;
-//    else return ch;
-
     /* Clear the current cache. */
-    if (ch) ch->count++;
-    clearFileCache(cache[&slash]);
-
-    /* Add the root directory to the cache. */
-    insertFileCache(rootDir, "/");
+    clearFileCache();
 
     /* Read processes from process server. */
     while (true)
@@ -81,20 +77,17 @@ FileCache * ProcFileSystem::cacheHit(FileCache *ch)
 	procPidDir->addEntry("status",  DT_REG);
 	
 	/* Insert per-process directory to cache. */
-	insertFileCache(procPidDir, "/%u", msg.number);
+	insertFileCache(procPidDir, "%u", msg.number);
 
 	/* Command line string. */
-	insertFileCache(new ProcFile(uproc.command, strlen(uproc.command)),
-			"/%u/cmdline", msg.number);
+	insertFileCache(new ProcFile(uproc.command),
+			"%u/cmdline", msg.number);
 	
 	/* Process status. */
-	insertFileCache(new ProcFile(states[uproc.state], strlen(states[uproc.state])),
-		        "/%u/status",  msg.number);
+	insertFileCache(new ProcFile(states[uproc.state]),
+		        "%u/status",  msg.number);
 	
 	/* Move to next PID. */
 	pid = msg.number + 1;
     }    
-    /* Just return input. */
-    if (ch) ch->count--;
-    return ch;
 }

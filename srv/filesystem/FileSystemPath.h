@@ -26,6 +26,12 @@
 /** The default FileSystemPath separator. */
 #define DEFAULT_SEPARATOR '/'
 
+#define SEPARATOR(x) \
+    (this->separator == (x))
+
+#define EOL(s,x) \
+    ((x) == (s) + length - 1)
+
 /**
  * Simple filesystem path parser.
  */
@@ -36,7 +42,7 @@ class FileSystemPath
 	/**
 	 * Empty constructor.
 	 */
-	FileSystemPath()
+	FileSystemPath() : fullPath(ZERO), parentPath(ZERO)
 	{
 	}
     
@@ -46,6 +52,7 @@ class FileSystemPath
 	 * @param separator Pathname separator.
 	 */
 	FileSystemPath(char *path, char separator = DEFAULT_SEPARATOR)
+	    : fullPath(ZERO), fullLength(ZERO), parentPath(ZERO)
 	{
 	    parse(path, separator);
 	}
@@ -56,6 +63,7 @@ class FileSystemPath
 	 * @param separator Pathname separator.
 	 */
 	FileSystemPath(String *s, char separator = DEFAULT_SEPARATOR)
+	    : fullPath(ZERO), fullLength(ZERO), parentPath(ZERO)
 	{
 	    parse(**s, separator);
 	}
@@ -66,7 +74,8 @@ class FileSystemPath
 	~FileSystemPath()
 	{
 	    path.clear(true);
-	    fullpath.clear(true);
+	    if (parentPath) delete parentPath;
+	    if (fullPath) delete fullPath;
 	}
 
 	/**
@@ -74,55 +83,51 @@ class FileSystemPath
 	 * @param p Path to parse.
 	 * @param separator Pathname separator.
 	 */
-	void parse(char *p, char separator = DEFAULT_SEPARATOR)
+	void parse(char *p, char sep = DEFAULT_SEPARATOR)
 	{
-	    const char *saved = p, *cur = p;
+	    const char *saved = ZERO, *savedParent = ZERO, *savedTmp = ZERO;
+	    const char *cur   = p;
+	    Size size, savedParentSz;
+
+	    /* Skip heading separators. */
+	    while (*cur && *cur == sep) cur++;
 
 	    /* Save parameters. */
-	    this->length    = strlen(p);
-	    this->separator = separator;
+	    p          = (char *) cur;
+	    saved      = cur;
+	    separator  = sep;
+	    fullLength = strlen((char *)cur);
+	    fullPath   = new String(cur);
 
-	    /* Insert the root for absolute paths. */
-	    if (*cur == separator)
-	    {
-		path.insertTail(new String(&separator, 1));
-		fullpath.insertTail(new String(&separator, 1));
-		saved++, cur++;
-	    }
 	    /* Loop the entire path. */
 	    while (*cur)
 	    {
-		if (*cur == separator || cur == p + length - 1)
+		if (*cur == separator || cur == p + fullLength - 1)
 		{
-		    path.insertTail(new String(saved, (cur - saved) + 1));
-		    fullpath.insertTail(new String(p, (cur - p) + 1));
-		    saved = cur + 1;
+		    if (cur == saved)
+			size = 1;
+		    else
+			size = (cur - saved);
+			
+		    path.insertTail(new String(saved, size));
+		    savedParent   = savedTmp;
+		    savedParentSz = (savedTmp - savedParent) + 1;
+		    savedTmp      = saved;
+		    saved         = cur + 1;
 		}
 		cur++;
 	    }
+	    /* Create parent, if any. */
+	    if (savedParent) parentPath = new String(savedParent, savedParentSz);
 	}
 
 	/**
-	 * Retrieve the (absolute) pathname of our parent.
-	 * @param absolute Include full path to the parent or only it's base.
-	 * @return Pathname of our parent.
+	 * Retrieve the full path of our parent.
+	 * @return Path of our parent.
 	 */
-	String * parent(bool absolute = true)
+	String * parent()
 	{
-	    ListIterator<String> i;
-	    String *ret = ZERO;
-    
-	    /* Loop path. */
-	    for (absolute ? i.reset(&fullpath) : i.reset(&path); i.hasNext(); i++)
-	    {
-		if (( absolute && i.current() == fullpath.tail()) ||
-		    (!absolute && i.current() == path.tail()))
-		{
-		    break;
-		}
-		ret = i.current();
-	    }
-	    return ret;
+	    return parentPath;
 	}
 
 	/**
@@ -140,17 +145,25 @@ class FileSystemPath
 	 */
 	String * full()
 	{
-	    return fullpath.tail();
+	    return fullPath;
 	}
 
 	/**
 	 * Returns a List of seperate path elements.
-	 * @param absolute Include full path of each element or it's base.
 	 * @return Pointer to a List.
 	 */
-	List<String> * split(bool absolute = true)
+	List<String> * split()
 	{
-	    return absolute ? &fullpath : &path;
+	    return &path;
+	}
+
+	/**
+	 * Get Length of our full path.
+	 * @return Length.
+	 */
+	Size length()
+	{
+	    return fullLength;
 	}
 
     private:
@@ -158,12 +171,15 @@ class FileSystemPath
 	/** The path split in pieces. */
 	List<String> path;
 
-	/** Each piece also contains all parents. */
-	List<String> fullpath;
+	/** Full input path. */
+	String *fullPath;
 
 	/** Full length of the given path. */
-	Size length;
+	Size fullLength;
 	
+	/** Full path to our parent. */
+	String *parentPath;
+
 	/** Separator character. */
 	char separator;
 };

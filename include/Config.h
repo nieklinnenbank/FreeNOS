@@ -30,7 +30,6 @@
 #define PROCSRV_PID	0
 #define VFSSRV_PID	1
 #define MEMSRV_PID	2
-// #define NAMESRV_PID	3
 
 // TEMP:
 #define TERMINAL_PID	3

@@ -38,14 +38,13 @@ $(TMPDIR):
 	cp $(KERNEL) $(TMPDIR)/boot/kernel
 	cp srv/process/process.bin $(TMPDIR)/boot/process.bin
 	cp srv/filesystem/virtual/vfs.bin $(TMPDIR)/boot/vfs.bin
-	cp srv/filesystem/proc/proc.bin $(TMPDIR)/boot/procfs.bin
+	cp srv/filesystem/proc/procfs.bin $(TMPDIR)/boot/procfs.bin
+	cp srv/filesystem/tmp/tmpfs.bin $(TMPDIR)/boot/tmpfs.bin
 	cp srv/memory/memory.bin $(TMPDIR)/boot/memory.bin
-	# cp srv/name/name.bin $(TMPDIR)/boot/name.bin
 	cp srv/terminal/terminal.bin $(TMPDIR)/boot/terminal.bin
 	cp srv/idle/idle.bin $(TMPDIR)/boot/idle.bin
 	cp sbin/init/init.bin $(TMPDIR)/boot/init.bin
 	cp bin/sh/sh.bin $(TMPDIR)/boot/sh.bin
-
 	echo 'timeout 0' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'title Kernel' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'root (cd)' >> $(TMPDIR)/boot/grub/menu.lst
@@ -53,9 +52,9 @@ $(TMPDIR):
 	echo 'module /boot/process.bin' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'module /boot/vfs.bin' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'module /boot/memory.bin' >> $(TMPDIR)/boot/grub/menu.lst
-	#echo 'module /boot/name.bin' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'module /boot/terminal.bin' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'module /boot/procfs.bin' >> $(TMPDIR)/boot/grub/menu.lst
+	echo 'module /boot/tmpfs.bin' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'module /boot/init.bin' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'module /boot/idle.bin' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'module /boot/sh.bin' >> $(TMPDIR)/boot/grub/menu.lst

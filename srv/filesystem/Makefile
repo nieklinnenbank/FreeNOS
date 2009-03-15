@@ -15,6 +15,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-subdirs   += virtual proc
+subdirs   += virtual proc tmp
 
 include ../../tools/rules.mk

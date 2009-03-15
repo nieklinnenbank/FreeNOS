@@ -18,10 +18,11 @@
 #include <stdio.h>
 #include "ProcFile.h"
 
-ProcFile::ProcFile(char *buf, Size sz)
+ProcFile::ProcFile(char *str)
 {
-    buffer = new char[sz + 1];
-    size   = strlcpy(buffer, buf, sz + 1);
+    size   = strlen(str);
+    buffer = new char[size + 1];
+    strlcpy(buffer, str, size + 1);
 }
 
 ProcFile::~ProcFile()

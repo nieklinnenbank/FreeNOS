@@ -66,6 +66,7 @@ void VirtualFileSystem::openFileHandler(FileSystemMessage *msg,
 	return;
     }
     // TODO: stat first, to enforce POSIX permissions here!
+    // TODO: also, contact a device server if it's a device file!!!
     
     /* Ask filesystem server to open it. */
     fs.action = OpenFile;
@@ -120,7 +121,8 @@ void VirtualFileSystem::closeFileHandler(FileSystemMessage *msg,
     {
 	/* Inform filesystem we are closing the file. */
 	fs.action = CloseFile;
-	fs.fd     = msg->fd;
+	fs.ident  = fd->identifier;
+	fs.procID = msg->from;
 	
 	/* Send message. */
 	IPCMessage(fd->mount->procID, SendReceive, &fs);

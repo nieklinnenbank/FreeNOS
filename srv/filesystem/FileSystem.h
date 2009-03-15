@@ -23,6 +23,7 @@
 #include <IPCServer.h>
 #include <Config.h>
 #include <HashTable.h>
+#include <HashIterator.h>
 #include "File.h"
 #include "FileSystemPath.h"
 #include "FileSystemMessage.h"
@@ -37,12 +38,22 @@ typedef struct FileCache
 {
     /**
      * Constructor function.
+     * @param path Full path of the new file to insert.
      * @param f File to insert into the cache.
+     * @param p Our parent. ZERO if we have no parent.
      */
-    FileCache(File *f, FileSystemPath *p)
-	: file(f), path(p), parent(ZERO)
+    FileCache(FileSystemPath *path, File *f, FileCache *p)
+	: file(f), count(ZERO)
     {
+	entries.insert(new String("."),  this);
+	entries.insert(new String(".."), p ? p : this);
+	
+	if (p && p != this)
+	{
+	    p->entries.insert(new String(path->base()), this);
+	}
     }
+    
     /**
      * Comparision operator.
      * @param fc Instance to compare us with.
@@ -50,20 +61,14 @@ typedef struct FileCache
      */
     bool operator == (FileCache *fc)
     {
-	return file == fc->file && path == fc->path && parent == fc->parent;
+	return file == fc->file;
     }
     
     /** File pointer. */
     File *file;
     
-    /** Full path to us. */
-    FileSystemPath *path;
-    
-    /** Our parent entry. */
-    FileCache *parent;
-    
-    /** Possible childs. */
-    List<FileCache> childs;
+    /** Contains parent, ourselves, and childs. */
+    HashTable<String, FileCache> entries;
     
     /** Number of times opened. */
     Size count;
@@ -82,13 +87,14 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	 * @param path Path to which we are mounted.
 	 */
 	FileSystem(const char *path)
-	    : IPCServer<FileSystem, FileSystemMessage>(this)
+	    : IPCServer<FileSystem, FileSystemMessage>(this), root(ZERO)
 	{
 	    FileSystemMessage msg;
 	    
 	    /* Register message handlers. */
-	    addIPCHandler(OpenFile, &FileSystem::openFileHandler);
-	    addIPCHandler(ReadFile, &FileSystem::readFileHandler);
+	    addIPCHandler(OpenFile,  &FileSystem::openFileHandler);
+	    addIPCHandler(ReadFile,  &FileSystem::readFileHandler);
+	    addIPCHandler(CloseFile, &FileSystem::closeFileHandler);
 	    
 	    /* Mount ourselves. */
 	    msg.action = Mount;
@@ -96,10 +102,6 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	    
 	    /* Request VFS mount. */
 	    IPCMessage(VFSSRV_PID, SendReceive, &msg);
-	    
-	    /* Create dummy root. */
-	    root = new FileCache(ZERO, ZERO);
-	    root->count++;
 	}
     
 	/**
@@ -191,8 +193,8 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	 * @param msg Incoming message.
 	 * @param reply Response message.
 	 */
-	void closeFileHandler(FileSystemMessage *msg,
-			      FileSystemMessage *reply)
+	virtual void closeFileHandler(FileSystemMessage *msg,
+				      FileSystemMessage *reply)
 	{
 	    FileCache *file = (FileCache *) msg->ident;
 	    
@@ -211,33 +213,30 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	 */
 	FileCache * insertFileCache(File *file, char *pathFormat, ...)
 	{
-	    char path[PATHLEN];
+	    char pathStr[PATHLEN];
+	    FileSystemPath path;
+	    FileCache *parent = ZERO;
 	    va_list args;
 	    
 	    /* Format the path first. */
 	    va_start(args, pathFormat);
-	    vsnprintf(path, sizeof(path), pathFormat, args);
+	    vsnprintf(pathStr, sizeof(pathStr), pathFormat, args);
 	    va_end(args);
 	    
-	    /* Create objects. */
-	    FileSystemPath *p = new FileSystemPath(path);
-	    FileCache *entry  = (FileCache *) ZERO;
-	    FileCache *parent = ZERO;
+	    /* Interpret the given path. */
+	    path.parse(pathStr);
 	    
-	    /* Set parent. */
-	    if (p->parent() && cache[p->parent()])
-		parent = cache[p->parent()];
-	    else
+	    /* Lookup our parent. */
+	    if (!(path.parent()))
+	    {
 		parent = root;
-	    
+	    }
+	    else if (!(parent = findFileCache(path.parent())))
+	    {
+		return ZERO;
+	    }
     	    /* Create new cache. */
-	    entry = new FileCache(file, p);
-	    entry->parent = parent;
-    	    cache.insert(p->full(), entry);
-		
-	    /* Add it to parent. */
-	    parent->childs.insertTail(entry);
-	    return entry;
+	    return new FileCache(&path, file, parent);
 	}
 
 	/**
@@ -268,10 +267,29 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	 */
 	FileCache * findFileCache(FileSystemPath *p)
 	{
-	    FileCache *c = cache[p->full()];
+	    List<String> *entries = p->split();
+	    FileCache *c = root;
 
-	    /* Perform a implementation defined cache hit. */	    
-	    return cacheHit(c);
+	    /* Root is treated special. */
+	    if (!p->parent() && p->length() == 0)
+	    {
+		return root;
+	    }
+	    /* Loop the entire path. */
+	    for (ListIterator<String> i(entries); i.hasNext(); i++)
+	    {
+		if (!(c = c->entries[i.current()]))
+		{
+		    break;
+		}
+	    }
+	    /* Perform cachehit? */
+	    if (c)
+	    {
+		cacheHit(c);
+	    }
+	    /* Return what we got. */
+	    return c;
 	}
 
 	/**
@@ -285,8 +303,8 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	}
 
 	/**
-	 * Cleans up the entire file cache (except opened file caches).
-	 * @param cache Input FileCache object. ZERO to start from root.
+	 * Cleans up the entire file cache (except opened file caches and root).
+	 * @param cache Input FileCache object. ZERO to clean up all from root.
 	 */
 	void clearFileCache(FileCache *cache = ZERO)
 	{
@@ -295,30 +313,31 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	    {
 		cache = root;
 	    }
-	    /* Walk all our childs. */
-	    for (ListIterator<FileCache> i(&cache->childs); i.hasNext(); i++)
+	    /* May we clear this entry? Mark it, if so. */
+	    if (cache->count == 0 && cache != root)
 	    {
-		clearFileCache(i.current());
+		cache->count = (Size) -1;
 	    }
-	    /* May we clear this entry? */
-	    if (cache->count == 0)
+	    /* Walk all our childs. */
+	    for (HashIterator<String, FileCache> i(&cache->entries); i.hasNext(); i++)
 	    {
-		/* Remove us from our parent. */
-		if (cache->parent)
-		    cache->parent->childs.remove(cache);
-		
-		/* Release allocated memory. */
-		delete cache->path;
+		/* May we free this entry? */
+		if (i.current()->count == 0 && i.current() != root)
+		{
+		    clearFileCache(i.current());
+		    cache->entries.remove(i.key(), true);
+		}
+	    }
+	    /* Remove the entry itself. */
+	    if (cache->count == (Size) -1)
+	    {
 		delete cache->file;
 		delete cache;
 	    }
 	}
     
-	/** Dummy root entry. */
+	/** Root entry of the filesystem tree. */
 	FileCache *root;
-	
-	/** Quick path -> FileCache mapping. */
-	HashTable<String, FileCache> cache;
 };
 
 #endif /* __FILESYSTEM_FILESYSTEM_H */

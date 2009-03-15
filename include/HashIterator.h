@@ -93,6 +93,15 @@ template <class Key, class Value> class HashIterator
 	}
 	
 	/**
+	 * Retrieve key of the current item.
+	 * @return Current key.
+	 */
+	Key * key()
+	{
+	    return listIter ? listIter->current()->key : ZERO;
+	}
+	
+	/**
 	 * Check if there is more on the HashTable to iterate.
 	 * @return true if more items, false if not.
 	 */

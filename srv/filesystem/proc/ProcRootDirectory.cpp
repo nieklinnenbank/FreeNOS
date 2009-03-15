@@ -15,18 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Macros.h>
-#include "errno.h"
+#include "ProcRootDirectory.h"
 
-Size errno USED = 0;
-
-char * error_map[] USED =
+ProcRootDirectory::ProcRootDirectory(ProcFileSystem *p)
+    : proc(p)
 {
-    [-ESUCCESS]   = "Success",
-    [-ENOSUCH]    = "No such file or directory",
-    [-EINVALID]   = "Invalid argument",
-    [-ENOSUPPORT] = "Operation is not supported",
-    [-EFAULT]     = "Memory fault",
-    [-EACCESS]    = "Permission denied",
-    [-ENOMEM]     = "Not enough memory",
-};
+}
+
+Error ProcRootDirectory::read(u8 *buffer, Size size, Size offset)
+{
+    proc->refresh();
+    return Directory::read(buffer, size, offset);
+}

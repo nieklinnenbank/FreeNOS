@@ -22,6 +22,7 @@
 #include <errno.h>
 #include "dirent.h"
 #include "fcntl.h"
+#include "unistd.h"
 
 DIR * opendir(const char *dirname)
 {
@@ -85,6 +86,9 @@ struct dirent * readdir(DIR *dirp)
 
 int closedir(DIR *dirp)
 {
+    /* Close file handle. */
+    close(dirp->fd);
+
     /* Free buffers. */
     delete dirp->buffer;
     delete dirp;

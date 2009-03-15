@@ -32,10 +32,9 @@ class ProcFile : public File
 
 	/**
 	 * Constructor function.
-	 * @param buffer Input buffer.
-	 * @param size Size of the buffer.
+	 * @param str Input string.
 	 */
-	ProcFile(char *buffer, Size size);
+	ProcFile(char *str);
 
 	/**
 	 * Destructor function, which releases the buffer.
