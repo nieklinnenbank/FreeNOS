@@ -11,7 +11,6 @@
     --> perhaps, memory server can then do more management of virtual memory?
 
 ++ Improve IPC performance!!!
-    --> problem is: memory allocator!!!
     --> Don't use the heap
     --> IPC via registers (avoid memory checking)
     --> benchmark!!!
@@ -24,13 +23,8 @@
 
 [first]
 
-POSIX:::: implement readdir() with read!!!()
-
 [5] --> ram filesystem, make sure we can read/write files right.
 
-    --> FileSystem: each Directory contains "." and ".."
-	and all other entries in an HashTable.
-    
     --> CreateFile: to create regular, directory, device files etc.
     
     --> StatFile: and also POSIX stat()

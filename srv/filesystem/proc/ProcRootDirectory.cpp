@@ -24,6 +24,7 @@ ProcRootDirectory::ProcRootDirectory(ProcFileSystem *p)
 
 Error ProcRootDirectory::read(u8 *buffer, Size size, Size offset)
 {
+    clear();
     proc->refresh();
     return Directory::read(buffer, size, offset);
 }

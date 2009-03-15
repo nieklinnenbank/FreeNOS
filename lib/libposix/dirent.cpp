@@ -52,29 +52,21 @@ DIR * opendir(const char *dirname)
 
 struct dirent * readdir(DIR *dirp)
 {
-    FileSystemMessage msg;    
+    FileSystemMessage msg;
+    Size num; 
 
     /* Do we need to read more dirents? */
     if (dirp->current >= dirp->count && !dirp->eof)
     {
-	/* Fill in the message. */
-	msg.action = ReadFile;
-	msg.buffer = (char *) dirp->buffer;
-	msg.size   = sizeof(Dirent) * 8;
-	msg.fd     = dirp->fd;
-	
-	/* Request VFS service. */
-	IPCMessage(VFSSRV_PID, SendReceive, &msg);
-	
-	/* End-of-file reached? */
-	if (!msg.size)
+	/* Read more entries. */
+	if (!(num = read(dirp->fd, dirp->buffer, sizeof(Dirent) * 8)))
 	{
 	    dirp->eof = true;
 	}
 	else
 	{
 	    dirp->current   = 0;
-	    dirp->countRead = msg.size / sizeof(Dirent);
+	    dirp->countRead = num / sizeof(Dirent);
 	}
     }
     /* Retrieve next dirent. */

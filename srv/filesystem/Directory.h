@@ -65,7 +65,7 @@ class Directory : public File
 		    continue;
 		}
 		/* Can we read another entry? */
-		if (bytes + sizeof(Dirent) < size)
+		else if (bytes + sizeof(Dirent) <= size)
 		{
 		    memcpy(dent++, i.current(), sizeof(Dirent));
 		    bytes += sizeof(Dirent);
@@ -86,6 +86,14 @@ class Directory : public File
 	    strlcpy(d->d_name, name, DIRLEN);
 	    d->d_type = type;
 	    entries.insertTail(d);
+	}
+	
+	/**
+	 * Clears the list of entries.
+	 */
+	void clear()
+	{
+	    entries.clear(true);
 	}
 
     private:
