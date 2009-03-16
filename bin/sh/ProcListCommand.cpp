@@ -27,16 +27,16 @@ int ProcListCommand::execute(Size nparams, char **params)
 {
     DIR *d;
     struct dirent *dent;
+
+    printf("PID STATUS CMD\n");
     
     /* Attempt to open the directory. */
-    if (!(d = opendir("/proc/")))
+    if (!(d = opendir("/proc")))
     {
-	printf("Failed to open '/proc/': %s\n",
+	printf("Failed to open '/proc': %s\n",
 		strerror(errno));
 	return errno;
     }
-    printf("PID STATUS CMD\n");
-    
     /* Read directory. */
     while ((dent = readdir(d)))
     {

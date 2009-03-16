@@ -39,7 +39,10 @@
 /** Not enough memory. */
 #define ENOMEM		-6
 
+/** Number out of range. */
+#define ERANGE		-7
+
 /** Last defined error value (do not use). */
-#define ELAST		ENOMEM
+#define ELAST		ERANGE
 
 #endif /* __ERROR_H */

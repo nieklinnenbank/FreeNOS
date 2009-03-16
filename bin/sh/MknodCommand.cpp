@@ -15,10 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ProcFileSystem.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <string.h>
+#include <sys/stat.h>
+#include "MknodCommand.h"
 
-int main(int argc, char **argv)
+int MknodCommand::execute(Size nparams, char **params)
 {
-    ProcFileSystem server("/proc");
-    return server.run();
+    printf("Creating '%s', major %d, minor %d\n",
+	    params[0], atoi(params[1]), atoi(params[2]));
+    return 0;
 }
+
+INITOBJ(MknodCommand, mknodCmd, DEFAULT)

@@ -107,7 +107,7 @@ void VirtualFileSystem::openFileHandler(FileSystemMessage *msg,
     
     /* Ask filesystem server to open it. */
     fs.action = OpenFile;
-    fs.buffer = path + strlen(mount->path) - 1;
+    fs.buffer = path + strlen(mount->path);
     IPCMessage(mount->procID, SendReceive, &fs);
     
     /* Allocate file descriptor. */
@@ -197,7 +197,7 @@ void VirtualFileSystem::statFileHandler(FileSystemMessage *msg,
     }
     /* Now we stat the file. */
     fs.action = StatFile;
-    fs.buffer = path + strlen(mount->path) - 1;
+    fs.buffer = path + strlen(mount->path);
     fs.stat   = msg->stat;    
     fs.procID = msg->from;
     IPCMessage(mount->procID, SendReceive, &fs);

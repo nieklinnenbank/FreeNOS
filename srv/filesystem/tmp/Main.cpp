@@ -19,6 +19,6 @@
 
 int main(int argc, char **argv)
 {
-    TmpFileSystem server("/dev/");
+    TmpFileSystem server("/dev");
     return server.run();
 }

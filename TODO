@@ -21,9 +21,11 @@
 
 --> We could merge the two mapVirtual() overloads into one, then check for p == this :)
 
+--> fixup all posix library function documentation!!!
+
 [first]
 
-    --> stat '/proc/xxx/status' and '/proc/xxx/statut' seem to be the same?!
+
 
 [5] --> ram filesystem, make sure we can read/write files right.
 

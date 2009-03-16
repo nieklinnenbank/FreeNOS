@@ -15,24 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <api/IPCMessage.h>
-#include <api/ProcessCtl.h>
-#include <ProcessServer.h>
-#include <Config.h>
-#include "stdlib.h"
+#ifndef __LIBC_LIMITS_H
+#define __LIBC_LIMITS_H
 
-void exit(int status)
-{
-//    ProcessCtl(SELF, KillPID);
-    
-//    for (;;);
+#include <Macros.h>
+#include "types.h"
 
-    ProcessMessage msg;
-    
-    /* Fill in the message. */
-    msg.action = ExitProcess;
-    msg.number = status;
-    
-    /* Request termination. */
-    IPCMessage(PROCSRV_PID, SendReceive, &msg);
-}
+/** 
+ * @defgroup ansic ISO/IEC 9899:1999 
+ * @{ 
+ */
+
+/** Minimum value of an object of type long int. */
+#define LONG_MIN -2147483647
+
+#define LONG_MAX  2147483647
+
+/**
+ * @}
+ */
+
+#endif /* __LIBC_LIMITS_H */

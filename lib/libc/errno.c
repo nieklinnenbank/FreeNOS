@@ -29,4 +29,5 @@ char * error_map[] USED =
     [-EFAULT]     = "Memory fault",
     [-EACCESS]    = "Permission denied",
     [-ENOMEM]     = "Not enough memory",
+    [-ERANGE]     = "Number out of range",
 };

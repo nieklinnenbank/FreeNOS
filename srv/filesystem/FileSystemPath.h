@@ -104,8 +104,13 @@ class FileSystemPath
 	    {
 		if (*cur == separator || cur == p + fullLength - 1)
 		{
+		    /* Determinze size of the piece to copy. */
 		    if (cur == saved)
 			size = 1;
+			
+		    else if (cur == p + fullLength - 1)
+			size = (cur - saved) + 1;
+
 		    else
 			size = (cur - saved);
 			

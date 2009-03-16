@@ -36,14 +36,6 @@
     printf("{%s:%d}: " fmt, __FILE__, __LINE__, ##__VA_ARGS__);
 
 /**
- * Convert a number to a string.
- * @param buffer String buffer to write to.
- * @param divisor Base of the number, e.g. 16 for hexadecimal.
- * @param number The number to convert.
- */
-extern C void itoa(char *buffer, int divisor, int number);
-
-/**
  * Write a formatted string into a buffer.
  * @param buffer String buffer to write to.
  * @param size Maximum number of bytes to write.
