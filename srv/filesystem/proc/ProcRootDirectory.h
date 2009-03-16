@@ -23,9 +23,6 @@
 #include <Error.h>
 #include "ProcFileSystem.h"
 
-/** @see ProcFileSystem */
-class ProcFileSystem;
-
 /**
  * Lists running processes as directory entries.
  */

@@ -15,7 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <File.h>
 #include <Directory.h>
+#include <Device.h>
 #include "TmpFileSystem.h"
 #include "TmpFile.h"
 
@@ -30,5 +32,33 @@ TmpFileSystem::TmpFileSystem(const char *path)
 void TmpFileSystem::createFileHandler(FileSystemMessage *msg,
 				      FileSystemMessage *reply)
 {
-    reply->result = EINVALID;
+    char path[PATHLEN];
+    
+    /* Copy the path first. */
+    if (VMCopy(msg->from, Read, (Address) path,
+                                (Address) msg->buffer, PATHLEN) <= 0)
+    {
+        reply->result = EACCESS;
+        return;
+    }
+    /* Create the appropriate file type. */
+    switch (msg->filetype)
+    {
+	case S_IFREG:
+	    insertFileCache(new File, "%s", path);
+	    break;
+	
+	case S_IFDIR:
+	    insertFileCache(new Directory, "%s", path);
+	    break;
+	
+	case S_IFCHR:
+	    insertFileCache(new Device, "%s", path);
+	    break;
+	
+	default:
+	    reply->result = EINVALID;
+	    return;
+    }
+    reply->result = ESUCCESS;
 }

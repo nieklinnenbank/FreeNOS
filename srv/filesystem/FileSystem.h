@@ -24,6 +24,7 @@
 #include <Config.h>
 #include <HashTable.h>
 #include <HashIterator.h>
+#include "Directory.h"
 #include "File.h"
 #include "FileSystemPath.h"
 #include "FileSystemMessage.h"
@@ -51,6 +52,7 @@ typedef struct FileCache
 	if (p && p != this)
 	{
 	    p->entries.insert(new String(path->base()), this);
+	    p->dir->addEntry(**path->base(), f->getType());
 	}
     }
     
@@ -64,8 +66,14 @@ typedef struct FileCache
 	return file == fc->file;
     }
     
-    /** File pointer. */
-    File *file;
+    union
+    {
+	/** File pointer. */
+        File *file;
+    
+	/** Directory pointer. */
+	Directory *dir;
+    };
     
     /** Contains parent, ourselves, and childs. */
     HashTable<String, FileCache> entries;

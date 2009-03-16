@@ -24,8 +24,19 @@
 
 int MknodCommand::execute(Size nparams, char **params)
 {
-    printf("Creating '%s', major %d, minor %d\n",
-	    params[0], atoi(params[1]), atoi(params[2]));
+    dev_t dev;
+    
+    /* Fill in major/minor numbers. */
+    dev.major = atoi(params[1]);
+    dev.minor = atoi(params[2]);
+
+    /* Attempt to create the file. */
+    if (mknod(params[0], ZERO, dev) < 0)
+    {
+	printf("Failed to create '%s': %s\n",
+		params[0], strerror(errno));
+	return errno;
+    }
     return 0;
 }
 

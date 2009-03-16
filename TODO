@@ -25,6 +25,8 @@
 
 [first]
 
+--> VFS: FileCache.entries and Directory.entries are duplicate!!!
+    --> should design this in a better way!
 
 
 [5] --> ram filesystem, make sure we can read/write files right.

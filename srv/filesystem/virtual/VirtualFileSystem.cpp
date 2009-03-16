@@ -69,7 +69,7 @@ void VirtualFileSystem::createFileHandler(FileSystemMessage *msg,
     }
     /* Ask the filesystem server to create the given file. */
     fs.action   = CreateFile;
-    fs.buffer   = path;
+    fs.buffer   = path + strlen(mount->path);
     fs.userID   = procs[msg->from].userID;
     fs.groupID  = procs[msg->from].groupID;
     fs.deviceID = msg->deviceID;

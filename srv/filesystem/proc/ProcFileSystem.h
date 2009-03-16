@@ -23,10 +23,6 @@
 #include <FileSystemMessage.h>
 #include <Types.h>
 #include <Error.h>
-#include "ProcRootDirectory.h"
-
-/** @see ProcRootDirectory */
-class ProcRootDirectory;
 
 /**
  * Process filesystem (procfs). Maps processes into a pseudo filesystem.
@@ -47,9 +43,6 @@ class ProcFileSystem : public FileSystem
 	void refresh();
 
     private:
-	
-	/** Root directory file. */
-	ProcRootDirectory *rootDir;
 	
 	/** String representation of process states. */
 	static char *states[];

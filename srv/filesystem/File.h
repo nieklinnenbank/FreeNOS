@@ -100,6 +100,15 @@ class File
 	    st->st_uid  = uid;
 	    st->st_gid  = gid;
 	}
+	
+	/**
+	 * Retrieve our filetype.
+	 * @return FileType object.
+	 */
+	FileType getType()
+	{
+	    return type;
+	}
     
     protected:
 

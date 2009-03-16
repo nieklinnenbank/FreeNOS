@@ -38,8 +38,7 @@ ProcFileSystem::ProcFileSystem(const char *path)
 {
     FileSystemPath slash("/");
 
-    rootDir = new ProcRootDirectory(this);
-    root    = new FileCache(&slash, rootDir, ZERO);
+    root = new FileCache(&slash, new ProcRootDirectory(this), ZERO);
 }
 
 void ProcFileSystem::refresh()
@@ -47,7 +46,6 @@ void ProcFileSystem::refresh()
     ProcessMessage msg;
     ProcessID pid = 0;
     UserProcess uproc;    
-    Directory *procPidDir;
     String slash("/");
     char tmp[PATHLEN];
 
@@ -69,15 +67,9 @@ void ProcFileSystem::refresh()
 	}
 	/* Add entry to root. */
 	snprintf(tmp, sizeof(tmp), "%u", msg.number);
-	rootDir->addEntry(tmp, DT_DIR);
-	
+
 	/* Per-process directory. */
-	procPidDir = new Directory;
-	procPidDir->addEntry("cmdline", DT_REG);
-	procPidDir->addEntry("status",  DT_REG);
-	
-	/* Insert per-process directory to cache. */
-	insertFileCache(procPidDir, "%u", msg.number);
+	insertFileCache(new Directory, "%u", msg.number);
 
 	/* Command line string. */
 	insertFileCache(new ProcFile(uproc.command),

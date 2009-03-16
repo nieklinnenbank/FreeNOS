@@ -42,6 +42,21 @@ int stat(const char *path, struct stat *buf)
 
 int mknod(const char *path, mode_t mode, dev_t dev)
 {
-    errno = ENOSUPPORT;
-    return -1;
+    FileSystemMessage msg;
+    
+    /* Fill in the message. */
+    msg.action   = CreateFile;
+    msg.buffer   = (char *) path;
+    msg.deviceID = dev;
+    msg.filetype = CharacterDeviceFile;
+    msg.mode     = mode;
+    
+    /* Ask VFS to create the file for us. */
+    IPCMessage(VFSSRV_PID, SendReceive, &msg);
+    
+    /* Set errno. */
+    errno = msg.result;
+
+    /* Report result. */
+    return msg.result == ESUCCESS ? 0 : -1;
 }
