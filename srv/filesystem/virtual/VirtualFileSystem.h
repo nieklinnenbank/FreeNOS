@@ -106,53 +106,76 @@ class VirtualFileSystem : public IPCServer<VirtualFileSystem, FileSystemMessage>
     private:
 
 	/**
+	 * Creates a new file.
+	 * @param msg Input message.
+	 * @param reply Response message.
+	 */
+	void createFileHandler(FileSystemMessage *msg,
+			       FileSystemMessage *reply);
+
+	/**
 	 * Opens a new file.
 	 * @param msg Input message.
 	 * @param reply Response message.
 	 */
-	void openFileHandler(FileSystemMessage *msg, FileSystemMessage *reply);
+	void openFileHandler(FileSystemMessage *msg,
+			     FileSystemMessage *reply);
 
 	/**
 	 * Reads a file.
 	 * @param msg Input message.
 	 * @param reply Response message.
 	 */
-	void readFileHandler(FileSystemMessage *msg, FileSystemMessage *reply);
+	void readFileHandler(FileSystemMessage *msg,
+			     FileSystemMessage *reply);
 
 	/**
 	 * Closes a file.
 	 * @param msg Input message.
 	 * @param reply Response message.
 	 */
-	void closeFileHandler(FileSystemMessage *msg, FileSystemMessage *reply);
+	void closeFileHandler(FileSystemMessage *msg,
+			      FileSystemMessage *reply);
+
+	/**
+	 * Get file statistics.
+	 * @param msg Input message.
+	 * @param reply Response message.
+	 */
+	void statFileHandler(FileSystemMessage *msg,
+			     FileSystemMessage *reply);
 
 	/**
 	 * Mounts a filesystem.
 	 * @param msg Input message.
 	 * @param reply Response message.
 	 */
-	void mountHandler(FileSystemMessage *msg, FileSystemMessage *reply);
+	void mountHandler(FileSystemMessage *msg,
+		          FileSystemMessage *reply);
 
 	/**
 	 * Request mounted filesystems.
 	 * @param msg Input message.
 	 * @param reply Response message.
 	 */
-	void mountInfoHandler(FileSystemMessage *msg, FileSystemMessage *reply);
+	void mountInfoHandler(FileSystemMessage *msg,
+			      FileSystemMessage *reply);
 
 	/**
 	 * Allows the process server to communicate process+uid/gid pairs.
 	 * @param msg Input message.
 	 * @param reply Response message.
 	 */
-	void newProcessHandler(FileSystemMessage *msg, FileSystemMessage *reply);
+	void newProcessHandler(FileSystemMessage *msg,
+			       FileSystemMessage *reply);
 	
 	/**
 	 * Allows the process server to remove process+uid/gid pairs.
 	 * @param msg Input message.
 	 * @param reply Response message.
 	 */
-	void killProcessHandler(FileSystemMessage *msg, FileSystemMessage *reply);
+	void killProcessHandler(FileSystemMessage *msg,
+			        FileSystemMessage *reply);
 	
 	/**
 	 * Creats a new mount.
@@ -164,7 +187,7 @@ class VirtualFileSystem : public IPCServer<VirtualFileSystem, FileSystemMessage>
 
 	/**
 	 * Lookup the mount for a given path.
-	 * @param path Path to lookup.
+	 * @param path Path of the mountpoint to find.
 	 * @return Pointer to mount if found, ZERO otherwise.
 	 */
 	FileSystemMount * findMount(char *path);

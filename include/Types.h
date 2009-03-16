@@ -60,6 +60,28 @@ typedef unsigned int Size;
 /** A memory address. */
 typedef unsigned long Address;
 
+/** User Identity. */
+typedef unsigned short UserID;
+
+/** Group Identity. */
+typedef unsigned short GroupID;
+
+/** Process Identification Number. */
+typedef u16 ProcessID;
+
+/**                                                                                   
+ * Describes a device ID number.                                                      
+ */                                                                                   
+typedef struct DeviceID                                                               
+{                                                                                     
+    /** Major device ID number is a PID. */                                           
+    ProcessID major;
+
+    /** Device specific minor ID number. */
+    u16 minor;
+}
+DeviceID;
+
 /**
  * Error code defined in Error.h
  * @see Error.h

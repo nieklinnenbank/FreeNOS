@@ -17,5 +17,6 @@
 
 program   += init
 libraries += libc libcrt liballoc libposix
+includes  += srv/filesystem
 
 include ../../tools/rules.mk

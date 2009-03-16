@@ -22,7 +22,9 @@
 #include <IPCServer.h>
 #include <Types.h>
 #include <Error.h>
+#include <sys/stat.h>
 #include "File.h"
+#include "Device.h"
 
 /**
  * Actions which may be performed on the filesystem.
@@ -95,15 +97,9 @@ typedef struct FileSystemMessage : public Message
 	Error result;
     };
 
-    union
-    {
-	/** Points to a buffer for I/O. */
-	char *buffer;
-    
-	/** Full path to a file. */
-	char *path;
-    };
-    
+    /** Points to a buffer for I/O. */
+    char *buffer;
+
     union
     {
 	/** Size of the buffer. */
@@ -115,21 +111,36 @@ typedef struct FileSystemMessage : public Message
 
     union
     {
-	/** Filetype. */
-        FileType filetype;
+	/** File mode permissions. */
+	FileMode mode;
 
         /** Unique identifier. */
 	Address ident;
+	
+	/** File Statistics. */
+	FileStat *stat;
     };
 
-    /** File descriptor. */
-    u16 fd;
+    union
+    {
+        /** File descriptor. */
+	u16 fd;
 
-    /** Process id number. */
-    ProcessID procID;
+	/** Process id number. */
+        ProcessID procID;
 
-    /** Offset in the file to read. */
-    Size offset;
+	/** Filetype. */
+        FileType filetype;
+    };
+
+    union
+    {
+	/** Offset in the file to read. */
+        Size offset;
+	
+	/** Device major/minor numbers. */
+	DeviceID deviceID;
+    };
 }
 FileSystemMessage;
 

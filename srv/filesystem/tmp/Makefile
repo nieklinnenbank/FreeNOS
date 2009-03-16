@@ -15,8 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-program   += vfs
-libraries += libc liballoc libcrt
-includes  += srv srv/filesystem lib/libposix
+program   += tmpfs
+libraries += libc libcrt liballoc
+includes  += srv srv/filesystem srv/process lib/libposix
 
 include ../../../tools/rules.mk

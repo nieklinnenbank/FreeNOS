@@ -92,9 +92,11 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	    FileSystemMessage msg;
 	    
 	    /* Register message handlers. */
-	    addIPCHandler(OpenFile,  &FileSystem::openFileHandler);
-	    addIPCHandler(ReadFile,  &FileSystem::readFileHandler);
-	    addIPCHandler(CloseFile, &FileSystem::closeFileHandler);
+	    addIPCHandler(CreateFile, &FileSystem::createFileHandler);
+	    addIPCHandler(OpenFile,   &FileSystem::openFileHandler);
+	    addIPCHandler(ReadFile,   &FileSystem::readFileHandler);
+	    addIPCHandler(CloseFile,  &FileSystem::closeFileHandler);
+	    addIPCHandler(StatFile,   &FileSystem::statFileHandler);
 	    
 	    /* Mount ourselves. */
 	    msg.action = Mount;
@@ -119,6 +121,17 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	virtual FileCache * lookupFile(FileSystemPath *path)
 	{
 	    return (FileCache *) ZERO;
+	}
+
+	/**
+	 * Create a new file.
+	 * @param msg Incoming message.
+	 * @param reply Response message.
+	 */
+	virtual void createFileHandler(FileSystemMessage *msg,
+				       FileSystemMessage *reply)
+	{
+	    reply->result = ENOSUPPORT;
 	}
 
 	/**
@@ -200,6 +213,45 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	    
 	    /* Decrement count. */
 	    file->count--;
+	}
+
+	/**
+	 * Retrieve file statistics.
+	 * @param msg Incoming message.
+	 * @param reply Response message.
+	 */
+	void statFileHandler(FileSystemMessage *msg,
+			     FileSystemMessage *reply)
+	{
+	    FileSystemPath path;
+	    FileCache *entry;
+	    struct stat st;
+	    char buf[PATHLEN];
+	    
+            /* Copy the path first. */
+            if (VMCopy(msg->from, Read, (Address) buf,
+                                        (Address) msg->buffer, PATHLEN) <= 0)
+            {
+                reply->result = EACCESS;
+                return;
+            }
+            /* Parse the path. */
+            path.parse(buf);
+                                      
+            /* Do we have this file cached? */
+            if ((entry = findFileCache(&path)) || (entry = lookupFile(&path)))
+	    {
+		/* Retrieve file status. */
+        	entry->file->status(&st);
+	    
+	        /* Copy to remote process. */
+                VMCopy(msg->procID, Write, (Address) &st,
+                                           (Address) msg->stat, sizeof(st));
+		/* Done. */
+		reply->result = ESUCCESS;
+	    }
+	    else
+		reply->result = ENOSUCH;
 	}
 
     protected:

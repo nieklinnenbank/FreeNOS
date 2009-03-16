@@ -18,21 +18,27 @@
 #ifndef __FILESYSTEM_FILE_H
 #define __FILESYSTEM_FILE_H
 
+#include <arch/Process.h>
 #include <Types.h>
 #include <Error.h>
+#include <sys/stat.h>
 
 /**
  * All possible filetypes.
  */
 typedef enum FileType
 {
-    RegularFile         = 0,
-    DirectoryFile       = 1,
-    BlockDeviceFile     = 2,
-    CharacterDeviceFile = 3,
-    SymlinkFile         = 4,
-    FIFOFile            = 5,
-};
+    RegularFile         = S_IFREG,
+    DirectoryFile       = S_IFDIR,
+    BlockDeviceFile     = S_IFBLK,
+    CharacterDeviceFile = S_IFCHR,
+    SymlinkFile         = S_IFLNK,
+    FIFOFile            = S_IFIFO,
+}
+FileType;
+
+/** File access permissions. */
+typedef uint FileMode;
 
 /**
  * Abstracts a file which is opened by a process.
@@ -44,8 +50,11 @@ class File
 	/**
 	 * Constructor function.
 	 * @param t Type of file.
+	 * @param u User identity.
+	 * @param g Group identity.
 	 */
-	File(FileType t = RegularFile) : type(t), size(ZERO)
+	File(FileType t = RegularFile, UserID u = ZERO, GroupID g = ZERO)
+	    : type(t), size(ZERO), uid(u), gid(g)
 	{
 	}
 
@@ -79,14 +88,32 @@ class File
 	{
 	    return ENOSUPPORT;
 	}
-
-    private:
+    
+	/**
+	 * Retrieve file statistics.
+	 * @param st Buffer to write statistics to.
+	 */
+	virtual void status(struct stat *st)
+	{
+	    st->st_mode = type;
+	    st->st_size = size;
+	    st->st_uid  = uid;
+	    st->st_gid  = gid;
+	}
+    
+    protected:
 
 	/** File of this file. */
 	FileType type;
 	
 	/** Size of the file, in bytes. */
 	Size size;
+	
+	/** Owner of the file. */
+	UserID uid;
+	
+	/** Group of the file. */
+	GroupID gid;
 };
 
 #endif /* __FILESYSTEM_FILE_H */

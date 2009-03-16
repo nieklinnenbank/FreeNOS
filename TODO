@@ -23,12 +23,12 @@
 
 [first]
 
+    --> stat '/proc/xxx/status' and '/proc/xxx/statut' seem to be the same?!
+
 [5] --> ram filesystem, make sure we can read/write files right.
 
     --> CreateFile: to create regular, directory, device files etc.
     
-    --> StatFile: and also POSIX stat()
-
     --> put argv string pointer in %eax!!! (then copy in _entry)
 	--> environment will eventually also be in there ;)
 	
@@ -40,6 +40,14 @@
 	--> libparse for this too.
 
 	--> then, we can just fill in the mountpoint in grub.conf! :)
+
+ --> How are we going to let filesystems know, which mountpoint to use?
+         argv[1] seems most appropriate, but then again, how can we set argc/argv
+	 for the boot modules?
+	 
+	    --> Use GRUB's boot module line, then parse it into argc/argv! :)
+		--> most probably, we have to push it on the user stack... then let _entry() find it?
+
 
     (--> ls /proc/1 crashes?)
 
@@ -74,13 +82,10 @@
 [12] --> Implement the notion of "current directory" in VirtualFileSystem.
 
 [second]
-     --> How are we going to let filesystems know, which mountpoint to use?
-         argv[1] seems most appropriate, but then again, how can we set argc/argv
-	 for the boot modules?
-	 
-	    --> Use GRUB's boot module line, then parse it into argc/argv! :)
-		--> most probably, we have to push it on the user stack... then let _entry() find it?
 
+    --> VFS should I/O with filesystem servers asynchroneously (i.e. no SendReceive!!!)
+	--> have somekind of request queue for each mountpoint then.
+    
 [13] --> Faults -> process manager must receive the Fault message!
 	--> e.g. use faultPID or so???
 [15] --> Don't use ugly unions!!! Perhapse we can modify ::run() to customize

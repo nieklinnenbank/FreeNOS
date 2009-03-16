@@ -43,9 +43,6 @@ typedef enum ProcessState
 }
 ProcessState;
 
-/** Process Identification Number. */
-typedef u16 ProcessID;
-
 /**
  * Represents a process which may run on the host.
  */

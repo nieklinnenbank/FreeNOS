@@ -27,9 +27,11 @@ VirtualFileSystem::VirtualFileSystem()
     FileSystemMessage msg;
 
     /* Register message handlers. */
+    addIPCHandler(CreateFile,  &VirtualFileSystem::createFileHandler);
     addIPCHandler(OpenFile,    &VirtualFileSystem::openFileHandler);
     addIPCHandler(ReadFile,    &VirtualFileSystem::readFileHandler);
     addIPCHandler(CloseFile,   &VirtualFileSystem::closeFileHandler);
+    addIPCHandler(StatFile,    &VirtualFileSystem::statFileHandler);
     addIPCHandler(Mount,       &VirtualFileSystem::mountHandler);
     addIPCHandler(MountInfo,   &VirtualFileSystem::mountInfoHandler);
     addIPCHandler(NewProcess,  &VirtualFileSystem::newProcessHandler);
@@ -46,20 +48,55 @@ VirtualFileSystem::VirtualFileSystem()
     }
 }
 
+void VirtualFileSystem::createFileHandler(FileSystemMessage *msg,
+					  FileSystemMessage *reply)
+{
+    char path[PATHLEN];
+    FileSystemMount *mount;
+    FileSystemMessage fs;
+
+    /* Obtain full path first. */
+    if ((reply->result = VMCopy(msg->from, Read, (Address) path,
+			       (Address) msg->buffer, PATHLEN) < 0))
+    {
+    	return;
+    }
+    /* Retrieve mountpoint. */
+    if (!(mount = findMount(path)))
+    {
+	reply->result = ENOSUCH;
+	return;
+    }
+    /* Ask the filesystem server to create the given file. */
+    fs.action   = CreateFile;
+    fs.buffer   = path;
+    fs.userID   = procs[msg->from].userID;
+    fs.groupID  = procs[msg->from].groupID;
+    fs.deviceID = msg->deviceID;
+    fs.filetype = msg->filetype;
+    fs.mode     = msg->mode;
+    
+    /* Perform IPC. */
+    IPCMessage(mount->procID, SendReceive, &fs);
+    
+    /* Report results. */
+    reply->result = fs.result;
+}
+
 void VirtualFileSystem::openFileHandler(FileSystemMessage *msg,
 					FileSystemMessage *reply)
 {
     char path[PATHLEN];
     FileSystemMount *mount;
     FileSystemMessage fs;
-
-    /* Obtain full path to open. */
+    
+    /* Obtain full path first. */
     if ((reply->result = VMCopy(msg->from, Read, (Address) path,
 			       (Address) msg->buffer, PATHLEN) < 0))
     {
-	return;
+    	return;
     }
-    /* Do we have a mount? */
+    /* Retrieve mountpoint. */
     if (!(mount = findMount(path)))
     {
 	reply->result = ENOSUCH;
@@ -104,7 +141,7 @@ void VirtualFileSystem::readFileHandler(FileSystemMessage *msg,
     /* Do IPC. */
     IPCMessage(fd->mount->procID, SendReceive, &fs);
     
-    /* Success. */
+    /* Report results. */
     fd->position  += fs.size;
     reply->result  = fs.result;
     reply->size    = fs.size;
@@ -137,6 +174,36 @@ void VirtualFileSystem::closeFileHandler(FileSystemMessage *msg,
     }
     else
 	reply->result = ENOSUCH;
+}
+
+void VirtualFileSystem::statFileHandler(FileSystemMessage *msg,
+					FileSystemMessage *reply)
+{
+    char path[PATHLEN];
+    FileSystemMount *mount;
+    FileSystemMessage fs;
+    
+    /* Obtain full path first. */
+    if ((reply->result = VMCopy(msg->from, Read, (Address) path,
+			       (Address) msg->buffer, PATHLEN) < 0))
+    {
+    	return;
+    }
+    /* Retrieve mountpoint. */
+    if (!(mount = findMount(path)))
+    {
+	reply->result = ENOSUCH;
+	return;
+    }
+    /* Now we stat the file. */
+    fs.action = StatFile;
+    fs.buffer = path + strlen(mount->path) - 1;
+    fs.stat   = msg->stat;    
+    fs.procID = msg->from;
+    IPCMessage(mount->procID, SendReceive, &fs);
+
+    /* Report results. */
+    reply->result = fs.result;
 }
 
 void VirtualFileSystem::mountHandler(FileSystemMessage *msg,
