@@ -88,6 +88,27 @@ typedef struct FileSystemMessage : public Message
 	this->ipc(VFSSRV_PID, SendReceive);
     }
 
+    /**
+     * Attempt to create a new file.
+     * @param path Path to the file to create.
+     * @param type File type.
+     * @param mode Initial file permissions.
+     * @param major Device major ID (optional).
+     * @param minor Device minor ID (optional).
+     */
+    void createFile(char *path, FileType type = RegularFile,
+		    FileMode mode = 0600, u16 major = ZERO,
+		    u16 minor = ZERO)
+    {
+	this->action   = CreateFile;
+	this->buffer   = path;
+	this->filetype = type;
+	this->mode     = mode;
+	this->deviceID.major = major;
+	this->deviceID.minor = minor;
+	this->ipc(VFSSRV_PID, SendReceive);
+    }
+
     union
     {
 	/** Action to perform. */

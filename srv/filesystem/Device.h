@@ -31,12 +31,23 @@ class Device : public File
     
 	/**
 	 * Constructor function.
+	 * @param id Unique identity of the device.
 	 * @param t Type of device.
 	 */
-	Device(FileType t = CharacterDeviceFile)
-	     : File(t)
+	Device(DeviceID id, FileType t = CharacterDeviceFile)
+	     : File(t), deviceID(id)
 	{
 	}
+
+        /**                                                                            
+         * Retrieve file statistics.                                                   
+         * @param st Buffer to write statistics to.                                    
+         */                                                                            
+        virtual void status(struct stat *st)
+        {
+	    st->st_dev = deviceID;
+	    File::status(st);
+        }
 
     private:
 

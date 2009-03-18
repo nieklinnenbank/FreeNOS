@@ -20,22 +20,21 @@
 #include <Macros.h>
 #include <Types.h>
 #include <Config.h>
-#include "i8250Terminal.h"
-#include "Terminal.h"
+#include "i8250.h"
 
-i8250Terminal::i8250Terminal(u16 b, u16 i)
-    : Terminal(), base(b), irq(i)
+i8250::i8250(u16 b, u16 i)
+    : base(b), irq(i)
 {
     /* Aquire I/O port and IRQ line permissions. */
-    ProcessCtl(TERMINAL_PID, AllowIO,  base);
-    ProcessCtl(TERMINAL_PID, AllowIO,  base + LINESTATUS);
-    ProcessCtl(TERMINAL_PID, AllowIO,  base + LINECONTROL);
-    ProcessCtl(TERMINAL_PID, AllowIO,  base + IRQCONTROL);
-    ProcessCtl(TERMINAL_PID, AllowIO,  base + FIFOCONTROL);
-    ProcessCtl(TERMINAL_PID, AllowIO,  base + MODEMCONTROL);
-    ProcessCtl(TERMINAL_PID, AllowIO,  base + DIVISORLOW);
-    ProcessCtl(TERMINAL_PID, AllowIO,  base + DIVISORHIGH);
-    ProcessCtl(TERMINAL_PID, WatchIRQ, irq);
+    ProcessCtl(SELF, AllowIO,  base);
+    ProcessCtl(SELF, AllowIO,  base + LINESTATUS);
+    ProcessCtl(SELF, AllowIO,  base + LINECONTROL);
+    ProcessCtl(SELF, AllowIO,  base + IRQCONTROL);
+    ProcessCtl(SELF, AllowIO,  base + FIFOCONTROL);
+    ProcessCtl(SELF, AllowIO,  base + MODEMCONTROL);
+    ProcessCtl(SELF, AllowIO,  base + DIVISORLOW);
+    ProcessCtl(SELF, AllowIO,  base + DIVISORHIGH);
+    ProcessCtl(SELF, WatchIRQ, irq);
     
     /* 8bit Words, no parity. */
     outb(base + LINECONTROL, 3);
@@ -56,7 +55,7 @@ i8250Terminal::i8250Terminal(u16 b, u16 i)
     outb(base + LINECONTROL, inb(base + LINECONTROL) & ~DLAB);
 }
 
-int i8250Terminal::read(s8 *buffer, Size size)
+int i8250::read(s8 *buffer, Size size)
 {
     Size bytes = 0;
     
@@ -68,7 +67,7 @@ int i8250Terminal::read(s8 *buffer, Size size)
     return (bytes);
 }
 								     
-int i8250Terminal::write(s8 *buffer, Size size)
+int i8250::write(s8 *buffer, Size size)
 {
     Size bytes = 0;
 

@@ -51,11 +51,9 @@ ProcessServer::ProcessServer()
 	vfs.newProcess(i, procs[i].uid, procs[i].gid);
     }
     /* Debug out boot modules. */
-    printf("Boot Modules:\n");
-    
     for (Size i = 0; i < MAX_PROCS; i++)
 	if (procs[i].command[0])
-	    printf("%u: %s\n", i, procs[i].command);
+	    debug("%u: %s\n", i, procs[i].command);
 }
 
 void ProcessServer::getIDHandler(ProcessMessage *msg, ProcessMessage *reply)

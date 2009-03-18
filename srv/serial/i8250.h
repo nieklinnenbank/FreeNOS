@@ -15,12 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __TERMINAL_I8250TERMINAL_H
-#define __TERMINAL_I8250TERMINAL_H
+#ifndef __SERIAL_I8250_H
+#define __SERIAL_I8250_H
 
 #include <Macros.h>
 #include <Types.h>
-#include "Terminal.h"
 
 /**
  * Constants used to communicate with the UART.
@@ -41,14 +40,12 @@ enum
     TXREADY      = 0x20,
     DLAB	 = 0x80,
     BAUDRATE     = 9600,
-    PORT         = 0x3f8,
-    IRQ		 = 4,
 };
 
 /**
- * Use the i8250 as system terminal.
+ * i8250 serial UART.
  */
-class i8250Terminal : public Terminal
+class i8250
 {
     public:
 
@@ -56,7 +53,7 @@ class i8250Terminal : public Terminal
 	 * Constructor function.
 	 * @param base I/O base port.
 	 */
-        i8250Terminal(u16 base = PORT, u16 irq = IRQ);
+        i8250(u16 base, u16 irq);
 
 	/**
 	 * Retrieve the base I/O port.
@@ -102,4 +99,4 @@ class i8250Terminal : public Terminal
 	u16 irq;
 };
 
-#endif /* __TERMINAL_I8250TERMINAL_H */
+#endif /* __SERIAL_I8250_H */

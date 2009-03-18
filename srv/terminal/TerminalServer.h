@@ -21,7 +21,6 @@
 #include <api/IPCMessage.h>
 #include <Types.h>
 #include "VGATerminal.h"
-#include "i8250Terminal.h"
 #include "PS2Terminal.h"
 
 /** Memory address of the VGA terminal to use. */

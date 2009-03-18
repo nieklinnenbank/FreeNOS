@@ -33,7 +33,6 @@
 
 Shell::Shell()
 {
-    printf("Shell(): PID %u\n", getpid());
 }
 
 int Shell::run()
@@ -53,8 +52,9 @@ int Shell::run()
 	
 	/* Enough input? */
 	if (strlen(cmdStr) == 0)
+	{
 	    continue;
-	
+	}
 	/* Attempt to extract arguments. */
 	argc = parse(cmdStr, argv, MAX_ARGV);
 	

@@ -24,8 +24,6 @@ int main(int argc, char **argv)
      * TODO: give up all priviledges: run us in priviledge level 0.
      */
 
-    printf("Init: starting\n");
-
     /* Exit immediately. */
     exit(EXIT_SUCCESS); 
 

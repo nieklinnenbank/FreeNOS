@@ -53,7 +53,7 @@ void TmpFileSystem::createFileHandler(FileSystemMessage *msg,
 	    break;
 	
 	case S_IFCHR:
-	    insertFileCache(new Device, "%s", path);
+	    insertFileCache(new Device(msg->deviceID), "%s", path);
 	    break;
 	
 	default:

@@ -42,6 +42,7 @@ $(TMPDIR):
 	cp srv/filesystem/tmp/tmpfs.bin $(TMPDIR)/boot/tmpfs.bin
 	cp srv/memory/memory.bin $(TMPDIR)/boot/memory.bin
 	cp srv/terminal/terminal.bin $(TMPDIR)/boot/terminal.bin
+	cp srv/serial/serial.bin $(TMPDIR)/boot/serial.bin
 	cp srv/idle/idle.bin $(TMPDIR)/boot/idle.bin
 	cp sbin/init/init.bin $(TMPDIR)/boot/init.bin
 	cp bin/sh/sh.bin $(TMPDIR)/boot/sh.bin
@@ -52,9 +53,10 @@ $(TMPDIR):
 	echo 'module /boot/process.bin' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'module /boot/vfs.bin' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'module /boot/memory.bin' >> $(TMPDIR)/boot/grub/menu.lst
-	echo 'module /boot/terminal.bin' >> $(TMPDIR)/boot/grub/menu.lst
-	echo 'module /boot/procfs.bin' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'module /boot/tmpfs.bin' >> $(TMPDIR)/boot/grub/menu.lst
+	echo 'module /boot/terminal.bin' >> $(TMPDIR)/boot/grub/menu.lst
+	echo 'module /boot/serial.bin' >> $(TMPDIR)/boot/grub/menu.lst
+	echo 'module /boot/procfs.bin' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'module /boot/init.bin' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'module /boot/idle.bin' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'module /boot/sh.bin' >> $(TMPDIR)/boot/grub/menu.lst

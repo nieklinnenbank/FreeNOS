@@ -46,6 +46,10 @@ VirtualFileSystem::VirtualFileSystem()
 	    msg.ipc(PROCSRV_PID, Send);
 	}
     }
+    /* For now, we only guarantee that /dev is mounted. */
+    msg.ipc(DEVSRV_PID, Receive);
+    mountHandler(&msg, &msg);
+    msg.ipc(DEVSRV_PID, Send);
 }
 
 void VirtualFileSystem::createFileHandler(FileSystemMessage *msg,

@@ -23,6 +23,9 @@
 
 --> fixup all posix library function documentation!!!
 
+--> fixup libc --> divide the functions into seperate files, so
+		   we can provide man pages like so too (like *BSD does)
+
 [first]
 
 --> VFS: FileCache.entries and Directory.entries are duplicate!!!
@@ -31,7 +34,10 @@
 
 [5] --> ram filesystem, make sure we can read/write files right.
 
-    --> CreateFile: to create regular, directory, device files etc.
+    ++ CreateFile:
+	- regular,
+	- directory
+	++ device files
     
     --> put argv string pointer in %eax!!! (then copy in _entry)
 	--> environment will eventually also be in there ;)
@@ -51,9 +57,6 @@
 	 
 	    --> Use GRUB's boot module line, then parse it into argc/argv! :)
 		--> most probably, we have to push it on the user stack... then let _entry() find it?
-
-
-    (--> ls /proc/1 crashes?)
 
     --> Let VFS stat() the file!!!
 	--> perform auth checks aswell ;D

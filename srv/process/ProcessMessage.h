@@ -61,6 +61,29 @@ typedef struct ProcessMessage : public Message
 	buffer  = m->buffer;
     }
 
+    /**
+     * Terminate ourselves.
+     * @param status Exit code.
+     * @return Never.
+     */
+    void exit(int status)
+    {
+	number = status;
+	action = ExitProcess;
+	ipc(PROCSRV_PID, SendReceive);
+    }
+
+    /**
+     * Retrieve our process ID number (PID).
+     * @return Process ID number.
+     */
+    ProcessID pid()
+    {
+	action = GetID;
+	ipc(PROCSRV_PID, SendReceive);
+	return number;
+    }
+
     union
     {
 	/** Action to perform. */

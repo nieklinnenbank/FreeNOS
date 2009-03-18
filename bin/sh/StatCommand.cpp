@@ -43,8 +43,11 @@ int StatCommand::execute(Size nparams, char **params)
 	printf("Directory\n");
     
     else if (S_ISCHR(st.st_mode))
-	printf("Character Device\n"); 
-    
+    {
+	printf("Character Device\n");
+	printf("Major ID: %u\n", st.st_dev.major);
+	printf("Minor ID: %u\n", st.st_dev.minor);
+    }
     else if (S_ISBLK(st.st_mode))
 	printf("Block Device\n");
 
