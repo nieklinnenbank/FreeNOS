@@ -50,7 +50,7 @@ class Device : public File
 	    msg->action   = ReadFile;
 	    msg->deviceID = deviceID;
 	    msg->ipc(deviceID.major, Send, sizeof(*msg));
-	    return ZERO;
+	    return EWAIT;
 	}
 
         /**

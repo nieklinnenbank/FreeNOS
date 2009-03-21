@@ -188,8 +188,10 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	    Error result;
 	    
 	    /* Let the file read into our buffer. */
-	    if (fc->file->read(msg))
+	    if ((msg->result = fc->file->read(msg)) >= 0)
 	    {
+		msg->size   = msg->result;
+		msg->result = ESUCCESS;
 		ioDoneHandler(msg, reply);
 	    }
 	}
@@ -255,8 +257,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	void ioDoneHandler(FileSystemMessage *msg,
 			   FileSystemMessage *reply)
 	{
-	    *reply = msg;
-	     reply->ioDone(VFSSRV_PID, msg->procID, msg->size, msg->result);
+	     msg->ioDone(VFSSRV_PID, msg->procID, msg->size, msg->result);
 	}
 
     protected:
