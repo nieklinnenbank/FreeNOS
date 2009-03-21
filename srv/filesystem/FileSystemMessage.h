@@ -155,10 +155,29 @@ typedef struct FileSystemMessage : public Message
      * @param pid ProcessID number of the filesystem.
      * @return Number of bytes read on success and Error code on failure.
      */
-    Error readFile(char *buf, Size sz, Size off,
+    Error readFile(char *buf, Size sz, Size off = ZERO,
 		   ProcessID pid = VFSSRV_PID)
     {
 	action = ReadFile;
+	buffer = buf;
+	size   = sz;
+	offset = off;
+	ipc(pid, SendReceive, sizeof(*this));
+	return result == ESUCCESS ? size : result;
+    }
+
+    /**
+     * Write to a file on the filesystem.
+     * @param buf Input buffer.
+     * @param sz Maximum size to write.
+     * @param off Offset in the file to write.
+     * @param pid ProcessID number of the filesystem.
+     * @return Number of bytes written on success and Error code on failure.
+     */
+    Error writeFile(char *buf, Size sz, Size off = ZERO,
+		   ProcessID pid = VFSSRV_PID)
+    {
+	action = WriteFile;
 	buffer = buf;
 	size   = sz;
 	offset = off;

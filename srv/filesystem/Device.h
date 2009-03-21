@@ -53,6 +53,20 @@ class Device : public File
 	    return EWAIT;
 	}
 
+        /** 
+         * Writes data from the buffer to the device.
+	 * @param msg Write request.
+         * @return Always zero. The Device will send an IODone
+	 *         when it has completed the request.
+         */	
+	Error write(FileSystemMessage *msg)
+	{
+	    msg->action   = WriteFile;
+	    msg->deviceID = deviceID;
+	    msg->ipc(deviceID.major, Send, sizeof(*msg));
+	    return EWAIT;
+	}
+
         /**
          * Retrieve file statistics.
          * @param st Buffer to write statistics to.

@@ -29,16 +29,7 @@
 
 [5] --> ram filesystem, make sure we can read/write files right.
 
-    [serial I/O]
-    --> synchroneous read(), full!
-	--> let proc -> vfs, specifies to read X number of bytes
-	--> vfs -> dev, specifies to read X number of bytes
-	--> dev -> vfs, says okey I have them all, or: I'm not ready yet (VFS doesn't reply to the msg->from process)
-	--> dev -> vfs, okey, I'm done, vfs replies to the msg->from
-
-    --> same with write()
-    --> /dev/serial0 working, with simple read/write shell commands!!! (e.g. read(1) and write(1))
-    --> Then, implement touch(1) and mkdir(1)
+    --> let process server write the banner! (so i8250 console works there aswell ;D)
 
     --> for VFS + Terminal server: SendReceive should NOT receive from SELF!!!
 	--> this will fix our problem :-)
@@ -57,6 +48,7 @@
         --> BACKSPACE should be supported. (low prio)
 
 [12] --> Implement the notion of "current directory" in VirtualFileSystem.
+     --> Implement touch(1) and mkdir(1) and cd(1)
 
 [7] --> put argv string pointer in %eax!!! (then copy in _entry)
     --> environment will eventually also be in there ;)

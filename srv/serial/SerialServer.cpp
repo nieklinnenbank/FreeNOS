@@ -42,7 +42,8 @@ SerialServer::SerialServer()
     bool detected = false;
 
     /* Register message handlers. */
-    addIPCHandler(ReadFile, &SerialServer::readHandler, false);
+    addIPCHandler(ReadFile,  &SerialServer::readWriteHandler, false);
+    addIPCHandler(WriteFile, &SerialServer::readWriteHandler, false);
 
     /* Attempt to detect available UART's. */
     for (Size i = 0; i < MAX_UARTS; i++)
@@ -86,8 +87,8 @@ SerialServer::SerialServer()
     }
 }
 
-void SerialServer::readHandler(FileSystemMessage *msg,
-			       FileSystemMessage *reply)
+void SerialServer::readWriteHandler(FileSystemMessage *msg,
+			            FileSystemMessage *reply)
 {
     SerialDevice *dev;
     Error e;
@@ -97,10 +98,25 @@ void SerialServer::readHandler(FileSystemMessage *msg,
        (dev = uarts[msg->deviceID.minor].dev) &&
        (!dev->isRequestPending()))
     {
-	/* Attempt to read bytes. */
-	dev->flush();
-	e = dev->bufferedRead(msg);
+	/* Copy over. */
+	*reply = msg;
+    
+	/* Attempt to perform I/O. */
+	switch (msg->action)
+	{
+	    case ReadFile:
+		    dev->flush();
+		e = dev->bufferedRead(msg);
+		break;
+	
+	    case WriteFile:
+		e = dev->bufferedWrite(msg);
+		    dev->flush();
+		break;
 
+	    default:
+		e = ENOSUPPORT;
+	}
 	/* Did it fail? */
 	if (e < 0)
 	{

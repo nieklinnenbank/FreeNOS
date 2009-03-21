@@ -50,6 +50,13 @@ ProcessServer::ProcessServer()
 	/* Inform VFS. */
 	vfs.newProcess(i, procs[i].uid, procs[i].gid);
     }
+    /* Output banner. */
+    printf("%s\n", "FreeNOS " RELEASE " (" BUILDUSER "@" BUILDHOST
+           ") (" COMPILER ") " DATETIME);
+    
+    /* Print copyright and license. */
+    printf("%s\n", COPYRIGHT);
+    
     /* Debug out boot modules. */
     for (Size i = 0; i < MAX_PROCS; i++)
 	if (procs[i].command[0])

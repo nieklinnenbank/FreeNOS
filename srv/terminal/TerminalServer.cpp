@@ -22,29 +22,6 @@
 #include <Version.h>
 #include "TerminalServer.h"
 
-/**
- * Short banner to print out startup.
- */
-#define BANNER \
-    "FreeNOS " RELEASE " (" BUILDUSER "@" BUILDHOST ") (" COMPILER ") " DATETIME "\n"
-
-/**
- * Macro to output a message from inside the MemoryServer.
- * @param str Static character string to print out.
- */
-#define OUTPUT(str) \
-({ \
-    TerminalMessage msg; \
-    \
-    /* Construct message. */ \
-    msg.action = TerminalWrite; \
-    msg.buffer = str; \
-    msg.size   = strlen(str); \
-    \
-    /* Output banner. */ \
-    IPCMessage(TERMINAL_PID, Send, &msg, sizeof(msg)); \
-})
-
 TerminalServer::TerminalServer() : vga(VGA_ADDR), reading(false)
 {
     /* Request VGA memory. */
@@ -53,10 +30,6 @@ TerminalServer::TerminalServer() : vga(VGA_ADDR), reading(false)
 
     /* Clear VGA. */
     vga.clear();
-
-    /* Output banner and copyrights. */
-    OUTPUT(BANNER);
-    OUTPUT(COPYRIGHT);
 }
 	
 int TerminalServer::run()

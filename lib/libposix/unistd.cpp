@@ -34,30 +34,32 @@ pid_t getpid()
 
 ssize_t read(int fildes, void *buf, size_t nbyte)
 {
-    FileSystemMessage msg;
-//    Size numRead = 0;
-    
-//    while (numRead < nbyte)
-//    {
-	/* Fill in the message. */
-        msg.action = ReadFile;
-        msg.fd     = fildes;
-        msg.buffer = ((char *) buf);// + numRead;
-        msg.size   = nbyte;// - numRead;
-    
-        /* Ask VFS. */
-	IPCMessage(VFSSRV_PID, SendReceive, &msg, sizeof(msg));
-        //if (IPCMessage(VFSSRV_PID, SendReceive, &msg, sizeof(msg)) || !msg.size)
-	//{
-	//    break;
-	//}
-//	numRead   += msg.size;
-//    }
+    FileSystemMessage fs;
+
+    /* Read the file. */
+    fs.fd = fildes;
+    fs.readFile((char *) buf, nbyte);
+
     /* Set error number. */
-    errno = msg.result;
+    errno = fs.result;
     
     /* Success. */
-    return errno == ESUCCESS ? msg.size/*numRead*/ : -1;
+    return errno == ESUCCESS ? fs.size : -1;
+}
+
+ssize_t write(int fildes, const void *buf, size_t nbyte)
+{
+    FileSystemMessage fs;
+    
+    /* Write the file. */
+    fs.fd = fildes;
+    fs.writeFile((char *) buf, nbyte);
+    
+    /* Set error number. */
+    errno = fs.result;
+    
+    /* Give the result back. */
+    return errno == ESUCCESS ? fs.size : -1;
 }
 
 int close(int fildes)

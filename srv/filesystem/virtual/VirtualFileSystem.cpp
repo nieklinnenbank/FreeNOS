@@ -29,7 +29,8 @@ VirtualFileSystem::VirtualFileSystem()
     /* Register message handlers. */
     addIPCHandler(CreateFile,  &VirtualFileSystem::createFileHandler);
     addIPCHandler(OpenFile,    &VirtualFileSystem::openFileHandler);
-    addIPCHandler(ReadFile,    &VirtualFileSystem::readFileHandler, false);
+    addIPCHandler(ReadFile,    &VirtualFileSystem::readWriteFileHandler, false);
+    addIPCHandler(WriteFile,   &VirtualFileSystem::readWriteFileHandler, false);
     addIPCHandler(CloseFile,   &VirtualFileSystem::closeFileHandler);
     addIPCHandler(StatFile,    &VirtualFileSystem::statFileHandler);
     addIPCHandler(Mount,       &VirtualFileSystem::mountHandler);
@@ -108,8 +109,8 @@ void VirtualFileSystem::openFileHandler(FileSystemMessage *msg,
     }
 }
 
-void VirtualFileSystem::readFileHandler(FileSystemMessage *msg,
-					FileSystemMessage *reply)
+void VirtualFileSystem::readWriteFileHandler(FileSystemMessage *msg,
+					     FileSystemMessage *reply)
 {
     FileDescriptor *fd;
     
@@ -119,8 +120,8 @@ void VirtualFileSystem::readFileHandler(FileSystemMessage *msg,
 	reply->result = ENOSUCH;
 	return;
     }
-    /* Request (asynchroneous) read operation. */
-    reply->action = ReadFile;
+    /* Request (asynchroneous) read/write operation. */
+    reply->action = msg->action;
     reply->buffer = msg->buffer;
     reply->size   = msg->size;
     reply->offset = fd->position;

@@ -102,7 +102,8 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	    /* Register message handlers. */
 	    addIPCHandler(CreateFile, &FileSystem::createFileHandler);
 	    addIPCHandler(OpenFile,   &FileSystem::openFileHandler);
-	    addIPCHandler(ReadFile,   &FileSystem::readFileHandler, false);
+	    addIPCHandler(ReadFile,   &FileSystem::readWriteFileHandler, false);
+	    addIPCHandler(WriteFile,  &FileSystem::readWriteFileHandler, false);
 	    addIPCHandler(CloseFile,  &FileSystem::closeFileHandler);
 	    addIPCHandler(StatFile,   &FileSystem::statFileHandler);
 	    addIPCHandler(IODone,     &FileSystem::ioDoneHandler, false);
@@ -177,21 +178,36 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	}
 
 	/**
-         * Read an opened file.
+         * Read or writes an opened file.
 	 * @param msg Incoming message.
 	 * @param reply Response message.
          */    
-	void readFileHandler(FileSystemMessage *msg,
-			     FileSystemMessage *reply)
+	void readWriteFileHandler(FileSystemMessage *msg,
+			          FileSystemMessage *reply)
 	{
 	    FileCache *fc = (FileCache *) msg->ident;
 	    Error result;
 	    
-	    /* Let the file read into our buffer. */
-	    if ((msg->result = fc->file->read(msg)) >= 0)
+	    /* Perform I/O on the file. */
+	    switch (msg->action)
 	    {
-		msg->size   = msg->result;
-		msg->result = ESUCCESS;
+		case ReadFile:
+		    msg->result = fc->file->read(msg);
+		    break;
+		
+		case WriteFile:
+		default:
+		    msg->result = fc->file->write(msg);
+		    break;
+	    }
+	    /* Did the operation succeed already? */
+	    if (msg->result != EWAIT)
+	    {
+		if (msg->result >= 0)
+		{
+		    msg->size   = msg->result;
+		    msg->result = ESUCCESS;
+		}
 		ioDoneHandler(msg, reply);
 	    }
 	}

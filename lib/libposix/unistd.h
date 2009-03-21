@@ -64,6 +64,23 @@ extern C pid_t getpid();
 extern C ssize_t read(int fildes, void *buf, size_t nbyte);
 
 /**
+ * @brief Write on a file.
+ *
+ * The write() function shall attempt to write nbyte bytes from
+ * the buffer pointed to by buf to the file associated with the
+ * open file descriptor, fildes.
+ *
+ * @param fildes File descriptor.
+ * @param buf Input buffer.
+ * @param nbyte Maximum number of bytes to write.
+ * @return Upon successful completion, these functions shall return the number
+ *         of bytes actually written to the file associated with fildes. This
+ *         number shall never be greater than nbyte. Otherwise, -1 shall be
+ *         returned and errno set to indicate the error.
+ */
+extern C ssize_t write(int fildes, const void *buf, size_t nbyte);
+
+/**
  * Close a file descriptor
  * @param fildes The close() function shall deallocate the file descriptor indicated by fildes.
  * @return Upon successful completion, 0 shall be returned; otherwise, -1 shall

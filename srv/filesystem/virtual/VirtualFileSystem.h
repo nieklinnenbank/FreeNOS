@@ -122,12 +122,12 @@ class VirtualFileSystem : public IPCServer<VirtualFileSystem, FileSystemMessage>
 			     FileSystemMessage *reply);
 
 	/**
-	 * Reads a file.
+	 * Reads or writes to a file.
 	 * @param msg Input message.
 	 * @param reply Response message.
 	 */
-	void readFileHandler(FileSystemMessage *msg,
-			     FileSystemMessage *reply);
+	void readWriteFileHandler(FileSystemMessage *msg,
+			          FileSystemMessage *reply);
 
 	/**
 	 * Closes a file.

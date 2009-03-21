@@ -111,18 +111,27 @@ Size SerialDevice::bufferedRead(FileSystemMessage *req)
 
 Size SerialDevice::bufferedWrite(FileSystemMessage *req)
 {
+    /* Set request. */
+    if (req)
+	request = req;
+
     /* Calculate number of bytes to write. */
-    Size num = req->size < (BUFFERSIZE - writeBytes) ?
-	       req->size : (BUFFERSIZE - writeBytes);
+    Size num = request.size < (BUFFERSIZE - writeBytes) ?
+	       request.size : (BUFFERSIZE - writeBytes);
 
     /* Write bytes. */
     if (num)
     {
-	if ((num = VMCopy(req->procID, Read, (Address) writeBuffer + writeBytes,
-	                 (Address) req->buffer, num)) > 0)
+	if ((num = VMCopy(request.procID, Read, (Address) writeBuffer + writeBytes,
+	                 (Address) request.buffer, num)) > 0)
 	{
 	    writeBytes += num;
 	}
+	requestPending = false;
     }
+    /* Could not write all bytes yet. */
+    else
+	requestPending = true;
+
     return num;
 }
