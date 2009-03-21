@@ -176,6 +176,14 @@ class VirtualFileSystem : public IPCServer<VirtualFileSystem, FileSystemMessage>
 	 */
 	void killProcessHandler(FileSystemMessage *msg,
 			        FileSystemMessage *reply);
+
+	/**
+	 * Informs us that a I/O operation has completed.
+	 * @param msg Input message.
+	 * @param reply Response message.
+	 */
+	void ioDoneHandler(FileSystemMessage *msg,
+			   FileSystemMessage *reply);
 	
 	/**
 	 * Creats a new mount.

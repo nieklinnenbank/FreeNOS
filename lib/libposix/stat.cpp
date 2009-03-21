@@ -31,7 +31,7 @@ int stat(const char *path, struct stat *buf)
     msg.stat   = buf;
     
     /* Ask VFS for the information. */
-    IPCMessage(VFSSRV_PID, SendReceive, &msg);
+    IPCMessage(VFSSRV_PID, SendReceive, &msg, sizeof(msg));
 
     /* Set errno. */
     errno = msg.result;
@@ -52,7 +52,7 @@ int mknod(const char *path, mode_t mode, dev_t dev)
     msg.mode     = mode;
     
     /* Ask VFS to create the file for us. */
-    IPCMessage(VFSSRV_PID, SendReceive, &msg);
+    IPCMessage(VFSSRV_PID, SendReceive, &msg, sizeof(msg));
     
     /* Set errno. */
     errno = msg.result;

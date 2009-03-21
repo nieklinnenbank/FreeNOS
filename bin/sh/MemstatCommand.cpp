@@ -15,26 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <api/IPCMessage.h>
 #include <MemoryMessage.h>
-#include <Config.h>
 #include <stdio.h>
 #include "MemstatCommand.h"
 
 int MemstatCommand::execute(Size nparams, char **params)
 {
-    MemoryMessage msg;
+    MemoryMessage mem;
         
-    /* Query stats. */
-    msg.action = MemoryUsage;
-    
-    /* Ask memory server for memory stats. */
-    IPCMessage(MEMSRV_PID, SendReceive, &msg);
+    /* Query memory usage stats. */
+    mem.usage();
     
     /* Print it. */
     printf("Total:     %u KB\n"
            "Available: %u KB\n",
-           msg.bytes / 1024, msg.bytesFree / 1024);
+           mem.bytes / 1024, mem.bytesFree / 1024);
 
     return 0;
 }

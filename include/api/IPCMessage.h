@@ -28,6 +28,9 @@
 /** SystemCall number for IPCMessage(). */
 #define IPCMESSAGE 1
 
+/** Maximum size of an Message, in bytes. */
+#define MAX_MESSAGE_SIZE 64
+
 /**
  * Forward declaration.
  * @see Message
@@ -39,11 +42,12 @@ class Message;
  * @param proc Remote process to send/receive from.
  * @param action Either Send or Receive.
  * @param msg Message buffer.
+ * @param sz Size of message.
  * @return Instance of a SystemInfo object.
  */
-inline int IPCMessage(ProcessID proc, Action action, Message *msg)
+inline int IPCMessage(ProcessID proc, Action action, Message *msg, Size sz)
 {
-    return trapKernel3(IPCMESSAGE, proc, action, (ulong) msg);
+    return trapKernel4(IPCMESSAGE, proc, action, (ulong) msg, sz);
 }
 
 /**
@@ -92,10 +96,11 @@ class Message
 	 * Perform IPC operation to a given process.
 	 * @param pid Process to IPC to/from.
 	 * @param action Determines the action to perform.
+	 * @param sz Size of message.
 	 */
-	Error ipc(ProcessID pid, Action action = SendReceive)
+	Error ipc(ProcessID pid, Action action, Size sz)
 	{
-	    return IPCMessage(pid, action, this);
+	    return IPCMessage(pid, action, this, sz);
 	}
 
 	/** At minimum, we must know the origin. */
@@ -114,19 +119,21 @@ class UserMessage : public Message
     
 	/**
 	 * Default constructor function.
+	 * @param u Input  message.
+	 * @param sz Size of the message.
 	 */
-	UserMessage() : Message(IPCType, ZERO), d1(0), d2(0), d3(0),
-						d4(0), d5(0), d6(0)
+	UserMessage(Message *u, Size sz) : Message(u), size(sz)
 	{
+	    data = new s8[size];
+	    memcpy(data, u, size);
 	}
-	
+
 	/**
-	 * Copy constructor.
-	 * @param u UserMessage instance pointer.
+	 * Destructor function.
 	 */
-	UserMessage(UserMessage *u) : Message(u), d1(u->d1), d2(u->d2), d3(u->d3),
-						  d4(u->d4), d5(u->d5), d6(u->d6)
+	~UserMessage()
 	{
+	    delete data;
 	}
 
 	/**
@@ -136,12 +143,14 @@ class UserMessage : public Message
 	 */
 	bool operator == (UserMessage *u)
 	{
-	    return d1 == u->d1 && d2 == u->d2 && d3 == u->d3 &&
-		   d4 == u->d4 && d5 == u->d5 && d6 == u->d6;
+	    return data == u->data && size == u->size;
 	}
 
-	/** User messages have exactly six ulong's as data. */
-        ulong d1, d2, d3, d4, d5, d6;
+	/** User data. */
+	s8 *data;
+	
+	/** Size of user data. */
+	Size size;
 };
 
 /**
@@ -161,9 +170,6 @@ class InterruptMessage : public Message
 
 	/** Interrupt vector. */
 	ulong vector;
-	
-	/** Not used. */
-	ulong unused[5];
 };
 
 #endif /* __API_IPCMESSAGE_H */

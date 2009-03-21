@@ -38,12 +38,10 @@ class ProcRootDirectory : public Directory
 
 	/**
 	 * Reads out the buffer.
-	 * @param buffer Output buffer.
-	 * @param size Maximum number of bytes to write.
-	 * @param offset Offset to read.
+	 * @param msg Read request.
 	 * @return Number of bytes read, or Error number.
 	 */
-	Error read(u8 *buffer, Size size, Size offset);
+	Error read(FileSystemMessage *msg);
 
     private:
 

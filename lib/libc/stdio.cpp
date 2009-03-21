@@ -124,7 +124,7 @@ int vprintf(char *format, va_list args)
     msg.size   = vsnprintf(buf, sizeof(buf), format, args);
 
     /* Send message to the terminal server. */
-    return IPCMessage(TERMINAL_PID, SendReceive, &msg);
+    return IPCMessage(TERMINAL_PID, SendReceive, &msg, sizeof(msg));
 }
 
 char * gets(char *buffer, Size size)
@@ -160,7 +160,7 @@ char getc(char *buffer)
         msg.size   = 1;
     
 	/* Send message to terminal. */
-	IPCMessage(TERMINAL_PID, SendReceive, &msg);
+	IPCMessage(TERMINAL_PID, SendReceive, &msg, sizeof(msg));
     }
     return *buffer;
 }

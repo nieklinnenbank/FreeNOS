@@ -38,16 +38,11 @@ int CatCommand::execute(Size nparams, char **params)
         return errno;
     }
     /* Read contents. */
-    if (read(fd, buf, sizeof(buf)) < 0)
+    while (read(fd, buf, sizeof(buf)) > 0)
     {
-        printf("Failed to read '%s': %s\n",
-                params[0], strerror(errno));
-        close(fd);
-        return errno;
+	/* Print out results. */
+	printf("%s", buf);
     }
-    /* Print out results. */
-    printf("%s", buf);
-    
     /* Close the file. */
     close(fd);
     return 0;

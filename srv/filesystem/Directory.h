@@ -18,6 +18,7 @@
 #ifndef __FILESYSTEM_DIRECTORY_H
 #define __FILESYSTEM_DIRECTORY_H
 
+#include <api/VMCopy.h>
 #include <dirent.h>
 #include <List.h>
 #include "File.h"
@@ -46,29 +47,32 @@ class Directory : public File
     
 	/**
 	 * Read directory entries.
-	 * @param buffer Output buffer.
-	 * @param size Maximum size to read.
-	 * @param offset Offset in the file to read.
+	 * @param msg Read request.
 	 * @return Number of bytes read on success, Error on failure.
 	 */
-	Error read(u8 *buffer, Size size, Size offset)
+	Error read(FileSystemMessage *msg)
 	{
 	    Size count = 0, bytes = 0;
-	    Dirent *dent = (Dirent *) buffer;
+	    Dirent *dent = (Dirent *) msg->buffer;
+	    Error e;
 	
 	    /* Loop our list of Dirents. */
 	    for (ListIterator<Dirent> i(&entries); i.hasNext(); i++)
 	    {
 		/* Make sure we start at the correct offset. */
-		if (count++ < offset / sizeof(Dirent))
+		if (count++ < msg->offset / sizeof(Dirent))
 		{
 		    continue;
 		}
 		/* Can we read another entry? */
-		else if (bytes + sizeof(Dirent) <= size)
+		else if (bytes + sizeof(Dirent) <= msg->size)
 		{
-		    memcpy(dent++, i.current(), sizeof(Dirent));
-		    bytes += sizeof(Dirent);
+		    if ((e = VMCopy(msg->procID, Write, (Address) i.current(),
+					    	        (Address) (dent++), sizeof(Dirent))) < 0)
+		    {
+			return e;
+		    }
+		    bytes += e;
 		}
 		else break;
 	    }

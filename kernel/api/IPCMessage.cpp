@@ -23,12 +23,13 @@
 #include <Config.h>
 #include <Error.h>
 
-int IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg)
+int IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg, Size size)
 {
     ArchProcess *proc;
 
     /* Verify memory read/write access. */
-    if (!memory->access(scheduler->current(), (Address) msg, sizeof(UserMessage)))
+    if (size > MAX_MESSAGE_SIZE || !memory->access(scheduler->current(),
+						  (Address) msg, sizeof(UserMessage)))
     {
 	return EFAULT;
     }
@@ -48,7 +49,7 @@ int IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg)
 		return ENOSUCH;
 	    }
 	    /* Put our message on their list, and try to let them execute! */
-	    proc->getMessages()->insertTail(new UserMessage(msg));
+	    proc->getMessages()->insertTail(new UserMessage(msg, size));
 	    scheduler->executeAttempt(proc);
 
 	    if (action == Send)
@@ -60,13 +61,13 @@ int IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg)
 	    while (true)
 	    {
 		/* Look for a message, with origin 'id'. */
-		
 		for (ListIterator<UserMessage> i(scheduler->current()->getMessages());
 		     i.hasNext(); i++)
 		{
 		    if (i.current()->from == id || id == ANY)
 		    {
-			*msg = *i.current();
+			memcpy(msg, i.current()->data, size < i.current()->size ?
+						       size : i.current()->size);
 			scheduler->current()->getMessages()->remove(i.current());
 			delete i.current();
 			return 0;

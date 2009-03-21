@@ -22,23 +22,7 @@
 #include <Types.h>
 #include <Error.h>
 #include <sys/stat.h>
-
-/**
- * All possible filetypes.
- */
-typedef enum FileType
-{
-    RegularFile         = S_IFREG,
-    DirectoryFile       = S_IFDIR,
-    BlockDeviceFile     = S_IFBLK,
-    CharacterDeviceFile = S_IFCHR,
-    SymlinkFile         = S_IFLNK,
-    FIFOFile            = S_IFIFO,
-}
-FileType;
-
-/** File access permissions. */
-typedef uint FileMode;
+#include "FileSystemMessage.h"
 
 /**
  * Abstracts a file which is opened by a process.
@@ -67,24 +51,20 @@ class File
     
 	/**
 	 * Read bytes from the file.
-	 * @param buffer Output buffer.
-	 * @param size Maximum size to read.
-	 * @param offset Offset in the file to read.
+	 * @param msg Describes the read request.
 	 * @return Number of bytes read on success, Error on failure.
 	 */
-	virtual Error read(u8 *buffer, Size size, Size offset)
+	virtual Error read(FileSystemMessage *msg)
 	{
 	    return ENOSUPPORT;
 	}
 
 	/**
 	 * Write bytes to the file.
-	 * @param buffer Input buffer.
-	 * @param size Maximum size to write.
-	 * @param offset Offset in the file to write.
+	 * @param msg Describes the write request.
 	 * @return Number of bytes written on success, Error on failure.
 	 */
-	virtual Error write(u8 *buffer, Size size, Size offset)
+	virtual Error write(FileSystemMessage *msg)
 	{
 	    return ENOSUPPORT;
 	}

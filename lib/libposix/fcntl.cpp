@@ -30,7 +30,7 @@ int open(const char *path, int oflag, ...)
     msg.buffer = (char *) path;
     
     /* Ask VFS. */
-    IPCMessage(VFSSRV_PID, SendReceive, &msg);
+    IPCMessage(VFSSRV_PID, SendReceive, &msg, sizeof(msg));
     
     /* Set errno. */
     errno = msg.result;

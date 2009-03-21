@@ -22,9 +22,9 @@ ProcRootDirectory::ProcRootDirectory(ProcFileSystem *p)
 {
 }
 
-Error ProcRootDirectory::read(u8 *buffer, Size size, Size offset)
+Error ProcRootDirectory::read(FileSystemMessage *msg)
 {
     clear();
     proc->refresh();
-    return Directory::read(buffer, size, offset);
+    return Directory::read(msg);
 }

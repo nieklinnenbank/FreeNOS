@@ -61,10 +61,10 @@ template <class Base, class MsgType> class IPCServer
 	 * @param num Number of message handlers to support.
          */
         IPCServer(Base *inst, Size num = 32)
+	    : sendReply(true), instance(inst)
         {
 	    ipcHandlers = new Vector<MessageHandler<IPCHandlerFunction> >(num);
 	    irqHandlers = new Vector<MessageHandler<IRQHandlerFunction> >(num);
-	    instance    = inst;
 	}
 
 	/**
@@ -84,13 +84,15 @@ template <class Base, class MsgType> class IPCServer
 	{
 	    MsgType msg, reply;
 	    InterruptMessage *imsg = (InterruptMessage *) &msg;
-	    bool sendReply = true;
 
     	    /* Enter loop. */
 	    while (true)
 	    {
+		/* Reset. */
+		sendReply = true;
+	    
 		/* Now wait for a message. */
-		IPCMessage(ANY, Receive, &msg);
+		IPCMessage(ANY, Receive, &msg, sizeof(MsgType));
 
 		/* Handle the message. */
 		switch (msg.type)
@@ -109,7 +111,7 @@ template <class Base, class MsgType> class IPCServer
 		    case IRQType:
 			if ((*irqHandlers)[imsg->vector])
 			{
-			    sendReply =  (*ipcHandlers)[msg.action]->sendReply;
+			    sendReply = false;
 			    (instance->*((*irqHandlers)[imsg->vector])->exec) (imsg);
 			}
 			
@@ -119,7 +121,7 @@ template <class Base, class MsgType> class IPCServer
 		/* Send Reply. */
 		if (sendReply)
 		{
-		    IPCMessage(msg.from, Send, &reply);
+		    IPCMessage(msg.from, Send, &reply, sizeof(MsgType));
 		}
 	    }
     	    /* Satify compiler. */
@@ -130,7 +132,7 @@ template <class Base, class MsgType> class IPCServer
 	 * Register a new IPC message action handler.
 	 * @param slot Action value to trigger h.
 	 * @param h Handler to execute.
-	 * @param r Does the handler need to send a reply?
+	 * @param r Does the handler need to send a reply (per default) ?
 	 */
 	void addIPCHandler(Size slot, IPCHandlerFunction h, bool sendReply = true)
 	{
@@ -144,8 +146,13 @@ template <class Base, class MsgType> class IPCServer
 	 */
 	void addIRQHandler(Size slot, IRQHandlerFunction h)
 	{
-	    irqHandlers->insert(slot, new MessageHandler<IRQHandlerFunction>(h));
+	    irqHandlers->insert(slot, new MessageHandler<IRQHandlerFunction>(h, false));
 	}
+
+    protected:
+
+	/** Should we send a reply message? */
+	bool sendReply;
 
     private:
     

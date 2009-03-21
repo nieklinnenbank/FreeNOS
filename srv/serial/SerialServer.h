@@ -19,10 +19,13 @@
 #define __SERIAL_SERIALSERVER_H
 
 #include <IPCServer.h>
-#include <DeviceMessage.h>
+#include <FileSystemMessage.h>
 #include <Types.h>
 #include <Error.h>
-#include "i8250.h"
+#include "SerialDevice.h"
+
+/** Maximum number of possible uarts. */
+#define MAX_UARTS (sizeof(uarts) / sizeof(SerialAddress))
 
 /**
  * An I/O port and IRQ number combination.
@@ -36,14 +39,14 @@ typedef struct SerialAddress
     u16 irq;
     
     /** Pointer to an UART, if any detected. */
-    i8250 *uart;
+    SerialDevice *dev;
 }
 SerialAddress;
 
 /**
  * Serial device server.
  */
-class SerialServer : public IPCServer<SerialServer, DeviceMessage>
+class SerialServer : public IPCServer<SerialServer, FileSystemMessage>
 {
     public:
     
@@ -53,7 +56,21 @@ class SerialServer : public IPCServer<SerialServer, DeviceMessage>
 	SerialServer();
 
     private:
-    
+
+	/**
+	 * Reads data from an UART.
+	 * @param msg Incoming message.
+	 * @param reply Response message.
+	 */
+	void readHandler(FileSystemMessage *msg, FileSystemMessage *reply);
+
+	/**
+	 * Process interrupts.
+	 * @param msg Incoming message.
+	 */
+	void interruptHandler(InterruptMessage *msg);
+
+
 	/** List of known serial port/irq combinations. */
 	static SerialAddress uarts[];
 };

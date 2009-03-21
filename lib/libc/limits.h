@@ -29,6 +29,7 @@
 /** Minimum value of an object of type long int. */
 #define LONG_MIN -2147483647
 
+/** Maximum value of an object of type long int. */
 #define LONG_MAX  2147483647
 
 /**

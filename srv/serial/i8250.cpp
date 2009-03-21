@@ -23,7 +23,7 @@
 #include "i8250.h"
 
 i8250::i8250(u16 b, u16 i)
-    : base(b), irq(i)
+    : SerialDevice(b, i)
 {
     /* Aquire I/O port and IRQ line permissions. */
     ProcessCtl(SELF, AllowIO,  base);
@@ -55,7 +55,7 @@ i8250::i8250(u16 b, u16 i)
     outb(base + LINECONTROL, inb(base + LINECONTROL) & ~DLAB);
 }
 
-int i8250::read(s8 *buffer, Size size)
+Size i8250::read(s8 *buffer, Size size)
 {
     Size bytes = 0;
     
@@ -67,7 +67,7 @@ int i8250::read(s8 *buffer, Size size)
     return (bytes);
 }
 								     
-int i8250::write(s8 *buffer, Size size)
+Size i8250::write(s8 *buffer, Size size)
 {
     Size bytes = 0;
 

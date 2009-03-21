@@ -20,7 +20,7 @@
 
 #include <Types.h>
 #include <Error.h>
-#include "File.h"
+#include "FileSystemMessage.h"
 
 /**
  * Abstract device which is represented as a File.
@@ -39,10 +39,24 @@ class Device : public File
 	{
 	}
 
-        /**                                                                            
-         * Retrieve file statistics.                                                   
-         * @param st Buffer to write statistics to.                                    
-         */                                                                            
+        /** 
+         * Reads out the buffer. 
+	 * @param msg Read request.
+         * @return Always zero. The Device will send an IODone
+	 *         when it has completed the request.
+         */
+        Error read(FileSystemMessage *msg)
+	{
+	    msg->action   = ReadFile;
+	    msg->deviceID = deviceID;
+	    msg->ipc(deviceID.major, Send, sizeof(*msg));
+	    return ZERO;
+	}
+
+        /**
+         * Retrieve file statistics.
+         * @param st Buffer to write statistics to.
+         */
         virtual void status(struct stat *st)
         {
 	    st->st_dev = deviceID;

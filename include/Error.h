@@ -42,7 +42,10 @@
 /** Number out of range. */
 #define ERANGE		-7
 
+/** Wait for more data. */
+#define EWAIT		-8
+
 /** Last defined error value (do not use). */
-#define ELAST		ERANGE
+#define ELAST		EWAIT
 
 #endif /* __ERROR_H */

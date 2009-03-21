@@ -61,7 +61,7 @@ void ProcFileSystem::refresh()
 	msg.number = pid;
 	
 	/* Read next process. */
-	if (IPCMessage(PROCSRV_PID, SendReceive, &msg) || msg.result)
+	if (IPCMessage(PROCSRV_PID, SendReceive, &msg, sizeof(msg)) || msg.result)
 	{
 	    break;
 	}

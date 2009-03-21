@@ -42,7 +42,7 @@
     msg.size   = strlen(str); \
     \
     /* Output banner. */ \
-    IPCMessage(TERMINAL_PID, Send, &msg); \
+    IPCMessage(TERMINAL_PID, Send, &msg, sizeof(msg)); \
 })
 
 TerminalServer::TerminalServer() : vga(VGA_ADDR), reading(false)
@@ -67,7 +67,7 @@ int TerminalServer::run()
     while (true)
     {
 	/* Now wait for a message. */
-	IPCMessage(ANY, Receive, &msg);
+	IPCMessage(ANY, Receive, &msg, sizeof(msg));
 
 	/* Handle various message types. */
 	switch (msg.type)
@@ -127,7 +127,7 @@ void TerminalServer::doRead(TerminalMessage *msg)
     
 	/* Success. */
 	reply.action = TerminalOK;
-	IPCMessage(msg->from, Send, &reply);
+	IPCMessage(msg->from, Send, &reply, sizeof(reply));
 	reading      = false;
     }
     /* Save the request. */
@@ -153,7 +153,7 @@ void TerminalServer::doWrite(TerminalMessage *msg)
     reply.action = TerminalOK;
 
     /* Send Reply. */
-    IPCMessage(msg->from, Send, &reply);
+    IPCMessage(msg->from, Send, &reply, sizeof(reply));
 
     /* Flush buffers. */
     vga.flush();

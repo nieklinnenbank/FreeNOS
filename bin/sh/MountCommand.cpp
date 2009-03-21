@@ -33,7 +33,7 @@ int MountCommand::execute(Size nparams, char **params)
     msg.size   = sizeof(mounts);
         
     /* Trap. */
-    IPCMessage(VFSSRV_PID, SendReceive, &msg);
+    IPCMessage(VFSSRV_PID, SendReceive, &msg, sizeof(msg));
 
     /* Print out. */
     for (Size i = 0; i < MAX_MOUNTS; i++)

@@ -102,16 +102,17 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	    /* Register message handlers. */
 	    addIPCHandler(CreateFile, &FileSystem::createFileHandler);
 	    addIPCHandler(OpenFile,   &FileSystem::openFileHandler);
-	    addIPCHandler(ReadFile,   &FileSystem::readFileHandler);
+	    addIPCHandler(ReadFile,   &FileSystem::readFileHandler, false);
 	    addIPCHandler(CloseFile,  &FileSystem::closeFileHandler);
 	    addIPCHandler(StatFile,   &FileSystem::statFileHandler);
+	    addIPCHandler(IODone,     &FileSystem::ioDoneHandler, false);
 	    
 	    /* Mount ourselves. */
 	    msg.action = Mount;
 	    msg.buffer = (char *) path;
 	    
 	    /* Request VFS mount. */
-	    IPCMessage(VFSSRV_PID, SendReceive, &msg);
+	    IPCMessage(VFSSRV_PID, SendReceive, &msg, sizeof(msg));
 	}
     
 	/**
@@ -175,7 +176,6 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 		reply->result = ENOSUCH;
 	}
 
-
 	/**
          * Read an opened file.
 	 * @param msg Incoming message.
@@ -183,29 +183,14 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
          */    
 	void readFileHandler(FileSystemMessage *msg,
 			     FileSystemMessage *reply)
-			    					// TODO: VMCtl() the page into our memory, instead of using a local buffer...
 	{
 	    FileCache *fc = (FileCache *) msg->ident;
-	    u8 buf[1024];
-	    Size bufSize  = sizeof(buf) > msg->size ? msg->size : sizeof(buf);
 	    Error result;
 	    
 	    /* Let the file read into our buffer. */
-	    if ((result = fc->file->read(buf, bufSize, msg->offset)) > 0)
+	    if (fc->file->read(msg))
 	    {
-		/* Recalculate number of bytes. */
-		result = result > bufSize ? bufSize : result;
-	    
-		/* Copy to remote process. */
-	        VMCopy(msg->procID, Write, (Address) buf,
-				           (Address) msg->buffer, result);
-		reply->result = ESUCCESS;
-		reply->size   = result;
-	    }
-	    else
-	    {
-		reply->result = result;
-		reply->size   = 0;
+		ioDoneHandler(msg, reply);
 	    }
 	}
 
@@ -260,6 +245,18 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	    }
 	    else
 		reply->result = ENOSUCH;
+	}
+
+	/**
+	 * Allows devices to inform the filesystem that an I/O operation has completed.
+	 * @param msg Incoming message.
+	 * @param reply Response message.
+	 */
+	void ioDoneHandler(FileSystemMessage *msg,
+			   FileSystemMessage *reply)
+	{
+	    *reply = msg;
+	     reply->ioDone(VFSSRV_PID, msg->procID, msg->size, msg->result);
 	}
 
     protected:

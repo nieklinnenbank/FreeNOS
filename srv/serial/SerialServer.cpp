@@ -17,7 +17,6 @@
 
 #include <api/IPCMessage.h>
 #include <api/ProcessCtl.h>
-#include <DeviceMessage.h>
 #include <FileSystemMessage.h>
 #include <ProcessMessage.h>
 #include <Config.h>
@@ -34,7 +33,7 @@ SerialAddress SerialServer::uarts[] =
 };
     
 SerialServer::SerialServer()
-    : IPCServer<SerialServer, DeviceMessage>(this)
+    : IPCServer<SerialServer, FileSystemMessage>(this)
 {
     FileSystemMessage fs;
     ProcessMessage proc;
@@ -43,9 +42,10 @@ SerialServer::SerialServer()
     bool detected = false;
 
     /* Register message handlers. */
+    addIPCHandler(ReadFile, &SerialServer::readHandler, false);
 
     /* Attempt to detect available UART's. */
-    for (Size i = 0; i < sizeof(uarts) / sizeof(SerialAddress); i++)
+    for (Size i = 0; i < MAX_UARTS; i++)
     {
 	/* Request I/O permissions. */
         ProcessCtl(SELF, AllowIO, uarts[i].port + LINECONTROL);
@@ -64,7 +64,8 @@ SerialServer::SerialServer()
 	    debug("detected UART at PORT=%x IRQ=%u\n",
 		   uarts[i].port, uarts[i].irq);
 
-	    uarts[i].uart = new i8250(uarts[i].port, uarts[i].irq);
+	    /* Create new instance. */
+	    uarts[i].dev = new i8250(uarts[i].port, uarts[i].irq);
 	    detected = true;
 
 	    /* Fill in path to device file. */
@@ -73,11 +74,66 @@ SerialServer::SerialServer()
 	    /* Create the file. */
 	    fs.createFile(path, CharacterDeviceFile, 0600,
 			  proc.pid(), i);
+			  
+	    /* Register IRQ handler. */
+	    addIRQHandler(uarts[i].irq, &SerialServer::interruptHandler);
 	}
     }
     /* Did we detect at least one UART? */
     if (!detected)
     {
 	proc.exit(1);
+    }
+}
+
+void SerialServer::readHandler(FileSystemMessage *msg,
+			       FileSystemMessage *reply)
+{
+    SerialDevice *dev;
+    Error e;
+
+    /* Is the given UART available? */
+    if (msg->deviceID.minor < MAX_UARTS &&     
+       (dev = uarts[msg->deviceID.minor].dev) &&
+       (!dev->isRequestPending()))
+    {
+	/* Attempt to read bytes. */
+	dev->flush();
+	e = dev->bufferedRead(msg);
+
+	/* Did it fail? */
+	if (e < 0)
+	{
+	    reply->result = e;
+	}
+	/* Is data pending? */
+	else if (e == 0)
+	{
+	    return;
+	}
+	/* Success. */
+	else
+	{
+	    reply->size   = e;
+	    reply->result = ESUCCESS;
+	}
+    }
+    else
+	reply->result = EACCESS;
+
+    /* Send reply. */
+    reply->action = IODone;
+    reply->ipc(msg->from, Send, sizeof(*reply));
+}
+
+void SerialServer::interruptHandler(InterruptMessage *msg)
+{
+    for (Size i = 0; i < MAX_UARTS; i++)
+    {
+	if (uarts[i].irq == msg->vector &&
+	    uarts[i].dev->flush())
+	{
+	    break;
+	}
     }
 }

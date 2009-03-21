@@ -58,6 +58,15 @@ typedef struct MemoryMessage : public Message
 	bytes  = m->bytes;
     }
 
+    /**
+     * Get the current system wide memory usage.
+     */
+    void usage()
+    {
+	action = MemoryUsage;
+	ipc(MEMSRV_PID, SendReceive, sizeof(MemoryMessage));
+    }
+
     union
     {
 	/** Action to perform. */

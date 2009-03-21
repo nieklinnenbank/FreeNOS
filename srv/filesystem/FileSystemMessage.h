@@ -23,8 +23,6 @@
 #include <Types.h>
 #include <Error.h>
 #include <sys/stat.h>
-#include "File.h"
-#include "Device.h"
 
 /**
  * Actions which may be performed on the filesystem.
@@ -43,8 +41,26 @@ typedef enum FileSystemAction
     MountInfo   = 9,
     NewProcess  = 10,
     KillProcess = 11,
+    IODone      = 12,
 }
 FileSystemAction;
+
+/** 
+ * All possible filetypes. 
+ */
+typedef enum FileType
+{
+    RegularFile         = S_IFREG,
+    DirectoryFile       = S_IFDIR,
+    BlockDeviceFile     = S_IFBLK,
+    CharacterDeviceFile = S_IFCHR,
+    SymlinkFile         = S_IFLNK,
+    FIFOFile            = S_IFIFO,
+}
+FileType;
+
+/** File access permissions. */
+typedef uint FileMode;
 
 /**
  * FileSystem IPC message.
@@ -67,10 +83,18 @@ typedef struct FileSystemMessage : public Message
 	from   = m->from;
 	type   = m->type;
 	action = m->action;
+	result = m->result;
 	buffer = m->buffer;
 	size   = m->size;
+	offset = m->offset;
+	userID = m->userID;
+	groupID = m->groupID;
+	deviceID = m->deviceID;
+	mode   = m->mode;
+	stat   = m->stat;
 	fd     = m->fd;
 	filetype = m->filetype;
+	ident    = m->ident;
 	procID   = m->procID;
     }
 
@@ -85,7 +109,7 @@ typedef struct FileSystemMessage : public Message
 	this->procID  = pid;
 	this->userID  = uid;
 	this->groupID = gid;
-	this->ipc(VFSSRV_PID, SendReceive);
+	this->ipc(VFSSRV_PID, SendReceive, sizeof(*this));
     }
 
     /**
@@ -95,10 +119,11 @@ typedef struct FileSystemMessage : public Message
      * @param mode Initial file permissions.
      * @param major Device major ID (optional).
      * @param minor Device minor ID (optional).
+     * @param pid Process to send the request to.
      */
     void createFile(char *path, FileType type = RegularFile,
 		    FileMode mode = 0600, u16 major = ZERO,
-		    u16 minor = ZERO)
+		    u16 minor = ZERO, ProcessID pid = VFSSRV_PID)
     {
 	this->action   = CreateFile;
 	this->buffer   = path;
@@ -106,62 +131,109 @@ typedef struct FileSystemMessage : public Message
 	this->mode     = mode;
 	this->deviceID.major = major;
 	this->deviceID.minor = minor;
-	this->ipc(VFSSRV_PID, SendReceive);
+	this->ipc(pid, SendReceive, sizeof(*this));
+    }
+    
+    /**
+     * Open a file on the filesystem.
+     * @param path Path to the file to open.
+     * @param pid Process ID number of the filesystem.
+     */
+    Error openFile(char *path, ProcessID pid = VFSSRV_PID)
+    {
+	action = OpenFile;
+	buffer = path;
+	ipc(pid, SendReceive, sizeof(*this));
+	return result;
+    }
+    
+    /**
+     * Read a file from the filesystem.
+     * @param buf Output buffer.
+     * @param sz Maximum size to read.
+     * @param off Offset in the file to read.
+     * @param pid ProcessID number of the filesystem.
+     * @return Number of bytes read on success and Error code on failure.
+     */
+    Error readFile(char *buf, Size sz, Size off,
+		   ProcessID pid = VFSSRV_PID)
+    {
+	action = ReadFile;
+	buffer = buf;
+	size   = sz;
+	offset = off;
+	ipc(pid, SendReceive, sizeof(*this));
+	return result == ESUCCESS ? size : result;
     }
 
-    union
+    /**
+     * Closes an open file.
+     * @param fd File descriptor number.
+     * @param pid Process ID number of the filesystem.
+     * @return Error code of the closing operation.
+     */
+    Error closeFile(int fd, ProcessID pid = VFSSRV_PID)
     {
-	/** Action to perform. */
-	FileSystemAction action;
+	action   = CloseFile;
+	this->fd = fd;
+	ipc(pid, SendReceive, sizeof(*this));
+	return result;
+    }
+
+    /**
+     * I/O operation has completed.
+     * @param fs Process of the filesystem.
+     * @param pid Process ID for which I/O has been performed.
+     * @param bytes Number of bytes processed.
+     * @param e Result code.
+     */
+    void ioDone(ProcessID fs, ProcessID pid, Size bytes, Error e)
+    {
+	procID = pid;
+	size   = bytes;
+	result = e;
+	action = IODone;
+	ipc(fs, Send, sizeof(*this));
+    }
+
+    /** Action to perform. */
+    FileSystemAction action;
     
-	/** Result code. */
-	Error result;
-    };
+    /** Result code. */
+    Error result;
 
     /** Points to a buffer for I/O. */
     char *buffer;
 
-    union
-    {
-	/** Size of the buffer. */
-	Size size;
+    /** Size of the buffer. */
+    Size size;
+
+    /** Offset in the file to read. */
+    Size offset;
 	
-	/** User ID and group ID. */
-	u16 userID, groupID;
-    };
+    /** User ID and group ID. */
+    u16 userID, groupID;
 
-    union
-    {
-	/** File mode permissions. */
-	FileMode mode;
+    /** Filetype. */
+    FileType filetype;
 
-        /** Unique identifier. */
-	Address ident;
+    /** File mode permissions. */
+    FileMode mode;
+        
+    /** File Statistics. */
+    FileStat *stat;
+
+    /** File descriptor. */
+    u16 fd;
+    
+    /** Unique identifier. */
+    Address ident;
+
+    /** Process id number. */
+    ProcessID procID;
 	
-	/** File Statistics. */
-	FileStat *stat;
-    };
-
-    union
-    {
-        /** File descriptor. */
-	u16 fd;
-
-	/** Process id number. */
-        ProcessID procID;
-
-	/** Filetype. */
-        FileType filetype;
-    };
-
-    union
-    {
-	/** Offset in the file to read. */
-        Size offset;
-	
-	/** Device major/minor numbers. */
-	DeviceID deviceID;
-    };
+    /** Device major/minor numbers. */
+    DeviceID deviceID;
 }
 FileSystemMessage;
 

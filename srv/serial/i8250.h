@@ -20,6 +20,7 @@
 
 #include <Macros.h>
 #include <Types.h>
+#include "SerialDevice.h"
 
 /**
  * Constants used to communicate with the UART.
@@ -45,7 +46,7 @@ enum
 /**
  * i8250 serial UART.
  */
-class i8250
+class i8250 : public SerialDevice
 {
     public:
 
@@ -55,32 +56,13 @@ class i8250
 	 */
         i8250(u16 base, u16 irq);
 
-	/**
-	 * Retrieve the base I/O port.
-	 * @return Base I/O port.
-	 */	
-	u16 getBase()
-	{
-	    return base;
-	}
-
-	/**
-	 * Returns our IRQ number.
-	 * @return IRQ number.
-	 * @return Zero on success and non-zero on failure.
-	 */
-	u16 getIRQ()
-	{
-	    return irq;
-	}
-
 	/** 
 	 * Read bytes from the i8250.
 	 * @param buffer Buffer to save the read bytes.
 	 * @param size Number of bytes to read.
 	 * @return Number of bytes on success and ZERO on failure. 
 	 */
-	int read(s8 *buffer, Size size);
+	Size read(s8 *buffer, Size size);
 
 	/** 
 	 * Write bytes to the device.
@@ -88,15 +70,7 @@ class i8250
 	 * @param size Number of bytes to write. 
 	 * @return Number of bytes on success and ZERO on failure. 
 	 */
-	int write(s8 *buffer, Size size);
-
-    private:
-    
-	/** Base I/O port. */
-	u16 base;
-	
-	/** IRQ of the i8250. */
-	u16 irq;
+	Size write(s8 *buffer, Size size);
 };
 
 #endif /* __SERIAL_I8250_H */

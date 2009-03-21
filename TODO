@@ -1,8 +1,4 @@
 [DEFERRED]
-++ FIX: Keyboard controller: real hardware, and in Virtualbox, doesn't respond! (keymapping problem?)
-    --> THE PROBLEM IS THE COM1 PORT!!!!!!!
-	--> DETECT IT PROPERLY
-
 --> fix Assert.h
     --> we COULD map page tables + dirs READONLY in every proces.. this way, assertRead/Write is very
         efficient!!! (define inline/macros in arch/ for this)
@@ -31,62 +27,63 @@
 --> VFS: FileCache.entries and Directory.entries are duplicate!!!
     --> should design this in a better way!
 
-
 [5] --> ram filesystem, make sure we can read/write files right.
 
-    ++ CreateFile:
-	- regular,
-	- directory
-	++ device files
-    
-    --> put argv string pointer in %eax!!! (then copy in _entry)
-	--> environment will eventually also be in there ;)
-	
-	--> Better: just copy it on the esp3 stack!!!
-	    --> and use libparse for create an argv[] :)
-	    --> then automatically, argv/env will be random :)
-	    --> maybe, we shouldn't support the envp argument... only just getenv() :)
-	
-	--> libparse for this too.
+    [serial I/O]
+    --> synchroneous read(), full!
+	--> let proc -> vfs, specifies to read X number of bytes
+	--> vfs -> dev, specifies to read X number of bytes
+	--> dev -> vfs, says okey I have them all, or: I'm not ready yet (VFS doesn't reply to the msg->from process)
+	--> dev -> vfs, okey, I'm done, vfs replies to the msg->from
 
-	--> then, we can just fill in the mountpoint in grub.conf! :)
+    --> same with write()
+    --> /dev/serial0 working, with simple read/write shell commands!!! (e.g. read(1) and write(1))
+    --> Then, implement touch(1) and mkdir(1)
 
- --> How are we going to let filesystems know, which mountpoint to use?
-         argv[1] seems most appropriate, but then again, how can we set argc/argv
-	 for the boot modules?
-	 
-	    --> Use GRUB's boot module line, then parse it into argc/argv! :)
-		--> most probably, we have to push it on the user stack... then let _entry() find it?
+    --> for VFS + Terminal server: SendReceive should NOT receive from SELF!!!
+	--> this will fix our problem :-)
 
-    --> Let VFS stat() the file!!!
-	--> perform auth checks aswell ;D
-	--> also implement it in libposix meanwhile :)
-
-    --> make VFS aware of character/block files!!!
-	--> then put them in '/dev' on the ram file system!!!
-		
 [6] --> Terminals! Mknod to /dev/tty0..7
 	--> character device for this :)
 	    --> try to use libteken.
 	    --> use PID as major
 	        use TermID as minor
 
---> just create e.g. /dev/serial0 for the serial port?
-    --> run it as a different server i think, maybe /srv/serial
-    
     --> if we have the main() argc/argv thingies, we could do configure
         the boot modules to use /dev/serial0 as the system console! :)
-
-[8] --> make a /dev/random! ^.^
-    --> e.g. RDTSC, IRQ's etc.
 
 [9] --> libteken voor de terminal server!!!
 [10] -->  Nicer /bin/sh:
         --> BACKSPACE should be supported. (low prio)
+
+[12] --> Implement the notion of "current directory" in VirtualFileSystem.
+
+[7] --> put argv string pointer in %eax!!! (then copy in _entry)
+    --> environment will eventually also be in there ;)
+	
+    --> Better: just copy it on the esp3 stack!!!
+	    --> and use libparse for create an argv[] :)
+	    --> then automatically, argv/env will be random :)
+	    --> maybe, we shouldn't support the envp argument... only just getenv() :)
+	
+    --> libparse for this too.
+	--> then, we can just fill in the mountpoint in grub.conf! :)
+
+    --> How are we going to let filesystems know, which mountpoint to use?
+         argv[1] seems most appropriate, but then again, how can we set argc/argv
+	 for the boot modules?
+	 
+	    --> Use GRUB's boot module line, then parse it into argc/argv! :)
+		--> most probably, we have to push it on the user stack... then let _entry() find it?
+
+    --> Let the filesystem perform auth checks aswell ;D
+
+[8] --> make a /dev/random! ^.^
+    --> e.g. RDTSC, IRQ's etc.
+
 [11] --> remove IRQ hooks in ~x86Process(). Also, cleanup pending messages?
      --> simply keep a list with the copy of InterruptHook in each Process...
 	--> Maybe also output this in ProcessInfo! :)
-[12] --> Implement the notion of "current directory" in VirtualFileSystem.
 
 [second]
 

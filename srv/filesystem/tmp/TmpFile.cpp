@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <api/VMCopy.h>
 #include <string.h>
 #include "TmpFile.h"
 
@@ -27,26 +28,24 @@ TmpFile::~TmpFile()
     if (buffer)	delete buffer;
 }
 
-Error TmpFile::read(u8 *buf, Size sz, Size offset)
+Error TmpFile::read(FileSystemMessage *msg)
 {
     Size bytes;
 
     /* Bounds checking. */
-    if (offset >= size)
+    if (msg->offset >= size)
     {
 	return 0;
     }
     else
-	bytes = size - offset > sz ? sz : size - offset;
+	bytes = size - msg->offset > msg->size ? msg->size : size - msg->offset;
     
     /* Copy the buffers. */
-    memcpy(buf, buffer + offset, bytes);
-    
-    /* Success. */
-    return bytes;
+    return VMCopy(msg->procID, Write, (Address) buffer + msg->offset,
+				      (Address) msg->buffer, bytes);
 }
 
-Error TmpFile::write(u8 *buf, Size sz, Size offset)
+Error TmpFile::write(FileSystemMessage *msg)
 {
-    return EACCESS; // TODO
+    return EACCESS;
 }

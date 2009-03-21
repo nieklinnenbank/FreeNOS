@@ -63,7 +63,7 @@ void exit(int status)
     msg.number = status;
     
     /* Request termination. */
-    IPCMessage(PROCSRV_PID, SendReceive, &msg);
+    IPCMessage(PROCSRV_PID, SendReceive, &msg, sizeof(msg));
 }
 
 void itoa(char *buffer, int divisor, int number)

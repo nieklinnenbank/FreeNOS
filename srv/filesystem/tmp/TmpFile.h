@@ -19,7 +19,7 @@
 #define __FILESYSTEM_TMPFILE_H
 
 #include <File.h>
-#include <Directory.h>
+#include <FileSystemMessage.h>
 #include <Types.h>
 #include <Error.h>
 
@@ -42,21 +42,17 @@ class TmpFile : public File
 
 	/**
 	 * Reads out the buffer.
-	 * @param buffer Output buffer.
-	 * @param size Maximum number of bytes to write.
-	 * @param offset Offset to read.
+	 * @param msg Read request.
 	 * @return Number of bytes read, or Error number.
 	 */
-	Error read(u8 *buffer, Size size, Size offset);
+	Error read(FileSystemMessage *msg);
 
         /** 
          * Write bytes to the file.
-         * @param buffer Input buffer.
-         * @param size Maximum size to write.
-         * @param offset Offset in the file to write.
+	 * @param msg Write request.
          * @return Number of bytes written on success, Error on failure.
          */
-	Error write(u8 *buffer, Size size, Size offset);
+	Error write(FileSystemMessage *msg);
 
     private:
     

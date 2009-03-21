@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-QEMU := qemu
+QEMU := qemu -serial stdio 
 
 #
 # Run qemu in debugging mode.

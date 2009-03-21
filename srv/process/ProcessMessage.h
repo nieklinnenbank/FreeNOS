@@ -70,7 +70,7 @@ typedef struct ProcessMessage : public Message
     {
 	number = status;
 	action = ExitProcess;
-	ipc(PROCSRV_PID, SendReceive);
+	ipc(PROCSRV_PID, SendReceive, sizeof(*this));
     }
 
     /**
@@ -80,7 +80,7 @@ typedef struct ProcessMessage : public Message
     ProcessID pid()
     {
 	action = GetID;
-	ipc(PROCSRV_PID, SendReceive);
+	ipc(PROCSRV_PID, SendReceive, sizeof(*this));
 	return number;
     }
 
