@@ -39,45 +39,45 @@ int BenchCommand::execute(Size nparams, char **params)
         pid = ProcessCtl(SELF, GetPID);
         t2 = timestamp();
 	
-        printf("SystemCall (GetPID) Ticks: %u\n", t2 - t1);
+        printf("SystemCall (GetPID) Ticks: %u\r\n", t2 - t1);
 	
 	t1 = timestamp();
 	ProcessCtl(SELF, InfoPID, (Address) &info);
 	t2 = timestamp();
 
-	printf("SystemCall (InfoPID) Ticks: %u\n", t2 - t1);
+	printf("SystemCall (InfoPID) Ticks: %u\r\n", t2 - t1);
 
 	t1 = timestamp();
 	ProcessCtl(SELF, Schedule);
 	t2 = timestamp();
 
-	printf("SystemCall (Schedule) Ticks: %u\n", t2 - t1);
+	printf("SystemCall (Schedule) Ticks: %u\r\n", t2 - t1);
 	
 	t1 = timestamp();
 	VMCtl(Lookup, SELF, ZERO, 0x80000000);
 	t2 = timestamp();
 	
-	printf("SystemCall (VMCtl) Ticks: %u\n", t2 - t1);
+	printf("SystemCall (VMCtl) Ticks: %u\r\n", t2 - t1);
 
 	t1 = timestamp();
 	getpid();
 	t2 = timestamp();
 
-	printf("IPC Ticks: %u\n", t2 - t1);
+	printf("IPC Ticks: %u\r\n", t2 - t1);
 	
 	t1 = timestamp();
 	for (int i = 0; i < 128; i++)
 	    foo[i] = new char[16];
 	t2 = timestamp();
 	
-	printf("allocate() Ticks: %u (%u AVG)\n",
+	printf("allocate() Ticks: %u (%u AVG)\r\n",
 		(u32)(t2 - t1), (u32)(t2 - t1) / 128);
 	
 	t1 = timestamp();
 	for (int i = 0; i < 128; i++)
 	    delete foo[i];
 	t2 = timestamp();
-	printf("release() Ticks: %u (%u AVG)\n",
+	printf("release() Ticks: %u (%u AVG)\r\n",
 		(u32)(t2 - t1), (u32)(t2 - t1) / 128);
     }
     else
@@ -89,7 +89,7 @@ int BenchCommand::execute(Size nparams, char **params)
 		t1 = timestamp();
 		cmd->execute(nparams - 1, params + 1);
 		t2 = timestamp();
-		printf("%s Ticks: %u\n", cmd->getName(), t2 - t1);
+		printf("%s Ticks: %u\r\n", cmd->getName(), t2 - t1);
 	    }
 	}
     }

@@ -39,7 +39,7 @@ int MountCommand::execute(Size nparams, char **params)
     for (Size i = 0; i < MAX_MOUNTS; i++)
     {
         if (mounts[i].path[0])
-            printf("%s\n", mounts[i].path);
+            printf("%s\r\n", mounts[i].path);
     }
     /* Success. */
     return 0;

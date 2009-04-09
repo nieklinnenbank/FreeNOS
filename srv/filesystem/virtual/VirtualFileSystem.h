@@ -22,9 +22,9 @@
 #include <api/SystemInfo.h>
 #include <arch/Process.h>
 #include <IPCServer.h>
-#include <Vector.h>
 #include <FileSystem.h>
 #include <FileSystemMessage.h>
+#include <Vector.h>
 
 /** Maximum number of mounted filesystems. */
 #define MAX_MOUNTS 16
@@ -85,8 +85,12 @@ typedef struct UserProcessFSEntry
     /** Total number of open files. */
     Size fileCount;
     
+    /** Current working directory.
+     char curdir[len];
+     */
+    
     /** Root directory
-     char rootdir[len]
+     char rootdir[len];
       */
 }
 UserProcessFSEntry;
@@ -106,85 +110,41 @@ class VirtualFileSystem : public IPCServer<VirtualFileSystem, FileSystemMessage>
     private:
 
 	/**
-	 * Creates a new file.
+	 * Performs filesystem Input/Output.
 	 * @param msg Input message.
-	 * @param reply Response message.
 	 */
-	void createFileHandler(FileSystemMessage *msg,
-			       FileSystemMessage *reply);
-
-	/**
-	 * Opens a new file.
-	 * @param msg Input message.
-	 * @param reply Response message.
-	 */
-	void openFileHandler(FileSystemMessage *msg,
-			     FileSystemMessage *reply);
-
-	/**
-	 * Reads or writes to a file.
-	 * @param msg Input message.
-	 * @param reply Response message.
-	 */
-	void readWriteFileHandler(FileSystemMessage *msg,
-			          FileSystemMessage *reply);
-
-	/**
-	 * Closes a file.
-	 * @param msg Input message.
-	 * @param reply Response message.
-	 */
-	void closeFileHandler(FileSystemMessage *msg,
-			      FileSystemMessage *reply);
-
-	/**
-	 * Get file statistics.
-	 * @param msg Input message.
-	 * @param reply Response message.
-	 */
-	void statFileHandler(FileSystemMessage *msg,
-			     FileSystemMessage *reply);
-
-	/**
-	 * Mounts a filesystem.
-	 * @param msg Input message.
-	 * @param reply Response message.
-	 */
-	void mountHandler(FileSystemMessage *msg,
-		          FileSystemMessage *reply);
-
-	/**
-	 * Request mounted filesystems.
-	 * @param msg Input message.
-	 * @param reply Response message.
-	 */
-	void mountInfoHandler(FileSystemMessage *msg,
-			      FileSystemMessage *reply);
-
-	/**
-	 * Allows the process server to communicate process+uid/gid pairs.
-	 * @param msg Input message.
-	 * @param reply Response message.
-	 */
-	void newProcessHandler(FileSystemMessage *msg,
-			       FileSystemMessage *reply);
-	
-	/**
-	 * Allows the process server to remove process+uid/gid pairs.
-	 * @param msg Input message.
-	 * @param reply Response message.
-	 */
-	void killProcessHandler(FileSystemMessage *msg,
-			        FileSystemMessage *reply);
+	void ioHandler(FileSystemMessage *msg);
 
 	/**
 	 * Informs us that a I/O operation has completed.
 	 * @param msg Input message.
-	 * @param reply Response message.
 	 */
-	void ioDoneHandler(FileSystemMessage *msg,
-			   FileSystemMessage *reply);
+	void ioDoneHandler(FileSystemMessage *msg);
+
+	/**
+	 * Mounts a filesystem.
+	 * @param msg Input message.
+	 */
+	void mountHandler(FileSystemMessage *msg);
+
+	/**
+	 * Request mounted filesystems.
+	 * @param msg Input message.
+	 */
+	void mountInfoHandler(FileSystemMessage *msg);
+
+	/**
+	 * Allows the process server to communicate process+uid/gid pairs.
+	 * @param msg Input message.
+	 */
+	void newProcessHandler(FileSystemMessage *msg);
 	
+	/**
+	 * Allows the process server to remove process+uid/gid pairs.
+	 * @param msg Input message.
+	 */
+	void killProcessHandler(FileSystemMessage *msg);
+
 	/**
 	 * Creats a new mount.
 	 * @param path Full path of the new mount.

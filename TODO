@@ -17,12 +17,21 @@
 
 --> We could merge the two mapVirtual() overloads into one, then check for p == this :)
 
---> fixup all posix library function documentation!!!
-
+[commit first]
 --> fixup libc --> divide the functions into seperate files, so
 		   we can provide man pages like so too (like *BSD does)
+--> fixup all posix library function documentation!!!
 
 [first]
+
+--> userlevel processes should NOT be allowed to IPC asynchroneously; e.g. to the VFS server.
+
+--> Maybe let debug() / output() send console messages with inline buffers, so it's safe for e.g. VFS,
+    serial, all filesystems etc. to send asynchroneous messages to the console; no workaround needed then :)
+
+--> fixup rules.mk: just everything lowercase, simplify everything :-)
+    --> parallel make
+    --> we should be able to link the *init sections, without --whole-library... e.g. kernel doesn't need everything from libposix! 
 
 --> VFS: FileCache.entries and Directory.entries are duplicate!!!
     --> should design this in a better way!
@@ -30,22 +39,14 @@
 [5] --> ram filesystem, make sure we can read/write files right.
 
     --> let process server write the banner! (so i8250 console works there aswell ;D)
+	--> or better: write the banner per default, on each virtual terminal! :)
 
     --> for VFS + Terminal server: SendReceive should NOT receive from SELF!!!
 	--> this will fix our problem :-)
-
-[6] --> Terminals! Mknod to /dev/tty0..7
-	--> character device for this :)
-	    --> try to use libteken.
-	    --> use PID as major
-	        use TermID as minor
+	--> for the blocking problem, yes. But, how can we guarantee that the buffer is still valid???
 
     --> if we have the main() argc/argv thingies, we could do configure
         the boot modules to use /dev/serial0 as the system console! :)
-
-[9] --> libteken voor de terminal server!!!
-[10] -->  Nicer /bin/sh:
-        --> BACKSPACE should be supported. (low prio)
 
 [12] --> Implement the notion of "current directory" in VirtualFileSystem.
      --> Implement touch(1) and mkdir(1) and cd(1)
@@ -123,7 +124,7 @@
     --> then, for each MemoryMessage, just add it to the counter! :)
 * Login server: allocate a pseudo tty? 
 * Reincarnation server, a la minix 3.
-* Inet server.
+* Inet server: maybe a /net, like in plan 9! :)
 
 [sources]
 * Perhaps, find a clean way to build libc and libposix using gcc and .c, instead of g++ and .cpp
@@ -136,6 +137,7 @@
 * FooMessage.doBar() wrapper functions?
 
 [kernel]
+* IPC via files in /proc? :)
 * perhaps we should allow multiple messages to be fetched in IPCMessage()! (speed++)
 * Improve scheduler: don't put a Process on the queue if it isn't Ready!
     --> Also, fix the timer interval to switch processes --> currently a bit too fast...?

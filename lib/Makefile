@@ -15,6 +15,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-subdirs := libc libcrt liballoc libposix
+subdirs := libc libcrt liballoc libposix libteken
 
 include ../tools/rules.mk

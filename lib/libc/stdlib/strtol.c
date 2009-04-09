@@ -1,20 +1,3 @@
-/*
- * Copyright (C) 2009 Niek Linnenbank
- * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 /*	$OpenBSD: strtol.c,v 1.7 2005/08/08 08:05:37 espie Exp $ */
 /*-
  * Copyright (c) 1990 The Regents of the University of California.
@@ -45,77 +28,10 @@
  * SUCH DAMAGE.
  */
 
-#include <api/IPCMessage.h>
-#include <api/ProcessCtl.h>
-#include <ProcessMessage.h>
-#include <Config.h>
 #include "stdlib.h"
 #include "ctype.h"
 #include "errno.h"
 #include "limits.h"
-
-void exit(int status)
-{
-    ProcessMessage msg;
-    
-    /* Fill in the message. */
-    msg.action = ExitProcess;
-    msg.number = status;
-    
-    /* Request termination. */
-    IPCMessage(PROCSRV_PID, SendReceive, &msg, sizeof(msg));
-}
-
-void itoa(char *buffer, int divisor, int number)
-{
-    char *p = buffer, *p1, *p2, tmp;
-    unsigned long ud = number;
-    int remainder;
-        
-    /* Negative decimal. */
-    if (divisor == 10 && number < 0)
-    {
-	*p++ = '-';
-	buffer++;
-	ud = -number;
-    }
-    /* Hexadecimal. */
-    else if (divisor == 16)
-    {
-	*p++ = '0';
-	*p++ = 'x';
-	buffer += 2;
-    }
-    /* Divide ud by the divisor, until ud == 0. */
-    do
-    {
-	remainder = ud % divisor;
-	*p++ = (remainder < 10) ? remainder + '0' : remainder + 'a' - 10;
-    }
-    while (ud /= divisor);
-    
-    /* Terminate buffer. */
-    *p = 0;
-    
-    /* Initialize pointers. */
-    p1 = buffer;
-    p2 = p - 1;
-    
-    /* Reverse buf. */
-    while (p1 < p2)
-    {
-	tmp = *p1;
-	*p1 = *p2;
-	*p2 = tmp;
-	p1++;
-	p2--;
-    }
-}
-
-int atoi(const char *nptr)
-{
-    return (int) strtol(nptr, ZERO, 10);
-}
 
 long strtol(const char *nptr, char **endptr, int base)
 {
@@ -189,7 +105,7 @@ long strtol(const char *nptr, char **endptr, int base)
 		if (any < 0)
 			continue;
 		if (neg) {
-			if (acc < cutoff || acc == cutoff && c > cutlim) {
+			if (acc < cutoff || (acc == cutoff && c > cutlim)) {
 				any = -1;
 				acc = LONG_MIN;
 				errno = ERANGE;
@@ -199,7 +115,7 @@ long strtol(const char *nptr, char **endptr, int base)
 				acc -= c;
 			}
 		} else {
-			if (acc > cutoff || acc == cutoff && c > cutlim) {
+			if (acc > cutoff || (acc == cutoff && c > cutlim)) {
 				any = -1;
 				acc = LONG_MAX;
 				errno = ERANGE;

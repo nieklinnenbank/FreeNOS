@@ -59,24 +59,20 @@ class ProcessServer : public IPCServer<ProcessServer, ProcessMessage>
 	/**
 	 * Retrieves the PID of the caller.
 	 * @param msg Incoming message.
-	 * @param reply Response message.
 	 */
-	void getIDHandler(ProcessMessage *msg, ProcessMessage *reply);
+	void getIDHandler(ProcessMessage *msg);
 
 	/**
 	 * Read the user process table.
 	 * @param msg Incoming message.
-	 * @param reply Response message.
-	 * @return True (sends reply).
 	 */
-	void readProcessHandler(ProcessMessage *msg, ProcessMessage *reply);
+	void readProcessHandler(ProcessMessage *msg);
 
 	/**
 	 * Terminate a process.
 	 * @param msg Incoming message.
-	 * @param reply Response message.
 	 */
-	void exitProcessHandler(ProcessMessage *msg, ProcessMessage *reply);
+	void exitProcessHandler(ProcessMessage *msg);
 
 	/** User Process table. */
 	static UserProcess procs[MAX_PROCS];

@@ -16,6 +16,7 @@
 #
 
 library  := libc.a
-includes := lib/libposix srv/terminal srv/process lib/libc
+includes := srv srv/filesystem lib/libposix srv/terminal srv/process lib/libc
+srcdirs  := stdio stdlib string
 
 include ../../tools/rules.mk

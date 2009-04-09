@@ -15,6 +15,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-libraries += liballoc libc
+libraries += liballoc libc libposix
 
 include ../../tools/rules.mk

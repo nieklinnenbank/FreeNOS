@@ -92,20 +92,20 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 
 	/**
 	 * Constructor function.
-	 * @param path Path to which we are mounted.
+	 * @param p Path to which we are mounted.
 	 */
 	FileSystem(const char *path)
-	    : IPCServer<FileSystem, FileSystemMessage>(this), root(ZERO)
+	    : IPCServer<FileSystem, FileSystemMessage>(this), root(ZERO), mountPath((char*)path)
 	{
 	    FileSystemMessage msg;
 	    
 	    /* Register message handlers. */
-	    addIPCHandler(CreateFile, &FileSystem::createFileHandler);
-	    addIPCHandler(OpenFile,   &FileSystem::openFileHandler);
-	    addIPCHandler(ReadFile,   &FileSystem::readWriteFileHandler, false);
-	    addIPCHandler(WriteFile,  &FileSystem::readWriteFileHandler, false);
-	    addIPCHandler(CloseFile,  &FileSystem::closeFileHandler);
-	    addIPCHandler(StatFile,   &FileSystem::statFileHandler);
+	    addIPCHandler(CreateFile, &FileSystem::ioHandler, false);
+	    addIPCHandler(OpenFile,   &FileSystem::ioHandler, false);
+	    addIPCHandler(ReadFile,   &FileSystem::ioHandler, false);
+	    addIPCHandler(WriteFile,  &FileSystem::ioHandler, false);
+	    addIPCHandler(CloseFile,  &FileSystem::ioHandler, false);
+	    addIPCHandler(StatFile,   &FileSystem::ioHandler, false);
 	    addIPCHandler(IODone,     &FileSystem::ioDoneHandler, false);
 	    
 	    /* Mount ourselves. */
@@ -124,6 +124,17 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	}
 
 	/**
+	 * Create a new file.
+	 * @param msg Describes the file to create.
+	 * @param path Full path to the file to create.
+	 */
+	virtual Error createFile(FileSystemMessage *msg,
+				 FileSystemPath *path)
+	{
+	    return ENOSUPPORT;
+	}
+
+	/**
 	 * Load a file corresponding to the given path from underlying storage.
 	 * @param path Full path to the file to load.
 	 * @return Pointer to FileCache object if the file exists, or ZERO otherwise.
@@ -134,144 +145,107 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	}
 
 	/**
-	 * Create a new file.
+         * Perform Input/Output on a file.
 	 * @param msg Incoming message.
-	 * @param reply Response message.
-	 */
-	virtual void createFileHandler(FileSystemMessage *msg,
-				       FileSystemMessage *reply)
-	{
-	    reply->result = ENOSUPPORT;
-	}
-
-	/**
-         * Attempt to open a file.
-	 * @param msg Incoming message.
-	 * @param reply Response message.
          */    
-	virtual void openFileHandler(FileSystemMessage *msg,
-				     FileSystemMessage *reply)
+	void ioHandler(FileSystemMessage *msg)
 	{
 	    FileSystemPath path;
-	    FileCache *entry;
+	    FileCache *fc = ZERO; 
 	    char buf[PATHLEN];
-
-	    /* Copy the path first. */
-	    if (VMCopy(msg->from, Read, (Address) buf,
-				        (Address) msg->buffer, PATHLEN) <= 0)
-	    {
-		reply->result = EACCESS;
-		return;
-	    }
-	    /* Parse the path. */
-	    path.parse(buf);
-	    
-	    /* Do we have this file cached? */
-	    if ((entry = findFileCache(&path)) || (entry = lookupFile(&path)))
-	    {
-		entry->count++;
-		reply->result = ESUCCESS;
-		reply->ident  = (Address) entry;
-	    }
-	    else
-		reply->result = ENOSUCH;
-	}
-
-	/**
-         * Read or writes an opened file.
-	 * @param msg Incoming message.
-	 * @param reply Response message.
-         */    
-	void readWriteFileHandler(FileSystemMessage *msg,
-			          FileSystemMessage *reply)
-	{
-	    FileCache *fc = (FileCache *) msg->ident;
 	    Error result;
-	    
+
+	    /*
+	     * Find the file, either in cache, storage or via
+	     * the message itself. 
+	     */
+	    switch (msg->action)
+	    {
+		case CreateFile:
+		case OpenFile:
+		case StatFile:
+
+		    /* Copy the path first. */
+		    if (VMCopy(msg->procID, Read, (Address) buf,
+			      (Address) msg->buffer + strlen(mountPath), PATHLEN) <= 0)
+		    {
+			msg->error(EACCESS, IODone);
+			return;
+		    }
+		    else
+		    {
+			/* Parse the path. */
+		        path.parse(buf);
+
+			/* No need to lookup caches for creation. */	    
+			if (msg->action == CreateFile)
+			{
+			    break;
+			}
+			/* Do we have this file cached? */
+		    	if ((fc = findFileCache(&path)) || (fc = lookupFile(&path)))
+			{
+			    msg->ident = (Address) fc;
+			    fc->count++;
+			}
+			else
+			{
+			    msg->error(ENOSUCH, IODone);
+			    return;
+			}
+		    }
+		
+		case ReadFile:
+		case WriteFile:
+		case CloseFile:
+		
+		    /* Simply use the message identity. */
+		    fc = (FileCache *) msg->ident;
+	    }
 	    /* Perform I/O on the file. */
 	    switch (msg->action)
 	    {
+		case CreateFile:
+		    msg->result = createFile(msg, &path);
+		    break;
+		
+		case OpenFile:
+		    msg->result = fc->file->open(msg);
+		    break;
+
+		case StatFile:
+		    msg->result = fc->file->status(msg);
+		    break;
+
 		case ReadFile:
 		    msg->result = fc->file->read(msg);
 		    break;
 		
 		case WriteFile:
-		default:
 		    msg->result = fc->file->write(msg);
 		    break;
+		
+		case CloseFile:
+		    fc->count--;
+	    	    msg->result = ESUCCESS;
+		    break;
+
+		default:
+		    msg->error(ENOSUPPORT);
+		    break;
 	    }
-	    /* Did the operation succeed already? */
+	    /* Did the operation complete already? */
 	    if (msg->result != EWAIT)
 	    {
-		if (msg->result >= 0)
-		{
-		    msg->size   = msg->result;
-		    msg->result = ESUCCESS;
-		}
-		ioDoneHandler(msg, reply);
+		ioDoneHandler(msg);
 	    }
-	}
-
-	/**
-	 * Closes a file.
-	 * @param msg Incoming message.
-	 * @param reply Response message.
-	 */
-	virtual void closeFileHandler(FileSystemMessage *msg,
-				      FileSystemMessage *reply)
-	{
-	    FileCache *file = (FileCache *) msg->ident;
-	    
-	    /* Decrement count. */
-	    file->count--;
-	}
-
-	/**
-	 * Retrieve file statistics.
-	 * @param msg Incoming message.
-	 * @param reply Response message.
-	 */
-	void statFileHandler(FileSystemMessage *msg,
-			     FileSystemMessage *reply)
-	{
-	    FileSystemPath path;
-	    FileCache *entry;
-	    struct stat st;
-	    char buf[PATHLEN];
-	    
-            /* Copy the path first. */
-            if (VMCopy(msg->from, Read, (Address) buf,
-                                        (Address) msg->buffer, PATHLEN) <= 0)
-            {
-                reply->result = EACCESS;
-                return;
-            }
-            /* Parse the path. */
-            path.parse(buf);
-                                      
-            /* Do we have this file cached? */
-            if ((entry = findFileCache(&path)) || (entry = lookupFile(&path)))
-	    {
-		/* Retrieve file status. */
-        	entry->file->status(&st);
-	    
-	        /* Copy to remote process. */
-                VMCopy(msg->procID, Write, (Address) &st,
-                                           (Address) msg->stat, sizeof(st));
-		/* Done. */
-		reply->result = ESUCCESS;
-	    }
-	    else
-		reply->result = ENOSUCH;
 	}
 
 	/**
 	 * Allows devices to inform the filesystem that an I/O operation has completed.
 	 * @param msg Incoming message.
-	 * @param reply Response message.
 	 */
-	void ioDoneHandler(FileSystemMessage *msg,
-			   FileSystemMessage *reply)
+	void ioDoneHandler(FileSystemMessage *msg)
 	{
 	     msg->ioDone(VFSSRV_PID, msg->procID, msg->size, msg->result);
 	}
@@ -412,6 +386,9 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
     
 	/** Root entry of the filesystem tree. */
 	FileCache *root;
+	
+	/** Mount point. */
+	char *mountPath;
 };
 
 #endif /* __FILESYSTEM_FILESYSTEM_H */

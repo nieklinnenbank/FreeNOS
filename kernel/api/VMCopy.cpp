@@ -20,6 +20,7 @@
 #include <arch/API.h>
 #include <arch/Memory.h>
 #include <Error.h>
+#include <string.h>
 
 int VMCopyHandler(ProcessID procID, Operation how, Address ours, Address theirs, Size sz)
 {

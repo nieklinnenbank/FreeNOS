@@ -72,21 +72,6 @@ extern C int printf(char *format, ...);
 extern C int vprintf(char *format, va_list args);
 
 /**
- * Read a line from standard input.
- * @param buffer Output buffer.
- * @param size Maximum number of bytes to read.
- * @return Pointer to buffer on success, NULL on failure.
- */
-extern C char * gets(char *buffer, Size size);
-
-/**
- * Read one character from standard input.
- * @param buffer Output buffer.
- * @return Character.
- */
-extern C char getc(char *buffer);
-
-/**
  * @}
  */
 

@@ -33,17 +33,20 @@ ProcFile::~ProcFile()
 
 Error ProcFile::read(FileSystemMessage *msg)
 {
-    Size bytes;
-
     /* Bounds checking. */
     if (msg->offset >= size)
     {
-	return 0;
+	msg->size = 0;
     }
     else
-	bytes = size - msg->offset > msg->size ? msg->size : size - msg->offset;
+    {
+	/* How much bytes to copy? */
+	Size bytes = size - msg->offset > msg->size ?
+		    			  msg->size : size - msg->offset;
     
-    /* Copy the buffers. */
-    return VMCopy(msg->procID, Write, (Address) buffer + msg->offset,
-				      (Address) msg->buffer, bytes);
+	/* Copy the buffers. */
+	msg->size = VMCopy(msg->procID, Write, (Address) buffer + msg->offset,
+			  (Address) msg->buffer, bytes);
+    }
+    return ESUCCESS;
 }

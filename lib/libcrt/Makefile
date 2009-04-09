@@ -16,6 +16,6 @@
 #
 
 library  := libcrt.a
-includes := lib/libc lib/liballoc
+includes := lib/libc lib/liballoc lib/libposix
 
 include ../../tools/rules.mk

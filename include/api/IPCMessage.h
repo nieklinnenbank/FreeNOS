@@ -24,6 +24,7 @@
 #include <Types.h>
 #include <Error.h>
 #include <Config.h>
+#include <string.h>
 
 /** SystemCall number for IPCMessage(). */
 #define IPCMESSAGE 1

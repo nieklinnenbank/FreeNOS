@@ -28,12 +28,12 @@ int ProcListCommand::execute(Size nparams, char **params)
     DIR *d;
     struct dirent *dent;
 
-    printf("PID STATUS CMD\n");
+    printf("PID STATUS CMD\r\n");
     
     /* Attempt to open the directory. */
     if (!(d = opendir("/proc")))
     {
-	printf("Failed to open '/proc': %s\n",
+	printf("Failed to open '/proc': %s\r\n",
 		strerror(errno));
 	return errno;
     }
@@ -44,7 +44,7 @@ int ProcListCommand::execute(Size nparams, char **params)
 	catFmt("/proc/%s/status",  dent->d_name);
 	printf(" ");
 	catFmt("/proc/%s/cmdline", dent->d_name);
-	printf("\n");
+	printf("\r\n");
     }
     /* Close it. */
     closedir(d);

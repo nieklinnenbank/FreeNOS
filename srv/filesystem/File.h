@@ -18,6 +18,7 @@
 #ifndef __FILESYSTEM_FILE_H
 #define __FILESYSTEM_FILE_H
 
+#include <api/VMCopy.h>
 #include <arch/Process.h>
 #include <Types.h>
 #include <Error.h>
@@ -48,6 +49,16 @@ class File
 	virtual ~File()
 	{
 	}
+
+	/**
+	 * Attempt to open a file.
+	 * @param msg Describes the open request.
+	 * @return Error code status.
+	 */
+	virtual Error open(FileSystemMessage *msg)
+	{
+	    return ESUCCESS;
+	}
     
 	/**
 	 * Read bytes from the file.
@@ -73,12 +84,25 @@ class File
 	 * Retrieve file statistics.
 	 * @param st Buffer to write statistics to.
 	 */
-	virtual void status(struct stat *st)
+	virtual Error status(FileSystemMessage *msg)
 	{
-	    st->st_mode = type;
-	    st->st_size = size;
-	    st->st_uid  = uid;
-	    st->st_gid  = gid;
+	    struct stat st;
+	    Error e;
+	
+	    /* Fill in the status structure. */
+	    st.st_mode = type;
+	    st.st_size = size;
+	    st.st_uid  = uid;
+	    st.st_gid  = gid;
+	    
+	    /* Copy to the remote process. */
+	    if ((e = VMCopy(msg->procID, Write, (Address) &st,
+			   (Address) msg->stat, sizeof(st)) > 0))
+	    {
+		return ESUCCESS;
+	    }
+	    else
+		return e;
 	}
 	
 	/**

@@ -18,7 +18,6 @@
 #ifndef __VECTOR_H
 #define __VECTOR_H
 
-#include <string.h>
 #include "Macros.h"
 #include "Types.h"
 #include "Assert.h"

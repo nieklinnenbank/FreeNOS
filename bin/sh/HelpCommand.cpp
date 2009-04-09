@@ -24,7 +24,7 @@ int HelpCommand::execute(Size nparams, char **params)
 {
     for (HashIterator<String, ShellCommand> i(&commands); i.hasNext(); i++)
     {
-	printf("%s -- %s\n", i.current()->getName(), i.current()->help());
+	printf("%s -- %s\r\n", i.current()->getName(), i.current()->help());
     }
     return 0;
 }

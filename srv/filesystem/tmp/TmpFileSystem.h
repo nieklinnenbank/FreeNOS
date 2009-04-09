@@ -20,6 +20,7 @@
 
 #include <FileSystem.h>
 #include <FileSystemMessage.h>
+#include <FileSystemPath.h>
 #include <Types.h>
 #include <Error.h>
 
@@ -40,11 +41,11 @@ class TmpFileSystem : public FileSystem
 	
 	/**
 	 * Creates a new TmpFile.
-	 * @param msg Incoming message.
-	 * @param reply Response message.
+	 * @param msg Describes the file creation request.
+	 * @param path Full path to the file to create.
 	 */
-	void createFileHandler(FileSystemMessage *msg,
-			       FileSystemMessage *reply);
+	Error createFile(FileSystemMessage *msg,
+                         FileSystemPath *path);
 };
 
 #endif /* __FILESYSTEM_TMPFILESYSTEM_H */

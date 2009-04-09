@@ -28,19 +28,19 @@ int UnameCommand::execute(Size nparams, char **params)
     /* Retrieve version information. */
     if (uname(&info) < 0)
     {
-	printf("uname() failed: %s\n",
+	printf("uname() failed: %s\r\n",
 		strerror(errno));
 	return errno;
     }
     /* System name. */
     if (nparams == 0 || !strcmp(params[0], "-s"))
     {
-	printf("%s\n", info.sysname);
+	printf("%s\r\n", info.sysname);
     }
     /* Everything. */
     else if (!strcmp(params[0], "-a"))
     {
-        printf("%s %s %s %s %s\n",
+        printf("%s %s %s %s %s\r\n",
                 info.sysname,
                 info.nodename,
                 info.release,

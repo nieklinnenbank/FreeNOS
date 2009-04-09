@@ -16,7 +16,7 @@
 #
 
 program   += vfs
-libraries += libc liballoc libcrt
-includes  += srv srv/filesystem lib/libposix
+libraries += libc liballoc libcrt libposix
+includes  += srv srv/filesystem
 
 include ../../../tools/rules.mk

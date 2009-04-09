@@ -20,6 +20,7 @@
 #
 TOPDIR	    := $(subst /tools/rules.mk,,$(lastword $(MAKEFILE_LIST)))
 TOPDIR	    := ./$(subst tools/rules.mk,,$(TOPDIR))
+SRCDIR      += $(CURDIR) $(srcdirs)
 
 #
 # Compiler chain.
@@ -41,11 +42,11 @@ LDSCRIPT     = $(ldscript)
 #
 # Source and object files.
 #
-C_SOURCES   += $(wildcard *.c)
+C_SOURCES   += $(foreach dir,$(SRCDIR),$(wildcard $(dir)/*.c))
 C_OBJECTS   += $(patsubst %.c,%.o,$(C_SOURCES))
-C++_SOURCES += $(wildcard *.cpp)
+C++_SOURCES += $(foreach dir,$(SRCDIR),$(wildcard $(dir)/*.cpp))
 C++_OBJECTS += $(patsubst %.cpp,%.o,$(C++_SOURCES))
-ASM_SOURCES += $(wildcard *.S)
+ASM_SOURCES += $(foreach dir,$(SRCDIR),$(wildcard $(dir)/*.S))
 ASM_OBJECTS += $(patsubst %.S,%.o,$(ASM_SOURCES))
 SOURCES	    += $(C_SOURCES) $(C++_SOURCES) $(ASM_SOURCES)
 OBJECTS	    += $(C_OBJECTS) $(C++_OBJECTS) $(ASM_OBJECTS)
@@ -106,7 +107,7 @@ $(ASM_OBJECTS) : %.o : %.S
 #
 # Include generated dependancies.
 #
--include $(wildcard *.d)
+-include $(foreach dir,$(SRCDIR),$(wildcard $(dir)*.d))
 
 #
 # Cleans up OBJECTS.

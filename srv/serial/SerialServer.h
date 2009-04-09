@@ -58,12 +58,16 @@ class SerialServer : public IPCServer<SerialServer, FileSystemMessage>
     private:
 
 	/**
+	 * Opens a serial port.
+	 * @param msg Open request.
+	 */
+	void openHandler(FileSystemMessage *msg);
+
+	/**
 	 * Reads or writes data from/to an UART.
 	 * @param msg Incoming message.
-	 * @param reply Response message.
 	 */
-	void readWriteHandler(FileSystemMessage *msg,
-			      FileSystemMessage *reply);
+	void readWriteHandler(FileSystemMessage *msg);
 
 	/**
 	 * Process interrupts.

@@ -27,36 +27,36 @@ int StatCommand::execute(Size nparams, char **params)
     /* Try to stat the file. */
     if ((stat(params[0], &st)) < 0)
     {
-	printf("Failed to stat '%s': %s\n",
+	printf("Failed to stat '%s': %s\r\n",
 		params[0], strerror(errno));
 	return errno;
     }
     /* Output file statistics. */
-    printf("File: %s\n", params[0]);
+    printf("File: %s\r\n", params[0]);
     printf("Type: ");
     
     /* Print the right file type. */
     if (S_ISREG(st.st_mode))
-	printf("Regular File\n");
+	printf("Regular File\r\n");
     
     else if (S_ISDIR(st.st_mode))
-	printf("Directory\n");
+	printf("Directory\r\n");
     
     else if (S_ISCHR(st.st_mode))
     {
-	printf("Character Device\n");
-	printf("Major ID: %u\n", st.st_dev.major);
-	printf("Minor ID: %u\n", st.st_dev.minor);
+	printf("Character Device\r\n");
+	printf("Major ID: %u\r\n", st.st_dev.major);
+	printf("Minor ID: %u\r\n", st.st_dev.minor);
     }
     else if (S_ISBLK(st.st_mode))
-	printf("Block Device\n");
+	printf("Block Device\r\n");
 
     else
-	printf("Unknown\n");
+	printf("Unknown\r\n");
     
     /* Identities. */
-    printf("Uid:  %u\n", st.st_uid);
-    printf("Gid:  %u\n", st.st_gid);
+    printf("Uid:  %u\r\n", st.st_uid);
+    printf("Gid:  %u\r\n", st.st_gid);
     
     /* Success. */
     return 0;

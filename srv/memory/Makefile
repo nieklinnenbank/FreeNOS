@@ -16,7 +16,7 @@
 #
 
 program   += memory
-libraries += libc liballoc
+libraries += libc liballoc libposix
 includes  += srv srv/process
 
 include ../../tools/rules.mk

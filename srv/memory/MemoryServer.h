@@ -58,23 +58,20 @@ class MemoryServer : public IPCServer<MemoryServer, MemoryMessage>
 	/**
 	 * Allocate more memory pages for the heap of a process.
 	 * @param msg Request message.
-	 * @param reply Reply message.
 	 */
-	void doGrow(MemoryMessage *msg, MemoryMessage *reply);
+	void doGrow(MemoryMessage *msg);
 
 	/**
 	 * Releases memory pages from the heap of a process.
 	 * @param msg Request message.
-	 * @param reply Reply message.
 	 */
-	void doShrink(MemoryMessage *msg, MemoryMessage *reply);
+	void doShrink(MemoryMessage *msg);
     
 	/**
 	 * Retrieve the physical memory usage.
 	 * @param msg Request message.
-	 * @param reply Reply message.
 	 */
-	void doUsage(MemoryMessage *msg, MemoryMessage *reply);
+	void doUsage(MemoryMessage *msg);
 
 	/** Heap pointers. */
 	Address heaps[MAX_PROCS];

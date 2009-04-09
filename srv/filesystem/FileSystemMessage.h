@@ -80,22 +80,23 @@ typedef struct FileSystemMessage : public Message
      */
     void operator = (FileSystemMessage *m)
     {
-	from   = m->from;
-	type   = m->type;
-	action = m->action;
-	result = m->result;
-	buffer = m->buffer;
-	size   = m->size;
-	offset = m->offset;
-	userID = m->userID;
-	groupID = m->groupID;
-	deviceID = m->deviceID;
-	mode   = m->mode;
-	stat   = m->stat;
-	fd     = m->fd;
-	filetype = m->filetype;
-	ident    = m->ident;
-	procID   = m->procID;
+	from        = m->from;
+	type        = m->type;
+	action      = m->action;
+	savedAction = m->savedAction;
+	result      = m->result;
+	buffer      = m->buffer;
+	size        = m->size;
+	offset      = m->offset;
+	userID      = m->userID;
+	groupID     = m->groupID;
+	deviceID    = m->deviceID;
+	mode        = m->mode;
+	stat        = m->stat;
+	fd          = m->fd;
+	filetype    = m->filetype;
+	ident       = m->ident;
+	procID      = m->procID;
     }
 
     /**
@@ -215,8 +216,21 @@ typedef struct FileSystemMessage : public Message
 	ipc(fs, Send, sizeof(*this));
     }
 
+    /**
+     * Send an error back to the transient Process.
+     * @param result Error code.
+     * @param pid ProcessID to send to.
+     * @param ac Action override.
+     */
+    void error(Error err, FileSystemAction ac = IODone, ProcessID pid = ANY)
+    {
+	result = err;
+	action = ac;
+	ipc(pid == ANY ? from : pid, Send, sizeof(*this));
+    }
+
     /** Action to perform. */
-    FileSystemAction action;
+    FileSystemAction action, savedAction;
     
     /** Result code. */
     Error result;

@@ -76,7 +76,9 @@ class Directory : public File
 		}
 		else break;
 	    }
-	    return bytes;
+	    /* Report results. */
+	    msg->size = bytes;
+	    return ESUCCESS;
 	}
 
 	/**

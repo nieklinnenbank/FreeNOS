@@ -33,6 +33,11 @@
 
 Shell::Shell()
 {
+    /* Initialize terminal as standard I/O. */
+    for (int i = 0; i < 3; i++)
+    {
+	open("/dev/tty0", ZERO);
+    }
 }
 
 int Shell::run()
@@ -61,12 +66,12 @@ int Shell::run()
 	/* Do we have a matching ShellCommand? */
 	if (!(cmd = ShellCommand::byName(argv[0])))
 	{
-	    printf("Command not found: '%s'\n", cmdStr);
+	    printf("Command not found: '%s'\r\n", cmdStr);
 	}
 	/* Enough arguments given? */
 	else if (argc - 1 < cmd->getMinimumParams())
 	{
-	    printf("%s: not enough arguments (%u required)\n",
+	    printf("%s: not enough arguments (%u required)\r\n",
 		    cmd->getName(), cmd->getMinimumParams());
 	}
 	/* Execute it. */
@@ -87,17 +92,29 @@ char * Shell::getCommand()
     while (total < sizeof(line))
     {
         /* Read a character. */
-	getc(line + total);
+	read(0, line + total, 1);
 	
-	/* End of line reached? */
-	if (line[total] != '\r' && line[total] != '\n')
+	/* Process character. */
+	switch (line[total])
 	{
-	    printf("%c", line[total]);
-	    total++;
-	}
-	else
-	{
-	    printf("\n"); break;
+	    case '\r':
+	    case '\n':
+	    	printf("\r\n");
+		line[total] = ZERO;
+		return line;
+
+	    case '\b':
+		if (total > 0)
+		{
+		    total--;
+		    printf("\b \b");
+		}
+		break;
+	    
+	    default:
+		printf("%c", line[total]);
+		total++;
+		break;
 	}
     }
     line[total] = ZERO;

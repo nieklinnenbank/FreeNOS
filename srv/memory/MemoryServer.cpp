@@ -32,7 +32,7 @@ MemoryServer::MemoryServer() : IPCServer<MemoryServer, MemoryMessage>(this)
     }
 }
 
-void MemoryServer::doGrow(MemoryMessage *msg, MemoryMessage *reply)
+void MemoryServer::doGrow(MemoryMessage *msg)
 {
     Size num = 0;
 
@@ -44,13 +44,13 @@ void MemoryServer::doGrow(MemoryMessage *msg, MemoryMessage *reply)
 	num += PAGESIZE;
     }
     /* Update reply. */
-    reply->bytes     = num;
-    reply->result    = ESUCCESS;
-    reply->startAddr = HEAP_START;
-    reply->endAddr   = heaps[msg->from];
+    msg->bytes     = num;
+    msg->result    = ESUCCESS;
+    msg->startAddr = HEAP_START;
+    msg->endAddr   = heaps[msg->from];
 }
 
-void MemoryServer::doShrink(MemoryMessage *msg, MemoryMessage *reply)
+void MemoryServer::doShrink(MemoryMessage *msg)
 {
     Size num = 0;
     
@@ -62,17 +62,17 @@ void MemoryServer::doShrink(MemoryMessage *msg, MemoryMessage *reply)
 	num += PAGESIZE;
     }
     /* Update reply. */
-    reply->bytes     = num;
-    reply->result    = ESUCCESS;
-    reply->startAddr = HEAP_START;
-    reply->endAddr   = heaps[msg->from];
+    msg->bytes     = num;
+    msg->result    = ESUCCESS;
+    msg->startAddr = HEAP_START;
+    msg->endAddr   = heaps[msg->from];
 }
 
-void MemoryServer::doUsage(MemoryMessage *msg, MemoryMessage *reply)
+void MemoryServer::doUsage(MemoryMessage *msg)
 {
     SystemInformation info;
     
     /* Fill in the reply. */
-    reply->bytes     = info.memorySize;
-    reply->bytesFree = info.memoryAvail;
+    msg->bytes     = info.memorySize;
+    msg->bytesFree = info.memoryAvail;
 }

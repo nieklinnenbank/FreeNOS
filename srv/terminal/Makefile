@@ -16,6 +16,7 @@
 #
 
 program   += terminal
-libraries += libc libcrt liballoc
+libraries += libc libcrt liballoc libposix libteken
+includes  += srv srv/filesystem srv/process
 
 include ../../tools/rules.mk

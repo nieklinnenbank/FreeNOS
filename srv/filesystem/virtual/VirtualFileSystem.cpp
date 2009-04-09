@@ -27,192 +27,205 @@ VirtualFileSystem::VirtualFileSystem()
     FileSystemMessage msg;
 
     /* Register message handlers. */
-    addIPCHandler(CreateFile,  &VirtualFileSystem::createFileHandler);
-    addIPCHandler(OpenFile,    &VirtualFileSystem::openFileHandler);
-    addIPCHandler(ReadFile,    &VirtualFileSystem::readWriteFileHandler, false);
-    addIPCHandler(WriteFile,   &VirtualFileSystem::readWriteFileHandler, false);
-    addIPCHandler(CloseFile,   &VirtualFileSystem::closeFileHandler);
-    addIPCHandler(StatFile,    &VirtualFileSystem::statFileHandler);
+    addIPCHandler(CreateFile,  &VirtualFileSystem::ioHandler, false);
+    addIPCHandler(OpenFile,    &VirtualFileSystem::ioHandler, false);
+    addIPCHandler(ReadFile,    &VirtualFileSystem::ioHandler, false);
+    addIPCHandler(WriteFile,   &VirtualFileSystem::ioHandler, false);
+    addIPCHandler(CloseFile,   &VirtualFileSystem::ioHandler, false);
+    addIPCHandler(StatFile,    &VirtualFileSystem::ioHandler, false);
+    addIPCHandler(IODone,      &VirtualFileSystem::ioDoneHandler, false);
     addIPCHandler(Mount,       &VirtualFileSystem::mountHandler);
     addIPCHandler(MountInfo,   &VirtualFileSystem::mountInfoHandler);
     addIPCHandler(NewProcess,  &VirtualFileSystem::newProcessHandler);
     addIPCHandler(KillProcess, &VirtualFileSystem::killProcessHandler);
-    addIPCHandler(IODone,      &VirtualFileSystem::ioDoneHandler, false);
     
     /* Wait for process server to sync procs. */
     for (Size i = 0; i < info.moduleCount; i++)
     {
 	if (!msg.ipc(PROCSRV_PID, Receive, sizeof(msg)))
 	{
-	    newProcessHandler(&msg, &msg);
+	    newProcessHandler(&msg);
 	    msg.ipc(PROCSRV_PID, Send, sizeof(msg));
 	}
     }
     /* For now, we only guarantee that /dev is mounted. */
     msg.ipc(DEVSRV_PID, Receive, sizeof(msg));
-    mountHandler(&msg, &msg);
+    mountHandler(&msg);
     msg.ipc(DEVSRV_PID, Send, sizeof(msg));
 }
 
-void VirtualFileSystem::createFileHandler(FileSystemMessage *msg,
-					  FileSystemMessage *reply)
+void VirtualFileSystem::ioHandler(FileSystemMessage *msg)
 {
     char path[PATHLEN];
     FileSystemMount *mount;
+    FileDescriptor *fd;
+    ProcessID fsID;
 
-    /* Obtain full path first. */
-    if ((reply->result = VMCopy(msg->from, Read, (Address) path,
-			       (Address) msg->buffer, PATHLEN) < 0))
+    /* Save the request, so we can reuse it in IODone. */
+    msg->savedAction = msg->action;
+
+    /* Fill in the message. */
+    msg->userID  = procs[msg->from].userID;
+    msg->groupID = procs[msg->from].groupID;
+    msg->procID  = msg->from;
+    
+    /* Lookup mountpoint or filedescriptor. */
+    switch (msg->action)
     {
-    	return;
+	case CreateFile:
+	case OpenFile:
+	case StatFile:
+    
+	    /* Obtain full path first. */
+	    if ((msg->result = VMCopy(msg->from, Read, (Address) path,
+				     (Address) msg->buffer, PATHLEN) < 0))
+	    {
+		msg->error(msg->result);
+		return;
+	    }
+	    /* Retrieve mountpoint. */
+	    if (!(mount = findMount(path)))
+	    {
+		msg->error(ENOSUCH);
+		return;
+	    }
+	    fsID = mount->procID;
+	    break;
+
+	case ReadFile:
+	case WriteFile:
+	case CloseFile:
+
+	    /* Do we have this fd? */
+	    if (!(fd = (*procs[msg->from].files)[msg->fd]))
+	    {
+		msg->error(ENOSUCH);
+		return;
+	    }
+	    else
+	    {
+		msg->offset = fd->position;
+		msg->ident  = fd->identifier;
+	    }
+	    fsID = fd->mount->procID;
+	    break;
+
+	default:
+	
+	    /* No such I/O operation. */
+	    msg->error(ENOSUPPORT);
+	    return;
     }
-    /* Retrieve mountpoint. */
-    if (!(mount = findMount(path)))
+    
+    /* Forward the I/O request to the appropriate filesystem server. */
+    if (msg->ipc(fsID, Send, sizeof(*msg)) != ESUCCESS)
     {
-	reply->result = ENOSUCH;
-	return;
+	ioDoneHandler(msg);
     }
-    /* Ask the filesystem server to create the given file. */
-    reply->userID  = procs[msg->from].userID;
-    reply->groupID = procs[msg->from].groupID;
-    reply->createFile(path + strlen(mount->path), msg->filetype,
-		      msg->mode, msg->deviceID.major, msg->deviceID.minor,
-		      mount->procID);
 }
 
-void VirtualFileSystem::openFileHandler(FileSystemMessage *msg,
-					FileSystemMessage *reply)
-{
-    char path[PATHLEN];
-    FileSystemMount *mount;
-    
-    /* Obtain full path first. */
-    if ((reply->result = VMCopy(msg->from, Read, (Address) path,
-			       (Address) msg->buffer, PATHLEN) < 0))
-    {
-    	return;
-    }
-    /* Retrieve mountpoint. */
-    if (!(mount = findMount(path)))
-    {
-	reply->result = ENOSUCH;
-	return;
-    }
-    /* Ask filesystem server to open it. */
-    reply->openFile(path + strlen(mount->path), mount->procID);
-    
-    /* Allocate file descriptor. */
-    if (reply->result == ESUCCESS)
-    {
-	reply->fd = procs[msg->from].files->insert(new FileDescriptor(mount, reply->ident));
-        procs[msg->from].fileCount++;
-    }
-}
-
-void VirtualFileSystem::readWriteFileHandler(FileSystemMessage *msg,
-					     FileSystemMessage *reply)
+void VirtualFileSystem::ioDoneHandler(FileSystemMessage *msg)
 {
     FileDescriptor *fd;
-    
-    /* Do we have this fd? */
-    if (!(fd = (*procs[msg->from].files)[msg->fd]))
-    {
-	reply->result = ENOSUCH;
-	return;
-    }
-    /* Request (asynchroneous) read/write operation. */
-    reply->action = msg->action;
-    reply->buffer = msg->buffer;
-    reply->size   = msg->size;
-    reply->offset = fd->position;
-    reply->fd     = msg->fd;
-    reply->ident  = fd->identifier;
-    reply->procID = msg->from;
-    reply->ipc(fd->mount->procID, Send, sizeof(*reply));
-}
-
-void VirtualFileSystem::closeFileHandler(FileSystemMessage *msg,
-					 FileSystemMessage *reply)
-{
-    FileDescriptor *fd;
-
-    /* Do we have it opened? */
-    if ((fd = (*procs[msg->from].files)[msg->fd]))
-    {
-	/* Inform filesystem we are closing the file. */
-	reply->ident  = fd->identifier;
-	reply->procID = msg->from;
-	reply->closeFile(msg->fd, fd->mount->procID);
-	
-	/* Release file. */
-	procs[msg->from].files->remove(msg->fd);
-	procs[msg->from].fileCount--;
-	
-	/* Free memory. */
-	delete fd;
-    }
-    else
-	reply->result = ENOSUCH;
-}
-
-void VirtualFileSystem::statFileHandler(FileSystemMessage *msg,
-					FileSystemMessage *reply)
-{
     char path[PATHLEN];
     FileSystemMount *mount;
-    FileSystemMessage fs;
-    
-    /* Obtain full path first. */
-    if ((reply->result = VMCopy(msg->from, Read, (Address) path,
-			       (Address) msg->buffer, PATHLEN) < 0))
-    {
-    	return;
-    }
-    /* Retrieve mountpoint. */
-    if (!(mount = findMount(path)))
-    {
-	reply->result = ENOSUCH;
-	return;
-    }
-    /* Now we stat the file. */
-    fs.action = StatFile;
-    fs.buffer = path + strlen(mount->path);
-    fs.stat   = msg->stat;    
-    fs.procID = msg->from;
-    IPCMessage(mount->procID, SendReceive, &fs, sizeof(fs));
+    Error err;
 
-    /* Report results. */
-    reply->result = fs.result;
+    /* Retrieve correct mountpoint or filedescriptor. */
+    switch (msg->savedAction)
+    {
+	case OpenFile:
+	case StatFile:
+
+	    /* Obtain full path first. */
+	    if ((err = VMCopy(msg->procID, Read, (Address) path,
+				     (Address) msg->buffer, PATHLEN) < 0))
+	    {
+		msg->error(err, IODone, msg->procID);
+		return;
+	    }
+	    /* Retrieve mountpoint. */
+	    if (!(mount = findMount(path)))
+	    {
+		msg->error(ENOSUCH, IODone, msg->procID);
+		return;
+	    }
+	    break;
+
+	case ReadFile:
+	case WriteFile:
+	case CloseFile:
+	
+	    /* Find the file descriptor. */
+	    fd = (*procs[msg->procID].files)[msg->fd];
+
+	default:
+	    ;
+    }	    
+
+    /* Post-process the I/O request on success. */
+    if (msg->result == ESUCCESS)
+    {
+	switch (msg->savedAction)
+        {
+    	    case OpenFile:
+	    
+	        /* Allocate file descriptor. */
+		msg->fd = procs[msg->procID].files->insert(
+		    new FileDescriptor(mount, msg->ident));
+		procs[msg->procID].fileCount++;
+		break;
+
+    	    case CloseFile:
+	    
+	    	/* Release file. */
+		procs[msg->procID].files->remove(msg->fd);
+		procs[msg->procID].fileCount--;
+		
+		/* Free memory. */
+		delete fd;
+		break;
+
+	    case ReadFile:
+	    case WriteFile:
+
+		/* Increment file pointer. */
+		fd->position += msg->size;
+	
+	    default:
+		;
+	}
+    }
+    /* Inform the user process the I/O operation has finished. */
+    msg->ipc(msg->procID, Send, sizeof(*msg));
 }
 
-void VirtualFileSystem::mountHandler(FileSystemMessage *msg,
-				     FileSystemMessage *reply)
+void VirtualFileSystem::mountHandler(FileSystemMessage *msg)
 {
     char p[PATHLEN];
 
     /* Copy the mount point. */
-    if ((reply->result = VMCopy(msg->from, Read,
+    if ((msg->result = VMCopy(msg->from, Read,
 			       (Address)p, (Address)msg->buffer, PATHLEN)))
     {
 	insertMount(p, msg->from, ZERO);
     }
 }
 
-void VirtualFileSystem::mountInfoHandler(FileSystemMessage *msg,
-					 FileSystemMessage *reply)
+void VirtualFileSystem::mountInfoHandler(FileSystemMessage *msg)
 {
     /* Copy mounts table. */
     if ((msg->size = VMCopy(msg->from, Write,
 			   (Address) mounts,
 		           (Address) msg->buffer,
-			    sizeof(mounts) > msg->size ? msg->size : sizeof(mounts))))
+			    msg->size < sizeof(mounts) ?
+			    msg->size : sizeof(mounts))))
     {
 	msg->result = ESUCCESS;
     }
 }
 
-void VirtualFileSystem::newProcessHandler(FileSystemMessage *msg,
-					  FileSystemMessage *reply)
+void VirtualFileSystem::newProcessHandler(FileSystemMessage *msg)
 {
     /* Fill in the new process. */
     procs[msg->procID].userID  = msg->userID;
@@ -220,11 +233,10 @@ void VirtualFileSystem::newProcessHandler(FileSystemMessage *msg,
     procs[msg->procID].files   = new Vector<FileDescriptor>;
     
     /* Success. */
-    reply->result = ESUCCESS;
+    msg->result = ESUCCESS;
 }
 
-void VirtualFileSystem::killProcessHandler(FileSystemMessage *msg,
-					   FileSystemMessage *reply)
+void VirtualFileSystem::killProcessHandler(FileSystemMessage *msg)
 {
     /* Clear process entry. */
     procs[msg->procID].userID  = 0;
@@ -234,26 +246,9 @@ void VirtualFileSystem::killProcessHandler(FileSystemMessage *msg,
     delete procs[msg->procID].files;
     
     /* Success. */
-    reply->result = ESUCCESS;
+    msg->result = ESUCCESS;
 }
 
-void VirtualFileSystem::ioDoneHandler(FileSystemMessage *msg,
-				      FileSystemMessage *reply)
-{
-    FileDescriptor *fd;
-
-    /* Find the file descriptor. */
-    if ((fd = (*procs[msg->procID].files)[msg->fd]))
-    {
-	/* Increment file pointer. */
-	fd->position += msg->size;
-
-        /* Inform the user process the I/O operation has finished. */
-        reply->size   = msg->size;
-        reply->result = msg->result;
-        reply->ipc(msg->procID, Send, sizeof(*reply));
-    }
-}
 
 void VirtualFileSystem::insertMount(char *path, ProcessID pid, ulong opts)
 {

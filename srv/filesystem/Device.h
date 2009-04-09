@@ -18,8 +18,10 @@
 #ifndef __FILESYSTEM_DEVICE_H
 #define __FILESYSTEM_DEVICE_H
 
+#include <api/VMCopy.h>
 #include <Types.h>
 #include <Error.h>
+#include "File.h"
 #include "FileSystemMessage.h"
 
 /**
@@ -39,10 +41,24 @@ class Device : public File
 	{
 	}
 
+	/**
+	 * Opens the Device.
+	 * @param msg Open request.
+         * @return Always EWAIT. The Device will send an IODone
+	 *         when it has completed the request.
+	 */
+	Error open(FileSystemMessage *msg)
+	{
+	    msg->action   = OpenFile;
+	    msg->deviceID = deviceID;
+	    msg->ipc(deviceID.major, Send, sizeof(*msg));
+	    return EWAIT;
+	}
+
         /** 
          * Reads out the buffer. 
 	 * @param msg Read request.
-         * @return Always zero. The Device will send an IODone
+         * @return Always EWAIT. The Device will send an IODone
 	 *         when it has completed the request.
          */
         Error read(FileSystemMessage *msg)
@@ -56,9 +72,9 @@ class Device : public File
         /** 
          * Writes data from the buffer to the device.
 	 * @param msg Write request.
-         * @return Always zero. The Device will send an IODone
+         * @return Always EWAIT. The Device will send an IODone
 	 *         when it has completed the request.
-         */	
+         */
 	Error write(FileSystemMessage *msg)
 	{
 	    msg->action   = WriteFile;
@@ -69,12 +85,31 @@ class Device : public File
 
         /**
          * Retrieve file statistics.
-         * @param st Buffer to write statistics to.
+	 * @param msg Describes the status request.
+	 * @return Error code status.
          */
-        virtual void status(struct stat *st)
+        Error status(FileSystemMessage *msg)
         {
-	    st->st_dev = deviceID;
-	    File::status(st);
+	    struct stat st;
+	    Error e;
+	    
+	    /* Fill in the status structure. */
+	    st.st_mode = type;
+            st.st_size = size;
+            st.st_uid  = uid;
+            st.st_gid  = gid;
+	    st.st_dev  = deviceID;
+	    
+	    /* Write to remote process' buffer. */
+	    if ((e = VMCopy(msg->procID, Write, (Address) &st,
+			   (Address) msg->stat, sizeof(st))) > 0)
+	    {
+		return ESUCCESS;
+	    }
+	    else
+	    {
+		return e;
+	    }
         }
 
     private:

@@ -19,6 +19,7 @@
 #define __AMD64_PROCESS_H
 
 #ifndef __ASSEMBLY__
+#ifdef  __cplusplus
 
 /**
  * Used by kernel/ classes to point back to us.
@@ -84,5 +85,6 @@ class x86Process : public Process
 	Address ioMapAddr;
 };
 
+#endif /* __cplusplus */
 #endif /* __ASSEMBLY__ */
 #endif /* __X86_PROCESS_H */

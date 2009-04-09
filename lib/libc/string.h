@@ -18,8 +18,8 @@
 #ifndef __LIBC_STRING_H
 #define __LIBC_STRING_H
 
-#include <Macros.h>
-#include <Types.h>
+#include <sys/types.h>
+#include "errno.h"
 
 /**
  * @defgroup ansic ISO/IEC 9899:1999
@@ -41,7 +41,7 @@ extern C int strcmp(char *dest, char *src);
  * @param count Maximum number of bytes to compare.
  * @return Zero if equal, non-zero if not.
  */
-extern C int strncmp(char *dest, char *src, Size count);
+extern C int strncmp(char *dest, char *src, size_t count);
 
 /**
  * Fill memory with a constant byte.
@@ -49,7 +49,7 @@ extern C int strncmp(char *dest, char *src, Size count);
  * @param ch Constant byte.
  * @return Pointer to dest.
  */
-extern C void * memset(void *dest, int ch, Size count);
+extern C void * memset(void *dest, int ch, size_t count);
 
 /**
  * Copy memory from one place to another.
@@ -58,25 +58,7 @@ extern C void * memset(void *dest, int ch, Size count);
  * @param count Number of bytes to copy.
  * @return The destination address.
  */
-extern C void * memcpy(void *dest, const void *src, Size count);
-
-/**
- * Copy memory, which may overlap.
- * @param dest Destination address.
- * @param src Source address.
- * @param count Number of bytes to copy.
- * @return The destination address.
- */
-extern C void * memmove(void *dest, const void *src, Size count);
-
-/**
- * Compare memory.
- * @param s1 First memory area.
- * @param s2 Second memory area.
- * @param count Number of bytes to compare.
- * @return <, = or > than zero, indicating s1 is <, =, or > then s2.
- */
-extern C int memcmp(const void *s1, const void *s2, Size count);
+extern C void * memcpy(void *dest, const void *src, size_t count);
 
 /**
  * Calculate the length of a string.
@@ -100,7 +82,7 @@ extern C int strcpy(char *dest, char *src);
  * @param sz Maximum number of bytes to copy.
  * @return Number of bytes copied.
  */
-extern C int strncpy(char *dest, char *src, Size sz);
+extern C int strncpy(char *dest, char *src, size_t sz);
 
 /**
  * Copy src to string dst of size siz. At most siz-1 characters 
@@ -108,10 +90,10 @@ extern C int strncpy(char *dest, char *src, Size sz);
  * @note This function is copied from OpenBSD-4.3
  * @param dst Destination string
  * @param src Source string
- * @param siz Size of dst buffer
+ * @param siz size_t of dst buffer
  * @return strlen(src); if retval >= siz, truncation occurred. 
  */
-extern C Size strlcpy(char *dst, const char *src, Size siz);
+extern C size_t strlcpy(char *dst, const char *src, size_t siz);
 
 /**
  * Append strings.

@@ -15,24 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <api/IPCMessage.h>
-#include <TerminalServer.h>
-#include <Config.h>
-#include <stdarg.h>
+#include "stdarg.h"
 #include "stdio.h"
 #include "stdlib.h"
-
-int snprintf(char *buffer, unsigned int size, const char *fmt, ...)
-{
-    va_list args;
-    int ret;
-
-    va_start(args, fmt);
-    ret = vsnprintf(buffer, size, fmt, args);
-    va_end(args);
-    
-    return (ret);
-}
 
 int vsnprintf(char *buffer, unsigned int size, const char *fmt, va_list args)
 {
@@ -96,71 +81,4 @@ int vsnprintf(char *buffer, unsigned int size, const char *fmt, va_list args)
     if (written < size)
 	*buffer = 0;
     return (written);
-}
-
-int printf(char *format, ...)
-{
-    va_list args;
-    int ret;
-    
-    va_start(args, format);
-    ret = vprintf(format, args);
-    va_end(args);
-    
-    return ret;
-}
-
-int vprintf(char *format, va_list args)
-{
-    TerminalMessage msg;
-    char buf[1024];
-    
-    /* Clear buffer first. */
-    memset(&buf, 0, sizeof(buf));
-    
-    /* Write formatted string. */
-    msg.action = TerminalWrite;
-    msg.buffer = buf;
-    msg.size   = vsnprintf(buf, sizeof(buf), format, args);
-
-    /* Send message to the terminal server. */
-    return IPCMessage(TERMINAL_PID, SendReceive, &msg, sizeof(msg));
-}
-
-char * gets(char *buffer, Size size)
-{
-    Size total = 0;
-    
-    /* Read a line. */
-    while (total < size)
-    {
-	*buffer = getc(buffer + total);
-	 total++;
-	 
-	/* EOL reached? */
-	if (buffer[total-1] == '\n' || buffer[total-1] == '\r')
-	{
-	    buffer[total-1] = ZERO;
-	    break;
-	}
-    }
-    return buffer;
-}
-
-char getc(char *buffer)
-{
-    TerminalMessage msg;
-    
-    /* Read a character. */
-    while (msg.action != TerminalOK)
-    {
-	/* Fill in message. */
-        msg.action = TerminalRead;
-	msg.buffer = buffer;
-        msg.size   = 1;
-    
-	/* Send message to terminal. */
-	IPCMessage(TERMINAL_PID, SendReceive, &msg, sizeof(msg));
-    }
-    return *buffer;
 }

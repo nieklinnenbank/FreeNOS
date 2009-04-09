@@ -20,7 +20,6 @@
 #include <FileSystemMessage.h>
 #include <ProcessMessage.h>
 #include <Config.h>
-#include <stdio.h>
 #include "SerialServer.h"
 #include "i8250.h"
 
@@ -42,6 +41,7 @@ SerialServer::SerialServer()
     bool detected = false;
 
     /* Register message handlers. */
+    addIPCHandler(OpenFile,  &SerialServer::openHandler, true);
     addIPCHandler(ReadFile,  &SerialServer::readWriteHandler, false);
     addIPCHandler(WriteFile, &SerialServer::readWriteHandler, false);
 
@@ -62,9 +62,6 @@ SerialServer::SerialServer()
 	/* Verify we actually wrote it (means there is an UART). */
 	if (lcr1 == lcr2)
 	{
-	    debug("detected UART at PORT=%x IRQ=%u\n",
-		   uarts[i].port, uarts[i].irq);
-
 	    /* Create new instance. */
 	    uarts[i].dev = new i8250(uarts[i].port, uarts[i].irq);
 	    detected = true;
@@ -87,8 +84,13 @@ SerialServer::SerialServer()
     }
 }
 
-void SerialServer::readWriteHandler(FileSystemMessage *msg,
-			            FileSystemMessage *reply)
+void SerialServer::openHandler(FileSystemMessage *msg)
+{
+    msg->action = IODone;
+    msg->result = ESUCCESS;
+}
+
+void SerialServer::readWriteHandler(FileSystemMessage *msg)
 {
     SerialDevice *dev;
     Error e;
@@ -98,9 +100,6 @@ void SerialServer::readWriteHandler(FileSystemMessage *msg,
        (dev = uarts[msg->deviceID.minor].dev) &&
        (!dev->isRequestPending()))
     {
-	/* Copy over. */
-	*reply = msg;
-    
 	/* Attempt to perform I/O. */
 	switch (msg->action)
 	{
@@ -120,7 +119,7 @@ void SerialServer::readWriteHandler(FileSystemMessage *msg,
 	/* Did it fail? */
 	if (e < 0)
 	{
-	    reply->result = e;
+	    msg->result = e;
 	}
 	/* Is data pending? */
 	else if (e == 0)
@@ -130,16 +129,16 @@ void SerialServer::readWriteHandler(FileSystemMessage *msg,
 	/* Success. */
 	else
 	{
-	    reply->size   = e;
-	    reply->result = ESUCCESS;
+	    msg->size   = e;
+	    msg->result = ESUCCESS;
 	}
     }
     else
-	reply->result = EACCESS;
+	msg->result = EACCESS;
 
     /* Send reply. */
-    reply->action = IODone;
-    reply->ipc(msg->from, Send, sizeof(*reply));
+    msg->action = IODone;
+    msg->ipc(msg->from, Send, sizeof(*msg));
 }
 
 void SerialServer::interruptHandler(InterruptMessage *msg)

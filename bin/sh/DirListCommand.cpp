@@ -29,7 +29,7 @@ int DirListCommand::execute(Size nparams, char **params)
     /* Attempt to open the directory. */
     if (!(d = opendir(params[0])))
     {
-	printf("Failed to open '%s': %s\n",
+	printf("Failed to open '%s': %s\r\n",
 		params[0], strerror(errno));
 	return errno;
     }
@@ -38,7 +38,7 @@ int DirListCommand::execute(Size nparams, char **params)
     {
 	printf("%s ", dent->d_name);
     }
-    printf("\n");
+    printf("\r\n");
 
     /* Close it. */
     closedir(d);

@@ -18,70 +18,27 @@
 #ifndef __TERMINAL_TERMINALSERVER_H
 #define __TERMINAL_TERMINALSERVER_H
 
-#include <api/IPCMessage.h>
+#include <FileSystemMessage.h>
+#include <IPCServer.h>
 #include <Types.h>
-#include "VGATerminal.h"
-#include "PS2Terminal.h"
+#include <Version.h>
+#include "Terminal.h"
+#include "VGA.h"
 
-/** Memory address of the VGA terminal to use. */
-#define VGA_ADDR ((u16 *) 0x70000000)
+/** Default number of terminals to support. */
+#define NUM_TERMINALS 8
 
-/**
- * Actions which may be performed on an Terminal.
- */
-typedef enum TerminalAction
-{
-    TerminalRead  = 0,
-    TerminalWrite = 1,
-    TerminalOK    = 2,
-    TerminalError = 3,
-}
-TerminalAction;
+/** Always points to the currently active terminal. */
+#define CONSOLE (NUM_TERMINALS+1)
 
-/**
- * Terminal IPC message.
- */
-typedef struct TerminalMessage : public Message
-{
-    /**
-     * Default constructor.
-     */
-    TerminalMessage() :
-	action(TerminalError), buffer(ZERO), size(ZERO)
-    {
-    }
-
-    /**
-     * Assignment operator.
-     * @param m TerminalMessage pointer to copy from.
-     */
-    void operator = (TerminalMessage *m)
-    {
-	from   = m->from;
-	type   = m->type;
-	action = m->action;
-	buffer = m->buffer;
-	size   = m->size;
-    }
-
-    /** Action to perform. */
-    TerminalAction action;
-    
-    /** Points to a buffer for I/O. */
-    char *buffer;
-    
-    /** Size of the buffer. */
-    Size size;
-    
-    /** Not used. */
-    ulong unused[3];
-}
-TerminalMessage;
+/** Printed per default to each Terminal on creation. */
+#define BANNER \
+    "FreeNOS " RELEASE " (" BUILDUSER "@" BUILDHOST ") (" COMPILER ") " DATETIME "\r\n"
 
 /**
  * Manages system terminals.
  */
-class TerminalServer
+class TerminalServer : public IPCServer<TerminalServer, FileSystemMessage>
 {
     public:
     
@@ -90,46 +47,31 @@ class TerminalServer
 	 */
 	TerminalServer();
 	
-	/**
-	 * Enters an infinite loop, serving incoming terminal requests.
-	 * @return Never.
-	 */
-	int run();
-	
     private:
     
 	/**
 	 * Handles an incoming IRQ.
 	 * @param msg Send by the kernel.
 	 */
-	void doIRQ(InterruptMessage *msg);
-	
-	/**
-	 * Process a read request.
-	 * @param msg TerminalMessage pointer.
-	 */
-	void doRead(TerminalMessage *msg);
-	
-	/**
-	 * Process a write request.
-	 * @param msg TerminalMessage pointer.
-	 */
-	void doWrite(TerminalMessage *msg);
+	void interruptHandler(InterruptMessage *msg);
     
-	/** Video Graphics Array terminal. */
-	VGATerminal vga;
+	/**
+	 * Opens an (unused) terminal.
+	 * @param msg Request message.
+	 */
+	void openFileHandler(FileSystemMessage *msg);
+
+	/**
+         * Reads or writes data from/to an Terminal.
+         * @param msg Incoming message.
+         */
+        void readWriteHandler(FileSystemMessage *msg);
+
+	/** Contains all running terminals. */
+	Vector<Terminal> terminals;
 	
-	/** PS2 keyboard terminal. */
-	PS2Terminal ps2;
-	
-	/** Intel 8250 UART terminal. */
-	//i8250Terminal uart;
-	
-	/** Last read message received. */
-	TerminalMessage lastRead;
-	
-	/** Is somebody reading? */
-	bool reading;
+	/** Currently active terminal. */
+	Terminal *current;
 };
 
 #endif /* __TERMINAL_TERMINALSERVER_H */

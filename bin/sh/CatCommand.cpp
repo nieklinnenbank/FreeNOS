@@ -33,7 +33,7 @@ int CatCommand::execute(Size nparams, char **params)
     /* Attempt to open the file first. */
     if ((fd = open(params[0], ZERO)) < 0)
     {
-        printf("Failed to open '%s': %s\n",
+        printf("Failed to open '%s': %s\r\n",
                 params[0], strerror(errno));
         return errno;
     }

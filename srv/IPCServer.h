@@ -49,7 +49,7 @@ template <class Func> struct MessageHandler
 template <class Base, class MsgType> class IPCServer
 {
     /** Member function pointer inside Base, to handle IPC messages. */
-    typedef void (Base::*IPCHandlerFunction)(MsgType *, MsgType *);
+    typedef void (Base::*IPCHandlerFunction)(MsgType *);
     
     /** Member function pointer inside Base, to handle IRQ messages. */
     typedef void (Base::*IRQHandlerFunction)(InterruptMessage *);
@@ -82,7 +82,7 @@ template <class Base, class MsgType> class IPCServer
          */
         int run()
 	{
-	    MsgType msg, reply;
+	    MsgType msg;
 	    InterruptMessage *imsg = (InterruptMessage *) &msg;
 
     	    /* Enter loop. */
@@ -101,7 +101,7 @@ template <class Base, class MsgType> class IPCServer
 			if ((*ipcHandlers)[msg.action])
 			{
 			    sendReply =  (*ipcHandlers)[msg.action]->sendReply;
-			    (instance->*((*ipcHandlers)[msg.action])->exec) (&msg, &reply);
+			    (instance->*((*ipcHandlers)[msg.action])->exec) (&msg);
 			}
 			break;
 
@@ -121,7 +121,7 @@ template <class Base, class MsgType> class IPCServer
 		/* Send Reply. */
 		if (sendReply)
 		{
-		    IPCMessage(msg.from, Send, &reply, sizeof(MsgType));
+		    IPCMessage(msg.from, Send, &msg, sizeof(MsgType));
 		}
 	    }
     	    /* Satify compiler. */

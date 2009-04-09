@@ -16,7 +16,7 @@
 #
 
 program   += tmpfs
-libraries += libc libcrt liballoc
-includes  += srv srv/filesystem srv/process lib/libposix
+libraries += libc libcrt liballoc libposix
+includes  += srv srv/filesystem srv/process
 
 include ../../../tools/rules.mk

@@ -16,6 +16,7 @@
  */
 
 #include <api/SystemInfo.h>
+#include <string.h>
 
 int SystemInfoHandler(SystemInformation *info)
 {

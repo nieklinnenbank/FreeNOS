@@ -37,9 +37,9 @@ include/Version.h: include/Config.h
 	echo -ne '#define ARCH "$(shell readlink include/arch)"\n' >> $@
 	echo -ne '#define COMPILER "$(shell $(CC) --version|head -n 1)"\n' >> $@
 	echo -ne '#define DATETIME "$(shell date)"\n' >> $@
-	echo -ne '#define COPYRIGHT "Copyright (C) 2009 Niek Linnenbank\\n" \\\n' >> $@
-	echo -ne '                  "This is free software; see the source for copying conditions.  There is NO\\n" \\\n' >> $@
-	echo -ne '                  "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\\n\\n"\n' >> $@
+	echo -ne '#define COPYRIGHT "Copyright (C) 2009 Niek Linnenbank\\r\\n" \\\n' >> $@
+	echo -ne '                  "This is free software; see the source for copying conditions.  There is NO\\r\\n" \\\n' >> $@
+	echo -ne '                  "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\\r\\n\\r\\n"\n' >> $@
 	echo -ne '#endif\n' >> $@
 
 clean += include/Version.h

@@ -33,7 +33,7 @@ int MknodCommand::execute(Size nparams, char **params)
     /* Attempt to create the file. */
     if (mknod(params[0], ZERO, dev) < 0)
     {
-	printf("Failed to create '%s': %s\n",
+	printf("Failed to create '%s': %s\r\n",
 		params[0], strerror(errno));
 	return errno;
     }

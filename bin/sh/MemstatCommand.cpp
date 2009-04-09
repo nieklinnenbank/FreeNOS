@@ -27,8 +27,8 @@ int MemstatCommand::execute(Size nparams, char **params)
     mem.usage();
     
     /* Print it. */
-    printf("Total:     %u KB\n"
-           "Available: %u KB\n",
+    printf("Total:     %u KB\r\n"
+           "Available: %u KB\r\n",
            mem.bytes / 1024, mem.bytesFree / 1024);
 
     return 0;

@@ -50,26 +50,15 @@ ProcessServer::ProcessServer()
 	/* Inform VFS. */
 	vfs.newProcess(i, procs[i].uid, procs[i].gid);
     }
-    /* Output banner. */
-    printf("%s\n", "FreeNOS " RELEASE " (" BUILDUSER "@" BUILDHOST
-           ") (" COMPILER ") " DATETIME);
-    
-    /* Print copyright and license. */
-    printf("%s\n", COPYRIGHT);
-    
-    /* Debug out boot modules. */
-    for (Size i = 0; i < MAX_PROCS; i++)
-	if (procs[i].command[0])
-	    debug("%u: %s\n", i, procs[i].command);
 }
 
-void ProcessServer::getIDHandler(ProcessMessage *msg, ProcessMessage *reply)
+void ProcessServer::getIDHandler(ProcessMessage *msg)
 {
-    reply->number = msg->from;
-    reply->result = ESUCCESS;
+    msg->number = msg->from;
+    msg->result = ESUCCESS;
 }
 
-void ProcessServer::readProcessHandler(ProcessMessage *msg, ProcessMessage *reply)
+void ProcessServer::readProcessHandler(ProcessMessage *msg)
 {
     ProcessInfo info;
 
@@ -87,16 +76,15 @@ void ProcessServer::readProcessHandler(ProcessMessage *msg, ProcessMessage *repl
 	    /* Copy buffer. */
 	    VMCopy(msg->from, Write, (Address) (&procs[i]),
 				     (Address) (msg->buffer), sizeof(UserProcess));
-	    reply->result = ESUCCESS;
-	    reply->number = i;
+	    msg->result = ESUCCESS;
+	    msg->number = i;
 	    return;
 	}
     }
-    reply->result = ENOSUCH;
+    msg->result = ENOSUCH;
 }
 
-void ProcessServer::exitProcessHandler(ProcessMessage *msg,
-				       ProcessMessage *reply)
+void ProcessServer::exitProcessHandler(ProcessMessage *msg)
 {
     printf("PID %u exited with status %d\n",
 	    msg->from, msg->number);

@@ -29,14 +29,14 @@ int WriteCommand::execute(Size nparams, char **params)
     /* Attempt to open the file first. */
     if ((fd = open(params[0], ZERO)) < 0)
     {
-        printf("Failed to open '%s': %s\n",
+        printf("Failed to open '%s': %s\r\n",
                 params[0], strerror(errno));
         return errno;
     }
     /* Write to the file. */
     if (write(fd, params[1], strlen(params[1])) < 0)
     {
-	printf("Failed to write '%s': %s\n",
+	printf("Failed to write '%s': %s\r\n",
 		params[0], strerror(errno));
 	return errno;
     }

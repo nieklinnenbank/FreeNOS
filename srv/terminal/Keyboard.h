@@ -15,53 +15,54 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __TERMINAL_PS2TERMINAL_H
-#define __TERMINAL_PS2TERMINAL_H
+#ifndef __TERMINAL_KEYBOARD_H
+#define __TERMINAL_KEYBOARD_H
 
 #include <Macros.h>
 #include <Types.h>
-#include "Terminal.h"
-
-#include "VGATerminal.h"
+#include <Error.h>
 
 /** PS2 Keyboard input port. */
-#define PS2_PORT	0x60
+#define PS2_PORT        0x60
 
 /** Interrupt number of the i8042 controller. */
-#define PS2_IRQ		1
+#define PS2_IRQ         1
 
 /** Bit is set in the scancode, if a key is released. */
-#define PS2_RELEASE	0x80
+#define PS2_RELEASE     0x80 
+
+/** Size of the keyboard buffer. */
+#define KEYBUF		1024
 
 /**
- * PS2 keyboard controller (i8042) support.
+ * PS2 Keyboard functionality.
  */
-class PS2Terminal : public Terminal
+typedef struct Keyboard
 {
-    public:
+    /**
+     * Constructor.
+     */
+    Keyboard();
 
-	/**
-	 * Constructor function.
-	 */
-	PS2Terminal();
+    /**
+     * Reads a character from the keyboard into keyboardBuffer.
+     * @return True if we read a valid character, false otherwise.
+     * @see keyboardBuffer
+     */
+    bool flush();
 
-	/** 
-	 * Read a character from the PS2 keyboard.
-	 * @param buffer Buffer to save the byte.
-	 * @param size Number of bytes to read.
-	 * @return Number of bytes on success and ZERO on failure. 
-	 */
-	int read(s8 *buffer, Size size);
-	
-    private:
+    /** Keyboard mapping. */
+    static const char keymap[0x3a][2];
+
+    /** Buffers all read operations. */
+    s8 keyboardBuffer[KEYBUF];
+
+    /** Amount of bytes in the keyboardBuffer. */
+    Size readBytes;
     
-	VGATerminal *vga;
-    
-	/** Keyboard mapping. */
-	static const char keymap[], shiftmap[];
-	
-	/** Current state of the shift key. */
-	u8 shiftState;
-};
+    /** State of the shift key. */
+    u8 shiftState;
+}
+Keyboard;
 
-#endif /* __TERMINAL_PS2TERMINAL_H */
+#endif /* __TERMINAL_KEYBOARD_H */

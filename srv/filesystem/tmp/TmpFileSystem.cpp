@@ -29,36 +29,26 @@ TmpFileSystem::TmpFileSystem(const char *path)
     root = new FileCache(&slash, new Directory, ZERO);
 }
 
-void TmpFileSystem::createFileHandler(FileSystemMessage *msg,
-				      FileSystemMessage *reply)
+Error TmpFileSystem::createFile(FileSystemMessage *msg,
+				FileSystemPath *path)
 {
-    char path[PATHLEN];
-    
-    /* Copy the path first. */
-    if (VMCopy(msg->from, Read, (Address) path,
-                                (Address) msg->buffer, PATHLEN) <= 0)
-    {
-        reply->result = EACCESS;
-        return;
-    }
     /* Create the appropriate file type. */
     switch (msg->filetype)
     {
 	case S_IFREG:
-	    insertFileCache(new File, "%s", path);
+	    insertFileCache(new File, "%s", **path->full());
 	    break;
 	
 	case S_IFDIR:
-	    insertFileCache(new Directory, "%s", path);
+	    insertFileCache(new Directory, "%s", **path->full());
 	    break;
 	
 	case S_IFCHR:
-	    insertFileCache(new Device(msg->deviceID), "%s", path);
+	    insertFileCache(new Device(msg->deviceID), "%s", **path->full());
 	    break;
 	
 	default:
-	    reply->result = EINVALID;
-	    return;
+	    return EINVALID;
     }
-    reply->result = ESUCCESS;
+    return ESUCCESS;
 }
