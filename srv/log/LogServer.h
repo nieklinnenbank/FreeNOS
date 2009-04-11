@@ -15,26 +15,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CONFIG_H
-#define __CONFIG_H
+#ifndef __LOG_LOGSERVER_H
+#define __LOG_LOGSERVER_H
+
+#include <api/IPCMessage.h>
+#include <IPCServer.h>
+#include <Types.h>
+#include <Macros.h>
+#include <Error.h>
+#include "LogMessage.h"
 
 /**
- * @brief Static PIDS.
- * @{
+ * Logs output and debug messages.
  */
+class LogServer : public IPCServer<LogServer, LogMessage>
+{
+    public:
+    
+	/**
+	 * Class constructor function.
+	 */
+	LogServer();
 
-#define ANY		65535
-#define SELF		65534
-#define KERNEL		65533
+    private:
+    
+	/**
+	 * Write a message to the log.
+	 * @param msg Request message.
+	 */
+	void writeLogHandler(LogMessage *msg);
 
-#define PROCSRV_PID	0
-#define VFSSRV_PID	1
-#define MEMSRV_PID	2
-#define DEVSRV_PID	3
-#define LOGSRV_PID	4
+};
 
-/**
- * @}
- */
-
-#endif /* __CONFIG_H */
+#endif /* __LOG_LOGSERVER_H */

@@ -31,7 +31,9 @@ CPP	    := $(CROSS)cpp
 LD          := $(CROSS)ld
 AR	    := $(CROSS)ar
 RANLIB	    := $(CROSS)ranlib
-CPPFLAGS    += -isystem $(TOPDIR)/include -isystem $(CURDIR) $(foreach inc,$(includes),-isystem $(TOPDIR)/$(inc)) -nostdinc
+CPPFLAGS    += -isystem $(TOPDIR)/include -isystem $(CURDIR) \
+               $(foreach inc,$(includes),-isystem $(TOPDIR)/$(inc)) -nostdinc \
+               -D__TOP__="$(shell readlink -f $(TOPDIR))"
 CFLAGS	    += $(CPPFLAGS) -Wall -Werror -MD -O0 -g3 -fno-builtin $(cflags)
 C++FLAGS    += $(CFLAGS) -fno-rtti -fno-exceptions
 ASMFLAGS    += $(CPPFLAGS) -Wall -Werror -O0 -g3
@@ -50,6 +52,7 @@ ASM_SOURCES += $(foreach dir,$(SRCDIR),$(wildcard $(dir)/*.S))
 ASM_OBJECTS += $(patsubst %.S,%.o,$(ASM_SOURCES))
 SOURCES	    += $(C_SOURCES) $(C++_SOURCES) $(ASM_SOURCES)
 OBJECTS	    += $(C_OBJECTS) $(C++_OBJECTS) $(ASM_OBJECTS)
+DEPS        += $(foreach dir,$(SRCDIR),$(wildcard $(dir)/*.d))
 
 #
 # Process library dependencies.
@@ -107,7 +110,7 @@ $(ASM_OBJECTS) : %.o : %.S
 #
 # Include generated dependancies.
 #
--include $(foreach dir,$(SRCDIR),$(wildcard $(dir)*.d))
+-include $(DEPS)
 
 #
 # Cleans up OBJECTS.
@@ -116,7 +119,7 @@ clean:
 	@for dir in $(subdirs); do \
 	  $(MAKE) -C $$dir clean; \
 	done
-	rm -f $(OBJECTS) $(program) $(program).bin $(library) *.d $(clean) $(CLEAN)
+	rm -f $(OBJECTS) $(program) $(program).bin $(library) $(DEPS) $(clean) $(CLEAN)
 
 #
 # These need to be forced.

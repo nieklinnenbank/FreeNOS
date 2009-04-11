@@ -21,8 +21,8 @@ char * strcat(char *dest, char *src)
 {
     char *s = dest;
 
-    while (*s++)
-	;
+    while (*s)
+	s++;
 
     strcpy(s, src);
     return dest;

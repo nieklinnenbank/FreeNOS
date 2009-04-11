@@ -15,26 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CONFIG_H
-#define __CONFIG_H
+#include <api/VMCopy.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include "LogServer.h"
+#include "LogMessage.h"
 
-/**
- * @brief Static PIDS.
- * @{
- */
+LogServer::LogServer() : IPCServer<LogServer, LogMessage>(this)
+{
+    /* Open standard I/O. */
+    for (int i = 0; i < 3; i++)
+    {
+	while (open("/dev/console", ZERO) == -1);
+    }
+    /* Register message handlers. */
+    addIPCHandler(WriteLog, &LogServer::writeLogHandler, false);
+}
 
-#define ANY		65535
-#define SELF		65534
-#define KERNEL		65533
-
-#define PROCSRV_PID	0
-#define VFSSRV_PID	1
-#define MEMSRV_PID	2
-#define DEVSRV_PID	3
-#define LOGSRV_PID	4
-
-/**
- * @}
- */
-
-#endif /* __CONFIG_H */
+void LogServer::writeLogHandler(LogMessage *msg)
+{
+    /* Write to the system console. */
+    printf("PID[%d]: %s\r\n", msg->from, msg->buffer);
+}

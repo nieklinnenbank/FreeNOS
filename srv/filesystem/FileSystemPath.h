@@ -85,9 +85,10 @@ class FileSystemPath
 	 */
 	void parse(char *p, char sep = DEFAULT_SEPARATOR)
 	{
-	    const char *saved = ZERO, *savedParent = ZERO, *savedTmp = ZERO;
+	    const char *saved = ZERO;
 	    const char *cur   = p;
-	    Size size, savedParentSz;
+	    char *parentStr   = ZERO;
+	    Size size;
 
 	    /* Skip heading separators. */
 	    while (*cur && *cur == sep) cur++;
@@ -115,15 +116,28 @@ class FileSystemPath
 			size = (cur - saved);
 			
 		    path.insertTail(new String(saved, size));
-		    savedParent   = savedTmp;
-		    savedParentSz = (savedTmp - savedParent) + 1;
-		    savedTmp      = saved;
 		    saved         = cur + 1;
 		}
 		cur++;
 	    }
 	    /* Create parent, if any. */
-	    if (savedParent) parentPath = new String(savedParent, savedParentSz);
+	    if (path.headNode && path.headNode->next)
+	    {
+		/* Allocate buffer. */
+		parentStr  = new char[strlen(p)];
+		memset(parentStr, 0, strlen(p));
+
+		/* Construct parent path. */		
+		for (ListNode<String> *l = path.headNode; l && l->next; l = l->next)
+		{
+		    strcat(parentStr, **l->data);
+		    if (l->next && l->next->next)
+			strncat(parentStr, &separator, 1);
+		}
+		/* Save the path, then release buffer. */
+		parentPath = new String(parentStr);
+		delete parentStr;
+	    }
 	}
 
 	/**

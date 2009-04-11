@@ -15,6 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-subdirs := terminal idle memory process filesystem serial log
+program   += log
+libraries += libc libcrt liballoc libposix
+includes  += srv
 
-include ../tools/rules.mk
+include ../../tools/rules.mk

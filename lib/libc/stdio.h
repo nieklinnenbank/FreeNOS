@@ -32,7 +32,7 @@
  * @param ... Argument list.
  * @see printf
  */
-#define debug(fmt, ...) \
+#define dprintf(fmt, ...) \
     printf("{%s:%d}: " fmt, __FILE__, __LINE__, ##__VA_ARGS__);
 
 /**

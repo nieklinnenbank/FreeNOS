@@ -19,6 +19,7 @@
 #include <api/ProcessCtl.h>
 #include <FileSystemMessage.h>
 #include <ProcessMessage.h>
+#include <LogMessage.h>
 #include <Config.h>
 #include "SerialServer.h"
 #include "i8250.h"
@@ -75,6 +76,10 @@ SerialServer::SerialServer()
 			  
 	    /* Register IRQ handler. */
 	    addIRQHandler(uarts[i].irq, &SerialServer::interruptHandler);
+	    
+	    /* Perform log. */
+	    log("i8250 at PORT=%x IRQ=%x",
+	         uarts[i].port, uarts[i].irq);
 	}
     }
     /* Did we detect at least one UART? */

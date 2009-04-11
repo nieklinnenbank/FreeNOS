@@ -15,26 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CONFIG_H
-#define __CONFIG_H
+#include "string.h"
 
-/**
- * @brief Static PIDS.
- * @{
- */
+char * strncat(char *dest, char *src, size_t n)
+{
+    char *s = dest;
 
-#define ANY		65535
-#define SELF		65534
-#define KERNEL		65533
+    while (*s)
+	s++;
 
-#define PROCSRV_PID	0
-#define VFSSRV_PID	1
-#define MEMSRV_PID	2
-#define DEVSRV_PID	3
-#define LOGSRV_PID	4
-
-/**
- * @}
- */
-
-#endif /* __CONFIG_H */
+    strncpy(s, src, n);
+    return dest;
+}

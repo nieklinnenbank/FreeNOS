@@ -26,6 +26,7 @@
  * @{
  */
 
+
 /**
  * Compare two strings.
  * @param dest Destination string to compare.
@@ -96,12 +97,36 @@ extern C int strncpy(char *dest, char *src, size_t sz);
 extern C size_t strlcpy(char *dst, const char *src, size_t siz);
 
 /**
- * Append strings.
+ * @brief Concatenate two strings.
+ * 
+ * The strcat() function shall append a copy of the string pointed to
+ * by s2 (including the terminating NUL character) to the end of the
+ * string pointed to by s1.
+ * 
  * @param dest Destination string.
- * @param src String to be appended to the dest.
- * @return Pointer to the resulting string.
+ * @param src Source string.
+ * @return The strcat() function shall return s1; no return value is
+ *         reserved to indicate an error.
  */
 extern C char * strcat(char *dest, char *src);
+
+/**
+ * @brief Concatenate a string with part of another
+ *
+ * The strncat() function shall append not more than n bytes (a NUL
+ * character and bytes that follow it are not appended) from the array
+ * pointed to by s2 to the end of the string pointed to by s1. The initial
+ * byte of s2 overwrites the NUL character at the end of s1. A terminating
+ * NUL character is always appended to the result. If copying takes place
+ * between objects that overlap, the behavior is undefined.
+ * 
+ * @param dest Destination string.
+ * @param src Source string.
+ * @param n Number of character to concatenate.
+ * @return The strncat() function shall return s1; no return value
+ *         shall be reserved to indicate an error.
+ */
+extern C char * strncat(char *dest, char *src, size_t siz);
 
 /**
  * The strerror function maps the number in errnum to a message string.

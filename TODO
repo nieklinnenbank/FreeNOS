@@ -17,21 +17,18 @@
 
 --> We could merge the two mapVirtual() overloads into one, then check for p == this :)
 
-[commit first]
---> fixup libc --> divide the functions into seperate files, so
-		   we can provide man pages like so too (like *BSD does)
---> fixup all posix library function documentation!!!
-
 [first]
 
---> userlevel processes should NOT be allowed to IPC asynchroneously; e.g. to the VFS server.
-
---> Maybe let debug() / output() send console messages with inline buffers, so it's safe for e.g. VFS,
-    serial, all filesystems etc. to send asynchroneous messages to the console; no workaround needed then :)
+--> fixup all posix library function documentation!!!
 
 --> fixup rules.mk: just everything lowercase, simplify everything :-)
     --> parallel make
     --> we should be able to link the *init sections, without --whole-library... e.g. kernel doesn't need everything from libposix! 
+	--> we actually don't need .init sections which we do not use :)
+
+--> ISO 9660 filesystem, using USB.
+
+--> userlevel processes should NOT be allowed to IPC asynchroneously; e.g. to the VFS server.
 
 --> VFS: FileCache.entries and Directory.entries are duplicate!!!
     --> should design this in a better way!

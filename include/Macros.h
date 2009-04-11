@@ -36,6 +36,10 @@
 #define QUOTE(x) \
     #x
 
+/** Indirect quoting. */
+#define IQUOTE(x) \
+    QUOTE(x)
+
 /** Calculates offsets in data structures. */
 #define offsetof(TYPE, MEMBER) \
     ((Size) &((TYPE *)0)->MEMBER)

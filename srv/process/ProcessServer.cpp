@@ -21,6 +21,7 @@
 #include <api/ProcessCtl.h> 
 #include <arch/Memory.h> 
 #include <FileSystemMessage.h>
+#include <LogMessage.h>
 #include <stdio.h>
 #include "ProcessMessage.h"
 #include "ProcessServer.h"
@@ -86,8 +87,8 @@ void ProcessServer::readProcessHandler(ProcessMessage *msg)
 
 void ProcessServer::exitProcessHandler(ProcessMessage *msg)
 {
-    printf("PID %u exited with status %d\n",
-	    msg->from, msg->number);
+    log("PID %u exited with status %d",
+        msg->from, msg->number);
 
     /* Clear process entry. */
     memset(&procs[msg->from], 0, sizeof(UserProcess));

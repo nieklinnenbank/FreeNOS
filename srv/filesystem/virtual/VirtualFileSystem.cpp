@@ -161,8 +161,7 @@ void VirtualFileSystem::ioDoneHandler(FileSystemMessage *msg)
 
 	default:
 	    ;
-    }	    
-
+    }
     /* Post-process the I/O request on success. */
     if (msg->result == ESUCCESS)
     {
@@ -191,6 +190,8 @@ void VirtualFileSystem::ioDoneHandler(FileSystemMessage *msg)
 
 		/* Increment file pointer. */
 		fd->position += msg->size;
+		
+		// TODO: free buffer here, if msg->procID == getPID()!!!
 	
 	    default:
 		;
