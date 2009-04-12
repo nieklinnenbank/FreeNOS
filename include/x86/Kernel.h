@@ -59,7 +59,6 @@
 /** PIT channel zero. */
 #define PIT_CHAN0	0x40
 
-
 /**
  * Implements an x86 compatible kernel.
  */

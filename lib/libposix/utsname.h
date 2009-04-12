@@ -26,7 +26,7 @@
  */
 
 /** Size of each buffer in the utsname structure fields. */
-#define UTSBUF 64
+#define UTSBUF 128
 
 /**
  * System name structure.

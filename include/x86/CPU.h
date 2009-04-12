@@ -115,8 +115,8 @@
  * @param long The long 32-bit number to output. 
  * @param port Target I/O port. 
  */
-#define outl(l,port) \
-    asm volatile ("outl %%eax,%%dx"::"a"(l),"d"(port))
+#define outl(port,l) \
+    asm volatile ("outl %%eax,%%dx"::"a" (l),"d" (port))
 
 /** I/O bitmap. */
 extern Address kernelioBitMap[1024];

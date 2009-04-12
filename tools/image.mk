@@ -44,6 +44,7 @@ $(TMPDIR):
 	cp srv/terminal/terminal.bin $(TMPDIR)/boot/terminal.bin
 	cp srv/log/log.bin $(TMPDIR)/boot/log.bin
 	cp srv/serial/serial.bin $(TMPDIR)/boot/serial.bin
+	cp srv/pci/pci.bin $(TMPDIR)/boot/pci.bin
 	cp srv/idle/idle.bin $(TMPDIR)/boot/idle.bin
 	cp sbin/init/init.bin $(TMPDIR)/boot/init.bin
 	cp bin/sh/sh.bin $(TMPDIR)/boot/sh.bin
@@ -59,6 +60,7 @@ $(TMPDIR):
 	echo 'module /boot/terminal.bin' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'module /boot/serial.bin' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'module /boot/procfs.bin' >> $(TMPDIR)/boot/grub/menu.lst
+	echo 'module /boot/pci.bin' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'module /boot/init.bin' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'module /boot/idle.bin' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'module /boot/sh.bin' >> $(TMPDIR)/boot/grub/menu.lst
@@ -68,7 +70,7 @@ $(TMPDIR):
 #
 $(IMAGE):
 	$(MKISO) -R -b boot/grub/stage2_eltorito -no-emul-boot \
-	    -boot-load-size 4 -boot-info-table -o $(IMAGE) $(TMPDIR)
+	    -boot-load-size 4 -boot-info-table -V "FreeNOS $(FULLVERSION)" -o $(IMAGE) $(TMPDIR)
 	rm -rf $(TMPDIR)
 
 .PHONY: $(TMPDIR) $(IMAGE)

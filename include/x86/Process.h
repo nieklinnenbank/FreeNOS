@@ -51,8 +51,9 @@ class x86Process : public Process
 	~x86Process();
 	
 	/**
-	 * Allow
-	 *
+	 * (Dis)allows a process direct I/O to a port.
+	 * @param port I/O port.
+	 * @param enabled (Dis)allow access.
 	 */
 	void IOPort(u16 port, bool enabled);
 	

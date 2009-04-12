@@ -19,6 +19,13 @@
 
 [first]
 
+--> srv/pci
+--> srv/name
+--> srv/usb/hub
+--> srv/usb/disk
+--> srv/storage
+--> srv/filesystem/ext2/Ext2FileSystem
+
 --> fixup all posix library function documentation!!!
 
 --> fixup rules.mk: just everything lowercase, simplify everything :-)
@@ -26,21 +33,12 @@
     --> we should be able to link the *init sections, without --whole-library... e.g. kernel doesn't need everything from libposix! 
 	--> we actually don't need .init sections which we do not use :)
 
---> ISO 9660 filesystem, using USB.
-
 --> userlevel processes should NOT be allowed to IPC asynchroneously; e.g. to the VFS server.
 
 --> VFS: FileCache.entries and Directory.entries are duplicate!!!
     --> should design this in a better way!
 
 [5] --> ram filesystem, make sure we can read/write files right.
-
-    --> let process server write the banner! (so i8250 console works there aswell ;D)
-	--> or better: write the banner per default, on each virtual terminal! :)
-
-    --> for VFS + Terminal server: SendReceive should NOT receive from SELF!!!
-	--> this will fix our problem :-)
-	--> for the blocking problem, yes. But, how can we guarantee that the buffer is still valid???
 
     --> if we have the main() argc/argv thingies, we could do configure
         the boot modules to use /dev/serial0 as the system console! :)
@@ -76,9 +74,6 @@
 	--> Maybe also output this in ProcessInfo! :)
 
 [second]
-
-    --> VFS should I/O with filesystem servers asynchroneously (i.e. no SendReceive!!!)
-	--> have somekind of request queue for each mountpoint then.
     
 [13] --> Faults -> process manager must receive the Fault message!
 	--> e.g. use faultPID or so???
@@ -92,14 +87,12 @@
 	    FileCloseMessage ...
 
 [16] --> /srv/storage/ram -> register to FileSystemServer
-[17] --> Ext2FileSystem
 [18] --> Let init drop it's priviledges (syscalls, ipc, etc)
 [19] --> VMCtl() : maybe pass two Address pointers!!! Then write the actual used paddr + vaddr there!!!
 [20] --> kernel messages/logging...
 
 [bugs]
 * Running 'ps' a couple of times, reveales a memory leak somewhere... (memstat shows this)
-* "Cursor pointer" in the VGA screen isn't updated...
 * MemoryServer::doGrow() allocated a whole page, if e.g. only 1 byte is requested...
 * fix parallel make (LD of the kernel that is, which races against $(subdirs)!)
 
@@ -124,8 +117,6 @@
 * Inet server: maybe a /net, like in plan 9! :)
 
 [sources]
-* Perhaps, find a clean way to build libc and libposix using gcc and .c, instead of g++ and .cpp
-    --> maybe, an extern C function in C++, which then can be used from pure C code, to send IPC messages...
 * /boot directory, containing the grub.conf (instead of inside image.mk)
 * Automatic copying of every file in the project to boot.iso!
 * SVN's $headURL inside debug()?
