@@ -29,6 +29,11 @@
 #ifndef _TEKEN_H_
 #define	_TEKEN_H_
 
+/**
+ * @defgroup libteken libteken
+ * @{
+ */
+
 /*
  * libteken: terminal emulation library.
  *
@@ -176,5 +181,9 @@ extern C void teken_set_cursor(teken_t *, const teken_pos_t *);
 extern C void teken_set_curattr(teken_t *, const teken_attr_t *);
 extern C void teken_set_defattr(teken_t *, const teken_attr_t *);
 extern C void teken_set_winsize(teken_t *, const teken_pos_t *);
+
+/** 
+ * @}
+ */
 
 #endif /* !_TEKEN_H_ */

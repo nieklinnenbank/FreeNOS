@@ -23,6 +23,11 @@
 #include <arch/Memory.h>
 #include <Types.h>
 
+/**  
+ * @defgroup kernelapi kernel (API) 
+ * @{  
+ */
+
 /** SystemCall number for VMCtl(). */
 #define VMCTL 5
 
@@ -40,5 +45,9 @@ inline Address VMCtl(Action action, ProcessID proc, Address paddr,
 {
     return trapKernel5(VMCTL, action, proc, paddr, vaddr, prot);
 }
+
+/**
+ * @}
+ */
 
 #endif /* __API_VMCTL_H */

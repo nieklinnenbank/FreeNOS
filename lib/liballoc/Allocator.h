@@ -21,6 +21,11 @@
 #include <Types.h>
 
 /**
+ * @defgroup liballoc liballoc
+ * @{
+ */
+
+/**
  * Memory allocator class.
  */
 class Allocator
@@ -101,13 +106,13 @@ class Allocator
 	static Allocator *_default;	
 };
 
-/**
- * @defgroup defalloc Dynamic memory allocation.
- * @{
- */
-
 #ifndef LIBALLOC_DISABLE_OPERATORS
 #ifndef HOST
+
+/**
+ * @name Dynamic memory allocation.
+ * @{
+ */
 
 /**
  * Allocate new memory.
@@ -150,7 +155,7 @@ inline void operator delete[] (void *mem)
  */
 
 /**
- * @defgroup direct Absolute memory allocation.
+ * @name Absolute memory allocation.
  * @{
  */
 
@@ -163,6 +168,10 @@ inline void * operator new(Size sz, Address addr)
 {
     return (void *) addr;
 }
+
+/**
+ * @}
+ */
 
 #endif /* HOST */
 #endif /* LIBALLOC_DISABLE_OPERATORS */

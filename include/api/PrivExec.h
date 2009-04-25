@@ -20,6 +20,11 @@
 
 #include <arch/API.h>
 
+/**  
+ * @defgroup kernelapi kernel (API) 
+ * @{  
+ */
+
 /** SystemCall number for PrivExec(). */
 #define PRIVEXEC 3
 
@@ -44,5 +49,9 @@ inline int PrivExec(PrivOperation op)
 {
     return trapKernel1(PRIVEXEC, op);
 }
+
+/**
+ * @}
+ */
 
 #endif /* __API_PRIVEXEC_H */

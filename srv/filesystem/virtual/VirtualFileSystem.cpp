@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <String.h>
 #include "VirtualFileSystem.h"
 
 FileSystemMount    VirtualFileSystem::mounts[MAX_MOUNTS];
@@ -25,6 +26,7 @@ VirtualFileSystem::VirtualFileSystem()
 {
     SystemInformation info;
     FileSystemMessage msg;
+    String str;
 
     /* Register message handlers. */
     addIPCHandler(CreateFile,  &VirtualFileSystem::ioHandler, false);
@@ -42,10 +44,13 @@ VirtualFileSystem::VirtualFileSystem()
     /* Wait for process server to sync procs. */
     for (Size i = 0; i < info.moduleCount; i++)
     {
-	if (!msg.ipc(PROCSRV_PID, Receive, sizeof(msg)))
+	if (str.match(info.modules[i].string, "*.bin"))
 	{
-	    newProcessHandler(&msg);
-	    msg.ipc(PROCSRV_PID, Send, sizeof(msg));
+	    if (!msg.ipc(PROCSRV_PID, Receive, sizeof(msg)))
+	    {
+	        newProcessHandler(&msg);
+	        msg.ipc(PROCSRV_PID, Send, sizeof(msg));
+	    }
 	}
     }
     /* For now, we only guarantee that /dev is mounted. */

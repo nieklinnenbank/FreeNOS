@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2009 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 #include <Macros.h>
 
 /**
- * @defgroup posix POSIX.1-2008
+ * @defgroup libposix libposix (POSIX.1-2008)
  * @{
  */
 

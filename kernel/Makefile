@@ -19,7 +19,7 @@ arch	  := x86
 subdirs   += api arch/$(arch)
 objects   += api/*.o arch/$(arch)/*.o
 program   += kernel
-libraries += libc liballoc libposix
+libraries += libc liballoc libposix libparse
 ldscript  += arch/$(arch)/link.ld
 
 include ../tools/rules.mk

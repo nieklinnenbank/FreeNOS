@@ -67,7 +67,16 @@ Size Terminal::read(char *buffer, Size size)
 
 void Terminal::write(char *buffer, Size size)
 {
-    teken_input(&state, buffer, size);
+    char cr  = '\r';
+
+    for (Size i = 0; i < size; i++)
+    {
+	if (*buffer == '\n')
+	{
+	    teken_input(&state, &cr, 1);
+	}
+	teken_input(&state, buffer++, 1);
+    }
 }
 
 void bell(Terminal *term)

@@ -24,6 +24,11 @@
 #include "Init.h"
 
 /**
+ * @defgroup kernel kernel (generic)
+ * @{
+ */
+
+/**
  * Initializes an APIHandler.
  * @param nr Unique system call number.
  * @param handler APIHandler function.
@@ -60,5 +65,9 @@ Action;
 
 /** List of known APIHandler functions. */
 extern Vector<APIHandler> apis;
+
+/**
+ * @}
+ */
 
 #endif /* __KERNEL_API_H */

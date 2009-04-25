@@ -25,13 +25,20 @@ TmpFileSystem::TmpFileSystem(const char *path)
     : FileSystem(path)
 {
     FileSystemPath slash("/");
+    Directory *rdir = new Directory;
 
-    root = new FileCache(&slash, new Directory, ZERO);
+    root = new FileCache(&slash, rdir, ZERO);
+    rdir->insertEntry(".", DT_DIR);
+    rdir->insertEntry("..", DT_DIR);
+    insertFileCache(rdir, ".");
+    insertFileCache(rdir, "..");
 }
 
 Error TmpFileSystem::createFile(FileSystemMessage *msg,
 				FileSystemPath *path)
 {
+    Directory *pdir;
+
     /* Create the appropriate file type. */
     switch (msg->filetype)
     {
@@ -50,5 +57,16 @@ Error TmpFileSystem::createFile(FileSystemMessage *msg,
 	default:
 	    return EINVALID;
     }
+    /* Add directory entry. */
+    if (path->parent())
+    {
+	pdir = (Directory *) findFileCache(**path->parent())->file;
+    }
+    else
+	pdir = (Directory *) root->file;
+	
+    pdir->insertEntry(**path->full(), msg->filetype);
+    
+    /* All done. */
     return ESUCCESS;
 }

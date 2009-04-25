@@ -39,7 +39,8 @@ class File
 	 * @param g Group identity.
 	 */
 	File(FileType t = RegularFile, UserID u = ZERO, GroupID g = ZERO)
-	    : type(t), size(ZERO), uid(u), gid(g)
+	    : type(t), size(ZERO), refCount(ZERO), openCount(ZERO),
+	      uid(u), gid(g)
 	{
 	}
 
@@ -48,6 +49,72 @@ class File
 	 */
 	virtual ~File()
 	{
+	}
+
+	/**
+	 * Retrieve our filetype.
+	 * @return FileType object.
+	 */
+	FileType getType()
+	{
+	    return type;
+	}
+
+	/**
+	 * Get the number of times we are referenced internally.
+	 * @return Reference count.
+	 * @see refCount
+	 */
+	Size getRefCount()
+	{
+	    return refCount;
+	}
+	
+	/**
+	 * Enlarge the number of times we are referenced by one.
+	 * @see refCount
+	 */
+	void incrementRefCount()
+	{
+	    refCount++;
+	}
+
+	/**
+	 * Shrink the number of times we are referenced by one.
+	 * @see refCount
+	 */
+	void decrementRefCount()
+	{
+	    if (refCount > 0) refCount--;
+	}
+
+
+	/**
+	 * Get the number of times we are opened by a process.
+	 * @return Open count.
+	 * @see openCount
+	 */
+	Size getOpenCount()
+	{
+	    return openCount;
+	}
+	
+	/**
+	 * Enlarge the number of times we are opened by one.
+	 * @see openCount
+	 */
+	void incrementOpenCount()
+	{
+	    openCount++;
+	}
+
+	/**
+	 * Shrink the number of times we are opened by one.
+	 * @see openCount
+	 */
+	void decrementOpenCount()
+	{
+	    if (openCount > 0) openCount--;
 	}
 
 	/**
@@ -104,15 +171,6 @@ class File
 	    else
 		return e;
 	}
-	
-	/**
-	 * Retrieve our filetype.
-	 * @return FileType object.
-	 */
-	FileType getType()
-	{
-	    return type;
-	}
     
     protected:
 
@@ -121,6 +179,12 @@ class File
 	
 	/** Size of the file, in bytes. */
 	Size size;
+	
+	/** Number of times the File is referenced internally. */
+	Size refCount;
+	
+	/** Number of times the File has been opened by a process. */
+	Size openCount;
 	
 	/** Owner of the file. */
 	UserID uid;

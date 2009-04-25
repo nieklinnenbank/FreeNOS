@@ -21,6 +21,11 @@
 #include <Types.h>
 #include <kernel/API.h>
 
+/**  
+ * @defgroup x86kernel kernel (x86) 
+ * @{  
+ */
+
 /** 
  * Perform a kernel trap with 1 argument.
  * @param num Unique number of the handler to execute. 
@@ -86,5 +91,9 @@ inline ulong trapKernel5(ulong num, ulong arg1, ulong arg2, ulong arg3,
 				 "d"(arg3), "S"(arg4), "D"(arg5));
     return ret;
 }
+
+/**
+ * @}
+ */
 
 #endif /* __X86_API_H */

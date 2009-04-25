@@ -40,11 +40,14 @@ int ProcListCommand::execute(Size nparams, char **params)
     /* Read directory. */
     while ((dent = readdir(d)))
     {
-	printf("%s ", dent->d_name);
-	catFmt("/proc/%s/status",  dent->d_name);
-	printf(" ");
-	catFmt("/proc/%s/cmdline", dent->d_name);
-	printf("\r\n");
+	if (dent->d_name[0] != '.')
+	{
+	    printf("%s ", dent->d_name);
+	    catFmt("/proc/%s/status",  dent->d_name);
+	    printf(" ");
+	    catFmt("/proc/%s/cmdline", dent->d_name);
+	    printf("\r\n");
+	}
     }
     /* Close it. */
     closedir(d);

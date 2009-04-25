@@ -22,6 +22,7 @@
 #include <arch/Memory.h> 
 #include <FileSystemMessage.h>
 #include <LogMessage.h>
+#include <String.h>
 #include <stdio.h>
 #include "ProcessMessage.h"
 #include "ProcessServer.h"
@@ -33,6 +34,7 @@ ProcessServer::ProcessServer()
 {
     SystemInformation info;
     FileSystemMessage vfs;
+    String str;
 
     /* Register message handlers. */
     addIPCHandler(GetID,       &ProcessServer::getIDHandler);
@@ -42,14 +44,17 @@ ProcessServer::ProcessServer()
     /* Fixup process table, with boot modules. */
     for (Size i = 0; i < info.moduleCount; i++)
     {
-	/* Write commandline and identities. */
-	snprintf(procs[i].command, COMMANDLEN,
-		"[%s]", info.modules[i].string);
-	procs[i].uid = 0;
-	procs[i].gid = 0;
+	if (str.match(info.modules[i].string, "*.bin"))
+	{
+	    /* Write commandline and identities. */
+	    snprintf(procs[i].command, COMMANDLEN,
+		    "[%s]", info.modules[i].string);
+	    procs[i].uid = 0;
+	    procs[i].gid = 0;
 	
-	/* Inform VFS. */
-	vfs.newProcess(i, procs[i].uid, procs[i].gid);
+	    /* Inform VFS. */
+	    vfs.newProcess(i, procs[i].uid, procs[i].gid);
+	}
     }
 }
 

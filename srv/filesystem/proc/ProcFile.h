@@ -24,6 +24,11 @@
 #include <Error.h>
 
 /**
+ * @defgroup procfs procfs (Process Filesystem)
+ * @{
+ */
+
+/**
  * Maps running processes into the filesystem.
  */
 class ProcFile : public File
@@ -56,5 +61,9 @@ class ProcFile : public File
 	/** Size of the buffer. */
 	Size size;
 };
+
+/**
+ * @}
+ */
 
 #endif /* __FILESYSTEM_PROCFILE_H */

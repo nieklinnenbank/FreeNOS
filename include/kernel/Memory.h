@@ -22,6 +22,11 @@
 #include <arch/Process.h>
 #include <Types.h>
 
+/** 
+ * @defgroup kernel kernel (generic)
+ * @{ 
+ */
+
 /**
  * Represents system memory.
  */
@@ -155,6 +160,10 @@ class Memory
 	 */
 	void setMark(Address addr, bool marked);
 };
+
+/**
+ * @}
+ */
 
 #endif /* __ASSEMBLY__ */
 #endif /* __MEMORY_H */

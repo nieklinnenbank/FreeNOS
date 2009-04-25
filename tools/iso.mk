@@ -19,7 +19,7 @@
 # Setup variables.
 #
 IMAGE	 := boot.iso
-KERNEL 	 := kernel/kernel
+KERNEL 	 := kernel/kernel.bin
 MKISO	 := mkisofs
 TMPDIR	 := $(shell mktemp -d -u)
 CLEAN    += $(IMAGE)
@@ -27,7 +27,7 @@ CLEAN    += $(IMAGE)
 #
 # Build a bootable ISO image.
 #
-image: $(TMPDIR) $(IMAGE)
+iso: $(BOOTIMAGE) $(TMPDIR) $(IMAGE)
 
 #
 # Fill a temporary directory.
@@ -40,6 +40,7 @@ $(TMPDIR):
 	cp srv/filesystem/virtual/vfs.bin $(TMPDIR)/boot/vfs.bin
 	cp srv/filesystem/proc/procfs.bin $(TMPDIR)/boot/procfs.bin
 	cp srv/filesystem/tmp/tmpfs.bin $(TMPDIR)/boot/tmpfs.bin
+	cp srv/filesystem/ext2/ext2fs.bin $(TMPDIR)/boot/ext2fs.bin
 	cp srv/memory/memory.bin $(TMPDIR)/boot/memory.bin
 	cp srv/terminal/terminal.bin $(TMPDIR)/boot/terminal.bin
 	cp srv/log/log.bin $(TMPDIR)/boot/log.bin
@@ -48,6 +49,7 @@ $(TMPDIR):
 	cp srv/idle/idle.bin $(TMPDIR)/boot/idle.bin
 	cp sbin/init/init.bin $(TMPDIR)/boot/init.bin
 	cp bin/sh/sh.bin $(TMPDIR)/boot/sh.bin
+	cp boot.img $(TMPDIR)/boot/boot.img
 	echo 'timeout 0' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'title Kernel' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'root (cd)' >> $(TMPDIR)/boot/grub/menu.lst
@@ -60,10 +62,12 @@ $(TMPDIR):
 	echo 'module /boot/terminal.bin' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'module /boot/serial.bin' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'module /boot/procfs.bin' >> $(TMPDIR)/boot/grub/menu.lst
+	echo 'module /boot/ext2fs.bin' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'module /boot/pci.bin' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'module /boot/init.bin' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'module /boot/idle.bin' >> $(TMPDIR)/boot/grub/menu.lst
 	echo 'module /boot/sh.bin' >> $(TMPDIR)/boot/grub/menu.lst
+	echo 'module /boot/boot.img' >> $(TMPDIR)/boot/grub/menu.lst
 
 #
 # Generate ISO image.

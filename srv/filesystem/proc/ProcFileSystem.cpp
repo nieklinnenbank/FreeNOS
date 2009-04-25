@@ -38,7 +38,8 @@ ProcFileSystem::ProcFileSystem(const char *path)
 {
     FileSystemPath slash("/");
 
-    root = new FileCache(&slash, new ProcRootDirectory(this), ZERO);
+    rootDir = new ProcRootDirectory(this);
+    root    = new FileCache(&slash, rootDir, ZERO);
 }
 
 void ProcFileSystem::refresh()
@@ -47,10 +48,17 @@ void ProcFileSystem::refresh()
     ProcessID pid = 0;
     UserProcess uproc;    
     String slash("/");
+    Directory *procDir;
     char tmp[PATHLEN];
 
     /* Clear the current cache. */
     clearFileCache();
+    
+    /* Update root. */
+    rootDir->insertEntry(".", DT_DIR);
+    rootDir->insertEntry("..", DT_DIR);
+    insertFileCache(rootDir, ".");
+    insertFileCache(rootDir, "..");
 
     /* Read processes from process server. */
     while (true)
@@ -59,17 +67,24 @@ void ProcFileSystem::refresh()
         msg.action = ReadProcess;
         msg.buffer = &uproc;
 	msg.number = pid;
-	
+
 	/* Read next process. */
 	if (IPCMessage(PROCSRV_PID, SendReceive, &msg, sizeof(msg)) || msg.result)
 	{
 	    break;
 	}
-	/* Add entry to root. */
 	snprintf(tmp, sizeof(tmp), "%u", msg.number);
-
+	
 	/* Per-process directory. */
-	insertFileCache(new Directory, "%u", msg.number);
+	procDir = new Directory;
+	procDir->insertEntry(".",       DT_DIR);
+	procDir->insertEntry("..",      DT_DIR);
+	procDir->insertEntry("cmdline", DT_REG);
+	procDir->insertEntry("status",  DT_REG);
+	rootDir->insertEntry(tmp,      DT_DIR);
+	insertFileCache(procDir, "%u",    msg.number);
+	insertFileCache(procDir, "%u/.",  msg.number);
+	insertFileCache(rootDir, "%u/..", msg.number);
 
 	/* Command line string. */
 	insertFileCache(new ProcFile(uproc.command),

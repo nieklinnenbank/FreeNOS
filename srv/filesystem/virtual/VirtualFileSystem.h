@@ -26,6 +26,11 @@
 #include <FileSystemMessage.h>
 #include <Vector.h>
 
+/** 
+ * @defgroup vfs vfs (Virtual Filesystem) 
+ * @{ 
+ */
+
 /** Maximum number of mounted filesystems. */
 #define MAX_MOUNTS 16
 
@@ -166,5 +171,9 @@ class VirtualFileSystem : public IPCServer<VirtualFileSystem, FileSystemMessage>
 	/** Filesystem's user process table. */
 	static UserProcessFSEntry procs[MAX_PROCS];
 };
+
+/**
+ * @}
+ */
 
 #endif /* __FILESYSTEM_VIRTUALFILESYSTEM_H */

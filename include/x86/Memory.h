@@ -18,6 +18,11 @@
 #ifndef __X86_MEMORY_H
 #define __X86_MEMORY_H
 
+/**   
+ * @defgroup x86kernel kernel (x86)  
+ * @{   
+ */
+
 #ifdef __ASSEMBLER__
 #define ADDRESS
 #define ADDRESSP
@@ -222,4 +227,9 @@ extern x86Memory *memory;
 extern Address kernelPageDir[1024], kernelPageTab[1024];
 
 #endif /* __ASSEMBLER__ */
+
+/**
+ * @}
+ */
+
 #endif /* __X86_MEMORY_H */

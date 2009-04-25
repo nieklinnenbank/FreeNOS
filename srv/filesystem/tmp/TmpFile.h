@@ -24,6 +24,11 @@
 #include <Error.h>
 
 /**
+ * @defgroup tmpfs tmpfs (Temporary Filesystem)
+ * @{
+ */
+
+/**
  * Keeps file contents in virtual memory instead of persistent storage.
  */
 class TmpFile : public File
@@ -62,5 +67,9 @@ class TmpFile : public File
 	/** Size of the buffer. */
 	Size size;
 };
+
+/**
+ * @}
+ */
 
 #endif /* __FILESYSTEM_TMPFILE_H */

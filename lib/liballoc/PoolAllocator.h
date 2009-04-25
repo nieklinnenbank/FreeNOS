@@ -21,6 +21,11 @@
 #include <Types.h>
 #include "Allocator.h"
 
+/** 
+ * @defgroup liballoc liballoc 
+ * @{ 
+ */
+
 /** Minimum power of two for a pool size. */
 #define POOL_MIN_POWER 2
 
@@ -143,5 +148,9 @@ class PoolAllocator : public Allocator
 	/** Array of memory pools. Index represents the power of two. */
 	MemoryPool *pools[POOL_MAX_POWER];
 };
+
+/**
+ * @}
+ */
 
 #endif /* __LIBALLOC_POOLALLOCATOR_H */

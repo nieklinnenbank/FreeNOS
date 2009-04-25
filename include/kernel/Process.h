@@ -25,6 +25,11 @@
 #include <List.h>
 #include "Scheduler.h"
 
+/** 
+ * @defgroup kernel kernel (generic)
+ * @{ 
+ */
+
 /** Maximum number of processes. */
 #define MAX_PROCS 1024
 
@@ -168,6 +173,10 @@ class Process
 	/** All known Processes. */
 	static Vector<Process> procs;
 };
+
+/**
+ * @}
+ */
 
 #endif /* __ASSEMBLER__ */
 #endif /* __KERNEL_PROCESS_H */

@@ -20,6 +20,11 @@
 
 #include <Macros.h>
 
+/** 
+ * @defgroup kernel kernel (generic)
+ * @{ 
+ */
+
 /**
  * Invokes all function pointers inside the .ctors section.
  */
@@ -44,5 +49,9 @@ extern void (*CTOR_LIST)();
  * Destructor list.
  */
 extern void (*DTOR_LIST)();
+
+/**
+ * @}
+ */
 
 #endif /* __KERNEL_SUPPORT_H */

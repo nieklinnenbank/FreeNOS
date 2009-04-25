@@ -24,8 +24,8 @@
 #include "time.h"
 
 /**                                                                                                                                                                                                     
- * @defgroup posix POSIX.1-2008                                                                                                                                                                         
- * @{                                                                                                                                                                                                   
+ * @defgroup libposix libposix (POSIX.1-2008)
+ * @{
  */ 
 
 /**

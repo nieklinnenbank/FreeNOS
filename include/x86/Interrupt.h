@@ -22,6 +22,11 @@
 #include <Types.h>
 #include <Macros.h>
 
+/**   
+ * @defgroup x86kernel kernel (x86)  
+ * @{   
+ */
+
 /**
  * Enables interrupts.
  */
@@ -112,5 +117,9 @@ InterruptHook;
  * @param state CPU registers pushed on the stack.
  */
 extern C void executeInterrupt(CPUState state);
+
+/**
+ * @}
+ */
 
 #endif /* __AMD64_INTERRUPT_H */

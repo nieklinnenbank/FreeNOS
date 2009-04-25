@@ -23,6 +23,15 @@
 #include <FileSystemMessage.h>
 #include <Types.h>
 #include <Error.h>
+#include "ProcRootDirectory.h"
+
+/** @see ProcRootDir. */
+class ProcRootDirectory;
+
+/** 
+ * @defgroup procfs procfs (Process Filesystem) 
+ * @{ 
+ */
 
 /**
  * Process filesystem (procfs). Maps processes into a pseudo filesystem.
@@ -46,6 +55,13 @@ class ProcFileSystem : public FileSystem
 	
 	/** String representation of process states. */
 	static char *states[];
+	
+	/** Root of the process filesystem. */
+	ProcRootDirectory *rootDir;
 };
+
+/**
+ * @}
+ */
 
 #endif /* __FILESYSTEM_PROCFILESYSTEM_H */

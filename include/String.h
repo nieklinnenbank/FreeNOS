@@ -23,6 +23,13 @@
 #include "Types.h"
 #include "Assert.h"
 
+/**
+ * Test for a wildcard character.
+ * @param ch Input character.
+ * @return True if wildcard, false otherwise.
+ */
+#define WILDCARD(c) ((c) == '*')
+
 /** Default maximum length of a String's value. */
 #define STRING_DEFAULT_MAX 128
 
@@ -38,7 +45,8 @@ class String : public Comparable<String>
 	 */
 	String()
 	{
-	    value = ZERO;
+	    value       = ZERO;
+	    deleteValue = false;
 	}
 
 	/**
@@ -112,6 +120,99 @@ class String : public Comparable<String>
 	}
 
 	/**
+	 * Matches the given string against a mask.
+	 * @param string Input string.
+	 * @param mask Pattern to match against.
+	 * @return True if match, false otherwise.
+	 */
+	bool match(char *string, char *mask)
+	{
+	    /* Loop until the end of the mask, */
+	    while (*mask)
+	    {
+		/* See if the current character is a wildcard or not. */
+		if (!WILDCARD(*mask))
+		{
+		    /*
+		     * If it's not a wildcard, the string and mask
+		     * must match exactly to be a match.
+		     */
+		    if (!*string || *mask != *string)
+		    {
+		        return false;
+		    }
+		    mask++, string++;
+		}
+		else
+		{
+		    /* If we have a wildcard, look for the next character. */
+		    while (WILDCARD(*mask))
+		    {
+			mask++;
+		    }
+		    /*
+		     * There is more coming after the wildcard, to which the
+		     * string must match.
+		     */
+		    if (*mask)
+		    {
+			/*
+			 * Loop until the char in string matches the char
+			 * after the wildcard.
+			 */
+			while (true)
+			{
+			    if (!*string)
+				return false;
+			
+			    if (*mask == *string)
+				break;
+
+			    string++;
+			}
+		    }
+		    /* Mask ends with a wildcard, which means the string matches. */
+		    else
+			return true;
+		}
+	    }
+	    /* If there remains more data in the string, it's not a match. */
+	    return *string ? false : true;
+	}
+
+	/**
+	 * Matches the String against a mask.
+	 * @param mask Pattern to match against.
+	 * @return True if match, false otherwise.
+	 */	
+	bool match(char *mask)
+	{
+	    return value ? match(value, mask) : false;
+	}
+
+	/**
+	 * Compare a String with a character array.
+	 * @param ch Character array.
+	 * @return True if equal, false otherwise.
+	 */	
+	bool equals(String *s)
+	{
+	    assertRead(s->value);
+	    return strcmp(value, s->value) == 0;
+	}
+
+	/**
+	 * Compare a String with a character array.
+	 * @param ch Character array.
+	 * @return True if equal, false otherwise.
+	 */	
+	bool equals(const String & s)
+	{
+	    assertRead(s.value);
+	    return strcmp(value, s.value) == 0;
+	}
+	
+	/**
 	 * Index operator.
 	 * @param index Index of the character inside the String to read.
 	 * @return Character value at the given index.
@@ -174,29 +275,6 @@ class String : public Comparable<String>
 	}
 	
 	/**
-	 * Compare a String with a character array.
-	 * @param ch Character array.
-	 * @return True if equal, false otherwise.
-	 */	
-	bool equals(String *s)
-	{
-	    assertRead(s->value);
-	    return strcmp(value, s->value) == 0;
-	}
-
-	/**
-	 * Compare a String with a character array.
-	 * @param ch Character array.
-	 * @return True if equal, false otherwise.
-	 */	
-	bool equals(const String & s)
-	{
-	    assertRead(s.value);
-	    return strcmp(value, s.value) == 0;
-	}
-
-	
-	/**
 	 * Dereference operator.
 	 * @return Pointer to the String value.
 	 */
@@ -217,7 +295,7 @@ class String : public Comparable<String>
 	    assertRead(s);
 	    assert(max > 0);
 
-	    Size sz = strlen(s);	// TODO: let's simply enforce the maximum
+	    Size sz = strlen(s);
 	    if (max < sz)
 		sz = max;
 

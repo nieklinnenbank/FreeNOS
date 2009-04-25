@@ -44,15 +44,12 @@ typedef struct FileCache
      * @param p Our parent. ZERO if we have no parent.
      */
     FileCache(FileSystemPath *path, File *f, FileCache *p)
-	: file(f), count(ZERO)
+	: file(f), valid(true)
     {
-	entries.insert(new String("."),  this);
-	entries.insert(new String(".."), p ? p : this);
-	
 	if (p && p != this)
 	{
+	    file->incrementRefCount();
 	    p->entries.insert(new String(path->base()), this);
-	    p->dir->addEntry(**path->base(), f->getType());
 	}
     }
     
@@ -65,21 +62,15 @@ typedef struct FileCache
     {
 	return file == fc->file;
     }
-    
-    union
-    {
-	/** File pointer. */
-        File *file;
-    
-	/** Directory pointer. */
-	Directory *dir;
-    };
+
+    /** File pointer. */
+    File *file;
     
     /** Contains parent, ourselves, and childs. */
     HashTable<String, FileCache> entries;
     
-    /** Number of times opened. */
-    Size count;
+    /** Is this entry still valid?. */
+    bool valid;
 }
 FileCache;
 
@@ -152,6 +143,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	{
 	    FileSystemPath path;
 	    FileCache *fc = ZERO; 
+	    File *f = ZERO;
 	    char buf[PATHLEN];
 	    Error result;
 
@@ -185,8 +177,9 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 			/* Do we have this file cached? */
 		    	if ((fc = findFileCache(&path)) || (fc = lookupFile(&path)))
 			{
-			    msg->ident = (Address) fc;
-			    fc->count++;
+			    f = fc->file;
+			    f->incrementRefCount();
+			    msg->ident = (Address) f;
 			}
 			else
 			{
@@ -194,13 +187,14 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 			    return;
 			}
 		    }
+		    break;
 		
 		case ReadFile:
 		case WriteFile:
 		case CloseFile:
 		
 		    /* Simply use the message identity. */
-		    fc = (FileCache *) msg->ident;
+		    f = (File *) msg->ident;
 	    }
 	    /* Perform I/O on the file. */
 	    switch (msg->action)
@@ -210,24 +204,24 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 		    break;
 		
 		case OpenFile:
-		    msg->result = fc->file->open(msg);
+		    msg->result = f->open(msg);
 		    break;
 
 		case StatFile:
-		    msg->result = fc->file->status(msg);
+		    msg->result = f->status(msg);
 		    break;
 
 		case ReadFile:
-		    msg->result = fc->file->read(msg);
+		    msg->result = f->read(msg);
 		    break;
 		
 		case WriteFile:
-		    msg->result = fc->file->write(msg);
+		    msg->result = f->write(msg);
 		    break;
 		
 		case CloseFile:
-		    fc->count--;
-	    	    msg->result = ESUCCESS;
+	    	    msg->result = ESUCCESS;	// TODO: for devices, we must inform them!!!
+						// TODO: incrementReferenceCount() here aswell.
 		    break;
 
 		default:
@@ -247,7 +241,29 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	 */
 	void ioDoneHandler(FileSystemMessage *msg)
 	{
-	     msg->ioDone(VFSSRV_PID, msg->procID, msg->size, msg->result);
+	    File *f = (File *) msg->ident;
+	
+	    if (msg->result == ESUCCESS)
+	    {
+		switch (msg->savedAction)
+	        {
+		    case OpenFile:
+			f->incrementOpenCount();
+		
+		    case StatFile:
+			f->decrementRefCount();
+			break;
+
+		    case CloseFile:
+			f->decrementOpenCount();
+			// TODO: decrementReferenceCount()
+			break;
+		
+		    default:
+			;
+		}
+	    }
+	    msg->ioDone(VFSSRV_PID, msg->procID, msg->size, msg->result);
 	}
 
     protected:
@@ -337,7 +353,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 		cacheHit(c);
 	    }
 	    /* Return what we got. */
-	    return c;
+	    return c && c->valid ? c : ZERO;
 	}
 
 	/**
@@ -361,23 +377,31 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	    {
 		cache = root;
 	    }
-	    /* May we clear this entry? Mark it, if so. */
-	    if (cache->count == 0 && cache != root)
-	    {
-		cache->count = (Size) -1;
-	    }
+	    /* Mark invalid immediately. */
+	    else
+	        cache->valid = false;
+
 	    /* Walk all our childs. */
 	    for (HashIterator<String, FileCache> i(&cache->entries); i.hasNext(); i++)
 	    {
-		/* May we free this entry? */
-		if (i.current()->count == 0 && i.current() != root)
+		/* Traverse subtree if it isn't invalidated yet. */
+		if (i.current()->valid)
 		{
 		    clearFileCache(i.current());
-		    cache->entries.remove(i.key(), true);
+
+		    /* May we remove reference to this entry? */
+		    if (i.current()->file->getRefCount()  >= 1 &&
+		        i.current()->file->getOpenCount() == 0)
+		    
+		    {
+			i.current()->file->decrementRefCount();
+			cache->entries.remove(i.key(), true);
+		    }
 		}
 	    }
-	    /* Remove the entry itself. */
-	    if (cache->count == (Size) -1)
+	    /* Remove the entry itself, if empty. */
+	    if (!cache->valid && cache->file->getRefCount() == 0 &&
+		 cache->entries.count() == 0 && cache->file->getOpenCount() == 0)
 	    {
 		delete cache->file;
 		delete cache;

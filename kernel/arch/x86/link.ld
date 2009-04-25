@@ -26,13 +26,20 @@ SECTIONS
     .text :
     {
 	. = ALIGN(4);
-	
+	multibootHeader = .;
+
 	/**
 	 * Multiboot header.
 	 */
 	LONG(0x1BADB002)
-	LONG(0x00000003)
-	LONG(-(0x1BADB002 + 0x00000003))
+	LONG(0x00010003)
+	LONG(-(0x1BADB002 + 0x00010003))
+	LONG(multibootHeader)
+	LONG(kernelStart)
+	LONG(0)
+	/* WORKS: LONG(0x0018e000) */
+	LONG(1024 * 1024 * 4)
+	LONG(_start)
 
 	*(.text)
     }

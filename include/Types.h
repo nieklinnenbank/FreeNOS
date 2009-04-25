@@ -18,41 +18,105 @@
 #ifndef __TYPES_H
 #define __TYPES_H
 
-/** Unsigned integer. */
+/** 
+ * @defgroup types types
+ * @{ 
+ */
+
+/**
+ * Restrict bit operations.
+ * @see http://kerneltrap.org/node/3848
+ */
+#define BITWISE \
+    __attribute__((bitwise))
+
+/**
+ * @name Unsigned integers.
+ * @{
+ */
+
+/** Unsigned integer number. */
 typedef unsigned int uint;
 
-/** Unsigned long integer. */
+/** Unsigned long number. */
 typedef unsigned long ulong;
 
-/** Signed integer. */
-typedef signed int sint;
-
-/** Signed long integer. */
-typedef signed long slong;
-
-/** Unsigned 64 bits. */
+/** Unsigned 64-bit number. */
 typedef unsigned long long u64;
 
-/** Unsigned 32 bits. */
+/** Unsigned 32-bit number. */
 typedef unsigned int u32;
 
-/** Unsigned 16 bits. */
+/** Unsigned 16-bit number. */
 typedef unsigned short u16;
 
-/** Unsigned 8 bits. */
+/** Unsigned 8-bit number. */
 typedef unsigned char u8;
 
-/** Signed 64 bits. */
+/**
+ * @}
+ */
+ 
+/**
+ * @name Signed integers.
+ * @{
+ */
+
+/** Signed integer number. */
+typedef signed int sint;
+
+/** Signed long number. */
+typedef signed long slong;
+
+/** Signed 64-bit number. */
 typedef signed long long s64;
 
-/** Signed 32 bits. */
+/** Signed 32-bit number. */
 typedef signed int s32;
 
-/** Signed 16 bits. */
+/** Signed 16-bit number. */
 typedef signed short int s16;
 
-/** Signed 8 bits. */
+/** Signed 8-bit number. */
 typedef signed char s8;
+
+/**
+ * @}
+ */
+
+/**
+ * @name Bitwise checked integers.
+ * @see http://kerneltrap.org/node/3848
+ * @{
+ */
+
+/** Unsigned 64-bit little endian number. */
+typedef u64 BITWISE le64;
+
+/** Unsigned 64-bit big endian number. */
+typedef u64 BITWISE be64;
+
+/** Unsigned 32-bit little endian number. */
+typedef u32 BITWISE le32;
+
+/** Unsigned 32-bit big endian number. */
+typedef u32 BITWISE be32;
+
+/** Unsigned 16-bit little endian number. */
+typedef u16 BITWISE le16;
+
+/** Unsigned 16-bit big endian number. */
+typedef u16 BITWISE be16;
+
+/** Unsigned 8-bit little endian number. */
+typedef u8  BITWISE le8;
+
+/** Unsigned 8-bit big endian number. */
+typedef u8  BITWISE be8;
+
+/**
+ * @}
+ */
 
 /** Any sane size indicator cannot go negative. */
 typedef unsigned int Size;
@@ -87,5 +151,9 @@ DeviceID;
  * @see Error.h
  */
 typedef slong Error;
+
+/**
+ * @}
+ */
 
 #endif /* __TYPES_H */

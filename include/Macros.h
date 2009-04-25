@@ -59,7 +59,9 @@
 #define SECTION(s) \
     __attribute__((__section__(s)))
 
-/** Declares an symbol to be forcibly "used". */
+/**
+ * Declares an symbol to be forcibly "used".
+ */
 #define USED \
     __attribute__((__used__))
 

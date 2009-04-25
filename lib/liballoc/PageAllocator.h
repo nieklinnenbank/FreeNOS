@@ -22,6 +22,11 @@
 #include <Types.h>
 #include "Allocator.h"
 
+/** 
+ * @defgroup liballoc liballoc 
+ * @{ 
+ */
+
 /** Minimum size required to allocate. */
 #define PAGEALLOC_MINIMUM (PAGESIZE * 2)
 
@@ -84,5 +89,9 @@ class PageAllocator : public Allocator
 	/** Total number of bytes allocated. */
 	Size allocated;
 };
+
+/**
+ * @}
+ */
 
 #endif /* __LIBALLOC_PAGEALLOCATOR_H */

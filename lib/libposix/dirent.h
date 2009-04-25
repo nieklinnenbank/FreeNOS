@@ -21,10 +21,11 @@
 #include <Macros.h>
 #include <Types.h>
 #include "types.h"
+#include "string.h"
 
 /**                                                                                                                                                                                                     
- * @defgroup posix POSIX.1-2008                                                                                                                                                                         
- * @{                                                                                                                                                                                                   
+ * @defgroup libposix libposix (POSIX.1-2008)
+ * @{
  */
  
 /** The file type is unknown. */
@@ -64,6 +65,20 @@ typedef struct dirent
     
     /** Type of file. */
     u8 d_type;
+
+#ifdef CPP
+
+    /**
+     * Comparison operator.
+     * @param d Dirent pointer.
+     * @return True if equal, false otherwise.
+     */
+    bool operator == (struct dirent *d)
+    {
+	return strcmp(d->d_name, d_name) == 0 && d->d_type == d_type;
+    }
+
+#endif /* CPP */
 }
 Dirent;
 
@@ -84,9 +99,6 @@ typedef struct DIR
     
     /** Number of direct structures in the buffer. */
     Size count;
-    
-    /** Number of entries read from the filesystem. */
-    Size countRead;
     
     /** End-of-file reached? */
     bool eof;

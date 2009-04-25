@@ -18,6 +18,11 @@
 #ifndef __AMD64_PROCESS_H
 #define __AMD64_PROCESS_H
 
+/**   
+ * @defgroup x86kernel kernel (x86)  
+ * @{   
+ */
+
 #ifndef __ASSEMBLY__
 #ifdef  __cplusplus
 
@@ -88,4 +93,9 @@ class x86Process : public Process
 
 #endif /* __cplusplus */
 #endif /* __ASSEMBLY__ */
+
+/**
+ * @}
+ */
+
 #endif /* __X86_PROCESS_H */

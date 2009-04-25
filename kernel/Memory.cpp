@@ -25,11 +25,22 @@
 #include <Types.h>
 
 Size Memory::memorySize, Memory::memoryAvail;
-u8 *Memory::memoryMap, *Memory::memoryMapEnd;
+u8  *Memory::memoryMap, *Memory::memoryMapEnd;
 
 Memory::Memory()
 {
-    allocatePhysical(1024 * 1024 * 4, 0);
+    /* Marks kernel memory used. */
+    allocatePhysical(0x00400000, 0);
+    
+    /* Marks boot module memory. */
+    for (Size i = 0; i < multibootInfo.modsCount; i++)
+    {
+        MultibootModule *mod  = &((MultibootModule *) multibootInfo.modsAddress)[i];
+        Size modSize = mod->modEnd - mod->modStart;
+
+        /* Mark memory used. */
+        allocatePhysical(modSize, mod->modStart);
+    }
 }
 
 void Memory::initialize()
@@ -65,8 +76,8 @@ void Memory::initialize()
 
 Address Memory::allocatePhysical(Size sz, Address paddr)
 {
-    Address start = paddr, end = memorySize;
-    Address from = 0, count = 0;
+    Address start = paddr & PAGEMASK, end = memorySize;
+    Address from  = 0, count = 0;
 
     /* Loop the memoryMap for a free block. */
     for (Address i = start; i < end; i += PAGESIZE)

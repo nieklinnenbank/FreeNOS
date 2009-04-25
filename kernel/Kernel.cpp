@@ -19,6 +19,7 @@
 #include <arch/Process.h>
 #include <arch/Scheduler.h>
 #include <arch/Multiboot.h>
+#include <String.h>
 
 Kernel::Kernel()
 {
@@ -26,22 +27,28 @@ Kernel::Kernel()
     ArchProcess *modProc;
     Address vstart = 0x80000000;
     Size modSize;
+    String str;
 
-    /* Startup modules. */
+    /* Startup boot modules. */
     for (Size n = 0; n <  multibootInfo.modsCount; n++)
     {
 	mod     = &((MultibootModule *) multibootInfo.modsAddress)[n];
-	modProc = new ArchProcess(vstart);
 	modSize = mod->modEnd - mod->modStart;
 	
-	/* Map the module in virtual memory. */
-	for (Size i = 0; i < modSize; i += PAGESIZE)
+	/* Do we need to create a process? */
+	if (str.match((char *) mod->string, "*.bin"))
 	{
-	    memory->mapVirtual(modProc, mod->modStart + i, vstart + i,
-			       PAGE_PRESENT|PAGE_USER|PAGE_RW);
+	    modProc = new ArchProcess(vstart);
+	    modProc->setState(Ready);
+	
+	    /* Map the module in virtual memory. */
+	    for (Size i = 0; i < modSize; i += PAGESIZE)
+	    {
+		memory->mapVirtual(modProc, mod->modStart + i, vstart + i,
+				   PAGE_PRESENT|PAGE_USER|PAGE_RW);
+	    }
+	    /* Schedule the process. */
+	    scheduler->enqueue(modProc);
 	}
-	/* Schedule the process. */
-	modProc->setState(Ready);
-	scheduler->enqueue(modProc);
     }
 }

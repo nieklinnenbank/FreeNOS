@@ -21,6 +21,11 @@
 #include <Types.h>
 #include "Allocator.h"
 
+/** 
+ * @defgroup liballoc liballoc 
+ * @{ 
+ */
+
 /** Magic cookie is used to detect heap corruption. */
 #define LISTALLOC_MAGIC 0x1234abcd
 
@@ -125,5 +130,9 @@ class ListAllocator : public Allocator
         /** Memory region list. */
 	MemRegion *regions;
 };
+
+/**
+ * @}
+ */
 
 #endif /* __LIBALLOC_LISTALLOCATOR_H */

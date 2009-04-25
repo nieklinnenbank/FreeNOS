@@ -26,6 +26,11 @@
 #include "Interrupt.h"
 #include "CPU.h"
 
+/**   
+ * @defgroup x86kernel kernel (x86)  
+ * @{   
+ */
+
 /** IO base address for master PIC */
 #define PIC1_CMD        0x20 
 
@@ -122,6 +127,10 @@ class x86Kernel : public Kernel, public Singleton<x86Kernel>
 
 /** Points to the kernel. */
 extern x86Kernel *kernel;
+
+/**
+ * @}
+ */
 
 #endif /* __ASSEMBLY__ */
 #endif /* __X86_CPU_H */

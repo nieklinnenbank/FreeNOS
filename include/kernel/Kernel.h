@@ -23,6 +23,11 @@
 #include <arch/Interrupt.h>
 #include "Multiboot.h"
 
+/** 
+ * @defgroup kernel kernel (generic)
+ * @{ 
+ */
+
 /**
  * Represents the kernel core.
  */
@@ -61,5 +66,9 @@ extern Address kernelStart;
 
 /** End of kernel. */
 extern Address kernelEnd;
+
+/**
+ * @}
+ */
 
 #endif /* __KERNEL_KERNEL_H */

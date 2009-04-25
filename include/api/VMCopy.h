@@ -21,6 +21,11 @@
 #include <arch/Process.h>
 #include <arch/API.h>
 
+/**  
+ * @defgroup kernelapi kernel (API) 
+ * @{  
+ */
+
 /** SystemCall number for VMCopy(). */
 #define VMCOPY 2
 
@@ -37,5 +42,9 @@ inline int VMCopy(ProcessID proc, Action how, Address ours, Address theirs, Size
 {
     return trapKernel5(VMCOPY, proc, how, ours, theirs, sz);
 }
+
+/**
+ * @}
+ */
 
 #endif /* __API_VMCOPY_H */

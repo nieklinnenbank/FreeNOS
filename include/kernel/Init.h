@@ -21,6 +21,11 @@
 #include <Init.h>
 #include <Types.h>
 
+/**
+ * @defgroup kernel kernel (generic)
+ * @{
+ */
+
 /** (Physical) memory must be initialized first. */
 #define PMEMORY	"0"
 
@@ -44,5 +49,9 @@ extern Address initStart;
 
 /** Marks the end of all initialization functions. */
 extern Address initEnd;
+
+/**
+ * @}
+ */
 
 #endif /* __KERNEL_INIT_H */

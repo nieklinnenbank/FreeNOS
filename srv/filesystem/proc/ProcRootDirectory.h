@@ -23,6 +23,14 @@
 #include <Error.h>
 #include "ProcFileSystem.h"
 
+/** @see ProcFileSystem */
+class ProcFileSystem;
+
+/** 
+ * @defgroup procfs procfs (Process Filesystem) 
+ * @{ 
+ */
+
 /**
  * Lists running processes as directory entries.
  */
@@ -48,5 +56,9 @@ class ProcRootDirectory : public Directory
 	/** ProcFS instance for which we are spawned. */
 	ProcFileSystem *proc;    
 };
+
+/**
+ * @}
+ */
 
 #endif /* __FILESYSTEM_PROCROOTDIRECTORY_H */

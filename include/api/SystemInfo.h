@@ -26,6 +26,11 @@
 #include <Error.h>
 #include <Types.h>
 
+/**  
+ * @defgroup kernelapi kernel (API) 
+ * @{  
+ */
+
 /** SystemCall number for SystemInfo(). */
 #define SYSTEMINFO 6
 
@@ -83,5 +88,9 @@ typedef struct SystemInformation
     Size moduleCount;
 }
 SystemInformation;
+
+/**
+ * @}
+ */
 
 #endif /* __API_SYSTEMINFO_H */

@@ -18,6 +18,14 @@
 #ifndef __X86_CPU_H
 #define __X86_CPU_H
 
+/**   
+ * @defgroup x86kernel kernel (x86)
+ * @{   
+ */
+
+/** Intel is little endian. */
+#define LITTLE_ENDIAN	1
+
 /** Paged Mode. */
 #define CR0_PG		0x80000000
 
@@ -198,6 +206,9 @@ extern Segment gdt[];
 /** Task State Segment. */
 extern TSS kernelTss;
 
+/**
+ * @}
+ */
 
 #endif /* __ASSEMBLER__ */
 #endif /* __X86_CPU_H */

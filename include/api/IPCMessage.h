@@ -26,6 +26,11 @@
 #include <Config.h>
 #include <string.h>
 
+/** 
+ * @defgroup kernelapi kernel (API)
+ * @{ 
+ */
+
 /** SystemCall number for IPCMessage(). */
 #define IPCMESSAGE 1
 
@@ -172,5 +177,9 @@ class InterruptMessage : public Message
 	/** Interrupt vector. */
 	ulong vector;
 };
+
+/**
+ * @}
+ */
 
 #endif /* __API_IPCMESSAGE_H */

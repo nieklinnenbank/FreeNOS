@@ -22,6 +22,11 @@
 #include <arch/Process.h>
 #include <Types.h>
 
+/**  
+ * @defgroup kernelapi kernel (API) 
+ * @{  
+ */
+
 /** SystemCall number for ProcessCtl(). */
 #define PROCESSCTL 4
 
@@ -62,5 +67,9 @@ inline int ProcessCtl(ProcessID proc, ProcessOperation op, Address addr = 0)
 {
     return trapKernel3(PROCESSCTL, proc, op, addr);
 }
+
+/**
+ * @}
+ */
 
 #endif /* __API_PROCESSCTL_H */

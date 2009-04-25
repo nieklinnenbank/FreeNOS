@@ -18,6 +18,7 @@
 subdirs := lib kernel srv sbin bin
 
 include tools/rules.mk
-include tools/image.mk
+include tools/bootimage.mk
+include tools/iso.mk
 include tools/qemu.mk
 include tools/version.mk

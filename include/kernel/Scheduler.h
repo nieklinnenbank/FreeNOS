@@ -26,6 +26,11 @@
 #include <Singleton.h>
 #include "Process.h"
 
+/** 
+ * @defgroup kernel kernel (generic)
+ * @{ 
+ */
+
 /**
  * Responsible for deciding which Process may execute on the CPU(s).
  */
@@ -115,6 +120,10 @@ class Scheduler : public Singleton<Scheduler>
 
 /** Scheduler instance. */
 extern Scheduler *scheduler;
+
+/**
+ * @}
+ */
 
 #endif /* __ASSEMBLER__ */
 #endif /* __KERNEL_SCHEDULER_H */

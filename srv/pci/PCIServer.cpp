@@ -74,7 +74,6 @@ PCIServer::PCIServer()
 	        log("[%x:%x] %x:%x (rev %d)",
         	     bus, slot,    dev.vendorID,
 		     dev.deviceID, dev.revisionID);
-
     	    }
 	}
     }

@@ -24,8 +24,9 @@
 
 int CatCommand::execute(Size nparams, char **params)
 {
-    char buf[1024];
+    char buf[1025];
     int fd;
+    Error e;
 
     /* Clear buffer. */
     memset(buf, 0, sizeof(buf));
@@ -38,14 +39,32 @@ int CatCommand::execute(Size nparams, char **params)
         return errno;
     }
     /* Read contents. */
-    while (read(fd, buf, sizeof(buf)) > 0)
+    while (1)
     {
-	/* Print out results. */
-	printf("%s", buf);
+	e = read(fd, buf, sizeof(buf) - 1);
+	switch (e)
+        {
+	    /* Error occurred. */
+	    case -1:
+		printf("Failed to read '%s': %s\r\n",
+		        params[0], strerror(errno));
+		close(fd);
+	        return errno;
+    
+	    /* End of file. */
+	    case 0:
+		close(fd);
+		return ESUCCESS;
+	
+	    /* Print out results. */
+	    default:
+		buf[e] = 0;
+		printf("%s", buf);
+	        break;
+	}
     }
-    /* Close the file. */
-    close(fd);
-    return 0;
+    /* Not reached. */
+    return ENOSUPPORT;
 }
 
 INITOBJ(CatCommand, catCmd, DEFAULT)

@@ -22,7 +22,7 @@
 #include "types.h"
 
 /** 
- * @defgroup ansic ISO/IEC 9899:1999 
+ * @defgroup libc libc (ISO C99)
  * @{ 
  */
 

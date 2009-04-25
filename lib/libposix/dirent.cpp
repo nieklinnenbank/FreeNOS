@@ -28,7 +28,14 @@ DIR * opendir(const char *dirname)
 {
     DIR *dir;
     int fd;
+    struct stat st;
+    Error e;
     
+    /* First stat the directory. */
+    if (stat(dirname, &st) < 0)
+    {
+	return (ZERO);
+    }
     /* Try to open the directory. */
     if ((fd = open(dirname, ZERO)) < 0)
     {
@@ -37,12 +44,22 @@ DIR * opendir(const char *dirname)
     /* Allocate DIR object. */
     dir = new DIR;
     dir->fd        = fd;
-    dir->buffer    = new Dirent[8];
-    dir->current   = 8;
-    dir->count     = 8;
-    dir->countRead = 0;
+    // TODO: dir->buffer    = new Dirent[st.st_size / sizeof(Dirent)];
+    dir->buffer    = new Dirent[128];
+    dir->current   = 0;
+    dir->count     = 0;
     dir->eof       = false;
     
+    /* Read them all. */
+    if ((e = read(fd, dir->buffer, sizeof(Dirent) * 128 /* TODO: st.st_size*/)) < 0)
+    {
+	e = errno;
+	closedir(dir);
+	errno = e;
+	return (ZERO);
+    }
+    dir->count = e / sizeof(Dirent);
+
     /* Set errno. */
     errno = ESUCCESS;
     
@@ -52,25 +69,7 @@ DIR * opendir(const char *dirname)
 
 struct dirent * readdir(DIR *dirp)
 {
-    FileSystemMessage msg;
-    Size num; 
-
-    /* Do we need to read more dirents? */
-    if (dirp->current >= dirp->count && !dirp->eof)
-    {
-	/* Read more entries. */
-	if (!(num = read(dirp->fd, dirp->buffer, sizeof(Dirent) * 8)))
-	{
-	    dirp->eof = true;
-	}
-	else
-	{
-	    dirp->current   = 0;
-	    dirp->countRead = num / sizeof(Dirent);
-	}
-    }
-    /* Retrieve next dirent. */
-    if (dirp->current < dirp->countRead)
+    if (dirp->current < dirp->count)
 	return &dirp->buffer[dirp->current++];
     else
 	return (struct dirent *) ZERO;

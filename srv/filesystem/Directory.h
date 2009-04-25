@@ -50,7 +50,7 @@ class Directory : public File
 	 * @param msg Read request.
 	 * @return Number of bytes read on success, Error on failure.
 	 */
-	Error read(FileSystemMessage *msg)
+	virtual Error read(FileSystemMessage *msg)
 	{
 	    Size count = 0, bytes = 0;
 	    Dirent *dent = (Dirent *) msg->buffer;
@@ -59,13 +59,8 @@ class Directory : public File
 	    /* Loop our list of Dirents. */
 	    for (ListIterator<Dirent> i(&entries); i.hasNext(); i++)
 	    {
-		/* Make sure we start at the correct offset. */
-		if (count++ < msg->offset / sizeof(Dirent))
-		{
-		    continue;
-		}
 		/* Can we read another entry? */
-		else if (bytes + sizeof(Dirent) <= msg->size)
+		if (bytes + sizeof(Dirent) <= msg->size)
 		{
 		    if ((e = VMCopy(msg->procID, Write, (Address) i.current(),
 					    	        (Address) (dent++), sizeof(Dirent))) < 0)
@@ -85,13 +80,53 @@ class Directory : public File
 	 * Adds a directory entry.
 	 * @param name Name of the entry to add.
 	 * @param type File type.
+	 * @note Entry names must be unique within the same Dirent.
 	 */
-	void addEntry(char *name, u8 type)
+	virtual void insertEntry(char *name, u8 type)
 	{
-	    Dirent *d = new Dirent;
-	    strlcpy(d->d_name, name, DIRLEN);
-	    d->d_type = type;
-	    entries.insertTail(d);
+	    if (!getEntry(name))
+	    {
+	        Dirent *d = new Dirent;
+	        strlcpy(d->d_name, name, DIRLEN);
+	        d->d_type = type;
+		entries.insertTail(d);
+		size += sizeof(*d);
+	    }
+	}
+	
+	/**
+	 * Retrieve a directory entry by it's name.
+	 * @param name Name of the entry to get.
+	 * @return Direct pointer on success, ZERO otherwise.
+	 */
+	Dirent * getEntry(char *name)
+	{
+	    for (ListIterator<Dirent> i(&entries); i.hasNext(); i++)
+	    {
+		if (strcmp(i.current()->d_name, name) == 0)
+		{
+		    return i.current();
+		}
+	    }
+	    return (Dirent *) ZERO;
+	}
+
+	/**
+	 * Removes an entry.
+	 * @param name Name of the entry to remove.
+	 */	
+	virtual void removeEntry(char *name)
+	{
+	    for (ListIterator<Dirent> i(&entries); i.hasNext(); i++)
+	    {
+		if (strcmp(i.current()->d_name, name) == 0)
+		{
+		    entries.remove(i.current());
+		    delete i.current();
+		    size -= sizeof(Dirent);
+		    return;
+		}
+	    }
 	}
 	
 	/**

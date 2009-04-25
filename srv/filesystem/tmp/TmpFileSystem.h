@@ -24,6 +24,11 @@
 #include <Types.h>
 #include <Error.h>
 
+/** 
+ * @defgroup tmpfs tmpfs (Temporary Filesystem) 
+ * @{ 
+ */
+
 /**
  * Temporary filesystem (procfs). Maps files into virtual memory.
  */
@@ -47,5 +52,9 @@ class TmpFileSystem : public FileSystem
 	Error createFile(FileSystemMessage *msg,
                          FileSystemPath *path);
 };
+
+/**
+ * @}
+ */
 
 #endif /* __FILESYSTEM_TMPFILESYSTEM_H */

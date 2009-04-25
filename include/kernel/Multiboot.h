@@ -18,6 +18,11 @@
 #ifndef __KERNEL_MULTIBOOT_H
 #define __KERNEL_MULTIBOOT_H
 
+/**
+ * @defgroup kernel kernel (generic)
+ * @{
+ */
+
 /** The magic number for the Multiboot header.  */
 #define MULTIBOOT_HEADER_MAGIC		0x1BADB002
 
@@ -111,6 +116,10 @@ MultibootMemoryMap;
 
 /** Fill in by the early boot process. */
 extern MultibootInfo multibootInfo;
+
+/**
+ * @}
+ */
 
 #endif /* !__ASSEMBLER__ */
 #endif /* __KERNEL_MULTIBOOT_H */

@@ -1,110 +1,60 @@
-[DEFERRED]
---> fix Assert.h
-    --> we COULD map page tables + dirs READONLY in every proces.. this way, assertRead/Write is very
-        efficient!!! (define inline/macros in arch/ for this)
-	--> the same *COULD* be done for remotes, but be VERY carefull (NOT r/w too).
-	--> /proc/maps!	
-    --> perhaps, memory server can then do more management of virtual memory?
-
-++ Improve IPC performance!!!
-    --> Don't use the heap
-    --> IPC via registers (avoid memory checking)
-    --> benchmark!!!
-    --> optimize x86Memory::*(); try to avoid mapRemote() if possible!!!
-
---> PoolAllocator: make sure minimize wasted space for large chunks: penatilize
+[bugs]
+* PoolAllocator: make sure minimize wasted space for large chunks: penatilize
     a bit for larger blocks, e.g. don't allocate 64 times 4096, but e.g. only 8 or 32 times 4096 or so.
 
---> We could merge the two mapVirtual() overloads into one, then check for p == this :)
+    --> ps freezes sometimes after I execute: 'ls /img/lost+found',
+        which is probably caused by the above... (temp now workaround in dirent.cpp)
 
-[first]
-
---> srv/pci
---> srv/name
---> srv/usb/hub
---> srv/usb/disk
---> srv/storage
---> srv/filesystem/ext2/Ext2FileSystem
-
---> fixup all posix library function documentation!!!
-
---> fixup rules.mk: just everything lowercase, simplify everything :-)
-    --> parallel make
-    --> we should be able to link the *init sections, without --whole-library... e.g. kernel doesn't need everything from libposix! 
-	--> we actually don't need .init sections which we do not use :)
-
---> userlevel processes should NOT be allowed to IPC asynchroneously; e.g. to the VFS server.
-
---> VFS: FileCache.entries and Directory.entries are duplicate!!!
-    --> should design this in a better way!
-
-[5] --> ram filesystem, make sure we can read/write files right.
-
-    --> if we have the main() argc/argv thingies, we could do configure
-        the boot modules to use /dev/serial0 as the system console! :)
-
-[12] --> Implement the notion of "current directory" in VirtualFileSystem.
-     --> Implement touch(1) and mkdir(1) and cd(1)
-
-[7] --> put argv string pointer in %eax!!! (then copy in _entry)
-    --> environment will eventually also be in there ;)
-	
-    --> Better: just copy it on the esp3 stack!!!
-	    --> and use libparse for create an argv[] :)
-	    --> then automatically, argv/env will be random :)
-	    --> maybe, we shouldn't support the envp argument... only just getenv() :)
-	
-    --> libparse for this too.
-	--> then, we can just fill in the mountpoint in grub.conf! :)
-
-    --> How are we going to let filesystems know, which mountpoint to use?
-         argv[1] seems most appropriate, but then again, how can we set argc/argv
-	 for the boot modules?
-	 
-	    --> Use GRUB's boot module line, then parse it into argc/argv! :)
-		--> most probably, we have to push it on the user stack... then let _entry() find it?
-
-    --> Let the filesystem perform auth checks aswell ;D
-
-[8] --> make a /dev/random! ^.^
-    --> e.g. RDTSC, IRQ's etc.
-
-[11] --> remove IRQ hooks in ~x86Process(). Also, cleanup pending messages?
-     --> simply keep a list with the copy of InterruptHook in each Process...
-	--> Maybe also output this in ProcessInfo! :)
-
-[second]
-    
-[13] --> Faults -> process manager must receive the Fault message!
-	--> e.g. use faultPID or so???
-[15] --> Don't use ugly unions!!! Perhapse we can modify ::run() to customize
-	 messages even more for handlers!
-  
-	  --> Better: just use FileMessage as a base class, derive the others :) (simple, works with current IPCServer too! :)
-  
-	    FileReadMessage  ] FileIOMessage
-	    FileWriteMessage ]
-	    FileCloseMessage ...
-
-[16] --> /srv/storage/ram -> register to FileSystemServer
-[18] --> Let init drop it's priviledges (syscalls, ipc, etc)
-[19] --> VMCtl() : maybe pass two Address pointers!!! Then write the actual used paddr + vaddr there!!!
-[20] --> kernel messages/logging...
-
-[bugs]
 * Running 'ps' a couple of times, reveales a memory leak somewhere... (memstat shows this)
 * MemoryServer::doGrow() allocated a whole page, if e.g. only 1 byte is requested...
 * fix parallel make (LD of the kernel that is, which races against $(subdirs)!)
+* remove IRQ hooks in ~x86Process(). Also, cleanup pending messages?
+    --> simply keep a list with the copy of InterruptHook in each Process...
+    --> Maybe also output this in ProcessInfo! :)
+
+[project]
+* clean way to build a boot.img
+    --> fix parallel make???
+    --> fix include/ et all???
+    --> make bootimage
+    --> make iso
+* maybe create a /VERSION, which is then used by scripts/version.mk
+* maybe put all include/api/*.h include/arch/*.h files just in
+  kernel/, and include/*.h in lib/libparse,libalgo(rithm),libcommon,libdata (find a good name).
+* fixup rules.mk: just everything lowercase, simplify everything :-)
+    --> parallel make
+    --> we should be able to link the *init sections, without --whole-library... e.g. kernel doesn't need everything from libposix! 
+	--> we actually don't need .init sections which we do not use :)
+* if we have the main() argc/argv thingies, we could do configure
+  the boot modules to use /dev/serial0 as the system console! :)
 
 [libraries]
-* libc: %NUMs formats support
 * libparse: generic parser library, usefull for the Shell too! :)
 
+    --> CommandLine
+    --> StringParser, CommandLineParser, URLParser, ConfigurationParser
+	XMLParser, RegexParser, HTTPParser, HTMLParser, ...
+    --> URLParser may replace FileSystemPath aswell! :)
+
+* libc: %NUMs formats support
+* libposix:
+    --> try to fork()
+    --> try to execl() a file in /img
+    --> fixup all posix library function documentation!!!
+
 [programs]
+* Let the user /sbin/init drop it's priviledges to the lowest (least priviledged) runlevel.
+* Commandline argc/argv support; via libparse.
 * Random stack, heap and program text!!!
 * We DON'T want setuid/setgid bits! (and we really don't need them either).
+* Implement touch(1) and mkdir(1) and cd(1)
 
 [servers]
+* Faults -> process manager must receive the Fault message! e.g. use faultPID or so???
+* Implement the notion of "current directory" in VirtualFileSystem.
+* Let the filesystem perform auth checks aswell ;D
+* /srv/usb/hub
+* /srv/usb/disk
 * /srv/storage, with a ramdisk and scsi (lsi's)
     --> Test it using, e.g. a dosfs dump of the project root
 * /srv/filesystem, simple dosfs first
@@ -115,8 +65,17 @@
 * Login server: allocate a pseudo tty? 
 * Reincarnation server, a la minix 3.
 * Inet server: maybe a /net, like in plan 9! :)
+* make a /dev/random! e.g. RDTSC, IRQ's etc.
 
 [sources]
+* turn on the le/be type warnings!!!
+* fix Assert.h:
+    --> we COULD map page tables + dirs READONLY in every proces.. this way, assertRead/Write is very
+        efficient!!! (define inline/macros in arch/ for this)
+	--> the same *COULD* be done for remotes, but be VERY carefull (NOT r/w too).
+	--> /proc/maps!	
+    --> perhaps, memory server can then do more management of virtual memory?
+
 * /boot directory, containing the grub.conf (instead of inside image.mk)
 * Automatic copying of every file in the project to boot.iso!
 * SVN's $headURL inside debug()?
@@ -125,6 +84,10 @@
 * FooMessage.doBar() wrapper functions?
 
 [kernel]
+* kernel messages/logging... simply use LogMessage now :-)
+* VMCtl() : maybe pass two Address pointers!!! Then write the actual used paddr + vaddr there!!!
+* userlevel processes should NOT be allowed to IPC asynchroneously; e.g. to the VFS server; use runlevels.
+* We could merge the two mapVirtual() overloads into one, then check for p == this :)
 * IPC via files in /proc? :)
 * perhaps we should allow multiple messages to be fetched in IPCMessage()! (speed++)
 * Improve scheduler: don't put a Process on the queue if it isn't Ready!

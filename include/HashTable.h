@@ -77,14 +77,15 @@ template <class Key, class Value> class HashTable
 	 * @param hash Hash function to use.
 	 * @param sz Initial size of the internal table.
 	 */
-	HashTable(Size (*hash)(Comparable<Key> *,Size) = FNVHash, Size sz = DEFAULT_SIZE)
+	HashTable(Size (*hash)(Comparable<Key> *, Size) = FNVHash, Size sz = DEFAULT_SIZE)
 	{
 	    assert(hash != ZERO);
 	    assert(sz > 0);
-	
-	    _size = sz;
-	    _map  = new List<HashBucket<Key,Value> >[sz];
-	    _hash = hash;
+
+	    _size  = sz;	
+	    _count = ZERO;
+	    _map   = new List<HashBucket<Key,Value> >[sz];
+	    _hash  = hash;
 	}
 	
 	/**
@@ -97,6 +98,7 @@ template <class Key, class Value> class HashTable
 	    assertRead(k);
 	    assertRead(v);
 	    _map[_hash(k,_size)].insertTail(new HashBucket<Key,Value>(k,v));
+	    _count++;
 	}
 	
 	/**
@@ -119,6 +121,7 @@ template <class Key, class Value> class HashTable
 		if (deleteKey) delete b->key;
 		if (deleteValue) delete b->value;
 		delete b;
+		_count--;
 	    }
 	}
 
@@ -130,6 +133,16 @@ template <class Key, class Value> class HashTable
 	{
 	    return _size;
 	}
+
+	/**
+	 * Get the number of filled buckets.
+	 * @return Number of items in the HashTable.
+	 */
+	Size count() const
+	{
+	    return _count;
+	}
+
 	
 	/**
 	 * Fetch the internal array.
@@ -180,6 +193,9 @@ template <class Key, class Value> class HashTable
 	
 	/** Size of the internal array. */
 	Size _size;
+	
+	/** Number of filled buckets. */
+	Size _count;
 	
 	/** Hash function. */
 	Size (*_hash)(Comparable<Key> *, Size);

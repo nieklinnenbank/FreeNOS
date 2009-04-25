@@ -21,6 +21,11 @@
 #include <Macros.h>
 #include <Init.h>
 
+/** 
+ * @defgroup libcrt libcrt (C/C++ runtime)
+ * @{ 
+ */
+
 /** Setup the dynamic memory heap. */
 #define HEAP "0"
 
@@ -49,5 +54,9 @@ extern void (*CTOR_LIST)();
 
 /** List of destructors. */
 extern void (*DTOR_LIST)();
+
+/**
+ * @}
+ */
 
 #endif /* __LIBCRT_RUNTIME_H */
