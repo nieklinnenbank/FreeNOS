@@ -22,9 +22,10 @@
  * @mainpage FreeNOS Documentation
  * @section About
  *
- * This documentation is for FreeNOS (Free Niek's Operating System), revision $Revision$.
+ * This documentation is for FreeNOS (Free Niek's Operating System).
  * FreeNOS is an experimental operating system for learning purposes, licensed under the GPLv3.
  *
+ * $Revision$
  * @see http://www.freenos.org/
  * @see http://gplv3.fsf.org/
  *
