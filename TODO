@@ -14,7 +14,6 @@
 
 [project]
 * clean way to build a boot.img
-    --> fix parallel make???
     --> fix include/ et all???
     --> make bootimage
     --> make iso
@@ -27,6 +26,7 @@
 	--> we actually don't need .init sections which we do not use :)
 * if we have the main() argc/argv thingies, we could do configure
   the boot modules to use /dev/serial0 as the system console! :)
+* Import kbuild! --> `.SECONDEXPANSION' in Makefiles maybe?
 
 [libraries]
 * libparse: generic parser library, usefull for the Shell too! :)
@@ -50,6 +50,7 @@
 * Implement touch(1) and mkdir(1) and cd(1)
 
 [servers]
+* logging daemon: ALL logging goes through this one, including (u)tmp etc.
 * Faults -> process manager must receive the Fault message! e.g. use faultPID or so???
 * Implement the notion of "current directory" in VirtualFileSystem.
 * Let the filesystem perform auth checks aswell ;D

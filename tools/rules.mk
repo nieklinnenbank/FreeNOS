@@ -63,9 +63,15 @@ LDFLAGS	    += $(foreach lib,$(libraries), $(TOPDIR)/lib/$(lib)/$(lib).a)
 #
 # The default target is all.
 #
-all: pre-hooks subdirs $(OBJECTS) $(program) $(library) post-hooks
+all: pre-hooks build post-hooks
 pre-hooks:
 post-hooks:
+
+#
+# First process subdirs in order (not optimal for parallel make tho).
+#
+build: subdirs
+	$(MAKE) objects $(program) $(library)
 
 #
 # Recurse into subdirectories (NOT parallel!)
@@ -88,6 +94,11 @@ $(program): $(OBJECTS)
 $(library): $(OBJECTS)
 	$(AR) ru $(library) $(OBJECTS) $(objects)
 	$(RANLIB) $(library)
+
+#
+# Compile all objects
+#
+objects: $(OBJECTS)
 
 #
 # C program source.
@@ -124,4 +135,4 @@ clean:
 #
 # These need to be forced.
 #
-.PHONY: clean $(subdirs) $(PHONY)
+.PHONY: clean build subdirs objects $(subdirs) $(PHONY)
