@@ -53,8 +53,8 @@ int StatCommand::execute(Size nparams, char **params)
 
     else
 	printf("Unknown\r\n");
-    
-    /* Identities. */
+
+    printf("Size: %u\r\n", st.st_size);   
     printf("Uid:  %u\r\n", st.st_uid);
     printf("Gid:  %u\r\n", st.st_gid);
     

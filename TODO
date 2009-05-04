@@ -2,12 +2,14 @@
 * PoolAllocator: make sure minimize wasted space for large chunks: penatilize
     a bit for larger blocks, e.g. don't allocate 64 times 4096, but e.g. only 8 or 32 times 4096 or so.
 
+    --> MemoryPool::allocate() divides by 8, then by sizeof(Address) ; can't work for <= 32
+	--> need updates there.
+
     --> ps freezes sometimes after I execute: 'ls /img/lost+found',
         which is probably caused by the above... (temp now workaround in dirent.cpp)
 
 * Running 'ps' a couple of times, reveales a memory leak somewhere... (memstat shows this)
 * MemoryServer::doGrow() allocated a whole page, if e.g. only 1 byte is requested...
-* fix parallel make (LD of the kernel that is, which races against $(subdirs)!)
 * remove IRQ hooks in ~x86Process(). Also, cleanup pending messages?
     --> simply keep a list with the copy of InterruptHook in each Process...
     --> Maybe also output this in ProcessInfo! :)

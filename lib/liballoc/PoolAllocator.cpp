@@ -36,7 +36,7 @@ Address PoolAllocator::allocate(Size *size)
     /* Do we need to allocate an initial pool? */
     if (!pools[index] && parent)
     {
-	pool = pools[index] = newPool(index, POOL_MIN_COUNT);
+	pool = pools[index] = newPool(index, POOL_MIN_COUNT(*size));
     }
     /* Search for pool with enough memory. */
     else
@@ -51,7 +51,7 @@ Address PoolAllocator::allocate(Size *size)
 	    /* If no pool has free space anymore, allocate another. */
 	    if (!pool->next)
 	    {
-		pool = newPool(index, POOL_MIN_COUNT * nPools);
+		pool = newPool(index, POOL_MIN_COUNT(*size) * nPools);
 		break;
 	    }
 	}

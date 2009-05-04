@@ -32,8 +32,13 @@
 /** Maximum power of two size a pool can be. */
 #define POOL_MAX_POWER 32
 
-/** Per default, allocate this many blocks. */
-#define POOL_MIN_COUNT 64
+/**
+ * Allocate this many blocks per default for the given size.
+ * @param size Size of each block.
+ */
+#define POOL_MIN_COUNT(size) \
+    (64 / (((size) / 1024 ) + 1)) > 0 ? \
+    (64 / (((size) / 1024 ) + 1)) : 1
 
 /**
  * Memory pool contains pre-allocated blocks of a certain size (power of two).
@@ -47,9 +52,13 @@ typedef struct MemoryPool
     Address allocate()
     {
 	Address *ptr;
+	Size num = count / sizeof(Address);
 	
+	/* At least one. */
+	if (!num) num++;
+
 	/* Scan bitmap as fast as possible. */
-	for (Size i = 0; i < count / 8 / sizeof(Address); i++)
+	for (Size i = 0; i < num; i++)
 	{
 	    /* Point to the correct offset. */
 	    ptr = (Address *) (&blocks) + i;
