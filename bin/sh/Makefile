@@ -16,7 +16,7 @@
 #
 
 program   += sh
-libraries += libc libcrt liballoc libposix
+libraries += libc libcrt liballoc libposix libexec
 includes  += srv srv/memory srv/filesystem srv/filesystem/virtual
 
 include ../../tools/rules.mk

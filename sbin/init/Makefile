@@ -16,7 +16,7 @@
 #
 
 program   += init
-libraries += libc libcrt liballoc libposix
+libraries += libc libcrt liballoc libposix libexec
 includes  += srv/filesystem
 
 include ../../tools/rules.mk

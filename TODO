@@ -1,36 +1,33 @@
 [bugs]
-* PoolAllocator: make sure minimize wasted space for large chunks: penatilize
-    a bit for larger blocks, e.g. don't allocate 64 times 4096, but e.g. only 8 or 32 times 4096 or so.
-
-    --> MemoryPool::allocate() divides by 8, then by sizeof(Address) ; can't work for <= 32
-	--> need updates there.
-
-    --> ps freezes sometimes after I execute: 'ls /img/lost+found',
-        which is probably caused by the above... (temp now workaround in dirent.cpp)
-
+* Compile errors don't stop the whole compilation process anymore!!!
 * Running 'ps' a couple of times, reveales a memory leak somewhere... (memstat shows this)
 * MemoryServer::doGrow() allocated a whole page, if e.g. only 1 byte is requested...
 * remove IRQ hooks in ~x86Process(). Also, cleanup pending messages?
     --> simply keep a list with the copy of InterruptHook in each Process...
     --> Maybe also output this in ProcessInfo! :)
+* Warnings in some newer GCC 4.x versions; cause compilation failure with -Werror!
 
 [project]
+* OK where going to use scons; it absolutely superiour to GNU make :-)
+    * Configuration (interface)? perhaps we can adapt kconfig for scons...
 * clean way to build a boot.img
     --> fix include/ et all???
-    --> make bootimage
-    --> make iso
+    --> should NOT put the entire project root inside ...
+    --> we want different (configurable) arch/; but ALSO different (configurable) boot images!!! Kbuild:
+	Y -> compile, statically if possible. Don't put in the boot image.
+	M -> compile, dynamically if possible. Put in the boot image.
+	N -> ignore.
 * maybe create a /VERSION, which is then used by scripts/version.mk
 * maybe put all include/api/*.h include/arch/*.h files just in
   kernel/, and include/*.h in lib/libparse,libalgo(rithm),libcommon,libdata (find a good name).
 * fixup rules.mk: just everything lowercase, simplify everything :-)
-    --> parallel make
     --> we should be able to link the *init sections, without --whole-library... e.g. kernel doesn't need everything from libposix! 
 	--> we actually don't need .init sections which we do not use :)
 * if we have the main() argc/argv thingies, we could do configure
   the boot modules to use /dev/serial0 as the system console! :)
-* Import kbuild! --> `.SECONDEXPANSION' in Makefiles maybe?
 
 [libraries]
+* libexec / libelf: executable parser!!!
 * libparse: generic parser library, usefull for the Shell too! :)
 
     --> CommandLine
@@ -71,6 +68,9 @@
 * make a /dev/random! e.g. RDTSC, IRQ's etc.
 
 [sources]
+* Programs do: printf() and cout <<, to stdin,stdout,stderr. Servers log() to the log server,
+  but libraries may be used by both! --> should have a solution for this.
+    --> use C++ <<, override the cout object? C programs then still use printf()
 * turn on the le/be type warnings!!!
 * fix Assert.h:
     --> we COULD map page tables + dirs READONLY in every proces.. this way, assertRead/Write is very

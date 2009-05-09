@@ -16,7 +16,7 @@
 #
 
 program   += serial
-libraries += libc libcrt liballoc libposix
+libraries += libc libcrt liballoc libposix libexec
 includes  += srv srv/filesystem srv/process srv/log
 
 include ../../tools/rules.mk

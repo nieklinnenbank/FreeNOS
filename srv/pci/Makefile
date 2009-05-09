@@ -16,7 +16,7 @@
 #
 
 program   += pci
-libraries += libc libcrt liballoc libposix
+libraries += libc libcrt liballoc libposix libexec
 includes  += srv srv/log
 
 include ../../tools/rules.mk

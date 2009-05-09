@@ -16,6 +16,6 @@
 #
 
 program   += idle
-libraries += libc libcrt liballoc libposix
+libraries += libc libcrt liballoc libposix libexec
 
 include ../../tools/rules.mk

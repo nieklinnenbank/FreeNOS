@@ -18,6 +18,7 @@
 #include <api/IPCMessage.h>
 #include <ProcessServer.h>
 #include <FileSystemMessage.h>
+#include <ExecutableFormat.h>
 #include <Config.h>
 #include <errno.h>
 #include "unistd.h"
@@ -78,4 +79,10 @@ int close(int fildes)
     
     /* All done. */
     return errno == ESUCCESS ? 0 : -1;
+}
+
+int execv(const char *path, const char *argv[])
+{
+    ExecutableFormat *fmt = ExecutableFormat::find(path);
+    return fmt ? 0 : -1;
 }

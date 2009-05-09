@@ -44,14 +44,13 @@ DIR * opendir(const char *dirname)
     /* Allocate DIR object. */
     dir = new DIR;
     dir->fd        = fd;
-    // TODO: dir->buffer    = new Dirent[st.st_size / sizeof(Dirent)];
-    dir->buffer    = new Dirent[128];
+    dir->buffer    = new Dirent[st.st_size / sizeof(Dirent)];
     dir->current   = 0;
     dir->count     = 0;
     dir->eof       = false;
     
     /* Read them all. */
-    if ((e = read(fd, dir->buffer, sizeof(Dirent) * 128 /* TODO: st.st_size*/)) < 0)
+    if ((e = read(fd, dir->buffer, sizeof(Dirent) * st.st_size)) < 0)
     {
 	e = errno;
 	closedir(dir);

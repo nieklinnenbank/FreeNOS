@@ -90,6 +90,29 @@ extern C ssize_t write(int fildes, const void *buf, size_t nbyte);
 extern C int close(int fildes);
 
 /**
+ * @brief Execute a file.
+ *
+ * The exec family of functions shall replace the current process image with a
+ * new process image. The new image shall be constructed from a regular,
+ * executable file called the new process image file. There shall be no return
+ * from a successful exec, because the calling process image is overlaid by the
+ * new process image.
+ *
+ * @param path File to execute.
+ * @param argv The argument argv is an array of character pointers to
+ *             null-terminated strings. The application shall ensure that the
+ *             last member of this array is a null pointer. These strings shall
+ *             constitute the argument list available to the new process image.
+ *             The value in argv[0] should point to a filename that is associated
+ *             with the process being started by one of the exec functions.
+ * @return If one of the exec functions returns to the calling process image,
+ *         an error has occurred; the return value shall be -1, and errno shall
+ *         be set to indicate the error.
+ *
+ */
+extern C int execv(const char *path, const char *argv[]);
+
+/**
  * @}
  */
 

@@ -16,7 +16,7 @@
 #
 
 program   += vfs
-libraries += libc liballoc libcrt libposix libparse
+libraries += libc liballoc libcrt libposix libparse libexec
 includes  += srv srv/filesystem
 
 include ../../../tools/rules.mk
