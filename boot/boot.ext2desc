@@ -2,12 +2,9 @@
 ./boot/grub/menu.lst
 ./boot/boot.isodesc
 ./TODO
-./sbin/Makefile
-./sbin/init/Makefile
 ./sbin/init/SConscript
 ./sbin/init/Main.cpp
 ./sbin/SConscript
-./bin/Makefile
 ./bin/sh/CatCommand.h
 ./bin/sh/Shell.cpp
 ./bin/sh/BenchCommand.cpp
@@ -19,7 +16,6 @@
 ./bin/sh/HelpCommand.cpp
 ./bin/sh/UnameCommand.h
 ./bin/sh/RebootCommand.cpp
-./bin/sh/Makefile
 ./bin/sh/DirListCommand.h
 ./bin/sh/HelpCommand.h
 ./bin/sh/WriteCommand.cpp
@@ -42,10 +38,8 @@
 ./bin/SConscript
 ./VERSION
 ./Doxyfile
-./Makefile
 ./srv/pci/PCIServer.h
 ./srv/pci/PCIMessage.h
-./srv/pci/Makefile
 ./srv/pci/PCIServer.cpp
 ./srv/pci/PCIDevice.h
 ./srv/pci/SConscript
@@ -53,7 +47,6 @@
 ./srv/terminal/TerminalServer.cpp
 ./srv/terminal/Keyboard.h
 ./srv/terminal/Terminal.h
-./srv/terminal/Makefile
 ./srv/terminal/VGA.h
 ./srv/terminal/Keyboard.cpp
 ./srv/terminal/VGA.cpp
@@ -61,8 +54,6 @@
 ./srv/terminal/SConscript
 ./srv/terminal/Main.cpp
 ./srv/terminal/TerminalServer.h
-./srv/Makefile
-./srv/memory/Makefile
 ./srv/memory/MemoryMessage.h
 ./srv/memory/MemoryServer.h
 ./srv/memory/MemoryServer.cpp
@@ -72,19 +63,16 @@
 ./srv/filesystem/BootImage.h
 ./srv/filesystem/tmp/TmpFileSystem.h
 ./srv/filesystem/tmp/TmpFileSystem.cpp
-./srv/filesystem/tmp/Makefile
 ./srv/filesystem/tmp/TmpFile.cpp
 ./srv/filesystem/tmp/TmpFile.h
 ./srv/filesystem/tmp/SConscript
 ./srv/filesystem/tmp/Main.cpp
 ./srv/filesystem/FileSystemPath.h
-./srv/filesystem/Makefile
 ./srv/filesystem/File.h
 ./srv/filesystem/FileSystemMessage.h
 ./srv/filesystem/proc/ProcRootDirectory.h
 ./srv/filesystem/proc/ProcFile.h
 ./srv/filesystem/proc/ProcRootDirectory.cpp
-./srv/filesystem/proc/Makefile
 ./srv/filesystem/proc/ProcFileSystem.cpp
 ./srv/filesystem/proc/ProcFile.cpp
 ./srv/filesystem/proc/ProcFileSystem.h
@@ -96,7 +84,6 @@
 ./srv/filesystem/ext2/Ext2Directory.cpp
 ./srv/filesystem/ext2/Ext2File.cpp
 ./srv/filesystem/ext2/Ext2File.h
-./srv/filesystem/ext2/Makefile
 ./srv/filesystem/ext2/Ext2Group.h
 ./srv/filesystem/ext2/Ext2Directory.h
 ./srv/filesystem/ext2/SConscript
@@ -104,7 +91,6 @@
 ./srv/filesystem/ext2/Ext2FileSystem.h
 ./srv/filesystem/ext2/Ext2FileSystem.cpp
 ./srv/filesystem/virtual/VirtualFileSystem.cpp
-./srv/filesystem/virtual/Makefile
 ./srv/filesystem/virtual/VirtualFileSystem.h
 ./srv/filesystem/virtual/SConscript
 ./srv/filesystem/virtual/Main.cpp
@@ -112,18 +98,15 @@
 ./srv/filesystem/FileSystem.h
 ./srv/filesystem/Storage.h
 ./srv/IPCServer.h
-./srv/idle/Makefile
 ./srv/idle/SConscript
 ./srv/idle/Main.cpp
 ./srv/log/LogServer.h
 ./srv/log/LogMessage.h
-./srv/log/Makefile
 ./srv/log/LogServer.cpp
 ./srv/log/SConscript
 ./srv/log/Main.cpp
 ./srv/SConscript
 ./srv/process/ProcessServer.h
-./srv/process/Makefile
 ./srv/process/ProcessServer.cpp
 ./srv/process/SConscript
 ./srv/process/Main.cpp
@@ -132,16 +115,13 @@
 ./srv/serial/i8250.cpp
 ./srv/serial/i8250.h
 ./srv/serial/SerialServer.cpp
-./srv/serial/Makefile
 ./srv/serial/SerialDevice.cpp
 ./srv/serial/SerialDevice.h
 ./srv/serial/SConscript
 ./srv/serial/Main.cpp
 ./kernel/Scheduler.cpp
 ./kernel/Kernel.cpp
-./kernel/Makefile
 ./kernel/api/VMCopy.cpp
-./kernel/api/Makefile
 ./kernel/api/PrivExec.cpp
 ./kernel/api/SystemInfo.cpp
 ./kernel/api/IPCMessage.cpp
@@ -151,7 +131,6 @@
 ./kernel/Support.cpp
 ./kernel/arch/x86/boot.S
 ./kernel/arch/x86/Kernel.cpp
-./kernel/arch/x86/Makefile
 ./kernel/arch/x86/Memory.cpp
 ./kernel/arch/x86/boot.S.BAK
 ./kernel/arch/x86/kernel.ld
@@ -204,7 +183,6 @@
 ./include/Queue.h
 ./include/Factory.h
 ./include/Assert.h
-./lib/libcrt/Makefile
 ./lib/libcrt/runtime.cpp
 ./lib/libcrt/SConscript
 ./lib/libcrt/runtime.h
@@ -226,7 +204,6 @@
 ./lib/libc/stdio/vsnprintf.c
 ./lib/libc/limits.h
 ./lib/libc/errno.h
-./lib/libc/Makefile
 ./lib/libc/string.h
 ./lib/libc/stdlib.h
 ./lib/libc/ctype.h
@@ -238,9 +215,7 @@
 ./lib/libc/stdlib/exit.cpp
 ./lib/libc/stdlib/itoa.c
 ./lib/libc/stdlib/atoi.c
-./lib/Makefile
 ./lib/liballoc/ListAllocator.cpp
-./lib/liballoc/Makefile
 ./lib/liballoc/Allocator.h
 ./lib/liballoc/BubbleAllocator.cpp
 ./lib/liballoc/PoolAllocator.cpp
@@ -252,7 +227,6 @@
 ./lib/liballoc/ListAllocator.h
 ./lib/liballoc/PageAllocator.h
 ./lib/libexec/ELF.cpp
-./lib/libexec/Makefile
 ./lib/libexec/ExecutableFormat.h
 ./lib/libexec/ELF.h
 ./lib/libexec/SConscript
@@ -260,7 +234,6 @@
 ./lib/libposix/fcntl.h
 ./lib/libposix/dirent.cpp
 ./lib/libposix/types.h
-./lib/libposix/Makefile
 ./lib/libposix/fcntl.cpp
 ./lib/libposix/time.h
 ./lib/libposix/stat.cpp
@@ -275,7 +248,6 @@
 ./lib/libteken/teken_subr.h
 ./lib/libteken/teken_subr_compat.h
 ./lib/libteken/teken.h
-./lib/libteken/Makefile
 ./lib/libteken/teken_state.h
 ./lib/libteken/sequences
 ./lib/libteken/teken_wcwidth.h
@@ -283,7 +255,6 @@
 ./lib/libteken/gensequences
 ./lib/libteken/teken.c
 ./lib/SConscript
-./lib/libparse/Makefile
 ./lib/libparse/CommandLine.cpp
 ./lib/libparse/CommandLine.h
 ./lib/libparse/SConscript
