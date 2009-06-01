@@ -31,15 +31,15 @@
  *
  * @section building Building
  *
- * $ make clean all iso
+ * $ scons iso
  *
  * @section booting Booting
  *
- * $ make fqemu
+ * $ scons fqemu
  *
  * @section debugging Debugging
  *
- * $ make qemu
+ * $ scons qemu
  *
  */
 
