@@ -22,6 +22,7 @@
 #include <MemoryMessage.h>
 #include <Config.h>
 #include <unistd.h>
+#include <stdio.h>
 #include "BenchCommand.h"
 #include "ShellCommand.h"
 

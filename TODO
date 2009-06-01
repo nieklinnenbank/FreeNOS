@@ -1,5 +1,16 @@
+[now]
+* OK where going to use scons; it absolutely superiour to GNU make :-)
+    - Help()
+    - Create a builder for the .iso and .img
+    - Qemu "builder"
+    - Variant builder for host programs: the bootimage generator! :-)
+
 [bugs]
-* Compile errors don't stop the whole compilation process anymore!!!
+* scons: warning: Two different environments were specified for target VirtualFileSystem.o,
+    --> This error should leave when we finally can create a proper boot image, then *.bin are not needed anymore.
+* SCons causes a rebuild when we use Glob("*.cpp"): http://scons.tigris.org/issues/show_bug.cgi?id=2419
+    --> we use a static list for now.
+* Compilation with -Werror
 * Running 'ps' a couple of times, reveales a memory leak somewhere... (memstat shows this)
 * MemoryServer::doGrow() allocated a whole page, if e.g. only 1 byte is requested...
 * remove IRQ hooks in ~x86Process(). Also, cleanup pending messages?
@@ -8,8 +19,10 @@
 * Warnings in some newer GCC 4.x versions; cause compilation failure with -Werror!
 
 [project]
-* OK where going to use scons; it absolutely superiour to GNU make :-)
-    * Configuration (interface)? perhaps we can adapt kconfig for scons...
+* Library depends in Prepare(). Whenver library X needs Library Y to work, and Program Z needs Library X, auto-link with Library Y.
+    --> Just use lists for this :-) But look out for circular deps.
+
+* SCons Configuration (interface)? perhaps we can adapt kconfig for scons...
 * clean way to build a boot.img
     --> fix include/ et all???
     --> should NOT put the entire project root inside ...

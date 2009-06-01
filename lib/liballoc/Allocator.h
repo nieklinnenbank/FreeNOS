@@ -17,6 +17,7 @@
 
 #ifndef __LIBALLOC_ALLOCATOR_H
 #define __LIBALLOC_ALLOCATOR_H
+#ifndef __ASSEMBLER__
 
 #include <Types.h>
 
@@ -180,4 +181,5 @@ inline void * operator new(Size sz, Address addr)
  * @}
  */
 
+#endif /* __ASSEMBLER__ */
 #endif /* __LIBALLOC_ALLOCATOR_H */

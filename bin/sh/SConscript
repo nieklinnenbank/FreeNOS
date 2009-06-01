@@ -1,0 +1,33 @@
+#
+# Copyright (C) 2009 Niek Linnenbank
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+from build import *
+
+src = [ 'BenchCommand.cpp', 'DirListCommand.cpp',  'Main.cpp',
+	'MknodCommand.cpp', 'ProcListCommand.cpp', 'Shell.cpp',
+	'StatCommand.cpp',  'WriteCommand.cpp',    'CatCommand.cpp',
+	'HelpCommand.cpp',  'MemstatCommand.cpp',  'MountCommand.cpp',
+	'RebootCommand.cpp', 'ShellCommand.cpp',   'UnameCommand.cpp' ]
+
+lib = [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc' ]
+srv = [ 'memory', 'filesystem', 'filesystem/virtual' ]
+
+env = Prepare(target, lib, srv)
+bin = Prepare(bintarget, lib, srv)
+
+env.Program('sh',     src, LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])
+bin.Program('sh.bin', src, LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])

@@ -17,6 +17,7 @@
 
 #ifndef __LIBCRT_RUNTIME_H
 #define __LIBCRT_RUNTIME_H
+#ifndef __ASSEMBLER__
 
 #include <Macros.h>
 #include <Init.h>
@@ -59,4 +60,5 @@ extern void (*DTOR_LIST)();
  * @}
  */
 
+#endif /* __ASSEMBLER__ */
 #endif /* __LIBCRT_RUNTIME_H */

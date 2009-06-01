@@ -28,6 +28,7 @@
 
 #ifndef _TEKEN_H_
 #define	_TEKEN_H_
+#ifndef __ASSEMBLER__
 
 /**
  * @defgroup libteken libteken
@@ -186,4 +187,5 @@ extern C void teken_set_winsize(teken_t *, const teken_pos_t *);
  * @}
  */
 
+#endif /* __ASSEMBLER__ */
 #endif /* !_TEKEN_H_ */

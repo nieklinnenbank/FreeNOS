@@ -17,6 +17,7 @@
 
 #ifndef __LIBEXEC_EXECUTABLEFORMAT_H
 #define __LIBEXEC_EXECUTABLEFORMAT_H
+#ifndef __ASSEMBLER__
 
 #include <List.h>
 #include <Types.h>
@@ -93,4 +94,5 @@ class ExecutableFormat
 	static List<ExecutableFormat> formats;
 };
 
+#endif /* __ASSEMBLER__ */
 #endif /* __LIBEXEC_EXECUTABLEFORMAT_H */

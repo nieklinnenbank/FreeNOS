@@ -73,7 +73,8 @@ typedef struct MemRegion
 
     /** The next region, if any. */
     MemRegion *next;
-};
+}
+MemRegion;
 
 /**
  * Dynamic memory allocation class.

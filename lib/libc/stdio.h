@@ -17,6 +17,7 @@
 
 #ifndef __LIBC_STDIO_H
 #define __LIBC_STDIO_H
+#ifndef __ASSEMBLER__
 
 #include <stdarg.h>
 #include <Macros.h>
@@ -75,4 +76,5 @@ extern C int vprintf(char *format, va_list args);
  * @}
  */
 
+#endif /* __ASSEMBLER__ */
 #endif /* __LIBC_STDIO_H */

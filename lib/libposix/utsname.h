@@ -17,6 +17,7 @@
 
 #ifndef __LIBPOSIX_UTSNAME_H
 #define __LIBPOSIX_UTSNAME_H
+#ifndef __ASSEMBLER__
 
 #include <Macros.h>
 
@@ -64,4 +65,5 @@ extern C int uname(struct utsname *name);
  * @}
  */
 
+#endif /* __ASSEMBLER__ */
 #endif /* __LIBPOSIX_UTSNAME_H */

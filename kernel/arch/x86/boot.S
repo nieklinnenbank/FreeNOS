@@ -62,7 +62,7 @@ i\vfrom:
 .endif
 .endm
 
-.global _start, multibootInfo, gdt, kernelPageDir, kernelPageTab, kernelTss, kernelioBitMap
+.global _start, multibootHeader, multibootInfo, gdt, kernelPageDir, kernelPageTab, kernelTss, kernelioBitMap
 
 .section ".text"
 
@@ -70,6 +70,24 @@ i\vfrom:
  * Entry point.
  */
 _start:
+	jmp _jump_entry
+
+/*
+ * Multiboot header, 32-bit aligned.
+ */
+.align 4
+
+multibootHeader:
+        .long  (MULTIBOOT_HEADER_MAGIC)
+        .long  (MULTIBOOT_HEADER_ELF_FLAGS)
+        .long -(MULTIBOOT_HEADER_MAGIC + MULTIBOOT_HEADER_ELF_FLAGS)
+        .long  (multibootHeader)
+        .long  (kernelStart)
+        .long  (0)
+        .long  (1024 * 1024 * 4)
+        .long  (_start)
+
+_jump_entry:
 	/* Disable interrupts. */
 	cli
 

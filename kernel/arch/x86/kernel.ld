@@ -15,22 +15,45 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBPARSE_COMMANDLINE_H
-#define __LIBPARSE_COMMANDLINE_H
-#ifndef __ASSEMBLER__
+ENTRY(_start)
+OUTPUT_FORMAT("elf32-i386")
 
-/**
- * Parses commandline arguments.
- */
-class CommandLine
+SECTIONS
 {
-    public:
-    
-	/**
-	 * Default constructor.
-	 */
-	CommandLine();
-};
+    . = 0x00100000;
+    kernelStart = .;
 
-#endif /* __ASSEMBLER__ */
-#endif /* __LIBPARSE_COMMANDLINE_H */
+    .text :
+    {
+	*(.text)
+    }
+
+    .data :
+    {
+	*(.data)
+
+        CTOR_LIST = .;
+	KEEP (*(SORT(.ctors.*)))
+	KEEP (*(.ctors))
+	LONG(0)
+        CTOR_END = .;
+	
+        DTOR_LIST = .;
+	KEEP (*(SORT(.dtors.*)))
+	KEEP (*(.dtors))
+        LONG(0)
+        DTOR_END = .;
+	. += 4;
+	
+	initStart = .;
+	KEEP (*(SORT(.init*)))
+	initEnd   = .;
+    }
+
+    .bss :
+    {
+	*(.bss)
+    }
+    . += 4;
+    kernelEnd = .;
+}

@@ -21,7 +21,7 @@
 
 int main(int argc, char **argv)
 {
-    BootImage image("/boot/boot.img");
+    BootImage image("/boot/boot.ext2");
     if (image.load())
     {
 	Ext2FileSystem server("/img", &image);
