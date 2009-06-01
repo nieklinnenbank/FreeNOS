@@ -132,7 +132,6 @@
 ./kernel/arch/x86/boot.S
 ./kernel/arch/x86/Kernel.cpp
 ./kernel/arch/x86/Memory.cpp
-./kernel/arch/x86/boot.S.BAK
 ./kernel/arch/x86/kernel.ld
 ./kernel/arch/x86/user.ld
 ./kernel/arch/x86/Process.cpp
@@ -140,7 +139,6 @@
 ./kernel/Main.cpp
 ./kernel/Process.cpp
 ./AUTHORS
-./bochsrc
 ./include/Integer.h
 ./include/List.h
 ./include/Types.h
@@ -207,7 +205,6 @@
 ./lib/libc/string.h
 ./lib/libc/stdlib.h
 ./lib/libc/ctype.h
-./lib/libc/memcpy.S.bak
 ./lib/libc/SConscript
 ./lib/libc/errno.c
 ./lib/libc/stdio.h
