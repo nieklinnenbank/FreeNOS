@@ -28,26 +28,43 @@ except:
     cross = ""
 
 #
-# Define the default build environment.
+# Command-line options.
 # TODO: -Werror
 #
-target = DefaultEnvironment(CC       = cross + 'gcc',
-			    CXX      = cross + 'g++',
-			    CCFLAGS  = [ '-O0', '-g3', '-nostdinc', '-Wall', '-fno-builtin' ],
-			    LINKFLAGS = [ '-Wl,--whole-archive', '-nostdlib', '-nodefaultlibs', '-T', 'kernel/arch/x86/user.ld' ],
-			    CXXFLAGS = [ '-fno-rtti', '-fno-exceptions', '-nostdinc' ],
-			    CPPFLAGS = '-isystem include',
-			    CPPPATH  = '.',
-		            ENV      = {'PATH' : os.environ['PATH'],
-                    	                'TERM' : os.environ['TERM'],
-                        	        'HOME' : os.environ['HOME']})
+cmdVars = Variables()
+cmdVars.AddVariables(
+    ('CC',        'Set the C compiler to use',   cross + 'gcc'),
+    ('CXX',       'Set the C++ compiler to use', cross + 'g++'),
+    ('LINK',      'Set the linker to use',       cross + 'ld'),
+    ('CCFLAGS',   'Change C compiler flags',
+		[ '-O0', '-g3', '-nostdinc', '-Wall', '-fno-builtin' ]),
+    ('CXXFLAGS',  'Change C++ compiler flags',
+		[ '-fno-rtti', '-fno-exceptions', '-nostdinc' ]),
+    ('CPPFLAGS',  'Change C preprocessor flags', '-isystem include'),
+    ('LINKFLAGS', 'Change the flags for the linker',
+		[ '--whole-archive', '-nostdlib', '-T', 'kernel/arch/x86/user.ld' ])
+)
+
+#
+# Define the default build environment.
+#
+target = DefaultEnvironment(CPPPATH   = '.',
+		            ENV       = {'PATH' : os.environ['PATH'],
+                    	                 'TERM' : os.environ['TERM'],
+                        	         'HOME' : os.environ['HOME']},
+			    variables = cmdVars)
+Help(cmdVars.GenerateHelpText(target))
+
+#
+# Temporary environment for flat binary program files.
+#
 bintarget = target.Clone()
-bintarget.Append(LINKFLAGS = [ '-Wl,--oformat,binary' ])
+bintarget.Append(LINKFLAGS = [ '--oformat', 'binary' ])
 
 #
 # Build environment for programs on the host system.
 #
-host = Environment()
+host = Environment(variables = cmdVars)
 
 #
 # Prepares the given environment, using library and server dependencies.

@@ -1,41 +1,36 @@
 [now]
 * OK where going to use scons; it absolutely superiour to GNU make :-)
     - Help()
-    - Create a builder for the .iso and .img
-    - Qemu "builder"
     - Variant builder for host programs: the bootimage generator! :-)
+    - warning: Two different environments were specified for target VirtualFileSystem.o,
+	--> This error should leave when we finally can create a proper boot image, then *.bin are not needed anymore.
+* Boot image generator program, from ELF executables.
+* Compilation with -Werror
+    --> Warnings in some newer GCC 4.x versions; cause compilation failure with -Werror!
+* Compilation on FreeBSD
+* we should be able to link the *init sections, without --whole-library... e.g. kernel doesn't need everything from libposix! 
+    --> we actually don't need .init sections which we do not use :)
+* libcommon
+    --> fix include/ et all???
+    --> maybe put all include/api/*.h include/arch/*.h files just in
+	kernel/, and include/*.h in lib/libparse,libalgo(rithm),libcommon,libdata (find a good name).
+* x86Foo -> X86Foo
+    --> all filenames in kernel/arch/x86 too!
 
 [bugs]
-* scons: warning: Two different environments were specified for target VirtualFileSystem.o,
-    --> This error should leave when we finally can create a proper boot image, then *.bin are not needed anymore.
 * SCons causes a rebuild when we use Glob("*.cpp"): http://scons.tigris.org/issues/show_bug.cgi?id=2419
     --> we use a static list for now.
-* Compilation with -Werror
 * Running 'ps' a couple of times, reveales a memory leak somewhere... (memstat shows this)
 * MemoryServer::doGrow() allocated a whole page, if e.g. only 1 byte is requested...
 * remove IRQ hooks in ~x86Process(). Also, cleanup pending messages?
     --> simply keep a list with the copy of InterruptHook in each Process...
     --> Maybe also output this in ProcessInfo! :)
-* Warnings in some newer GCC 4.x versions; cause compilation failure with -Werror!
 
 [project]
 * Library depends in Prepare(). Whenver library X needs Library Y to work, and Program Z needs Library X, auto-link with Library Y.
     --> Just use lists for this :-) But look out for circular deps.
-
 * SCons Configuration (interface)? perhaps we can adapt kconfig for scons...
-* clean way to build a boot.img
-    --> fix include/ et all???
-    --> should NOT put the entire project root inside ...
-    --> we want different (configurable) arch/; but ALSO different (configurable) boot images!!! Kbuild:
-	Y -> compile, statically if possible. Don't put in the boot image.
-	M -> compile, dynamically if possible. Put in the boot image.
-	N -> ignore.
-* maybe create a /VERSION, which is then used by scripts/version.mk
-* maybe put all include/api/*.h include/arch/*.h files just in
-  kernel/, and include/*.h in lib/libparse,libalgo(rithm),libcommon,libdata (find a good name).
-* fixup rules.mk: just everything lowercase, simplify everything :-)
-    --> we should be able to link the *init sections, without --whole-library... e.g. kernel doesn't need everything from libposix! 
-	--> we actually don't need .init sections which we do not use :)
+
 * if we have the main() argc/argv thingies, we could do configure
   the boot modules to use /dev/serial0 as the system console! :)
 
@@ -92,8 +87,6 @@
 	--> /proc/maps!	
     --> perhaps, memory server can then do more management of virtual memory?
 
-* /boot directory, containing the grub.conf (instead of inside image.mk)
-* Automatic copying of every file in the project to boot.iso!
 * SVN's $headURL inside debug()?
 * use #define ArchXXX etc
 * void Memory::releasePhysical(Address addr)  <--- include size here?
