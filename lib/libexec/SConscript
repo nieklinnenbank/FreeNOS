@@ -27,4 +27,4 @@ env.Library('libexec', [ 'ELF.cpp', 'ExecutableFormat.cpp' ])
 # Host build.
 #
 env = Prepare(host)
-env.Library('host/libexec', [ 'host/ELF.cpp', 'host/ExecutableFormat.cpp' ])
+env.StaticLibrary('host/libexec', [ 'host/ELF.cpp', 'host/ExecutableFormat.cpp' ])

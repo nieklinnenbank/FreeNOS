@@ -73,9 +73,9 @@ hostVars.AddVariables(
 		[ '-O0', '-g3', '-Wall' ]),
     ('HOSTCXXFLAGS', 'Change host C++ compiler flags',
 		[ '' ]),
-    ('HOSTCPPFLAGS',  'Change host C preprocessor flags', '-isystem include'),
+    ('HOSTCPPFLAGS',  'Change host C preprocessor flags', '-isystem include -DHOST'),
     ('HOSTLINKFLAGS', 'Change the flags for the host linker',
-		[ '' ])
+		[ '-Wl,-whole-archive' ])
 )
 
 #
@@ -91,6 +91,7 @@ host = Environment(CPPPATH   = '.',
 		   variables = hostVars)
 
 host.Append(VARIANT = 'host')
+host['LINKCOM'] += ' -Wl,--no-whole-archive'
 Help(hostVars.GenerateHelpText(host))
 
 #

@@ -17,9 +17,28 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <ExecutableFormat.h>
 
 int main(int argc, char **argv)
 {
+    ExecutableFormat *format;
+    
+    /* Verify command-line arguments. */
+    if (argc < 2)
+    {
+	fprintf(stderr, "usage: %s [FILE]\n",
+		argv[0]);
+	return EXIT_FAILURE;
+    }
+    /* Attempt to parse the executable headers. */
+    else if (!(format = ExecutableFormat::find(argv[1])))
+    {
+	fprintf(stderr, "%s: failed to read `%s': %s\n",
+		argv[0], argv[1], strerror(errno));
+	return EXIT_FAILURE;
+    }
     /* Exit immediately. */
     return EXIT_SUCCESS;
 }

@@ -62,6 +62,16 @@
  * @param name Variable name.
  * @param level The ordering of the instantiation.
  */
+#ifdef HOST
+#define INITOBJ(class,name,level) \
+    class *name; \
+    \
+    void __attribute((constructor)) USED __mk_##class##name() \
+    { \
+	name = class::instance(); \
+    }
+
+#else
 #define INITOBJ(class,name,level) \
     class *name; \
     \
@@ -70,6 +80,7 @@
 	name = class::instance(); \
     } \
     INITFUNC(__mk_##class##name, level)
+#endif /* HOST */
 
 /**
  * Execute a range of initialization functions.
