@@ -28,20 +28,20 @@ except:
     cross = ""
 
 #
-# Command-line options.
+# Command-line options for the target build chain.
 # TODO: -Werror
 #
-cmdVars = Variables()
-cmdVars.AddVariables(
-    ('CC',        'Set the C compiler to use',   cross + 'gcc'),
-    ('CXX',       'Set the C++ compiler to use', cross + 'g++'),
-    ('LINK',      'Set the linker to use',       cross + 'ld'),
-    ('CCFLAGS',   'Change C compiler flags',
+targetVars = Variables()
+targetVars.AddVariables(
+    ('CC',        'Set the target C compiler to use',   cross + 'gcc'),
+    ('CXX',       'Set the target C++ compiler to use', cross + 'g++'),
+    ('LINK',      'Set the target linker to use',       cross + 'ld'),
+    ('CCFLAGS',   'Change target C compiler flags',
 		[ '-O0', '-g3', '-nostdinc', '-Wall', '-fno-builtin' ]),
-    ('CXXFLAGS',  'Change C++ compiler flags',
+    ('CXXFLAGS',  'Change target C++ compiler flags',
 		[ '-fno-rtti', '-fno-exceptions', '-nostdinc' ]),
-    ('CPPFLAGS',  'Change C preprocessor flags', '-isystem include'),
-    ('LINKFLAGS', 'Change the flags for the linker',
+    ('CPPFLAGS',  'Change target C preprocessor flags', '-isystem include'),
+    ('LINKFLAGS', 'Change the flags for the target linker',
 		[ '--whole-archive', '-nostdlib', '-T', 'kernel/arch/x86/user.ld' ])
 )
 
@@ -52,8 +52,8 @@ target = DefaultEnvironment(CPPPATH   = '.',
 		            ENV       = {'PATH' : os.environ['PATH'],
                     	                 'TERM' : os.environ['TERM'],
                         	         'HOME' : os.environ['HOME']},
-			    variables = cmdVars)
-Help(cmdVars.GenerateHelpText(target))
+			    variables = targetVars)
+Help(targetVars.GenerateHelpText(target))
 
 #
 # Temporary environment for flat binary program files.
@@ -62,9 +62,36 @@ bintarget = target.Clone()
 bintarget.Append(LINKFLAGS = [ '--oformat', 'binary' ])
 
 #
+# Command-line options for the host build chain.
+# TODO: -Werror
+#
+hostVars = Variables()
+hostVars.AddVariables(
+    ('HOSTCC',       'Set the host C compiler to use',   'gcc'),
+    ('HOSTCXX',      'Set the host C++ compiler to use', 'g++'),
+    ('HOSTCCFLAGS',  'Change host C compiler flags',
+		[ '-O0', '-g3', '-Wall' ]),
+    ('HOSTCXXFLAGS', 'Change host C++ compiler flags',
+		[ '' ]),
+    ('HOSTCPPFLAGS',  'Change host C preprocessor flags', '-isystem include'),
+    ('HOSTLINKFLAGS', 'Change the flags for the host linker',
+		[ '' ])
+)
+
+#
 # Build environment for programs on the host system.
 #
-host = Environment(variables = cmdVars)
+host = Environment(CPPPATH   = '.',
+		   CC        = '$HOSTCC',
+		   CXX       = '$HOSTCXX',
+		   CCFLAGS   = '$HOSTCCFLAGS',
+		   CXXFLAGS  = '$HOSTCXXFLAGS',
+		   CPPFLAGS  = '$HOSTCPPFLAGS',
+		   LINKFLAGS = '$HOSTLINKFLAGS',
+		   variables = hostVars)
+
+host.Append(VARIANT = 'host')
+Help(hostVars.GenerateHelpText(host))
 
 #
 # Prepares the given environment, using library and server dependencies.
@@ -73,13 +100,26 @@ def Prepare(env, libs = [], servers = []):
     
     # First create a safe copy.
     e = env.Clone()
+
+    # Setup variant build directory, if needed.    
+    try:
+	e.VariantDir(e['VARIANT'], '.')
+    except:
+	pass
     
-    # Add libraries to the system include path and linker.
+    # Loop all required libraries.
     for lib in libs:
+        
+	# Add them to the C preprocessor include path.
         e['CPPFLAGS'] += ' -isystem lib/' + lib
 	e['CPPFLAGS'] += ' -include lib/' + lib + '/Default.h'
 	
-	e.Append(LIBPATH = [ '#lib/' + lib ])
+	# Link against the correct library variant.
+	try:
+	    e.Append(LIBPATH = [ '#lib/' + lib + '/' + e['VARIANT']])
+	except:
+	    e.Append(LIBPATH = [ '#lib/' + lib ])
+
 	e.Append(LIBS = [ lib ])
 
     # Add servers to the system include path.

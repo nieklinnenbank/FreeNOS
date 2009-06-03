@@ -17,5 +17,14 @@
 
 from build import *
 
-env = Prepare(target, [ 'libposix', 'libc' ])
+#
+# Target build.
+#
+env = Prepare(target,  [ 'libposix', 'libc' ])
 env.Library('libexec', [ 'ELF.cpp', 'ExecutableFormat.cpp' ])
+
+#
+# Host build.
+#
+env = Prepare(host)
+env.Library('host/libexec', [ 'host/ELF.cpp', 'host/ExecutableFormat.cpp' ])

@@ -18,6 +18,7 @@
     --> all filenames in kernel/arch/x86 too!
 
 [bugs]
+* We should use standard errno values, instead of e.g. ENOSUPPORT, EINVALID.
 * SCons causes a rebuild when we use Glob("*.cpp"): http://scons.tigris.org/issues/show_bug.cgi?id=2419
     --> we use a static list for now.
 * Running 'ps' a couple of times, reveales a memory leak somewhere... (memstat shows this)

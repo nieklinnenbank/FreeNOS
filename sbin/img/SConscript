@@ -15,4 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-SConscript(dirs = ['init', 'img'] )
+from build import *
+
+env = Prepare(host, [ 'libexec' ])
+env.Program('img',  [ 'Main.cpp' ], LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])

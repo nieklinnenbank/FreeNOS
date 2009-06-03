@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2009 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -15,38 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-ENTRY(_entry)
-OUTPUT_FORMAT("elf32-i386")
+#include <stdio.h>
+#include <stdlib.h>
 
-SECTIONS
+int main(int argc, char **argv)
 {
-    . = 0x80000000;
-
-    .text :
-    {
-	*(.entry)
-	*(.text)
-	*(.data)
-	*(.rodata)
-
-	. = ALIGN(4);
-        CTOR_LIST = .;
-	KEEP (*(SORT(.ctors.*)))
-	KEEP (*(.ctors))
-	LONG(0)
-        CTOR_END = .;
-	
-        DTOR_LIST = .;
-	KEEP (*(SORT(.dtors.*)))
-	KEEP (*(.dtors))
-        LONG(0)
-        DTOR_END = .;
-	. += 4;
-	
-	initStart = .;
-	KEEP (*(SORT(.init*)))
-	KEEP (*(.init*))
-	initEnd   = .;
-	*(.bss)
-    }
+    /* Exit immediately. */
+    return EXIT_SUCCESS;
 }

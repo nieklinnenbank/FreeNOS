@@ -16,6 +16,7 @@
  */
 
 #include <Macros.h>
+#include <Error.h>
 #include <List.h>
 #include <ListIterator.h>
 #include "ExecutableFormat.h"
