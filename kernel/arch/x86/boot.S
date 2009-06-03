@@ -22,44 +22,33 @@
 /* The size of our stack (16KB).  */                                                                                                                                                                    
 #define STACK_SIZE 0x4000
 
-/* Enable alternate macro mode. */
-.altmacro
-
 /**
  * Generates interrupt handlers.
  */
-.macro interruptHandler vfrom, vto, verr
-i\vfrom:
+.macro interruptHandler vnum, verr
+i\vnum:
 .if !\verr
 	pushl $0
 .endif
-	pushl $\vfrom
+	pushl $\vnum
 	jmp invokeHandler
-.if \vto-\vfrom
-	interruptHandler %\vfrom+1,\vto,\verr
-.endif
 .endm
 
 /**
  * Fills in IDT entries.
  */
-.macro idtEntry vfrom, vto, vtype
-
+.macro idtEntry vnum, vtype
         mov $8, %eax
-        mov $\vfrom, %ebx
+	mov $\vnum, %ebx
         imul %ebx
         add $idt, %eax
-        mov $i\vfrom, %ebx
+	mov $i\vnum, %ebx
         movw %bx, (%eax)        	/* Offset low */
         shrl $16, %ebx
         movw %bx, 6(%eax)       	/* Offset high */
         movw $KERNEL_CS_SEL, 2(%eax)    /* Kernel CS */
         movb $0, 4(%eax)        	/* Zeroes */
         movb $\vtype, 5(%eax)   	/* Present, 32 bits, 01110 */
-
-.if \vto-\vfrom
-        idtEntry %\vfrom+1,\vto,\vtype
-.endif
 .endm
 
 .global _start, multibootHeader, multibootInfo, gdt, kernelPageDir, kernelPageTab, kernelTss, kernelioBitMap
@@ -112,9 +101,40 @@ _jump_entry:
 	lgdt gdtPtr
 
 	/* Fill in IDT entries 0 - 16, and 32 - 47. */
-	idtEntry 0,  16, 0x8f
-	idtEntry 32, 47, 0x8e
-        idtEntry 0x90, 0x90, 0xee
+	idtEntry 0, 0x8f
+	idtEntry 1, 0x8f
+	idtEntry 2, 0x8f
+	idtEntry 3, 0x8f
+	idtEntry 4, 0x8f
+	idtEntry 5, 0x8f
+	idtEntry 6, 0x8f
+	idtEntry 7, 0x8f
+	idtEntry 8, 0x8f
+	idtEntry 9, 0x8f
+	idtEntry 10, 0x8f
+	idtEntry 11, 0x8f
+	idtEntry 12, 0x8f
+	idtEntry 13, 0x8f
+	idtEntry 14, 0x8f
+	idtEntry 15, 0x8f
+	idtEntry 16, 0x8f
+	idtEntry 32, 0x8e
+	idtEntry 33, 0x8e
+	idtEntry 34, 0x8e
+	idtEntry 35, 0x8e
+	idtEntry 36, 0x8e
+	idtEntry 37, 0x8e
+	idtEntry 38, 0x8e
+	idtEntry 39, 0x8e
+	idtEntry 40, 0x8e
+	idtEntry 41, 0x8e
+	idtEntry 42, 0x8e
+	idtEntry 43, 0x8e
+	idtEntry 44, 0x8e
+	idtEntry 45, 0x8e
+	idtEntry 46, 0x8e
+	idtEntry 47, 0x8e
+        idtEntry 0x90, 0xee
 
 	/* Load IDT. */
 	lidt idtPtr
@@ -193,16 +213,40 @@ halt:
 /**
  * Generated interrupt handlers.
  */
-interruptHandler  0,  7, 0
-interruptHandler  8,  8, 1
-interruptHandler  9,  9, 0
-interruptHandler 10, 14, 1
-interruptHandler 15, 16, 0
-interruptHandler 32, 47, 0
-interruptHandler 0x90, 0x90, 0
-
-/** Number of times the kernel is entered. */
-kernelEntered: .long 0
+interruptHandler  0, 0
+interruptHandler  1, 0
+interruptHandler  2, 0
+interruptHandler  3, 0
+interruptHandler  4, 0
+interruptHandler  5, 0
+interruptHandler  6, 0
+interruptHandler  7, 0
+interruptHandler  8, 1
+interruptHandler  9, 0
+interruptHandler 10, 1
+interruptHandler 11, 1
+interruptHandler 12, 1
+interruptHandler 13, 1
+interruptHandler 14, 1
+interruptHandler 15, 0
+interruptHandler 16, 0
+interruptHandler 32, 0
+interruptHandler 33, 0
+interruptHandler 34, 0
+interruptHandler 35, 0
+interruptHandler 36, 0
+interruptHandler 37, 0
+interruptHandler 38, 0
+interruptHandler 39, 0
+interruptHandler 40, 0
+interruptHandler 41, 0
+interruptHandler 42, 0
+interruptHandler 43, 0
+interruptHandler 44, 0
+interruptHandler 45, 0
+interruptHandler 46, 0
+interruptHandler 47, 0
+interruptHandler 0x90, 0
 
 /**
  * Invokes the correct interrupt handler.

@@ -7,7 +7,7 @@
 * Boot image generator program, from ELF executables.
 * Compilation with -Werror
     --> Warnings in some newer GCC 4.x versions; cause compilation failure with -Werror!
-* Compilation on FreeBSD
+* Compilation on FreeBSD, OpenSolaris
 * we should be able to link the *init sections, without --whole-library... e.g. kernel doesn't need everything from libposix! 
     --> we actually don't need .init sections which we do not use :)
 * libcommon
