@@ -34,10 +34,11 @@ class ELF : public ExecutableFormat
 
 	/**
 	 * Class constructor.
+	 * @param path Path on filesystem to the ELF executable.
 	 * @param fd File descriptor of the ELF executable.
 	 * @param header ELF header read from the file.
 	 */
-	ELF(int fd, ELFHeader *header);
+	ELF(const char *path, int fd, ELFHeader *header);
 
 	/**
 	 * Class destructor.

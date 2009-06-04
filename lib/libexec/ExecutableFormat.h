@@ -79,14 +79,23 @@ class ExecutableFormat
 
 	/**
 	 * Class constructor.
+	 * @param path Filesystem path to the executable.
 	 */
-	ExecutableFormat();
+	ExecutableFormat(const char *path);
 
 	/**
 	 * Class destructor.
 	 */
 	virtual ~ExecutableFormat();
 
+	/**
+	 * Retrieve path to the executable.
+	 * @return Path on filesystem to the executable.
+	 */
+	const char * getPath()
+	{
+	    return path;
+	}
     
 	/**
 	 * Memory regions a program needs at runtime.
@@ -115,6 +124,11 @@ class ExecutableFormat
 
 	/** List of known executable formats. */
 	static List<FormatDetector> formats;
+
+    private:
+    
+	/** Path to the executable. */
+	const char *path;
 };
 
 #endif /* __ASSEMBLER__ */

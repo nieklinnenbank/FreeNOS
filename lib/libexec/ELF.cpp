@@ -24,7 +24,8 @@
 #include <Init.h>
 #include "ELF.h"
 
-ELF::ELF(int f, ELFHeader *h) : fd(f)
+ELF::ELF(const char *p, int f, ELFHeader *h)
+    : ExecutableFormat(p), fd(f)
 {
     memcpy(&header, h, sizeof(header));
 }
@@ -61,7 +62,7 @@ ExecutableFormat * ELF::detect(const char *path)
 	    header.version == ELF_VERSION_CURRENT &&
 	    header.type    == ELF_TYPE_EXEC)
 	{
-	    return new ELF(fd, &header);
+	    return new ELF(path, fd, &header);
 	}
     }
     close(fd);

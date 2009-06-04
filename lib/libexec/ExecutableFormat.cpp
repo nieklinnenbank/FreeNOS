@@ -26,7 +26,7 @@
 /** List of known executable formats. */
 List<FormatDetector> ExecutableFormat::formats;
 
-ExecutableFormat::ExecutableFormat()
+ExecutableFormat::ExecutableFormat(const char *p) : path(p)
 {
 }
 

@@ -9,8 +9,6 @@
 * Compilation with -Werror
     --> Warnings in some newer GCC 4.x versions; cause compilation failure with -Werror!
 * Compilation on FreeBSD, OpenSolaris
-* we should be able to link the *init sections, without --whole-library... e.g. kernel doesn't need everything from libposix! 
-    --> we actually don't need .init sections which we do not use :)
 * libcommon
     --> fix include/ et all???
     --> maybe put all include/api/*.h include/arch/*.h files just in
@@ -21,6 +19,7 @@
 
 [bugs]
 * We should use standard errno values, instead of e.g. ENOSUPPORT, EINVALID.
+* Some dependencies between source files are missing in the SCons scripts
 * SCons causes a rebuild when we use Glob("*.cpp"): http://scons.tigris.org/issues/show_bug.cgi?id=2419
     --> we use a static list for now.
 * Running 'ps' a couple of times, reveales a memory leak somewhere... (memstat shows this)

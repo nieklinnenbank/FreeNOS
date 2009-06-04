@@ -33,6 +33,9 @@
 /** Maximum length of BootVariable values. */
 #define BOOTIMAGE_VALUE		64
 
+/** Maximum length of the filesystem path in a BootProgram. */
+#define BOOTIMAGE_PATH		128
+
 /**
  * BootImage contains executable programs to be loaded at system bootup.
  */
@@ -52,6 +55,18 @@ typedef struct BootImage
     
     /** Number of entries in the variables table. */
     u16 variablesTableCount;
+    
+    /** Offset of the programs table. */
+    u32 programsTableOffset;
+    
+    /** Number of entries in the programs table. */
+    u16 programsTableCount;
+    
+    /** Offset of the segments table. */
+    u32 segmentsTableOffset;
+    
+    /** Number of entries in the segments table. */
+    u16 segmentsTableCount;
 }
 BootImage;
 
@@ -69,5 +84,37 @@ typedef struct BootVariable
     char value[BOOTIMAGE_VALUE];
 }
 BootVariable;
+
+/**
+ * Program embedded in the BootImage.
+ */
+typedef struct BootProgram
+{
+    /** Path to the program. */
+    char path[BOOTIMAGE_PATH];
+    
+    /** Offset of the program segments in the segments table. */
+    u32 segmentsOffset;
+    
+    /** Number of contiguous entries in the segment table. */
+    u16 segmentsCount;
+}
+BootProgram;
+
+/**
+ * Program memory segment.
+ */
+typedef struct BootSegment
+{
+    /** Virtual memory address to load the segment. */
+    Address virtualAddress;
+    
+    /** Total size of the segment. */
+    u32 size;
+    
+    /** Offset in the boot image of the segment contents. */
+    u32 offset;
+}
+BootSegment;
 
 #endif /* __KERNEL_BOOTIMAGE_H */

@@ -33,6 +33,9 @@ typedef struct BootEntry
     
     /** Memory regions extracted from the program. */
     MemoryRegion regions[MAX_REGIONS];
+    
+    /** Number of memory regions. */
+    Size numRegions;
 }
 BootEntry;
 
