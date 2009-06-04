@@ -15,16 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <BootImage.h>
+#include <BootModule.h>
 #include <stdlib.h>
 #include "Ext2FileSystem.h"
 
 int main(int argc, char **argv)
 {
-    BootImage image("/boot/boot.ext2");
-    if (image.load())
+    BootModule module("/boot/boot.ext2");
+    if (module.load())
     {
-	Ext2FileSystem server("/img", &image);
+	Ext2FileSystem server("/img", &module);
 	return server.run();
     }
     exit(1);

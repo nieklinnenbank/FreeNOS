@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __FILESYSTEM_BOOTIMAGE_H
-#define __FILESYSTEM_BOOTIMAGE_H
+#ifndef __FILESYSTEM_BOOTMODULE_H
+#define __FILESYSTEM_BOOTMODULE_H
 
 #include <api/SystemInfo.h>
 #include <api/VMCtl.h>
@@ -28,13 +28,13 @@
 #include <string.h>
 #include "Storage.h"
 
-/** Virtual address of the loaded boot image. */
-#define BOOTIMAGE_VADDR 0xa000f000
+/** Virtual address of the loaded image in memory. */
+#define BOOTMODULE_VADDR 0xa000f000
 
 /**
  * Uses a GRUB boot module as a filesystem storage provider.
  */
-class BootImage : public Storage
+class BootModule : public Storage
 {
     public:
     
@@ -42,19 +42,19 @@ class BootImage : public Storage
 	 * Constructor function.
 	 * @param m Name of the boot image loaded by GRUB.
 	 */
-	BootImage(const char *m)
-	    : moduleName(m), image((u8 *)BOOTIMAGE_VADDR)
+	BootModule(const char *m)
+	    : moduleName(m), image((u8 *)BOOTMODULE_VADDR)
 	{
 	}
 
 	/**
-	 * Loads the boot image into virtual memory.
+	 * Loads the boot module into virtual memory.
 	 * @return True on success, false otherwise.
 	 */
 	bool load()
 	{
 	    SystemInformation info;
-	    Address vaddr = BOOTIMAGE_VADDR;
+	    Address vaddr = BOOTMODULE_VADDR;
 	    
 	    /* Search for the boot image. */
 	    for (Size i = 0; i < info.moduleCount; i++)
@@ -77,7 +77,7 @@ class BootImage : public Storage
 	}
 
 	/**
-	 * Reads data from the boot image.
+	 * Reads data from the boot module.
 	 * @param offset Offset to start reading from.
 	 * @param buffer Output buffer.
 	 * @param size Number of bytes to copied.
@@ -110,14 +110,14 @@ class BootImage : public Storage
 
     private:
     
-	/** Name of the boot image. */
+	/** Name of the boot module. */
 	const char *moduleName;
     
-	/** Pointer to the boot image in virtual memory. */
+	/** Pointer to the boot module in virtual memory. */
 	u8 *image;
 	
-	/** Size of the boot image. */
+	/** Size of the boot module. */
 	Size imageSize;
 };
 
-#endif /* __FILESYSTEM_BOOTIMAGE_H */
+#endif /* __FILESYSTEM_BOOTMODULE_H */

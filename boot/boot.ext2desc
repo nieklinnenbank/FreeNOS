@@ -61,7 +61,7 @@
 ./srv/memory/SConscript
 ./srv/memory/Main.cpp
 ./srv/filesystem/Device.h
-./srv/filesystem/BootImage.h
+./srv/filesystem/BootModule.h
 ./srv/filesystem/tmp/TmpFileSystem.h
 ./srv/filesystem/tmp/TmpFileSystem.cpp
 ./srv/filesystem/tmp/TmpFile.cpp
