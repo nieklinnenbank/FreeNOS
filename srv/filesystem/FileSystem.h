@@ -122,7 +122,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	virtual Error createFile(FileSystemMessage *msg,
 				 FileSystemPath *path)
 	{
-	    return ENOSUPPORT;
+	    return ENOTSUP;
 	}
 
 	/**
@@ -161,7 +161,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 		    if (VMCopy(msg->procID, Read, (Address) buf,
 			      (Address) msg->buffer + strlen(mountPath), PATHLEN) <= 0)
 		    {
-			msg->error(EACCESS, IODone);
+			msg->error(EACCES, IODone);
 			return;
 		    }
 		    else
@@ -183,7 +183,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 			}
 			else
 			{
-			    msg->error(ENOSUCH, IODone);
+			    msg->error(ENOENT, IODone);
 			    return;
 			}
 		    }
@@ -225,11 +225,11 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 		    break;
 
 		default:
-		    msg->error(ENOSUPPORT);
+		    msg->error(ENOTSUP);
 		    break;
 	    }
 	    /* Did the operation complete already? */
-	    if (msg->result != EWAIT)
+	    if (msg->result != EAGAIN)
 	    {
 		ioDoneHandler(msg);
 	    }

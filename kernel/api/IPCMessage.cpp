@@ -46,7 +46,7 @@ int IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg, Size siz
 	    /* Find the remote process to send to. */
 	    if (!(proc = Process::byID(id)))
 	    {
-		return ENOSUCH;
+		return ESRCH;
 	    }
 	    /* Put our message on their list, and try to let them execute! */
 	    proc->getMessages()->insertTail(new UserMessage(msg, size));
@@ -79,7 +79,7 @@ int IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg, Size siz
 	    }
 
 	default:
-	    return ENOSUPPORT;
+	    return EINVAL;
     }
     /* Success. */
     return 0;

@@ -44,13 +44,13 @@ int ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
     /* Does the target process exist? */
     if(action != GetPID && !(proc = Process::byID(procID)))
     {
-	return ENOSUCH;
+	return ESRCH;
     }
     /* Handle request. */
     switch (action)
     {
 	case Spawn:
-	    return EINVALID;
+	    return EINVAL;
 	
 	case KillPID:
 	    delete proc;

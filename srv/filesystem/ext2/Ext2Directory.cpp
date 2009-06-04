@@ -44,7 +44,7 @@ Error Ext2Directory::read(FileSystemMessage *msg)
         /* We don't support indirect blocks (yet). */
     	if (blk >= EXT2_NDIR_BLOCKS)
     	{
-    	    e = ENOSUPPORT;
+    	    e = ENOTSUP;
     	    break;
     	}
 	/* Read directory entries. */
@@ -57,7 +57,7 @@ Error Ext2Directory::read(FileSystemMessage *msg)
 	    if (ext2->getStorage()->read(offset, (u8 *) &ext2Dent,
 				         sizeof(Ext2DirectoryEntry)) < 0)
 	    {
-		return EACCESS;
+		return EACCES;
 	    }
 	    /* Is it a valid entry? */
 	    else if (!ext2Dent.recordLength || !ext2Dent.inode)
@@ -70,7 +70,7 @@ Error Ext2Directory::read(FileSystemMessage *msg)
 		/* Fill in the Dirent. */
 		if (!(ext2Inode = ext2->getInode(ext2Dent.inode)))
 		{
-		    return EINVALID;
+		    return EINVAL;
 		}
 		strlcpy(dent.d_name, ext2Dent.name, ext2Dent.nameLength + 1);
 		dent.d_type = EXT2_FILETYPE(ext2Inode);
@@ -114,12 +114,12 @@ Error Ext2Directory::getEntry(Ext2DirectoryEntry *dent, char *name)
 	    if (ext2->getStorage()->read(offset, (u8 *) dent,
 				         sizeof(Ext2DirectoryEntry)) < 0)
 	    {
-		return EACCESS;
+		return EACCES;
 	    }
 	    /* Does it have a valid length? */
 	    else if (!dent->recordLength)
 	    {
-		return EINVALID;
+		return EINVAL;
 	    }
 	    /* Is it the entry we are looking for? */
 	    if (strncmp(name, dent->name,
@@ -131,5 +131,5 @@ Error Ext2Directory::getEntry(Ext2DirectoryEntry *dent, char *name)
 	    ent += dent->recordLength;
 	}
     }
-    return ENOSUCH;
+    return ENOENT;
 }

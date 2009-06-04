@@ -96,7 +96,7 @@ class BootImage : public Storage
 	 */
 	Error write(u64 offset, u8 *buffer, Size size)
 	{
-	    return ENOSUPPORT;
+	    return ENOTSUP;
 	}
 
 	/**

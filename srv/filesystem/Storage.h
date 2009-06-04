@@ -43,7 +43,7 @@ class Storage
 	 */
 	virtual Error read(u64 offset, u8 *buffer, Size size)
 	{
-	    return ENOSUPPORT;
+	    return ENOTSUP;
 	}
 	
 	/**
@@ -54,7 +54,7 @@ class Storage
 	 */
 	virtual Error write(u64 offset, u8 *buffer, Size size)
 	{
-	    return ENOSUPPORT;
+	    return ENOTSUP;
 	}
 
 	/**

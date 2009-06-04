@@ -64,7 +64,7 @@ int CatCommand::execute(Size nparams, char **params)
 	}
     }
     /* Not reached. */
-    return ENOSUPPORT;
+    return ENOTSUP;
 }
 
 INITOBJ(CatCommand, catCmd, DEFAULT)

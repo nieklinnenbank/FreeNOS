@@ -44,7 +44,7 @@ ExecutableFormat * ExecutableFormat::find(const char *path)
     {
         if (!S_ISREG(st.st_mode))
         {
-            errno = EINVALID;
+            errno = EINVAL;
             return ZERO;
         }
     }
@@ -59,6 +59,6 @@ ExecutableFormat * ExecutableFormat::find(const char *path)
 	    return i.current();
 	}
     }
-    errno = ENOSUPPORT;
+    errno = ENOEXEC;
     return ZERO;
 }

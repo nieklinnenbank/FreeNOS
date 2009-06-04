@@ -91,7 +91,7 @@ Ext2FileSystem::Ext2FileSystem(const char *p, Storage *s)
 Error Ext2FileSystem::createFile(FileSystemMessage *msg,
 				 FileSystemPath *path)
 {
-    return ENOSUPPORT;
+    return ENOTSUP;
 }
 
 Ext2Inode * Ext2FileSystem::getInode(u32 inodeNum)

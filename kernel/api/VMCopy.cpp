@@ -31,7 +31,7 @@ int VMCopyHandler(ProcessID procID, Operation how, Address ours, Address theirs,
     /* Find the corresponding ArchProcess. */
     if (!(proc = ArchProcess::byID(procID)))
     {
-	return ENOSUCH;
+	return ESRCH;
     }
     /* Verify memory addresses. */
     if (!memory->access(scheduler->current(), ours, sz) ||

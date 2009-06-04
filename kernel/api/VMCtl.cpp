@@ -28,7 +28,7 @@ Address VMCtlHandler(Operation action, ProcessID procID, Address paddr,
     /* Find the given process. */
     if (!(proc = Process::byID(procID)))
     {
-	return ENOSUCH;
+	return ESRCH;
     }
     switch (action)
     {
@@ -51,7 +51,7 @@ Address VMCtlHandler(Operation action, ProcessID procID, Address paddr,
 	    break;
 	    
 	default:
-	    return ENOSUPPORT;
+	    return EINVAL;
 	
     }
     /* Success. */

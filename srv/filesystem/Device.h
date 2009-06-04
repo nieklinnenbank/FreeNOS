@@ -44,7 +44,7 @@ class Device : public File
 	/**
 	 * Opens the Device.
 	 * @param msg Open request.
-         * @return Always EWAIT. The Device will send an IODone
+         * @return Always EAGAIN. The Device will send an IODone
 	 *         when it has completed the request.
 	 */
 	Error open(FileSystemMessage *msg)
@@ -52,13 +52,13 @@ class Device : public File
 	    msg->action   = OpenFile;
 	    msg->deviceID = deviceID;
 	    msg->ipc(deviceID.major, Send, sizeof(*msg));
-	    return EWAIT;
+	    return EAGAIN;
 	}
 
         /** 
          * Reads out the buffer. 
 	 * @param msg Read request.
-         * @return Always EWAIT. The Device will send an IODone
+         * @return Always EAGAIN. The Device will send an IODone
 	 *         when it has completed the request.
          */
         Error read(FileSystemMessage *msg)
@@ -66,13 +66,13 @@ class Device : public File
 	    msg->action   = ReadFile;
 	    msg->deviceID = deviceID;
 	    msg->ipc(deviceID.major, Send, sizeof(*msg));
-	    return EWAIT;
+	    return EAGAIN;
 	}
 
         /** 
          * Writes data from the buffer to the device.
 	 * @param msg Write request.
-         * @return Always EWAIT. The Device will send an IODone
+         * @return Always EAGAIN. The Device will send an IODone
 	 *         when it has completed the request.
          */
 	Error write(FileSystemMessage *msg)
@@ -80,7 +80,7 @@ class Device : public File
 	    msg->action   = WriteFile;
 	    msg->deviceID = deviceID;
 	    msg->ipc(deviceID.major, Send, sizeof(*msg));
-	    return EWAIT;
+	    return EAGAIN;
 	}
 
         /**

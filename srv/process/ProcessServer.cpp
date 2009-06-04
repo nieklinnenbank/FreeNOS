@@ -87,7 +87,7 @@ void ProcessServer::readProcessHandler(ProcessMessage *msg)
 	    return;
 	}
     }
-    msg->result = ENOSUCH;
+    msg->result = ENOENT;
 }
 
 void ProcessServer::exitProcessHandler(ProcessMessage *msg)

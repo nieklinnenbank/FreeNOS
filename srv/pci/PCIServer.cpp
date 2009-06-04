@@ -81,7 +81,7 @@ PCIServer::PCIServer()
 
 void PCIServer::getDeviceHandler(PCIMessage *msg)
 {
-    msg->result = ENOSUCH;
+    msg->result = ENOENT;
 
     /* Lookup the device. */
     for (ListIterator<PCIDevice> i(&devices); i.hasNext(); i++)

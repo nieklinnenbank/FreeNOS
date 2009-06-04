@@ -103,7 +103,7 @@ class SerialDevice
 	 */
 	virtual Size read(s8 *buffer, Size size)
 	{
-	    return ENOSUPPORT;
+	    return ENOTSUP;
 	}
 
 	/**
@@ -114,7 +114,7 @@ class SerialDevice
 	 */	
 	virtual Size write(s8 *buffer, Size size)
 	{
-	    return ENOSUPPORT;
+	    return ENOTSUP;
 	}
 
     protected:

@@ -47,5 +47,5 @@ Error TmpFile::read(FileSystemMessage *msg)
 
 Error TmpFile::write(FileSystemMessage *msg)
 {
-    return EACCESS;
+    return EACCES;
 }

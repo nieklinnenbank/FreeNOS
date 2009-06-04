@@ -134,7 +134,7 @@ class File
 	 */
 	virtual Error read(FileSystemMessage *msg)
 	{
-	    return ENOSUPPORT;
+	    return ENOTSUP;
 	}
 
 	/**
@@ -144,7 +144,7 @@ class File
 	 */
 	virtual Error write(FileSystemMessage *msg)
 	{
-	    return ENOSUPPORT;
+	    return ENOTSUP;
 	}
     
 	/**

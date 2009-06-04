@@ -91,7 +91,7 @@ void VirtualFileSystem::ioHandler(FileSystemMessage *msg)
 	    /* Retrieve mountpoint. */
 	    if (!(mount = findMount(path)))
 	    {
-		msg->error(ENOSUCH);
+		msg->error(ENOENT);
 		return;
 	    }
 	    fsID = mount->procID;
@@ -104,7 +104,7 @@ void VirtualFileSystem::ioHandler(FileSystemMessage *msg)
 	    /* Do we have this fd? */
 	    if (!(fd = (*procs[msg->from].files)[msg->fd]))
 	    {
-		msg->error(ENOSUCH);
+		msg->error(ENOENT);
 		return;
 	    }
 	    else
@@ -118,7 +118,7 @@ void VirtualFileSystem::ioHandler(FileSystemMessage *msg)
 	default:
 	
 	    /* No such I/O operation. */
-	    msg->error(ENOSUPPORT);
+	    msg->error(ENOTSUP);
 	    return;
     }
     
@@ -152,7 +152,7 @@ void VirtualFileSystem::ioDoneHandler(FileSystemMessage *msg)
 	    /* Retrieve mountpoint. */
 	    if (!(mount = findMount(path)))
 	    {
-		msg->error(ENOSUCH, IODone, msg->procID);
+		msg->error(ENOENT, IODone, msg->procID);
 		return;
 	    }
 	    break;

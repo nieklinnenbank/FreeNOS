@@ -119,7 +119,7 @@ void SerialServer::readWriteHandler(FileSystemMessage *msg)
 		break;
 
 	    default:
-		e = ENOSUPPORT;
+		e = ENOTSUP;
 	}
 	/* Did it fail? */
 	if (e < 0)
@@ -139,7 +139,7 @@ void SerialServer::readWriteHandler(FileSystemMessage *msg)
 	}
     }
     else
-	msg->result = EACCESS;
+	msg->result = EACCES;
 
     /* Send reply. */
     msg->action = IODone;

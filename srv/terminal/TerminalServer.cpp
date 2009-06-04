@@ -95,7 +95,7 @@ void TerminalServer::openFileHandler(FileSystemMessage *msg)
 	
     /* Request cannot be allowed. */
     else
-	reply->result = EACCESS;
+	reply->result = EACCES;
 #endif
 }
 

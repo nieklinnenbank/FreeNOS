@@ -52,7 +52,7 @@ Error Ext2File::read(FileSystemMessage *msg)
         if (ext2->getStorage()->read(offset, block,
 				     EXT2_BLOCK_SIZE(sb)) < 0)
 	{
-	    e = EACCESS;
+	    e = EACCES;
 	    break;
 	}
 	/* Calculate the number of bytes to copy. */
@@ -76,5 +76,5 @@ Error Ext2File::read(FileSystemMessage *msg)
 
 Error Ext2File::write(FileSystemMessage *msg)
 {
-    return ENOSUPPORT;
+    return ENOTSUP;
 }

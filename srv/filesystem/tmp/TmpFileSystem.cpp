@@ -55,7 +55,7 @@ Error TmpFileSystem::createFile(FileSystemMessage *msg,
 	    break;
 	
 	default:
-	    return EINVALID;
+	    return EINVAL;
     }
     /* Add directory entry. */
     if (path->parent())

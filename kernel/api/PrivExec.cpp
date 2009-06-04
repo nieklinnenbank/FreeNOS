@@ -40,7 +40,7 @@ int PrivExecHandler(PrivOperation op)
 	default:
 	    ;
     }
-    return EINVALID;
+    return EINVAL;
 }
 
 INITAPI(PRIVEXEC, PrivExecHandler)
