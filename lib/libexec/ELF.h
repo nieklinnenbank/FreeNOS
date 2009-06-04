@@ -21,6 +21,7 @@
 #include <List.h>
 #include <Types.h>
 #include <Factory.h>
+#include <Init.h>
 #include "ExecutableFormat.h"
 
 /** Number of bytes in the ELF identity field. */
@@ -41,39 +42,48 @@
 /**
  * Executable and Linkable Format (ELF).
  */
-class ELF : public ExecutableFormat, public Factory<ELF>
+class ELF : public ExecutableFormat
 {
     public:
+
+	/**
+	 * Class constructor.
+	 */
+	ELF();
 
 	/**
 	 * Class destructor.
 	 */
 	~ELF();
+    
+	/**
+	 * Memory regions a program needs at runtime.
+	 * @param regions Memory regions to fill.
+	 * @param max Maximum number of memory regions.
+	 * @return Number of memory regions or an error code on error.
+	 */
+	int regions(MemoryRegion *regions, Size max);
+
+	/**
+	 * Lookup the program entry point.
+	 * @param buf Entry point is written here.
+	 * @return Zero on success and an error code on error.
+	 */
+	int entry(Address *buf);
 
 	/**
 	 * Confirms if we understand the given format.
 	 * @param path Path to the file to read.
 	 * @return true on success and false on failure.
 	 */
-	bool detect(const char *path);
-    
-	/**
-	 * Memory regions a program needs at runtime.
-	 * @param path Path to the file to read.
-	 * @param regions Memory regions to fill.
-	 * @param max Maximum number of memory regions.
-	 * @return Number of memory regions or an error code on error.
-	 */
-	int regions(const char *path, MemoryRegion *regions, Size max);
+	static ExecutableFormat * detect(const char *path);
 
-	/**
-	 * Lookup the program entry point.
-	 * @param path Path to the file to read.
-	 * @param buf Entry point is written here.
-	 * @return Zero on success and an error code on error.
-	 */
-	int entry(const char *path, Address *buf);
+    private:
+
+	REGISTER(formats, ELF, detect)
 };
+
+
 
 /**
  * Describes an ELF executable and must be placed at the beginning of executable programs.

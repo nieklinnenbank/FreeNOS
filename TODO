@@ -78,6 +78,7 @@
 
 [sources]
 * __attribute__((constructor)) for the target aswell in Init.h?
+* __attribute__((constructor)) priorities in INIT*() in Init.h.
 * Programs do: printf() and cout <<, to stdin,stdout,stderr. Servers log() to the log server,
   but libraries may be used by both! --> should have a solution for this.
     --> use C++ <<, override the cout object? C programs then still use printf()

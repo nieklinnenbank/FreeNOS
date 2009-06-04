@@ -98,6 +98,19 @@
     }
 
 /**
+ * Performs registration of a function callback handler.
+ * @param list List containing function handlers.
+ * @param class Class name of the handler.
+ * @param func Function member name of the handler.
+ * @see List
+ */
+#define REGISTER(list,class,func) \
+    static void __attribute__((constructor)) __register_##class##func() \
+    { \
+	list.insertTail(&class::func); \
+    }
+
+/**
  * Function executed at initialization time.
  */
 typedef void InitHandler();

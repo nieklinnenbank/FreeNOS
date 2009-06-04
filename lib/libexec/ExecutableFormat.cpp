@@ -24,11 +24,10 @@
 #include <errno.h>
 
 /** List of known executable formats. */
-List<ExecutableFormat> ExecutableFormat::formats;
+List<FormatDetector> ExecutableFormat::formats;
 
 ExecutableFormat::ExecutableFormat()
 {
-    formats.insertTail(this);
 }
 
 ExecutableFormat::~ExecutableFormat()
@@ -37,6 +36,7 @@ ExecutableFormat::~ExecutableFormat()
 
 ExecutableFormat * ExecutableFormat::find(const char *path)
 {
+    ExecutableFormat *fmt = ZERO;
     struct stat st;
 
     /* Must be an existing, regular, executable file. */
@@ -52,11 +52,11 @@ ExecutableFormat * ExecutableFormat::find(const char *path)
         return ZERO;
 
     /* Search for the corresponding executable format. */
-    for (ListIterator<ExecutableFormat> i(&formats); i.hasNext(); i++)
+    for (ListIterator<FormatDetector> i(&formats); i.hasNext(); i++)
     {
-	if (i.current()->detect(path))
+	if ((fmt = (i.current())(path)))
 	{
-	    return i.current();
+	    return fmt;
 	}
     }
     errno = ENOEXEC;

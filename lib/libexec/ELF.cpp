@@ -20,11 +20,15 @@
 #include <Init.h>
 #include "ELF.h"
 
+ELF::ELF()
+{
+}
+
 ELF::~ELF()
 {
 }
 
-bool ELF::detect(const char *path)
+ExecutableFormat * ELF::detect(const char *path)
 {
     ELFHeader header;
     int fd;
@@ -38,22 +42,26 @@ bool ELF::detect(const char *path)
     if (read(fd, (void *) &header, sizeof(header)) != sizeof(header))
     {
 	close(fd);
-	return false;
+	return ZERO;
     }    
     /* Verify ELF magic. */
     close(fd);
-    return header.ident[0] == ELF_MAGIC0 && header.ident[1] == ELF_MAGIC1 &&
-	   header.ident[2] == ELF_MAGIC2 && header.ident[3] == ELF_MAGIC3;
+    
+    if (header.ident[0] == ELF_MAGIC0 && header.ident[1] == ELF_MAGIC1 &&
+	header.ident[2] == ELF_MAGIC2 && header.ident[3] == ELF_MAGIC3)
+    {
+	return new ELF;
+    }
+    else
+	return ZERO;
 }
 
-int ELF::regions(const char *path, MemoryRegion *regions, Size max)
+int ELF::regions(MemoryRegion *regions, Size max)
 {
     return -1;
 }
 
-int ELF::entry(const char *path, Address *buf)
+int ELF::entry(Address *buf)
 {
     return -1;
 }
-
-INITOBJ(ELF,elf,"1");

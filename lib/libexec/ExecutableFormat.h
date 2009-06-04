@@ -38,6 +38,15 @@ MemoryRegion;
 /** Entry point of a program. */
 typedef Address EntryPoint;
 
+/** Forward declaration. */
+class ExecutableFormat;
+
+/**
+ * Confirms if we understand the given format.
+ * @return true on success and false on failure.
+ */
+typedef ExecutableFormat * FormatDetector(const char *path);
+
 /**
  * Abstraction class of various executable formats.
  */
@@ -55,30 +64,21 @@ class ExecutableFormat
 	 */
 	virtual ~ExecutableFormat();
 
-	/**
-	 * Confirms if we understand the given format.
-	 * @param path Path to the file to read.
-	 * @return true on success and false on failure.
-	 */
-	virtual bool detect(const char *path) = 0;
     
 	/**
 	 * Memory regions a program needs at runtime.
-	 * @param cb Is executed to read input data.
 	 * @param regions Memory regions to fill.
 	 * @param max Maximum number of memory regions.
 	 * @return Number of memory regions or an error code on error.
 	 */
-	virtual int regions(const char *path, MemoryRegion *regions,
-			    Size max) = 0;
+	virtual int regions(MemoryRegion *regions, Size max) = 0;
 
 	/**
 	 * Lookup the program entry point.
-	 * @param path File to read from.
 	 * @param buf Entry point is written here.
 	 * @return Zero on success and an error code on error.
 	 */
-	virtual int entry(const char *path, Address *buf) = 0;
+	virtual int entry(Address *buf) = 0;
 
 	/**
 	 * Find a ExecFormat which can handle the given format.
@@ -91,7 +91,7 @@ class ExecutableFormat
     protected:
 
 	/** List of known executable formats. */
-	static List<ExecutableFormat> formats;
+	static List<FormatDetector> formats;
 };
 
 #endif /* __ASSEMBLER__ */
