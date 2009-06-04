@@ -19,6 +19,7 @@
 #define __LIBPOSIX_UNISTD_H
 
 #include <Macros.h>
+#include <stdio.h>
 #include "types.h"
 
 /**                                                                                                                                                                                                     
@@ -88,6 +89,26 @@ extern C ssize_t write(int fildes, const void *buf, size_t nbyte);
  *
  */
 extern C int close(int fildes);
+
+/**
+ * @brief Move the read/write file offset.
+ *
+ * The lseek() function shall set the file offset for the open file
+ * description associated with the file descriptor fildes, as follows:
+ *
+ * If whence is SEEK_SET, the file offset shall be set to offset bytes.
+ * If whence is SEEK_CUR, the file offset shall be set to its current location plus offset.
+ * If whence is SEEK_END, the file offset shall be set to the size of the file plus offset.
+ *
+ * @param fildes File descriptor.
+ * @param offset New file offset.
+ * @param whence Determines how to modify the file offset pointer.
+ * @return Upon successful completion, the resulting offset, as measured in bytes
+ *         from the beginning of the file, shall be returned. Otherwise, (off_t)-1
+ *         shall be returned, errno shall be set to indicate the error, and the file
+ *         offset shall remain unchanged.
+ */
+extern C off_t lseek(int fildes, off_t offset, int whence);
 
 /**
  * @brief Execute a file.

@@ -28,6 +28,24 @@
  */
 
 /**
+ * @brief Seek operations
+ * @{
+ */
+
+/** Seek relative to current position. */
+#define SEEK_CUR	0
+
+/** Seek relative to end-of-file. */
+#define SEEK_END	1
+
+/** Seek relative to start-of-file. */
+#define SEEK_SET	2
+
+/**
+ * @}
+ */
+
+/**
  * Output a debug message using printf().
  * @param fmt Formatted string.
  * @param ... Argument list.

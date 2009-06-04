@@ -24,6 +24,8 @@
 int main(int argc, char **argv)
 {
     ExecutableFormat *format;
+    MemoryRegion regions[16];
+    int num;
     
     /* Verify command-line arguments. */
     if (argc < 2)
@@ -38,6 +40,19 @@ int main(int argc, char **argv)
 	fprintf(stderr, "%s: failed to read `%s': %s\n",
 		argv[0], argv[1], strerror(errno));
 	return EXIT_FAILURE;
+    }
+    /* Extract memory regions. */
+    else if ((num = format->regions(regions, 16)) <= 0)
+    {
+	fprintf(stderr, "%s: failed to extract memory regions from `%s': %s\n",
+		argv[0], argv[1], strerror(errno));
+	return EXIT_FAILURE;
+    }
+    /* Debug out memory sections. */
+    for (int i = 0; i < num; i++)
+    {
+	printf("%s[%u]: vaddr=%x size=%u\n",
+		argv[1], i, (uint) regions[i].virtualAddress, regions[i].size);
     }
     /* Exit immediately. */
     return EXIT_SUCCESS;

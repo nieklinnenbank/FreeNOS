@@ -19,6 +19,7 @@
 #define __LIBEXEC_EXECUTABLEFORMAT_H
 #ifndef __ASSEMBLER__
 
+#include <arch/Memory.h>
 #include <List.h>
 #include <Types.h>
 
@@ -27,11 +28,33 @@
  */
 typedef struct MemoryRegion
 {
-    /** Beginning and end of the region. */
-    Address from, to;
+    /**
+     * Constructor.
+     */
+    MemoryRegion() : virtualAddress(0), size(0), data(0)
+    {
+    }
+    
+    /**
+     * Destructor.
+     */
+    ~MemoryRegion()
+    {
+	if (data)
+	    delete data;
+    }
 
-    /** Indicates at which offset in the file to read the contents. */
-    u64 offset;
+    /** Beginning of the region. */
+    Address virtualAddress;
+    
+    /** Size of the memory region. */
+    Size size;
+
+    /** Page protection flags. */
+    u16 flags;
+    
+    /** Memory contents. */
+    u8 *data;
 }
 MemoryRegion;
 

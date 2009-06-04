@@ -23,21 +23,7 @@
 #include <Factory.h>
 #include <Init.h>
 #include "ExecutableFormat.h"
-
-/** Number of bytes in the ELF identity field. */
-#define ELF_NIDENT 16
-
-/** Magic number byte 0. */
-#define ELF_MAGIC0 0x7f
-
-/** Magic number byte 1. */
-#define ELF_MAGIC1 'E'
-
-/** Magic number byte 2. */
-#define ELF_MAGIC2 'L'
-
-/** Magic number byte 3. */
-#define ELF_MAGIC3 'F'
+#include "ELFHeader.h"
 
 /**
  * Executable and Linkable Format (ELF).
@@ -48,8 +34,10 @@ class ELF : public ExecutableFormat
 
 	/**
 	 * Class constructor.
+	 * @param fd File descriptor of the ELF executable.
+	 * @param header ELF header read from the file.
 	 */
-	ELF();
+	ELF(int fd, ELFHeader *header);
 
 	/**
 	 * Class destructor.
@@ -57,7 +45,7 @@ class ELF : public ExecutableFormat
 	~ELF();
     
 	/**
-	 * Memory regions a program needs at runtime.
+	 * Reads out segments from the ELF program table.
 	 * @param regions Memory regions to fill.
 	 * @param max Maximum number of memory regions.
 	 * @return Number of memory regions or an error code on error.
@@ -80,58 +68,17 @@ class ELF : public ExecutableFormat
 
     private:
 
+	/**
+	 * Registers us to the ExecutableFormat::formats list.
+	 * @see ExecutableFormat
+	 */
 	REGISTER(formats, ELF, detect)
+
+	/** File descriptor of the ELF executable. */
+	int fd;
+	
+	/** ELF header. */
+	ELFHeader header;
 };
-
-
-
-/**
- * Describes an ELF executable and must be placed at the beginning of executable programs.
- */
-typedef struct ELFHeader
-{
-    /** Magic number and other info. */
-    u8  ident[ELF_NIDENT];
-    
-    /** Object file type. */
-    u16 type;
-    
-    /** Physical machine architecture. */
-    u16 machine;
-    
-    /** Object file version. */
-    u32 version;              
-    
-    /** Entry point virtual address. */
-    u32 entry;
-    
-    /** Program header table file offset. */
-    u32 programHeaderOffset;
-    
-    /* Section header table file offset */
-    u32 sectionHeaderOffset;
-    
-    /* Processor-specific flags. */
-    u16 flags;
-    
-    /** ELF header size in bytes. */
-    u16 headerSize;
-    
-    /** Program header table entry size. */
-    u16 programHeaderEntrySize;
-
-    /** Program header table entry count. */
-    u16 programHeaderEntryCount;
-    
-    /** Section header table entry size. */
-    u16 sectionHeaderEntrySize;
-    
-    /** Section header table entry count. */
-    u16 sectionHeaderEntryCount;
-
-    /** Section header string table index. */
-    u16 sectionHeaderStringsIndex;
-}
-ELFHeader;
 
 #endif /* __LIBEXEC_ELF_H */

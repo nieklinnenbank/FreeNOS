@@ -81,6 +81,12 @@ int close(int fildes)
     return errno == ESUCCESS ? 0 : -1;
 }
 
+off_t lseek(int fildes, off_t offset, int whence)
+{
+    errno = ENOTSUP;
+    return (off_t) -1;
+}
+
 int execv(const char *path, const char *argv[])
 {
     ExecutableFormat *fmt = ExecutableFormat::find(path);

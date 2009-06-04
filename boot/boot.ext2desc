@@ -35,6 +35,7 @@
 ./bin/sh/MemstatCommand.cpp
 ./bin/sh/RebootCommand.h
 ./bin/sh/MountCommand.cpp
+./bin/sh/sh
 ./bin/SConscript
 ./VERSION
 ./Doxyfile

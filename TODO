@@ -1,7 +1,7 @@
 [now]
+* REGISTER() for target!!! (without __attribute__((constructor)))
 * OK where going to use scons; it absolutely superiour to GNU make :-)
     - Help()
-    - Variant builder for host programs: the bootimage generator! :-)
     - warning: Two different environments were specified for target VirtualFileSystem.o,
 	--> This error should leave when we finally can create a proper boot image, then *.bin are not needed anymore.
 * Boot image generator program, from ELF executables.
