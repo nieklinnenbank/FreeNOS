@@ -5,6 +5,7 @@
     - warning: Two different environments were specified for target VirtualFileSystem.o,
 	--> This error should leave when we finally can create a proper boot image, then *.bin are not needed anymore.
 * Boot image generator program, from ELF executables.
+* Packaging with SCons!
 * Compilation with -Werror
     --> Warnings in some newer GCC 4.x versions; cause compilation failure with -Werror!
 * Compilation on FreeBSD, OpenSolaris
@@ -16,6 +17,7 @@
 	kernel/, and include/*.h in lib/libparse,libalgo(rithm),libcommon,libdata (find a good name).
 * x86Foo -> X86Foo
     --> all filenames in kernel/arch/x86 too!
+* Change arch/ to FreeNOS/
 
 [bugs]
 * We should use standard errno values, instead of e.g. ENOSUPPORT, EINVALID.
