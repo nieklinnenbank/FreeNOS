@@ -25,6 +25,11 @@
 #include "ExecutableFormat.h"
 #include "ELFHeader.h"
 
+/**   
+ * @defgroup libexec_elf libexec (ELF)
+ * @{   
+ */
+
 /**
  * Executable and Linkable Format (ELF).
  */
@@ -80,5 +85,9 @@ class ELF : public ExecutableFormat
 	/** ELF header. */
 	ELFHeader header;
 };
+
+/**
+ * @}
+ */
 
 #endif /* __LIBEXEC_ELF_H */

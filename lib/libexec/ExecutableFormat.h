@@ -23,6 +23,11 @@
 #include <List.h>
 #include <Types.h>
 
+/**  
+ * @defgroup libexec libexec
+ * @{  
+ */
+
 /**
  * Abstracts a memory region read from a format.
  */
@@ -129,6 +134,10 @@ class ExecutableFormat
 	/** Path to the executable. */
 	const char *path;
 };
+
+/**
+ * @}
+ */
 
 #endif /* __ASSEMBLER__ */
 #endif /* __LIBEXEC_EXECUTABLEFORMAT_H */

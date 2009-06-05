@@ -20,9 +20,13 @@
 
 #include <Types.h>
 
+/**   
+ * @defgroup libexec_elf libexec (ELF)
+ * @{   
+ */
 
 /**
- * @brief Identification indexes
+ * @name Identification indexes
  * @{
  */
 
@@ -58,7 +62,7 @@
  */
 
 /**
- * @brief Magic numbers
+ * @name Magic numbers
  * @{
  */
 
@@ -79,7 +83,7 @@
  */
 
 /**
- * @brief Processor classes
+ * @name Processor classes
  * @{
  */
 
@@ -97,7 +101,7 @@
  */
 
 /**
- * @brief Data encoding (endianness)
+ * @name Data encoding (endianness)
  * @{
  */
 
@@ -115,7 +119,7 @@
  */
 
 /**
- * @brief Object file types
+ * @name Object file types
  * @{
  */
 
@@ -148,7 +152,7 @@
  */
 
 /**
- * @brief Machine architectures
+ * @name Machine architectures
  * @{
  */
 
@@ -184,7 +188,7 @@
  */
 
 /**
- * @brief Object file version.
+ * @name Object file version.
  * @{
  */
 
@@ -248,7 +252,7 @@ typedef struct ELFHeader
 ELFHeader;
 
 /**
- * @brief Segment types
+ * @name Segment types
  * @{
  */
 
@@ -313,5 +317,9 @@ typedef struct ELFSegment
     u32 alignment;
 }
 ELFSegment;
+
+/**
+ * @}
+ */
 
 #endif /* __LIBEXEC_ELFHEADER_H */
