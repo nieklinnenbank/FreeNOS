@@ -38,7 +38,8 @@ targetVars.AddVariables(
     ('CXX',       'Set the target C++ compiler to use', cross + 'g++'),
     ('LINK',      'Set the target linker to use',       cross + 'ld'),
     ('CCFLAGS',   'Change target C compiler flags',
-		[ '-O0', '-g3', '-nostdinc', '-Wall', '-fno-builtin' ]),
+		[ '-O0', '-g3', '-nostdinc', '-Wall', '-Werror',
+		  '-fno-builtin', '-Wno-write-strings' ]),
     ('CXXFLAGS',  'Change target C++ compiler flags',
 		[ '-fno-rtti', '-fno-exceptions', '-nostdinc' ]),
     ('CPPFLAGS',  'Change target C preprocessor flags', '-isystem include'),
@@ -58,14 +59,13 @@ Help(targetVars.GenerateHelpText(target))
 
 #
 # Command-line options for the host build chain.
-# TODO: -Werror
 #
 hostVars = Variables()
 hostVars.AddVariables(
     ('HOSTCC',       'Set the host C compiler to use',   'gcc'),
     ('HOSTCXX',      'Set the host C++ compiler to use', 'g++'),
     ('HOSTCCFLAGS',  'Change host C compiler flags',
-		[ '-O0', '-g3', '-Wall' ]),
+		[ '-O0', '-g3', '-Wall', '-Werror', '-Wno-write-strings' ]),
     ('HOSTCXXFLAGS', 'Change host C++ compiler flags',
 		[ '' ]),
     ('HOSTCPPFLAGS',  'Change host C preprocessor flags', '-isystem include -DHOST'),
@@ -112,6 +112,11 @@ if ARGUMENTS.get('VERBOSE') is None:
     host['LINKCOMSTR']     = "  LINK    $TARGET"
     host['ARCOMSTR']       = "  AR      $TARGET"
     host['RANLIBCOMSTR']   = "  RANLIB  $TARGET"
+
+# Provide help aswell.
+Help("\n"
+     "VERBOSE: output verbose build commands\n"
+     "    default: no\n")
 
 #
 # Prepares the given environment, using library and server dependencies.

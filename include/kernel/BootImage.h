@@ -22,7 +22,7 @@
 #define BOOTIMAGE_MAGIC0	('F') + ('r' << 8) + ('e' << 16) + ('e' << 24)
 
 /** Second magic byte. */
-#define BOOTIMAGE_MAGIC1	('N') + ('O' << 8) + ('S' << 16) + (0xff << 24)
+#define BOOTIMAGE_MAGIC1	('N') + ('O' << 8) + ('S' << 16) + (0x1 << 24)
 
 /** Version of the boot image layout. */
 #define BOOTIMAGE_REVISION	1
