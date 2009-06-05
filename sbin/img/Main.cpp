@@ -65,7 +65,7 @@ Size readBootEntries(char *prog, char *file,
 	    exit(EXIT_FAILURE);
 	}
 	else
-	    entry->numRegions = (Size) num;
+	    entry->numRegions = num;
 
 	/* Insert into Vector. */
 	entries->insert(entry);
@@ -81,7 +81,7 @@ Size readBootEntries(char *prog, char *file,
 	}
     }
     /* All done. */
-    printf("%d entries, %d bytes total\n", totalEntries, totalBytes);
+    printf("%d entries, %d bytes total\n\n", totalEntries, totalBytes);
     return totalEntries;
 }    
 
@@ -144,6 +144,7 @@ int main(int argc, char **argv)
     for (Size i = 0; i < numEntries; i++)
     {
 	strncpy(programs[i].path, entries[i]->format->getPath(), BOOTIMAGE_PATH);
+	programs[i].entry = (u32) entries[i]->format->entry();
 	programs[i].segmentsOffset = numSegments;
 	programs[i].segmentsCount  = entries[i]->numRegions;
 	numSegments += entries[i]->numRegions;
@@ -156,8 +157,9 @@ int main(int argc, char **argv)
     memset(segments, 0, sizeof(BootSegment) * numSegments);
     
     /* Point segment data after the segments table. */
-    dataOffset = image.segmentsTableOffset +
-		 image.segmentsTableCount  * sizeof(BootSegment);
+    dataOffset  = image.segmentsTableOffset +
+		  image.segmentsTableCount  * sizeof(BootSegment);
+    dataOffset += PAGESIZE - (dataOffset % PAGESIZE);
     
     /* Fill the segments table by looping programs. */
     for (Size i = 0; i < numEntries; i++)
@@ -170,8 +172,15 @@ int main(int argc, char **argv)
 	    segments[i].size           = entries[i]->regions[j].size;
 	    segments[i].offset         = dataOffset;
 	    
-	    /* Increment data pointer. */
+	    /* Increment data pointer. Align on memory page boundary. */
 	    dataOffset += segments[i].size;
+	    dataOffset += PAGESIZE - (dataOffset % PAGESIZE);
+	    
+	    /* Debug out. */
+	    printf("segments[%u]: vaddr=%x size=%u offset=%u\n",
+		    i + j, (uint) segments[i].virtualAddress,
+			          segments[i].size,
+			          segments[i].offset);
 	}
     }
     /* Open boot image for writing. */
@@ -194,8 +203,18 @@ int main(int argc, char **argv)
     /* Write the contents of the BootSegments. */
     for (Size i = 0; i < numEntries; i++)
     {
+	/* Loop regions/segments per BootProgram entry. */
 	for (Size j = 0; j < entries[i]->numRegions; j++)
 	{
+	    /* Adjust file pointer. */
+	    if (fseek(fp, segments[programs[i].segmentsOffset].offset,
+		      SEEK_SET) == -1)
+	    {
+		fprintf(stderr, "%s: failed to seek to BootSegment contents in `%s': %s\n",
+			argv[0], argv[2], strerror(errno));
+		return EXIT_FAILURE;
+	    }
+	    /* Write segment contents. */
 	    if (fwrite(entries[i]->regions[j].data,
 		       entries[i]->regions[j].size, 1, fp) <= 0)
 	    {

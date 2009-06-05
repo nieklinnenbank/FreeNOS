@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <api/VMCtl.h>
+#include <arch/BootImage.h>
 #include <String.h>
 #include "VirtualFileSystem.h"
 
@@ -26,6 +28,7 @@ VirtualFileSystem::VirtualFileSystem()
 {
     SystemInformation info;
     FileSystemMessage msg;
+    BootImage *image = (BootImage *) (0xa1000000);
     String str;
 
     /* Register message handlers. */
@@ -40,16 +43,26 @@ VirtualFileSystem::VirtualFileSystem()
     addIPCHandler(MountInfo,   &VirtualFileSystem::mountInfoHandler);
     addIPCHandler(NewProcess,  &VirtualFileSystem::newProcessHandler);
     addIPCHandler(KillProcess, &VirtualFileSystem::killProcessHandler);
-    
-    /* Wait for process server to sync procs. */
+
+    /* Wait for process server to sync BootPrograms from BootImages. */
     for (Size i = 0; i < info.moduleCount; i++)
     {
-	if (str.match(info.modules[i].string, "*.bin"))
+	/* BootImages have the suffix '.img'. */
+	if (str.match(info.modules[i].string, "*.img"))
 	{
-	    if (!msg.ipc(PROCSRV_PID, Receive, sizeof(msg)))
+	    /* Map BootImage into our address space. */
+            VMCtl(Map, SELF, info.modules[i].modStart, 0xa1000000);
+            VMCtl(Map, SELF, info.modules[i].modStart + PAGESIZE,
+                  0xa1000000 + PAGESIZE);
+
+	    /* Loop programs. */
+	    for (Size j = 0; j < image->programsTableCount; j++)
 	    {
-	        newProcessHandler(&msg);
-	        msg.ipc(PROCSRV_PID, Send, sizeof(msg));
+		if (!msg.ipc(PROCSRV_PID, Receive, sizeof(msg)))
+		{
+		    newProcessHandler(&msg);
+		    msg.ipc(PROCSRV_PID, Send, sizeof(msg));
+		}
 	    }
 	}
     }

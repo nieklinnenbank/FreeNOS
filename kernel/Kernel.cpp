@@ -16,39 +16,75 @@
  */
 
 #include <arch/Kernel.h>
+#include <arch/Memory.h>
 #include <arch/Process.h>
 #include <arch/Scheduler.h>
 #include <arch/Multiboot.h>
+#include <arch/BootImage.h>
 #include <String.h>
+
+// TODO: mark modStart - modEnd used in physical memory map!!!
 
 Kernel::Kernel()
 {
     MultibootModule *mod;
-    ArchProcess *modProc;
-    Address vstart = 0x80000000;
-    Size modSize;
+    BootImage *image;
     String str;
 
     /* Startup boot modules. */
     for (Size n = 0; n <  multibootInfo.modsCount; n++)
     {
 	mod     = &((MultibootModule *) multibootInfo.modsAddress)[n];
-	modSize = mod->modEnd - mod->modStart;
-	
-	/* Do we need to create a process? */
-	if (str.match((char *) mod->string, "*.bin"))
+
+	/* Is this a BootImage? */
+	if (str.match((char *) mod->string, "*.img"))
 	{
-	    modProc = new ArchProcess(vstart);
-	    modProc->setState(Ready);
+	    /* Map the BootImage into our address space. */
+	    image = (BootImage *) memory->mapVirtual(mod->modStart);
+				  memory->mapVirtual(mod->modStart + PAGESIZE);
 	
-	    /* Map the module in virtual memory. */
-	    for (Size i = 0; i < modSize; i += PAGESIZE)
-	    {
-		memory->mapVirtual(modProc, mod->modStart + i, vstart + i,
-				   PAGE_PRESENT|PAGE_USER|PAGE_RW);
+	    /* Verify this is a correct BootImage. */
+	    if (image->magic[0] == BOOTIMAGE_MAGIC0 &&
+	        image->magic[1] == BOOTIMAGE_MAGIC1 &&
+		image->layoutRevision == BOOTIMAGE_REVISION)
+	    {	    
+		/* Loop BootPrograms. */
+		for (Size i = 0; i < image->programsTableCount; i++)
+		{
+		    loadBootProcess(image, mod->modStart, i);
+		}
 	    }
-	    /* Schedule the process. */
-	    scheduler->enqueue(modProc);
 	}
     }
+}
+
+void Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Size index)
+{
+    Address imageVAddr = (Address) image;
+    BootProgram *program;
+    BootSegment *segment;
+    ArchProcess *proc;
+    
+    /* Point to the program and segments table. */
+    program = &((BootProgram *) (imageVAddr + image->programsTableOffset))[index];
+    segment = &((BootSegment *) (imageVAddr + image->segmentsTableOffset))[program->segmentsOffset];
+
+    /* Create process. */
+    proc = new ArchProcess(program->entry);
+    proc->setState(Ready);
+		    
+    /* Loop program segments. */
+    for (Size i = 0; i < program->segmentsCount; i++)
+    {
+	/* Map program segment into it's virtual memory. */
+	for (Size j = 0; j < segment[i].size; j += PAGESIZE)
+	{
+	    memory->mapVirtual(proc,
+			       imagePAddr + segment[i].offset + j,
+			       segment[i].virtualAddress + j,
+			       PAGE_PRESENT | PAGE_USER | PAGE_RW);
+	}
+    }
+    /* Schedule process. */
+    scheduler->enqueue(proc);
 }

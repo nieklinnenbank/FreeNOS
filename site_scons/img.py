@@ -15,14 +15,25 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from build import *
+import os
+import tempfile
+import build
+from SCons.Script import *
 
-env = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc' ], 
-		      [ 'memory', 'filesystem', 'filesystem/virtual' ])
+#
+# Generate a BootImage.
+#
+def generateBootImage(target, source, env):
 
-env.Program('sh',  [ 'BenchCommand.cpp', 'DirListCommand.cpp',  'Main.cpp',
-		     'MknodCommand.cpp', 'ProcListCommand.cpp', 'Shell.cpp',
-		     'StatCommand.cpp',  'WriteCommand.cpp',    'CatCommand.cpp',
-	    	     'HelpCommand.cpp',  'MemstatCommand.cpp',  'MountCommand.cpp',
-		     'RebootCommand.cpp', 'ShellCommand.cpp',   'UnameCommand.cpp' ],
-		      LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])
+    # Use the host compiled 'img' program.
+    os.system("sbin/img/img " + str(source[0]) + " " + str(target[0]))
+
+imgBuilder = Builder(action     = generateBootImage,
+	    	     suffix     = '.img',
+	    	     src_suffix = '.imgdesc')
+
+build.target.Append(BUILDERS = { 'Img' : imgBuilder })
+
+img = build.target.Img('boot/boot.img', ['boot/boot.imgdesc'])
+Depends(img, ['bin', 'lib', 'kernel', 'sbin', 'srv'])
+AlwaysBuild(img)

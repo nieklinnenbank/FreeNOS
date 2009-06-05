@@ -1,4 +1,5 @@
 ./boot/boot.ext2desc
+./boot/boot.imgdesc
 ./boot/grub/menu.lst
 ./boot/boot.isodesc
 ./TODO

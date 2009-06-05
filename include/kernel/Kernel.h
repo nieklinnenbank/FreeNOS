@@ -21,6 +21,7 @@
 #include <Macros.h>
 #include <Types.h>
 #include <arch/Interrupt.h>
+#include <arch/BootImage.h>
 #include "Multiboot.h"
 
 /** 
@@ -54,6 +55,16 @@ class Kernel
          * @param enabled True to enable, and false to disable. 
          */
         virtual void enableIRQ(uint vector, bool enabled) = 0;
+
+    private:
+    
+	/**
+	 * Creates a new Process from a BootProcess.
+	 * @param image BootImage pointer loaded by the bootloader in kernel virtual memory.
+	 * @param imagePAddr Physical memory address of the boot image.
+	 * @param index Index in the BootProcess table.
+	 */
+	void loadBootProcess(BootImage *image, Address imagePAddr, Size index);
 };
 
 /**

@@ -19,10 +19,6 @@ from build import *
 
 env = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc' ],
 		      [ 'log' ])
-bin = Prepare(bintarget, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc' ],
-		         [ 'log' ])
 
 env.Program('pci', [ 'PCIServer.cpp', 'Main.cpp' ],
-		    LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])
-bin.Program('pci.bin', [ 'PCIServer.cpp', 'Main.cpp' ],
-		          LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])
+		      LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])

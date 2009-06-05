@@ -18,6 +18,7 @@
 import build
 import version
 import ext2
+import img
 import iso
 import qemu
 

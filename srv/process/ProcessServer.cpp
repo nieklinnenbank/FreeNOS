@@ -17,9 +17,11 @@
 
 #include <api/IPCMessage.h>                                                       
 #include <api/SystemInfo.h>                                                       
-#include <api/VMCopy.h>                                                           
+#include <api/VMCopy.h>
+#include <api/VMCtl.h>
 #include <api/ProcessCtl.h> 
 #include <arch/Memory.h> 
+#include <arch/BootImage.h>
 #include <FileSystemMessage.h>
 #include <LogMessage.h>
 #include <String.h>
@@ -34,26 +36,46 @@ ProcessServer::ProcessServer()
 {
     SystemInformation info;
     FileSystemMessage vfs;
+    BootImage *image = (BootImage *)(0xa1000000);
+    BootProgram *program;
     String str;
+    Size numProcs = 0;
 
     /* Register message handlers. */
     addIPCHandler(GetID,       &ProcessServer::getIDHandler);
     addIPCHandler(ReadProcess, &ProcessServer::readProcessHandler);
     addIPCHandler(ExitProcess, &ProcessServer::exitProcessHandler, false);
 
-    /* Fixup process table, with boot modules. */
+    /* Fixup process table, with BootPrograms from each BootImage. */
     for (Size i = 0; i < info.moduleCount; i++)
     {
-	if (str.match(info.modules[i].string, "*.bin"))
+	/* BootImage have the '.img' suffix. */
+	if (str.match(info.modules[i].string, "*.img"))
 	{
-	    /* Write commandline and identities. */
-	    snprintf(procs[i].command, COMMANDLEN,
-		    "[%s]", info.modules[i].string);
-	    procs[i].uid = 0;
-	    procs[i].gid = 0;
+	    /* Map BootImage into our address space. */
+	    VMCtl(Map, SELF, info.modules[i].modStart, 0xa1000000);
+	    VMCtl(Map, SELF, info.modules[i].modStart + PAGESIZE,
+		  0xa1000000 + PAGESIZE);
+	    
+	    /* Point to the BootProgram table. */
+	    program = (BootProgram *)((0xa1000000) + (image->programsTableOffset));
+	    
+	    /* Loop all embedded programs. */
+	    for (Size j = 0; j < image->programsTableCount; j++)
+	    {
+		/* Write commandline and identities. */
+		snprintf(procs[numProcs].command, COMMANDLEN,
+			"[%s]", program[j].path);
+
+		/* Set user and group identities. */
+	        procs[numProcs].uid = 0;
+	        procs[numProcs].gid = 0;
 	
-	    /* Inform VFS. */
-	    vfs.newProcess(i, procs[i].uid, procs[i].gid);
+		/* Inform VFS. */
+		vfs.newProcess(numProcs, procs[numProcs].uid,
+					 procs[numProcs].gid);
+		numProcs++;
+	    }
 	}
     }
 }

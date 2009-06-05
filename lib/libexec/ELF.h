@@ -55,10 +55,9 @@ class ELF : public ExecutableFormat
 
 	/**
 	 * Lookup the program entry point.
-	 * @param buf Entry point is written here.
-	 * @return Zero on success and an error code on error.
+	 * @return Program entry point.
 	 */
-	int entry(Address *buf);
+	Address entry();
 
 	/**
 	 * Confirms if we understand the given format.

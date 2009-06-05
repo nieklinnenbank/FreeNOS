@@ -107,10 +107,9 @@ class ExecutableFormat
 
 	/**
 	 * Lookup the program entry point.
-	 * @param buf Entry point is written here.
-	 * @return Zero on success and an error code on error.
+	 * @return Program entry point.
 	 */
-	virtual int entry(Address *buf) = 0;
+	virtual Address entry() = 0;
 
 	/**
 	 * Find a ExecFormat which can handle the given format.

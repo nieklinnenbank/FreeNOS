@@ -20,11 +20,5 @@ from build import *
 env = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc' ],
 		      [ 'filesystem', 'log', 'process' ])
 
-bin = Prepare(bintarget, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc' ],
-		         [ 'filesystem', 'log', 'process' ])
-
 env.Program('serial', [ 'SerialServer.cpp', 'SerialDevice.cpp', 'i8250.cpp', 'Main.cpp' ],
-		    LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])
-
-bin.Program('serial.bin', [ 'SerialServer.cpp', 'SerialDevice.cpp', 'i8250.cpp', 'Main.cpp' ],
-			     LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])
+		         LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])

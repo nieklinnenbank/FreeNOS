@@ -56,6 +56,6 @@ isoBuilder = Builder(action     = generateISO,
 target.Append(BUILDERS = { 'ISO' : isoBuilder })
 
 isoImage = target.ISO('#boot/boot.iso', ['#boot/boot.isodesc'])
-Depends(isoImage, ['bin', 'lib', 'kernel', 'sbin', 'srv', '#boot/boot.ext2'])
+Depends(isoImage, ['bin', 'lib', 'kernel', 'sbin', 'srv', '#boot/boot.ext2', '#boot/boot.img'])
 Alias('iso', isoImage)
 AlwaysBuild(isoImage)

@@ -20,12 +20,5 @@ from build import *
 env = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc', 'libparse' ],
 		      [ 'filesystem', 'process', 'log' ])
 
-bin = Prepare(bintarget, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc', 'libparse' ],
-		         [ 'filesystem', 'process', 'log' ])
-
 env.Program('vfs', [ 'Main.cpp', 'VirtualFileSystem.cpp' ],
 		      LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])
-
-bin.Program('vfs.bin', [ 'Main.cpp', 'VirtualFileSystem.cpp' ],
-		          LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])
-

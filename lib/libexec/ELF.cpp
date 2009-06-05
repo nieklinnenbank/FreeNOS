@@ -126,7 +126,7 @@ int ELF::regions(MemoryRegion *regions, Size max)
     return count;
 }
 
-int ELF::entry(Address *buf)
+Address ELF::entry()
 {
-    return -1;
+    return header.entry;
 }

@@ -4,7 +4,6 @@
     - Help()
     - warning: Two different environments were specified for target VirtualFileSystem.o,
 	--> This error should leave when we finally can create a proper boot image, then *.bin are not needed anymore.
-* Boot image generator program, from ELF executables.
 * Packaging with SCons!
 * Compilation with -Werror
     --> Warnings in some newer GCC 4.x versions; cause compilation failure with -Werror!

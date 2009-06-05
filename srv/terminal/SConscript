@@ -19,13 +19,7 @@ from build import *
 
 env = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc', 'libteken' ],
 		      [ 'filesystem', 'process' ])
-bin = Prepare(bintarget, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc', 'libteken' ],
-		         [ 'filesystem', 'process' ])
 
 env.Program('terminal', [ 'TerminalServer.cpp', 'Keyboard.cpp', 'Terminal.cpp',
 		          'VGA.cpp', 'Main.cpp' ],
 			   LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])
-
-bin.Program('terminal.bin', [ 'TerminalServer.cpp', 'Keyboard.cpp', 'Terminal.cpp',
-		              'VGA.cpp', 'Main.cpp' ],
-			       LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])

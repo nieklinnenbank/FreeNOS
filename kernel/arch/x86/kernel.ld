@@ -53,7 +53,11 @@ SECTIONS
     .bss :
     {
 	*(.bss)
+	*(.bss.*)
+
+        . += 4;
+	kernelEnd = .;
+	
+	. = 0x00400000;
     }
-    . += 4;
-    kernelEnd = .;
 }

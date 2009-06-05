@@ -73,7 +73,6 @@ BootImage;
 /**
  * Simple key/value entry for inside the BootImage.
  * @see BootImage
- * @note Both the key and value are not null-terminated.
  */
 typedef struct BootVariable
 {
@@ -92,6 +91,9 @@ typedef struct BootProgram
 {
     /** Path to the program. */
     char path[BOOTIMAGE_PATH];
+
+    /** Program entry point. */
+    u32 entry;
     
     /** Offset of the program segments in the segments table. */
     u32 segmentsOffset;
@@ -107,7 +109,7 @@ BootProgram;
 typedef struct BootSegment
 {
     /** Virtual memory address to load the segment. */
-    Address virtualAddress;
+    u32 virtualAddress;
     
     /** Total size of the segment. */
     u32 size;

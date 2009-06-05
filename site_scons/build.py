@@ -56,12 +56,6 @@ target = DefaultEnvironment(CPPPATH   = '.',
 Help(targetVars.GenerateHelpText(target))
 
 #
-# Temporary environment for flat binary program files.
-#
-bintarget = target.Clone()
-bintarget.Append(LINKFLAGS = [ '--oformat', 'binary' ])
-
-#
 # Command-line options for the host build chain.
 # TODO: -Werror
 #
