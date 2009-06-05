@@ -26,6 +26,9 @@ SECTIONS
     .text :
     {
 	*(.text)
+	*(*.text)
+	*(.gnu.linkonce.*)
+	*(.rodata)
     }
 
     .data :
