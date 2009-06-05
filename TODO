@@ -2,8 +2,6 @@
 * REGISTER() for target!!! (without __attribute__((constructor)))
 * OK where going to use scons; it absolutely superiour to GNU make :-)
     - Help()
-    - warning: Two different environments were specified for target VirtualFileSystem.o,
-	--> This error should leave when we finally can create a proper boot image, then *.bin are not needed anymore.
 * Packaging with SCons!
 * Compilation with -Werror
     --> Warnings in some newer GCC 4.x versions; cause compilation failure with -Werror!

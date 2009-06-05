@@ -269,3 +269,7 @@
 ./site_scons/qemu.py
 ./site_scons/build.py
 ./site_scons/build.pyc
+sbin/img/BootEntry.h
+sbin/img/Main.h
+sbin/img/SConscript
+sbin/img/Main.cpp
