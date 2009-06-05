@@ -6,6 +6,7 @@
 * Compilation with -Werror
     --> Warnings in some newer GCC 4.x versions; cause compilation failure with -Werror!
 * Compilation on FreeBSD, OpenSolaris
+* Nice output in SCons, with *COMSTR variables! :-)
 * libcommon
     --> fix include/ et all???
     --> maybe put all include/api/*.h include/arch/*.h files just in

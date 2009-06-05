@@ -90,6 +90,28 @@ host['LINKCOM'] += ' -Wl,--no-whole-archive'
 Help(hostVars.GenerateHelpText(host))
 
 #
+# Output short command values per default, to
+# distinguish commands from compiler warnings and errors more easy.
+#
+if ARGUMENTS.get('VERBOSE') is None:
+    
+    # Target chain command strings.
+    target['CCCOMSTR']     = "  CC      $TARGET"
+    target['CXXCOMSTR']    = "  CXX     $TARGET"
+    target['ASCOMSTR']     = "  AS      $TARGET"
+    target['LINKCOMSTR']   = "  LINK    $TARGET"
+    target['ARCOMSTR']     = "  AR      $TARGET"
+    target['RANLIBCOMSTR'] = "  RANLIB  $TARGET"
+    
+    # Host chain command strings.
+    host['CCCOMSTR']       = "  HOSTCC  $TARGET"
+    host['CXXCOMSTR']      = "  HOSTCXX $TARGET"
+    host['ASCOMSTR']       = "  HOSTAS  $TARGET"
+    host['LINKCOMSTR']     = "  LINK    $TARGET"
+    host['ARCOMSTR']       = "  AR      $TARGET"
+    host['RANLIBCOMSTR']   = "  RANLIB  $TARGET"
+
+#
 # Prepares the given environment, using library and server dependencies.
 #
 def Prepare(env, libs = [], servers = []):
