@@ -18,6 +18,8 @@
 import os
 import build
 
+build.target.Append(ENV = os.environ)
 build.PhonyTargets(build.target,
 		    qemu = 'qemu -curses -cdrom boot/boot.iso -s -S -d int,pcall,exec',
-		   fqemu = 'qemu -curses -cdrom boot/boot.iso -s')
+		   fqemu = 'qemu -curses -cdrom boot/boot.iso -s',
+		   sqemu = 'qemu -sdl -cdrom boot/boot.iso -s')

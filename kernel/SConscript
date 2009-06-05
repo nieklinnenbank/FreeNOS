@@ -18,7 +18,6 @@
 from build import *
 
 env = Prepare(target, [ 'libparse', 'liballoc', 'libposix', 'libexec', 'libc' ])
-env['LINK'] = cross + 'ld'
 env['LINKFLAGS'] = '--whole-archive -T kernel/arch/x86/kernel.ld'
 
 env.Program('kernel', [ 'arch/x86/boot.S', 'Kernel.cpp',  'Main.cpp', 'Memory.cpp',
