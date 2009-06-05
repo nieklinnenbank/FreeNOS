@@ -17,7 +17,8 @@
 
 import os
 import tempfile
-import build
+
+from build import *
 from SCons.Script import *
 
 #
@@ -34,9 +35,8 @@ def generateExt2(target, source, env):
     # Read out which file to add.
     for line in list.readlines():
 
-	# Copy them to the temporary directory. 
-        os.system("cp --parents '" + line.strip() + "' '" + temp + "'")
-
+        # Copy them to the temporary directory. 
+        copyWithParents(line.strip(), temp)
 
     # Create an 16MB Extended 2 Filesystem image.
     os.system("genext2fs -d " + temp + " -b 16384 " + str(target[0]))
@@ -49,8 +49,8 @@ ext2Builder = Builder(action     = generateExt2,
 	    	      suffix     = '.ext2',
 	    	      src_suffix = '.ext2desc')
 
-build.target.Append(BUILDERS = { 'Ext2' : ext2Builder })
+target.Append(BUILDERS = { 'Ext2' : ext2Builder })
 
-ext2 = build.target.Ext2('boot/boot.ext2', ['boot/boot.ext2desc'])
+ext2 = target.Ext2('boot/boot.ext2', ['boot/boot.ext2desc'])
 Depends(ext2, ['bin', 'lib', 'kernel', 'sbin', 'srv'])
 AlwaysBuild(ext2)

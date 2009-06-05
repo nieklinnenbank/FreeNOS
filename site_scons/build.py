@@ -18,6 +18,7 @@
 from SCons.Script import *
 import os
 import os.path
+import shutil
 
 #
 # Allow cross compilation.
@@ -135,3 +136,18 @@ def PhonyTargets(env, **kw):
 
     for target,action in kw.items():
         env.AlwaysBuild(env.Alias(target, [], action))
+
+#
+# Copies a file from source to destination, including parent directories.
+#
+def copyWithParents(source, dest):
+
+    # Lookup parents.
+    parent = dest + '/' + os.path.dirname(source)
+
+    # Create parent if needed. 
+    if not os.path.exists(parent):
+        os.makedirs(parent)
+
+    # Perform copy. 
+    shutil.copy(source, parent)

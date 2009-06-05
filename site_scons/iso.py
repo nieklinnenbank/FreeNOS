@@ -16,6 +16,7 @@
 #
 
 import os
+import shutil
 import tempfile
 import version
 
@@ -38,7 +39,7 @@ def generateISO(target, source, env):
     for line in list.readlines():
 
 	# Copy them to the temporary directory.
-	os.system("cp --parents '" + line.strip() + "' '" + temp + "'")
+	copyWithParents(line.strip(), temp)
 
     # Create an bootable ISO image.
     os.system("mkisofs -R -b boot/grub/stage2_eltorito -no-emul-boot " +
