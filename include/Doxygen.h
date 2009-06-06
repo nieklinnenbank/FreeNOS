@@ -33,13 +33,21 @@
  *
  * $ scons iso
  *
- * @section booting Booting
+ * @section booting Booting immediately
  *
  * $ scons fqemu
  *
  * @section debugging Debugging
  *
  * $ scons qemu
+ *
+ * @section snapshots Creating a snapshot
+ *
+ * $ scons snapshot
+ *
+ * @section releasing Creating a release
+ *
+ * $ scons release
  *
  */
 
