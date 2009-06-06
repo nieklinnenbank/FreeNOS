@@ -19,6 +19,7 @@ import os
 import shutil
 import tempfile
 import version
+import checksum
 
 from build import *
 from SCons.Script import *
@@ -49,13 +50,25 @@ def generateISO(target, source, env):
     os.system("rm -rf " + temp)
     list.close()
 
+#
+# Create the ISO builder.
+#
 isoBuilder = Builder(action     = generateISO,
 	    	     suffix     = '.iso',
 		     src_suffix = '.isodesc')
 
 target.Append(BUILDERS = { 'ISO' : isoBuilder })
 
-isoImage = target.ISO('#boot/boot.iso', ['#boot/boot.isodesc'])
+#
+# Instructs to build an ISO and MD5+SHA1 checksums.
+#
+isoImage     = target.ISO('#boot/boot.iso', ['#boot/boot.isodesc'])
+isoImageMd5  = target.Checksum('#boot/boot.iso.md5',  '#boot/boot.iso')
+isoImageSha1 = target.Checksum('#boot/boot.iso.sha1', '#boot/boot.iso')
+
+#
+# Dependencies and target aliases.
+#
 Depends(isoImage, ['bin', 'lib', 'kernel', 'sbin', 'srv', '#boot/boot.ext2', '#boot/boot.img'])
-Alias('iso', isoImage)
-AlwaysBuild(isoImage)
+Alias('iso', [ isoImage, isoImageMd5, isoImageSha1 ])
+AlwaysBuild(isoImage, isoImageMd5, isoImageSha1)
