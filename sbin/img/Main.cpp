@@ -81,7 +81,7 @@ Size readBootEntries(char *prog, char *file,
 	}
     }
     /* All done. */
-    printf("%d entries, %d bytes total\n\n", totalEntries, totalBytes);
+    printf("%d entries, %d bytes total\n", totalEntries, totalBytes);
     return totalEntries;
 }    
 
@@ -175,12 +175,6 @@ int main(int argc, char **argv)
 	    /* Increment data pointer. Align on memory page boundary. */
 	    dataOffset += segments[i].size;
 	    dataOffset += PAGESIZE - (dataOffset % PAGESIZE);
-	    
-	    /* Debug out. */
-	    printf("segments[%u]: vaddr=%x size=%u offset=%u\n",
-		    i + j, (uint) segments[i].virtualAddress,
-			          segments[i].size,
-			          segments[i].offset);
 	}
     }
     /* Open boot image for writing. */
