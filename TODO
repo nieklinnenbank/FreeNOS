@@ -1,5 +1,4 @@
 [now]
-* Change arch/ to FreeNOS/
 * REGISTER() for target!!! (without __attribute__((constructor)))
 * Compilation on OpenSolaris, OpenBSD
 * libcommon
@@ -10,8 +9,6 @@
 [bugs]
 * When overriding CCFLAGS, in libteken:
     --> cc1: error: invalid option argument '-O0 -g3 -nostdinc -Wall -Werror -fno-builtin -Wno-write-strings -Wstack-protector'
-* Building fails with stack protector turned on:
-    --> http://pastebin.com/m5e39ea3d
 * Fix these warnings:
     --> site_scons/checksum.py:18: DeprecationWarning: the md5 module is deprecated; use hashlib instead
     --> site_scons/checksum.py:19: DeprecationWarning: the sha module is deprecated; use the hashlib module instead
