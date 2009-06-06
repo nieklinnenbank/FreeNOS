@@ -36,9 +36,12 @@ for v in version:
     versionPower -= 8
 
 # Include subversion revision.
-client  = pysvn.Client()
-info    = client.info(".")
-release = text + "-r" + str(info.revision.number)
+try:
+    svnClient  = pysvn.Client()
+    svnInfo    = svnClient.info(".")
+    release = text + "-r" + str(svnInfo.revision.number)
+except:
+    release = text
 
 #
 # Regenerate version header file.
@@ -68,11 +71,17 @@ def regenerateHeader():
 	      '#define BUILDCPU  "' + platform.processor() + '"\n' \
 	      '#define BUILDPY   "' + platform.python_version() + '"\n' \
 	      '#define BUILDER   "SCons ' + SCons.__version__ + '"\n' \
-	      '#define BUILDPATH "' + os.getcwd() + '"\n' \
-	      '#define BUILDURL  "' + info.url + '"\n' \
-	      '\n' \
-	      '#endif\n'
-    )
+	      '#define BUILDPATH "' + os.getcwd() + '"\n')
+
+    # Include SVN repository, if available.
+    try:
+	out.write('#define BUILDURL  "' + svnInfo.url + '"\n')
+    except:
+	out.write('#define BUILDURL  BUILDPATH\n')
+
+    # Terminate #ifndef.
+    out.write('\n' \
+	      '#endif\n')
     # Done writing.
     out.flush()
     out.close()
