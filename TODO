@@ -1,12 +1,7 @@
 [now]
 * REGISTER() for target!!! (without __attribute__((constructor)))
-* OK where going to use scons; it absolutely superiour to GNU make :-)
-    - Help()
 * Packaging with SCons!
-* Compilation with -Werror
-    --> Warnings in some newer GCC 4.x versions; cause compilation failure with -Werror!
-* Compilation on FreeBSD, OpenSolaris
-* Nice output in SCons, with *COMSTR variables! :-)
+* Compilation on OpenSolaris
 * libcommon
     --> fix include/ et all???
     --> maybe put all include/api/*.h include/arch/*.h files just in
@@ -30,7 +25,6 @@
 * Library depends in Prepare(). Whenver library X needs Library Y to work, and Program Z needs Library X, auto-link with Library Y.
     --> Just use lists for this :-) But look out for circular deps.
 * SCons Configuration (interface)? perhaps we can adapt kconfig for scons...
-
 * if we have the main() argc/argv thingies, we could do configure
   the boot modules to use /dev/serial0 as the system console! :)
 

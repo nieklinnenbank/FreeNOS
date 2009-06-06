@@ -47,7 +47,7 @@ void executeInterrupt(CPUState state)
     }
 }
 
-x86Kernel::x86Kernel() : ticks(0)
+X86Kernel::X86Kernel() : ticks(0)
 {
     /* ICW1: Initialize PIC's (Edge triggered, Cascade) */
     outb(PIC1_CMD, 0x11);
@@ -115,7 +115,7 @@ x86Kernel::x86Kernel() : ticks(0)
     ltr(USER_TSS_SEL);
 }
 
-void x86Kernel::hookInterrupt(int vec, InterruptHandler h, ulong p)
+void X86Kernel::hookInterrupt(int vec, InterruptHandler h, ulong p)
 {
     InterruptHook hook(h, p);
 
@@ -131,7 +131,7 @@ void x86Kernel::hookInterrupt(int vec, InterruptHandler h, ulong p)
     }
 }
 
-void x86Kernel::enableIRQ(uint irq, bool enabled)
+void X86Kernel::enableIRQ(uint irq, bool enabled)
 {
     u8 pic = PIC1_DATA;
     
@@ -148,14 +148,14 @@ void x86Kernel::enableIRQ(uint irq, bool enabled)
         outb(pic, inb(pic) | (1 << (irq % 8)));
 }
 
-void x86Kernel::exception(CPUState *state, ulong param)
+void X86Kernel::exception(CPUState *state, ulong param)
 {
     assert(scheduler->current() != ZERO);
     delete scheduler->current();
     scheduler->executeNext();
 }
 
-void x86Kernel::interrupt(CPUState *state, ulong param)
+void X86Kernel::interrupt(CPUState *state, ulong param)
 {
     /* End of Interrupt to slave. */
     if (IRQ(state->vector) >= 8)
@@ -166,7 +166,7 @@ void x86Kernel::interrupt(CPUState *state, ulong param)
     outb(PIC1_CMD, PIC_EOI);
 }
 
-void x86Kernel::trap(CPUState *state, ulong param)
+void X86Kernel::trap(CPUState *state, ulong param)
 {
     APIHandler *h = apis[state->eax];
     
@@ -177,7 +177,7 @@ void x86Kernel::trap(CPUState *state, ulong param)
     }
 }
 
-void x86Kernel::clocktick(CPUState *state, ulong param)
+void X86Kernel::clocktick(CPUState *state, ulong param)
 {
     /* Quantum reached? */
     if ((++kernel->ticks % 2) == 0)
@@ -190,4 +190,4 @@ void x86Kernel::clocktick(CPUState *state, ulong param)
     }
 }
 
-INITOBJ(x86Kernel, kernel, KERNEL)
+INITOBJ(X86Kernel, kernel, KERNEL)

@@ -122,4 +122,4 @@ extern C void executeInterrupt(CPUState state);
  * @}
  */
 
-#endif /* __AMD64_INTERRUPT_H */
+#endif /* __X86_INTERRUPT_H */

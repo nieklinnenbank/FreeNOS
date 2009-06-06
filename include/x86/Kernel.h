@@ -67,14 +67,14 @@
 /**
  * Implements an x86 compatible kernel.
  */
-class x86Kernel : public Kernel, public Singleton<x86Kernel>
+class X86Kernel : public Kernel, public Singleton<X86Kernel>
 {
     public:
 
         /**
          * Constructor function.
          */
-	x86Kernel();
+	X86Kernel();
 	
 	/**
 	 * Hooks a function to an hardware interrupt.
@@ -126,7 +126,7 @@ class x86Kernel : public Kernel, public Singleton<x86Kernel>
 };
 
 /** Points to the kernel. */
-extern x86Kernel *kernel;
+extern X86Kernel *kernel;
 
 /**
  * @}

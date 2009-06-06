@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __AMD64_PROCESS_H
-#define __AMD64_PROCESS_H
+#ifndef __X86_PROCESS_H
+#define __X86_PROCESS_H
 
 /**   
  * @defgroup x86kernel kernel (x86)  
@@ -29,7 +29,7 @@
 /**
  * Used by kernel/ classes to point back to us.
  */
-#define ArchProcess x86Process
+#define ArchProcess X86Process
 class ArchProcess;
 
 #include <kernel/Process.h>
@@ -40,7 +40,7 @@ class ArchProcess;
 /**
  * Process which may execute on an Intel x86 CPU.
  */
-class x86Process : public Process
+class X86Process : public Process
 {
     public:
 
@@ -48,12 +48,12 @@ class x86Process : public Process
          * Constructor function.
 	 * @param entry Initial EIP register value.
          */
-	x86Process(Address entry);
+	X86Process(Address entry);
 
 	/**
 	 * Destructor function.
 	 */
-	~x86Process();
+	~X86Process();
 	
 	/**
 	 * (Dis)allows a process direct I/O to a port.

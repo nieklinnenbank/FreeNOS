@@ -21,13 +21,13 @@
 #include <Types.h>
 #include <string.h>
 
-x86Memory::x86Memory() : Memory(), remPageDir(PAGEDIRADDR_REMOTE),
+X86Memory::X86Memory() : Memory(), remPageDir(PAGEDIRADDR_REMOTE),
 			 remPageTab(ZERO), myPageDir(PAGEDIRADDR),
 			 myPageTab(ZERO)
 {
 }
 
-Address x86Memory::mapVirtual(Address paddr, Address vaddr, ulong prot)
+Address X86Memory::mapVirtual(Address paddr, Address vaddr, ulong prot)
 {
     /* Virtual address specified? */
     if (vaddr == ZERO)
@@ -59,7 +59,7 @@ Address x86Memory::mapVirtual(Address paddr, Address vaddr, ulong prot)
     return vaddr;
 }
 
-Address x86Memory::mapVirtual(x86Process *p, Address paddr,
+Address X86Memory::mapVirtual(X86Process *p, Address paddr,
 			      Address vaddr, ulong prot)
 {
     /* Map remote pages. */
@@ -97,7 +97,7 @@ Address x86Memory::mapVirtual(x86Process *p, Address paddr,
     return (Address) vaddr;
 }
 
-Address x86Memory::findFree(Address pageTabFrom, Address *pageDirPtr)
+Address X86Memory::findFree(Address pageTabFrom, Address *pageDirPtr)
 {
     Address  vaddr = 0xa0000000;
     Address *pageTabPtr = PAGETABADDR_FROM(vaddr, pageTabFrom);
@@ -113,7 +113,7 @@ Address x86Memory::findFree(Address pageTabFrom, Address *pageDirPtr)
     return vaddr;
 }
 
-Address x86Memory::lookupVirtual(x86Process *p, Address vaddr)
+Address X86Memory::lookupVirtual(X86Process *p, Address vaddr)
 {
     Address ret = ZERO;
 
@@ -129,7 +129,7 @@ Address x86Memory::lookupVirtual(x86Process *p, Address vaddr)
     return ret;
 }
 
-void x86Memory::mapRemote(x86Process *p, Address vaddr)
+void X86Memory::mapRemote(X86Process *p, Address vaddr)
 {
     /* Map remote page directory and page table. */
     myPageDir[DIRENTRY(PAGETABFROM_REMOTE)] = p->getPageDirectory() | (PAGE_PRESENT|PAGE_RW|PAGE_PINNED);
@@ -139,7 +139,7 @@ void x86Memory::mapRemote(x86Process *p, Address vaddr)
     tlb_flush_all();
 }
 
-bool x86Memory::access(x86Process *p, Address vaddr, Size sz, ulong prot)
+bool X86Memory::access(X86Process *p, Address vaddr, Size sz, ulong prot)
 {
     Size bytes = 0;
 
@@ -159,7 +159,7 @@ bool x86Memory::access(x86Process *p, Address vaddr, Size sz, ulong prot)
     return (bytes >= sz);    
 }
 
-void x86Memory::releaseAll(x86Process *p)
+void X86Memory::releaseAll(X86Process *p)
 {
     /* Map page tables. */
     mapRemote(p, 0x0);
@@ -186,4 +186,4 @@ void x86Memory::releaseAll(x86Process *p)
     }
 }
 
-INITOBJ(x86Memory, memory, VMEMORY)
+INITOBJ(X86Memory, memory, VMEMORY)

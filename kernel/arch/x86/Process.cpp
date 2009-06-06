@@ -23,7 +23,7 @@
 #include <string.h>
 #include <ListIterator.h>
 
-x86Process::x86Process(Address entry) : Process(entry)
+X86Process::X86Process(Address entry) : Process(entry)
 {
     Address *pageDir, miscTabAddr, *miscTab, *tmpStack, *ioMap;
     CPUState *regs;
@@ -92,7 +92,7 @@ x86Process::x86Process(Address entry) : Process(entry)
     memory->mapVirtual((Address) 0, (Address) ioMap, 0);
 }
 
-x86Process::~x86Process()
+X86Process::~X86Process()
 {
     /* Remove ourselves from the scheduler. */	
     scheduler->dequeue(this);
@@ -101,14 +101,14 @@ x86Process::~x86Process()
     memory->releaseAll(this);
 }
 
-void x86Process::IOPort(u16 port, bool enabled)
+void X86Process::IOPort(u16 port, bool enabled)
 {
     Address tmp = memory->mapVirtual(ioMapAddr);
     kernelTss.setPort(port, enabled, (u8 *) tmp);
     memory->mapVirtual((Address) 0, tmp, 0);
 }
 
-void x86Process::execute()
+void X86Process::execute()
 {
     /* Refresh I/O bitmap. */
     memory->mapVirtual(ioMapAddr, (Address) &kernelioBitMap);

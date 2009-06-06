@@ -142,14 +142,14 @@
 /**
  * x86 Virtual Memory.
  */
-class x86Memory : public Memory, public Singleton<x86Memory>
+class X86Memory : public Memory, public Singleton<X86Memory>
 {
     public:
 
 	/**
 	 * Constructor function.
 	 */
-	x86Memory();
+	X86Memory();
 
 	/**
 	 * Map a physical page to a virtual address, using intel's paged virtual memory.
@@ -169,7 +169,7 @@ class x86Memory : public Memory, public Singleton<x86Memory>
 	 * @param prot Page entry protection flags.
 	 * @return Mapped physical address.
 	 */	
-	Address mapVirtual(x86Process *p, Address paddr,
+	Address mapVirtual(X86Process *p, Address paddr,
 			   Address vaddr, ulong prot = PAGE_PRESENT | PAGE_RW);
 
         /**
@@ -178,7 +178,7 @@ class x86Memory : public Memory, public Singleton<x86Memory>
 	 * @param vaddr Virtual address to lookup.
 	 * @return Page table entry if vaddr is mapped, or ZERO if not.
 	 */
-	Address lookupVirtual(x86Process *p, Address vaddr);
+	Address lookupVirtual(X86Process *p, Address vaddr);
 
 	/**
 	 * Verify protection access flags in the page directory and page table.
@@ -187,7 +187,7 @@ class x86Memory : public Memory, public Singleton<x86Memory>
 	 * @param sz Size of the byte range to check.
 	 * @return True if the current process has access, false otherwise.
 	 */
-	bool access(x86Process *p, Address vaddr, Size sz,
+	bool access(X86Process *p, Address vaddr, Size sz,
 		    ulong prot = PAGE_PRESENT|PAGE_RW|PAGE_USER);
 
         /** 
@@ -211,7 +211,7 @@ class x86Memory : public Memory, public Singleton<x86Memory>
 	 * @param p Other process for which we map tables.
 	 * @param vaddr Point page table pointer for this address.
 	 */
-	void mapRemote(x86Process *p, Address vaddr);
+	void mapRemote(X86Process *p, Address vaddr);
 	
 	/** Remote page directory and page tables. */
 	Address *remPageDir, *remPageTab;
@@ -221,7 +221,7 @@ class x86Memory : public Memory, public Singleton<x86Memory>
 };
 
 /** Instance of Intel memory. */
-extern x86Memory *memory;
+extern X86Memory *memory;
 
 /** Kernel page directory. */
 extern Address kernelPageDir[1024], kernelPageTab[1024];
