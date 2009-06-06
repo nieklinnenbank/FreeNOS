@@ -37,6 +37,7 @@ import os
 import sys
 import tarfile
 import version
+import checksum
 import SCons.Builder
 
 from build import *
@@ -105,7 +106,6 @@ def DistTar(target, source, env):
       os.makedirs(target_dir)
 
    # open our tar file for writing
-
    tar = tarfile.open(str(target[0]), "w:%s" % (tar_format,))
 
    # write sources to our tar file
@@ -138,28 +138,68 @@ target.Append(BUILDERS =
      ),
 })
 
-target.AppendUnique(DISTTAR_FORMAT = 'gz')
 target.Append(
           DISTTAR_EXCLUDEEXTS=['.o','.os','.so','.a','.dll','.cc','.cache',
 			       '.pyc','.cvsignore','.dblite','.log', '.gz',
-			       '.bz2', '.zip', '.bak', '.BAK']
+			       '.bz2', '.zip', '.bak', '.BAK', '.md5', '.sha1',
+			       '.tar']
         , DISTTAR_EXCLUDEDIRS=['CVS','.svn','.sconf_temp', 'dist', 'host']
 )
 
 #
-# Creates a release or snapshot archive.
+# Create a release GZipped TAR archive.
 #
-releaseTarGz   = target.DistTar("FreeNOS-" + version.current + ".tar.gz",
-				[target.Dir('#')])
+releaseTarGz       = target.DistTar("FreeNOS-" + version.current + ".tar.gz",
+				     [target.Dir('#')],
+				     DISTTAR_FORMAT = "gz")
 
-releaseTarBz2  = target.DistTar("FreeNOS-" + version.current + ".tar.bz2",
-				[target.Dir("#")])
+releaseTarGzMd5    = target.Checksum("FreeNOS-" + version.current + ".tar.gz.md5",
+				     "FreeNOS-" + version.current + ".tar.gz")
 
-snapshotTarGz  = target.DistTar("FreeNOS-" + version.currentRev + ".tar.gz",
-				[target.Dir("#")])
-				
-snapshotTarBz2 = target.DistTar("FreeNOS-" + version.currentRev + ".tar.bz2",
-				[target.Dir("#")])
+releaseTarGzSha1   = target.Checksum("FreeNOS-" + version.current + ".tar.gz.sha1",
+				     "FreeNOS-" + version.current + ".tar.gz")
 
-Alias("release",  [ releaseTarGz,  releaseTarBz2  ])
-Alias("snapshot", [ snapshotTarGz, snapshotTarBz2 ])
+#
+# Create a release BZipped TAR archive.
+#
+releaseTarBz2      = target.DistTar("FreeNOS-" + version.current + ".tar.bz2",
+				     [target.Dir("#")],
+				     DISTTAR_FORMAT = "bz2")
+
+releaseTarBz2Md5   = target.Checksum("FreeNOS-" + version.current + ".tar.bz2.md5",
+				     "FreeNOS-" + version.current + ".tar.bz2")
+
+releaseTarBz2Sha1  = target.Checksum("FreeNOS-" + version.current + ".tar.bz2.sha1",
+				     "FreeNOS-" + version.current + ".tar.bz2")
+
+#
+# Create a snapshot GZipped TAR archive.
+#
+snapshotTarGz      = target.DistTar("FreeNOS-" + version.currentRev + ".tar.gz",
+				     [target.Dir("#")],
+				     DISTTAR_FORMAT = "gz")
+
+snapshotTarGzMd5   = target.Checksum("FreeNOS-" + version.currentRev + ".tar.gz.md5",
+				     "FreeNOS-" + version.currentRev + ".tar.gz")
+
+snapshotTarGzSha1  = target.Checksum("FreeNOS-" + version.currentRev + ".tar.gz.sha1",
+				     "FreeNOS-" + version.currentRev + ".tar.gz")
+
+#
+# Create a snapshot BZipped TAR archive.
+#				
+snapshotTarBz2     = target.DistTar("FreeNOS-" + version.currentRev + ".tar.bz2",
+				    [target.Dir("#")],
+				    DISTTAR_FORMAT = "bz2")
+
+snapshotTarBz2Md5  = target.Checksum("FreeNOS-" + version.currentRev + ".tar.bz2.md5",
+				     "FreeNOS-" + version.currentRev + ".tar.bz2")
+
+snapshotTarBz2Sha1 = target.Checksum("FreeNOS-" + version.currentRev + ".tar.bz2.sha1",
+				     "FreeNOS-" + version.currentRev + ".tar.bz2")
+
+
+Alias("release",  [ releaseTarGz,   releaseTarGzMd5,   releaseTarGzSha1,
+		    releaseTarBz2,  releaseTarBz2Md5,  releaseTarBz2Sha1 ])
+Alias("snapshot", [ snapshotTarGz,  snapshotTarGzMd5,  snapshotTarGzSha1,
+		    snapshotTarBz2, snapshotTarBz2Md5, snapshotTarBz2Sha1 ])
