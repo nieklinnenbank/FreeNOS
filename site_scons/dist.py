@@ -142,7 +142,7 @@ target.Append(
           DISTTAR_EXCLUDEEXTS=['.o','.os','.so','.a','.dll','.cc','.cache',
 			       '.pyc','.cvsignore','.dblite','.log', '.gz',
 			       '.bz2', '.zip', '.bak', '.BAK', '.md5', '.sha1',
-			       '.tar']
+			       '.tar', '.img', '.ext2', '.iso']
         , DISTTAR_EXCLUDEDIRS=['CVS','.svn','.sconf_temp', 'dist', 'host']
 )
 
