@@ -19,6 +19,7 @@ import os
 import tempfile
 import build
 from SCons.Script import *
+from SCons.Action import *
 
 #
 # Generate a BootImage.
@@ -28,12 +29,25 @@ def generateBootImage(target, source, env):
     # Use the host compiled 'img' program.
     os.system("sbin/img/img " + str(source[0]) + " " + str(target[0]))
 
-imgBuilder = Builder(action     = generateBootImage,
+#
+# Output user friendly command.
+#
+def generateBootImageStr(target, source, env):
+
+    return "  IMG     " + str(target[0])
+
+#
+# Create boot image builder.
+#
+imgBuilder = Builder(action     = Action(generateBootImage, generateBootImageStr),
 	    	     suffix     = '.img',
 	    	     src_suffix = '.imgdesc')
 
 build.target.Append(BUILDERS = { 'Img' : imgBuilder })
 
+#
+# Define dependencies and targets.
+#
 img = build.target.Img('boot/boot.img', ['boot/boot.imgdesc'])
 Depends(img, ['bin', 'lib', 'kernel', 'sbin', 'srv'])
 AlwaysBuild(img)

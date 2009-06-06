@@ -23,6 +23,7 @@ import checksum
 
 from build import *
 from SCons.Script import *
+from SCons.Action import *
 
 #
 # Generate an ISO 9660 image.
@@ -51,9 +52,16 @@ def generateISO(target, source, env):
     list.close()
 
 #
+# Output a user friendly command.
+#
+def generateISOstr(target, source, env):
+
+    return "  ISO     " + str(target[0])
+
+#
 # Create the ISO builder.
 #
-isoBuilder = Builder(action     = generateISO,
+isoBuilder = Builder(action     = Action(generateISO, generateISOstr),
 	    	     suffix     = '.iso',
 		     src_suffix = '.isodesc')
 

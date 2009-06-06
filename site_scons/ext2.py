@@ -20,6 +20,7 @@ import tempfile
 
 from build import *
 from SCons.Script import *
+from SCons.Action import *
 
 #
 # Generate an Extended 2 Filesystem image.
@@ -45,12 +46,25 @@ def generateExt2(target, source, env):
     os.system("rm -rf " + temp)
     list.close()
 
-ext2Builder = Builder(action     = generateExt2,
+#
+# Prints out a user friendly command-line string.
+#
+def generateExt2Str(target, source, env):
+
+    return "  EXT2    " + str(target[0])
+
+#
+# Create extended 2 builder.
+#
+ext2Builder = Builder(action     = Action(generateExt2, generateExt2Str),
 	    	      suffix     = '.ext2',
 	    	      src_suffix = '.ext2desc')
 
 target.Append(BUILDERS = { 'Ext2' : ext2Builder })
 
+#
+# Specify dependencies and targets.
+#
 ext2 = target.Ext2('boot/boot.ext2', ['boot/boot.ext2desc'])
 Depends(ext2, ['bin', 'lib', 'kernel', 'sbin', 'srv'])
 AlwaysBuild(ext2)

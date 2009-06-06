@@ -8,7 +8,6 @@
 * Change arch/ to FreeNOS/
 
 [bugs]
-* sh sometimes hangs at system bootup.
 * We should use standard errno values, instead of e.g. ENOSUPPORT, EINVALID.
 * Some dependencies between source files are missing in the SCons scripts
 * SCons causes a rebuild when we use Glob("*.cpp"): http://scons.tigris.org/issues/show_bug.cgi?id=2419
@@ -27,7 +26,6 @@
   the boot modules to use /dev/serial0 as the system console! :)
 
 [libraries]
-* libexec / libelf: executable parser!!!
 * libparse: generic parser library, usefull for the Shell too! :)
 
     --> CommandLine
@@ -81,7 +79,6 @@
 	--> /proc/maps!	
     --> perhaps, memory server can then do more management of virtual memory?
 
-* SVN's $headURL inside debug()?
 * use #define ArchXXX etc
 * void Memory::releasePhysical(Address addr)  <--- include size here?
 * FooMessage.doBar() wrapper functions?
