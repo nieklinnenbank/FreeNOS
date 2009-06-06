@@ -36,6 +36,10 @@ extern C void __dso_handle()
 {
 }
 
+extern C void __stack_chk_fail(void)
+{
+}
+
 void constructors()
 {
     for (void (**ctor)() = &CTOR_LIST; ctor && *ctor; ctor++)

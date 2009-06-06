@@ -43,6 +43,10 @@ extern C void __dso_handle()
 {
 }
 
+extern C void __stack_chk_fail(void)
+{
+}
+
 extern C int __cxa_atexit(void (*func) (void *), void * arg, void * dso_handle)
 {
     return (0);

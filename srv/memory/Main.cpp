@@ -39,6 +39,10 @@ extern C void __dso_handle()
 {
 }
 
+extern C void __stack_chk_fail(void)
+{
+}
+
 extern C void SECTION(".entry") _entry() 
 {
     char *argv[] = {"main", ZERO };
