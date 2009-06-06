@@ -58,6 +58,14 @@ target = DefaultEnvironment(CPPPATH   = '.',
 Help(targetVars.GenerateHelpText(target))
 
 #
+# The only target currently supported is x86.
+#
+try:
+    os.symlink("x86", "include/arch")
+except:
+    pass
+
+#
 # Command-line options for the host build chain.
 #
 hostVars = Variables()

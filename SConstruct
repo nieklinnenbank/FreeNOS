@@ -21,6 +21,7 @@ import ext2
 import img
 import iso
 import qemu
+import dist
 
 #
 # Update versioning header file.

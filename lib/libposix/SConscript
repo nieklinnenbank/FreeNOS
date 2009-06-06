@@ -19,4 +19,5 @@ from build import *
 
 env = Prepare(target, [ 'liballoc', 'libc', 'libexec' ],
 		      [ 'filesystem', 'process' ])
-env.Library('libposix', [ 'dirent.cpp','fcntl.cpp','stat.cpp','unistd.cpp','utsname.cpp' ])
+env.Library('libposix', [ 'dirent.cpp','fcntl.cpp', 'sys/stat.cpp',
+			  'unistd.cpp','sys/utsname.cpp' ])

@@ -19,7 +19,7 @@
 #define __LIBC_LIMITS_H
 
 #include <Macros.h>
-#include "types.h"
+#include <sys/types.h>
 
 /** 
  * @defgroup libc libc (ISO C99)

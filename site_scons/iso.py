@@ -25,7 +25,6 @@ from SCons.Script import *
 
 #
 # Generate an ISO 9660 image.
-# TODO: using 'cp' directly may be unportable.
 #
 def generateISO(target, source, env):
 

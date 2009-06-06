@@ -20,7 +20,7 @@
 
 #include <Macros.h>
 #include <stdio.h>
-#include "types.h"
+#include "sys/types.h"
 
 /**                                                                                                                                                                                                     
  * @defgroup libposix libposix (POSIX.1-2008)

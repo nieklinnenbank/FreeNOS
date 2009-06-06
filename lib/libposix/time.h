@@ -19,7 +19,7 @@
 #define __LIBPOSIX_TIME_H
 
 #include <Macros.h>
-#include "types.h"
+#include "sys/types.h"
 
 /**                                                                                                                                                                                                     
  * @defgroup libposix libposix (POSIX.1-2008)
