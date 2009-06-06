@@ -1,6 +1,5 @@
 [now]
 * REGISTER() for target!!! (without __attribute__((constructor)))
-* Packaging with SCons!
 * Compilation on OpenSolaris
 * libcommon
     --> fix include/ et all???
@@ -9,6 +8,7 @@
 * Change arch/ to FreeNOS/
 
 [bugs]
+* sh sometimes hangs at system bootup.
 * We should use standard errno values, instead of e.g. ENOSUPPORT, EINVALID.
 * Some dependencies between source files are missing in the SCons scripts
 * SCons causes a rebuild when we use Glob("*.cpp"): http://scons.tigris.org/issues/show_bug.cgi?id=2419
