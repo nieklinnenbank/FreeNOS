@@ -24,9 +24,9 @@ import SCons
 import build
 
 # Read current version.
-text = open("VERSION").read().strip()
-expr = re.compile("\.")
-version = expr.split(text)
+current = open("VERSION").read().strip()
+expr    = re.compile("\.")
+version = expr.split(current)
 versionCode  = 0
 versionPower = 16
 
@@ -39,9 +39,9 @@ for v in version:
 try:
     svnClient  = pysvn.Client()
     svnInfo    = svnClient.info(".")
-    release = text + "-r" + str(svnInfo.revision.number)
+    currentRev = current + "-r" + str(svnInfo.revision.number)
 except:
-    release = text
+    currentRev = current
 
 #
 # Regenerate version header file.
@@ -55,7 +55,7 @@ def regenerateHeader():
 	      '\n' \
 	      '#define VERSIONCODE ' + str(versionCode) + '\n' \
     	      '#define VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))\n' \
-	      '#define RELEASE   "' + release + '"\n' \
+	      '#define RELEASE   "' + currentRev + '"\n' \
 	      '#define COPYRIGHT "Copyright (C) ' + str(datetime.datetime.today().year) + ' Niek Linnenbank\\r\\n" \\\n' \
 	      '                  "This is free software; see the source for copying conditions.  There is NO\\r\\n" \\\n' \
 	      '                  "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\\r\\n\\r\\n"\n' \

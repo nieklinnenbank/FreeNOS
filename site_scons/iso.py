@@ -42,7 +42,7 @@ def generateISO(target, source, env):
 
     # Create an bootable ISO image.
     os.system("mkisofs -R -b boot/grub/stage2_eltorito -no-emul-boot " +
-	      "        -boot-load-size 4 -boot-info-table -V 'FreeNOS " + version.release + "'" +
+	      "        -boot-load-size 4 -boot-info-table -V 'FreeNOS " + version.currentRev + "'" +
 	      "        -o " + str(target[0]) + " " + temp)
 
     # Done.

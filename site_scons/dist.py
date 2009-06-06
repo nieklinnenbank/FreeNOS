@@ -140,12 +140,26 @@ target.Append(BUILDERS =
 
 target.AppendUnique(DISTTAR_FORMAT = 'gz')
 target.Append(
-          DISTTAR_EXCLUDEEXTS=['.o','.os','.so','.a','.dll','.cc','.cache','.pyc','.cvsignore','.dblite','.log', '.gz', '.bz2', '.zip']
+          DISTTAR_EXCLUDEEXTS=['.o','.os','.so','.a','.dll','.cc','.cache',
+			       '.pyc','.cvsignore','.dblite','.log', '.gz',
+			       '.bz2', '.zip', '.bak', '.BAK']
         , DISTTAR_EXCLUDEDIRS=['CVS','.svn','.sconf_temp', 'dist', 'host']
 )
 
 #
-# Creates a release archive.
+# Creates a release or snapshot archive.
 #
-tar = target.DistTar("FreeNOS-" + version.text, [target.Dir('#')])
-Alias("release", tar)
+releaseTarGz   = target.DistTar("FreeNOS-" + version.current + ".tar.gz",
+				[target.Dir('#')])
+
+releaseTarBz2  = target.DistTar("FreeNOS-" + version.current + ".tar.bz2",
+				[target.Dir("#")])
+
+snapshotTarGz  = target.DistTar("FreeNOS-" + version.currentRev + ".tar.gz",
+				[target.Dir("#")])
+				
+snapshotTarBz2 = target.DistTar("FreeNOS-" + version.currentRev + ".tar.bz2",
+				[target.Dir("#")])
+
+Alias("release",  [ releaseTarGz,  releaseTarBz2  ])
+Alias("snapshot", [ snapshotTarGz, snapshotTarBz2 ])
