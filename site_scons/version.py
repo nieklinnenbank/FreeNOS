@@ -43,6 +43,12 @@ try:
 except:
     currentRev = current
 
+# Attempt to retrieve the correct compiler version
+try:
+    compiler = os.popen(build.target['CC'] + " --version | head -n 1").read().strip()
+except:
+    compiler = build.target['CC'] + ' ' + build.target['CCVERSION']
+
 #
 # Regenerate version header file.
 #
@@ -60,7 +66,7 @@ def regenerateHeader():
 	      '                  "This is free software; see the source for copying conditions.  There is NO\\r\\n" \\\n' \
 	      '                  "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\\r\\n\\r\\n"\n' \
 	      '\n' \
-	      '#define COMPILER  "' + build.target['CC'] + ' ' + build.target['CCVERSION'] + '"\n' \
+	      '#define COMPILER  "' + compiler + '"\n' \
 	      '#define DATETIME  "' + str(datetime.datetime.today()) + '"\n' \
 	      '#define ARCH      "' + os.readlink("include/FreeNOS") + '"\n' \
 	      '\n' \
@@ -69,7 +75,7 @@ def regenerateHeader():
 	      '#define BUILDOS   "' + platform.system() + ' ' + platform.release() + '"\n' \
 	      '#define BUILDARCH "' + platform.machine() + '"\n' \
 	      '#define BUILDCPU  "' + platform.processor() + '"\n' \
-	      '#define BUILDPY   "' + platform.python_version() + '"\n' \
+	      '#define BUILDPY   "Python ' + platform.python_version() + '"\n' \
 	      '#define BUILDER   "SCons ' + SCons.__version__ + '"\n' \
 	      '#define BUILDPATH "' + os.getcwd() + '"\n')
 

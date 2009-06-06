@@ -20,5 +20,5 @@ from build import *
 env = Prepare(target, [ 'libposix', 'libc' ],
 		      [ 'terminal', 'process' ])
 
-env['CCFLAGS'] += ' -DTEKEN_XTERM'
+env.Append(CCFLAGS = [ '-DTEKEN_XTERM' ])
 env.Library('libteken', [ Glob("*.c") ])

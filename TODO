@@ -1,14 +1,17 @@
 [now]
+* Supported targets/hosts tables @ freenos.org
 * REGISTER() for target!!! (without __attribute__((constructor)))
 * Compilation on OpenSolaris, OpenBSD
+* llvm-gcc and gcc45 on FreeBSD --> problem in X86Process::execute()!!!
+    --> and linker needs to be updated aswell. See beastie vm.
 * libcommon
     --> fix include/ et all???
     --> maybe put all include/api/*.h include/arch/*.h files just in
 	kernel/, and include/*.h in lib/libparse,libalgo(rithm),libcommon,libdata (find a good name).
 
 [bugs]
-* When overriding CCFLAGS, in libteken:
-    --> cc1: error: invalid option argument '-O0 -g3 -nostdinc -Wall -Werror -fno-builtin -Wno-write-strings -Wstack-protector'
+* Problem with CCFLAGS and construction Variables not solved:
+    --> cc1: error: invalid option argument '-O0 -g3 -nostdinc -Wall -Werror -fno-builtin -Wno-write-strings -Wno-stack-protector'
 * Fix these warnings:
     --> site_scons/checksum.py:18: DeprecationWarning: the md5 module is deprecated; use hashlib instead
     --> site_scons/checksum.py:19: DeprecationWarning: the sha module is deprecated; use the hashlib module instead
