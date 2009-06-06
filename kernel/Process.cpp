@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <arch/Process.h>
+#include <FreeNOS/Process.h>
 #include <Vector.h>
 #include <Types.h>
 #include <Config.h>

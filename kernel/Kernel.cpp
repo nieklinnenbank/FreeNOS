@@ -15,12 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <arch/Kernel.h>
-#include <arch/Memory.h>
-#include <arch/Process.h>
-#include <arch/Scheduler.h>
-#include <arch/Multiboot.h>
-#include <arch/BootImage.h>
+#include <FreeNOS/Kernel.h>
+#include <FreeNOS/Memory.h>
+#include <FreeNOS/Process.h>
+#include <FreeNOS/Scheduler.h>
+#include <FreeNOS/Multiboot.h>
+#include <FreeNOS/BootImage.h>
 #include <String.h>
 
 // TODO: mark modStart - modEnd used in physical memory map!!!

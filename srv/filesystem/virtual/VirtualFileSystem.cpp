@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <api/VMCtl.h>
-#include <arch/BootImage.h>
+#include <API/VMCtl.h>
+#include <FreeNOS/BootImage.h>
 #include <String.h>
 #include "VirtualFileSystem.h"
 

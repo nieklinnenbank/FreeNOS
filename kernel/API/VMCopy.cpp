@@ -15,10 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <api/VMCopy.h>
-#include <arch/Process.h>
-#include <arch/API.h>
-#include <arch/Memory.h>
+#include <API/VMCopy.h>
+#include <FreeNOS/Process.h>
+#include <FreeNOS/API.h>
+#include <FreeNOS/Memory.h>
 #include <Error.h>
 #include <string.h>
 

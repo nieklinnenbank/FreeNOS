@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <api/IPCMessage.h>
-#include <api/ProcessCtl.h>
+#include <API/IPCMessage.h>
+#include <API/ProcessCtl.h>
 #include <FileSystemMessage.h>
 #include <ProcessMessage.h>
 #include <LogMessage.h>

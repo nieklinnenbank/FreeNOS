@@ -18,8 +18,8 @@
 #ifndef __FILESYSTEM_FILESYSTEM_H
 #define __FILESYSTEM_FILESYSTEM_H
 
-#include <api/IPCMessage.h>
-#include <api/VMCopy.h>
+#include <API/IPCMessage.h>
+#include <API/VMCopy.h>
 #include <IPCServer.h>
 #include <Config.h>
 #include <HashTable.h>

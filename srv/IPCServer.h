@@ -18,7 +18,7 @@
 #ifndef __IPCSERVER_H
 #define __IPCSERVER_H
 
-#include <api/IPCMessage.h>
+#include <API/IPCMessage.h>
 #include <Error.h>
 #include <Config.h>
 

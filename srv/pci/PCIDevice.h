@@ -18,7 +18,7 @@
 #ifndef __PCI_PCIDEVICE_H
 #define __PCI_PCIDEVICE_H
 
-#include <arch/CPU.h>
+#include <FreeNOS/CPU.h>
 #include <IPCServer.h>
 #include <Types.h>
 #include <Error.h>

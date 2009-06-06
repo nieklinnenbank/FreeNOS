@@ -18,10 +18,10 @@
 #ifndef __API_SYSTEMINFO_H
 #define __API_SYSTEMINFO_H
 
-#include <arch/API.h>
-#include <arch/Init.h>
-#include <arch/Multiboot.h>
-#include <arch/Memory.h>
+#include <FreeNOS/API.h>
+#include <FreeNOS/Init.h>
+#include <FreeNOS/Multiboot.h>
+#include <FreeNOS/Memory.h>
 #include <Version.h>
 #include <Error.h>
 #include <Types.h>

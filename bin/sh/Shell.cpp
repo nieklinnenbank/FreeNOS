@@ -15,9 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <api/IPCMessage.h>
-#include <arch/Process.h>
-#include <arch/CPU.h>
+#include <API/IPCMessage.h>
+#include <FreeNOS/Process.h>
+#include <FreeNOS/CPU.h>
 #include <MemoryServer.h>
 #include <FileSystemMessage.h>
 #include <VirtualFileSystem.h>

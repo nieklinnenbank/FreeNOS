@@ -19,7 +19,7 @@
 #define __LIBEXEC_EXECUTABLEFORMAT_H
 #ifndef __ASSEMBLER__
 
-#include <arch/Memory.h>
+#include <FreeNOS/Memory.h>
 #include <List.h>
 #include <Types.h>
 

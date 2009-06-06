@@ -18,11 +18,11 @@
 #ifndef __MEMORY_MEMORYSERVER_H
 #define __MEMORY_MEMORYSERVER_H
 
-#include <api/IPCMessage.h>
-#include <api/VMCtl.h>
-#include <api/SystemInfo.h>
-#include <arch/Process.h>
-#include <arch/Memory.h>
+#include <API/IPCMessage.h>
+#include <API/VMCtl.h>
+#include <API/SystemInfo.h>
+#include <FreeNOS/Process.h>
+#include <FreeNOS/Memory.h>
 #include <IPCServer.h>
 #include <Types.h>
 #include <Macros.h>

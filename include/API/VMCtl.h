@@ -18,9 +18,9 @@
 #ifndef __API_VMCTL_H
 #define __API_VMCTL_H
 
-#include <arch/Process.h>
-#include <arch/API.h>
-#include <arch/Memory.h>
+#include <FreeNOS/Process.h>
+#include <FreeNOS/API.h>
+#include <FreeNOS/Memory.h>
 #include <Types.h>
 
 /**  

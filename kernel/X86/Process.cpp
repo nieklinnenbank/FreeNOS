@@ -15,10 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <arch/Process.h>
-#include <arch/Memory.h>
-#include <arch/CPU.h>
-#include <arch/Scheduler.h>
+#include <FreeNOS/Process.h>
+#include <FreeNOS/Memory.h>
+#include <FreeNOS/CPU.h>
+#include <FreeNOS/Scheduler.h>
 #include <Types.h>
 #include <string.h>
 #include <ListIterator.h>

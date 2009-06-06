@@ -44,7 +44,7 @@ targetVars.AddVariables(
 		[ '-fno-rtti', '-fno-exceptions', '-nostdinc' ]),
     ('CPPFLAGS',  'Change target C preprocessor flags', '-isystem include'),
     ('LINKFLAGS', 'Change the flags for the target linker',
-		[ '--whole-archive', '-nostdlib', '-T', 'kernel/arch/x86/user.ld' ])
+		[ '--whole-archive', '-nostdlib', '-T', 'kernel/X86/user.ld' ])
 )
 
 #
@@ -61,7 +61,7 @@ Help(targetVars.GenerateHelpText(target))
 # The only target currently supported is x86.
 #
 try:
-    os.symlink("x86", "include/arch")
+    os.symlink("X86", "include/FreeNOS")
 except:
     pass
 

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <api/IPCMessage.h>
+#include <API/IPCMessage.h>
 #include <FileSystemMessage.h>
 #include <VirtualFileSystem.h>
 #include <Config.h>

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <api/PrivExec.h>
+#include <API/PrivExec.h>
 #include "RebootCommand.h"
 
 int RebootCommand::execute(Size nparams, char **params)

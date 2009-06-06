@@ -15,10 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <arch/Memory.h>
-#include <arch/Multiboot.h>
-#include <arch/Init.h>
-#include <arch/Kernel.h>
+#include <FreeNOS/Memory.h>
+#include <FreeNOS/Multiboot.h>
+#include <FreeNOS/Init.h>
+#include <FreeNOS/Kernel.h>
 #include <Allocator.h>
 #include <BubbleAllocator.h>
 #include <PoolAllocator.h>

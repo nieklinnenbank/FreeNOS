@@ -18,13 +18,13 @@
 from build import *
 
 env = Prepare(target, [ 'libparse', 'liballoc', 'libposix', 'libexec', 'libc' ])
-env['LINKFLAGS'] = '--whole-archive -T kernel/arch/x86/kernel.ld'
+env['LINKFLAGS'] = '--whole-archive -T kernel/X86/kernel.ld'
 
-env.Program('kernel', [ 'arch/x86/boot.S', 'Kernel.cpp',  'Main.cpp', 'Memory.cpp',
+env.Program('kernel', [ 'X86/boot.S', 'Kernel.cpp',  'Main.cpp', 'Memory.cpp',
 		        'Process.cpp', 'Scheduler.cpp', 'Support.cpp',
-			'api/IPCMessage.cpp', 'api/PrivExec.cpp',
-			'api/ProcessCtl.cpp', 'api/SystemInfo.cpp',
-			'api/VMCopy.cpp',     'api/VMCtl.cpp',
-			'arch/x86/Kernel.cpp','arch/x86/Memory.cpp',
-			'arch/x86/Process.cpp'  ],
+			'API/IPCMessage.cpp', 'API/PrivExec.cpp',
+			'API/ProcessCtl.cpp', 'API/SystemInfo.cpp',
+			'API/VMCopy.cpp',     'API/VMCtl.cpp',
+			'X86/Kernel.cpp','X86/Memory.cpp',
+			'X86/Process.cpp'  ],
 		         LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])

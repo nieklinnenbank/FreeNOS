@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <api/VMCopy.h>
+#include <API/VMCopy.h>
 #include <FileSystemMessage.h>
 #include <Types.h>
 #include <string.h>

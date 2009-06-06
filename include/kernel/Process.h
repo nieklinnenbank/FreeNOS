@@ -19,7 +19,7 @@
 #define __KERNEL_PROCESS_H
 #ifndef __ASSEMBLER__
 
-#include <arch/Interrupt.h>
+#include <FreeNOS/Interrupt.h>
 #include <Types.h>
 #include <Vector.h>
 #include <List.h>

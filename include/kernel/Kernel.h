@@ -18,10 +18,10 @@
 #ifndef __KERNEL_KERNEL_H
 #define __KERNEL_KERNEL_H
 
+#include <FreeNOS/Interrupt.h>
+#include <FreeNOS/BootImage.h>
 #include <Macros.h>
 #include <Types.h>
-#include <arch/Interrupt.h>
-#include <arch/BootImage.h>
 #include "Multiboot.h"
 
 /** 

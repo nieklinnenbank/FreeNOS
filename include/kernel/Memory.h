@@ -19,7 +19,7 @@
 #define __KERNEL_MEMORY_H
 #ifndef __ASSEMBLER__
 
-#include <arch/Process.h>
+#include <FreeNOS/Process.h>
 #include <Types.h>
 
 /** 

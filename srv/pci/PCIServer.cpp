@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <api/ProcessCtl.h>
+#include <API/ProcessCtl.h>
 #include <LogMessage.h>
 #include <stdlib.h>
 #include "PCIServer.h"

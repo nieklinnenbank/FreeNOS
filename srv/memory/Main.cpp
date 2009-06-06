@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <api/VMCtl.h>
+#include <API/VMCtl.h>
 #include <Config.h>
 #include <ListAllocator.h>
 #include "MemoryServer.h"

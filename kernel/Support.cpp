@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <arch/Support.h>
-#include <arch/Init.h>
+#include <FreeNOS/Support.h>
+#include <FreeNOS/Init.h>
 #include <Macros.h>
 
 extern C void constructors()

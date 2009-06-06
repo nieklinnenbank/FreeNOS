@@ -15,9 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <arch/Multiboot.h>
-#include <arch/CPU.h>
-#include <arch/Memory.h>
+#include <FreeNOS/Multiboot.h>
+#include <FreeNOS/CPU.h>
+#include <FreeNOS/Memory.h>
 
 /* The size of our stack (16KB).  */                                                                                                                                                                    
 #define STACK_SIZE 0x4000

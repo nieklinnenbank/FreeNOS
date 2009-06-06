@@ -18,8 +18,8 @@
 #ifndef __API_IPCMESSAGE_H
 #define __API_IPCMESSAGE_H
 
-#include <arch/Process.h>
-#include <arch/API.h>
+#include <FreeNOS/Process.h>
+#include <FreeNOS/API.h>
 #include <Macros.h>
 #include <Types.h>
 #include <Error.h>

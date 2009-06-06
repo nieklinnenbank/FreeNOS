@@ -15,10 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <arch/CPU.h>
-#include <api/ProcessCtl.h>
-#include <api/IPCMessage.h>
-#include <api/VMCtl.h>
+#include <FreeNOS/CPU.h>
+#include <API/ProcessCtl.h>
+#include <API/IPCMessage.h>
+#include <API/VMCtl.h>
 #include <MemoryMessage.h>
 #include <Config.h>
 #include <unistd.h>

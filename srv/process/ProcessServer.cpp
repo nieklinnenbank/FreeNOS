@@ -15,13 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <api/IPCMessage.h>                                                       
-#include <api/SystemInfo.h>                                                       
-#include <api/VMCopy.h>
-#include <api/VMCtl.h>
-#include <api/ProcessCtl.h> 
-#include <arch/Memory.h> 
-#include <arch/BootImage.h>
+#include <API/IPCMessage.h>                                                       
+#include <API/SystemInfo.h>                                                       
+#include <API/VMCopy.h>
+#include <API/VMCtl.h>
+#include <API/ProcessCtl.h> 
+#include <FreeNOS/Memory.h> 
+#include <FreeNOS/BootImage.h>
 #include <FileSystemMessage.h>
 #include <LogMessage.h>
 #include <String.h>

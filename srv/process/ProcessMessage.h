@@ -18,7 +18,7 @@
 #ifndef __PROCESS_PROCESSMESSAGE_H
 #define __PROCESS_PROCESSMESSAGE_H
 
-#include <api/IPCMessage.h>
+#include <API/IPCMessage.h>
 #include <Types.h>
 #include <Macros.h>
 #include <Config.h>

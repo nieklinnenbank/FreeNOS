@@ -18,7 +18,7 @@
 #ifndef __BYTEORDER_H
 #define __BYTEORDER_H
 
-#include <arch/CPU.h>
+#include <FreeNOS/CPU.h>
 #include <Macros.h>
 
 /**

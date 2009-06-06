@@ -15,32 +15,43 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <api/PrivExec.h>
-#include <arch/Init.h>
-#include <arch/Interrupt.h>
-#include <arch/Scheduler.h>
-#include <arch/CPU.h>
-#include <Error.h>
+#ifndef __API_PRIVEXEC_H
+#define __API_PRIVEXEC_H
 
-int PrivExecHandler(PrivOperation op)
+#include <FreeNOS/API.h>
+
+/**  
+ * @defgroup kernelapi kernel (API) 
+ * @{  
+ */
+
+/** SystemCall number for PrivExec(). */
+#define PRIVEXEC 3
+
+/**
+ * Available operations to perform using PrivExec().
+ * @see PrivExec
+ */
+typedef enum PrivOperation
 {
-    switch (op)
-    {
-	case Idle:
-	    
-	    scheduler->setIdle(scheduler->current());
-	    irq_enable();
-	    
-	    while (true)
-		idle();
-	
-	case Reboot:
-	    reboot();
-	    
-	default:
-	    ;
-    }
-    return EINVAL;
+    Idle,
+    Reboot,
+    Shutdown,
+}
+PrivOperation;
+
+/**
+ * Prototype for user applications. Performs various priviledged operations.
+ * @param op The operation to perform.
+ * @return Never.
+ */
+inline int PrivExec(PrivOperation op)
+{
+    return trapKernel1(PRIVEXEC, op);
 }
 
-INITAPI(PRIVEXEC, PrivExecHandler)
+/**
+ * @}
+ */
+
+#endif /* __API_PRIVEXEC_H */

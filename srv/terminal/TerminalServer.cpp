@@ -15,10 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <api/IPCMessage.h>
-#include <api/VMCopy.h>
-#include <api/VMCtl.h>
-#include <api/ProcessCtl.h>
+#include <API/IPCMessage.h>
+#include <API/VMCopy.h>
+#include <API/VMCtl.h>
+#include <API/ProcessCtl.h>
 #include <Types.h>
 #include <Version.h>
 #include <IPCServer.h>

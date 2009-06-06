@@ -15,10 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <api/ProcessCtl.h>
-#include <api/IPCMessage.h>
-#include <arch/Init.h>
-#include <arch/Kernel.h>
+#include <API/ProcessCtl.h>
+#include <API/IPCMessage.h>
+#include <FreeNOS/Init.h>
+#include <FreeNOS/Kernel.h>
 #include <Error.h>
 
 void interruptNotify(CPUState *st, ArchProcess *p)

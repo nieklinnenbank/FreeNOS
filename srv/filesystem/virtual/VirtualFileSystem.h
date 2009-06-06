@@ -18,9 +18,9 @@
 #ifndef __FILESYSTEM_VIRTUALFILESYSTEM_H
 #define __FILESYSTEM_VIRTUALFILESYSTEM_H
 
-#include <api/VMCopy.h>
-#include <api/SystemInfo.h>
-#include <arch/Process.h>
+#include <API/VMCopy.h>
+#include <API/SystemInfo.h>
+#include <FreeNOS/Process.h>
 #include <IPCServer.h>
 #include <FileSystem.h>
 #include <FileSystemMessage.h>

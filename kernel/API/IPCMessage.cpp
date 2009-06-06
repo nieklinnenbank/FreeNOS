@@ -15,11 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <api/IPCMessage.h>
-#include <arch/API.h>
-#include <arch/Init.h>
-#include <arch/Memory.h>
-#include <arch/Scheduler.h>
+#include <API/IPCMessage.h>
+#include <FreeNOS/API.h>
+#include <FreeNOS/Init.h>
+#include <FreeNOS/Memory.h>
+#include <FreeNOS/Scheduler.h>
 #include <Config.h>
 #include <Error.h>
 

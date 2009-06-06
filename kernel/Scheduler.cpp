@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <arch/Scheduler.h>
-#include <arch/Init.h>
+#include <FreeNOS/Scheduler.h>
+#include <FreeNOS/Init.h>
 #include <List.h>
 #include <ListIterator.h>
 #include <Macros.h>

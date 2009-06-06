@@ -1,14 +1,16 @@
 [now]
+* Change arch/ to FreeNOS/
 * REGISTER() for target!!! (without __attribute__((constructor)))
-* Compilation on OpenSolaris
+* Compilation on OpenSolaris, OpenBSD
 * libcommon
     --> fix include/ et all???
     --> maybe put all include/api/*.h include/arch/*.h files just in
 	kernel/, and include/*.h in lib/libparse,libalgo(rithm),libcommon,libdata (find a good name).
-* Change arch/ to FreeNOS/
 
 [bugs]
-* We should use standard errno values, instead of e.g. ENOSUPPORT, EINVALID.
+* Fix these warnings:
+    --> site_scons/checksum.py:18: DeprecationWarning: the md5 module is deprecated; use hashlib instead
+    --> site_scons/checksum.py:19: DeprecationWarning: the sha module is deprecated; use the hashlib module instead
 * Some dependencies between source files are missing in the SCons scripts
 * SCons causes a rebuild when we use Glob("*.cpp"): http://scons.tigris.org/issues/show_bug.cgi?id=2419
     --> we use a static list for now.

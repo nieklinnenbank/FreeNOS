@@ -18,7 +18,7 @@
 #ifndef __IMG_MAIN_H
 #define __IMG_MAIN_H
 
-#include <arch/BootImage.h>
+#include <FreeNOS/BootImage.h>
 #include <string.h>
 
 /**

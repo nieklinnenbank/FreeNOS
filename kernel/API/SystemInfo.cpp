@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <api/SystemInfo.h>
+#include <API/SystemInfo.h>
 #include <string.h>
 
 int SystemInfoHandler(SystemInformation *info)

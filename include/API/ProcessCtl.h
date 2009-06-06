@@ -18,8 +18,8 @@
 #ifndef __API_PROCESSCTL_H
 #define __API_PROCESSCTL_H
 
-#include <arch/API.h>
-#include <arch/Process.h>
+#include <FreeNOS/API.h>
+#include <FreeNOS/Process.h>
 #include <Types.h>
 
 /**  

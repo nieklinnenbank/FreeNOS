@@ -19,9 +19,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <Version.h>
+#include <FreeNOS/BootImage.h>
 #include <ExecutableFormat.h>
-#include <arch/BootImage.h>
+#include <Version.h>
 #include "BootEntry.h"
 #include "Main.h"
 

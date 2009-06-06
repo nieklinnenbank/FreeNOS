@@ -18,7 +18,7 @@
 #ifndef __MEMORY_MEMORYMESSAGE_H
 #define __MEMORY_MEMORYMESSAGE_H
 
-#include <api/IPCMessage.h>
+#include <API/IPCMessage.h>
 #include <Types.h>
 #include <Macros.h>
 #include <Error.h>

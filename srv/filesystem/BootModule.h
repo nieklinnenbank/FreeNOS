@@ -18,10 +18,9 @@
 #ifndef __FILESYSTEM_BOOTMODULE_H
 #define __FILESYSTEM_BOOTMODULE_H
 
-#include <api/SystemInfo.h>
-#include <api/VMCtl.h>
-#include <arch/Memory.h>
-#include <string.h>
+#include <API/SystemInfo.h>
+#include <API/VMCtl.h>
+#include <FreeNOS/Memory.h>
 #include <Types.h>
 #include <Error.h>
 #include <Config.h>

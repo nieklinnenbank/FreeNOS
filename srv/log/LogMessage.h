@@ -18,7 +18,7 @@
 #ifndef __LOG_LOGMESSAGE_H
 #define __LOG_LOGMESSAGE_H
 
-#include <api/IPCMessage.h>
+#include <API/IPCMessage.h>
 #include <Types.h>
 #include <Macros.h>
 #include <Error.h>

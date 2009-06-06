@@ -18,7 +18,7 @@
 #ifndef __SERIAL_SERIALDEVICE_H
 #define __SERIAL_SERIALDEVICE_H
 
-#include <api/IPCMessage.h>
+#include <API/IPCMessage.h>
 #include <FileSystemMessage.h>
 #include <Macros.h>
 #include <Types.h>

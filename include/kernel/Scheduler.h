@@ -19,7 +19,7 @@
 #define __KERNEL_SCHEDULER_H
 #ifndef __ASSEMBLER__
 
-#include <arch/Process.h>
+#include <FreeNOS/Process.h>
 #include <List.h>
 #include <ListIterator.h>
 #include <Macros.h>

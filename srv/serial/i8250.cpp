@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <api/ProcessCtl.h>
-#include <arch/CPU.h>
+#include <API/ProcessCtl.h>
+#include <FreeNOS/CPU.h>
 #include <Macros.h>
 #include <Types.h>
 #include <Config.h>

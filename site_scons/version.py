@@ -62,7 +62,7 @@ def regenerateHeader():
 	      '\n' \
 	      '#define COMPILER  "' + build.target['CC'] + ' ' + build.target['CCVERSION'] + '"\n' \
 	      '#define DATETIME  "' + str(datetime.datetime.today()) + '"\n' \
-	      '#define ARCH      "' + os.readlink("include/arch") + '"\n' \
+	      '#define ARCH      "' + os.readlink("include/FreeNOS") + '"\n' \
 	      '\n' \
 	      '#define BUILDUSER "' + os.environ['USER'] + '"\n' \
 	      '#define BUILDHOST "' + platform.node() + '"\n' \

@@ -18,8 +18,8 @@
 #ifndef __FILESYSTEM_FILE_H
 #define __FILESYSTEM_FILE_H
 
-#include <api/VMCopy.h>
-#include <arch/Process.h>
+#include <API/VMCopy.h>
+#include <FreeNOS/Process.h>
 #include <Types.h>
 #include <Error.h>
 #include <sys/stat.h>

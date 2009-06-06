@@ -18,8 +18,8 @@
 #ifndef __API_VMCOPY_H
 #define __API_VMCOPY_H
 
-#include <arch/Process.h>
-#include <arch/API.h>
+#include <FreeNOS/Process.h>
+#include <FreeNOS/API.h>
 
 /**  
  * @defgroup kernelapi kernel (API) 

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <arch/Memory.h>
+#include <FreeNOS/Memory.h>
 #include <Types.h>
 #include <Macros.h>
 #include <Init.h>

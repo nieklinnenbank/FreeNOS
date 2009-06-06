@@ -18,7 +18,7 @@
 #ifndef __FILESYSTEM_DEVICE_H
 #define __FILESYSTEM_DEVICE_H
 
-#include <api/VMCopy.h>
+#include <API/VMCopy.h>
 #include <Types.h>
 #include <Error.h>
 #include "File.h"

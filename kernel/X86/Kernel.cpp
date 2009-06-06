@@ -15,12 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <arch/Kernel.h>
-#include <arch/CPU.h>
-#include <arch/API.h>
-#include <arch/Init.h>
-#include <arch/Interrupt.h>
-#include <arch/Scheduler.h>
+#include <FreeNOS/Kernel.h>
+#include <FreeNOS/CPU.h>
+#include <FreeNOS/API.h>
+#include <FreeNOS/Init.h>
+#include <FreeNOS/Interrupt.h>
+#include <FreeNOS/Scheduler.h>
 #include <Macros.h>
 #include <List.h>
 #include <ListIterator.h>

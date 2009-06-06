@@ -18,7 +18,7 @@
 #ifndef __FILESYSTEM_DIRECTORY_H
 #define __FILESYSTEM_DIRECTORY_H
 
-#include <api/VMCopy.h>
+#include <API/VMCopy.h>
 #include <dirent.h>
 #include <List.h>
 #include "File.h"
