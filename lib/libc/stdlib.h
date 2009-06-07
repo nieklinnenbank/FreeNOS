@@ -93,6 +93,38 @@ extern C int atoi(const char *nptr);
 extern C long strtol(const char *nptr, char **endptr, int base);
 
 /**
+ * @brief A memory allocator
+ *
+ * The malloc() function shall allocate unused space for an object whose
+ * size in bytes is specified by size and whose value is unspecified.
+ *
+ * @param size Number of bytes to allocate.
+ * @return Upon successful completion with size not equal to 0, malloc()
+ *         shall return a pointer to the allocated space. If size is 0,
+ *         either a null pointer or a unique pointer that can be
+ *         successfully passed to free() shall be returned. Otherwise,
+ *         it shall return a null pointer [CX] [Option Start]  and set
+ *         errno to indicate the error.
+ */
+extern C void * malloc(size_t size);
+
+/**
+ * @brief Free allocated memory
+ *
+ * The free() function shall cause the space pointed to by ptr to be
+ * deallocated; that is, made available for further allocation. If ptr
+ * is a null pointer, no action shall occur. Otherwise, if the argument
+ * does not match a pointer earlier returned by a function in POSIX.1-2008
+ * that allocates memory as if by malloc(), or if the space has been
+ * deallocated by a call to free() or realloc(), the behavior is undefined.
+ * Any use of a pointer that refers to freed space results in undefined behavior.
+ *
+ * @param ptr Previously allocated memory to free.
+ * @return The free() function shall not return a value.
+ */
+extern C void free(void *ptr);
+
+/**
  * @}
  */
 

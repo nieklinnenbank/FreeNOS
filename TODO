@@ -3,7 +3,6 @@
 * REGISTER() for target!!! (without __attribute__((constructor)))
 * Compilation on OpenSolaris, OpenBSD
 * libc: malloc()
-* Warnings with GCC 3.4.X
 * llvm-gcc and gcc45 on FreeBSD --> problem in X86Process::execute()!!!
     --> and linker needs to be updated aswell. See beastie vm.
 * libcommon
@@ -57,6 +56,9 @@
 * Implement touch(1) and mkdir(1) and cd(1)
 
 [servers]
+* Place in the BootImage a flag whether to start or not start a BootProgram via the kernel.
+  A BootServer can then control the boot order of the servers... (idea from JariOS)
+    --> why not let /sbin/init do this? :-)
 * logging daemon: ALL logging goes through this one, including (u)tmp etc.
 * Faults -> process manager must receive the Fault message! e.g. use faultPID or so???
 * Implement the notion of "current directory" in VirtualFileSystem.
