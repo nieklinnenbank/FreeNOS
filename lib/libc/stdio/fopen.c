@@ -15,11 +15,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <fcntl.h>
 #include <sys/types.h>
+#include "stdio.h"
 #include "stdlib.h"
 #include "errno.h"
 
-void free(void *ptr)
+FILE * fopen(const char *filename,
+             const char *mode)
 {
-    delete (char *) ptr;
+    FILE *f;
+
+    /* Handle the file stream request. */
+    switch (*mode)
+    {
+	/* Read. */
+	case 'r':
+	    f = malloc(sizeof(FILE));
+	    f->fd = open(filename, ZERO);
+	    return f;
+
+	/* Unsupported. */	
+	default:
+	    break;
+    }
+    /* Sorry, not available yet! */
+    errno = ENOTSUP;
+    return NULL;
 }

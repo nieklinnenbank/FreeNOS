@@ -15,11 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <sys/types.h>
+#include <unistd.h>
+#include "stdio.h"
 #include "stdlib.h"
 #include "errno.h"
 
-void free(void *ptr)
+int fclose(FILE *stream)
 {
-    delete (char *) ptr;
+    /* Close and free. */
+    close(stream->fd);
+    free(stream);
+    
+    /* Success. */
+    errno = 0;
+    return 0;
 }

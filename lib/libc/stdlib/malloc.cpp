@@ -16,6 +16,7 @@
  */
 
 #include <sys/types.h>
+#include "stdlib.h"
 #include "errno.h"
 
 void * malloc(size_t size)
