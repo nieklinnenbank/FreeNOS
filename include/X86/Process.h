@@ -91,6 +91,20 @@ class X86Process : public Process
 	Address ioMapAddr;
 };
 
+/**
+ * Assembly routine which performs context switches.
+ * @param oldStackPtr Pointer to the stackAddr of the currently running X86Process, if any.
+ * @param pageDirAddr Address of the page directory.
+ * @param stackAddr Address of the user stack.
+ * @param kernelTss Pointer to the kernel's TSS.
+ * @param kernelStackAddr Address of the kernel stack.
+ * @see TSS
+ * @see contextSwitch.S
+ */
+extern C void contextSwitch(Address *oldStack,  Address pageDirAddr,
+			    Address  stackAddr, TSS *kernelTss,
+			    Address  kernelStackAddr);
+
 #endif /* __cplusplus */
 #endif /* __ASSEMBLY__ */
 

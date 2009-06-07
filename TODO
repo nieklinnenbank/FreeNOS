@@ -3,6 +3,8 @@
 * REGISTER() for target!!! (without __attribute__((constructor)))
 * Compilation on OpenSolaris, OpenBSD
 * llvm-gcc and gcc45 on FreeBSD --> problem in X86Process::execute()!!!
+    --> maybe we should implement X86Process::execute() in assembly... it seems problematic
+        among different versions of compilers...
     --> and linker needs to be updated aswell. See beastie vm.
 * libcommon
     --> fix include/ et all???

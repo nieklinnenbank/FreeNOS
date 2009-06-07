@@ -113,59 +113,11 @@ void X86Process::execute()
     /* Refresh I/O bitmap. */
     memory->mapVirtual(ioMapAddr, (Address) &kernelioBitMap);
 
-    /* Saves the current process state. */
-    if (scheduler->old())
-    {
-	asm volatile
-	(
-	    /* Setup stack for IRETD later on. */
-	    "pushf\n"
-	    "push %%cs\n"
-	    "push $resume\n"
-
-	    /* Save registers on the current stack (CPUState). */
-	    "pushl $0\n"
-	    "pushl $0\n"
-	    "pusha\n"
-	    "pushl %%ss\n"
-	    "pushl %%ds\n"
-	    "pushl %%es\n"
-	    "pushl %%fs\n"
-	    "pushl %%gs\n"
-
-	    /* Save current stack pointer. */
-	    "pushl %%esp\n"
-	    "popl %%eax\n"
-	    "movl %%eax, %0\n" : "=r"(scheduler->old()->stackAddr)
-	);
-    }
-    /* Reload page directory, stack and TSS. */
-    asm volatile
-    (
-	"movl %%eax, %%cr3\n"
-	"movl %%edx, 4(%%ecx)\n"
-	"movl $0x10, 8(%%ecx)\n"
-	"movl %%ebx, %%esp\n"
-	:: "a"(pageDirAddr),
-	   "b"(stackAddr),
-	   "c"(&kernelTss),
-	   "d"(kernelStackAddr)
-    );
-    /* Restores the old process state. */
-    asm volatile
-    (
-	/* Restore registers. */
-	"popl %gs\n"
-	"popl %fs\n"
-	"popl %es\n"
-	"popl %ds\n"
-	"popl %ss\n"
-	"popa\n"
-	"addl $8, %esp\n"
-	
-	/* Resume execution. */
-	"iret\n"
-	"\n"
-	"resume:\n"
-    );
+    /* Perform a context switch. */
+    contextSwitch( scheduler->old() ? &scheduler->old()->stackAddr
+				    :  ZERO,
+		   pageDirAddr,
+		   stackAddr,
+		  &kernelTss,
+		   kernelStackAddr);
 }
