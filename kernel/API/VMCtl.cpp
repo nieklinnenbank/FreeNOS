@@ -19,8 +19,8 @@
 #include <Error.h>
 #include <Config.h>
 
-Address VMCtlHandler(Operation action, ProcessID procID, Address paddr,
-		     Address vaddr, ulong prot = PAGE_PRESENT|PAGE_USER|PAGE_RW)
+Error VMCtlHandler(Operation action, ProcessID procID, Address paddr,
+		   Address vaddr, ulong prot = PAGE_PRESENT|PAGE_USER|PAGE_RW)
 {
     ArchProcess *proc = ZERO;
     Address page = ZERO;
@@ -32,8 +32,9 @@ Address VMCtlHandler(Operation action, ProcessID procID, Address paddr,
     }
     switch (action)
     {
-	case Lookup:    
-	    return memory->lookupVirtual(proc, vaddr);
+	case Lookup:
+	    return ENOTSUP;
+	    // TODO: return memory->lookupVirtual(proc, vaddr);
 
 	case Map:
 	    /* Map the memory page. */

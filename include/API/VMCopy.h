@@ -20,6 +20,7 @@
 
 #include <FreeNOS/Process.h>
 #include <FreeNOS/API.h>
+#include <Error.h>
 
 /**  
  * @defgroup kernelapi kernel (API) 
@@ -36,9 +37,9 @@
  * @param ours Virtual address of the buffer of this process.
  * @param theirs Virtual address of the remote process' buffer.
  * @param sz Amount of memory to copy.
- * @return Total number of bytes copied.
+ * @return Total number of bytes copied on success and error code on failure.
  */
-inline int VMCopy(ProcessID proc, Action how, Address ours, Address theirs, Size sz)
+inline Error VMCopy(ProcessID proc, Action how, Address ours, Address theirs, Size sz)
 {
     return trapKernel5(VMCOPY, proc, how, ours, theirs, sz);
 }

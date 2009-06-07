@@ -189,10 +189,8 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 		    }
 		    break;
 		
-		case ReadFile:
-		case WriteFile:
-		case CloseFile:
-		
+		default:
+
 		    /* Simply use the message identity. */
 		    f = (File *) msg->ident;
 	    }

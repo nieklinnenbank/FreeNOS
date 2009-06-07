@@ -101,7 +101,7 @@ class SerialDevice
 	 * @param size Number of bytes to read.
 	 * @return Number of bytes on success and ZERO on failure.
 	 */
-	virtual Size read(s8 *buffer, Size size)
+	virtual Error read(s8 *buffer, Size size)
 	{
 	    return ENOTSUP;
 	}
@@ -112,7 +112,7 @@ class SerialDevice
 	 * @param size Number of bytes to write.
 	 * @return Number of bytes on success and ZERO on failure.
 	 */	
-	virtual Size write(s8 *buffer, Size size)
+	virtual Error write(s8 *buffer, Size size)
 	{
 	    return ENOTSUP;
 	}

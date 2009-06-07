@@ -55,7 +55,7 @@ i8250::i8250(u16 b, u16 i)
     outb(base + LINECONTROL, inb(base + LINECONTROL) & ~DLAB);
 }
 
-Size i8250::read(s8 *buffer, Size size)
+Error i8250::read(s8 *buffer, Size size)
 {
     Size bytes = 0;
     
@@ -67,7 +67,7 @@ Size i8250::read(s8 *buffer, Size size)
     return (bytes);
 }
 								     
-Size i8250::write(s8 *buffer, Size size)
+Error i8250::write(s8 *buffer, Size size)
 {
     Size bytes = 0;
 

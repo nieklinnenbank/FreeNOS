@@ -62,7 +62,7 @@ class i8250 : public SerialDevice
 	 * @param size Number of bytes to read.
 	 * @return Number of bytes on success and ZERO on failure. 
 	 */
-	Size read(s8 *buffer, Size size);
+	Error read(s8 *buffer, Size size);
 
 	/** 
 	 * Write bytes to the device.
@@ -70,7 +70,7 @@ class i8250 : public SerialDevice
 	 * @param size Number of bytes to write. 
 	 * @return Number of bytes on success and ZERO on failure. 
 	 */
-	Size write(s8 *buffer, Size size);
+	Error write(s8 *buffer, Size size);
 };
 
 #endif /* __SERIAL_I8250_H */

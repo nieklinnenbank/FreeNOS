@@ -45,7 +45,7 @@ ssize_t read(int fildes, void *buf, size_t nbyte)
     errno = fs.result;
     
     /* Success. */
-    return errno == ESUCCESS ? fs.size : -1;
+    return errno == ESUCCESS ? fs.size : (ssize_t) -1;
 }
 
 ssize_t write(int fildes, const void *buf, size_t nbyte)
@@ -60,7 +60,7 @@ ssize_t write(int fildes, const void *buf, size_t nbyte)
     errno = fs.result;
     
     /* Give the result back. */
-    return errno == ESUCCESS ? fs.size : -1;
+    return errno == ESUCCESS ? fs.size : (ssize_t) -1;
 }
 
 int close(int fildes)

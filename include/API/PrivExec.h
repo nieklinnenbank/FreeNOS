@@ -19,6 +19,8 @@
 #define __API_PRIVEXEC_H
 
 #include <FreeNOS/API.h>
+#include <Error.h>
+#include <Types.h>
 
 /**  
  * @defgroup kernelapi kernel (API) 
@@ -43,9 +45,9 @@ PrivOperation;
 /**
  * Prototype for user applications. Performs various priviledged operations.
  * @param op The operation to perform.
- * @return Never.
+ * @return Zero on success and error code on failure.
  */
-inline int PrivExec(PrivOperation op)
+inline Error PrivExec(PrivOperation op)
 {
     return trapKernel1(PRIVEXEC, op);
 }

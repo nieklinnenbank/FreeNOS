@@ -27,11 +27,9 @@
  */
 
 /**
- * Expands to a modifiable lvalue that has type int,
- * the value of which is set to a posivite error number
- * by several library functions.
+ * The lvalue errno is used by many functions to return error values.
  */
-extern C Size errno;
+extern C int errno;
 
 /**
  * Contains a array of character strings, representing errno values.

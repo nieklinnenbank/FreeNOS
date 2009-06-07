@@ -18,7 +18,7 @@
 #include <Macros.h>
 #include "errno.h"
 
-Size errno USED = 0;
+int errno USED = 0;
 
 char * error_map[] USED =
 {

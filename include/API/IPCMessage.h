@@ -49,9 +49,9 @@ class Message;
  * @param action Either Send or Receive.
  * @param msg Message buffer.
  * @param sz Size of message.
- * @return Instance of a SystemInfo object.
+ * @return Zero on success and error code on failure.
  */
-inline int IPCMessage(ProcessID proc, Action action, Message *msg, Size sz)
+inline Error IPCMessage(ProcessID proc, Action action, Message *msg, Size sz)
 {
     return trapKernel4(IPCMESSAGE, proc, action, (ulong) msg, sz);
 }

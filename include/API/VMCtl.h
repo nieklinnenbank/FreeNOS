@@ -21,6 +21,7 @@
 #include <FreeNOS/Process.h>
 #include <FreeNOS/API.h>
 #include <FreeNOS/Memory.h>
+#include <Error.h>
 #include <Types.h>
 
 /**  
@@ -38,10 +39,10 @@
  * @param paddr Physical address which we map. ZERO to pick a free paddr.
  * @param vaddr Virtual address to map paddr.
  * @param prot Protection bits. Set PAGE_PRESENT to allocate, ~PAGE_PRESENT to release.
- * @return New physical address for of the mapping.
+ * @return Zero on success or error code on failure.
  */
-inline Address VMCtl(Action action, ProcessID proc, Address paddr,
-		     Address vaddr, ulong prot = PAGE_PRESENT|PAGE_USER|PAGE_RW)
+inline Error VMCtl(Action action, ProcessID proc, Address paddr,
+		   Address vaddr, ulong prot = PAGE_PRESENT|PAGE_USER|PAGE_RW)
 {
     return trapKernel5(VMCTL, action, proc, paddr, vaddr, prot);
 }

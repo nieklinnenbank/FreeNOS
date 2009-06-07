@@ -44,7 +44,7 @@ class SystemInformation;
  * Prototype for user applications. Retrieves system information.
  * @param buf Target buffer.
  */
-inline int SystemInfo(SystemInformation *info)
+inline Error SystemInfo(SystemInformation *info)
 {
     return trapKernel1(SYSTEMINFO, (Address) info);
 }

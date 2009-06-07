@@ -20,6 +20,7 @@
 
 #include <FreeNOS/API.h>
 #include <FreeNOS/Process.h>
+#include <Error.h>
 #include <Types.h>
 
 /**  
@@ -61,9 +62,9 @@ typedef struct ProcessInfo
  * @param op The operation to perform.
  * @param addr Argument address, used for program entry point for Spawn,
  *             ProcessInfo pointer for Info.
- * @return Never.
+ * @return Zero on success and error code on failure.
  */
-inline int ProcessCtl(ProcessID proc, ProcessOperation op, Address addr = 0)
+inline Error ProcessCtl(ProcessID proc, ProcessOperation op, Address addr = 0)
 {
     return trapKernel3(PROCESSCTL, proc, op, addr);
 }
