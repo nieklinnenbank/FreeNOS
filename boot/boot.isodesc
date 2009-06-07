@@ -1,6 +1,5 @@
-/boot/grub/stage1
-/boot/grub/stage2
-/boot/grub/stage2_eltorito
+./boot/grub/stage1
+./boot/grub/stage2_eltorito
 ./boot/boot.ext2
 ./boot/boot.img
 ./boot/grub/menu.lst
