@@ -39,7 +39,7 @@ targetVars.AddVariables(
     ('LINK',      'Set the target linker to use',       cross + 'ld'),
     ('CCFLAGS',   'Change target C compiler flags',
 		[ '-O0', '-g3', '-nostdinc', '-Wall', '-Werror',
-		  '-fno-builtin', '-Wno-write-strings', '-Wno-stack-protector' ]),
+		  '-fno-builtin', '-Wno-write-strings', '-fno-stack-protector' ]),
     ('CXXFLAGS',  'Change target C++ compiler flags',
 		[ '-fno-rtti', '-fno-exceptions', '-nostdinc' ]),
     ('CPPFLAGS',  'Change target C preprocessor flags', '-isystem include'),

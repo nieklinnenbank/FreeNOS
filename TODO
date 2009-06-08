@@ -2,7 +2,6 @@
 * Supported targets/hosts tables @ freenos.org
 * REGISTER() for target!!! (without __attribute__((constructor)))
 * Compilation on OpenSolaris, OpenBSD
-* libc: malloc()
 * llvm-gcc and gcc45 on FreeBSD --> problem in X86Process::execute()!!!
     --> and linker needs to be updated aswell. See beastie vm.
 * libcommon
@@ -34,14 +33,11 @@
   the boot modules to use /dev/serial0 as the system console! :)
 
 [libraries]
-* libc: Buffered I/O in libc: fopen() fread() fwrite() fclose() etc.
 * libparse: generic parser library, usefull for the Shell too! :)
-
     --> CommandLine
     --> StringParser, CommandLineParser, URLParser, ConfigurationParser
 	XMLParser, RegexParser, HTTPParser, HTMLParser, ...
     --> URLParser may replace FileSystemPath aswell! :)
-
 * libc: %NUMs formats support
 * libposix:
     --> try to fork()
