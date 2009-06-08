@@ -67,7 +67,7 @@ int Shell::run()
 	if (!(cmd = ShellCommand::byName(argv[0])))
 	{
 	    /* If not, try to execute it as a file. */
-	    if (execv(argv[0], (const char **) argv))
+	    if (forkexec(argv[0], (const char **) argv))
 	    {
 		printf("execv '%s' failed: %s\n", argv[0],
 			strerror(errno));

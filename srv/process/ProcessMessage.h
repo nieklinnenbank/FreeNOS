@@ -31,9 +31,10 @@ class UserProcess;
  */
 typedef enum ProcessAction
 {
-    GetID       = 0,
-    ReadProcess = 1,
-    ExitProcess = 2,
+    GetID        = 0,
+    ReadProcess  = 1,
+    ExitProcess  = 2,
+    SpawnProcess = 3,
 }
 ProcessAction;
 
@@ -100,8 +101,11 @@ typedef struct ProcessMessage : public Message
     /** Input/Output buffer for ReadProcess. */
     UserProcess *buffer;
 
+    /** Path to an executable program. */
+    char *path;
+
     /** Unused. */
-    ulong unused[3];
+    ulong unused[2];
 }
 ProcessMessage;
 

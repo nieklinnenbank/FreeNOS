@@ -73,6 +73,12 @@ class ProcessServer : public IPCServer<ProcessServer, ProcessMessage>
 	 * @param msg Incoming message.
 	 */
 	void exitProcessHandler(ProcessMessage *msg);
+	
+	/**
+	 * Create a process.
+	 * @param msg Incoming message.
+	 */
+	void spawnProcessHandler(ProcessMessage *msg);
 
 	/** User Process table. */
 	static UserProcess procs[MAX_PROCS];

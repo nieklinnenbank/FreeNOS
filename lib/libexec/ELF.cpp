@@ -130,3 +130,5 @@ Address ELF::entry()
 {
     return header.entry;
 }
+
+INITCLASS(ELF,__register_ELFdetect, "999")

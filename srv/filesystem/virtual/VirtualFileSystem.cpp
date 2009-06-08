@@ -113,6 +113,7 @@ void VirtualFileSystem::ioHandler(FileSystemMessage *msg)
 	case ReadFile:
 	case WriteFile:
 	case CloseFile:
+	case SeekFile:
 
 	    /* Do we have this fd? */
 	    if (!(fd = (*procs[msg->from].files)[msg->fd]))
@@ -126,6 +127,15 @@ void VirtualFileSystem::ioHandler(FileSystemMessage *msg)
 		msg->ident  = fd->identifier;
 	    }
 	    fsID = fd->mount->procID;
+	    
+	    /* Change file descriptor pointer, for SeekFile. */
+	    if (msg->action == SeekFile)
+	    {
+		fd->position = msg->offset;
+		msg->error(ESUCCESS);
+		return;
+	    }
+	    
 	    break;
 
 	default:

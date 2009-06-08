@@ -23,7 +23,9 @@
 #include <FreeNOS/Memory.h> 
 #include <FreeNOS/BootImage.h>
 #include <FileSystemMessage.h>
+#include <FileSystem.h>
 #include <LogMessage.h>
+#include <ExecutableFormat.h>
 #include <String.h>
 #include <stdio.h>
 #include "ProcessMessage.h"
@@ -42,9 +44,10 @@ ProcessServer::ProcessServer()
     Size numProcs = 0;
 
     /* Register message handlers. */
-    addIPCHandler(GetID,       &ProcessServer::getIDHandler);
-    addIPCHandler(ReadProcess, &ProcessServer::readProcessHandler);
-    addIPCHandler(ExitProcess, &ProcessServer::exitProcessHandler, false);
+    addIPCHandler(GetID,        &ProcessServer::getIDHandler);
+    addIPCHandler(ReadProcess,  &ProcessServer::readProcessHandler);
+    addIPCHandler(ExitProcess,  &ProcessServer::exitProcessHandler, false);
+    addIPCHandler(SpawnProcess, &ProcessServer::spawnProcessHandler);
 
     /* Fixup process table, with BootPrograms from each BootImage. */
     for (Size i = 0; i < info.moduleCount; i++)
@@ -122,4 +125,48 @@ void ProcessServer::exitProcessHandler(ProcessMessage *msg)
 
     /* Ask kernel to terminate the process. */
     ProcessCtl(msg->from, KillPID);
+}
+
+void ProcessServer::spawnProcessHandler(ProcessMessage *msg)
+{
+    char path[PATHLEN];
+    FileSystemMessage fs;
+    ExecutableFormat *fmt;
+
+    /* Read out the path to the executable. */
+    if ((msg->result = VMCopy(msg->from, Read, (Address) path,
+                             (Address) msg->path, PATHLEN) < 0))
+    {
+        return;
+    }
+    /* Attempt to read executable format. */
+    if (!(fmt = ExecutableFormat::find(path)))
+    {
+	msg->result = errno;
+	return;
+    }
+    /* Create new process. */
+    msg->number = ProcessCtl(ANY, Spawn, 0x80000000);
+    msg->result = ENOBUFS;
+    log("PID %u created\n", msg->number);
+
+    /* Set command-line string. */
+    snprintf(procs[msg->number].command, COMMANDLEN,
+             "%s", path);
+
+    /* Inherit user and group identities. */
+    procs[msg->number].uid = procs[msg->from].uid;
+    procs[msg->number].gid = procs[msg->from].gid;
+
+    /* Inform VFS. */
+    fs.newProcess(msg->number, procs[msg->number].uid,
+    			       procs[msg->number].gid);
+
+    //
+    // TODO: map the program sections into virtual memory
+    //       of the new process.
+
+    /* Success. */
+    msg->result = ESUCCESS;
+
 }

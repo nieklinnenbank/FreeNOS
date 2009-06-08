@@ -83,12 +83,35 @@ int close(int fildes)
 
 off_t lseek(int fildes, off_t offset, int whence)
 {
-    errno = ENOTSUP;
-    return (off_t) -1;
+    FileSystemMessage fs;
+    
+    /* Ask for the seek. */
+    errno = fs.seekFile(fildes, offset, whence);
+    
+    /* Done. */
+    return errno == ESUCCESS ? 0 : (off_t) -1;
 }
 
 int execv(const char *path, const char *argv[])
 {
     ExecutableFormat *fmt = ExecutableFormat::find(path);
     return fmt ? 0 : -1;
+}
+
+int forkexec(const char *path, const char *argv[])
+{
+    ProcessMessage msg;
+    
+    /* We want to spawn a new process. */
+    msg.action = SpawnProcess;
+    msg.path   = (char *) path;
+    
+    /* Ask process server. */
+    IPCMessage(PROCSRV_PID, SendReceive, &msg, sizeof(msg));
+
+    /* Set errno. */
+    errno = msg.result;
+    
+    /* All done. */
+    return errno == ESUCCESS ? 0 : -1;
 }

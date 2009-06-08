@@ -42,7 +42,7 @@ int ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
 	}
     }
     /* Does the target process exist? */
-    if(action != GetPID && !(proc = Process::byID(procID)))
+    if(action != GetPID && action != Spawn && !(proc = Process::byID(procID)))
     {
 	return ESRCH;
     }
@@ -50,7 +50,8 @@ int ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
     switch (action)
     {
 	case Spawn:
-	    return EINVAL;
+	    proc = new ArchProcess(addr);
+	    return proc->getID();
 	
 	case KillPID:
 	    delete proc;

@@ -71,13 +71,13 @@ class ELF : public ExecutableFormat
 	 */
 	static ExecutableFormat * detect(const char *path);
 
-    private:
-
 	/**
 	 * Registers us to the ExecutableFormat::formats list.
 	 * @see ExecutableFormat
 	 */
 	REGISTER(formats, ELF, detect)
+
+    private:
 
 	/** File descriptor of the ELF executable. */
 	int fd;

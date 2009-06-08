@@ -134,6 +134,15 @@ extern C off_t lseek(int fildes, off_t offset, int whence);
 extern C int execv(const char *path, const char *argv[]);
 
 /**
+ * @brief Create a new process and execute program.
+ * @param path File to execute.
+ * @param argv Argument list pointer.
+ * @return Zero on success and -1 on failure. Errno is set with the
+ *         appropriate error code on failure.
+ */
+extern C int forkexec(const char *path, const char *argv[]);
+
+/**
  * @}
  */
 

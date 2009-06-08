@@ -33,15 +33,16 @@ typedef enum FileSystemAction
     OpenFile    = 1,
     ReadFile    = 2,
     WriteFile   = 3,
-    StatFile    = 4,
-    ChangeFile  = 5,
-    CloseFile   = 6,
-    Mount	= 7,
-    Unmount	= 8,
-    MountInfo   = 9,
-    NewProcess  = 10,
-    KillProcess = 11,
-    IODone      = 12,
+    SeekFile    = 4,
+    StatFile    = 5,
+    ChangeFile  = 6,
+    CloseFile   = 7,
+    Mount	= 8,
+    Unmount	= 9,
+    MountInfo   = 10,
+    NewProcess  = 11,
+    KillProcess = 12,
+    IODone      = 13,
 }
 FileSystemAction;
 
@@ -184,6 +185,23 @@ typedef struct FileSystemMessage : public Message
 	offset = off;
 	ipc(pid, SendReceive, sizeof(*this));
 	return result == ESUCCESS ? size : result;
+    }
+
+    /**
+     * Moves the filepointer of a file.
+     * @param fd File descriptor
+     * @param off Offset to move to.
+     * @param how Determines how to move the file descriptor.
+     * @return Error code of the seek operation.
+     */
+    Error seekFile(int fd, Size off, int how, ProcessID pid = VFSSRV_PID)
+    {
+	action = SeekFile;
+	offset = offset;
+	// TODO: use the how argument!
+	// size = how;
+	ipc(pid, SendReceive, sizeof(*this));
+	return result;
     }
 
     /**
