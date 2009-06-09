@@ -46,6 +46,9 @@
   the boot modules to use /dev/serial0 as the system console! :)
 
 [libraries]
+* libregex: parse pattern through libparse
+    --> build support for []
+    --> build support for the rest
 * libposix: separate functions into different .c/.cpp files, like libc!
 * libparse: generic parser library, usefull for the Shell too! :)
     --> CommandLine

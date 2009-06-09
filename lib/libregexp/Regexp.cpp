@@ -17,8 +17,21 @@
 
 #include "Regexp.h"
 
-Regexp::Regexp() {}
-
 Regexp::Regexp(String& pattern) : _pattern(*pattern) {}
 
 Regexp::Regexp(const char* pattern) : _pattern(pattern) {}
+
+bool Regexp::match(String& subject)
+{
+    return match(*subject);
+}
+
+bool Regexp::match(char* subject)
+{
+    return false;
+}
+
+const char* Regexp::getPattern()
+{
+    return _pattern;
+}

@@ -18,25 +18,47 @@
 #ifndef __LIBREGEXP_REGEXP_H
 #define __LIBREGEXP_REGEXP_H
 
-#include "String.h"
-#include "string.h"
+#include <String.h>
+#include <string.h>
 
 /**
- * This class privides regexp functionality
+ * This class privides regexp functionality.
+ * This implementation currently only supports []
  */
 class Regexp
 {
     public:
     
 	/**
-	 * Default constructor.
+	 * Constructor that takes a String that contains the
+	 * pattern to match other strings to.
 	 */
-	Regexp();
-	
 	Regexp(String& pattern);
 	
+	/**
+	 * Constructor that takes a char* that contains the
+	 * pattern to match other strings to.
+	 */
 	Regexp(const char* pattern);
-
+	
+	/**
+	 * Matches the given subject to the pattern
+	 * and returns whether that succeeded.
+	 */
+	bool match(String& subject);
+	
+	/**
+	 * Matches the given subject to the pattern
+	 * and returns whether that succeeded.
+	 */
+	bool match(char* subject);
+	
+	/**
+	 * Returns the pattern this Regex matches 
+	 * subjects to.
+	 */
+	const char* getPattern();
+	
     private:
 
 	const char* _pattern;
