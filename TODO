@@ -1,6 +1,5 @@
 [now]
-* Implement wait()
-    --> just in the ProcessServer: wait for an incoming exit() :-)
+* GCC 4.3.1-r1 fails to boot on gentoo!!! (Freeze)
 * REGISTER() for target!!! (without __attribute__((constructor)))
     --> remove temporary line from libexec/ELF.cpp:
 	--> INITCLASS(ELF,__register_ELFdetect, "999")

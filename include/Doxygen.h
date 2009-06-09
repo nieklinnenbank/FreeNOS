@@ -33,13 +33,21 @@
  *
  * $ scons iso
  *
- * @section booting Booting immediately
+ * @section booting Booting with Curses console
  *
- * $ scons fqemu
+ * $ scons cqemu
  *
- * @section debugging Debugging
+ * @section booting Booting with SDL console
+ *
+ * $ scons sqemu
+ *
+ * @section debugging Booting with debugger
  *
  * $ scons qemu
+ *
+ * @section cleaning Cleaning up
+ *
+ * $ scons -c .
  *
  * @section snapshots Creating a snapshot
  *
