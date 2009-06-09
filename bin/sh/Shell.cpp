@@ -74,9 +74,11 @@ int Shell::run()
 	    {
 		waitpid(pid, &status, 0);
 	    }
-	    /* Try to find it on the livecd filesystem. */
-	    else if ( snprintf(tmp, sizeof(tmp), "/img/bin/%s/%s", argv[0], argv[0]) &&
-	            ((pid = forkexec(tmp, (const char **) argv)) >= 0))
+	    /* Try to find it on the livecd filesystem. (temporary hardcoded PATH) */
+	    else if ((snprintf(tmp, sizeof(tmp), "/img/bin/%s/%s",  argv[0], argv[0]) &&
+	            ((pid = forkexec(tmp, (const char **) argv)) >= 0)) ||
+		     (snprintf(tmp, sizeof(tmp), "/img/sbin/%s/%s", argv[0], argv[0]) &&
+	            ((pid = forkexec(tmp, (const char **) argv)) >= 0)))
 	    {
 		waitpid(pid, &status, 0);
 	    }

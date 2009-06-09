@@ -22,10 +22,16 @@
 
 int HelpCommand::execute(Size nparams, char **params)
 {
+    printf("List of builtin Shell commands:\r\n\r\n");
+
     for (HashIterator<String, ShellCommand> i(&commands); i.hasNext(); i++)
     {
 	printf("%s -- %s\r\n", i.current()->getName(), i.current()->help());
     }
+    printf("\r\n");
+    printf("Type 'ls /img/bin' to see available user commands\r\n");
+    printf("Type 'ls /img/sbin' to see available system commands\r\n");
+    
     return 0;
 }
 

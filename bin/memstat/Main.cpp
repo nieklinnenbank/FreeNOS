@@ -17,12 +17,18 @@
 
 #include <MemoryMessage.h>
 #include <stdio.h>
-#include "MemstatCommand.h"
+#include <stdlib.h>
+#include <fcntl.h>
 
-int MemstatCommand::execute(Size nparams, char **params)
+int main(int argc, char **argv)
 {
     MemoryMessage mem;
-        
+
+    /* Initialize terminal as standard I/O. */
+    for (int i = 0; i < 3; i++)
+    {
+        while (open("/dev/tty0", ZERO) < 0);
+    }
     /* Query memory usage stats. */
     mem.usage();
     
@@ -30,8 +36,7 @@ int MemstatCommand::execute(Size nparams, char **params)
     printf("Total:     %u KB\r\n"
            "Available: %u KB\r\n",
            mem.bytes / 1024, mem.bytesFree / 1024);
-
-    return 0;
+    
+    /* Done. */
+    exit(EXIT_SUCCESS);
 }
-
-INITOBJ(MemstatCommand, memstatCmd, DEFAULT)

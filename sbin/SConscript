@@ -15,4 +15,4 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-SConscript(dirs = ['init', 'img'] )
+SConscript(dirs = [ 'init', 'img', 'reboot' ] )

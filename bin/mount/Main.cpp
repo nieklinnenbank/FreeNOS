@@ -20,13 +20,19 @@
 #include <VirtualFileSystem.h>
 #include <Config.h>
 #include <stdio.h>
-#include "MountCommand.h"
+#include <stdlib.h>
+#include <fcntl.h>
 
-int MountCommand::execute(Size nparams, char **params)
+int main(int argc, char **argv)
 {
     FileSystemMessage msg;
     FileSystemMount mounts[MAX_MOUNTS];
-    
+
+    /* Initialize terminal as standard I/O. */
+    for (int i = 0; i < 3; i++)
+    {
+        while (open("/dev/tty0", ZERO) < 0);
+    }
     /* Ask filesystem for active mounts. */
     msg.action = MountInfo;
     msg.buffer = (char *) &mounts;
@@ -42,7 +48,5 @@ int MountCommand::execute(Size nparams, char **params)
             printf("%s\r\n", mounts[i].path);
     }
     /* Success. */
-    return 0;
+    exit(EXIT_SUCCESS);
 }
-
-INITOBJ(MountCommand, mountCmd, DEFAULT)

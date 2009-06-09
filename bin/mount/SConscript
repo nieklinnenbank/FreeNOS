@@ -15,4 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-SConscript(dirs = [ 'sh', 'ps', 'memstat', 'mount', 'bench', 'hostname' ])
+from build import *
+
+env = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc' ],
+		      [ 'filesystem', 'filesystem/virtual' ])
+env.Program('mount',  [ 'Main.cpp' ],
+	     LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])

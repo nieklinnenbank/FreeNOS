@@ -16,11 +16,8 @@
  */
 
 #include <API/PrivExec.h>
-#include "RebootCommand.h"
 
-int RebootCommand::execute(Size nparams, char **params)
+int main(int argc, char **argv)
 {
     return PrivExec(Reboot);
 }
-
-INITOBJ(RebootCommand, rebootCmd, DEFAULT)
