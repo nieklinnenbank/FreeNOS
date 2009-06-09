@@ -15,11 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import os
-import build
+from build import *
 
-build.target.Append(ENV = os.environ)
-build.PhonyTargets(build.target,
-		    qemu = 'qemu -curses -cdrom boot/boot.iso -s -S -d int,pcall,exec',
-		   cqemu = 'qemu -curses -cdrom boot/boot.iso -s',
-		   sqemu = 'qemu -sdl -cdrom boot/boot.iso -s')
+env = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc' ])
+env.Program('ps',  [ 'Main.cpp' ],
+	     LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])

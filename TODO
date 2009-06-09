@@ -62,6 +62,8 @@
     --> fixup all posix library function documentation!!!
 
 [programs]
+* bin/sh: nice colors (use libteken).
+* bin/sh: set prompt to: 'localhost #', using gethostname() or something.
 * Let the user /sbin/init drop it's priviledges to the lowest (least priviledged) runlevel.
 * Commandline argc/argv support; via libparse.
 * Random stack, heap and program text!!!

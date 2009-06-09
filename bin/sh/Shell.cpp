@@ -44,6 +44,7 @@ Shell::Shell()
 int Shell::run()
 {
     char *cmdStr, *argv[MAX_ARGV];
+    char tmp[128];
     ShellCommand *cmd;
     Size argc;
     int pid, status;
@@ -68,16 +69,20 @@ int Shell::run()
 	/* Do we have a matching ShellCommand? */
 	if (!(cmd = ShellCommand::byName(argv[0])))
 	{
-	    /* If not, try to execute it as a file. */
-	    if ((pid = forkexec(argv[0], (const char **) argv)) < 0)
-	    {
-		printf("forkexec '%s' failed: %s\r\n", argv[0],
-			strerror(errno));
-	    }
-	    else
+	    /* If not, try to execute it as a file directly. */
+	    if ((pid = forkexec(argv[0], (const char **) argv)) >= 0)
 	    {
 		waitpid(pid, &status, 0);
 	    }
+	    /* Try to find it on the livecd filesystem. */
+	    else if ( snprintf(tmp, sizeof(tmp), "/img/bin/%s/%s", argv[0], argv[0]) &&
+	            ((pid = forkexec(tmp, (const char **) argv)) >= 0))
+	    {
+		waitpid(pid, &status, 0);
+	    }
+	    else
+		printf("forkexec '%s' failed: %s\r\n", argv[0],
+			strerror(errno));
 	}
 	/* Enough arguments given? */
 	else if (argc - 1 < cmd->getMinimumParams())

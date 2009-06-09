@@ -22,10 +22,8 @@
 ./bin/sh/WriteCommand.cpp
 ./bin/sh/MountCommand.h
 ./bin/sh/MknodCommand.h
-./bin/sh/ProcListCommand.cpp
 ./bin/sh/Shell.h
 ./bin/sh/MknodCommand.cpp
-./bin/sh/ProcListCommand.h
 ./bin/sh/DirListCommand.cpp
 ./bin/sh/ShellCommand.h
 ./bin/sh/WriteCommand.h
@@ -276,3 +274,6 @@ sbin/img/Main.cpp
 bin/hostname/hostname
 bin/hostname/SConscript
 bin/hostname/Main.cpp
+bin/ps/ps
+bin/ps/SConscript
+bin/ps/Main.cpp

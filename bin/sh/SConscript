@@ -21,7 +21,7 @@ env = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc' ],
 		      [ 'memory', 'filesystem', 'filesystem/virtual' ])
 
 env.Program('sh',  [ 'BenchCommand.cpp', 'DirListCommand.cpp',  'Main.cpp',
-		     'MknodCommand.cpp', 'ProcListCommand.cpp', 'Shell.cpp',
+		     'MknodCommand.cpp', 'Shell.cpp',
 		     'StatCommand.cpp',  'WriteCommand.cpp',    'CatCommand.cpp',
 	    	     'HelpCommand.cpp',  'MemstatCommand.cpp',  'MountCommand.cpp',
 		     'RebootCommand.cpp', 'ShellCommand.cpp',   'UnameCommand.cpp' ],
