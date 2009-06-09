@@ -35,6 +35,7 @@ typedef enum ProcessAction
     ReadProcess  = 1,
     ExitProcess  = 2,
     SpawnProcess = 3,
+    WaitProcess  = 4
 }
 ProcessAction;
 

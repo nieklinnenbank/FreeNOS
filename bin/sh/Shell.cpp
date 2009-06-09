@@ -27,6 +27,7 @@
 #include <errno.h>
 #include <dirent.h>
 #include <sys/utsname.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include "Shell.h"
@@ -45,6 +46,7 @@ int Shell::run()
     char *cmdStr, *argv[MAX_ARGV];
     ShellCommand *cmd;
     Size argc;
+    int pid, status;
 
     /* Read commands. */    
     while (true)
@@ -67,10 +69,14 @@ int Shell::run()
 	if (!(cmd = ShellCommand::byName(argv[0])))
 	{
 	    /* If not, try to execute it as a file. */
-	    if (forkexec(argv[0], (const char **) argv))
+	    if ((pid = forkexec(argv[0], (const char **) argv)) < 0)
 	    {
-		printf("execv '%s' failed: %s\n", argv[0],
+		printf("forkexec '%s' failed: %s\r\n", argv[0],
 			strerror(errno));
+	    }
+	    else
+	    {
+		waitpid(pid, &status, 0);
 	    }
 	}
 	/* Enough arguments given? */

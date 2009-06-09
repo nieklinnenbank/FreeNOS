@@ -49,6 +49,7 @@ ProcessServer::ProcessServer()
     addIPCHandler(ReadProcess,  &ProcessServer::readProcessHandler);
     addIPCHandler(ExitProcess,  &ProcessServer::exitProcessHandler, false);
     addIPCHandler(SpawnProcess, &ProcessServer::spawnProcessHandler);
+    addIPCHandler(WaitProcess,  &ProcessServer::waitProcessHandler, false);
 
     /* Fixup process table, with BootPrograms from each BootImage. */
     for (Size i = 0; i < info.moduleCount; i++)
@@ -120,9 +121,7 @@ void ProcessServer::exitProcessHandler(ProcessMessage *msg)
 {
     MemoryMessage mem;
     FileSystemMessage vfs;
-
-    log("PID %u exited with status %d",
-        msg->from, msg->number);
+    ProcessMessage reply;
 
     /* Clear process entry. */
     memset(&procs[msg->from], 0, sizeof(UserProcess));
@@ -134,6 +133,23 @@ void ProcessServer::exitProcessHandler(ProcessMessage *msg)
     mem.action = HeapReset;
     mem.pid    = msg->from;
     IPCMessage(MEMSRV_PID, SendReceive, &mem, sizeof(mem));
+    
+    /* Awake any processes waiting for this process' death. */
+    for (Size i = 0; i < MAX_PROCS; i++)
+    {
+	if (procs[i].command[0] &&
+	    procs[i].waitProcessID == msg->from)
+	{
+	    /* Clear wait status. */
+	    procs[i].waitProcessID = ANY;
+	    
+	    /* Send exit status. */
+	    reply.action = WaitProcess;
+	    reply.number = msg->number;
+	    reply.result = ESUCCESS;
+	    IPCMessage(i, Send, &reply, sizeof(reply));
+	}
+    }
 }
 
 void ProcessServer::spawnProcessHandler(ProcessMessage *msg)
@@ -165,7 +181,6 @@ void ProcessServer::spawnProcessHandler(ProcessMessage *msg)
     /* Create new process. */
     msg->number = ProcessCtl(ANY, Spawn, fmt->entry());
     msg->result = ENOBUFS;
-    log("PID %u created\n", msg->number);
 
     /* Map program regions into virtual memory of the new process. */
     for (int i = 0; i < numRegions; i++)
@@ -203,4 +218,18 @@ void ProcessServer::spawnProcessHandler(ProcessMessage *msg)
     /* Success. */
     msg->result = ESUCCESS;
     delete fmt;
+}
+
+void ProcessServer::waitProcessHandler(ProcessMessage *msg)
+{
+    if (msg->number < MAX_PROCS && msg->number != ANY &&
+	procs[msg->number].command[0])
+    {
+	procs[msg->from].waitProcessID = msg->number;
+    }
+    else
+    {
+	msg->result = EINVAL;
+	IPCMessage(msg->from, Send, msg, sizeof(*msg));
+    }
 }

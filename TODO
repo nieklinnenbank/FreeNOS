@@ -1,7 +1,6 @@
 [now]
-* fork() + exec() in srv/process:
-  ProcessCtl(ANY, Create, entryAddress)
-  ProcessCtl(ANY, Resume)
+* Implement wait()
+    --> just in the ProcessServer: wait for an incoming exit() :-)
 * REGISTER() for target!!! (without __attribute__((constructor)))
     --> remove temporary line from libexec/ELF.cpp:
 	--> INITCLASS(ELF,__register_ELFdetect, "999")
@@ -33,6 +32,7 @@
     --> Maybe also output this in ProcessInfo! :)
 
 [project]
+* boot.ext2desc should be generated (?)
 * We want full sources on the ISO aswell! :-)
 * Write a svn download tool (or use exiting ones), that use for example svnsync to
   download a copy of the full repository, including all revisions and history to the local disk :-)

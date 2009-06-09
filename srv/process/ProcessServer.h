@@ -39,6 +39,9 @@ typedef struct UserProcess
     
     /** Process state. */
     ProcessState state;
+    
+    /** Waits for exit of this Process. */
+    ProcessID waitProcessID;
 }
 UserProcess;
 
@@ -79,6 +82,12 @@ class ProcessServer : public IPCServer<ProcessServer, ProcessMessage>
 	 * @param msg Incoming message.
 	 */
 	void spawnProcessHandler(ProcessMessage *msg);
+
+	/**
+	 * Waits until a process has died.
+	 * @param msg Incoming message.
+	 */
+	void waitProcessHandler(ProcessMessage *msg);
 
 	/** User Process table. */
 	static UserProcess procs[MAX_PROCS];
