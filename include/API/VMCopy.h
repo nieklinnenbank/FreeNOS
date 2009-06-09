@@ -39,7 +39,8 @@
  * @param sz Amount of memory to copy.
  * @return Total number of bytes copied on success and error code on failure.
  */
-inline Error VMCopy(ProcessID proc, Action how, Address ours, Address theirs, Size sz)
+inline Error VMCopy(ProcessID proc, Action how, Address ours,
+				    Address theirs, Size sz)
 {
     return trapKernel5(VMCOPY, proc, how, ours, theirs, sz);
 }

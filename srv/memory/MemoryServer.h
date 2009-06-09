@@ -72,6 +72,12 @@ class MemoryServer : public IPCServer<MemoryServer, MemoryMessage>
 	 * @param msg Request message.
 	 */
 	void doUsage(MemoryMessage *msg);
+	
+	/**
+	 * Resets heap pointer from a killed process.
+	 * @param msg Request message.
+	 */
+	void doReset(MemoryMessage *msg);
 
 	/** Heap pointers. */
 	Address heaps[MAX_PROCS];

@@ -273,3 +273,6 @@ sbin/img/BootEntry.h
 sbin/img/Main.h
 sbin/img/SConscript
 sbin/img/Main.cpp
+bin/hostname/hostname
+bin/hostname/SConscript
+bin/hostname/Main.cpp

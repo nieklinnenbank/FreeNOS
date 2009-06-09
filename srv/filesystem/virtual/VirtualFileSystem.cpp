@@ -36,6 +36,7 @@ VirtualFileSystem::VirtualFileSystem()
     addIPCHandler(OpenFile,    &VirtualFileSystem::ioHandler, false);
     addIPCHandler(ReadFile,    &VirtualFileSystem::ioHandler, false);
     addIPCHandler(WriteFile,   &VirtualFileSystem::ioHandler, false);
+    addIPCHandler(SeekFile,    &VirtualFileSystem::ioHandler, false);
     addIPCHandler(CloseFile,   &VirtualFileSystem::ioHandler, false);
     addIPCHandler(StatFile,    &VirtualFileSystem::ioHandler, false);
     addIPCHandler(IODone,      &VirtualFileSystem::ioDoneHandler, false);
@@ -121,21 +122,19 @@ void VirtualFileSystem::ioHandler(FileSystemMessage *msg)
 		msg->error(ENOENT);
 		return;
 	    }
-	    else
+	    else if (msg->action != SeekFile)
 	    {
 		msg->offset = fd->position;
 		msg->ident  = fd->identifier;
 	    }
-	    fsID = fd->mount->procID;
-	    
 	    /* Change file descriptor pointer, for SeekFile. */
-	    if (msg->action == SeekFile)
+	    else
 	    {
 		fd->position = msg->offset;
 		msg->error(ESUCCESS);
 		return;
 	    }
-	    
+	    fsID = fd->mount->procID;
 	    break;
 
 	default:

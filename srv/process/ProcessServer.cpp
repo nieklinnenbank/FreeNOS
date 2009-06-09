@@ -25,6 +25,7 @@
 #include <FileSystemMessage.h>
 #include <FileSystem.h>
 #include <LogMessage.h>
+#include <MemoryMessage.h>
 #include <ExecutableFormat.h>
 #include <String.h>
 #include <stdio.h>
@@ -117,6 +118,9 @@ void ProcessServer::readProcessHandler(ProcessMessage *msg)
 
 void ProcessServer::exitProcessHandler(ProcessMessage *msg)
 {
+    MemoryMessage mem;
+    FileSystemMessage vfs;
+
     log("PID %u exited with status %d",
         msg->from, msg->number);
 
@@ -125,6 +129,11 @@ void ProcessServer::exitProcessHandler(ProcessMessage *msg)
 
     /* Ask kernel to terminate the process. */
     ProcessCtl(msg->from, KillPID);
+    
+    /* Inform memory server. */
+    mem.action = HeapReset;
+    mem.pid    = msg->from;
+    IPCMessage(MEMSRV_PID, SendReceive, &mem, sizeof(mem));
 }
 
 void ProcessServer::spawnProcessHandler(ProcessMessage *msg)
@@ -132,6 +141,8 @@ void ProcessServer::spawnProcessHandler(ProcessMessage *msg)
     char path[PATHLEN];
     FileSystemMessage fs;
     ExecutableFormat *fmt;
+    MemoryRegion regions[16];
+    Error numRegions, ret;
 
     /* Read out the path to the executable. */
     if ((msg->result = VMCopy(msg->from, Read, (Address) path,
@@ -145,11 +156,35 @@ void ProcessServer::spawnProcessHandler(ProcessMessage *msg)
 	msg->result = errno;
 	return;
     }
+    /* Retrieve memory regions. */
+    if ((numRegions = fmt->regions(regions, 16)) <= 0)
+    {
+	msg->result = numRegions;
+	return;
+    }
     /* Create new process. */
-    msg->number = ProcessCtl(ANY, Spawn, 0x80000000);
+    msg->number = ProcessCtl(ANY, Spawn, fmt->entry());
     msg->result = ENOBUFS;
     log("PID %u created\n", msg->number);
 
+    /* Map program regions into virtual memory of the new process. */
+    for (int i = 0; i < numRegions; i++)
+    {
+	/* Copy executable memory from this region. */
+	for (Size j = 0; j < regions[i].size; j += PAGESIZE)
+	{
+	    /* Create mapping first. */
+	    if ((ret = VMCtl(Map, msg->number, ZERO,
+			     regions[i].virtualAddress + j)) != 0)
+	    {
+		msg->result = ret;
+		return;
+	    }
+	    /* Copy bytes. */
+	    VMCopy(msg->number, Write, (Address) (regions[i].data) + j,
+		   regions[i].virtualAddress + j, PAGESIZE);
+	}
+    }
     /* Set command-line string. */
     snprintf(procs[msg->number].command, COMMANDLEN,
              "%s", path);
@@ -162,11 +197,10 @@ void ProcessServer::spawnProcessHandler(ProcessMessage *msg)
     fs.newProcess(msg->number, procs[msg->number].uid,
     			       procs[msg->number].gid);
 
-    //
-    // TODO: map the program sections into virtual memory
-    //       of the new process.
+    /* Begin execution. */
+    ProcessCtl(msg->number, Resume);
 
     /* Success. */
     msg->result = ESUCCESS;
-
+    delete fmt;
 }

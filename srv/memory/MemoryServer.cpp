@@ -23,6 +23,7 @@ MemoryServer::MemoryServer() : IPCServer<MemoryServer, MemoryMessage>(this)
     /* Register message handlers. */
     addIPCHandler(HeapGrow,    &MemoryServer::doGrow);
     addIPCHandler(HeapShrink,  &MemoryServer::doShrink);
+    addIPCHandler(HeapReset,   &MemoryServer::doReset);
     addIPCHandler(MemoryUsage, &MemoryServer::doUsage);
 
     /* Initialize heaps. */
@@ -75,4 +76,12 @@ void MemoryServer::doUsage(MemoryMessage *msg)
     /* Fill in the reply. */
     msg->bytes     = info.memorySize;
     msg->bytesFree = info.memoryAvail;
+}
+
+void MemoryServer::doReset(MemoryMessage *msg)
+{
+    if (msg->pid < MAX_PROCS)
+    {
+	heaps[msg->pid] = HEAP_START;
+    }
 }

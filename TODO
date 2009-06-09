@@ -14,6 +14,8 @@
 	kernel/, and include/*.h in lib/libparse,libalgo(rithm),libcommon,libdata (find a good name).
 
 [bugs]
+* Files in site_scons/ on the LiveCD seems to be clobbered, when
+  reading them with cat. Most likely a problem in Ext2File::read() and friends.
 * Some GCC's don't have -mno-stack-protector! Use SCons's "autoconf" for this :-)
 * VMCtl() : maybe pass two Address pointers!!! Then write the actual used paddr + vaddr there!!!
 * Problem with CCFLAGS and construction Variables not solved:

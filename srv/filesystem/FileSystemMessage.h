@@ -189,15 +189,16 @@ typedef struct FileSystemMessage : public Message
 
     /**
      * Moves the filepointer of a file.
-     * @param fd File descriptor
+     * @param fildes File descriptor
      * @param off Offset to move to.
      * @param how Determines how to move the file descriptor.
      * @return Error code of the seek operation.
      */
-    Error seekFile(int fd, Size off, int how, ProcessID pid = VFSSRV_PID)
+    Error seekFile(u16 fildes, Size off, int how, ProcessID pid = VFSSRV_PID)
     {
 	action = SeekFile;
-	offset = offset;
+	fd     = fildes;
+	offset = off;
 	// TODO: use the how argument!
 	// size = how;
 	ipc(pid, SendReceive, sizeof(*this));

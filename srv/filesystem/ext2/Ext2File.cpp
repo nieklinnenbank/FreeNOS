@@ -33,42 +33,53 @@ Error Ext2File::read(FileSystemMessage *msg)
 {
     Ext2SuperBlock *sb = ext2->getSuperBlock();
     u8 *block = new u8[EXT2_BLOCK_SIZE(sb)], *buffer = (u8 *) msg->buffer;
-    Size bytes = 0, total = 0;
+    Size bytes = 0, total = 0, blockNr = 0;
     Error e = ESUCCESS;
-    u64 offset;
+    u64 storageOffset, copyOffset = msg->offset;
 
-    /* Loop all blocks. */
-    for (Size blk = 0; blk < inode->blocks - 1 && total < msg->size; blk++)
+    /* Skip ahead blocks. */
+    while ((EXT2_BLOCK_SIZE(sb) * (blockNr + 1)) <= copyOffset)
     {
-	/* Skip ahead blocks. */
-	if (EXT2_BLOCK_SIZE(sb) * blk < msg->offset)
-	{
-	    continue;
-	}
+	blockNr++;
+    }
+    /* We don't have __umoddi3 yet. Calculate modulus manually. */
+    while (copyOffset >= EXT2_BLOCK_SIZE(sb))
+    {
+	copyOffset -= EXT2_BLOCK_SIZE(sb);
+    }
+    /* Loop all blocks. */
+    for (; blockNr < inode->blocks - 1 && total < msg->size; blockNr++)
+    {
 	/* Calculate the offset in storage for this block. */
-	offset = ext2->getOffset(inode, blk);
+	storageOffset = ext2->getOffset(inode, blockNr);
 
         /* Fetch the next block. */
-        if (ext2->getStorage()->read(offset, block,
+        if (ext2->getStorage()->read(storageOffset, block,
 				     EXT2_BLOCK_SIZE(sb)) < 0)
 	{
 	    e = EACCES;
 	    break;
 	}
 	/* Calculate the number of bytes to copy. */
-	bytes = EXT2_BLOCK_SIZE(sb) < (msg->size - total) ?
-	        EXT2_BLOCK_SIZE(sb) : (msg->size - total);
-	
+	bytes = EXT2_BLOCK_SIZE(sb) - copyOffset;
+	if (bytes > msg->size - total)
+	{
+	    bytes = msg->size - total;
+	}
         /* Copy to the remote process. */
-        if ((e = VMCopy(msg->procID, Write, (Address) block,
-                       (Address) buffer, bytes)) < 0)
+        if ((e = VMCopy(msg->procID, Write,
+	               ((Address) (block)) + copyOffset,
+                        (Address) (buffer), bytes)) < 0)
         {
 	    break;
 	}
-	buffer += EXT2_BLOCK_SIZE(sb);
-	total  += bytes;
-	e       = ESUCCESS;
-    }
+	/* Update state. */
+	buffer     += bytes;
+	total      += bytes;
+	copyOffset  = 0;
+	e           = ESUCCESS;
+     }
+    /* Success. */
     msg->size = total;
     delete block;
     return e;

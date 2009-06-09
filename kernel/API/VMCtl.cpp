@@ -56,7 +56,7 @@ Error VMCtlHandler(Operation action, ProcessID procID, Address paddr,
 	
     }
     /* Success. */
-    return (page);
+    return 0;
 }
 
 INITAPI(VMCTL, VMCtlHandler)

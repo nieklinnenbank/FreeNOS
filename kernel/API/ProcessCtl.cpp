@@ -63,6 +63,11 @@ int ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
 	case Schedule:
 	    scheduler->executeNext();
 	    break;
+
+	case Resume:
+	    proc->setState(Ready);
+	    scheduler->enqueue(proc);
+	    break;
 	
 	case AllowIO:
 	    proc->IOPort(addr, true);
