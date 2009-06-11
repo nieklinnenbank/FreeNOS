@@ -141,7 +141,13 @@ char * Shell::getCommand()
 
 void Shell::prompt()
 {
-    printf("# ");
+    char tmp[128];
+    
+    /* Retrieve current hostname. */
+    gethostname(tmp, sizeof(tmp));
+    
+    /* Print out the prompt. */
+    printf("(%s) # ", tmp);
 }
 
 Size Shell::parse(char *cmdline, char **argv, Size maxArgv)

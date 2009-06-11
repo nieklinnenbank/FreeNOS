@@ -143,6 +143,24 @@ extern C int execv(const char *path, const char *argv[]);
 extern C int forkexec(const char *path, const char *argv[]);
 
 /**
+ * @brief Get name of current host.
+ *
+ * The gethostname() function shall return the standard host name for the
+ * current machine. The namelen argument shall specify the size of the
+ * array pointed to by the name argument. The returned name shall be
+ * null-terminated, except that if namelen is an insufficient length to
+ * hold the host name, then the returned name shall be truncated and it
+ * is unspecified whether the returned name is null-terminated.
+ * Host names are limited to {HOST_NAME_MAX} bytes.
+ * 
+ * @param name Output buffer.
+ * @param namelen Size of the output buffer.
+ * @return Upon successful completion, 0 shall be returned; otherwise,
+ *         -1 shall be returned.
+ */
+extern C int gethostname(char *name, size_t namelen);
+
+/**
  * @}
  */
 

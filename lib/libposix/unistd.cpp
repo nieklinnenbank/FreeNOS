@@ -20,6 +20,7 @@
 #include <FileSystemMessage.h>
 #include <ExecutableFormat.h>
 #include <Config.h>
+#include <string.h>
 #include <errno.h>
 #include "unistd.h"
 
@@ -114,4 +115,10 @@ int forkexec(const char *path, const char *argv[])
     
     /* All done. */
     return errno == ESUCCESS ? (int) msg.number : -1;
+}
+
+int gethostname(char *name, size_t namelen)
+{
+    strlcpy(name, "localhost", namelen);
+    return 0;
 }
