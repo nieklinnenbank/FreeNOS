@@ -20,7 +20,7 @@ from sha import *
 from build import *
 from SCons.Action import *
 
-def Checksum(target, source, env):
+def ChecksumBuilder(target, source, env):
 
     # Read source contents
     content = open(str(source[0])).read()
@@ -62,6 +62,6 @@ def ChecksumString(target, source, env):
 target.Append(BUILDERS =
 {
     'Checksum': target.Builder(
-        action = Action(Checksum, ChecksumString)
+        action = Action(ChecksumBuilder, ChecksumString)
      ),
 })
