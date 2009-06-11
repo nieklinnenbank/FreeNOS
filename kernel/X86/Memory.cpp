@@ -142,6 +142,7 @@ void X86Memory::mapRemote(X86Process *p, Address vaddr)
 bool X86Memory::access(X86Process *p, Address vaddr, Size sz, ulong prot)
 {
     Size bytes = 0;
+    Address vfrom = vaddr;
 
     /* Map remote pages. */
     mapRemote(p, vaddr);
@@ -152,15 +153,8 @@ bool X86Memory::access(X86Process *p, Address vaddr, Size sz, ulong prot)
 	   bytes < sz)
     {
 	vaddr += PAGESIZE;
-
-	if (!(vaddr & ~PAGEMASK))
-	{
-	    bytes += PAGESIZE;
-	}
-	else
-	{
-	    bytes += ~PAGEMASK - (vaddr & ~PAGEMASK);
-	}
+	bytes += ((vfrom & PAGEMASK) + PAGESIZE) - vfrom;
+	vfrom  = vaddr & PAGEMASK;
 	remPageTab = PAGETABADDR_FROM(vaddr, PAGETABFROM_REMOTE);
     }
     /* Do we have a match? */

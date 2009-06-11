@@ -37,7 +37,7 @@ Shell::Shell()
     /* Initialize terminal as standard I/O. */
     for (int i = 0; i < 3; i++)
     {
-	while (open("/dev/tty0", ZERO) < 0);
+	while (open("/dev/tty0", ZERO) == -1);
     }
 }
 

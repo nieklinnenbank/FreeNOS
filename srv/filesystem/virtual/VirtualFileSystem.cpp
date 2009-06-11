@@ -97,7 +97,7 @@ void VirtualFileSystem::ioHandler(FileSystemMessage *msg)
     
 	    /* Obtain full path first. */
 	    if ((msg->result = VMCopy(msg->from, Read, (Address) path,
-				     (Address) msg->buffer, PATHLEN) < 0))
+				     (Address) msg->buffer, PATHLEN)) < 0)
 	    {
 		msg->error(msg->result);
 		return;
