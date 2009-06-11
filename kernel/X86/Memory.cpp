@@ -151,12 +151,20 @@ bool X86Memory::access(X86Process *p, Address vaddr, Size sz, ulong prot)
            remPageTab[TABENTRY(vaddr)] & prot &&
 	   bytes < sz)
     {
-	vaddr +=  PAGESIZE;
-	bytes += ~PAGEMASK - (vaddr & ~PAGEMASK);
-	remPageTab = PAGETABADDR(vaddr); 
+	vaddr += PAGESIZE;
+
+	if (!(vaddr & ~PAGEMASK))
+	{
+	    bytes += PAGESIZE;
+	}
+	else
+	{
+	    bytes += ~PAGEMASK - (vaddr & ~PAGEMASK);
+	}
+	remPageTab = PAGETABADDR_FROM(vaddr, PAGETABFROM_REMOTE);
     }
     /* Do we have a match? */
-    return (bytes >= sz);    
+    return (bytes >= sz);
 }
 
 void X86Memory::releaseAll(X86Process *p)
