@@ -65,7 +65,7 @@ extern C void * memcpy(void *dest, const void *src, size_t count);
  * @param str String to calculate length for.
  * @return Length of the string.
  */
-extern C int strlen(char *str);
+extern C size_t strlen(char *str);
 
 /**
  * Copy a string.
@@ -136,6 +136,20 @@ extern C char * strncat(char *dest, char *src, size_t siz);
  *         strerror function.
  */
 extern C char * strerror(int errnum);
+
+/**
+ * @brief String scanning operation.
+ *
+ * The strchr() function shall locate the first occurrence of c
+ * (converted to a char) in the string pointed to by s. The terminating
+ * NULL character is considered to be part of the string.
+ *
+ * @param s String to search in.
+ * @param c Character to look for.
+ * @return Upon completion, strchr() shall return a pointer to the byte,
+ *         or a null pointer if the byte was not found.
+ */
+extern C char * strchr(const char *s, int c);
 
 /**
  * @}

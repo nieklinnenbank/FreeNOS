@@ -35,6 +35,10 @@ Kernel::Kernel()
     for (Size n = 0; n <  multibootInfo.modsCount; n++)
     {
 	mod     = &((MultibootModule *) multibootInfo.modsAddress)[n];
+	
+	/* Mark module memory used. */
+	memory->allocatePhysical(mod->modEnd - mod->modStart,
+				 mod->modStart);
 
 	/* Is this a BootImage? */
 	if (str.match((char *) mod->string, "*.img"))

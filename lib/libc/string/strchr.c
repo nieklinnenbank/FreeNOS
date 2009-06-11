@@ -15,13 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <sys/types.h>
 #include "string.h"
 
-size_t strlen(char *str)
+char * strchr(const char *s, int c)
 {
-    char *s;
-
-    for (s = str; *s; ++s);
-    return (s - str);
+    while (*s && *s != c)
+    {
+	s++;
+    }
+    return (char *) (*s ? s : NULL);
 }
