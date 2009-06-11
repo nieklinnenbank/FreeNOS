@@ -1,16 +1,13 @@
 [now]
-* GCC 4.3.1-r1 fails to boot on gentoo!!! (Freeze)
-* /sbin/init should open fd's 0,1,2 for servers and login shell's appropriately.
-    --> /srv/filesystem/virtual should then inherit fd's from their parent on fork(exec)'s!
-    --> use /etc/init.conf or something
 * bin/sh: nice colors (use libteken).
 * bin/sh: set prompt to: 'localhost #', using gethostname() or something.
 * Write a /sbin/shutdown
-* libc: implement strchr(), also for qoen's libparse.
+* Add bin/prime for demonstration :-)
 * REGISTER() for target!!! (without __attribute__((constructor)))
     --> remove temporary line from libexec/ELF.cpp:
 	--> INITCLASS(ELF,__register_ELFdetect, "999")
 * Compilation on OpenSolaris, OpenBSD
+* Compilation with -Wconversion and -Wextra turned on
 * llvm-gcc and gcc45 on FreeBSD --> problem in X86Process::execute()!!!
     --> and linker needs to be updated aswell. See beastie vm.
 * libcommon
@@ -71,6 +68,9 @@
     --> fixup all posix library function documentation!!!
 
 [programs]
+* /sbin/init: should open fd's 0,1,2 for servers and login shell's appropriately.
+    --> /srv/filesystem/virtual should then inherit fd's from their parent on fork(exec)'s!
+    --> use /etc/init.conf or something
 * Let the user /sbin/init drop it's priviledges to the lowest (least priviledged) runlevel.
 * Commandline argc/argv support; via libparse.
 * Random stack, heap and program text!!!

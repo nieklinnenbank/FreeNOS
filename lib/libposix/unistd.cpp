@@ -113,5 +113,5 @@ int forkexec(const char *path, const char *argv[])
     errno = msg.result;
     
     /* All done. */
-    return errno == ESUCCESS ? msg.number : -1;
+    return errno == ESUCCESS ? (int) msg.number : -1;
 }
