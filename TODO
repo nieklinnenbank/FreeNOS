@@ -5,10 +5,6 @@
 * Add bin/prime for demonstration :-)
 * Compilation on OpenBSD
 * Some GCC's don't have -mno-stack-protector! Use SCons's "autoconf" for this :-)
-* 12:47 <@mrf00> als de Shell opstart, moet ie een bannertje printen met: 'type help voor een lijstje met commands'
-* /sbin/init: should open fd's 0,1,2 for servers and login shell's appropriately.
-    --> /srv/filesystem/virtual should then inherit fd's from their parent on fork(exec)'s!
-    --> use /etc/init.conf or something
 
 [bugs]
 * Directory::insertEntry() type argument isn't valid! Now we simply use FileType directly,
@@ -69,6 +65,9 @@
     --> fixup all posix library function documentation!!!
 
 [programs]
+* /sbin/init: should open fd's 0,1,2 for servers and login shell's appropriately.
+    --> /srv/filesystem/virtual should then inherit fd's from their parent on fork(exec)'s!
+    --> use /etc/init.conf or something
 * Let the user /sbin/init drop it's priviledges to the lowest (least priviledged) runlevel.
 * Commandline argc/argv support; via libparse.
 * Random stack, heap and program text!!!
@@ -100,6 +99,7 @@
 * make a /dev/random! e.g. RDTSC, IRQ's etc.
 
 [sources]
+* Suggestion from flupzor: use __BEGIN_DECLS instead of extern C.
 * libcommon
     --> fix include/ et all???
     --> maybe put all include/api/*.h include/arch/*.h files just in

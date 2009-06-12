@@ -41,7 +41,7 @@ try:
     svnInfo    = svnClient.info(".")
     currentRev = current + "-r" + str(svnInfo.revision.number)
 except:
-    currentRev = current
+    currentRev = current + "-local"
 
 # Attempt to retrieve the correct compiler version
 try:
