@@ -21,6 +21,7 @@
 #include <Init.h>
 #include <PageAllocator.h>
 #include <PoolAllocator.h>
+#include <stdlib.h>
 #include "runtime.h"
 
 extern C int __cxa_atexit(void (*func) (void *), void * arg, void * dso_handle)
@@ -81,12 +82,16 @@ void heap()
 extern C void SECTION(".entry") _entry() 
 {
     char *argv[] = { "main", ZERO };
+    int ret;
 
     /* Run initialization. */
     INITRUN(&initStart, &initEnd);
     
     /* Pass control to the program. */
-    main(1, argv);
+    ret = main(1, argv);
+    
+    /* Terminate execution. */
+    exit(ret);
 }
 
 INITFUNC(heap, HEAP)

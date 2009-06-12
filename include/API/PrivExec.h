@@ -36,9 +36,9 @@
  */
 typedef enum PrivOperation
 {
-    Idle,
-    Reboot,
-    Shutdown,
+    Idle     = 0,
+    Reboot   = 1,
+    Shutdown = 2,
 }
 PrivOperation;
 

@@ -17,18 +17,24 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <fcntl.h>
 
 int main(int argc, char **argv)
 {
+    char host[128];
+
     /* Initialize terminal as standard I/O. */
     for (int i = 0; i < 3; i++)
     {
         while (open("/dev/tty0", ZERO) < 0);
     }
+    /* Fetch hostname. */
+    gethostname(host, sizeof(host));
+    
     /* Output our hostname. */
-    printf("localhost\r\n");
+    printf("%s\r\n", host);
     
     /* Done. */
-    exit(EXIT_SUCCESS);
+    return EXIT_SUCCESS;
 }

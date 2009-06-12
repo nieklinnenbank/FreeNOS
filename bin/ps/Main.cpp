@@ -111,5 +111,5 @@ int main(int argc, char **argv)
     closedir(d);
     
     /* Done. */
-    exit(EXIT_SUCCESS);
+    return EXIT_SUCCESS;
 }

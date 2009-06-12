@@ -84,5 +84,5 @@ int main(int argc, char **argv)
 	(u32)(t2 - t1), (u32)(t2 - t1) / 128);
 
     /* Done. */
-    exit(EXIT_SUCCESS);
+    return EXIT_SUCCESS;
 }

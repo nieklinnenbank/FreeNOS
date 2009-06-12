@@ -48,5 +48,5 @@ int main(int argc, char **argv)
             printf("%s\r\n", mounts[i].path);
     }
     /* Success. */
-    exit(EXIT_SUCCESS);
+    return EXIT_SUCCESS;
 }

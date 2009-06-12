@@ -25,8 +25,5 @@ int main(int argc, char **argv)
      */
 
     /* Exit immediately. */
-    exit(EXIT_SUCCESS); 
-
-    /* Satify compiler. */
-    return 0;
+    return EXIT_SUCCESS;
 }

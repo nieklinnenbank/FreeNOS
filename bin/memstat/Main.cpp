@@ -38,5 +38,5 @@ int main(int argc, char **argv)
            mem.bytes / 1024, mem.bytesFree / 1024);
     
     /* Done. */
-    exit(EXIT_SUCCESS);
+    return EXIT_SUCCESS;
 }

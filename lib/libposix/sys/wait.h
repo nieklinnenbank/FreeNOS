@@ -18,6 +18,7 @@
 #ifndef __LIBPOSIX_WAIT_H
 #define __LIBPOSIX_WAIT_H
 
+#include <Macros.h>
 #include "types.h"
 
 /**                                                                                                                                                                                                     
@@ -39,7 +40,7 @@
  * @param stat_loc Points to an integer for storing the exit status.
  * @param options Optional flags.
  */
-pid_t waitpid(pid_t pid, int *stat_loc, int options);
+extern C pid_t waitpid(pid_t pid, int *stat_loc, int options);
 
 /**
  * @}

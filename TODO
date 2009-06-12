@@ -3,7 +3,6 @@
 * DokuWiki @ webpage!
 * bin/sh: nice colors (use libteken).
 * bin/ls: also nice colors with libteken.
-* Write a /sbin/shutdown
 * Add bin/prime for demonstration :-)
 * Compilation on OpenBSD
 * Some GCC's don't have -mno-stack-protector! Use SCons's "autoconf" for this :-)
