@@ -21,6 +21,7 @@
 #include <MemoryServer.h>
 #include <FileSystemMessage.h>
 #include <VirtualFileSystem.h>
+#include <TerminalCodes.h>
 #include <Config.h>
 #include <stdio.h>
 #include <string.h>
@@ -147,7 +148,7 @@ void Shell::prompt()
     gethostname(tmp, sizeof(tmp));
     
     /* Print out the prompt. */
-    printf("(%s) # ", tmp);
+    printf(WHITE "(" GREEN "%s" WHITE ") # ", tmp);
 }
 
 Size Shell::parse(char *cmdline, char **argv, Size maxArgv)

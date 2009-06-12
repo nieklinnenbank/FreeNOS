@@ -1,8 +1,6 @@
 [0.0.1]
 * Our Logo! :-) As ASCII art image, in /bin/sh, and on the webpage!
 * DokuWiki @ webpage!
-* bin/sh: nice colors (use libteken).
-* bin/ls: also nice colors with libteken.
 * Add bin/prime for demonstration :-)
 * Compilation on OpenBSD
 * Some GCC's don't have -mno-stack-protector! Use SCons's "autoconf" for this :-)
@@ -13,6 +11,9 @@
 * libcrt: use exit() on return of main()!
 
 [bugs]
+* Directory::insertEntry() type argument isn't valid! Now we simply use FileType directly,
+  but isn't correct. We should define FileType without looking at libposix. Libposix should then
+  translate from FileType to S_IF* and DT_* values.
 * llvm-gcc and gcc45 on FreeBSD fails --> problem in X86Process::execute() ?
     --> and linker needs to be updated aswell. See beastie vm.
 * Compilation with -Wconversion and -Wextra turned on fails
@@ -50,6 +51,7 @@
 * SCons Configuration (interface)? perhaps we can adapt kconfig for scons...
 * if we have the main() argc/argv thingies, we could do configure
   the boot modules to use /dev/serial0 as the system console! :)
+* Implement exercises 1-2-3 from http://www.cs.vu.nl/~bs/ in FreeNOS! :-)
 
 [libraries]
 * libregex: parse pattern through libparse

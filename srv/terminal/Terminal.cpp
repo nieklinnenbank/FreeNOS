@@ -94,7 +94,8 @@ void putchar(Terminal *term, const teken_pos_t *pos,
     term->hideCursor();
 
     /* Write the buffer. */
-    buffer[pos->tp_col + (pos->tp_row * width)] = VGA_CHAR(ch, LIGHTGREY, BLACK);
+    buffer[pos->tp_col + (pos->tp_row * width)] =
+	VGA_CHAR(ch, tekenToVGA[attr->ta_fgcolor], BLACK);
 
     /* Show cursor again. */
     term->showCursor();
@@ -121,7 +122,8 @@ void fill(Terminal *term, const teken_rect_t *rect,
 	for (Size col = rect->tr_begin.tp_col;
 	                col < rect->tr_end.tp_col; col++)
 	{
-	    term->getBuffer()[col + (row * term->getWidth())] = VGA_CHAR(ch, LIGHTGREY, BLACK);
+	    term->getBuffer()[col + (row * term->getWidth())] =
+		VGA_CHAR(ch, tekenToVGA[attr->ta_fgcolor], BLACK);
 	}
     }
     /* Show cursor again. */

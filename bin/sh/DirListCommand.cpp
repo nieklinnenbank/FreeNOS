@@ -19,6 +19,7 @@
 #include <dirent.h>
 #include <string.h>
 #include <errno.h>
+#include <TerminalCodes.h>
 #include "DirListCommand.h"
 
 int DirListCommand::execute(Size nparams, char **params)
@@ -36,6 +37,11 @@ int DirListCommand::execute(Size nparams, char **params)
     /* Read directory. */
     while ((dent = readdir(d)))
     {
+	/* Coloring. */
+	if (dent->d_type == DT_DIR)
+	    printf("%s", BLUE);
+	else
+	    printf("%s", WHITE);
 	printf("%s ", dent->d_name);
     }
     printf("\r\n");

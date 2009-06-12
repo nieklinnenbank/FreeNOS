@@ -76,6 +76,11 @@ enum Colors
 };
 
 /**
+ * Maps libteken colors to VGA.
+ */
+extern u8 tekenToVGA[];
+
+/**
  * Video Graphics Array (VGA) screen.
  */
 class VGA

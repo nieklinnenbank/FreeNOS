@@ -20,6 +20,19 @@
 #include <Config.h>
 #include "VGA.h"
 
+u8 tekenToVGA[] =
+{
+    BLACK,
+    RED,
+    GREEN,
+    BROWN,
+    BLUE,
+    MAGENTA,
+    CYAN,
+    LIGHTGREY,
+    LIGHTGREY,
+};
+
 VGA::VGA(u16 *m, Size w, Size h)
     : width(w), height(h), vgaMemory(m)
 {
@@ -70,6 +83,9 @@ void VGA::setCursor(const teken_pos_t *pos)
 void VGA::showCursor()
 {
     u16 index = cursorPos.tp_col + (cursorPos.tp_row * width);
+
+    /* Refresh cursorValue first. */
+    setCursor(&cursorPos);
 
     /* Write cursor. */
     videoMemory[index] &= 0xff;
