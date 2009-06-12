@@ -1,4 +1,4 @@
-[0.0.1]
+[first]
 * Entering 'host' or 'p' works in /bin/sh, while it shouldn't.
 * Our Logo! :-) As ASCII art image, in /bin/sh, and on the webpage!
 * DokuWiki @ webpage!

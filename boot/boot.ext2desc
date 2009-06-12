@@ -294,3 +294,5 @@
 ./sbin/init/SConscript
 ./sbin/init/Main.cpp
 ./sbin/SConscript
+./etc/logo.gif
+./etc/logo.txt
