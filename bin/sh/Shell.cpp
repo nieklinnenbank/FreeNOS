@@ -16,6 +16,7 @@
  */
 
 #include <API/IPCMessage.h>
+#include <API/ProcessCtl.h>
 #include <FreeNOS/Process.h>
 #include <FreeNOS/CPU.h>
 #include <MemoryServer.h>
@@ -35,11 +36,20 @@
 
 Shell::Shell()
 {
+    /* TODO: Temporarily solution: wait a while until services have started. */
+    for (int i = 0; i < 50000; i++)
+    {
+	ProcessCtl(ANY, Schedule);
+    }
     /* Initialize terminal as standard I/O. */
     for (int i = 0; i < 3; i++)
     {
 	while (open("/dev/tty0", ZERO) == -1);
     }
+    /* Show the user where to get help. */
+    printf("\r\n"
+	   "Entering Shell. Type 'help' for the command list.\r\n"
+	   "\r\n");
 }
 
 int Shell::run()

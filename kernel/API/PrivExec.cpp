@@ -40,7 +40,7 @@ int PrivExecHandler(PrivOperation op)
 	    
 	case Shutdown:
 	    shutdown();
-	    while (true);
+	    return ESUCCESS;
 
 	default:
 	    ;

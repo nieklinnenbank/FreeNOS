@@ -1,4 +1,5 @@
 [0.0.1]
+* Entering 'host' or 'p' works in /bin/sh, while it shouldn't.
 * Our Logo! :-) As ASCII art image, in /bin/sh, and on the webpage!
 * DokuWiki @ webpage!
 * Add bin/prime for demonstration :-)
@@ -8,7 +9,6 @@
 * /sbin/init: should open fd's 0,1,2 for servers and login shell's appropriately.
     --> /srv/filesystem/virtual should then inherit fd's from their parent on fork(exec)'s!
     --> use /etc/init.conf or something
-* libcrt: use exit() on return of main()!
 
 [bugs]
 * Directory::insertEntry() type argument isn't valid! Now we simply use FileType directly,
@@ -17,7 +17,6 @@
 * llvm-gcc and gcc45 on FreeBSD fails --> problem in X86Process::execute() ?
     --> and linker needs to be updated aswell. See beastie vm.
 * Compilation with -Wconversion and -Wextra turned on fails
-* Entering 'host' or 'p' works in /bin/sh, while it shouldn't.
 * Some files in site_scons/ on the LiveCD seems to be clobbered, when
   reading them with cat. Most likely a problem in Ext2File::read() and friends.
 * VMCtl() : maybe pass two Address pointers!!! Then write the actual used paddr + vaddr there!!!
