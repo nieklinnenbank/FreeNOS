@@ -82,6 +82,14 @@
 #define reboot() \
     outb(0x64, 0xfe)
 
+/**
+ * Shutdown the machine via ACPI.
+ * @note We do not have ACPI yet. Shutdown now has a bit naive implementation.
+ * @see http://forum.osdev.org/viewtopic.php?t=16990
+ */
+#define shutdown() \
+    outw(0xB004, 0x0 | 0x2000)
+
 /**  
  * Puts the CPU in a lower power consuming state. 
  */
@@ -118,10 +126,18 @@
 #define outb(port,byte) \
     asm volatile ("outb %%al,%%dx"::"a" (byte),"d" (port))
 
+/**
+ * Output a word to a port.
+ * @param port Port to write to.
+ * @param byte The word to output.
+ */
+#define outw(port,word) \
+    asm volatile ("outw %%ax,%%dx"::"a" (word),"d" (port))
+
 /** 
  * Output a long to a I/O port. 
- * @param long The long 32-bit number to output. 
  * @param port Target I/O port. 
+ * @param l The long 32-bit number to output.
  */
 #define outl(port,l) \
     asm volatile ("outl %%eax,%%dx"::"a" (l),"d" (port))

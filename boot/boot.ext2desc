@@ -277,6 +277,9 @@
 ./sbin/reboot/reboot
 ./sbin/reboot/SConscript
 ./sbin/reboot/Main.cpp
+./sbin/shutdown/Main.cpp
+./sbin/shutdown/SConscript
+./sbin/shutdown/shutdown
 ./sbin/img/BootEntry.h
 ./sbin/img/img
 ./sbin/img/Main.h

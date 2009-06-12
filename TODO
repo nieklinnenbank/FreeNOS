@@ -1,25 +1,25 @@
-[now]
+[0.0.1]
+* Our Logo! :-) As ASCII art image, in /bin/sh, and on the webpage!
+* DokuWiki @ webpage!
 * bin/sh: nice colors (use libteken).
-* bin/sh: set prompt to: 'localhost #', using gethostname() or something.
+* bin/ls: also nice colors with libteken.
 * Write a /sbin/shutdown
 * Add bin/prime for demonstration :-)
-* REGISTER() for target!!! (without __attribute__((constructor)))
-    --> remove temporary line from libexec/ELF.cpp:
-	--> INITCLASS(ELF,__register_ELFdetect, "999")
-* Compilation on OpenSolaris, OpenBSD
-* Compilation with -Wconversion and -Wextra turned on
-* llvm-gcc and gcc45 on FreeBSD --> problem in X86Process::execute()!!!
-    --> and linker needs to be updated aswell. See beastie vm.
-* libcommon
-    --> fix include/ et all???
-    --> maybe put all include/api/*.h include/arch/*.h files just in
-	kernel/, and include/*.h in lib/libparse,libalgo(rithm),libcommon,libdata (find a good name).
+* Compilation on OpenBSD
+* Some GCC's don't have -mno-stack-protector! Use SCons's "autoconf" for this :-)
+* 12:47 <@mrf00> als de Shell opstart, moet ie een bannertje printen met: 'type help voor een lijstje met commands'
+* /sbin/init: should open fd's 0,1,2 for servers and login shell's appropriately.
+    --> /srv/filesystem/virtual should then inherit fd's from their parent on fork(exec)'s!
+    --> use /etc/init.conf or something
+* libcrt: use exit() on return of main()!
 
 [bugs]
+* llvm-gcc and gcc45 on FreeBSD fails --> problem in X86Process::execute() ?
+    --> and linker needs to be updated aswell. See beastie vm.
+* Compilation with -Wconversion and -Wextra turned on fails
 * Entering 'host' or 'p' works in /bin/sh, while it shouldn't.
 * Some files in site_scons/ on the LiveCD seems to be clobbered, when
   reading them with cat. Most likely a problem in Ext2File::read() and friends.
-* Some GCC's don't have -mno-stack-protector! Use SCons's "autoconf" for this :-)
 * VMCtl() : maybe pass two Address pointers!!! Then write the actual used paddr + vaddr there!!!
 * Problem with CCFLAGS and construction Variables not solved:
     --> cc1: error: invalid option argument '-O0 -g3 -nostdinc -Wall -Werror -fno-builtin -Wno-write-strings -Wno-stack-protector'
@@ -36,7 +36,8 @@
     --> Maybe also output this in ProcessInfo! :)
 
 [project]
-* Added site_scons/checksum.py to the SCons wiki! :-)
+* Compilation testings on more platforms, e.g. Solaris.
+* Added site_scons/checksum.py to the SCons wiki! :-) Checksum.py should be improved first.
 * Generate a ChangeLog-0.0.1 aswell, with svn2cl :-)
 * boot.ext2desc should be generated (?)
 * We want full sources on the ISO aswell! :-)
@@ -68,9 +69,6 @@
     --> fixup all posix library function documentation!!!
 
 [programs]
-* /sbin/init: should open fd's 0,1,2 for servers and login shell's appropriately.
-    --> /srv/filesystem/virtual should then inherit fd's from their parent on fork(exec)'s!
-    --> use /etc/init.conf or something
 * Let the user /sbin/init drop it's priviledges to the lowest (least priviledged) runlevel.
 * Commandline argc/argv support; via libparse.
 * Random stack, heap and program text!!!
@@ -102,6 +100,13 @@
 * make a /dev/random! e.g. RDTSC, IRQ's etc.
 
 [sources]
+* libcommon
+    --> fix include/ et all???
+    --> maybe put all include/api/*.h include/arch/*.h files just in
+	kernel/, and include/*.h in lib/libparse,libalgo(rithm),libcommon,libdata (find a good name).
+* REGISTER() for target!!! (without __attribute__((constructor)))
+    --> remove temporary line from libexec/ELF.cpp:
+	--> INITCLASS(ELF,__register_ELFdetect, "999")
 * __attribute__((constructor)) for the target aswell in Init.h?
 * __attribute__((constructor)) priorities in INIT*() in Init.h.
 * Programs do: printf() and cout <<, to stdin,stdout,stderr. Servers log() to the log server,

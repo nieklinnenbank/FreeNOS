@@ -16,34 +16,8 @@
  */
 
 #include <API/PrivExec.h>
-#include <FreeNOS/Init.h>
-#include <FreeNOS/Interrupt.h>
-#include <FreeNOS/Scheduler.h>
-#include <FreeNOS/CPU.h>
-#include <Error.h>
 
-int PrivExecHandler(PrivOperation op)
+int main(int argc, char **argv)
 {
-    switch (op)
-    {
-	case Idle:
-	    
-	    scheduler->setIdle(scheduler->current());
-	    irq_enable();
-	    
-	    while (true)
-		idle();
-	
-	case Reboot:
-	    reboot();
-	    
-	case Shutdown:
-	    shutdown();
-
-	default:
-	    ;
-    }
-    return EINVAL;
+    return PrivExec(Shutdown);
 }
-
-INITAPI(PRIVEXEC, PrivExecHandler)
