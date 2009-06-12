@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2009 Coen Bijlsma
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,22 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBPARSE_COMMANDLINE_H
-#define __LIBPARSE_COMMANDLINE_H
-#ifndef __ASSEMBLER__
+#include "Parser.h"
 
-/**
- * Parses commandline arguments.
- */
-class CommandLine
-{
-    public:
-    
-	/**
-	 * Default constructor.
-	 */
-	CommandLine();
-};
+Parser::Parser() {}
 
-#endif /* __ASSEMBLER__ */
-#endif /* __LIBPARSE_COMMANDLINE_H */
+Parser::~Parser() {}

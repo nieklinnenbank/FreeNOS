@@ -17,5 +17,5 @@
 
 from build import *
 
-env = Prepare(target, [ 'liballoc', 'libposix', 'libc' ])
-env.Library('libparse', [ 'CommandLine.cpp' ])
+env = Prepare(target, [ 'libc', 'libposix' ])
+env.Library('libparse', [ 'Parser.cpp', 'StringTokenizer.cpp' ])

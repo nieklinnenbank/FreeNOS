@@ -240,8 +240,10 @@
 ./lib/libteken/gensequences
 ./lib/libteken/teken.c
 ./lib/SConscript
-./lib/libparse/CommandLine.cpp
-./lib/libparse/CommandLine.h
+./lib/libparse/Parser.h
+./lib/libparse/Parser.cpp
+./lib/libparse/StringTokenizer.h
+./lib/libparse/StringTokenizer.cpp
 ./lib/libparse/SConscript
 ./SConstruct
 ./COPYING
@@ -274,6 +276,9 @@
 ./bin/bench/SConscript
 ./bin/bench/Main.cpp
 ./bin/bench/bench
+./bin/parse/Main.cpp
+./bin/parse/SConscript
+./bin/parse/parse
 ./sbin/reboot/reboot
 ./sbin/reboot/SConscript
 ./sbin/reboot/Main.cpp
