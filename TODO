@@ -5,6 +5,10 @@
 * Add bin/prime for demonstration :-)
 * Compilation on OpenBSD
 * Some GCC's don't have -mno-stack-protector! Use SCons's "autoconf" for this :-)
+* Generate boot/FreeNOS-$VERSION.iso
+* Fill in <MD5|SHA1>  FILENAME-WITHOUT-BASENAME, e.g:
+
+    000011111212031928412840198  FreeNOS-0.0.1.iso
 
 [bugs]
 * Directory::insertEntry() type argument isn't valid! Now we simply use FileType directly,
