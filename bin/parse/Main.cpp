@@ -28,10 +28,9 @@ int main(int argc, char **argv)
 		while(open("/dev/tty0", ZERO) < 0);
 	}
 	
-	String s("foo bar blaat hoi");
+	StringTokenizer st("foo bar blaat hoi", ' ');
 	
-	StringTokenizer st(s, ' ');
-	
+	printf("I found %d tokens\n", st.count());
 	while( st.hasNext() )
 	{
 		printf( *(st.next()) );

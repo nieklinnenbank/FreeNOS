@@ -34,9 +34,33 @@ class StringTokenizer
 
 	/**
 	 * Constructor.
-	 * Initalizes the tokenizer
+	 * Initializes the tokenizer
 	 */
 	StringTokenizer(String& seq, char delim);
+	
+	/**
+	 * Constructor.
+	 * Initializes the tokenizer
+	 */
+	StringTokenizer(String& seq, String& delim);
+	
+	/**
+	 * Constructor
+	 * Initializes the tokenizer
+	 */
+	StringTokenizer(String&, char* delim);
+	
+	/**
+	 * Constructor.
+	 * Initializes the tokenizer
+	 */
+	StringTokenizer(char* seq, char delim);
+	
+	/**
+	 * Constructor.
+	 * Initializes the tokenizer
+	 */
+	StringTokenizer(char* seq, char* delim);
 	
 	/**
 	 * Destructor
@@ -63,12 +87,13 @@ class StringTokenizer
     private:
 
 	char*	_sequence;
-	char	_delimeter;
+	char*	_delimeters;
 	int	_currentLocation;
 	int	_count;
 	char*	_currentToken;
 	char*	_nextToken;
 	
+	void _init(char* seq, char* delim);
 };
 
 #endif /* __LIBPARSE_STRINGTOKENIZER_H */
