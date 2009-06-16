@@ -23,10 +23,13 @@
 #include "Assert.h"
 
 /** Default size of a Vector. */
-#define VECTOR_DEFAULT_SIZE	64
+#define VECTOR_DEFAULT_SIZE	10
 
 /**
  * Simple array template class.
+ *
+ * @author Niek Linnenbank
+ * @author Coen Bijlsma (_expand())
  */
 template <class T> class Vector
 {
@@ -36,7 +39,7 @@ template <class T> class Vector
 	 * Class constructor.
 	 * @param sz Maximum number of item this Vector can hold.
 	 */
-	Vector(Size sz = VECTOR_DEFAULT_SIZE) : _size(sz)
+	Vector(Size sz = VECTOR_DEFAULT_SIZE) : _size(sz), _count(0)
 	{
 	    assert(sz > 0);
 	    vec = new T*[_size];
@@ -63,11 +66,17 @@ template <class T> class Vector
 	{
 	    assertRead(t);
 	
+	    if(  (_count + 1) == _size )
+	    {
+		_expand();
+	    }
+	    
 	    for (Size i = 0; i < _size; i++)
 	    {
 		if (vec[i] == ZERO)
 		{
 		    vec[i] = t;
+		    _count++;
 		    return i;
 		}
 	    }
@@ -98,6 +107,7 @@ template <class T> class Vector
 	    if (pos < _size)
 	    {
 		vec[pos] = ZERO;
+		_count--;
 	    }
 	}
 	
@@ -124,6 +134,15 @@ template <class T> class Vector
 	{
 	    return _size;
 	}
+	
+	/**
+	 * Retrieve the amount of items in the Vector.
+	 * @return The amount of items in the Vector.
+	 */
+	Size count() const
+	{
+	    return _count;
+	}
     
         /**
 	 * Lookup an item in the Vector.
@@ -142,6 +161,34 @@ template <class T> class Vector
 	
 	/** Size of the array. */
 	Size _size;
+	
+	/** The amount of items in the array. */
+	Size _count;
+	
+	/**
+	 * Expands the vector with VECTOR_DEFAULT_SIZE items
+	 */
+	void _expand()
+	{
+		T** newVec = new T*[_size + VECTOR_DEFAULT_SIZE];
+		
+		/* Copy the old array in the new one */
+		for( Size i = 0; i < _size; i++)
+		{
+			newVec[i] = vec[i];
+		}
+		
+		/* Set the new items to 0 */
+		for( Size i = _size; i < (_size + VECTOR_DEFAULT_SIZE); i++)
+		{
+			newVec[i] = 0;
+		}
+		
+		/* Clean up the old vector and set the new one */
+		delete vec;
+		vec = newVec;
+		_size += VECTOR_DEFAULT_SIZE;
+	}
 };
 
 #endif /* __VECTOR_H */
