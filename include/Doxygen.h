@@ -33,27 +33,27 @@
  *
  * $ scons iso
  *
- * @section booting Booting under Qemu
+ * @section booting_qemu Booting under Qemu
  *
  * $ scons qemu
  *
- * @section booting Booting under Qemu with Curses console
+ * @section booting_qemu_curses Booting under Qemu with Curses console
  *
  * $ scons qemu_curses
  *
- * @section booting Booting under Qemu with SDL console
+ * @section booting_qemu_sdl Booting under Qemu with SDL console
  *
  * $ scons qemu_sdl
  *
- * @section booting Booting under Bochs
+ * @section booting_bochs Booting under Bochs
  *
  * $ scons bochs
  *
- * @section debugging Debugging under Qemu
+ * @section debugging_qemu Debugging under Qemu
  *
  * $ scons qemu_debug
  *
- * @section debugging Debugging under Bochs
+ * @section debugging_bochs Debugging under Bochs
  *
  * $ scons bochs_debug
  *
