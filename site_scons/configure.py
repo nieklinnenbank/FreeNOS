@@ -30,7 +30,7 @@ def TryCompileC(context):
     source_file = "int main(int argc, char **argv)" \
 		  "{" \
 		  "    return 0;" \
-		  "}"
+		  "}\n"
 
     # Try to compile and link it.
     result = context.TryLink(source_file, '.c')
