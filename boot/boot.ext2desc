@@ -2,7 +2,6 @@
 ./boot/boot.imgdesc
 ./boot/grub/menu.lst
 ./boot/boot.isodesc
-./TODO
 ./bin/sh/CatCommand.h
 ./bin/sh/Shell.cpp
 ./bin/sh/StatCommand.h

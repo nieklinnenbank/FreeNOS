@@ -30,7 +30,7 @@ template <class K, class V> class CommandLineOption
 	/**
 	 * Constructor
 	 */
-	CommandLineOption(K key, V value = NULL) : _key(key), _value(value)
+	CommandLineOption(K* key, V* value = NULL) : _key(key), _value(value)
 	{
 	}
 	
@@ -39,12 +39,12 @@ template <class K, class V> class CommandLineOption
 	 */
 	virtual ~CommandLineOption();
 	
-	K getKey()
+	K* getKey() const
 	{
 		return _key;
 	}
 	
-	V getValue()
+	V* getValue() const
 	{
 		return _value;
 	}
