@@ -19,6 +19,7 @@ from SCons.Script import *
 import os
 import os.path
 import shutil
+import configure
 
 #
 # Allow cross compilation.
@@ -30,7 +31,6 @@ except:
 
 #
 # Command-line options for the target build chain.
-# TODO: -Werror
 #
 targetVars = Variables()
 targetVars.AddVariables(
@@ -38,8 +38,7 @@ targetVars.AddVariables(
     ('CXX',       'Set the target C++ compiler to use', cross + 'g++'),
     ('LINK',      'Set the target linker to use',       cross + 'ld'),
     ('CCFLAGS',   'Change target C compiler flags',
-		[ '-O0', '-g3', '-nostdinc', '-Wall', '-Werror',
-		  '-fno-builtin', '-Wno-write-strings', '-fno-stack-protector' ]),
+		[ '-O0', '-g3', '-nostdinc', '-Wall', '-Werror', '-fno-builtin'  ]),
     ('CXXFLAGS',  'Change target C++ compiler flags',
 		[ '-fno-rtti', '-fno-exceptions', '-nostdinc' ]),
     ('CPPFLAGS',  'Change target C preprocessor flags', '-isystem include'),
@@ -64,6 +63,14 @@ try:
     os.symlink("X86", "include/FreeNOS")
 except:
     pass
+
+#
+# Perform autoconf-a-like checks on the selected target compiler chain.
+#
+if not target.GetOption('clean'):
+    
+    configure.TryCCFlag(target, '-fno-stack-protector')
+    configure.TryCCFlag(target, '-Wno-write-strings')
 
 #
 # Command-line options for the host build chain.
