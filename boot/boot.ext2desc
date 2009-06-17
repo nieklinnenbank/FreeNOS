@@ -248,12 +248,14 @@
 ./COPYING
 ./site_scons/ext2.pyc
 ./site_scons/iso.py
-./site_scons/qemu.pyc
+./site_scons/emulate.pyc
 ./site_scons/version.py
 ./site_scons/version.pyc
 ./site_scons/ext2.py
 ./site_scons/iso.pyc
-./site_scons/qemu.py
+./site_scons/emulate.py
+./site_scons/configure.py
+./site_scons/configure.pyc
 ./site_scons/build.py
 ./site_scons/build.pyc
 ./sbin/img/BootEntry.h

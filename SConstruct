@@ -20,7 +20,7 @@ import version
 import ext2
 import img
 import iso
-import qemu
+import emulate
 import dist
 
 #
