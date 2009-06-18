@@ -15,13 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __STACKNODE_H
-#define __STACKNODE_H
+#ifndef __ELEMENT_H
+#define __ELEMENT_H
 
 /**
- * This class represents a Node in a Stack
+ * This class represents an Element in (i.e.) a Stack
  */
-template <class T> class StackNode
+template <class T> class Element
 {
     public:
 
@@ -30,14 +30,14 @@ template <class T> class StackNode
 	 * @param data The data stored in this node.
 	 * @param next A pointer to the next node.
 	 */
-	StackNode(T* data, Node* next = NULL) : _data(data), _next(next)
+	Element(T* data, Node* next = NULL) : _data(data), _next(next)
 	{
 	}
 	
 	/**
 	 * Destructor
 	 */
-	virtual ~StackNode() {}
+	virtual ~Element() {}
 	
 	/**
 	 * Returns the data stored in this node.
@@ -50,7 +50,7 @@ template <class T> class StackNode
 	/**
 	 * Returns the pointer to the next node.
 	 */
-	StackNode<T>* getNext() const
+	Element<T>* getNext() const
 	{
 		return _next;
 	}
@@ -68,14 +68,14 @@ template <class T> class StackNode
 	 * Sets the pointer to the next node.
 	 * @param next The pointer to the next node.
 	 */
-	void setNext(StackNode<T>* next)
+	void setNext(Element<T>* next)
 	{
 		_next = next;
 	}
 	
     private:
 	T* _data;
-	StackNode<T>* _next;
+	Element<T>* _next;
 }
 
-#endif /* __STACKNODE_H */
+#endif /* __ELEMENT_H */
