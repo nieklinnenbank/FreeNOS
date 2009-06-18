@@ -25,18 +25,18 @@ template <class T> class StackNode
 {
     public:
 
-	Node(T* data, Node* next = NULL) : _data(data), _next(next)
+	StackNode(T* data, Node* next = NULL) : _data(data), _next(next)
 	{
 	}
 	
-	virtual ~Node() {}
+	virtual ~StackNode() {}
 	
 	T* getData() const
 	{
 		return _data;
 	}
 	
-	Node* getNext() const
+	StackNode<T>* getNext() const
 	{
 		return _next;
 	}
@@ -46,14 +46,14 @@ template <class T> class StackNode
 		_data = data;
 	}
 	
-	void setNext(Node* next)
+	void setNext(StackNode<T>* next)
 	{
 		_next = next;
 	}
 	
     private:
 	T* _data;
-	Node* _next;
+	StackNode<T>* _next;
 }
 
 #endif /* __STACKNODE_H */

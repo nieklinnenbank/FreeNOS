@@ -18,6 +18,8 @@
 #ifndef __STACK_H
 #define __STACK_H
 
+#include "StackNode.h"
+
 /**
  * This is an implementaion of the stack datastructure.
  */
@@ -29,7 +31,7 @@ template <class T> class Stack
 	 * Constructor.
 	 * @param top The top node of this Stack;
 	 */
-	Stack(Node<T>* top) : _top(top)
+	Stack(StackNode<T>* top) : _top(top)
 	{
 	}
 	
@@ -47,7 +49,7 @@ template <class T> class Stack
 	 * Pushes the given node on top of the Stack
 	 * @param node The Node to put on top of the Stack
 	 */
-	void push(Node<T>* node)
+	void push(StackNode<T>* node)
 	{
 		if( _top == NULL )
 		{
@@ -55,7 +57,7 @@ template <class T> class Stack
 			return;
 		}
 		
-		Node<T>* temp = _top;
+		StackNode<T>* temp = _top;
 		_top = node;
 		_top->setNext(temp);
 	}
@@ -65,9 +67,9 @@ template <class T> class Stack
 	 * sets the new top Node to be the next Node of the one
 	 * returned here.
 	 */
-	Node<T>* pop()
+	StackNode<T>* pop()
 	{
-		Node<T>* temp = _top;
+		StackNode<T>* temp = _top;
 		_top = temp->getNext();
 		return temp;
 	}
@@ -79,7 +81,7 @@ template <class T> class Stack
 	{
 		Size s = 0;
 		
-		for( Node<T>* node = _top; node != NULL; node = node->getNext() )
+		for( StackNode<T>* node = _top; node != NULL; node = node->getNext() )
 		{
 			s++;
 		}
@@ -96,7 +98,7 @@ template <class T> class Stack
 	}
     private:
 
-	Node<T>* _top;
+	StackNode<T>* _top;
 }
 
 #endif /* __STACK_H */
