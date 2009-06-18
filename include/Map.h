@@ -256,7 +256,7 @@ template <class K = Comparable<K>, class V = Comparable<V> > class Map
 		
 		return -1;
 	}
-}
+};
 
 
 #endif /* __MAP_H */
