@@ -143,6 +143,21 @@ template <class T> class Vector
 	{
 	    return _count;
 	}
+	
+	/**
+	 * Returns a shallow clone of this Vector
+	 * @return A shallow clone of this Vector
+	 */
+	Vector<T> clone()
+	{
+		Vector<T> clone;
+		for(Size index = 0; index < _size; index++)
+		{
+			clone.insert(index, vec[index]);
+		}
+		
+		return clone;
+	}
     
         /**
 	 * Lookup an item in the Vector.
