@@ -30,6 +30,8 @@ SECTIONS
 	*(.gnu.linkonce.*)
 	*(.data)
 	*(.rodata)
+	*(.rodata.*)
+	*(.eh_frame)
 
 	. = ALIGN(4);
         CTOR_LIST = .;

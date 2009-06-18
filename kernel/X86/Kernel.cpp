@@ -134,19 +134,20 @@ void X86Kernel::hookInterrupt(int vec, InterruptHandler h, ulong p)
 
 void X86Kernel::enableIRQ(uint irq, bool enabled)
 {
-    u8 pic = PIC1_DATA;
-    
-    /* Use the slave PIC? */
-    if (irq >= 8)
-    {
-        pic  = PIC2_DATA;
-	irq -= 8;
-    }
-    /* (Un)mask appropriately. */
     if (enabled)
-        outb(pic, inb(pic) & ~(1 << (irq % 8)));
+    {
+    	if (irq < 8)
+        	outb(PIC1_DATA, inb(PIC1_DATA) & ~(1 << irq));
+    	else
+        	outb(PIC2_DATA, inb(PIC2_DATA) & ~(1 << (irq - 8)));
+    }
     else
-        outb(pic, inb(pic) | (1 << (irq % 8)));
+    {
+    	if (irq < 8)
+        	outb(PIC1_DATA, inb(PIC1_DATA) | (1 << irq));
+    	else
+        	outb(PIC2_DATA, inb(PIC2_DATA) | (1 << (irq - 8)));
+    }
 }
 
 void X86Kernel::exception(CPUState *state, ulong param)
