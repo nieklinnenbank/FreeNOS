@@ -19,33 +19,55 @@
 #define __STACKNODE_H
 
 /**
- * 
+ * This class represents a Node in a Stack
  */
 template <class T> class StackNode
 {
     public:
 
+	/**
+	 * Constructor.
+	 * @param data The data stored in this node.
+	 * @param next A pointer to the next node.
+	 */
 	StackNode(T* data, Node* next = NULL) : _data(data), _next(next)
 	{
 	}
 	
+	/**
+	 * Destructor
+	 */
 	virtual ~StackNode() {}
 	
+	/**
+	 * Returns the data stored in this node.
+	 */
 	T* getData() const
 	{
 		return _data;
 	}
 	
+	/**
+	 * Returns the pointer to the next node.
+	 */
 	StackNode<T>* getNext() const
 	{
 		return _next;
 	}
 	
+	/**
+	 * Sets the data stored in this node.
+	 * @param data The data to store.
+	 */
 	void setData(T* data)
 	{
 		_data = data;
 	}
 	
+	/**
+	 * Sets the pointer to the next node.
+	 * @param next The pointer to the next node.
+	 */
 	void setNext(StackNode<T>* next)
 	{
 		_next = next;
