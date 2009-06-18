@@ -19,7 +19,8 @@
 #define __KERNEL_API_H
 
 #include <Types.h>
-#include <Vector.h>
+#include <Array.h>
+/* #include <Vector.h> */
 #include <Init.h>
 #include "Init.h"
 
@@ -64,7 +65,7 @@ typedef enum Operation
 Action;
 
 /** List of known APIHandler functions. */
-extern Vector<APIHandler> apis;
+extern Array<APIHandler> apis;
 
 /**
  * @}

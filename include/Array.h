@@ -19,7 +19,7 @@
 #define __ARRAY_H
 
 #include "Comparable.h"
-#include "Size.h"
+#include "Types.h"
 
 /** Default size of an Array */
 #define ARRAY_DEFAULT_SIZE	64
@@ -28,7 +28,7 @@
  * This is a wrapper class for an array and contains some extra
  * functionality, somewhat like the Arrays class in Java.
  */
-template <class T> class Array : public Comparable<Array<T> >
+template <class T> class Array
 {
 
     public:
@@ -40,7 +40,7 @@ template <class T> class Array : public Comparable<Array<T> >
 	 */
 	Array(Size size = ARRAY_DEFAULT_SIZE) : _size(size)
 	{
-		assert(sz > 0);
+		assert(size > 0);
 		_array = new T*[_size];
 		
 		for( Size i = 0; i < _size; i++)
@@ -136,7 +136,7 @@ template <class T> class Array : public Comparable<Array<T> >
 		
 		for( Size s = 0; s < _size; s++)
 		{
-			array.insert(s, _array[i]);
+			array.insert(s, _array[s]);
 		}
 		
 		return array;
@@ -187,7 +187,7 @@ template <class T> class Array : public Comparable<Array<T> >
 	 */
 	T* operator [] (int i) const
 	{
-		return( i >= 0 && i < (int) _size) ? _array[i] : NULL;
+		return( i >= 0 && i < (int) _size) ? _array[i] : (T*)NULL;
 	}
 	
 	/**
@@ -231,6 +231,6 @@ template <class T> class Array : public Comparable<Array<T> >
 	
 	/** The maximum size of the array */
 	Size _size;
-}
+};
 
 #endif /* __ARRAY_H */

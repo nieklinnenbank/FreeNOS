@@ -15,45 +15,47 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBPARSE_COMMANDLINEOPTION_H
-#define __LIBPARSE_COMMANDLINEOPTION_H
-
-#include <String.h>
+#ifndef __LIBPARSE_DELIMETER_H
+#define __LIBPARSE_DELIMETER_H
 
 /**
- * Represents a commandline option
+ * Represents a delimeter
  */
-template <class K, class V> class CommandLineOption
+class Delimeter
 {
     public:
 
 	/**
 	 * Constructor
+	 *
+	 * @param open The char that indicates that
+	 * a string should be tokenized from here.
+	 * @param close The char that indicates that
+	 * the current token lasts until here.
 	 */
-	CommandLineOption(K* key, V* value = NULL) : _key(key), _value(value)
-	{
-	}
+	Delimeter(char open, char close);
 	
 	/**
 	 * Destructor
 	 */
-	virtual ~CommandLineOption();
+	virtual ~Delimeter() {};
 	
-	K* getKey() const
-	{
-		return _key;
-	}
+	/**
+	 * Returns the char that is used to indicate
+	 * that a string should be tokenized from here.
+	 */
+	char getOpen() const;
 	
-	V* getValue() const
-	{
-		return _value;
-	}
-	
+	/**
+	 * Returns the char that indicates that
+	 * the current token lasts until here.
+	 */
+	char getClose() const;
 
     private:
-
-	K* _key;
-	V* _value;
+	
+	char _open;
+	char _close;
 };
 
-#endif /* __LIBPARSE_COMMANDLINEOPTION_H */
+#endif /* __LIBPARSE_DELIMETER_H */

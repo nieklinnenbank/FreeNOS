@@ -76,6 +76,6 @@ template <class T> class Element
     private:
 	T* _data;
 	Element<T>* _next;
-}
+};
 
 #endif /* __ELEMENT_H */

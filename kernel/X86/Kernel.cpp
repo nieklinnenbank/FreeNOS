@@ -24,13 +24,14 @@
 #include <Macros.h>
 #include <List.h>
 #include <ListIterator.h>
-#include <Vector.h>
+#include <Array.h>
+/* #include <Vector.h> */
 
 /** Interrupt handlers. */
-Vector<List<InterruptHook> > interrupts(256);
+Array<List<InterruptHook> > interrupts(256);
 
 /** API handlers. */
-Vector<APIHandler> apis(16);
+Array<APIHandler> apis(16);
 
 void executeInterrupt(CPUState state)
 {

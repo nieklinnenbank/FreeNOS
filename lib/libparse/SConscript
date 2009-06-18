@@ -18,4 +18,5 @@
 from build import *
 
 env = Prepare(target, [ 'libc', 'libposix' ])
-env.Library('libparse', [ 'Parser.cpp', 'StringTokenizer.cpp' ])
+env.Library('libparse', [ 'Parser.cpp', 'StringTokenizer.cpp', 'Delimeter.cpp',
+    'CommandLine.cpp' ])

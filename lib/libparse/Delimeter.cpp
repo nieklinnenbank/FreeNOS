@@ -15,45 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBPARSE_COMMANDLINEOPTION_H
-#define __LIBPARSE_COMMANDLINEOPTION_H
+#include <Delimeter.h>
 
-#include <String.h>
-
-/**
- * Represents a commandline option
- */
-template <class K, class V> class CommandLineOption
+Delimeter::Delimeter(char open, char close) : _open(open), _close(close)
 {
-    public:
+}
 
-	/**
-	 * Constructor
-	 */
-	CommandLineOption(K* key, V* value = NULL) : _key(key), _value(value)
-	{
-	}
-	
-	/**
-	 * Destructor
-	 */
-	virtual ~CommandLineOption();
-	
-	K* getKey() const
-	{
-		return _key;
-	}
-	
-	V* getValue() const
-	{
-		return _value;
-	}
-	
+char Delimeter::getOpen() const
+{
+	return _open;
+}
 
-    private:
-
-	K* _key;
-	V* _value;
-};
-
-#endif /* __LIBPARSE_COMMANDLINEOPTION_H */
+char Delimeter::getClose() const
+{
+	return _close;
+}

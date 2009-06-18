@@ -99,6 +99,6 @@ template <class T> class Stack
     private:
 
 	Element<T>* _top;
-}
+};
 
 #endif /* __STACK_H */

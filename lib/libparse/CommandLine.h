@@ -22,6 +22,7 @@
 #include <Vector.h>
 
 #include "CommandLineOption.h"
+#include "Delimeter.h"
 
 /**
  * Represents a commandline
@@ -32,18 +33,20 @@ class CommandLine
 
 	/**
 	 * Constructor
+	 * @param line The original commandline
+	 * @param delimeters
 	 */
-	CommandLine(String& line);
+	CommandLine(String* line, Vector<Delimeter>* delimeters);
 	
 	/**
 	 * Constructor
 	 */
-	CommandLine(char* line);
+	CommandLine(char* line, Vector<Delimeter>* delimeters);
 	
 	/**
 	 * Destructor
 	 */
-	virtual ~CommandLine();
+	virtual ~CommandLine() {};
 	
 	/**
 	 * Returns the entered options
@@ -53,20 +56,20 @@ class CommandLine
 	/**
 	 * Returns the CommandLineOption that has the given name
 	 */
-	CommandLineOption<String, String> getOption(String& name);
+	CommandLineOption<String, String>* getOption(String& name);
 	
 	/**
 	 * Returns the CommandLineOption that has the given name
 	 */
-	CommandLineOption<String, String> getOption(char* name);
+	CommandLineOption<String, String>* getOption(char* name);
 
     private:
 
 	char* _line;
+	Vector< Delimeter >* _delimeters;
 	Vector< CommandLineOption<String, String> > _options;
 	
 	void _parse();
 };
 
-#endif
 #endif /* __LIBPARSE_COMMANDLINE_H */
