@@ -24,7 +24,7 @@
 #include <IPCServer.h>
 #include <FileSystem.h>
 #include <FileSystemMessage.h>
-#include <Vector.h>
+#include <Array.h>
 
 /** 
  * @defgroup vfs vfs (Virtual Filesystem) 
@@ -85,7 +85,7 @@ typedef struct UserProcessFSEntry
     u16 userID, groupID;
 
     /** Open files. */
-    Vector<FileDescriptor> *files;
+    Array<FileDescriptor> *files;
     
     /** Total number of open files. */
     Size fileCount;

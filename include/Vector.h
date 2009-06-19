@@ -107,6 +107,18 @@ template <class T> class Vector
 	    if (pos < _size)
 	    {
 		vec[pos] = ZERO;
+		
+		/** Shift the rest of the items to the left */
+		for( Size index = pos; index < _size; index++ )
+		{
+			if( index == (_size - 1) )
+			{
+				vec[index] = ZERO;
+			} else {
+				vec[index] = vec[index + 1];
+			}
+		}
+		
 		_count--;
 	    }
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2009 Coen Bijlsma
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,35 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/Process.h>
-#include <Array.h>
-#include <Types.h>
-#include <Config.h>
-#include <ListIterator.h>
+#include "StringTokenizer.h"
 
-Array<Process> Process::procs(MAX_PROCS);
-List<Process> Process::wakeups;
+Array<String> URI::_reserved(9);
+URI::_reserved[0] = String(":");
+URI::_reserved
 
-Process::Process(Address addr) : status(Stopped)
+URI::URI(String uri) : _uri(uri)
 {
-    pid = procs.insert(this);
-}
-    
-Process::~Process()
-{
-    wakeups.remove(this);
-    procs.remove(pid);
+	StringTokenizer st(_uri, URI_SCHEME_SEPARATOR);
+	
+	assert( st.count() >= 2 );
+	_scheme = st.next();
 }
 
-ArchProcess * Process::byID(ProcessID id)
+String* URI::getScheme() const
 {
-    if (id == SELF && scheduler->current())
-	return scheduler->current();
-    else
-	return (ArchProcess *) procs[id];
+	return *_scheme;
 }
 
-bool Process::operator == (Process *p)
-{
-    return this->pid == p->pid;
-}

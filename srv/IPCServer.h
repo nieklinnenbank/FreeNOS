@@ -63,8 +63,8 @@ template <class Base, class MsgType> class IPCServer
         IPCServer(Base *inst, Size num = 32)
 	    : sendReply(true), instance(inst)
         {
-	    ipcHandlers = new Vector<MessageHandler<IPCHandlerFunction> >(num);
-	    irqHandlers = new Vector<MessageHandler<IRQHandlerFunction> >(num);
+	    ipcHandlers = new Array<MessageHandler<IPCHandlerFunction> >(num);
+	    irqHandlers = new Array<MessageHandler<IRQHandlerFunction> >(num);
 	}
 
 	/**
@@ -141,7 +141,7 @@ template <class Base, class MsgType> class IPCServer
 	
 	/**
 	 * Register a new IRQ message vector handler
-	 * @param slot Vector value to trigger h.
+	 * @param slot Array value to trigger h.
 	 * @param h Handler to execute.
 	 */
 	void addIRQHandler(Size slot, IRQHandlerFunction h)
@@ -157,10 +157,10 @@ template <class Base, class MsgType> class IPCServer
     private:
     
 	/** IPC handler functions. */
-	Vector<MessageHandler<IPCHandlerFunction> > *ipcHandlers;
+	Array<MessageHandler<IPCHandlerFunction> > *ipcHandlers;
 	
 	/** IRQ handler functions. */
-	Vector<MessageHandler<IRQHandlerFunction> > *irqHandlers;
+	Array<MessageHandler<IRQHandlerFunction> > *irqHandlers;
 	
 	/** Server object instance. */
 	Base *instance;

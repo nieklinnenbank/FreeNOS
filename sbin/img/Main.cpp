@@ -26,7 +26,7 @@
 #include "Main.h"
 
 Size readBootEntries(char *prog, char *file,
-		    Vector<BootEntry> *entries)
+		    Array<BootEntry> *entries)
 {
     char line[128];
     int num = 0;
@@ -67,7 +67,7 @@ Size readBootEntries(char *prog, char *file,
 	else
 	    entry->numRegions = num;
 
-	/* Insert into Vector. */
+	/* Insert into Array. */
 	entries->insert(entry);
 	totalEntries++;
 	
@@ -87,7 +87,7 @@ Size readBootEntries(char *prog, char *file,
 
 int main(int argc, char **argv)
 {
-    Vector<BootEntry> entries(128);
+    Array<BootEntry> entries(128);
     BootImage image;
     BootVariable variables[13];
     BootProgram *programs;

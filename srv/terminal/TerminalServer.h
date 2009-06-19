@@ -68,7 +68,7 @@ class TerminalServer : public IPCServer<TerminalServer, FileSystemMessage>
         void readWriteHandler(FileSystemMessage *msg);
 
 	/** Contains all running terminals. */
-	Vector<Terminal> terminals;
+	Array<Terminal> terminals;
 	
 	/** Currently active terminal. */
 	Terminal *current;

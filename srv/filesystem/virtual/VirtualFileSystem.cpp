@@ -258,7 +258,7 @@ void VirtualFileSystem::newProcessHandler(FileSystemMessage *msg)
     /* Fill in the new process. */
     procs[msg->procID].userID  = msg->userID;
     procs[msg->procID].groupID = msg->groupID;
-    procs[msg->procID].files   = new Vector<FileDescriptor>;
+    procs[msg->procID].files   = new Array<FileDescriptor>;
     
     /* Success. */
     msg->result = ESUCCESS;

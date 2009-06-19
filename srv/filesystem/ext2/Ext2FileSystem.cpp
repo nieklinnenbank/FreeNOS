@@ -53,7 +53,7 @@ Ext2FileSystem::Ext2FileSystem(const char *p, Storage *s)
 	exit(EXIT_FAILURE);
     }
     /* Create groups vector. */
-    groups  = new Vector<Ext2Group>(EXT2_GROUPS_COUNT(&superBlock));
+    groups  = new Array<Ext2Group>(EXT2_GROUPS_COUNT(&superBlock));
 
     /* Read out group descriptors. */
     for (Size i = 0; i < EXT2_GROUPS_COUNT(&superBlock); i++)

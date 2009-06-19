@@ -25,7 +25,6 @@
 #include <List.h>
 #include <ListIterator.h>
 #include <Array.h>
-/* #include <Vector.h> */
 
 /** Interrupt handlers. */
 Array<List<InterruptHook> > interrupts(256);

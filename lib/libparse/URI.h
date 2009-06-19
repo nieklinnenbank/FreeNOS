@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2009 Coen Bijlsma
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,35 +15,45 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/Process.h>
+#ifndef __LIBPARSE_URI_H
+#define __LIBPARSE_URI_H
+
 #include <Array.h>
-#include <Types.h>
-#include <Config.h>
-#include <ListIterator.h>
+#include <String.h>
 
-Array<Process> Process::procs(MAX_PROCS);
-List<Process> Process::wakeups;
+/**
+ * Represents an URI according to RFC 1630.
+ * This rfc is located at http://tools.ietf.org/html/rfc1630
+ */
+class URI
+{
+    public:
 
-Process::Process(Address addr) : status(Stopped)
-{
-    pid = procs.insert(this);
-}
-    
-Process::~Process()
-{
-    wakeups.remove(this);
-    procs.remove(pid);
-}
+	/**
+	 * Constructor
+	 */
+	URI(String uri);
+	
+	/**
+	 * Destructor
+	 */
+	virtual ~URI() {};
+	
+	/**
+	 * Returns the scheme of this URI
+	 */
+	String* getScheme() const;
 
-ArchProcess * Process::byID(ProcessID id)
-{
-    if (id == SELF && scheduler->current())
-	return scheduler->current();
-    else
-	return (ArchProcess *) procs[id];
-}
+    protected:
 
-bool Process::operator == (Process *p)
-{
-    return this->pid == p->pid;
-}
+	/** Reserved characters array */
+	static Array<String> _reserved;
+	
+	/** The raw URI. */
+	String _uri;
+	
+	/** The scheme of the URI. */
+	String _scheme;
+};
+
+#endif /* __LIBPARSE_URI */

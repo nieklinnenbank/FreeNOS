@@ -21,7 +21,7 @@
 
 #include <FreeNOS/Interrupt.h>
 #include <Types.h>
-#include <Vector.h>
+#include <Array.h>
 #include <List.h>
 #include "Scheduler.h"
 
@@ -125,7 +125,7 @@ class Process
 	 * Retrieve the process table.
 	 * @return Pointer to the process table.
 	 */
-	Vector<Process> * getProcessTable()
+	Array<Process> * getProcessTable()
 	{
 	    return &procs;
 	}
@@ -171,7 +171,7 @@ class Process
 	static List<Process> wakeups;
 	
 	/** All known Processes. */
-	static Vector<Process> procs;
+	static Array<Process> procs;
 };
 
 /**

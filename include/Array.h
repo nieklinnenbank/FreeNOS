@@ -18,6 +18,7 @@
 #ifndef __ARRAY_H
 #define __ARRAY_H
 
+#include "Assert.h"
 #include "Comparable.h"
 #include "Types.h"
 
@@ -54,17 +55,17 @@ template <class T> class Array
 	 * @param item The item to add to the Array.
 	 * @return bool Whether adding the item to the Array succeeded.
 	 */
-	bool insert(T* item)
+	int insert(T* item)
 	{
 		for(Size i = 0; i < _size; i++)
 		{
-			if( _array[i] == NULL )
+			if( _array[i] == ZERO )
 			{
 				_array[i] = item;
-				return true;
+				return i;
 			}
 		}
-		return false;
+		return -1;
 	}
 	
 	/**
@@ -98,7 +99,7 @@ template <class T> class Array
 			return false;
 		}
 		
-		_array[position] = NULL;
+		_array[position] = (T*) NULL;
 		return true;
 	}
 	
@@ -130,7 +131,7 @@ template <class T> class Array
 	 * Returns a shallow copy of this Array.
 	 * @return A clone of this Array.
 	 */
-	Array<T>& clone()
+	Array<T> clone()
 	{
 		Array<T> array(_size);
 		
