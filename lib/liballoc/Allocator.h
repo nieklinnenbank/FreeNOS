@@ -119,18 +119,18 @@ class Allocator
  * Allocate new memory.
  * @param sz Amount of memory to allocate.
  */
-inline void * operator new(Size sz)
+inline void * operator new(__SIZE_TYPE__ sz)
 {
-    return (void *) Allocator::getDefault()->allocate(&sz);
+    return (void *) Allocator::getDefault()->allocate((Size *) &sz);
 }
 
 /**
  * Allocate memory for an array.
  * @param sz Amount of memory to allocate.
  */
-inline void * operator new[](Size sz)
+inline void * operator new[](__SIZE_TYPE__ sz)
 {
-    return (void *) Allocator::getDefault()->allocate(&sz);
+    return (void *) Allocator::getDefault()->allocate((Size *) &sz);
 }
 
 /**
@@ -165,7 +165,7 @@ inline void operator delete[] (void *mem)
  * @param sz Size to allocate (ignored).
  * @param addr Memory address to return.
  */
-inline void * operator new(Size sz, Address addr)
+inline void * operator new(__SIZE_TYPE__ sz, Address addr)
 {
     return (void *) addr;
 }
