@@ -18,42 +18,84 @@
 #ifndef __LIBPARSE_URI_H
 #define __LIBPARSE_URI_H
 
-#include <Array.h>
 #include <String.h>
+#include <string.h>
+
+#define RESERVED_GENDELIMS ":/?#[]@"
+#define RESERVED_SUBDELIMS "!$&'()*+,;="
+#define UNRESERVED_CHARS "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-._~"
+#define URI_SCHEME_SEPARATOR ":"
 
 /**
- * Represents an URI according to RFC 1630.
- * This rfc is located at http://tools.ietf.org/html/rfc1630
+ * Represents an URI according to RFC 3986.
+ * This rfc is located at http://tools.ietf.org/html/rfc3986
+ *
+ * Note that the URI class itself is only capable of identifying
+ * the various components defined in the given URI. The contents
+ * of these components have to be validated by the subclass that
+ * knows the scheme.
+ * For instance, given the following URI:
+ * file:///etc/passwd
+ * the class FileURI knows all about the correct format of that URI.
+ *
+ * On a second note, it's important to remember that an URI does NOT
+ * have to refer to an accessable resource, as an URI only provides
+ * identification of that resource.
  */
 class URI
 {
     public:
 
-	/**
-	 * Constructor
-	 */
-	URI(String uri);
-	
-	/**
-	 * Destructor
-	 */
-	virtual ~URI() {};
-	
-	/**
-	 * Returns the scheme of this URI
-	 */
-	String* getScheme() const;
+        /**
+         * Constructor
+         */
+        URI(String uri);
+        
+        /**
+         * Destructor
+         */
+        virtual ~URI() {};
+        
+        /**
+         * Returns the scheme of this URI
+         */
+        String getScheme() const;
+        
+        /**
+         * Returns the raw URI string as given in the
+         * constructor.
+         */
+        String getRawURI() const;
+        
+        /**
+         * Returns whether the given URI is equal
+         * to this URI.
+         * @param uri The URI to compare to this URI.
+         */
+        bool equals(URI& uri);
+        
+        /**
+         * Normalizes this URI. That means that percent-encoded
+         * unreserved characters are decoded and replaced in the
+         * returned String. This is needed for - amongs other things -
+         * determining whether two URI's are equal.
+         */
+         String normalize();
 
     protected:
 
-	/** Reserved characters array */
-	static Array<String> _reserved;
-	
-	/** The raw URI. */
-	String _uri;
-	
-	/** The scheme of the URI. */
-	String _scheme;
+        /** The raw URI. */
+        String _uri;
+        
+        /** The normalized URI. */
+        String _normalized;
+
+        char _decode(char* encoded);
+
+    private:
+
+        /** The scheme of the URI. */
+        String _scheme;
 };
 
 #endif /* __LIBPARSE_URI */

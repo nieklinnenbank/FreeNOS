@@ -24,7 +24,7 @@
 #include "Vector.h"
 #include "Comparable.h"
 
-template <class K = Comparable<K>, class V = Comparable<V> > class Map
+template <class K = Comparable<class K>, class V = Comparable<class V> > class Map
 {
     public:
 

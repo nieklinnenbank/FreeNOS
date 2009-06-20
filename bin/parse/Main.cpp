@@ -15,7 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <StringTokenizer.h>
+#include <String.h>
+#include <URI.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -28,15 +29,14 @@ int main(int argc, char **argv)
 		while(open("/dev/tty0", ZERO) < 0);
 	}
 	
-	StringTokenizer st("foo bar blaat hoi", ' ');
-	
-	printf("I found %d tokens\n", st.count());
-	while( st.hasNext() )
-	{
-		printf( *(st.next()) );
-		printf("\n");
-	}
-	
-	printf("Done\n");
+        String u1("http://my.utrecht\%2d.nl");
+        String u2("http://my.utrecht-.nl");
+        
+        URI uri1(u1);
+        URI uri2(u2);
+        
+        printf("URI1 has scheme %s\n", *(uri1.getScheme()) );
+        printf("URI1 equals URI2: %s\n", (uri1.equals(uri2) ? "true" : "false") );
+        printf("URI1 normalized == %s\n", *(uri1.normalize()) );
 	return 0;
 }
