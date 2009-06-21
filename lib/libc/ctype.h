@@ -81,14 +81,16 @@
  * @param c The letter to convert.
  * @return The converted letter, or c if conversion was not possible.
  */
-extern C int tolower(int c);
+#define tolower(c) \
+    (c >= 'A' && c <= 'Z') ? (c + 32) : (c)
 
 /**
  * Converts the letter c to uppercase.
  * @param c The letter to convert.
  * @return The converted letter, or c if conversion was not possible.
  */
-extern C int toupper(int c);
+#define toupper(c) \
+    (c >= 'a' && c <= 'z') ? (c - 32) : (c)
 
 /**
  * @}

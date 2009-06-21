@@ -16,7 +16,6 @@
  */
 
 #include <Assert.h>
-#include <string.h>
 #include <stdlib.h>
 #include "StringTokenizer.h"
 #include "URI.h"
@@ -30,6 +29,7 @@ URI::URI(String uri) : _uri(uri), _normalized(String())
     if( st.count() == 2 )
     {
         _scheme = st.next();
+        _scheme = _scheme.toUpperCase();
     }
 }
 

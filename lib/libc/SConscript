@@ -20,7 +20,6 @@ from build import *
 env = Prepare(target, [ 'libposix' ], [ 'process' ])
 env.Library('libc', [ Glob('stdio/*.c' ),
 	              Glob('stdlib/*.c'),
-	              Glob('ctype/*.c'),
 		      Glob('stdlib/*.cpp'),
 	    	      Glob('string/*.c'),
 		      Glob('*.c') ])

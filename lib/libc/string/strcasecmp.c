@@ -18,8 +18,6 @@
 #include "string.h"
 #include <ctype.h>
 
-extern C int tolower(int c);
-
 int strcasecmp(char *dest, char *src )
 {
     

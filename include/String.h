@@ -19,6 +19,8 @@
 #define __STRING_H
 
 #include <string.h>
+#include <ctype.h>
+#include <stdlib.h>
 #include "Comparable.h"
 #include "Types.h"
 #include "Assert.h"
@@ -107,6 +109,42 @@ class String : public Comparable<String>
 	{
 	    return strlen(value);
 	}
+	
+	/**
+         * Returns a copy of this String, converted to lowercase.
+         * @return The lowercase variant of this String.
+         */
+        String toLowerCase()
+        {
+            Size length = this->size();
+            char* nv = (char*)malloc(length + 1);
+            memset(nv, 0, length + 1);
+            
+            for( Size index = 0; index < length; index++ )
+            {
+                nv[index] = tolower(value[index]);
+            }
+            
+            return String(nv);
+        }
+        
+        /**
+         * Returns a copy of this String, converted to uppercase.
+         * @return The uppercase variant of this String.
+         */
+        String toUpperCase()
+        {
+            Size length = this->size();
+            char* nv = (char*)malloc(length + 1);
+            memset(nv, 0, length + 1);
+            
+            for( Size index = 0; index < length; index++ )
+            {
+                nv[index] = toupper(value[index]);
+            }
+            
+            return String(nv);
+        }
 
 	/**
 	 * Read the string byte-wise.
