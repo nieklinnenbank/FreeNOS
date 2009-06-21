@@ -77,6 +77,20 @@
       (c) == '\r' || (c) == '\n' || isblank(c))
 
 /**
+ * Converts the letter c to lowercase.
+ * @param c The letter to convert.
+ * @return The converted letter, or c if conversion was not possible.
+ */
+extern C int tolower(int c);
+
+/**
+ * Converts the letter c to uppercase.
+ * @param c The letter to convert.
+ * @return The converted letter, or c if conversion was not possible.
+ */
+extern C int toupper(int c);
+
+/**
  * @}
  */
 

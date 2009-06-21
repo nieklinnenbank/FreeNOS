@@ -118,7 +118,80 @@ class String : public Comparable<String>
 	    assert(index < size());
 	    return value[index];
 	}
-
+	
+	/**
+	 * Returns true if and only if this String contains the specified
+	 * String.
+	 * @param sequence The String searched for in this String.
+	 * @return bool Whether the specified String is contained in this String.
+	 */
+        bool contains(String& sequence)
+        {
+                return contains(*sequence);
+        }
+        
+        /**
+         * Returns true if and only if this String contains the specified
+         * char*.
+         * @param sequence The char* searched for in this String.
+         * @return bool Whether the specified char* is contained in this String.
+         */
+        bool contains(char* sequence)
+        {
+                if( sequence == (char*) NULL
+                    || strlen(sequence) > strlen(value) )
+                {
+                        return false;
+                }
+                
+                /** See if the first character of sequence occurs in value. */
+                char* pt = strchr(value, sequence[0]);
+                if( pt == (char*) NULL )
+                {
+                        return false;
+                }
+                
+                while( *pt )
+                {
+                        if( strncmp( sequence, pt, strlen( sequence ) == 0  ))
+                        {
+                                return true;
+                        }
+                        pt++;
+                }
+                
+                return false;
+        }
+        
+        /**
+         * Tests if this String ends with the specified suffix.
+         * @param suffix The String to compare with the end of this String.
+         * @return bool Whether this String ends with the given suffix.
+         */
+        bool endsWith(String& suffix)
+        {
+                return endsWith(*suffix);
+        }
+        
+        /**
+         * Tests if this String ends with the specified suffix.
+         * @param suffix The String to compare with the end of this String.
+         * @return bool Whether this String ends with the given suffix.
+         */
+        bool endsWith(char* suffix)
+        {
+                Size sLength = strlen(suffix);
+                Size vLength = strlen(value);
+                
+                if( sLength > vLength )
+                {
+                        return false;
+                }
+                
+                char* pt = (value + (vLength - sLength) );
+                return( strcmp(pt, suffix) == 0);
+        }
+        
 	/**
 	 * Matches the given string against a mask.
 	 * @param string Input string.
@@ -211,6 +284,28 @@ class String : public Comparable<String>
 	    assertRead(s.value);
 	    return strcmp(value, s.value) == 0;
 	}
+	
+	/**
+	 * Compares this String to the given String, ignoring
+	 * case considerations.
+	 * @param s The String to compare to this String.
+	 * @return bool Whether the given String is equal to this String.
+	 */
+        bool equalsIgnoreCase(String& s)
+        {
+                return equalsIgnoreCase(*s);
+        }
+        
+        /**
+         * Compares this String to the given char*, ignoring
+         * case considerations.
+         * @param s The char* to compare to this String.
+         * @return Whether the given char* equals this String.
+         */
+        bool equalsIgnoreCase(char* s)
+        {
+                return strcasecmp(value, s);
+        }
 	
 	/**
 	 * Index operator.

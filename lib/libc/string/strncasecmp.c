@@ -15,30 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <String.h>
-#include <URI.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
+#include "string.h"
+#include <ctype.h>
 
-int main(int argc, char **argv)
+int strncasecmp( char *dest, char *src, size_t count )
 {
-	/* Initialize terminal as stdio */
-	for( int i = 0; i < 3; i++)
+    while (*dest && *src && tolower(*dest) == tolower(*src) && count)
+    {
+	if (--count)
 	{
-		while(open("/dev/tty0", ZERO) < 0);
+	    dest++, src++;
 	}
-	
-        String u1("http://my.site\%2enl");
-        String u2("http://my.site.nl");
-        
-        URI uri1(u1);
-        URI uri2(u2);
-        
-        printf("URI1 == %s\n", *uri1.getRawURI());
-        printf("URI2 == %s\n", *uri2.getRawURI());
-        printf("URI1 has scheme %s\n", *(uri1.getScheme()) );
-        printf("URI1 equals URI2: %s\n", (uri1.equals(uri2) ? "true" : "false") );
-        printf("URI1 normalized == %s\n", *(uri1.normalize()) );
-	return 0;
+    }
+    return (tolower(*dest) - tolower(*src));
 }

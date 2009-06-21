@@ -44,6 +44,23 @@ extern C int strcmp(char *dest, char *src);
 extern C int strncmp(char *dest, char *src, size_t count);
 
 /**
+ * Compare two strings, ignoring case considerations.
+ * @param dest Destination string to compare.
+ * @param src Source string to compare.
+ * @return Zero if equal, non-zero if not.
+ */
+extern C int strcasecmp(char* dest, char* src);
+
+/**
+ * Compare two strings, ignoring case considerations.
+ * @param dest Destination string to compare.
+ * @param src Source string to compare.
+ * @param count Maximum number of bytes to compare.
+ * @return Zero if equal, non-zero if not.
+ */
+extern C int strncasecmp(char* dest, char* src, size_t count);
+
+/**
  * Fill memory with a constant byte.
  * @param dest Memory to write to.
  * @param ch Constant byte.

@@ -23,12 +23,12 @@
 
 #define RESERVED_GENDELIMS ":/?#[]@"
 #define RESERVED_SUBDELIMS "!$&'()*+,;="
-#define UNRESERVED_CHARS "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-._~"
+#define UNRESERVED_CHARS \
+"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-._~"
 #define URI_SCHEME_SEPARATOR ":"
 
 /**
  * Represents an URI according to RFC 3986.
- * This rfc is located at http://tools.ietf.org/html/rfc3986
  *
  * Note that the URI class itself is only capable of identifying
  * the various components defined in the given URI. The contents
@@ -41,6 +41,8 @@
  * On a second note, it's important to remember that an URI does NOT
  * have to refer to an accessable resource, as an URI only provides
  * identification of that resource.
+ *
+ * @see http://tools.ietf.org/html/rfc3986
  */
 class URI
 {
@@ -89,13 +91,29 @@ class URI
         
         /** The normalized URI. */
         String _normalized;
+        
+        /** The hierarchical part of the URI. */
+        String _hierarchical;
+        
+        /** The query part of the URI. */
+        String _query;
+        
+        /** The fragment part of the URI. */
+        String _fragment;
 
+        /**
+         * Decodes the given encoded char* (hex)
+         * and returns the decoded char.
+         * @param encoded The char* to decode.
+         * @return char The decoded char.
+         */
         char _decode(char* encoded);
 
     private:
 
         /** The scheme of the URI. */
         String _scheme;
+        
 };
 
 #endif /* __LIBPARSE_URI */
