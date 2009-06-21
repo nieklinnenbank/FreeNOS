@@ -19,12 +19,10 @@
 #include <Error.h>
 #include <List.h>
 #include <ListIterator.h>
-#include "ExecutableFormat.h"
 #include <sys/stat.h>
 #include <errno.h>
-
-/** List of known executable formats. */
-List<FormatDetector> ExecutableFormat::formats;
+#include "ExecutableFormat.h"
+#include "ELF.h"
 
 ExecutableFormat::ExecutableFormat(const char *p) : path(p)
 {
@@ -37,7 +35,11 @@ ExecutableFormat::~ExecutableFormat()
 ExecutableFormat * ExecutableFormat::find(const char *path)
 {
     ExecutableFormat *fmt = ZERO;
+    List<FormatDetector> formats;
     struct stat st;
+
+    /* Insert known formats. */
+    formats.insertTail(ELF::detect);
 
     /* Must be an existing, regular, executable file. */
     if (stat(path, &st) != -1)

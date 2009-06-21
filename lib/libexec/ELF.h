@@ -21,7 +21,6 @@
 #include <List.h>
 #include <Types.h>
 #include <Factory.h>
-#include <Init.h>
 #include "ExecutableFormat.h"
 #include "ELFHeader.h"
 
@@ -70,12 +69,6 @@ class ELF : public ExecutableFormat
 	 * @return true on success and false on failure.
 	 */
 	static ExecutableFormat * detect(const char *path);
-
-	/**
-	 * Registers us to the ExecutableFormat::formats list.
-	 * @see ExecutableFormat
-	 */
-	REGISTER(formats, ELF, detect)
 
     private:
 

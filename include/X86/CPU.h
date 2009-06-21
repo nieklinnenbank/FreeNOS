@@ -24,7 +24,7 @@
  */
 
 /** Intel is little endian. */
-#define LITTLE_ENDIAN	1
+#define CPU_LITTLE_ENDIAN	1
 
 /** Paged Mode. */
 #define CR0_PG		0x80000000

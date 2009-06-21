@@ -27,7 +27,9 @@
 #define FALSE		0
 
 /** NULL means zero. */
+#ifndef NULL
 #define NULL		(void *)0
+#endif
 
 /** Zero value. */
 #define ZERO		0

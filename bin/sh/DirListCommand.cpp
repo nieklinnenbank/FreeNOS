@@ -53,4 +53,4 @@ int DirListCommand::execute(Size nparams, char **params)
     return 0;
 }
 
-INITOBJ(DirListCommand, dirListCmd, DEFAULT)
+INITOBJ(DirListCommand, dirListCmd, LIBCRT_DEFAULT)

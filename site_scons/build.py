@@ -38,10 +38,10 @@ targetVars.AddVariables(
     ('CXX',       'Set the target C++ compiler to use', cross + 'g++'),
     ('LINK',      'Set the target linker to use',       cross + 'ld'),
     ('CCFLAGS',   'Change target C compiler flags',
-		[ '-O0', '-g3', '-nostdinc', '-Wall', '-Werror', '-fno-builtin'  ]),
+		[ '-O0', '-g3', '-nostdinc', '-Wall', '-Werror', '-fno-builtin' ]),
     ('CXXFLAGS',  'Change target C++ compiler flags',
 		[ '-fno-rtti', '-fno-exceptions', '-nostdinc' ]),
-    ('CPPFLAGS',  'Change target C preprocessor flags', '-isystem include'),
+    ('CPPFLAGS',  'Change target C preprocessor flags', '-Iinclude'),
     ('LINKFLAGS', 'Change the flags for the target linker',
 		[ '--whole-archive', '-nostdlib', '-T', 'kernel/X86/user.ld' ])
 )
@@ -83,7 +83,8 @@ hostVars.AddVariables(
 		[ '-O0', '-g3', '-Wall', '-Werror', '-Wno-write-strings' ]),
     ('HOSTCXXFLAGS', 'Change host C++ compiler flags',
 		[ '' ]),
-    ('HOSTCPPFLAGS',  'Change host C preprocessor flags', '-isystem include -DHOST'),
+    ('HOSTCPPFLAGS',  'Change host C preprocessor flags',
+		[ '-D__HOST__', '-Iinclude' ]),
     ('HOSTLINKFLAGS', 'Change the flags for the host linker',
 		[ '-Wl,-whole-archive' ])
 )
@@ -151,7 +152,7 @@ def Prepare(env, libs = [], servers = []):
     for lib in libs:
         
 	# Add them to the C preprocessor include path.
-        e['CPPFLAGS'] += ' -isystem lib/' + lib
+        e['CPPFLAGS'] += ' -Ilib/' + lib
 	e['CPPFLAGS'] += ' -include lib/' + lib + '/Default.h'
 	
 	# Link against the correct library variant.
@@ -164,11 +165,11 @@ def Prepare(env, libs = [], servers = []):
 
     # Add servers to the system include path.
     for srv in servers:
-	e['CPPFLAGS'] += ' -isystem srv/' + srv
+	e['CPPFLAGS'] += ' -Isrv/' + srv
 
     # For IPCServer.h. TODO: put this in libcommon!!!
     if len(servers) > 0:
-	e['CPPFLAGS'] += ' -isystem srv'
+	e['CPPFLAGS'] += ' -Isrv'
 
     return e
 

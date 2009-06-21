@@ -67,4 +67,4 @@ int CatCommand::execute(Size nparams, char **params)
     return ENOTSUP;
 }
 
-INITOBJ(CatCommand, catCmd, DEFAULT)
+INITOBJ(CatCommand, catCmd, LIBCRT_DEFAULT)

@@ -35,4 +35,4 @@ int HelpCommand::execute(Size nparams, char **params)
     return 0;
 }
 
-INITOBJ(HelpCommand, helpCmd, DEFAULT)
+INITOBJ(HelpCommand, helpCmd, LIBCRT_DEFAULT)

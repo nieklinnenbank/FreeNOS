@@ -118,6 +118,7 @@
     PAGETABADDR_FROM(PAGETABFROM, PAGETABFROM_REMOTE)
 
 #ifndef __ASSEMBLER__
+#ifndef __HOST__
 
 /**
  * Flushes the Translation Lookaside Buffers (TLB) for a single page.
@@ -226,6 +227,7 @@ extern X86Memory *memory;
 /** Kernel page directory. */
 extern Address kernelPageDir[1024], kernelPageTab[1024];
 
+#endif /* __HOST__ */
 #endif /* __ASSEMBLER__ */
 
 /**

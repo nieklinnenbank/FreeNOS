@@ -40,4 +40,4 @@ int MknodCommand::execute(Size nparams, char **params)
     return 0;
 }
 
-INITOBJ(MknodCommand, mknodCmd, DEFAULT)
+INITOBJ(MknodCommand, mknodCmd, LIBCRT_DEFAULT)

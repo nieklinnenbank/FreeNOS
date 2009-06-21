@@ -52,7 +52,7 @@ class Directory : public File
 	 */
 	virtual Error read(FileSystemMessage *msg)
 	{
-	    Size count = 0, bytes = 0;
+	    Size bytes = 0;
 	    Dirent *dent = (Dirent *) msg->buffer;
 	    Error e;
 	

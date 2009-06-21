@@ -107,8 +107,7 @@ class Allocator
 	static Allocator *_default;	
 };
 
-#ifndef LIBALLOC_DISABLE_OPERATORS
-#ifndef HOST
+#ifndef __HOST__
 
 /**
  * @name Dynamic memory allocation.
@@ -174,8 +173,7 @@ inline void * operator new(__SIZE_TYPE__ sz, Address addr)
  * @}
  */
 
-#endif /* HOST */
-#endif /* LIBALLOC_DISABLE_OPERATORS */
+#endif /* __HOST__ */
 
 /**
  * @}

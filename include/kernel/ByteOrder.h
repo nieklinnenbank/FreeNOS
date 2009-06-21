@@ -26,9 +26,9 @@
  * @{
  */
 
-#ifdef BIG_ENDIAN
+#ifdef CPU_BIG_ENDIAN
 
-#elif LITTLE_ENDIAN
+#elif CPU_LITTLE_ENDIAN
 
 #define FORCE
 

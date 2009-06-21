@@ -19,7 +19,6 @@
 #define __LIBEXEC_EXECUTABLEFORMAT_H
 #ifndef __ASSEMBLER__
 
-#include <FreeNOS/Memory.h>
 #include <List.h>
 #include <Types.h>
 
@@ -123,11 +122,6 @@ class ExecutableFormat
 	 *         and NULL if not found.
 	 */
 	static ExecutableFormat * find(const char *path);
-
-    protected:
-
-	/** List of known executable formats. */
-	static List<FormatDetector> formats;
 
     private:
     

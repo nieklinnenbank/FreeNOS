@@ -15,13 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/BootImage.h>
+#include <FreeNOS/Memory.h>
+#include <Version.h>
+#include <Array.h>
+#include <ExecutableFormat.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <FreeNOS/BootImage.h>
-#include <ExecutableFormat.h>
-#include <Version.h>
 #include "BootEntry.h"
 #include "Main.h"
 

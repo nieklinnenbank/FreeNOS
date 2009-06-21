@@ -62,4 +62,4 @@ int StatCommand::execute(Size nparams, char **params)
     return 0;
 }
 
-INITOBJ(StatCommand, statCmd, DEFAULT)
+INITOBJ(StatCommand, statCmd, LIBCRT_DEFAULT)

@@ -145,7 +145,6 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	    FileCache *fc = ZERO; 
 	    File *f = ZERO;
 	    char buf[PATHLEN];
-	    Error result;
 
 	    /*
 	     * Find the file, either in cache, storage or via

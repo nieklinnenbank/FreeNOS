@@ -28,13 +28,13 @@
  */
 
 /** Setup the dynamic memory heap. */
-#define HEAP "0"
+#define LIBCRT_HEAP	"0"
 
 /** Constructors must be called. */
-#define CTOR "1"
+#define LIBCRT_CTOR	"1"
 
 /** The default initialization level. */
-#define DEFAULT	"2"
+#define LIBCRT_DEFAULT	"2"
 
 /** Start of initialization routines. */
 extern Address initStart;

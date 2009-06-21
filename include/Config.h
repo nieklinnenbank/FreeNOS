@@ -25,7 +25,7 @@
 
 #define ANY		65535
 #define SELF		65534
-#define KERNEL		65533
+#define KERNEL_PID	65533
 
 #define PROCSRV_PID	0
 #define VFSSRV_PID	1

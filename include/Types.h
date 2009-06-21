@@ -27,8 +27,12 @@
  * Restrict bit operations.
  * @see http://kerneltrap.org/node/3848
  */
+#if 0
 #define BITWISE \
     __attribute__((bitwise))
+#else
+#define BITWISE
+#endif
 
 /**
  * @name Unsigned integers.

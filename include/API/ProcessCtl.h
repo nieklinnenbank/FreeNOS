@@ -55,7 +55,8 @@ typedef struct ProcessInfo
 {
     ProcessID id;
     ProcessState state;
-};
+}
+ProcessInfo;
 
 /**
  * Prototype for user applications. Process management related operations.

@@ -50,6 +50,13 @@ except:
     compiler = build.target['CC'] + ' ' + build.target['CCVERSION']
 
 #
+# Converts the into to a string, and escapes double quotes.
+#
+def escape(obj):
+
+    return str(obj).replace('"', '\\"')
+
+#
 # Regenerate version header file.
 #
 def regenerateHeader():
@@ -59,29 +66,29 @@ def regenerateHeader():
     out.write('#ifndef __VERSION_H\n' \
 	      '#define __VERSION_H\n' \
 	      '\n' \
-	      '#define VERSIONCODE ' + str(versionCode) + '\n' \
+	      '#define VERSIONCODE ' + escape(versionCode) + '\n' \
     	      '#define VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))\n' \
-	      '#define RELEASE   "' + currentRev + '"\n' \
-	      '#define COPYRIGHT "Copyright (C) ' + str(datetime.datetime.today().year) + ' Niek Linnenbank\\r\\n" \\\n' \
+	      '#define RELEASE   "' + escape(currentRev) + '"\n' \
+	      '#define COPYRIGHT "Copyright (C) ' + escape(datetime.datetime.today().year) + ' Niek Linnenbank\\r\\n" \\\n' \
 	      '                  "This is free software; see the source for copying conditions.  There is NO\\r\\n" \\\n' \
 	      '                  "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\\r\\n\\r\\n"\n' \
 	      '\n' \
-	      '#define COMPILER  "' + compiler + '"\n' \
-	      '#define DATETIME  "' + str(datetime.datetime.today()) + '"\n' \
-	      '#define ARCH      "' + os.readlink("include/FreeNOS") + '"\n' \
+	      '#define COMPILER  "' + escape(compiler) + '"\n' \
+	      '#define DATETIME  "' + escape(datetime.datetime.today()) + '"\n' \
+	      '#define ARCH      "' + escape(os.readlink("include/FreeNOS")) + '"\n' \
 	      '\n' \
-	      '#define BUILDUSER "' + os.environ['USER'] + '"\n' \
-	      '#define BUILDHOST "' + platform.node() + '"\n' \
-	      '#define BUILDOS   "' + platform.system() + ' ' + platform.release() + '"\n' \
-	      '#define BUILDARCH "' + platform.machine() + '"\n' \
-	      '#define BUILDCPU  "' + platform.processor() + '"\n' \
-	      '#define BUILDPY   "Python ' + platform.python_version() + '"\n' \
-	      '#define BUILDER   "SCons ' + SCons.__version__ + '"\n' \
-	      '#define BUILDPATH "' + os.getcwd() + '"\n')
+	      '#define BUILDUSER "' + escape(os.environ['USER']) + '"\n' \
+	      '#define BUILDHOST "' + escape(platform.node()) + '"\n' \
+	      '#define BUILDOS   "' + escape(platform.system()) + ' ' + escape(platform.release()) + '"\n' \
+	      '#define BUILDARCH "' + escape(platform.machine()) + '"\n' \
+	      '#define BUILDCPU  "' + escape(platform.processor()) + '"\n' \
+	      '#define BUILDPY   "Python ' + escape(platform.python_version()) + '"\n' \
+	      '#define BUILDER   "SCons ' + escape(SCons.__version__) + '"\n' \
+	      '#define BUILDPATH "' + escape(os.getcwd()) + '"\n')
 
     # Include SVN repository, if available.
     try:
-	out.write('#define BUILDURL  "' + svnInfo.url + '"\n')
+	out.write('#define BUILDURL  "' + escape(svnInfo.url) + '"\n')
     except:
 	out.write('#define BUILDURL  BUILDPATH\n')
 

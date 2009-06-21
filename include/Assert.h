@@ -18,11 +18,10 @@
 #ifndef __ASSERT_H
 #define __ASSERT_H
 
-// TODO: #include "Config.h"
 #include "Macros.h"
 #include "Types.h"
 
-#if defined(CONFIG_ASSERT) && !defined(HOST)
+#if defined(NOT_IMPLEMENTED) && !defined(__HOST__)
 
 /**
  * Function which prints a message, and then terminates itself.
@@ -68,11 +67,13 @@ extern bool __assertWrite(Address addr);
     assert(__assertWrite((Address)addr))
 
 #else
+
 #define assert(exp) \
     if (!(exp)) \
 	for (;;);
 #define assertRead(exp)
 #define assertWrite(exp)
-#endif /* defined(CONFIG_ASSERT) && !defined(HOST) */
+
+#endif /* defined(NOT_IMPLEMENTED) && !defined(__HOST__) */
 
 #endif /* __ASSERT_H */

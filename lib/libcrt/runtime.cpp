@@ -94,5 +94,5 @@ extern C void SECTION(".entry") _entry()
     exit(ret);
 }
 
-INITFUNC(heap, HEAP)
-INITFUNC(constructors, CTOR)
+INITFUNC(heap, LIBCRT_HEAP)
+INITFUNC(constructors, LIBCRT_CTOR)

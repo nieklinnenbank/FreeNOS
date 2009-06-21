@@ -170,7 +170,7 @@ class InterruptMessage : public Message
 	 * Default constructor function.
 	 */
 	InterruptMessage(ulong v) :
-	    Message(IRQType, KERNEL), vector(v)
+	    Message(IRQType, KERNEL_PID), vector(v)
 	{
 	}
 

@@ -18,6 +18,10 @@
 #ifndef __INIT_H
 #define __INIT_H
 
+#ifdef __HOST__
+#error "Init.h is not supported for the host platform."
+#endif
+
 #include "Types.h"
 #include "Macros.h"
 
@@ -62,16 +66,6 @@
  * @param name Variable name.
  * @param level The ordering of the instantiation.
  */
-#ifdef HOST
-#define INITOBJ(class,name,level) \
-    class *name; \
-    \
-    void __attribute((constructor)) USED __mk_##class##name() \
-    { \
-	name = class::instance(); \
-    }
-
-#else
 #define INITOBJ(class,name,level) \
     class *name; \
     \
@@ -80,7 +74,6 @@
 	name = class::instance(); \
     } \
     INITFUNC(__mk_##class##name, level)
-#endif /* HOST */
 
 /**
  * Execute a range of initialization functions.
@@ -95,19 +88,6 @@
 	{ \
     	    (*(InitHandler **) i)(); \
 	} \
-    }
-
-/**
- * Performs registration of a function callback handler.
- * @param list List containing function handlers.
- * @param class Class name of the handler.
- * @param func Function member name of the handler.
- * @see List
- */
-#define REGISTER(list,class,func) \
-    static void __attribute__((constructor)) __register_##class##func() \
-    { \
-	list.insertTail(&class::func); \
     }
 
 /**

@@ -15,13 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/Memory.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include <Init.h>
 #include "ELF.h"
 
 ELF::ELF(const char *p, int f, ELFHeader *h)
@@ -130,5 +130,3 @@ Address ELF::entry()
 {
     return header.entry;
 }
-
-INITCLASS(ELF,__register_ELFdetect, "999")
