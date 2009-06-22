@@ -21,6 +21,8 @@
 #include <Macros.h>
 #include <Types.h>
 
+#ifndef __HOST__
+
 /**
  * @defgroup libc libc (ISO C99)
  * @{
@@ -289,4 +291,5 @@ extern C char *error_map[];
  * @}
  */
 
+#endif /* __HOST__ */
 #endif /* __LIBC_ERRNO_H */

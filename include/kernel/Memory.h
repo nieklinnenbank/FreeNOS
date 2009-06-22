@@ -40,6 +40,11 @@ class Memory
 	Memory();
 
 	/**
+	 * Destructor function.
+	 */
+	virtual ~Memory() {}
+
+	/**
 	 * Get the total amount of physical memory.
 	 * @return Amount of physical memory, in bytes.
 	 */

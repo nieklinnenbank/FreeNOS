@@ -36,6 +36,11 @@ class Storage
 	}
 
 	/**
+	 * Destructor function.
+	 */
+	virtual ~Storage() {}
+
+	/**
 	 * Read a contigeous set of data.
 	 * @param offset Offset to start reading from.
 	 * @param buffer Output buffer.

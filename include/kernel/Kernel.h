@@ -41,6 +41,11 @@ class Kernel
 	 */
 	Kernel();
 
+	/**
+	 * Destructor function.
+	 */
+	virtual ~Kernel() {}
+
         /**
          * Hooks a function to an hardware interrupt.
          * @param vec Interrupt vector to hook on.
