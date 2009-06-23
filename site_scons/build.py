@@ -93,7 +93,7 @@ hostVars.AddVariables(
     ('HOSTCPPFLAGS',  'Change host C preprocessor flags',
 		[ '-D__HOST__', '-Iinclude' ]),
     ('HOSTLINKFLAGS', 'Change the flags for the host linker',
-		[ '-Wl,-whole-archive' ])
+		[ '' ])
 )
 
 #
