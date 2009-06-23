@@ -36,7 +36,7 @@ int PrivExecHandler(PrivOperation op)
 	
 	case Reboot:
 	    reboot();
-	    while (true);
+	    while (true) ;
 	    
 	case Shutdown:
 	    shutdown();

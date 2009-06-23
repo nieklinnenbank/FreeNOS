@@ -26,7 +26,7 @@ LogServer::LogServer() : IPCServer<LogServer, LogMessage>(this)
     /* Open standard I/O. */
     for (int i = 0; i < 3; i++)
     {
-	while (open("/dev/console", ZERO) == -1);
+	while (open("/dev/console", ZERO) == -1) ;
     }
     /* Register message handlers. */
     addIPCHandler(WriteLog, &LogServer::writeLogHandler, false);

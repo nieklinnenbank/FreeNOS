@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 	/* Initialize terminal as stdio */
 	for( int i = 0; i < 3; i++)
 	{
-		while(open("/dev/tty0", ZERO) < 0);
+		while(open("/dev/tty0", ZERO) < 0) ;
 	}
 	
         String u1("http://my.site\%2enl");
