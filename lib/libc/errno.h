@@ -264,25 +264,25 @@ extern C char *error_map[];
 #define ESPIPE		-74
 
 /** No such process. */
-#define ESRCH		-74
+#define ESRCH		-75
 
 /** Reserved. */
-#define ESTALE		-75
+#define ESTALE		-76
 
 /** Stream ioctl() timeout. */
-#define ETIME		-76
+#define ETIME		-77
 
 /** Connection timed out. */
-#define ETIMEDOUT	-77
+#define ETIMEDOUT	-78
 
 /** Text file busy. */
-#define ETXTBSY		-78
+#define ETXTBSY		-79
 
 /** Operation would block (may be the same value as [EAGAIN]). */
-#define EWOULDBLOCK	-79
+#define EWOULDBLOCK	-80
 
 /** Cross-device link. */
-#define EXDEV		-80
+#define EXDEV		-81
 
 /** Last defined error value (do not use). */
 #define ELAST		EXDEV

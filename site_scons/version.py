@@ -16,17 +16,29 @@
 #
 
 import datetime
-import pysvn
+import svn
+import svn.core
+import svn.client
 import os
 import platform
 import re
 import SCons
 import build
 
+#
+# Retrieves Subversion information.
+#
+def info_receiver(path, info, pool):
+
+    global currentRev, url
+    
+    currentRev = current + "-r" + str(info.rev)
+    url = str(info.URL)
+
 # Read current version.
-current = open("VERSION").read().strip()
-expr    = re.compile("\.")
-version = expr.split(current)
+current    = open("VERSION").read().strip()
+expr       = re.compile("\.")
+version      = expr.split(current)
 versionCode  = 0
 versionPower = 16
 
@@ -37,9 +49,16 @@ for v in version:
 
 # Include subversion revision.
 try:
-    svnClient  = pysvn.Client()
-    svnInfo    = svnClient.info(".")
-    currentRev = current + "-r" + str(svnInfo.revision.number)
+    context  = svn.client.svn_client_create_context()
+    rev      = svn.core.svn_opt_revision_t()
+    rev.king = svn.core.svn_opt_revision_head
+    path     = os.getcwd()
+    currentRev = None
+    url        = None
+
+    svn.client.info(path, rev, rev, info_receiver, False, context)
+
+# Not a SVN repository.
 except:
     currentRev = current + "-local"
 
@@ -87,9 +106,9 @@ def regenerateHeader():
 	      '#define BUILDPATH "' + escape(os.getcwd()) + '"\n')
 
     # Include SVN repository, if available.
-    try:
-	out.write('#define BUILDURL  "' + escape(svnInfo.url) + '"\n')
-    except:
+    if url is not None:
+	out.write('#define BUILDURL  "' + escape(url) + '"\n')
+    else:
 	out.write('#define BUILDURL  BUILDPATH\n')
 
     # Terminate #ifndef.

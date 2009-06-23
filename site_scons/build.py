@@ -37,10 +37,9 @@ targetVars.AddVariables(
     ('CC',        'Set the target C compiler to use',   cross + 'gcc'),
     ('CXX',       'Set the target C++ compiler to use', cross + 'g++'),
     ('LINK',      'Set the target linker to use',       cross + 'ld'),
-    ('CCFLAGS',   'Change target C compiler flags',
-		[ '-O0', '-g3', '-nostdinc', '-Wall', '-Werror', '-fno-builtin' ]),
+    ('CCFLAGS',   'Change target C compiler flags'),
     ('CXXFLAGS',  'Change target C++ compiler flags',
-		[ '-fno-rtti', '-fno-exceptions', '-nostdinc' ]),
+		[ '-fno-rtti', '-fno-exceptions' ]),
     ('CPPFLAGS',  'Change target C preprocessor flags', '-Iinclude'),
     ('LINKFLAGS', 'Change the flags for the target linker',
 		[ '--whole-archive', '-nostdlib', '-T', 'kernel/X86/user.ld' ])
@@ -69,6 +68,14 @@ except:
 #
 if not target.GetOption('clean'):
     
+    configure.TryCCFlag(target, '-O0')
+    configure.TryCCFlag(target, '-g3')
+    configure.TryCCFlag(target, '-Wall')
+    configure.TryCCFlag(target, '-W')
+    configure.TryCCFlag(target, '-Wno-unused-parameter')
+    configure.TryCCFlag(target, '-Werror')
+    configure.TryCCFlag(target, '-fno-builtin')
+    configure.TryCCFlag(target, '-nostdinc')
     configure.TryCCFlag(target, '-fno-stack-protector')
     configure.TryCCFlag(target, '-Wno-write-strings')
 
