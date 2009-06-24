@@ -17,7 +17,7 @@
 
 #include "string.h"
 
-int strcmp( char *dest, char *src )
+int strcmp( const char *dest, const char *src )
 {
     while ( *dest && *src && *dest == *src )
     {

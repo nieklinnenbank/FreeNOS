@@ -32,7 +32,7 @@
  * @param src Source string to compare.
  * @return Zero if equal, non-zero if not.
  */
-extern C int strcmp(char *dest, char *src);
+extern C int strcmp(const char *dest, const char *src);
 
 /**
  * Compare two strings, by only a maximum number of bytes.
@@ -41,7 +41,7 @@ extern C int strcmp(char *dest, char *src);
  * @param count Maximum number of bytes to compare.
  * @return Zero if equal, non-zero if not.
  */
-extern C int strncmp(char *dest, char *src, size_t count);
+extern C int strncmp(const char *dest, const char *src, size_t count);
 
 /**
  * Compare two strings, ignoring case considerations.
@@ -49,7 +49,7 @@ extern C int strncmp(char *dest, char *src, size_t count);
  * @param src Source string to compare.
  * @return Zero if equal, non-zero if not.
  */
-extern C int strcasecmp(char* dest, char* src);
+extern C int strcasecmp(const char *dest, const char *src);
 
 /**
  * Compare two strings, ignoring case considerations.
@@ -58,7 +58,14 @@ extern C int strcasecmp(char* dest, char* src);
  * @param count Maximum number of bytes to compare.
  * @return Zero if equal, non-zero if not.
  */
-extern C int strncasecmp(char* dest, char* src, size_t count);
+extern C int strncasecmp(const char *dest, const char *src, size_t count);
+
+/**
+ * Duplicate a string
+ * @param str String to duplicate
+ * @return Duplicated string or NULL if not enough memory is available.
+ */
+extern C char *strdup(const char *str);
 
 /**
  * Fill memory with a constant byte.
@@ -82,7 +89,7 @@ extern C void * memcpy(void *dest, const void *src, size_t count);
  * @param str String to calculate length for.
  * @return Length of the string.
  */
-extern C size_t strlen(char *str);
+extern C size_t strlen(const char *str);
 
 /**
  * Copy a string.
@@ -90,7 +97,7 @@ extern C size_t strlen(char *str);
  * @param src Source string.
  * @return Number of bytes copied.
  */
-extern C int strcpy(char *dest, char *src);
+extern C int strcpy(char *dest, const char *src);
 
 /**
  * Copy a string, given a maximum number of bytes.
@@ -99,7 +106,7 @@ extern C int strcpy(char *dest, char *src);
  * @param sz Maximum number of bytes to copy.
  * @return Number of bytes copied.
  */
-extern C int strncpy(char *dest, char *src, size_t sz);
+extern C int strncpy(char *dest, const char *src, size_t sz);
 
 /**
  * Copy src to string dst of size siz. At most siz-1 characters 
@@ -124,7 +131,7 @@ extern C size_t strlcpy(char *dst, const char *src, size_t siz);
  * @return The strcat() function shall return s1; no return value is
  *         reserved to indicate an error.
  */
-extern C char * strcat(char *dest, char *src);
+extern C char * strcat(char *dest, const char *src);
 
 /**
  * @brief Concatenate a string with part of another
@@ -142,7 +149,7 @@ extern C char * strcat(char *dest, char *src);
  * @return The strncat() function shall return s1; no return value
  *         shall be reserved to indicate an error.
  */
-extern C char * strncat(char *dest, char *src, size_t siz);
+extern C char * strncat(char *dest, const char *src, size_t siz);
 
 /**
  * The strerror function maps the number in errnum to a message string.

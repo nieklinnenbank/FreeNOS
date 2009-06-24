@@ -17,7 +17,7 @@
 
 #include "string.h"
 
-int strcpy(char *dest, char *src)
+int strcpy(char *dest, const char *src)
 {
     char *d = dest;
     char *s = src;

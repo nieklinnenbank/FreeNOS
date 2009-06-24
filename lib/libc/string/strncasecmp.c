@@ -18,7 +18,7 @@
 #include "string.h"
 #include <ctype.h>
 
-int strncasecmp( char *dest, char *src, size_t count )
+int strncasecmp( const char *dest, const char *src, size_t count )
 {
     while (*dest && *src && tolower(*dest) == tolower(*src) && count)
     {

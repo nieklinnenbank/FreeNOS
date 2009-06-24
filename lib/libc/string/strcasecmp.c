@@ -18,7 +18,7 @@
 #include "string.h"
 #include <ctype.h>
 
-int strcasecmp(char *dest, char *src )
+int strcasecmp(const char *dest, const char *src )
 {
     
     while ( *dest && *src && (tolower((int)*dest) == tolower((int)*src)) )

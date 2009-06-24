@@ -18,9 +18,9 @@
 #include <sys/types.h>
 #include "string.h"
 
-size_t strlen(char *str)
+size_t strlen(const char *str)
 {
-    char *s;
+    const char *s;
 
     for (s = str; *s; ++s);
     return (s - str);

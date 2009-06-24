@@ -17,9 +17,10 @@
 
 #include "string.h"
 
-int strncpy(char *dest, char *src, size_t sz)
+int strncpy(char *dest, const char *src, size_t sz)
 {
-    char *d, *s;
+    char *d;
+    const char *s;
     int val = 0;
     
     d = dest;
