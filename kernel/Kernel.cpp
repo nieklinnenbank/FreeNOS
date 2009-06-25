@@ -23,8 +23,6 @@
 #include <FreeNOS/BootImage.h>
 #include <String.h>
 
-// TODO: mark modStart - modEnd used in physical memory map!!!
-
 Kernel::Kernel()
 {
     MultibootModule *mod;
