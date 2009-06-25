@@ -38,9 +38,6 @@
 /** Ending address of the heap. */
 #define HEAP_END	(HEAP_START + HEAP_MAX - MEMALIGN)
 
-/** Virtual address, at which we map the process table. */
-#define PROCTABLE	(0xf0000000)
-
 /**
  * Memory management server.
  */

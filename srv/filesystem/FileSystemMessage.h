@@ -111,6 +111,7 @@ typedef struct FileSystemMessage : public Message
 	this->procID  = pid;
 	this->userID  = uid;
 	this->groupID = gid;
+	this->action  = NewProcess;
 	this->ipc(VFSSRV_PID, SendReceive, sizeof(*this));
     }
 

@@ -173,9 +173,9 @@ void ProcessServer::spawnProcessHandler(ProcessMessage *msg)
 	return;
     }
     /* Retrieve memory regions. */
-    if ((numRegions = fmt->regions(regions, 16)) <= 0)
+    if ((numRegions = fmt->regions(regions, 16)) < 0)
     {
-	msg->result = numRegions;
+	msg->result = errno;
 	return;
     }
     /* Create new process. */

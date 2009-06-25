@@ -86,7 +86,8 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	 * @param p Path to which we are mounted.
 	 */
 	FileSystem(const char *path)
-	    : IPCServer<FileSystem, FileSystemMessage>(this), root(ZERO), mountPath((char*)path)
+	    : IPCServer<FileSystem, FileSystemMessage>(this),
+	      root(ZERO), mountPath((char*)path)
 	{
 	    FileSystemMessage msg;
 	    
