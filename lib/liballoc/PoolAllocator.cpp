@@ -68,18 +68,18 @@ MemoryPool * PoolAllocator::newPool(Size index, Size cnt)
     /* Prepare amount to allocate from parent. */
     sz  = cnt * (1 << (index + 1));
     sz += sizeof(MemoryPool);
-    sz += cnt / 8;
+    sz += BITMAP_NUM_BYTES(cnt);
 
     /* Ask parent for memory, then fill in the pool. */
     if ((pool = (MemoryPool *) parent->allocate(&sz)))
     {
 	pool->count  = cnt;
-        pool->addr   = ((Address) (pool + 1)) + (pool->count / 8);
+        pool->addr   = ((Address) (pool + 1)) + BITMAP_NUM_BYTES(pool->count);
         pool->next   = pools[index];
         pool->free   = pool->count;
-	pool->size   = 1 << (index + 1);
+	pool->size   = (1 << (index + 1));
 	pools[index] = pool;
-	memset(pool->blocks, 0, pool->count / 8);
+	memset(pool->blocks, 0, BITMAP_NUM_BYTES(pool->count));
     }
     return pool;
 }

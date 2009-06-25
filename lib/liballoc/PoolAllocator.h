@@ -41,6 +41,14 @@
     (64 / (((size) / 1024 ) + 1)) : 1
 
 /**
+ * @brief Calculates the number of bytes needed in a bitmap,
+ *        to hold the specified number of elements.
+ * @param count Number of elements to hold in the bitmap.
+ */
+#define BITMAP_NUM_BYTES(count) \
+    ((count / 8) + 1)
+
+/**
  * Memory pool contains pre-allocated blocks of a certain size (power of two).
  */
 typedef struct MemoryPool
