@@ -70,7 +70,7 @@ extern bool __assertWrite(Address addr);
 
 #define assert(exp) \
     if (!(exp)) \
-	for (;;);
+	for ( ; ; ) { }
 #define assertRead(exp)
 #define assertWrite(exp)
 
