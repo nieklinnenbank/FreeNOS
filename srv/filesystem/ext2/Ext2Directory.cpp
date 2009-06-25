@@ -123,7 +123,7 @@ Error Ext2Directory::getEntry(Ext2DirectoryEntry *dent, char *name)
 	    }
 	    /* Is it the entry we are looking for? */
 	    if (strncmp(name, dent->name,
-			      dent->nameLength < strlen(name) ?
+			      dent->nameLength > strlen(name) ?
 			      dent->nameLength : strlen(name)) == 0)
 	    {
 		return ESUCCESS;
