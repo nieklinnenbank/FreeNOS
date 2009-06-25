@@ -46,7 +46,8 @@ int VMCopyHandler(ProcessID procID, Operation how, Address ours,
 	/* Update variables. */
 	paddr   = memory->lookupVirtual(proc, theirs) & PAGEMASK;
 	pageOff = theirs & ~PAGEMASK;
-	bytes   = (PAGESIZE - pageOff) < sz ? (PAGESIZE - pageOff) : sz;
+	bytes   = (PAGESIZE - pageOff) < (sz - total) ?
+		  (PAGESIZE - pageOff) : (sz - total);
 		
 	/* Valid address? */
 	if (!paddr) break;

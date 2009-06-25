@@ -136,16 +136,16 @@ void X86Kernel::enableIRQ(uint irq, bool enabled)
     if (enabled)
     {
     	if (irq < 8)
-        	outb(PIC1_DATA, inb(PIC1_DATA) & ~(1 << irq));
+    	    outb(PIC1_DATA, inb(PIC1_DATA) & ~(1 << irq));
     	else
-        	outb(PIC2_DATA, inb(PIC2_DATA) & ~(1 << (irq - 8)));
+    	    outb(PIC2_DATA, inb(PIC2_DATA) & ~(1 << (irq - 8)));
     }
     else
     {
     	if (irq < 8)
-        	outb(PIC1_DATA, inb(PIC1_DATA) | (1 << irq));
+    	    outb(PIC1_DATA, inb(PIC1_DATA) | (1 << irq));
     	else
-        	outb(PIC2_DATA, inb(PIC2_DATA) | (1 << (irq - 8)));
+    	    outb(PIC2_DATA, inb(PIC2_DATA) | (1 << (irq - 8)));
     }
 }
 
