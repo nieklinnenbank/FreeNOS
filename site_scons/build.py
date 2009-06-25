@@ -67,7 +67,8 @@ except:
 # Perform autoconf-a-like checks on the selected target compiler chain.
 #
 if not target.GetOption('clean'):
-    
+
+    configure.TryCCFlag(target, '-fno-stack-protector')    
     configure.TryCCFlag(target, '-O0')
     configure.TryCCFlag(target, '-g3')
     configure.TryCCFlag(target, '-Wall')
@@ -76,7 +77,6 @@ if not target.GetOption('clean'):
     configure.TryCCFlag(target, '-Werror')
     configure.TryCCFlag(target, '-fno-builtin')
     configure.TryCCFlag(target, '-nostdinc')
-    configure.TryCCFlag(target, '-fno-stack-protector')
     configure.TryCCFlag(target, '-Wno-write-strings')
 
 #
