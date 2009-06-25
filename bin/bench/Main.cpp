@@ -33,11 +33,6 @@ int main(int argc, char **argv)
     ProcessInfo info;
     char *foo[128];
 
-    /* Initialize terminal as standard I/O. */
-    for (int i = 0; i < 3; i++)
-    {
-        while (open("/dev/tty0", ZERO) < 0) ;
-    }
     t1 = timestamp();
     pid = ProcessCtl(SELF, GetPID);
     t2 = timestamp();

@@ -24,11 +24,6 @@ int main(int argc, char **argv)
 {
     char host[128];
 
-    /* Initialize terminal as standard I/O. */
-    for (int i = 0; i < 3; i++)
-    {
-        while (open("/dev/tty0", ZERO) < 0) ;
-    }
     /* Fetch hostname. */
     gethostname(host, sizeof(host));
     

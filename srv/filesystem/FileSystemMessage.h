@@ -103,15 +103,17 @@ typedef struct FileSystemMessage : public Message
     /**
      * Introduce a new process to VFS.
      * @param pid Process ID number.
+     * @param ppid Parent Process ID number.
      * @param uid User ID number.
      * @param gid Group ID number.
      */
-    void newProcess(ProcessID pid, u16 uid, u16 gid)
+    void newProcess(ProcessID pid, ProcessID ppid, u16 uid, u16 gid)
     {
-	this->procID  = pid;
-	this->userID  = uid;
-	this->groupID = gid;
-	this->action  = NewProcess;
+	this->procID   = pid;
+	this->parentID = ppid;
+	this->userID   = uid;
+	this->groupID  = gid;
+	this->action   = NewProcess;
 	this->ipc(VFSSRV_PID, SendReceive, sizeof(*this));
     }
 
@@ -284,9 +286,15 @@ typedef struct FileSystemMessage : public Message
 
     /** Process id number. */
     ProcessID procID;
+
+    union
+    {	
+	/** Device major/minor numbers. */
+	DeviceID deviceID;
 	
-    /** Device major/minor numbers. */
-    DeviceID deviceID;
+	/** Parent process ID number. */
+	ProcessID parentID;
+    };
 }
 FileSystemMessage;
 

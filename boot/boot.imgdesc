@@ -3,11 +3,7 @@
 ./srv/memory/memory
 ./srv/filesystem/tmp/tmpfs
 ./srv/log/log
-./srv/terminal/terminal
-./srv/serial/serial
-./srv/filesystem/proc/procfs
 ./srv/filesystem/ext2/ext2fs
-./srv/pci/pci
-./sbin/init/init
 ./srv/idle/idle
-./bin/sh/sh
+./srv/terminal/terminal
+./sbin/init/init

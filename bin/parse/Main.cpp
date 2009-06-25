@@ -23,22 +23,17 @@
 
 int main(int argc, char **argv)
 {
-	/* Initialize terminal as stdio */
-	for( int i = 0; i < 3; i++)
-	{
-		while(open("/dev/tty0", ZERO) < 0) ;
-	}
-	
-        String u1("http://my.site\%2enl");
-        String u2("http://my.site.nl");
+    String u1("http://my.site\%2enl");
+    String u2("http://my.site.nl");
         
-        URI uri1(u1);
-        URI uri2(u2);
+    URI uri1(u1);
+    URI uri2(u2);
         
-        printf("URI1 == %s\n", *uri1.getRawURI());
-        printf("URI2 == %s\n", *uri2.getRawURI());
-        printf("URI1 has scheme %s\n", *(uri1.getScheme()) );
-        printf("URI1 equals URI2: %s\n", (uri1.equals(uri2) ? "true" : "false") );
-        printf("URI1 normalized == %s\n", *(uri1.normalize()) );
-	return 0;
+    printf("URI1 == %s\n", *uri1.getRawURI());
+    printf("URI2 == %s\n", *uri2.getRawURI());
+    printf("URI1 has scheme %s\n", *(uri1.getScheme()) );
+    printf("URI1 equals URI2: %s\n", (uri1.equals(uri2) ? "true" : "false") );
+    printf("URI1 normalized == %s\n", *(uri1.normalize()) );
+
+    return EXIT_SUCCESS;
 }

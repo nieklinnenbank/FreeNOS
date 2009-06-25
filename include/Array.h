@@ -31,7 +31,6 @@
  */
 template <class T> class Array
 {
-
     public:
 
 	/**
@@ -41,13 +40,28 @@ template <class T> class Array
 	 */
 	Array(Size size = ARRAY_DEFAULT_SIZE) : _size(size)
 	{
-		assert(size > 0);
-		_array = new T*[_size];
+	    assert(size > 0);
+	    _array = new T*[_size];
 		
-		for( Size i = 0; i < _size; i++)
-		{
-			_array[i] = 0;
-		}
+	    for( Size i = 0; i < _size; i++)
+	    {
+		_array[i] = 0;
+	    }
+	}
+	
+	/**
+	 * Copy constructor.
+	 * @param a Array pointer to copy from.
+	 */
+	Array(Array<T> *a) : _size(a->_size)
+	{
+	    assert(_size > 0);
+	    _array = new T*[_size];
+	    
+	    for (Size i = 0; i < _size; i++)
+	    {
+		_array[i] = a->_array[i];
+	    }
 	}
 	
 	/**
@@ -57,15 +71,15 @@ template <class T> class Array
 	 */
 	int insert(T* item)
 	{
-		for(Size i = 0; i < _size; i++)
+	    for(Size i = 0; i < _size; i++)
+	    {
+		if( _array[i] == ZERO )
 		{
-			if( _array[i] == ZERO )
-			{
-				_array[i] = item;
-				return i;
-			}
+		    _array[i] = item;
+		    return i;
 		}
-		return -1;
+	    }
+	    return -1;
 	}
 	
 	/**
@@ -78,13 +92,12 @@ template <class T> class Array
 	 */
 	bool insert(Size position, T* item)
 	{
-		if( position >= _size )
-		{
-			return false;
-		}
-		
-		_array[position] = item;
-		return true;
+	    if( position >= _size )
+	    {
+		return false;
+	    }
+	    _array[position] = item;
+	    return true;
 	}
 	
 	/**
@@ -94,13 +107,12 @@ template <class T> class Array
 	 */
 	bool remove(Size position)
 	{
-		if( position >= _size || position == 0 )
-		{
-			return false;
-		}
-		
-		_array[position] = (T*) NULL;
-		return true;
+	    if( position >= _size || position == 0 )
+	    {
+		return false;
+	    }
+	    _array[position] = (T*) NULL;
+	    return true;
 	}
 	
 	/**
@@ -110,12 +122,11 @@ template <class T> class Array
 	 */
 	T* get(Size position)
 	{
-		if( position >= _size )
-		{
-			return NULL;
-		}
-		
-		return _array[position];
+	    if( position >= _size )
+	    {
+		return NULL;
+	    }
+	    return _array[position];
 	}
 	
 	/**
@@ -124,7 +135,7 @@ template <class T> class Array
 	 */
 	Size size() const
 	{
-		return _size;
+	    return _size;
 	}
 	
 	/**
@@ -133,14 +144,13 @@ template <class T> class Array
 	 */
 	Array<T> clone()
 	{
-		Array<T> array(_size);
+	    Array<T> array(_size);
 		
-		for( Size s = 0; s < _size; s++)
-		{
-			array.insert(s, _array[s]);
-		}
-		
-		return array;
+	    for( Size s = 0; s < _size; s++)
+	    {
+		array.insert(s, _array[s]);
+	    }
+	    return array;
 	}
 	
 	/**
@@ -150,24 +160,23 @@ template <class T> class Array
 	 */
 	bool equals(const Array<T> &t)
 	{
-		if( *t == this )
-		{
-			return true;
-		}
-		if( t.size() != this->size() )
-		{
-			return false;
-		}
-		
-		for( Size s = 0; s < _size; s++ )
-		{
-			if( this->get(s) != t.get(s) )
-			{
-				return false;
-			}
-		}
-		
+	    if( *t == this )
+	    {
 		return true;
+	    }
+	    if( t.size() != this->size() )
+	    {
+		return false;
+	    }
+	
+	    for( Size s = 0; s < _size; s++ )
+	    {
+		if( this->get(s) != t.get(s) )
+		{
+		    return false;
+		}
+	    }
+	    return true;
 	}
 	
 	/**
@@ -177,8 +186,8 @@ template <class T> class Array
 	 */
 	u8 valueAt(Size index) const
 	{
-		assert(index < _size);
-		return (u8)_array[index];
+	    assert(index < _size);
+	    return (u8) _array[index];
 	}
 	
 	/**
@@ -188,7 +197,7 @@ template <class T> class Array
 	 */
 	T* operator [] (int i) const
 	{
-		return( i >= 0 && i < (int) _size) ? _array[i] : (T*)NULL;
+	    return( i >= 0 && i < (int) _size) ? _array[i] : (T *) NULL;
 	}
 	
 	/**
@@ -198,22 +207,20 @@ template <class T> class Array
 	 */
 	Array& operator+=  (Array<T>& value)
 	{
-		 T** array = new T*( _size + value.size() );
+	    T** array = new T*( _size + value.size() );
 		
-		for( Size s = 0; s < _size; s++ )
-		{
-			array[s] = this->get(s);
-		}
-		
-		for( Size s = 0; s < value.size(); s++ )
-		{
-			array[(s + _size - 1)] = value.get(s);
-		}
-		
-		delete _array;
-		_array = array;
-		_size += value.size();
-		return *this;
+	    for( Size s = 0; s < _size; s++ )
+	    {
+		array[s] = this->get(s);
+	    }
+	    for( Size s = 0; s < value.size(); s++ )
+	    {
+		array[(s + _size - 1)] = value.get(s);
+	    }
+	    delete _array;
+	    _array = array;
+	    _size += value.size();
+	    return *this;
 	}
 	
 	/**
@@ -223,14 +230,15 @@ template <class T> class Array
 	 */
 	Array& operator+ (Array<T>& value)
 	{
-		return Array(*this) += value;
+	    return Array(*this) += value;
 	}
 
     private:
-	/** The actual array where the data is stored */
+
+	/** The actual array where the data is stored. */
 	T** _array;
 	
-	/** The maximum size of the array */
+	/** The maximum size of the array. */
 	Size _size;
 };
 

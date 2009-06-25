@@ -258,7 +258,13 @@ void VirtualFileSystem::newProcessHandler(FileSystemMessage *msg)
     /* Fill in the new process. */
     procs[msg->procID].userID  = msg->userID;
     procs[msg->procID].groupID = msg->groupID;
-    procs[msg->procID].files   = new Array<FileDescriptor>;
+    
+    /* Copy file descriptor from parent, if any. */
+    if (msg->parentID != ANY)
+	procs[msg->procID].files = new Array<FileDescriptor>(
+					procs[msg->parentID].files);
+    else
+	procs[msg->procID].files = new Array<FileDescriptor>;
     
     /* Success. */
     msg->result = ESUCCESS;

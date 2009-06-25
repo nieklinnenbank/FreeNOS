@@ -77,8 +77,9 @@ ProcessServer::ProcessServer()
 	        procs[numProcs].gid = 0;
 	
 		/* Inform VFS. */
-		vfs.newProcess(numProcs, procs[numProcs].uid,
-					 procs[numProcs].gid);
+		vfs.newProcess(numProcs, ANY,
+			       procs[numProcs].uid,
+			       procs[numProcs].gid);
 		numProcs++;
 	    }
 	}
@@ -209,8 +210,9 @@ void ProcessServer::spawnProcessHandler(ProcessMessage *msg)
     procs[msg->number].gid = procs[msg->from].gid;
 
     /* Inform VFS. */
-    fs.newProcess(msg->number, procs[msg->number].uid,
-    			       procs[msg->number].gid);
+    fs.newProcess(msg->number, msg->from,
+		  procs[msg->number].uid,
+    		  procs[msg->number].gid);
 
     /* Begin execution. */
     ProcessCtl(msg->number, Resume);
