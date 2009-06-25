@@ -20,7 +20,7 @@
 int strcpy(char *dest, const char *src)
 {
     char *d = dest;
-    char *s = src;
+    const char *s = src;
     int count = 0;
 
     while (*s)
