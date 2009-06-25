@@ -87,7 +87,7 @@ class StringTokenizer
     private:
 
 	char*	_sequence;
-	char*	_delimeters;
+	char*	_delimiters;
 	int	_currentLocation;
 	int	_count;
 	char*	_currentToken;
