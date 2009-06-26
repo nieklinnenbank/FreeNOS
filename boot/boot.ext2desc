@@ -28,6 +28,9 @@
 ./bin/mknod/SConscript
 ./bin/mknod/Main.cpp
 ./bin/mknod/mknod
+./bin/echo/SConscript
+./bin/echo/Main.cpp
+./bin/echo/echo
 ./bin/SConscript
 ./VERSION
 ./Doxyfile
