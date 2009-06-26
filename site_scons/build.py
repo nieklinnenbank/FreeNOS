@@ -109,7 +109,6 @@ host = Environment(CPPPATH   = '.',
 		   variables = hostVars)
 
 host.Append(VARIANT = 'host')
-host['LINKCOM'] += ' -Wl,--no-whole-archive'
 Help(hostVars.GenerateHelpText(host))
 
 #
