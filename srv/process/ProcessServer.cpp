@@ -155,11 +155,13 @@ void ProcessServer::exitProcessHandler(ProcessMessage *msg)
 
 void ProcessServer::spawnProcessHandler(ProcessMessage *msg)
 {
-    char path[PATHLEN];
+    char path[PATHLEN], *tmp;
     FileSystemMessage fs;
     ExecutableFormat *fmt;
     MemoryRegion regions[16];
     Error numRegions, ret;
+    Size size;
+    ProcessID pid;
 
     /* Read out the path to the executable. */
     if ((msg->result = VMCopy(msg->from, Read, (Address) path,
@@ -180,8 +182,7 @@ void ProcessServer::spawnProcessHandler(ProcessMessage *msg)
 	return;
     }
     /* Create new process. */
-    msg->number = ProcessCtl(ANY, Spawn, fmt->entry());
-    msg->result = ENOBUFS;
+    pid = ProcessCtl(ANY, Spawn, fmt->entry());
 
     /* Map program regions into virtual memory of the new process. */
     for (int i = 0; i < numRegions; i++)
@@ -190,36 +191,65 @@ void ProcessServer::spawnProcessHandler(ProcessMessage *msg)
 	for (Size j = 0; j < regions[i].size; j += PAGESIZE)
 	{
 	    /* Create mapping first. */
-	    if ((ret = VMCtl(Map, msg->number, ZERO,
+	    if ((ret = VMCtl(Map, pid, ZERO,
 			     regions[i].virtualAddress + j)) != 0)
 	    {
 		msg->result = ret;
 		return;
 	    }
 	    /* Copy bytes. */
-	    VMCopy(msg->number, Write, (Address) (regions[i].data) + j,
+	    VMCopy(pid, Write, (Address) (regions[i].data) + j,
 		   regions[i].virtualAddress + j, PAGESIZE);
 	}
     }
     /* Set command-line string. */
-    snprintf(procs[msg->number].command, COMMANDLEN,
+    snprintf(procs[pid].command, COMMANDLEN,
              "%s", path);
 
+    /* Create mapping for command-line arguments. */
+    VMCtl(Map, pid, ZERO, ARGV_ADDR);
+
+    /* Allocate temporary variable. */
+    tmp  = new char[PAGESIZE];
+    memset(tmp, 0, PAGESIZE);
+
+    /* Calculate number of bytes to copy. */
+    size = msg->number * ARGV_SIZE < PAGESIZE ?
+	   msg->number * ARGV_SIZE : PAGESIZE;
+
+    /* Copy arguments into the temporary variable. */    
+    if ((msg->result = VMCopy(msg->from, Read, (Address) tmp,
+			     (Address) msg->arguments, size)) < 0)
+    {
+	delete tmp;
+	return;
+    }
+    /* Copy argc/argv into the new process. */
+    if ((msg->result = VMCopy(pid, Write, (Address) tmp,
+		    	     (Address) ARGV_ADDR, PAGESIZE)) < 0)
+    {
+	delete tmp;
+	return;
+    }
     /* Inherit user and group identities. */
-    procs[msg->number].uid = procs[msg->from].uid;
-    procs[msg->number].gid = procs[msg->from].gid;
+    procs[pid].uid = procs[msg->from].uid;
+    procs[pid].gid = procs[msg->from].gid;
 
     /* Inform VFS. */
-    fs.newProcess(msg->number, msg->from,
-		  procs[msg->number].uid,
-    		  procs[msg->number].gid);
+    fs.newProcess(pid, msg->from,
+		  procs[pid].uid,
+    		  procs[pid].gid);
 
     /* Begin execution. */
-    ProcessCtl(msg->number, Resume);
+    ProcessCtl(pid, Resume);
 
     /* Success. */
+    msg->number = pid;
     msg->result = ESUCCESS;
+    
+    /* Cleanup. */
     delete fmt;
+    delete tmp;
 }
 
 void ProcessServer::waitProcessHandler(ProcessMessage *msg)

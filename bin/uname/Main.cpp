@@ -15,30 +15,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <sys/utsname.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <string.h>
-#include "UnameCommand.h"
+#include <sys/utsname.h>
 
-int UnameCommand::execute(Size nparams, char **params)
+int main(int argc, char **argv)
 {
     struct utsname info;
 
     /* Retrieve version information. */
     if (uname(&info) < 0)
     {
-	printf("uname() failed: %s\r\n",
-		strerror(errno));
+	printf("%s: uname() failed: %s\r\n",
+		argv[0], strerror(errno));
 	return errno;
     }
     /* System name. */
-    if (nparams == 0 || !strcmp(params[0], "-s"))
+    if (argc <= 1 || !strcmp(argv[1], "-s"))
     {
 	printf("%s\r\n", info.sysname);
     }
     /* Everything. */
-    else if (!strcmp(params[0], "-a"))
+    else if (argc == 2 && !strcmp(argv[1], "-a"))
     {
         printf("%s %s %s %s %s\r\n",
                 info.sysname,
@@ -47,7 +47,5 @@ int UnameCommand::execute(Size nparams, char **params)
                 info.version,
                 info.machine);
     }
-    return 0;
+    return EXIT_SUCCESS;
 }
-
-INITOBJ(UnameCommand, unameCmd, LIBCRT_DEFAULT)

@@ -157,7 +157,7 @@ class X86Memory : public Memory, public Singleton<X86Memory>
 	 * @param paddr Physical address.
 	 * @param vaddr Virtual address.
 	 * @param prot Page entry protection flags.
-	 * @return Mapped physical address.
+	 * @return Mapped virtual address.
 	 */	
 	Address mapVirtual(Address paddr, Address vaddr = ZERO,
 			   ulong prot = PAGE_PRESENT | PAGE_RW);
@@ -168,7 +168,7 @@ class X86Memory : public Memory, public Singleton<X86Memory>
 	 * @param paddr Physical address.
 	 * @param vaddr Virtual address.
 	 * @param prot Page entry protection flags.
-	 * @return Mapped physical address.
+	 * @return Mapped virtual address.
 	 */	
 	Address mapVirtual(X86Process *p, Address paddr,
 			   Address vaddr, ulong prot = PAGE_PRESENT | PAGE_RW);

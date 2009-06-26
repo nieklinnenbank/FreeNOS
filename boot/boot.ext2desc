@@ -6,10 +6,8 @@
 ./bin/sh/Shell.cpp
 ./bin/sh/StatCommand.h
 ./bin/sh/StatCommand.cpp
-./bin/sh/UnameCommand.cpp
 ./bin/sh/CatCommand.cpp
 ./bin/sh/HelpCommand.cpp
-./bin/sh/UnameCommand.h
 ./bin/sh/DirListCommand.h
 ./bin/sh/HelpCommand.h
 ./bin/sh/WriteCommand.cpp
@@ -23,6 +21,9 @@
 ./bin/sh/Main.cpp
 ./bin/sh/ShellCommand.cpp
 ./bin/sh/sh
+./bin/uname/SConscript
+./bin/uname/Main.cpp
+./bin/uname/uname
 ./bin/SConscript
 ./VERSION
 ./Doxyfile

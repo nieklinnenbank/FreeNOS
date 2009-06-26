@@ -26,6 +26,15 @@
 /** Maximum length of a command (as saved in the user process table). */
 #define COMMANDLEN 64
 
+/** Virtual memory address of the array of arguments for new processes. */
+#define ARGV_ADDR  0x9ffff000
+
+/** Maximum size of each argument. */
+#define ARGV_SIZE  128
+
+/** Number of arguments at maximum. */
+#define ARGV_COUNT (PAGESIZE / ARGV_SIZE)
+
 /**
  * Userlevel process information.
  */

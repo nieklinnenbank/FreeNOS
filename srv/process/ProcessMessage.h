@@ -98,10 +98,16 @@ typedef struct ProcessMessage : public Message
 
     /** Used to store somekind of number (e.g. PID's). */
     ulong number;
-    
-    /** Input/Output buffer for ReadProcess. */
-    UserProcess *buffer;
 
+    union
+    {    
+	/** Input/Output buffer for ReadProcess. */
+	UserProcess *buffer;
+
+	/** Pointer to an array of arguments for SpawnProcess. */
+	char *arguments;
+    };
+    
     /** Path to an executable program. */
     char *path;
 

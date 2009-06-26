@@ -103,7 +103,7 @@ class Memory
 	 * @param paddr Physical address.
 	 * @param vaddr Virtual address.
 	 * @param prot Protection flags.
-	 * @return The mapped physical address.
+	 * @return The mapped virtual address.
 	 */
 	virtual Address mapVirtual(Address paddr, Address vaddr, ulong prot) = 0;
 
@@ -113,7 +113,7 @@ class Memory
 	 * @param paddr Physical address.
 	 * @param vaddr Virtual address.
 	 * @param prot Protection flags.
-	 * @return The mapped physical address.
+	 * @return The mapped virtual address.
 	 */
 	virtual Address mapVirtual(ArchProcess *p, Address paddr,
 				   Address vaddr, ulong prot) = 0;

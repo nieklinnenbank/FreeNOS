@@ -21,6 +21,7 @@
 #include <FreeNOS/Scheduler.h>
 #include <FreeNOS/Multiboot.h>
 #include <FreeNOS/BootImage.h>
+#include <ProcessServer.h>
 #include <String.h>
 
 Kernel::Kernel()
@@ -62,7 +63,7 @@ Kernel::Kernel()
 
 void Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Size index)
 {
-    Address imageVAddr = (Address) image;
+    Address imageVAddr = (Address) image, args;
     BootProgram *program;
     BootSegment *segment;
     ArchProcess *proc;
@@ -87,6 +88,11 @@ void Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Size index)
 			       PAGE_PRESENT | PAGE_USER | PAGE_RW);
 	}
     }
+    /* Map and copy program arguments. */
+    args = memory->allocatePhysical(PAGESIZE);
+    memory->mapVirtual(proc, args, ARGV_ADDR, PAGE_PRESENT | PAGE_USER | PAGE_RW);
+    strlcpy( (char *) memory->mapVirtual(args), program->path, ARGV_SIZE);
+    
     /* Schedule process. */
     scheduler->enqueue(proc);
 }

@@ -21,6 +21,7 @@
 #include <Init.h>
 #include <PageAllocator.h>
 #include <PoolAllocator.h>
+#include <ProcessServer.h>
 #include <stdlib.h>
 #include "runtime.h"
 
@@ -81,14 +82,27 @@ void heap()
 
 extern C void SECTION(".entry") _entry() 
 {
-    char *argv[] = { "main", ZERO };
-    int ret;
+    int ret, argc;
+    char *arguments;
+    char **argv;
 
     /* Run initialization. */
     INITRUN(&initStart, &initEnd);
     
+    /* Allocate buffer for arguments. */
+    argc = 0;
+    argv = (char **) new char[ARGV_COUNT];
+    arguments = (char *) ARGV_ADDR;
+
+    /* Fill in arguments list. */
+    while (argc < ARGV_COUNT && *arguments)
+    {
+	argv[argc] = arguments;
+	arguments += ARGV_SIZE;
+	argc++;
+    }
     /* Pass control to the program. */
-    ret = main(1, argv);
+    ret = main(argc, argv);
     
     /* Terminate execution. */
     exit(ret);

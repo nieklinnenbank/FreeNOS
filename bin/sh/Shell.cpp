@@ -166,5 +166,6 @@ Size Shell::parse(char *cmdline, char **argv, Size maxArgv)
 	
 	if (*cmdline) *cmdline++ = ZERO;
     }
+    argv[argc] = ZERO;
     return argc;
 }

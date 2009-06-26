@@ -102,16 +102,29 @@ int execv(const char *path, const char *argv[])
 int forkexec(const char *path, const char *argv[])
 {
     ProcessMessage msg;
-    
+    char *arguments = new char[PAGESIZE];
+    uint count = 0;
+
+    /* Fill in arguments. */
+    while (argv[count] && count < PAGESIZE / ARGV_SIZE)
+    {
+	strlcpy(arguments + (ARGV_SIZE * count), argv[count], ARGV_SIZE);
+	count++;
+    }    
     /* We want to spawn a new process. */
-    msg.action = SpawnProcess;
-    msg.path   = (char *) path;
+    msg.action    = SpawnProcess;
+    msg.path      = (char *) path;
+    msg.arguments = arguments;
+    msg.number    = count;
     
     /* Ask process server. */
     IPCMessage(PROCSRV_PID, SendReceive, &msg, sizeof(msg));
 
     /* Set errno. */
     errno = msg.result;
+    
+    /* Cleanup. */
+    delete arguments;
     
     /* All done. */
     return errno == ESUCCESS ? (int) msg.number : -1;

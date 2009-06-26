@@ -27,8 +27,14 @@
 
 int main(int argc, char **argv)
 {
-    const char *av[] = { "main", 0 };
     struct stat st;
+    const char *progs[] =
+    {
+	"/img/srv/filesystem/proc/procfs",
+	"/img/srv/serial/serial",
+	"/img/srv/pci/pci",
+	"/img/bin/sh/sh",
+    };
 
     /*
      * TODO: give up all priviledges: run us in priviledge level 0.
@@ -45,11 +51,11 @@ int main(int argc, char **argv)
         while (open("/dev/tty0", ZERO) == -1) ;
     }
     /* Temporarily start a hardcoded list of drivers. */
-    forkexec("/img/srv/filesystem/proc/procfs", av);
-    forkexec("/img/srv/serial/serial", av);
-    forkexec("/img/srv/pci/pci", av);
-    forkexec("/img/bin/sh/sh", av);
-
+    for (int i = 0; i < 4; i++)
+    {
+	const char *av[] = { progs[i], 0 };
+	forkexec(progs[i], av);
+    }
     /* Exit immediately. */
     return EXIT_SUCCESS;
 }
