@@ -17,11 +17,5 @@
 
 from build import *
 
-env = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc' ], 
-		      [ 'memory', 'filesystem', 'filesystem/virtual', 'terminal' ])
-
-env.Program('sh',  [ 'DirListCommand.cpp', 'Main.cpp',
-		     'MknodCommand.cpp',   'Shell.cpp',
-		     'StatCommand.cpp',    'WriteCommand.cpp',
-	    	     'HelpCommand.cpp',    'ShellCommand.cpp' ],
-		      LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])
+env = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc' ])
+env.Program('cat',  [ 'Main.cpp' ], LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])

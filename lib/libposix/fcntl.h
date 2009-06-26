@@ -19,11 +19,78 @@
 #define __LIBPOSIX_FCNTL_H
 
 #include <Macros.h>
+#include <stdio.h>
 #include "sys/types.h"
 
 /**                                                                                                                                                                                                     
  * @defgroup libposix libposix (POSIX.1-2008)
  * @{
+ */
+
+/**
+ * @brief Constants
+ * @{
+ */
+
+/** Create file if it does not exist. */
+#define O_CREAT		(1 << 0)
+
+/** Exclusive use flag. */
+#define O_EXCL		(1 << 1)
+
+/** Do not assign controlling terminal. */
+#define O_NOCTTY	(1 << 2)
+
+/** Truncate flag. */
+#define O_TRUNC		(1 << 3)
+
+/** 
+ * @brief Set the termios structure terminal parameters to a state that
+ *        provides conforming behavior; see Parameters that Can be Set.
+ */
+#define O_TTY_INIT	(1 << 4)
+
+/** Set append mode. */
+#define O_APPEND	(1 << 5)
+
+/** Write according to synchronized I/O data integrity completion. */
+#define O_DSYNC		(1 << 6)
+
+/** Non-blocking mode. */
+#define O_NONBLOCK	(1 << 7)
+
+/** Synchronized read I/O operations. */
+#define O_RSYNC		(1 << 8)
+
+/** Write according to synchronized I/O file integrity completion. */
+#define O_SYNC		(1 << 9)
+
+/** Mask for file access modes. */
+#define O_ACCMODE	(O_EXEC | O_RDONLY | O_RDWR | O_SEARCH | O_WRONLY)
+
+/**
+ * @brief Open for execute only (non-directory files).
+ *        The result is unspecified if this flag is applied to a directory.
+ */
+#define O_EXEC		(1 << 10)
+
+/** Open for reading only. */
+#define O_RDONLY	(1 << 11)
+
+/** Open for reading and writing. */
+#define O_RDWR		(1 << 12)
+
+/**
+ * @brief Open directory for search only.
+ *        The result is unspecified if this flag is applied to a non-directory file.
+ */
+#define O_SEARCH	(1 << 13)
+
+/** Open for writing only. */
+#define O_WRONLY	(1 << 14)
+
+/**
+ * @}
  */
 
 /**

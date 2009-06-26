@@ -2,11 +2,9 @@
 ./boot/boot.imgdesc
 ./boot/grub/menu.lst
 ./boot/boot.isodesc
-./bin/sh/CatCommand.h
 ./bin/sh/Shell.cpp
 ./bin/sh/StatCommand.h
 ./bin/sh/StatCommand.cpp
-./bin/sh/CatCommand.cpp
 ./bin/sh/HelpCommand.cpp
 ./bin/sh/DirListCommand.h
 ./bin/sh/HelpCommand.h
@@ -24,6 +22,9 @@
 ./bin/uname/SConscript
 ./bin/uname/Main.cpp
 ./bin/uname/uname
+./bin/cat/SConscript
+./bin/cat/Main.cpp
+./bin/cat/cat
 ./bin/SConscript
 ./VERSION
 ./Doxyfile

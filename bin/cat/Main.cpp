@@ -15,28 +15,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <fcntl.h>
-#include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <errno.h>
-#include "CatCommand.h"
+#include <fcntl.h>
 
-int CatCommand::execute(Size nparams, char **params)
+int cat(char *prog, char *file)
 {
     char buf[1025];
-    int fd;
-    Error e;
+    int fd, e;
 
     /* Clear buffer. */
     memset(buf, 0, sizeof(buf));
 
     /* Attempt to open the file first. */
-    if ((fd = open(params[0], ZERO)) < 0)
+    if ((fd = open(file, O_RDONLY)) < 0)
     {
-        printf("Failed to open '%s': %s\r\n",
-                params[0], strerror(errno));
-        return errno;
+        printf("%s: failed to open '%s': %s\r\n",
+                prog, file, strerror(errno));
+        return EXIT_FAILURE;
     }
     /* Read contents. */
     while (1)
@@ -46,15 +45,15 @@ int CatCommand::execute(Size nparams, char **params)
         {
 	    /* Error occurred. */
 	    case -1:
-		printf("Failed to read '%s': %s\r\n",
-		        params[0], strerror(errno));
+		printf("%s: failed to read '%s': %s\r\n",
+		        prog, file, strerror(errno));
 		close(fd);
-	        return errno;
+	        return EXIT_FAILURE;
     
 	    /* End of file. */
 	    case 0:
 		close(fd);
-		return ESUCCESS;
+		return EXIT_SUCCESS;
 	
 	    /* Print out results. */
 	    default:
@@ -63,8 +62,32 @@ int CatCommand::execute(Size nparams, char **params)
 	        break;
 	}
     }
-    /* Not reached. */
-    return ENOTSUP;
+    return EXIT_FAILURE;
 }
 
-INITOBJ(CatCommand, catCmd, LIBCRT_DEFAULT)
+int main(int argc, char **argv)
+{
+    int ret = EXIT_SUCCESS, result;
+
+    /* Verify command-line arguments. */
+    if (argc < 2)
+    {
+	printf("usage: %s FILE1 FILE2 ...\r\n",
+		argv[0]);
+	return EXIT_FAILURE;
+    }
+    /* Cat all given files. */
+    for (int i = 0; i < argc - 1; i++)
+    {
+	/* Perform cat. */
+	result = cat(argv[0], argv[i + 1]);
+	
+	/* Update exit code if needed. */
+	if (result > ret)
+	{
+	    ret = result;
+	}
+    }
+    /* Done. */
+    return ret;
+}
