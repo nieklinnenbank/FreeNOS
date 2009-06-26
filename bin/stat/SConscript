@@ -15,7 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-SConscript(dirs = [ 'sh', 'ps', 'memstat', 'mount',
-		    'bench', 'hostname', 'parse',
-		    'uname', 'cat', 'ls', 'stat',
-		    'mknod' ])
+from build import *
+
+env = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc' ])
+env.Program('stat',   [ 'Main.cpp' ],
+	     LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])

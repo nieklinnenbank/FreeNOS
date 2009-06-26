@@ -17,27 +17,45 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
+#include <dirent.h>
 #include <string.h>
-#include <sys/stat.h>
-#include "MknodCommand.h"
+#include <errno.h>
+#include <TerminalCodes.h>
 
-int MknodCommand::execute(Size nparams, char **params)
+int main(int argc, char **argv)
 {
-    dev_t dev;
-    
-    /* Fill in major/minor numbers. */
-    dev.major = atoi(params[1]);
-    dev.minor = atoi(params[2]);
+    DIR *d;
+    struct dirent *dent;
 
-    /* Attempt to create the file. */
-    if (mknod(params[0], ZERO, dev) < 0)
+    /* Verify command-line arguments. */
+    if (argc <= 1)
     {
-	printf("Failed to create '%s': %s\r\n",
-		params[0], strerror(errno));
-	return errno;
+	printf("usage: %s DIRECTORY\r\n",
+		argv[0]);
+	return EXIT_FAILURE;
     }
-    return 0;
-}
+    /* Attempt to open the directory. */
+    if (!(d = opendir(argv[1])))
+    {
+	printf("%s: failed to open '%s': %s\r\n",
+		argv[0], argv[1], strerror(errno));
+	return EXIT_FAILURE;
+    }
+    /* Read directory. */
+    while ((dent = readdir(d)))
+    {
+	/* Coloring. */
+	if (dent->d_type == DT_DIR)
+	    printf("%s", BLUE);
+	else
+	    printf("%s", WHITE);
+	printf("%s ", dent->d_name);
+    }
+    printf("\r\n");
 
-INITOBJ(MknodCommand, mknodCmd, LIBCRT_DEFAULT)
+    /* Close it. */
+    closedir(d);
+    
+    /* Success. */
+    return EXIT_SUCCESS;
+}

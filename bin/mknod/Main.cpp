@@ -16,41 +16,32 @@
  */
 
 #include <stdio.h>
-#include <dirent.h>
-#include <string.h>
+#include <stdlib.h>
 #include <errno.h>
-#include <TerminalCodes.h>
-#include "DirListCommand.h"
+#include <string.h>
+#include <sys/stat.h>
 
-int DirListCommand::execute(Size nparams, char **params)
+int main(int argc, char **argv)
 {
-    DIR *d;
-    struct dirent *dent;
-    
-    /* Attempt to open the directory. */
-    if (!(d = opendir(params[0])))
-    {
-	printf("Failed to open '%s': %s\r\n",
-		params[0], strerror(errno));
-	return errno;
-    }
-    /* Read directory. */
-    while ((dent = readdir(d)))
-    {
-	/* Coloring. */
-	if (dent->d_type == DT_DIR)
-	    printf("%s", BLUE);
-	else
-	    printf("%s", WHITE);
-	printf("%s ", dent->d_name);
-    }
-    printf("\r\n");
+    dev_t dev;
 
-    /* Close it. */
-    closedir(d);
-    
-    /* Success. */
-    return 0;
+    /* Verify command-line arguments. */
+    if (argc < 5)
+    {
+	printf("usage: %s FILE TYPE MAJOR MINOR\r\n",
+		argv[0]);
+	return EXIT_FAILURE;
+    }
+    /* Fill in major/minor numbers. */
+    dev.major = atoi(argv[3]);
+    dev.minor = atoi(argv[4]);
+
+    /* Attempt to create the file. */
+    if (mknod(argv[1], S_IFCHR, dev) < 0)
+    {
+	printf("%s: failed to create '%s': %s\r\n",
+		argv[0], argv[1], strerror(errno));
+	return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
 }
-
-INITOBJ(DirListCommand, dirListCmd, LIBCRT_DEFAULT)

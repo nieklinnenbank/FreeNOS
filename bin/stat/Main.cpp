@@ -15,24 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <sys/stat.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include "StatCommand.h"
+#include <sys/stat.h>
 
-int StatCommand::execute(Size nparams, char **params)
+int statFile(char *prog, char *file)
 {
     struct stat st;
-    
+
     /* Try to stat the file. */
-    if ((stat(params[0], &st)) < 0)
+    if ((stat(file, &st)) < 0)
     {
-	printf("Failed to stat '%s': %s\r\n",
-		params[0], strerror(errno));
-	return errno;
+	printf("%s: failed to stat '%s': %s\r\n",
+		prog, file, strerror(errno));
+	return EXIT_FAILURE;
     }
     /* Output file statistics. */
-    printf("File: %s\r\n", params[0]);
+    printf("File: %s\r\n", file);
     printf("Type: ");
     
     /* Print the right file type. */
@@ -50,16 +51,40 @@ int StatCommand::execute(Size nparams, char **params)
     }
     else if (S_ISBLK(st.st_mode))
 	printf("Block Device\r\n");
-
     else
 	printf("Unknown\r\n");
 
     printf("Size: %u\r\n", st.st_size);   
     printf("Uid:  %u\r\n", st.st_uid);
     printf("Gid:  %u\r\n", st.st_gid);
-    
+
     /* Success. */
-    return 0;
+    return EXIT_SUCCESS;
 }
 
-INITOBJ(StatCommand, statCmd, LIBCRT_DEFAULT)
+int main(int argc, char **argv)
+{
+    int ret = EXIT_SUCCESS, result;
+
+    /* Verify command-line arguments. */
+    if (argc <= 1)
+    {
+	printf("usage: %s FILE ...\r\n",
+		argv[0]);
+	return EXIT_FAILURE;
+    }    
+    /* Perform a stat for each file. */
+    for (int i = 0; i < argc - 1; i++)
+    {
+	/* Stat the file immediately. */
+	result = statFile(argv[0], argv[i + 1]);
+	
+	/* Update exit status, if needed. */
+	if (result > ret)
+	{
+	    ret = result;
+	}
+    }    
+    /* Success. */
+    return ret;
+}
