@@ -173,7 +173,7 @@ def Prepare(env, libs = [], servers = []):
     for srv in servers:
 	e['CPPFLAGS'] += ' -Isrv/' + srv
 
-    # For IPCServer.h. TODO: put this in libcommon!!!
+    # For IPCServer.h.
     if len(servers) > 0:
 	e['CPPFLAGS'] += ' -Isrv'
 
