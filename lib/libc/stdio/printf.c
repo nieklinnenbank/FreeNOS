@@ -19,7 +19,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-int printf(char *format, ...)
+int printf(const char *format, ...)
 {
     va_list args;
     int ret;

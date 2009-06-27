@@ -172,7 +172,7 @@ extern C int vsnprintf(char *buffer, unsigned int size, const char *fmt, va_list
  * @param ... Argument list.
  * @return Number of bytes written or error code on failure.
  */
-extern C int printf(char *format, ...);
+extern C int printf(const char *format, ...);
 
 /**
  * Output a formatted string to standard output, using a variable argument list.
@@ -180,7 +180,7 @@ extern C int printf(char *format, ...);
  * @param ... Argument list.
  * @return Number of bytes written or error code on failure.
  */
-extern C int vprintf(char *format, va_list args);
+extern C int vprintf(const char *format, va_list args);
 
 /**
  * @}

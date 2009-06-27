@@ -135,9 +135,20 @@ if ARGUMENTS.get('VERBOSE') is None:
     host['ARCOMSTR']       = "  AR      $TARGET"
     host['RANLIBCOMSTR']   = "  RANLIB  $TARGET"
 
+#
+# Build with assertion checks.
+#
+if ARGUMENTS.get('ASSERT') is not None:
+
+    target.Append(CCFLAGS = [ '-D__ASSERT__' ])
+    host.Append(  CCFLAGS = [ '-D__ASSERT__' ])
+
 # Provide help aswell.
 Help("\n"
      "VERBOSE: output verbose build commands\n"
+     "    default: no\n")
+Help("\n"
+     "ASSERT: build with assertion checks enabled\n"
      "    default: no\n")
 
 #

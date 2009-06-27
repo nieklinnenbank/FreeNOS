@@ -18,6 +18,7 @@
 #include <FreeNOS/Support.h>
 #include <FreeNOS/Init.h>
 #include <Macros.h>
+#include <Assert.h>
 
 extern C void constructors()
 {
@@ -33,6 +34,31 @@ extern C void destructors()
     {
 	(*dtor)();
     }
+}
+
+extern C void __assertFailure(const char *fmt, ...)
+{
+    for (;;) ;
+}
+
+extern C int __assertRead(Address addr)
+{
+    if (memory && scheduler && scheduler->current())
+    {
+	return memory->access(scheduler->current(), addr,
+			      sizeof(Address), PAGE_PRESENT|PAGE_USER);
+    }
+    return true;
+}
+
+extern C int __assertWrite(Address addr)
+{
+    if (memory && scheduler && scheduler->current())
+    {
+	return memory->access(scheduler->current(), addr,
+			      sizeof(Address), PAGE_PRESENT|PAGE_USER|PAGE_RW);
+    }
+    return true;
 }
 
 extern C void __cxa_pure_virtual()

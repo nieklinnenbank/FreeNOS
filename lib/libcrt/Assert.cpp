@@ -15,40 +15,35 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <unistd.h>
-#include "stdarg.h"
-#include "stdio.h"
-#include "stdlib.h"
+#include <FreeNOS/Memory.h>
+#include <API/VMCtl.h>
+#include <Assert.h>
+#include <Macros.h>
+#include <Types.h>
+#include <Config.h>
+#include <stdio.h>
+#include <stdarg.h>
+#include <stdlib.h>
 
-int vprintf(const char *format, va_list args)
+void __assertFailure(const char *fmt, ...)
 {
-    char buf[1024];
-    Size size, written = 0;
-    Error e;
+    va_list args;
     
-    /* Write formatted string. */
-    size = vsnprintf(buf, sizeof(buf), format, args);
+    /* Output assertion failure message. */
+    va_start(args, fmt);
+    vprintf(fmt, args);
+    va_end(args);
     
-    /* Write it to standard output. */
-    while (written < size)
-    {
-	e = write(1, buf + written, size - written);
-	
-	switch (e)
-	{
-	    /* Error occurred. */
-	    case -1:
-		return e;
-	
-	    /* End of file reached. */
-	    case 0:
-		return written;
-		
-	    /* Process bytes. */
-	    default:
-		written += e;
-	}
-    }
-    /* All done. */
-    return written;
+    /* Terminate immediately. */
+    exit(EXIT_FAILURE);
+}
+
+int __assertRead(Address addr)
+{
+    return VMCtl(Access, SELF, ZERO, addr, PAGE_PRESENT|PAGE_USER);
+}
+
+int __assertWrite(Address addr)
+{
+    return VMCtl(Access, SELF, ZERO, addr, PAGE_PRESENT|PAGE_USER|PAGE_RW);
 }

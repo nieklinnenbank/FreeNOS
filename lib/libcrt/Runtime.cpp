@@ -23,7 +23,7 @@
 #include <PoolAllocator.h>
 #include <ProcessServer.h>
 #include <stdlib.h>
-#include "runtime.h"
+#include "Runtime.h"
 
 extern C int __cxa_atexit(void (*func) (void *), void * arg, void * dso_handle)
 {

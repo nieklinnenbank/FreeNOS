@@ -16,9 +16,14 @@
  */
 
 #include <API/VMCtl.h>
+#include <FreeNOS/Memory.h>
+#include <Macros.h>
 #include <Config.h>
+#include <Types.h>
 #include <ListAllocator.h>
+#include <LogMessage.h>
 #include "MemoryServer.h"
+#include <stdlib.h>
 
 int main(int argc, char **argv)
 {
@@ -41,6 +46,33 @@ extern C void __dso_handle()
 
 extern C void __stack_chk_fail(void)
 {
+}
+
+void __assertFailure(const char *fmt, ...)
+{
+    va_list args;
+    char msg[256];
+
+    /* Construct assertion failure message. */
+    va_start(args, fmt);
+    vsnprintf(msg, sizeof(msg), fmt, args);
+    va_end(args);
+    
+    /* Send it to the log server. */
+    log("%s", msg);
+
+    /* Terminate immediately. */
+    exit(EXIT_FAILURE);
+}
+
+int __assertRead(Address addr)
+{
+    return VMCtl(Access, SELF, ZERO, addr, PAGE_PRESENT|PAGE_USER);
+}
+
+int __assertWrite(Address addr)
+{
+    return VMCtl(Access, SELF, ZERO, addr, PAGE_PRESENT|PAGE_USER|PAGE_RW);
 }
 
 extern C void SECTION(".entry") _entry() 

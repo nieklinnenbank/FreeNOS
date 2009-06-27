@@ -26,7 +26,6 @@
  * $FreeBSD: head/sys/dev/syscons/teken/teken.c 190157 2009-03-20 14:31:08Z ed $
  */
 
-//#include <sys/cdefs.h>
 #if defined(__FreeBSD__) && defined(_KERNEL)
 #include <sys/param.h>
 #include <sys/lock.h>
@@ -35,11 +34,10 @@
 #define	teken_printf(x,...)
 #else /* !(__FreeBSD__ && _KERNEL) */
 #include <sys/types.h>
-#include <Assert.h>
 #define __unused __attribute((unused))
-//#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
+#include <Assert.h>
 #define	teken_assert(x)		assert(x)
 /*
  #define	teken_printf(x,...)	do { \

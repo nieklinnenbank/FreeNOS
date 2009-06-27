@@ -180,9 +180,10 @@
 ./include/Queue.h
 ./include/Factory.h
 ./include/Assert.h
-./lib/libcrt/runtime.cpp
+./lib/libcrt/Runtime.cpp
 ./lib/libcrt/SConscript
-./lib/libcrt/runtime.h
+./lib/libcrt/Runtime.h
+./lib/libcrt/Assert.cpp
 ./lib/libc/stdarg.h
 ./lib/libc/string/strlen.c
 ./lib/libc/string/strlcpy.c

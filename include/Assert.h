@@ -23,6 +23,11 @@
 #include "Macros.h"
 #include "Types.h"
 
+#ifdef __SERVER__
+#include <LogMessage.h>
+#include <stdlib.h>
+#endif /* __SERVER__ */
+
 /**
  * @brief Runtime functions
  * @{
@@ -33,19 +38,19 @@
  * @param fmt Formatted message.
  * @param ... Argument list.
  */
-extern void __assertFailure(const char *fmt, ...);
+extern C void __assertFailure(const char *fmt, ...);
 
 /**
  * Verify that the given address is readable.
  * @param addr Address to verify.
  */
-extern bool __assertRead(Address addr);
+extern C int __assertRead(Address addr);
 
 /**
  * Verify that the given address is writeable.
  * @param addr Address to verify.
  */
-extern bool __assertWrite(Address addr);
+extern C int __assertWrite(Address addr);
 
 /**
  * @}
@@ -57,14 +62,29 @@ extern bool __assertWrite(Address addr);
  */
 
 /**
+ * Invokes __assertFailure for applications, and log() + exit() for servers.
+ * @param fmt Formatted string.
+ * @param ... Argument list.
+ * @return Never.
+ */
+#ifdef __SERVER__
+#define raiseFailure(fmt, ...) \
+    log(fmt, ##__VA_ARGS__); \
+    exit(1);
+#else
+#define raiseFailure(fmt, ...) \
+    __assertFailure(fmt, ##__VA_ARGS__);
+#endif
+
+/**
  * Verify that a given expression evaluates to true.
  * @param exp Boolean expression.
  */
 #define assert(exp) \
     if (!(exp)) \
     { \
-	__assert("[%s:%d]: *** Assertion `%s' failed ***\n", \
-		 __FILE__, __LINE__, #exp); \
+	raiseFailure("[%s:%d]: *** Assertion `%s' failed ***\n", \
+		       __FILE__, __LINE__, #exp); \
     }
 
 /**
