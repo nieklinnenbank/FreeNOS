@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include "Comparable.h"
 #include "Types.h"
+#include "Macros.h"
 #include "Assert.h"
 
 /**
@@ -47,7 +48,7 @@ class String : public Comparable<String>
 	 */
 	String()
 	{
-	    value       = ZERO;
+	    value = ZERO;
 	}
 
 	/**
@@ -56,7 +57,7 @@ class String : public Comparable<String>
 	 */
 	String(char *s)
 	{
-	    init(s, STRING_DEFAULT_MAX);
+	    value = strdup(s);
 	}
 
 	/**
@@ -65,7 +66,7 @@ class String : public Comparable<String>
 	 */
 	String(String *s)
 	{
-	    init(s->value, s->size());
+	    value = strdup(s->value);
 	}
     
 	/**
@@ -74,7 +75,7 @@ class String : public Comparable<String>
 	 */
 	String(const char *s)
 	{
-	    init((char *) s, STRING_DEFAULT_MAX);
+	    value = strdup(s);
 	}
     
 	/**
@@ -84,7 +85,7 @@ class String : public Comparable<String>
 	 */
 	String(const char *s, Size max)
 	{
-	    init((char *) s, max);
+	    value = strndup(s, max);
 	}
 
 	/** 
@@ -163,7 +164,7 @@ class String : public Comparable<String>
 	 */
         bool contains(String& sequence)
         {
-                return contains(*sequence);
+            return contains(*sequence);
         }
         
         /**
@@ -174,29 +175,28 @@ class String : public Comparable<String>
          */
         bool contains(char* sequence)
         {
-                if( sequence == (char*) NULL
-                    || strlen(sequence) > strlen(value) )
-                {
-                        return false;
-                }
-                
-                /** See if the first character of sequence occurs in value. */
-                char* pt = strchr(value, sequence[0]);
-                if( pt == (char*) NULL )
-                {
-                        return false;
-                }
-                
-                while( *pt )
-                {
-                        if( strncmp( sequence, pt, strlen( sequence ) == 0  ))
-                        {
-                                return true;
-                        }
-                        pt++;
-                }
-                
+            if(sequence == (char*) NULL ||
+	       strlen(sequence) > strlen(value))
+            {
                 return false;
+            }
+	    
+            /* See if the first character of sequence occurs in value. */
+            char* pt = strchr(value, sequence[0]);
+            if( pt == (char*) NULL )
+            {
+                return false;
+            }
+	    
+            while(*pt)
+            {
+        	if(strncmp( sequence, pt, strlen( sequence ) == 0))
+                {
+                    return true;
+                }
+                pt++;
+            }
+            return false;
         }
         
         /**
@@ -206,7 +206,7 @@ class String : public Comparable<String>
          */
         bool endsWith(String& suffix)
         {
-                return endsWith(*suffix);
+            return endsWith(*suffix);
         }
         
         /**
@@ -216,16 +216,16 @@ class String : public Comparable<String>
          */
         bool endsWith(char* suffix)
         {
-                Size sLength = strlen(suffix);
-                Size vLength = strlen(value);
+            Size sLength = strlen(suffix);
+            Size vLength = strlen(value);
                 
-                if( sLength > vLength )
-                {
-                        return false;
-                }
+            if( sLength > vLength )
+            {
+                return false;
+            }
                 
-                char* pt = (value + (vLength - sLength) );
-                return( strcmp(pt, suffix) == 0);
+            char* pt = (value + (vLength - sLength) );
+            return( strcmp(pt, suffix) == 0);
         }
         
 	/**
@@ -415,25 +415,6 @@ class String : public Comparable<String>
 	}
 
     private:
-
-	/**
-	 * Initialize the String.
-	 * @param s Initial value of the String.
-	 * @param max Maximum length of the String.
-	 */
-	void init(char *s, Size max)
-	{
-	    assertRead(s);
-	    assert(max > 0);
-
-	    Size sz = strlen(s);
-	    if (max < sz)
-	    {
-		sz = max;
-	    }
-
-	    value = strdup(s);
-	}
 
 	/** Current value of the String. */    
 	char *value;

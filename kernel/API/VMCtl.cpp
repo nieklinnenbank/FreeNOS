@@ -50,6 +50,9 @@ Error VMCtlHandler(Operation action, ProcessID procID, Address paddr,
 		memory->releasePhysical(page);
 	    }
 	    break;
+
+	case Access:
+	    return memory->access(proc, vaddr, sizeof(Address), prot);
 	    
 	default:
 	    return EINVAL;

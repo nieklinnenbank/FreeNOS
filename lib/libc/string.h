@@ -68,6 +68,28 @@ extern C int strncasecmp(const char *dest, const char *src, size_t count);
 extern C char *strdup(const char *str);
 
 /**
+ * @brief Duplicate a specific number of bytes from a string.
+ *
+ * The strndup() function shall be equivalent to the strdup()
+ * function, duplicating the provided s in a new block of memory
+ * allocated as if by using malloc(), with the exception being that
+ * strndup() copies at most size plus one bytes into the newly allocated
+ * memory, terminating the new string with a NUL character. If the length
+ * of s is larger than size, only size bytes shall be duplicated. If size
+ * is larger than the length of s, all bytes in s shall be copied into the
+ * new memory buffer, including the terminating NUL character. The newly
+ * created string shall always be properly terminated.
+ *
+ * @param s String to duplicate.
+ * @param size Maximum number of bytes to copy, excluding the NULL byte.
+ * @return Upon successful completion, the strndup() function shall return
+ *         a pointer to the newly allocated memory containing the duplicated
+ *         string. Otherwise, it shall return a null pointer and set errno
+ *         to indicate the error.
+ */
+extern C char *strndup(const char *s, size_t size);
+
+/**
  * Fill memory with a constant byte.
  * @param dest Memory to write to.
  * @param ch Constant byte.

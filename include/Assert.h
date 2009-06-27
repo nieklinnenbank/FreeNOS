@@ -18,17 +18,22 @@
 #ifndef __ASSERT_H
 #define __ASSERT_H
 
+#if defined(__ASSERT__) && !defined(__HOST__)
+
 #include "Macros.h"
 #include "Types.h"
 
-#if defined(NOT_IMPLEMENTED) && !defined(__HOST__)
+/**
+ * @brief Runtime functions
+ * @{
+ */
 
 /**
  * Function which prints a message, and then terminates itself.
  * @param fmt Formatted message.
  * @param ... Argument list.
  */
-extern void __assert(const char *fmt, ...);
+extern void __assertFailure(const char *fmt, ...);
 
 /**
  * Verify that the given address is readable.
@@ -43,13 +48,23 @@ extern bool __assertRead(Address addr);
 extern bool __assertWrite(Address addr);
 
 /**
+ * @}
+ */
+
+/**
+ * @brief Preprocessor macros
+ * @{
+ */
+
+/**
  * Verify that a given expression evaluates to true.
  * @param exp Boolean expression.
  */
 #define assert(exp) \
     if (!(exp)) \
     { \
-	__assert("[%s:%d]: *** Assertion `%s' failed ***\n", __FILE__, __LINE__, #exp); \
+	__assert("[%s:%d]: *** Assertion `%s' failed ***\n", \
+		 __FILE__, __LINE__, #exp); \
     }
 
 /**
@@ -66,14 +81,38 @@ extern bool __assertWrite(Address addr);
 #define assertWrite(addr) \
     assert(__assertWrite((Address)addr))
 
+/**
+ * @}
+ */
+
 #else
 
-#define assert(exp) \
-    if (!(exp)) \
-	for ( ; ; ) { }
-#define assertRead(exp)
-#define assertWrite(exp)
+/**
+ * @brief Dummy preprocessor macros
+ * @{
+ */
 
-#endif /* defined(NOT_IMPLEMENTED) && !defined(__HOST__) */
+/**
+ * Dummy assertion function which does not perform any check.
+ * @param exp Expression is ignored.
+ */
+#define assert(exp)
 
+/**
+ * Dummy assertion function for checking read access on an address.
+ * @param addr Address is ignored.
+ */
+#define assertRead(addr)
+
+/**
+ * Dummy assertion function for checking read access on an address.
+ * @param addr Address is ignored.
+ */
+#define assertWrite(addr)
+
+/**
+ * @}
+ */
+
+#endif /* defined(__ASSERT__) && !defined(__HOST__) */
 #endif /* __ASSERT_H */

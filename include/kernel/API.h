@@ -61,6 +61,7 @@ typedef enum Operation
     Read 	= 6,
     Write 	= 7,
     Lookup      = 8,
+    Access	= 9,
 }
 Action;
 
