@@ -22,31 +22,104 @@
 
 #include <stdio.h>
 
-URI::URI(String uri) : _uri(uri), _normalized(String())
+URI::URI(char* uri) : _uri(uri)
 {
-    StringTokenizer st(_uri, URI_SCHEME_SEPARATOR);
+    _scheme = 0;
+    _hierarchical = 0;
+    _query = 0;
+    _fragment = 0;
+    _normalized = 0;
     
-    if( st.count() == 2 )
+    StringTokenizer st(_uri, ':');
+    
+    if( st.count() > 0 )
     {
-        _scheme = st.next();
-        _scheme = _scheme.toUpperCase();
+        _scheme = strdup(st.next());
+    }
+    
+    StringTokenizer querySt(st.next(), '?');
+    
+    if( querySt.count() > 0 )
+    {
+        _hierarchical = strdup(querySt.next());
+        
+        if( querySt.count() > 1 )
+        {
+    
+            StringTokenizer fragmentSt(querySt.next(), '#');
+            _query = strdup(fragmentSt.next());
+            
+            if( fragmentSt.count() > 1 )
+            {
+                _fragment = strdup(fragmentSt.next());
+            }
+        }
+    }
+    
+}
+
+URI::~URI()
+{
+    if( _scheme != 0 )
+    {
+        free( _scheme );
+        _scheme = 0;
+    }
+    
+    if( _hierarchical != 0 )
+    {
+        free( _hierarchical );
+        _hierarchical = 0;
+    }
+    
+    if( _query != 0 )
+    {
+        free( _query );
+        _query = 0;
+    }
+    
+    if( _fragment != 0 )
+    {
+        free( _fragment );
+        _fragment = 0;
+    }
+    
+    if( _normalized != 0 )
+    {
+        free( _normalized );
+        _normalized = 0;
     }
 }
 
-String URI::getScheme() const
+char* URI::getScheme() const
 {
     return _scheme;
 }
 
-String URI::getRawURI() const
+char* URI::getHierarchical() const
+{
+    return _hierarchical;
+}
+
+char* URI::getQuery() const
+{
+    return _query;
+}
+
+char* URI::getFragment() const
+{
+    return _fragment;
+}
+
+char* URI::getRawURI() const
 {
     return _uri;
 }
 
 bool URI::equals(URI& uri)
 {
-    char* own = *(this->normalize());
-    char* other = *(uri.normalize());
+    char* own = this->normalize();
+    char* other = uri.normalize();
     unsigned int length = strlen(own);
     bool inEncoding = false;
     
@@ -90,13 +163,13 @@ bool URI::equals(URI& uri)
     return true;
 }
 
-String URI::normalize()
+char* URI::normalize()
 {
-    Size size = _uri.size();
+    Size size = strlen(_uri);
     
-    if( *_normalized == (char*)NULL )
+    if( _normalized == (char*)NULL )
     {
-        char* original = *_uri;
+        char* original = _uri;
         char* copy = (char*)malloc( size + 1);
         memset(copy, 0, size + 1);
         unsigned int copyPointer = 0;
@@ -139,8 +212,7 @@ String URI::normalize()
         }
         
         free(encoded);
-        String ret(copy);
-        _normalized = ret;
+        _normalized = copy;
     }
     
     return _normalized;

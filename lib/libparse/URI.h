@@ -25,7 +25,9 @@
 #define RESERVED_SUBDELIMS "!$&'()*+,;="
 #define UNRESERVED_CHARS \
 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-._~"
-#define URI_SCHEME_SEPARATOR ":"
+#define URI_SCHEME_SEPARATOR ':'
+#define URI_QUERY_SEPARATOR '?'
+#define URI_FRAGMENT_SEPARATOR '#'
 
 /**
  * Represents an URI according to RFC 3986.
@@ -51,23 +53,38 @@ class URI
         /**
          * Constructor
          */
-        URI(String uri);
+        URI(char* uri);
         
         /**
          * Destructor
          */
-        virtual ~URI() {};
+        virtual ~URI();
         
         /**
          * Returns the scheme of this URI
          */
-        String getScheme() const;
+        char* getScheme() const;
+        
+        /**
+         *
+         */
+        char* getHierarchical() const;
+        
+        /**
+         *
+         */
+        char* getQuery() const;
+        
+        /**
+         *
+         */
+        char* getFragment() const;
         
         /**
          * Returns the raw URI string as given in the
          * constructor.
          */
-        String getRawURI() const;
+        char* getRawURI() const;
         
         /**
          * Returns whether the given URI is equal
@@ -82,24 +99,24 @@ class URI
          * returned String. This is needed for - amongs other things -
          * determining whether two URI's are equal.
          */
-         String normalize();
+         char* normalize();
 
     protected:
 
         /** The raw URI. */
-        String _uri;
+        char* _uri;
         
         /** The normalized URI. */
-        String _normalized;
+        char* _normalized;
         
         /** The hierarchical part of the URI. */
-        String _hierarchical;
+        char* _hierarchical;
         
         /** The query part of the URI. */
-        String _query;
+        char* _query;
         
         /** The fragment part of the URI. */
-        String _fragment;
+        char* _fragment;
 
         /**
          * Decodes the given encoded char* (hex)
@@ -112,7 +129,7 @@ class URI
     private:
 
         /** The scheme of the URI. */
-        String _scheme;
+        char* _scheme;
         
 };
 

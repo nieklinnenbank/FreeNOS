@@ -48,15 +48,13 @@ class String : public Comparable<String>
 	String()
 	{
 	    value       = ZERO;
-	    deleteValue = false;
 	}
 
 	/**
 	 * Constructor.
 	 * @param s Initial value of the String.
-	 * @param dv Delete value in the destructor.
 	 */
-	String(char *s, bool dv = true) : deleteValue(dv)
+	String(char *s)
 	{
 	    init(s, STRING_DEFAULT_MAX);
 	}
@@ -64,9 +62,8 @@ class String : public Comparable<String>
 	/**
 	 * Copy constructor.
 	 * @param s String instance pointer.
-	 * @param dv Delete value in the destructor.
 	 */
-	String(String *s, bool dv = true) : deleteValue(dv)
+	String(String *s)
 	{
 	    init(s->value, s->size());
 	}
@@ -74,9 +71,8 @@ class String : public Comparable<String>
 	/**
 	 * Constant constructor.
 	 * @param s Initial value of the String.
-	 * @param dv Delete value in the destructor.
 	 */
-	String(const char *s, bool dv = false) : deleteValue(dv)
+	String(const char *s)
 	{
 	    init((char *) s, STRING_DEFAULT_MAX);
 	}
@@ -85,10 +81,8 @@ class String : public Comparable<String>
 	 * Constrant constructor including the maximum length.
 	 * @param s Initial value of the String.
 	 * @param max Maximum length of the String.
-	 * @param dv Delete value in the destructor.
 	 */
-	String(const char *s, Size max, bool dv = false)
-	    : deleteValue(dv)
+	String(const char *s, Size max)
 	{
 	    init((char *) s, max);
 	}
@@ -98,7 +92,11 @@ class String : public Comparable<String>
 	 */
 	~String()
 	{
-	    if (deleteValue && value) delete value;
+	    if (value)
+	    {
+		free(value);
+		value = 0;
+	    }
 	}
 
 	/**
@@ -430,18 +428,15 @@ class String : public Comparable<String>
 
 	    Size sz = strlen(s);
 	    if (max < sz)
+	    {
 		sz = max;
+	    }
 
-	    value = new char[sz + 1];
-	    strncpy(value, s, sz);
-	    value[sz] = 0;
+	    value = strdup(s);
 	}
 
 	/** Current value of the String. */    
 	char *value;
-	
-	/** Do we need to delete() to value in destructor? */
-	bool deleteValue;
 };
 
 #endif /* __STRING_H */

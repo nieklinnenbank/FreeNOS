@@ -23,17 +23,20 @@
 
 int main(int argc, char **argv)
 {
-    String u1("http://my.site\%2enl");
+    String u1("http://coen@my.site\%2enl/file.php?query#fragment");
     String u2("http://my.site.nl");
         
-    URI uri1(u1);
-    URI uri2(u2);
+    URI uri1(*u1);
+    URI uri2(*u2);
         
-    printf("URI1 == %s\n", *uri1.getRawURI());
-    printf("URI2 == %s\n", *uri2.getRawURI());
-    printf("URI1 has scheme %s\n", *(uri1.getScheme()) );
+    printf("URI1 == %s\n", uri1.getRawURI());
+    printf("URI2 == %s\n", uri2.getRawURI());
+    printf("URI1 has scheme %s\n", uri1.getScheme() );
+    printf("URI1 has hierarchical: %s\n", uri1.getHierarchical() );
+    printf("URI1 has query: %s\n", uri1.getQuery() );
+    printf("URI1 has fragment: %s\n", uri1.getFragment() );
     printf("URI1 equals URI2: %s\n", (uri1.equals(uri2) ? "true" : "false") );
-    printf("URI1 normalized == %s\n", *(uri1.normalize()) );
+    printf("URI1 normalized == %s\n", uri1.normalize() );
 
     return EXIT_SUCCESS;
 }

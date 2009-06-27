@@ -17,6 +17,16 @@
 
 from build import *
 
+#
+# Target build
+#
 env = Prepare(target, [ 'libc', 'libposix' ])
 env.Library('libparse', [ 'Parser.cpp', 'StringTokenizer.cpp', 'Delimeter.cpp',
     'CommandLine.cpp', 'URI.cpp' ])
+
+#
+# Host build
+#
+env = Prepare(host)
+env.Library('host/libparse', [ 'host/Parser.cpp', 'host/StringTokenizer.cpp', 'host/Delimeter.cpp',
+    'host/CommandLine.cpp', 'host/URI.cpp' ])

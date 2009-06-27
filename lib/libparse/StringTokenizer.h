@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright (C) 2009 Coen Bijlsma
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -42,28 +42,10 @@ class StringTokenizer
 	 * Constructor.
 	 * Initializes the tokenizer
 	 */
-	StringTokenizer(String& seq, String& delim);
-	
-	/**
-	 * Constructor
-	 * Initializes the tokenizer
-	 */
-	StringTokenizer(String&, char* delim);
-	
-	/**
-	 * Constructor.
-	 * Initializes the tokenizer
-	 */
 	StringTokenizer(char* seq, char delim);
 	
 	/**
-	 * Constructor.
-	 * Initializes the tokenizer
-	 */
-	StringTokenizer(char* seq, char* delim);
-	
-	/**
-	 * Destructor
+	 * Destructor.
 	 */
 	virtual ~StringTokenizer();
 	
@@ -77,23 +59,23 @@ class StringTokenizer
 	 * Returns the amount of tokens there are
 	 * in the String
 	 */
-	int count();
+	unsigned int count();
 	
 	/**
 	 * Returns the next token
 	 */
-	String next();
+	char* next();
 
     private:
 
 	char*	_sequence;
-	char*	_delimiters;
+	char	_delimiter;
 	int	_currentLocation;
-	int	_count;
+	unsigned int	_count;
 	char*	_currentToken;
 	char*	_nextToken;
 	
-	void _init(char* seq, char* delim);
+	void _init(char* seq, char delim);
 };
 
 #endif /* __LIBPARSE_STRINGTOKENIZER_H */

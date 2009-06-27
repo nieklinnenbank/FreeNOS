@@ -17,7 +17,18 @@
 
 from build import *
 
+#
+# Target build
+#
 env = Prepare(target, [ 'libcrt', 'libexec', 'liballoc', 'libc', 'libposix', 'libparse' ] )
 
 env.Program('parse',  [ 'Main.cpp' ],
+		      LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])
+
+#
+# Host build
+#
+env = Prepare(host, [ 'libparse' ] )
+
+env.Program('host/parse',  [ 'host/Main.cpp' ],
 		      LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])

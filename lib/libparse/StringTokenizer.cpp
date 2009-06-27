@@ -23,27 +23,10 @@
 
 StringTokenizer::StringTokenizer(String& seq, char delim)
 {
-	char dl[] = {delim, '\0'};
-	this->_init(*seq, dl);
-}
-
-StringTokenizer::StringTokenizer(String& seq, String& delim)
-{
-	this->_init(*seq, *delim);
-}
-
-StringTokenizer::StringTokenizer(String& seq, char* delim)
-{
 	this->_init(*seq, delim);
 }
 
 StringTokenizer::StringTokenizer(char* seq, char delim)
-{
-	char dl[] = {delim, '\0'};
-	this->_init(seq, dl);
-}
-
-StringTokenizer::StringTokenizer(char* seq, char* delim)
 {
 	this->_init(seq, delim);
 }
@@ -53,15 +36,14 @@ StringTokenizer::~StringTokenizer()
 	free( _currentToken );
 	free( _nextToken );
 	free( _sequence );
-	free( _delimiters );
 }
 
 bool StringTokenizer::hasNext()
 {
-	return ( _nextToken != 0 );
+	return !( _nextToken == 0 );
 }
 
-int StringTokenizer::count()
+unsigned int StringTokenizer::count()
 {
 	if( _count == 0 )
 	{
@@ -69,13 +51,10 @@ int StringTokenizer::count()
 		
 		for( unsigned int i = 0; i < strlen( _sequence ); i++)
 		{
-			for( unsigned int n = 0; n < strlen( _delimiters ); n++)
-			{
-				if( _sequence[i] == _delimiters[n])
-				{
-					_count++;
-				}
-			}
+		        if( _delimiter == _sequence[i] )
+		        {
+		                _count++;
+		        }
 		}
 		
 	}
@@ -83,15 +62,14 @@ int StringTokenizer::count()
 	return _count;
 }
 
-String StringTokenizer::next()
+char* StringTokenizer::next()
 {
 	char* ptr = 0;
 	char* ptr2 = 0;
-	char* retval = 0;
 	
 	if( _nextToken == 0 )
 	{
-		return String();
+		return (char*) NULL;
 	}
 	
 	if( _currentToken != 0 )
@@ -99,107 +77,66 @@ String StringTokenizer::next()
 		free( _currentToken );
 	}
 	
+	// Copy _nextToken into _currentToken
 	_currentToken = strdup(_nextToken);
 	
-	// Shift until next _delimeter
-	ptr = _sequence + _currentLocation;
-	while( ptr[0] != 0 )
-	{
-		bool delimeterFound = false;
-		for( unsigned int i = 0; i < strlen( _delimiters ); i++ )
-		{
-			if( ptr[0] == _delimiters[i] )
-			{
-				delimeterFound = true;
-			}
-			
-		}
-		
-		if( ! delimeterFound )
-		{
-			ptr++;
-		} else {
-			break;
-		}
-	}
-	
+	// Shift until next _delimiter
+        for( ptr = _sequence + _currentLocation; 
+          ptr[0] != '\0' && ptr[0] != _delimiter; ptr++){};
+        
 	// (re)fill _nextToken
 	free( _nextToken );
 	if( ptr[0] == '\0' )
 	{
 		_nextToken = 0;
 	} else {
-		ptr++;
-		
-		for( unsigned int i = 0; i < strlen( _delimiters ); i++ )
-		{
-			ptr2 = strchr( ptr, _delimiters[i] );
-			if( ptr2 > 0 )
-			{
-				// A delimeter is found
-				break;
-			}
-		}
-		
-		if( ptr2 == 0 )
-		{
-			// If this is the last token
-			_nextToken = strdup(ptr);
-		} else {
-			_nextToken = (char*)malloc(ptr2 - ptr + 1 );
-			memset( _nextToken, 0, ptr2 - ptr + 1 );
-			strncpy( _nextToken, ptr, ptr2 - ptr );
-		}
-		
-		_currentLocation += strlen( _nextToken ) + 1;
+	        ptr++;
+	        ptr2 = strchr(ptr, _delimiter);
+	        
+	        if( ptr2 == 0 )
+	        {
+	            // This is the last token
+	            _nextToken = strdup(ptr);
+	        } else {
+	            _nextToken = (char*)malloc(ptr2 - ptr + 1);
+	            memset(_nextToken, 0, ptr2 - ptr + 1);
+	            strncpy(_nextToken, ptr, ptr2 - ptr);
+	        }
+	        
+	        _currentLocation += strlen(_nextToken) +1;
 	}
-
-	retval = strdup(_currentToken);
 	
-	return String( retval, true );
+	return _currentToken;
 }
 
-void StringTokenizer::_init(char* seq, char* delim)
+void StringTokenizer::_init(char* seq, char delim)
 {
 	char* ptr;
 	char* value = seq;
 	
-	if( value == 0 )
-	{
-		printf("The _sequence to be checked cannot be NULL.\n"); // TODO: change to  fprintf()
-		return;
-	} else {
-		_sequence = strdup(value);
-	}
+	assert( value != 0 && strlen(value) > 0);
+	_sequence = strdup(value);
 	
-	if( delim == 0 || strlen( delim ) == 0 )
+	if( delim == '\0' )
 	{
-	    delim = " ";
+	    delim = ' ';
 	}
-
-	_delimiters = strdup(delim);
+        
+        _delimiter = delim;
 	
 	// Initialize the other variables
 	_currentLocation = 0;
 	_currentToken = 0;
 	_count = 0;
-	
-	for( unsigned int i = 0; i < strlen( _delimiters ); i++ )
-	{
-		ptr = strchr( _sequence, _delimiters[i] );
-		if( ptr > 0 )
-		{
-		    break;
-		}
-	}
-	
-	if( ptr  == 0)
-	{
-		_nextToken = strdup(_sequence);
-	} else {
-		_nextToken = (char*)malloc( ptr - _sequence + 1 );
-		memset( _nextToken, 0, ptr - _sequence + 1 );
-		strncpy( _nextToken, _sequence, ptr - _sequence);
-		_currentLocation = ptr - _sequence;
-	}
+        
+        if( (ptr = strchr( _sequence, delim )) == 0)
+        {
+            _nextToken = strdup(_sequence);
+        } else {
+            _nextToken = (char*)malloc(ptr - _sequence + 1);
+            memset(_nextToken, 0, ptr - _sequence + 1);
+            strncpy(_nextToken, _sequence, ptr - _sequence);
+            _currentLocation = ptr - _sequence;
+        }
+        
 }
