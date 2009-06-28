@@ -1,9 +1,9 @@
-./srv/process/process
-./srv/filesystem/virtual/vfs
-./srv/memory/memory
-./srv/filesystem/tmp/tmpfs
-./srv/log/log
-./srv/filesystem/ext2/ext2fs
-./srv/idle/idle
-./srv/terminal/terminal
+./srv/process/server
+./srv/filesystem/virtual/server
+./srv/memory/server
+./srv/filesystem/tmp/server
+./srv/log/server
+./srv/filesystem/ext2/server
+./srv/idle/server
+./srv/terminal/server
 ./sbin/init/init

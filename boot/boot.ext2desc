@@ -40,7 +40,7 @@
 ./srv/pci/PCIDevice.h
 ./srv/pci/SConscript
 ./srv/pci/Main.cpp
-./srv/pci/pci
+./srv/pci/server
 ./srv/terminal/TerminalServer.cpp
 ./srv/terminal/Keyboard.h
 ./srv/terminal/Terminal.h
@@ -75,7 +75,7 @@
 ./srv/filesystem/proc/ProcFileSystem.h
 ./srv/filesystem/proc/SConscript
 ./srv/filesystem/proc/Main.cpp
-./srv/filesystem/proc/procfs
+./srv/filesystem/proc/server
 ./srv/filesystem/Directory.h
 ./srv/filesystem/ext2/Ext2Inode.h
 ./srv/filesystem/ext2/Ext2SuperBlock.h
@@ -117,7 +117,7 @@
 ./srv/serial/SerialDevice.h
 ./srv/serial/SConscript
 ./srv/serial/Main.cpp
-./srv/serial/serial
+./srv/serial/server
 ./kernel/Scheduler.cpp
 ./kernel/Kernel.cpp
 ./kernel/API/VMCopy.cpp

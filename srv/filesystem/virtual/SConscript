@@ -20,5 +20,5 @@ from build import *
 env = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc', 'libparse' ],
 		      [ 'filesystem', 'process', 'log' ])
 
-env.Program('vfs', [ 'Main.cpp', 'VirtualFileSystem.cpp' ],
-		      LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])
+env.Program('server', [ 'Main.cpp', 'VirtualFileSystem.cpp' ],
+		         LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])

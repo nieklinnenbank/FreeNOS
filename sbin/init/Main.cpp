@@ -30,9 +30,9 @@ int main(int argc, char **argv)
     struct stat st;
     const char *progs[] =
     {
-	"/img/srv/filesystem/proc/procfs",
-	"/img/srv/serial/serial",
-	"/img/srv/pci/pci",
+	"/img/srv/filesystem/proc/server",
+	"/img/srv/serial/server",
+	"/img/srv/pci/server",
 	"/img/bin/sh/sh",
     };
 

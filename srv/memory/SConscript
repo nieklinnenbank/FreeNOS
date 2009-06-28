@@ -20,5 +20,5 @@ from build import *
 env = Prepare(target, [ 'liballoc', 'libposix', 'libexec', 'libc' ],
 		      [ 'process', 'log' ])
 
-env.Program('memory', [ 'MemoryServer.cpp', 'Main.cpp' ],
+env.Program('server', [ 'MemoryServer.cpp', 'Main.cpp' ],
 		         LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])

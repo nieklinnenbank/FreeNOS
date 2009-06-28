@@ -20,5 +20,5 @@ from build import *
 env = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc' ],
 		      [ 'filesystem', 'process', 'log' ])
 
-env.Program('tmpfs', [ 'Main.cpp', 'TmpFile.cpp', 'TmpFileSystem.cpp' ],
-		        LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])
+env.Program('server', [ 'Main.cpp', 'TmpFile.cpp', 'TmpFileSystem.cpp' ],
+		         LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])
