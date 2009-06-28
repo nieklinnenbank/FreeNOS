@@ -35,12 +35,16 @@ class StringTokenizer
 	/**
 	 * Constructor.
 	 * Initializes the tokenizer
+	 * @param seq The String to be tokenized.
+	 * @param delim The character to use as a delimiter.
 	 */
 	StringTokenizer(String& seq, char delim);
 	
 	/**
 	 * Constructor.
 	 * Initializes the tokenizer
+	 * @param seq The string to be tokenized.
+	 * @param delim The character to use as a delimiter.
 	 */
 	StringTokenizer(char* seq, char delim);
 	
@@ -52,17 +56,22 @@ class StringTokenizer
 	/**
 	 * Returns whether there are any tokens left
 	 * after the current position.
+	 * @return bool Whether there are more tokens left.
 	 */
 	bool hasNext();
 	
 	/**
 	 * Returns the amount of tokens there are
-	 * in the String
+	 * in the String.
+	 * @return int The amount of tokens found in the given string.
 	 */
 	unsigned int count();
 	
 	/**
-	 * Returns the next token
+	 * Returns the next token. If there are no more tokens
+	 * (when StringTokenizer::hasNext() returns false), 
+	 * (char*)NULL is returned.
+	 * @return char* The next token in the string.
 	 */
 	char* next();
 
