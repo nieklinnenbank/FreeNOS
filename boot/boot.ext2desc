@@ -310,3 +310,4 @@
 ./sbin/SConscript
 ./etc/logo.gif
 ./etc/logo.txt
+./etc/rc

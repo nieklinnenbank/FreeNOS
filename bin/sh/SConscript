@@ -17,9 +17,9 @@
 
 from build import *
 
-env = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc' ], 
+env = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc', 'libparse' ], 
 		      [ 'memory', 'filesystem', 'filesystem/virtual', 'terminal' ])
 
 env.Program('sh', [ 'Main.cpp', 'Shell.cpp', 'HelpCommand.cpp', 
-		    'ShellCommand.cpp', 'WriteCommand.cpp' ],
+		    'ShellCommand.cpp', 'WriteCommand.cpp', 'ExitCommand.cpp' ],
 		     LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])

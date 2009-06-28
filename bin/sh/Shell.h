@@ -18,11 +18,11 @@
 #ifndef __SH_SHELL
 #define __SH_SHELL
 
-/** Maximum number of supported command arguments. */
-#define MAX_ARGV 16
-
 #include <Types.h>
 #include "ShellCommand.h"
+
+/** Maximum number of supported command arguments. */
+#define MAX_ARGV 16
 
 /**
  * Very basic command shell.
@@ -32,15 +32,17 @@ class Shell
     public:
 
 	/**
-	 * Constructor function.
-	 */
-	Shell();
-
-	/**
 	 * Executes the Shell by entering an infinite loop.
 	 * @return Never.
 	 */
 	int run();
+
+	/**
+	 * Executes the given command.
+	 * @param cmdline Command to execute.
+	 * @return Exit status of the command.
+	 */
+	int execute(char *cmdline);
 
     private:
     

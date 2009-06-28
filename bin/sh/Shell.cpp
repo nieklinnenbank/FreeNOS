@@ -15,14 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/IPCMessage.h>
-#include <FreeNOS/Process.h>
-#include <FreeNOS/CPU.h>
-#include <MemoryServer.h>
-#include <FileSystemMessage.h>
-#include <VirtualFileSystem.h>
 #include <TerminalCodes.h>
-#include <Config.h>
+#include "Shell.h"
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -31,23 +25,10 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include "Shell.h"
-
-Shell::Shell()
-{
-    /* Show the user where to get help. */
-    printf("\r\n"
-	   "Entering Shell. Type 'help' for the command list.\r\n"
-	   "\r\n");
-}
 
 int Shell::run()
 {
-    char *cmdStr, *argv[MAX_ARGV];
-    char tmp[128];
-    ShellCommand *cmd;
-    Size argc;
-    int pid, status;
+    char *cmdStr;
 
     /* Read commands. */    
     while (true)
@@ -63,42 +44,63 @@ int Shell::run()
 	{
 	    continue;
 	}
-	/* Attempt to extract arguments. */
-	argc = parse(cmdStr, argv, MAX_ARGV);
-	
-	/* Do we have a matching ShellCommand? */
-	if (!(cmd = ShellCommand::byName(argv[0])))
-	{
-	    /* If not, try to execute it as a file directly. */
-	    if ((pid = forkexec(argv[0], (const char **) argv)) >= 0)
-	    {
-		waitpid(pid, &status, 0);
-	    }
-	    /* Try to find it on the livecd filesystem. (temporary hardcoded PATH) */
-	    else if ((snprintf(tmp, sizeof(tmp), "/img/bin/%s/%s",  argv[0], argv[0]) &&
-	            ((pid = forkexec(tmp, (const char **) argv)) >= 0)) ||
-		     (snprintf(tmp, sizeof(tmp), "/img/sbin/%s/%s", argv[0], argv[0]) &&
-	            ((pid = forkexec(tmp, (const char **) argv)) >= 0)))
-	    {
-		waitpid(pid, &status, 0);
-	    }
-	    else
-		printf("forkexec '%s' failed: %s\r\n", argv[0],
-			strerror(errno));
-	}
-	/* Enough arguments given? */
-	else if (argc - 1 < cmd->getMinimumParams())
-	{
-	    printf("%s: not enough arguments (%u required)\r\n",
-		    cmd->getName(), cmd->getMinimumParams());
-	}
-	/* Execute it. */
-	else
-	{
-	    cmd->execute(argc - 1, argv + 1);
-	}
+	/* Execute the command. */
+	execute(cmdStr);
     }
-    return 0;
+    return EXIT_SUCCESS;
+}
+
+int Shell::execute(char *command)
+{
+    char *argv[MAX_ARGV];
+    char tmp[128];
+    ShellCommand *cmd;
+    Size argc;
+    int pid, status;
+
+    /* Valid argument? */
+    if (!strlen(command))
+    {
+	return EXIT_SUCCESS;
+    }
+    /* Attempt to extract arguments. */
+    argc = parse(command, argv, MAX_ARGV);
+	
+    /* Do we have a matching ShellCommand? */
+    if (!(cmd = ShellCommand::byName(argv[0])))
+    {
+	/* If not, try to execute it as a file directly. */
+	if ((pid = forkexec(argv[0], (const char **) argv)) >= 0)
+	{
+	    waitpid(pid, &status, 0);
+	    return status;
+	}
+	/* Try to find it on the livecd filesystem. (temporary hardcoded PATH) */
+	else if ((snprintf(tmp, sizeof(tmp), "/img/bin/%s/%s",  argv[0], argv[0]) &&
+	        ((pid = forkexec(tmp, (const char **) argv)) >= 0)) ||
+		 (snprintf(tmp, sizeof(tmp), "/img/sbin/%s/%s", argv[0], argv[0]) &&
+	        ((pid = forkexec(tmp, (const char **) argv)) >= 0)))
+	{
+	    waitpid(pid, &status, 0);
+	    return status;
+	}
+	else
+	    printf("forkexec '%s' failed: %s\r\n", argv[0],
+		    strerror(errno));
+    }
+    /* Enough arguments given? */
+    else if (argc - 1 < cmd->getMinimumParams())
+    {
+	printf("%s: not enough arguments (%u required)\r\n",
+		cmd->getName(), cmd->getMinimumParams());
+    }
+    /* Execute it. */
+    else
+    {
+	return cmd->execute(argc - 1, argv + 1);
+    }
+    /* Not successful. */
+    return EXIT_FAILURE;
 }
 
 char * Shell::getCommand()
