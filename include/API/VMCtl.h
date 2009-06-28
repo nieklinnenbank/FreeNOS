@@ -41,7 +41,7 @@
  * @param prot Protection bits. Set PAGE_PRESENT to allocate, ~PAGE_PRESENT to release.
  * @return Zero on success or error code on failure.
  */
-inline Error VMCtl(Action action, ProcessID proc, Address paddr,
+inline Error VMCtl(Operation action, ProcessID proc, Address paddr,
 		   Address vaddr, ulong prot = PAGE_PRESENT|PAGE_USER|PAGE_RW)
 {
     return trapKernel5(VMCTL, action, proc, paddr, vaddr, prot);

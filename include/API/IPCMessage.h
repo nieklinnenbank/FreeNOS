@@ -51,7 +51,7 @@ class Message;
  * @param sz Size of message.
  * @return Zero on success and error code on failure.
  */
-inline Error IPCMessage(ProcessID proc, Action action, Message *msg, Size sz)
+inline Error IPCMessage(ProcessID proc, Operation action, Message *msg, Size sz)
 {
     return trapKernel4(IPCMESSAGE, proc, action, (ulong) msg, sz);
 }
@@ -104,7 +104,7 @@ class Message
 	 * @param action Determines the action to perform.
 	 * @param sz Size of message.
 	 */
-	Error ipc(ProcessID pid, Action action, Size sz)
+	Error ipc(ProcessID pid, Operation action, Size sz)
 	{
 	    return IPCMessage(pid, action, this, sz);
 	}

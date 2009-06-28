@@ -63,7 +63,7 @@ typedef enum Operation
     Lookup      = 8,
     Access	= 9,
 }
-Action;
+Operation;
 
 /** List of known APIHandler functions. */
 extern Array<APIHandler> apis;
