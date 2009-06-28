@@ -54,14 +54,11 @@ typedef enum Operation
 {
     Create 	= 0,
     Delete 	= 1,
-    Map    	= 2,
-    Send   	= 3,
-    Receive 	= 4,
-    SendReceive = 5,
-    Read 	= 6,
-    Write 	= 7,
-    Lookup      = 8,
-    Access	= 9,
+    Send   	= 2,
+    Receive 	= 3,
+    SendReceive = 4,
+    Read 	= 5,
+    Write 	= 6,
 }
 Operation;
 

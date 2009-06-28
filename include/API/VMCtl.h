@@ -33,18 +33,29 @@
 #define VMCTL 5
 
 /**
+ * Memory operations which may be used as an argument to VMCtl().
+ */
+typedef enum MemoryOperation
+{
+    Map    = 0,
+    Lookup = 1,
+    Access = 2,
+}
+MemoryOperation;
+
+/**
  * Prototype for user applications. Examines and modifies virtual memory pages.
- * @param action Determines which action to perform.
+ * @param op Determines which operation to perform.
  * @param proc Remote process.
  * @param paddr Physical address which we map. ZERO to pick a free paddr.
  * @param vaddr Virtual address to map paddr.
  * @param prot Protection bits. Set PAGE_PRESENT to allocate, ~PAGE_PRESENT to release.
  * @return Zero on success or error code on failure.
  */
-inline Error VMCtl(Operation action, ProcessID proc, Address paddr,
+inline Error VMCtl(MemoryOperation op, ProcessID proc, Address paddr,
 		   Address vaddr, ulong prot = PAGE_PRESENT|PAGE_USER|PAGE_RW)
 {
-    return trapKernel5(VMCTL, action, proc, paddr, vaddr, prot);
+    return trapKernel5(VMCTL, op, proc, paddr, vaddr, prot);
 }
 
 /**
