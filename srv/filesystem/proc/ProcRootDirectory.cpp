@@ -21,7 +21,7 @@
 ProcRootDirectory::ProcRootDirectory(ProcFileSystem *p)
     : proc(p)
 {
-    size = /* MAX_PROCS */ 64 * sizeof(Dirent);	// TODO: we must fix PoolAllocator to NOT pre-allocate huge areas.
+    size = MAX_PROCS * sizeof(Dirent);
 }
 
 Error ProcRootDirectory::read(FileSystemMessage *msg)
