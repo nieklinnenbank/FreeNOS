@@ -16,9 +16,15 @@
  */
 
 #include "SerialServer.h"
+#include <stdlib.h>
+#include <unistd.h>
 
 int main(int argc, char **argv)
 {
-    SerialServer server;
-    return server.run();
+    if (!fork())
+    {
+	SerialServer server;
+	return server.run();
+    }
+    return EXIT_SUCCESS;
 }

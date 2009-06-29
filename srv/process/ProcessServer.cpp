@@ -47,9 +47,10 @@ ProcessServer::ProcessServer()
     /* Register message handlers. */
     addIPCHandler(GetID,        &ProcessServer::getIDHandler);
     addIPCHandler(ReadProcess,  &ProcessServer::readProcessHandler);
-    addIPCHandler(ExitProcess,  &ProcessServer::exitProcessHandler, false);
+    addIPCHandler(ExitProcess,  &ProcessServer::exitProcessHandler,  false);
     addIPCHandler(SpawnProcess, &ProcessServer::spawnProcessHandler);
-    addIPCHandler(WaitProcess,  &ProcessServer::waitProcessHandler, false);
+    addIPCHandler(CloneProcess, &ProcessServer::cloneProcessHandler, false);
+    addIPCHandler(WaitProcess,  &ProcessServer::waitProcessHandler,  false);
 
     /* Fixup process table, with BootPrograms from each BootImage. */
     for (Size i = 0; i < info.moduleCount; i++)
@@ -250,6 +251,98 @@ void ProcessServer::spawnProcessHandler(ProcessMessage *msg)
     /* Cleanup. */
     delete fmt;
     delete tmp;
+}
+
+void ProcessServer::cloneProcessHandler(ProcessMessage *msg)
+{
+    FileSystemMessage fs;
+    MemoryMessage mem;
+    ProcessID id;
+    Address  pageAddress   = PAGEUSERFROM;
+    Address *pageDirectory = (Address *) PAGETABADDR_FROM(pageAddress, pageAddress);
+    Address *pageTable;
+    Address  vaddr;
+    ProcessInfo info;
+    u8 *page;
+
+    /* Create a new Process. */
+    id   = ProcessCtl(ANY, Spawn, ZERO);
+    page = new u8[PAGESIZE];
+    
+    /* Map the page tables of the parent process. */
+    VMCtl(MapTables, msg->from);
+
+    /* Loop the page directory. */
+    for (Size i = 4; i < PAGEDIR_MAX; i++)
+    {
+	/* Do we need to create a copy this page table (and below)? */
+	if ((pageDirectory[i] & PAGE_PRESENT) &&
+	   !(pageDirectory[i] & PAGE_PINNED))
+	{
+	    /* Point to the correct page table. */
+	    pageTable = PAGETABADDR_FROM(i * PAGESIZE * PAGEDIR_MAX,
+                                         pageAddress);
+	
+	    /* Loop the page table. */
+	    for (Size j = 0; j < PAGETAB_MAX; j++)
+	    {	    
+		/* Are we going to create a copy this page? */
+		if ((pageTable[j] & PAGE_PRESENT) &&
+		   !(pageTable[j] & PAGE_PINNED))
+		{
+		    /* Calculate virtual address. */
+		    vaddr = (i * PAGETAB_MAX * PAGESIZE) +
+			    (j * PAGESIZE);
+		    
+		    /* Allocate a physical page. */
+		    VMCtl(Map, id, ZERO, vaddr);
+		    
+		    /* Copy the page contents of the parent. */
+		    VMCopy(msg->from, Read, (Address) page,
+			  (Address) vaddr, PAGESIZE);
+		
+		    /* Copy it to the new Process. */
+		    VMCopy(id, Write, (Address) page,
+			  (Address) vaddr, PAGESIZE);
+		}
+	    }
+	}
+    }
+    /* Inherit user and group identities. */
+    strlcpy(procs[id].command, procs[msg->from].command, COMMANDLEN);
+    procs[id].uid = procs[msg->from].uid;
+    procs[id].gid = procs[msg->from].gid;
+                
+    /* Inform VFS. */
+    fs.newProcess(id, msg->from,
+                  procs[id].uid,
+                  procs[id].gid);
+
+    /* Unmap page tables. */
+    delete page;
+    VMCtl(UnMapTables, msg->from, ZERO, pageAddress);
+
+    /* Repoint stack of the child. */
+    ProcessCtl(msg->from, InfoPID, (Address) &info);
+    ProcessCtl(id, SetStack, info.stack);
+
+    /* Repoint heap of the child. */
+    mem.action = HeapClone;
+    mem.pid    = id;
+    mem.ppid   = msg->from;
+    IPCMessage(MEMSRV_PID, SendReceive, &mem, sizeof(MemoryMessage));
+
+    /* Begin execution of the child. */
+    ProcessCtl(id, Resume);
+    
+    /* Send a reply to the parent. */
+    msg->result = ESUCCESS;
+    msg->number = id;
+    msg->ipc(msg->from, Send, sizeof(ProcessMessage));
+    
+    /* And to the child aswel. */
+    msg->number = ZERO;
+    msg->ipc(id, Send, sizeof(ProcessMessage));
 }
 
 void ProcessServer::waitProcessHandler(ProcessMessage *msg)

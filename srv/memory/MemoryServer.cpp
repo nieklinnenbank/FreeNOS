@@ -24,6 +24,7 @@ MemoryServer::MemoryServer() : IPCServer<MemoryServer, MemoryMessage>(this)
     addIPCHandler(HeapGrow,    &MemoryServer::doGrow);
     addIPCHandler(HeapShrink,  &MemoryServer::doShrink);
     addIPCHandler(HeapReset,   &MemoryServer::doReset);
+    addIPCHandler(HeapClone,   &MemoryServer::doClone);
     addIPCHandler(MemoryUsage, &MemoryServer::doUsage);
 
     /* Initialize heaps. */
@@ -83,5 +84,13 @@ void MemoryServer::doReset(MemoryMessage *msg)
     if (msg->pid < MAX_PROCS)
     {
 	heaps[msg->pid] = HEAP_START;
+    }
+}
+
+void MemoryServer::doClone(MemoryMessage *msg)
+{
+    if (msg->pid < MAX_PROCS && msg->ppid && MAX_PROCS)
+    {
+	heaps[msg->pid] = heaps[msg->ppid];
     }
 }

@@ -16,9 +16,15 @@
  */
 
 #include "ProcFileSystem.h"
+#include <stdlib.h>
+#include <unistd.h>
 
 int main(int argc, char **argv)
 {
-    ProcFileSystem server("/proc");
-    return server.run();
+    if (!fork())
+    {
+	ProcFileSystem server("/proc");
+	return server.run();
+    }
+    return EXIT_SUCCESS;
 }

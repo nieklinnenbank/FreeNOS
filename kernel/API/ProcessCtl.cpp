@@ -82,6 +82,12 @@ int ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
 	case InfoPID:
 	    info->id    = proc->getID();
 	    info->state = proc->getState();
+	    info->stack = proc->getStack();
+	    break;
+	    
+	case SetStack:
+	    proc->setStack(addr);
+	    break;
     }
     return 0;
 }

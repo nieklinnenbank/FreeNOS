@@ -1,3 +1,4 @@
-echo Starting System Servers
-echo Starting Drivers
-echo Starting Applications
+/img/srv/filesystem/proc/server
+/img/srv/serial/server
+/img/srv/pci/server
+/img/bin/sh/sh

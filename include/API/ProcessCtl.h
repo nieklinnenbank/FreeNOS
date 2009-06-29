@@ -45,6 +45,7 @@ typedef enum ProcessOperation
     InfoPID  = 5,
     Schedule = 6,
     Resume   = 7,
+    SetStack = 8,
 }
 ProcessOperation;
 
@@ -55,6 +56,7 @@ typedef struct ProcessInfo
 {
     ProcessID id;
     ProcessState state;
+    Address stack;
 }
 ProcessInfo;
 

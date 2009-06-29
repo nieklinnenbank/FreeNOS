@@ -69,6 +69,12 @@ class MemoryServer : public IPCServer<MemoryServer, MemoryMessage>
 	 * @param msg Request message.
 	 */
 	void doUsage(MemoryMessage *msg);
+
+	/**
+	 * Copies the heap pointer from another process.
+	 * @param msg Request message.
+	 */
+	void doClone(MemoryMessage *msg);
 	
 	/**
 	 * Resets heap pointer from a killed process.

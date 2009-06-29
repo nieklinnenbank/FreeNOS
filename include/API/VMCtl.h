@@ -37,9 +37,11 @@
  */
 typedef enum MemoryOperation
 {
-    Map    = 0,
-    Lookup = 1,
-    Access = 2,
+    Map         = 0,
+    Lookup      = 1,
+    Access      = 2,
+    MapTables   = 3,
+    UnMapTables = 4,
 }
 MemoryOperation;
 
@@ -52,8 +54,8 @@ MemoryOperation;
  * @param prot Protection bits. Set PAGE_PRESENT to allocate, ~PAGE_PRESENT to release.
  * @return Zero on success or error code on failure.
  */
-inline Error VMCtl(MemoryOperation op, ProcessID proc, Address paddr,
-		   Address vaddr, ulong prot = PAGE_PRESENT|PAGE_USER|PAGE_RW)
+inline Error VMCtl(MemoryOperation op, ProcessID proc, Address paddr = ZERO,
+		   Address vaddr = ZERO, ulong prot = PAGE_PRESENT|PAGE_USER|PAGE_RW)
 {
     return trapKernel5(VMCTL, op, proc, paddr, vaddr, prot);
 }

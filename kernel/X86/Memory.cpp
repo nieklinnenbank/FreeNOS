@@ -129,11 +129,13 @@ Address X86Memory::lookupVirtual(X86Process *p, Address vaddr)
     return ret;
 }
 
-void X86Memory::mapRemote(X86Process *p, Address vaddr)
+void X86Memory::mapRemote(X86Process *p, Address pageTabAddr,
+			  Address pageDirAddr, ulong prot)
 {
     /* Map remote page directory and page table. */
-    myPageDir[DIRENTRY(PAGETABFROM_REMOTE)] = p->getPageDirectory() | (PAGE_PRESENT|PAGE_RW|PAGE_PINNED);
-    remPageTab = PAGETABADDR_FROM(vaddr, PAGETABFROM_REMOTE);
+    myPageDir[DIRENTRY(pageDirAddr)] =
+	p->getPageDirectory() | (PAGE_PRESENT|PAGE_RW|PAGE_PINNED|prot);
+    remPageTab = PAGETABADDR_FROM(pageTabAddr, PAGETABFROM_REMOTE);
     
     /* Refresh entire TLB cache. */
     tlb_flush_all();
@@ -148,9 +150,9 @@ bool X86Memory::access(X86Process *p, Address vaddr, Size sz, ulong prot)
     mapRemote(p, vaddr);
 
     /* Verify protection bits. */
-    while (remPageDir[DIRENTRY(vaddr)] & prot &&
-           remPageTab[TABENTRY(vaddr)] & prot &&
-	   bytes < sz)
+    while (bytes < sz &&
+	   remPageDir[DIRENTRY(vaddr)] & prot &&
+           remPageTab[TABENTRY(vaddr)] & prot)
     {
 	vaddr += PAGESIZE;
 	bytes += ((vfrom & PAGEMASK) + PAGESIZE) - vfrom;

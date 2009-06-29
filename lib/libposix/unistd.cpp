@@ -99,6 +99,23 @@ int execv(const char *path, const char *argv[])
     return fmt ? 0 : -1;
 }
 
+pid_t fork(void)
+{
+    ProcessMessage msg;
+    
+    /* Fill in the message. */
+    msg.action = CloneProcess;
+    
+    /* Ask the process server. */
+    IPCMessage(PROCSRV_PID, SendReceive, &msg, sizeof(msg));
+    
+    /* Set errno. */
+    errno = msg.result;
+    
+    /* All done. */
+    return msg.result == ESUCCESS ? (pid_t) msg.number : (pid_t) -1;
+}
+
 int forkexec(const char *path, const char *argv[])
 {
     ProcessMessage msg;

@@ -40,6 +40,12 @@
 /** Intel uses 4K pages. */
 #define PAGESIZE        4096
 
+/** Number of entries in the page directory. */
+#define PAGEDIR_MAX	1024
+
+/** Number of entries in a page table. */
+#define PAGETAB_MAX	1024
+
 /** Mask to find the page. */
 #define PAGEMASK        0xfffff000 
 
@@ -58,14 +64,17 @@
 /** Pinned pages cannot be released. */
 #define PAGE_PINNED	(1 << 9)
 
+/** This page has been marked for temporary operations. */
+#define PAGE_MARKED	(1 << 10)
+
 /** We map page tables into virtual memory, at a fixed address. */
 #define PAGETABFROM		ADDRESS (1024 * 1024 * 4)
 
 /** Address space for modifing remote page tables. */
 #define PAGETABFROM_REMOTE	ADDRESS (1024 * 1024 * 8)
 
-/** Address space for Task State Segment mapping. */
-#define PAGEMISCFROM		ADDRESS (1024 * 1024 * 12)
+/** Address space for userspace pagetable mapping. */
+#define PAGEUSERFROM		ADDRESS (1024 * 1024 * 12)
 
 /**
  * Entry inside the page directory of a given virtual address.
@@ -197,6 +206,17 @@ class X86Memory : public Memory, public Singleton<X86Memory>
          */
 	void releaseAll(ArchProcess *p);
 
+	/**
+	 * Maps remote pages into the current process.
+	 * @param p Other process for which we map tables.
+	 * @param pageTabAddr Point page table pointer for this address.
+	 * @param pageDirAddr Map the remote page remote directory on this address.
+	 * @param prot Extra memory protection flags for the mapping.
+	 */
+	void mapRemote(X86Process *p, Address pageTabaddr,
+		       Address pageDirAddr = (Address) PAGEDIRADDR_REMOTE,
+		       ulong prot = ZERO);
+
     private:
     
 	/**
@@ -207,12 +227,6 @@ class X86Memory : public Memory, public Singleton<X86Memory>
 	 */
 	Address findFree(Address pageTabFrom, Address *pageDir);
 
-	/**
-	 * Maps remote pages into the current process.
-	 * @param p Other process for which we map tables.
-	 * @param vaddr Point page table pointer for this address.
-	 */
-	void mapRemote(X86Process *p, Address vaddr);
 	
 	/** Remote page directory and page tables. */
 	Address *remPageDir, *remPageTab;

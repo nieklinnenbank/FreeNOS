@@ -25,16 +25,12 @@
 
 X86Process::X86Process(Address entry) : Process(entry)
 {
-    Address *pageDir, miscTabAddr, *miscTab, *tmpStack, *ioMap;
+    Address *pageDir, *tmpStack, *ioMap;
     CPUState *regs;
 
     /* Allocate page directory. */
     pageDirAddr = memory->allocatePhysical(PAGESIZE);
     pageDir     = (Address *) memory->mapVirtual(pageDirAddr);
-
-    /* Allocate a page, for mapping temporary kernel pages. */
-    miscTabAddr = memory->allocatePhysical(PAGESIZE);
-    miscTab     = (Address *) memory->mapVirtual(miscTabAddr);
 
     /* One page for the I/O bitmap. */
     ioMapAddr   = memory->allocatePhysical(PAGESIZE);
@@ -42,13 +38,12 @@ X86Process::X86Process(Address entry) : Process(entry)
 
     /* Clear them first. */
     memset(pageDir,   0, PAGESIZE);
-    memset(miscTab,   0, PAGESIZE);
     memset(ioMap,  0xff, PAGESIZE);
 
     /* Setup mappings. */
     pageDir[0] = kernelPageDir[0];
     pageDir[DIRENTRY(PAGETABFROM) ] = pageDirAddr | PAGE_PRESENT | PAGE_RW;
-    pageDir[DIRENTRY(PAGEMISCFROM)] = miscTabAddr | PAGE_PRESENT | PAGE_RW;
+    pageDir[DIRENTRY(PAGEUSERFROM)] = pageDirAddr | PAGE_PRESENT | PAGE_RW;
 
     /* Point stacks. */
     stackAddr       = 0xc0000000 - MEMALIGN;
@@ -87,7 +82,6 @@ X86Process::X86Process(Address entry) : Process(entry)
 
     /* Release temporary mappings. */
     memory->mapVirtual((Address) 0, (Address) pageDir, 0);
-    memory->mapVirtual((Address) 0, (Address) miscTab, 0);
     memory->mapVirtual((Address) 0, (Address) tmpStack, 0);
     memory->mapVirtual((Address) 0, (Address) ioMap, 0);
 }

@@ -93,6 +93,12 @@ class ProcessServer : public IPCServer<ProcessServer, ProcessMessage>
 	void spawnProcessHandler(ProcessMessage *msg);
 
 	/**
+	 * Create a copy of a process.
+	 * @param msg Incoming message.
+	 */
+	void cloneProcessHandler(ProcessMessage *msg);
+
+	/**
 	 * Waits until a process has died.
 	 * @param msg Incoming message.
 	 */

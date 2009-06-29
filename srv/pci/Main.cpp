@@ -16,9 +16,16 @@
  */
 
 #include "PCIServer.h"
+#include <stdlib.h>
+#include <unistd.h>
 
 int main(int argc, char **argv)
 {
     PCIServer server;
-    return server.run();
+    
+    if (!fork())
+    {
+	return server.run();
+    }
+    return EXIT_SUCCESS;
 }

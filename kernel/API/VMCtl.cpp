@@ -23,7 +23,8 @@ Error VMCtlHandler(MemoryOperation op, ProcessID procID, Address paddr,
 		   Address vaddr, ulong prot = PAGE_PRESENT|PAGE_USER|PAGE_RW)
 {
     ArchProcess *proc = ZERO;
-    Address page = ZERO;
+    Address  page     = ZERO;
+    Address *remotePG = (Address *) PAGETABADDR_FROM(PAGEUSERFROM, PAGEUSERFROM);
     
     /* Find the given process. */
     if (!(proc = Process::byID(procID)))
@@ -36,6 +37,7 @@ Error VMCtlHandler(MemoryOperation op, ProcessID procID, Address paddr,
 	    return ENOTSUP;
 
 	case Map:
+
 	    /* Map the memory page. */
 	    if (prot & PAGE_PRESENT)
 	    {
@@ -46,12 +48,47 @@ Error VMCtlHandler(MemoryOperation op, ProcessID procID, Address paddr,
 	    else if (!memory->access(proc, vaddr, PAGE_PINNED))
 	    {
 		page = memory->lookupVirtual(proc, vaddr) & PAGEMASK;
-		memory->releasePhysical(page);
+		if (page)
+		    memory->releasePhysical(page);
 	    }
 	    break;
 
 	case Access:
 	    return memory->access(proc, vaddr, sizeof(Address), prot);
+	    
+	case MapTables:
+
+	    /* Map remote page tables. */
+	    memory->mapRemote(proc, 0,
+			     (Address) PAGETABADDR_FROM(PAGEUSERFROM, PAGEUSERFROM),
+			      PAGE_USER);
+	    
+	    /* Temporarily allow userlevel access to the page tables. */
+	    for (Size i = 0; i < PAGEDIR_MAX; i++)
+	    {
+		if (!(remotePG[i] & PAGE_USER))
+		{
+		    remotePG[i] |= PAGE_MARKED;
+		}
+		remotePG[i] |= PAGE_USER;
+	    }
+	    /* Flush caches. */
+	    tlb_flush_all();
+	    break;
+	    
+	case UnMapTables:
+
+	    /* Remove userlevel access where needed. */
+	    for (Size i = 0; i < PAGEDIR_MAX; i++)
+	    {
+		if (remotePG[i] & PAGE_MARKED)
+		{
+		    remotePG[i] &= ~PAGE_USER;
+		}
+	    }
+	    /* Flush caches. */
+	    tlb_flush_all();
+	    break;
 	    
 	default:
 	    return EINVAL;

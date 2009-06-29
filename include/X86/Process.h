@@ -75,6 +75,24 @@ class X86Process : public Process
 	{
 	    return pageDirAddr;
 	}
+	
+	/**
+	 * Get the address of our stack.
+	 * @return Stack address.
+	 */
+	Address getStack()
+	{
+	    return stackAddr;
+	}
+	
+	/**
+	 * Sets the address of our stack.
+	 * @param addr New stack address.
+	 */
+	void setStack(Address addr)
+	{
+	    stackAddr = addr;
+	}
 
     private:
 	

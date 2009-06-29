@@ -31,7 +31,8 @@ typedef enum MemoryAction
     HeapGrow    = 0,
     HeapShrink  = 1,
     HeapReset   = 2,
-    MemoryUsage = 3
+    HeapClone   = 3,
+    MemoryUsage = 4
 }
 MemoryAction;
 
@@ -83,8 +84,8 @@ typedef struct MemoryMessage : public Message
     /** Start and end addresses (e.g. of the heap). */
     Address startAddr, endAddr;
     
-    /** Target Process ID number. */
-    ProcessID pid;
+    /** Target Process(es) ID number. */
+    ProcessID pid, ppid;
 }
 MemoryMessage;
 

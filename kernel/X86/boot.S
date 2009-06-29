@@ -163,18 +163,6 @@ _jump_entry:
 	decl %ecx
 	jnz 1b
 
-	/* Map kernelMiscTab into kernelPageDir. */
-	movl $4, %eax
-	movl $PAGEMISCFROM, %ebx
-	shrl $DIRSHIFT, %ebx
-	imul %ebx
-	movl $kernelPageDir, %ebx
-	addl %eax, %ebx
-	movl %ebx, %eax
-	movl $kernelMiscTab, %ebx
-	orl  $(PAGE_PRESENT | PAGE_RW | PAGE_PINNED), %ebx
-	movl %ebx, (%eax)
-
 	/* Map page directory into itself. */
 	movl $4, %eax
 	movl $PAGETABFROM, %ebx
@@ -304,7 +292,6 @@ stack:	.fill STACK_SIZE, 1, 0
 .align PAGESIZE
 kernelPageDir:	.fill PAGESIZE, 1, 0
 kernelPageTab:	.fill PAGESIZE, 1, 0
-kernelMiscTab:  .fill PAGESIZE, 1, 0
 kernelTss:	.fill PAGESIZE, 1, 0
 kernelioBitMap:	.fill PAGESIZE, 1, 1
 

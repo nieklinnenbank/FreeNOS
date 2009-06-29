@@ -27,14 +27,8 @@
 
 int main(int argc, char **argv)
 {
+    const char *av[] = { "/img/bin/sh/sh", "/img/etc/rc", ZERO };
     struct stat st;
-    const char *progs[] =
-    {
-	"/img/srv/filesystem/proc/server",
-	"/img/srv/serial/server",
-	"/img/srv/pci/server",
-	"/img/bin/sh/sh",
-    };
 
     /*
      * TODO: give up all priviledges: run us in priviledge level 0.
@@ -50,12 +44,9 @@ int main(int argc, char **argv)
     {
         while (open("/dev/tty0", ZERO) == -1) ;
     }
-    /* Temporarily start a hardcoded list of drivers. */
-    for (int i = 0; i < 4; i++)
-    {
-	const char *av[] = { progs[i], 0 };
-	forkexec(progs[i], av);
-    }
+    /* Execute the run commands file. */
+    forkexec("/img/bin/sh/sh", av);
+
     /* Exit immediately. */
     return EXIT_SUCCESS;
 }
