@@ -33,8 +33,10 @@
 #ifndef __FILESYSTEM_EXT2INODE_H
 #define __FILESYSTEM_EXT2INODE_H
 
+#ifndef __HOST__
 #include <FileSystemMessage.h>
 #include <sys/stat.h>
+#endif /* __HOST__ */
 
 /**                                                                                                                                                                                                     
  * @defgroup ext2 ext2fs (Extended 2 Filesystem)

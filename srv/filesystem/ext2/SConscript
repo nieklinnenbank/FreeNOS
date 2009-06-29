@@ -17,8 +17,25 @@
 
 from build import *
 
-env = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc' ],
+#
+# Target system environment.
+#
+targetEnv = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc' ],
 		      [ 'filesystem', 'process', 'log' ])
 
-env.Program('server', [ 'Ext2Directory.cpp', 'Ext2File.cpp', 'Ext2FileSystem.cpp', 'Main.cpp' ],
-		         LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])
+#
+# Host system environment.
+#
+hostEnv   = Prepare(host, [ 'libexec' ], [ 'filesystem' ])
+
+#
+# Extended 2 FileSystem server.
+#
+targetEnv.Program('server', [ 'Ext2Directory.cpp', 'Ext2File.cpp', 'Ext2FileSystem.cpp' ],
+		   LIBS = targetEnv['LIBS'], LIBPATH = targetEnv['LIBPATH'])
+
+#
+# Extended 2 FileSystem creation utility.
+#
+hostEnv.Program('create', [ 'Ext2Create.cpp' ],
+		 LIBS = hostEnv['LIBS'], LIBPATH = hostEnv['LIBPATH'])

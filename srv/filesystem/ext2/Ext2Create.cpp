@@ -15,18 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <BootModule.h>
+#include <BitMap.h>
+#include "Ext2SuperBlock.h"
+#include "Ext2Inode.h"
+#include "Ext2Group.h"
+#include <stdio.h>
 #include <stdlib.h>
-#include "Ext2FileSystem.h"
 
 int main(int argc, char **argv)
 {
-    BootModule module("/boot/boot.ext2");
-    if (module.load())
-    {
-	Ext2FileSystem server("/img", &module);
-	return server.run();
-    }
-    exit(1);
-    return 1;
+    return EXIT_SUCCESS;
 }

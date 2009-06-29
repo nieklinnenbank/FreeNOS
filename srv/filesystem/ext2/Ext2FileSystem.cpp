@@ -16,17 +16,30 @@
  */
 
 #include <File.h>
+#include <BootModule.h> 
 #include <Directory.h>
 #include <Device.h>
 #include <LogMessage.h>
-#include <stdlib.h>
-#include <string.h>
 #include "Ext2FileSystem.h"
 #include "Ext2SuperBlock.h"
 #include "Ext2File.h"
 #include "Ext2Directory.h"
 #include "Ext2Inode.h"
 #include "Ext2Group.h"
+#include <stdlib.h>
+#include <string.h>
+
+int main(int argc, char **argv)
+{
+    BootModule module("/boot/boot.ext2");
+    if (module.load())
+    {
+        Ext2FileSystem server("/img", &module);
+        return server.run();
+    }
+    exit(1);
+    return 1;
+}
 
 Ext2FileSystem::Ext2FileSystem(const char *p, Storage *s)
     : FileSystem(p), storage(s), groups(ZERO)
