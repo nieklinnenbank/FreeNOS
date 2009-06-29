@@ -90,15 +90,15 @@ class Device : public File
          */
         Error status(FileSystemMessage *msg)
         {
-	    struct stat st;
+	    FileStat st;
 	    Error e;
 	    
 	    /* Fill in the status structure. */
-	    st.st_mode = type;
-            st.st_size = size;
-            st.st_uid  = uid;
-            st.st_gid  = gid;
-	    st.st_dev  = deviceID;
+	    st.type = type;
+            st.size = size;
+            st.userID   = uid;
+            st.groupID  = gid;
+	    st.deviceID = deviceID;
 	    
 	    /* Write to remote process' buffer. */
 	    if ((e = VMCopy(msg->procID, Write, (Address) &st,

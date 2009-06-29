@@ -19,9 +19,34 @@
 #define __FILESYSTEM_DIRECTORY_H
 
 #include <API/VMCopy.h>
-#include <dirent.h>
 #include <List.h>
 #include "File.h"
+
+/** Maximum length of a filename. */
+#define DIRENT_LEN	64
+
+/**
+ * Describes an entry inside a Directory.
+ */
+typedef struct Dirent
+{
+    /** Name of the file. */
+    char name[DIRENT_LEN];
+    
+    /** Type of file. */
+    FileType type;
+    
+    /**
+     * Compares this Dirent with another Dirent instance.
+     * @param dir Instance to compare with.
+     * @return True if equal, false otherwise.
+     */
+    bool operator == (struct Dirent *dir)
+    {
+	return strcmp(name, dir->name) == 0;
+    }
+}
+Dirent;
 
 /**
  * In-memory directory object.
@@ -82,13 +107,13 @@ class Directory : public File
 	 * @param type File type.
 	 * @note Entry names must be unique within the same Dirent.
 	 */
-	virtual void insertEntry(char *name, u8 type)
+	virtual void insertEntry(char *name, FileType type)
 	{
 	    if (!getEntry(name))
 	    {
 	        Dirent *d = new Dirent;
-	        strlcpy(d->d_name, name, DIRLEN);
-	        d->d_type = type;
+	        strlcpy(d->name, name, DIRENT_LEN);
+	        d->type = type;
 		entries.insertTail(d);
 		size += sizeof(*d);
 	    }
@@ -103,7 +128,7 @@ class Directory : public File
 	{
 	    for (ListIterator<Dirent> i(&entries); i.hasNext(); i++)
 	    {
-		if (strcmp(i.current()->d_name, name) == 0)
+		if (strcmp(i.current()->name, name) == 0)
 		{
 		    return i.current();
 		}
@@ -119,7 +144,7 @@ class Directory : public File
 	{
 	    for (ListIterator<Dirent> i(&entries); i.hasNext(); i++)
 	    {
-		if (strcmp(i.current()->d_name, name) == 0)
+		if (strcmp(i.current()->name, name) == 0)
 		{
 		    entries.remove(i.current());
 		    delete i.current();

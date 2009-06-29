@@ -20,7 +20,7 @@ from build import *
 #
 # Target build.
 #
-env = Prepare(target,  [ 'libposix', 'libc' ])
+env = Prepare(target,  [ 'libposix', 'libc' ], [ 'filesystem' ])
 env.Library('libexec', [ 'ELF.cpp', 'ExecutableFormat.cpp' ])
 
 #

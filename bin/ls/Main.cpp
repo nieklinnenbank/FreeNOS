@@ -45,10 +45,21 @@ int main(int argc, char **argv)
     while ((dent = readdir(d)))
     {
 	/* Coloring. */
-	if (dent->d_type == DT_DIR)
-	    printf("%s", BLUE);
-	else
-	    printf("%s", WHITE);
+	switch (dent->d_type)
+	{
+	    case DT_DIR:
+		printf("%s", BLUE);
+		break;
+	
+	    case DT_BLK:
+	    case DT_CHR:
+		printf("%s", YELLOW);
+		break;
+	
+	    case DT_REG:
+	    default:
+		printf("%s", WHITE);
+	}
 	printf("%s ", dent->d_name);
     }
     printf("\r\n");

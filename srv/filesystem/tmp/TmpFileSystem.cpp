@@ -28,8 +28,8 @@ TmpFileSystem::TmpFileSystem(const char *path)
     Directory *rdir = new Directory;
 
     root = new FileCache(&slash, rdir, ZERO);
-    rdir->insertEntry(".", DT_DIR);
-    rdir->insertEntry("..", DT_DIR);
+    rdir->insertEntry(".",  DirectoryFile);
+    rdir->insertEntry("..", DirectoryFile);
     insertFileCache(rdir, ".");
     insertFileCache(rdir, "..");
 }
@@ -42,15 +42,15 @@ Error TmpFileSystem::createFile(FileSystemMessage *msg,
     /* Create the appropriate file type. */
     switch (msg->filetype)
     {
-	case S_IFREG:
+	case RegularFile:
 	    insertFileCache(new File, "%s", **path->full());
 	    break;
 	
-	case S_IFDIR:
+	case DirectoryFile:
 	    insertFileCache(new Directory, "%s", **path->full());
 	    break;
 	
-	case S_IFCHR:
+	case CharacterDeviceFile:
 	    insertFileCache(new Device(msg->deviceID), "%s", **path->full());
 	    break;
 	

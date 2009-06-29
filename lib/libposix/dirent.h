@@ -58,7 +58,7 @@
 /**
  * Represents a directory entry.
  */
-typedef struct dirent
+struct dirent
 {
     /** Name of entry. */
     char d_name[DIRLEN];
@@ -79,8 +79,7 @@ typedef struct dirent
     }
 
 #endif /* CPP */
-}
-Dirent;
+};
 
 /**
  * A type representing a directory stream.

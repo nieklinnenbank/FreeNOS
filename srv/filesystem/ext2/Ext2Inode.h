@@ -33,6 +33,7 @@
 #ifndef __FILESYSTEM_EXT2INODE_H
 #define __FILESYSTEM_EXT2INODE_H
 
+#include <FileSystemMessage.h>
 #include <sys/stat.h>
 
 /**                                                                                                                                                                                                     
@@ -130,14 +131,32 @@
  */
 
 /**
- * Retrieve POSIX filetype of an Ext2Inode.
+ * Retrieve the FileType of an Ext2Inode.
  * @param i Ext2Inode pointer.
- * @return POSIX filetype.
+ * @return FileType value.
  * @see dirent.h
  * @see stat.h
  */
 #define EXT2_FILETYPE(i) \
-    (((i)->mode & S_IFMT) >> 12)
+    ({ \
+	FileType types[] = \
+	{ \
+	    UnknownFile, \
+	    FIFOFile, \
+	    CharacterDeviceFile, \
+	    UnknownFile, \
+	    DirectoryFile, \
+	    UnknownFile, \
+	    BlockDeviceFile, \
+	    UnknownFile, \
+	    RegularFile, \
+	    UnknownFile, \
+	    SymlinkFile, \
+	    UnknownFile, \
+	    SocketFile, \
+	}; \
+	types[((i)->mode & S_IFMT) >> 12]; \
+    })
 
 /**
  * @}

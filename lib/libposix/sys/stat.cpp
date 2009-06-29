@@ -24,15 +24,21 @@
 int stat(const char *path, struct stat *buf)
 {
     FileSystemMessage msg;
+    FileStat st;
 
     /* Fill message. */
     msg.action = StatFile;
     msg.buffer = (char *) path;
-    msg.stat   = buf;
+    msg.stat   = &st;
     
     /* Ask VFS for the information. */
     IPCMessage(VFSSRV_PID, SendReceive, &msg, sizeof(msg));
 
+    /* Copy information into buf. */
+    if (msg.result == ESUCCESS)
+    {
+	buf->fromFileStat(&st);
+    }
     /* Set errno. */
     errno = msg.result;
     

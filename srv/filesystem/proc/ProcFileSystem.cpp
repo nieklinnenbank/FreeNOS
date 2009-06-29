@@ -55,8 +55,8 @@ void ProcFileSystem::refresh()
     clearFileCache();
     
     /* Update root. */
-    rootDir->insertEntry(".", DT_DIR);
-    rootDir->insertEntry("..", DT_DIR);
+    rootDir->insertEntry(".",  DirectoryFile);
+    rootDir->insertEntry("..", DirectoryFile);
     insertFileCache(rootDir, ".");
     insertFileCache(rootDir, "..");
 
@@ -77,11 +77,11 @@ void ProcFileSystem::refresh()
 	
 	/* Per-process directory. */
 	procDir = new Directory;
-	procDir->insertEntry(".",       DT_DIR);
-	procDir->insertEntry("..",      DT_DIR);
-	procDir->insertEntry("cmdline", DT_REG);
-	procDir->insertEntry("status",  DT_REG);
-	rootDir->insertEntry(tmp,      DT_DIR);
+	procDir->insertEntry(".",       DirectoryFile);
+	procDir->insertEntry("..",      DirectoryFile);
+	procDir->insertEntry("cmdline", DirectoryFile);
+	procDir->insertEntry("status",  DirectoryFile);
+	rootDir->insertEntry(tmp,       DirectoryFile);
 	insertFileCache(procDir, "%u",    msg.number);
 	insertFileCache(procDir, "%u/.",  msg.number);
 	insertFileCache(rootDir, "%u/..", msg.number);

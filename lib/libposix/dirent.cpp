@@ -19,13 +19,16 @@
 #include <Allocator.h>
 #include <Config.h>
 #include <FileSystemMessage.h>
+#include <Directory.h>
 #include <errno.h>
 #include "dirent.h"
 #include "fcntl.h"
 #include "unistd.h"
+#include "sys/stat.h"
 
 DIR * opendir(const char *dirname)
 {
+    Dirent *dirent;
     DIR *dir;
     int fd;
     struct stat st;
@@ -41,23 +44,43 @@ DIR * opendir(const char *dirname)
     {
 	return (ZERO);
     }
+    /* Allocate Dirents. */
+    dirent = new Dirent[st.st_size / sizeof(Dirent)];
+    
     /* Allocate DIR object. */
     dir = new DIR;
     dir->fd        = fd;
-    dir->buffer    = new Dirent[st.st_size / sizeof(Dirent)];
+    dir->buffer    = new struct dirent[st.st_size / sizeof(Dirent)];
     dir->current   = 0;
     dir->count     = 0;
     dir->eof       = false;
     
     /* Read them all. */
-    if ((e = read(fd, dir->buffer, sizeof(Dirent) * st.st_size)) < 0)
+    if ((e = read(fd, dirent, sizeof(Dirent) * st.st_size)) < 0)
     {
 	e = errno;
 	closedir(dir);
 	errno = e;
 	return (ZERO);
     }
+    /* Fill in the dirent structs. */
+    for (Size i = 0; i < st.st_size / sizeof(Dirent); i++)
+    {
+	u8 types[] =
+	{
+	    DT_REG,
+	    DT_DIR,
+	    DT_BLK,
+	    DT_CHR,
+	    DT_LNK,
+	    DT_FIFO,
+	    DT_SOCK,
+	};
+	strlcpy(dir->buffer[i].d_name, dirent[i].name, DIRLEN);
+	dir->buffer[i].d_type = types[dirent[i].type];
+    }
     dir->count = e / sizeof(Dirent);
+    delete dirent;
 
     /* Set errno. */
     errno = ESUCCESS;

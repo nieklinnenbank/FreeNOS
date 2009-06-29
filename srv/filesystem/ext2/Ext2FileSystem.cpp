@@ -243,26 +243,16 @@ FileCache * Ext2FileSystem::lookupFile(FileSystemPath *path)
 	    /* Create the appropriate in-memory file. */
 	    switch (EXT2_FILETYPE(inode))
 	    {
-	        case DT_DIR:
+	        case DirectoryFile:
 		    c = insertFileCache(new Ext2Directory(this, inode),
 		    			**i.current());
 		    break;
-			
-		//case DT_DEV:
-		//    c = insertFileCache(new Ext2Device(this, inode),
-		//			i.current());
-		//    break;
-			
-		//case DT_FIFO:
-		//case DT_SYM:
-		//case DT_LINK:
-		//case DT_SOCK:
-		case DT_REG:
+
+		case RegularFile:
 		    c = insertFileCache(new Ext2File(this, inode),
 					**i.current());
 		    break;
 
-		case DT_UNKNOWN:
 		default:
 		    return ZERO;
 	    }

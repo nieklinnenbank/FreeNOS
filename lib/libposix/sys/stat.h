@@ -18,6 +18,7 @@
 #ifndef __LIBPOSIX_STAT_H
 #define __LIBPOSIX_STAT_H
 
+#include <FileSystemMessage.h>
 #include <Macros.h>
 #include <Error.h>
 #include "types.h"
@@ -163,8 +164,31 @@
 /**
  * The <sys/stat.h> header shall define the stat structure.
  */
-typedef struct stat
+struct stat
 {
+    /**
+     * Instantiates the structure given an FileStat object.
+     * @param stat FileStat pointer to copy from.
+     */
+    void fromFileStat(FileStat *stat)
+    {
+	mode_t modes[] =
+        {
+    	    S_IFREG,
+	    S_IFDIR,
+	    S_IFBLK,
+	    S_IFCHR,
+	    S_IFLNK,
+	    S_IFIFO,
+	    S_IFSOCK,
+	};
+	this->st_mode = modes[stat->type];
+        this->st_size = stat->size;
+        this->st_uid  = stat->userID;
+        this->st_gid  = stat->groupID;
+	this->st_dev  = stat->deviceID;
+    }
+
     /** Device ID of device containing file. */
     dev_t st_dev;
     
@@ -215,8 +239,7 @@ typedef struct stat
     
     /** Number of blocks allocated for this object. */
     blkcnt_t st_blocks;
-}
-FileStat;
+};
 
 /**
  * Get file status.

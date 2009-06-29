@@ -22,7 +22,6 @@
 #include <IPCServer.h>
 #include <Types.h>
 #include <Error.h>
-#include <sys/stat.h>
 
 /**
  * Actions which may be performed on the filesystem.
@@ -51,14 +50,38 @@ FileSystemAction;
  */
 typedef enum FileType
 {
-    RegularFile         = S_IFREG,
-    DirectoryFile       = S_IFDIR,
-    BlockDeviceFile     = S_IFBLK,
-    CharacterDeviceFile = S_IFCHR,
-    SymlinkFile         = S_IFLNK,
-    FIFOFile            = S_IFIFO,
+    RegularFile         = 0,
+    DirectoryFile       = 1,
+    BlockDeviceFile     = 2,
+    CharacterDeviceFile = 3,
+    SymlinkFile         = 4,
+    FIFOFile            = 5,
+    SocketFile		= 6,
+    UnknownFile		= 7,
 }
 FileType;
+
+/**
+ * Contains file information.
+ */
+typedef struct FileStat
+{
+    /** File type. */
+    FileType type;
+    
+    /** Size of the file in bytes. */
+    Size size;
+    
+    /** User identity. */
+    UserID userID;
+    
+    /** Group identity. */
+    GroupID groupID;
+    
+    /** Device identity. */
+    DeviceID deviceID;
+}
+FileStat;
 
 /** File access permissions. */
 typedef uint FileMode;

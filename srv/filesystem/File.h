@@ -22,7 +22,6 @@
 #include <FreeNOS/Process.h>
 #include <Types.h>
 #include <Error.h>
-#include <sys/stat.h>
 #include "FileSystemMessage.h"
 
 /**
@@ -153,14 +152,14 @@ class File
 	 */
 	virtual Error status(FileSystemMessage *msg)
 	{
-	    struct stat st;
+	    FileStat st;
 	    Error e;
 	
 	    /* Fill in the status structure. */
-	    st.st_mode = type;
-	    st.st_size = size;
-	    st.st_uid  = uid;
-	    st.st_gid  = gid;
+	    st.type     = type;
+	    st.size     = size;
+	    st.userID   = uid;
+	    st.groupID  = gid;
 	    
 	    /* Copy to the remote process. */
 	    if ((e = VMCopy(msg->procID, Write, (Address) &st,

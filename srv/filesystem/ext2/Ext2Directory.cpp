@@ -72,8 +72,8 @@ Error Ext2Directory::read(FileSystemMessage *msg)
 		{
 		    return EINVAL;
 		}
-		strlcpy(dent.d_name, ext2Dent.name, ext2Dent.nameLength + 1);
-		dent.d_type = EXT2_FILETYPE(ext2Inode);
+		strlcpy(dent.name, ext2Dent.name, ext2Dent.nameLength + 1);
+		dent.type = EXT2_FILETYPE(ext2Inode);
 
 		/* Copy to the remote process. */		    
                 if ((e = VMCopy(msg->procID, Write, (Address) &dent,
