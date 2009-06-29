@@ -85,7 +85,12 @@ class String : public Comparable<String>
 	 */
 	String(const char *s, Size max)
 	{
-	    value = strndup(s, max);
+	    size_t len = strlen(s);
+	    if (len > max)
+		len = max;
+	    value = (char *) malloc(len + 1);
+	    memcpy(value, s, len + 1);
+	    value[len] = ZERO;
 	}
 
 	/** 
