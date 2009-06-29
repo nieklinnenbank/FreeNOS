@@ -79,8 +79,8 @@ void ProcFileSystem::refresh()
 	procDir = new Directory;
 	procDir->insertEntry(".",       DirectoryFile);
 	procDir->insertEntry("..",      DirectoryFile);
-	procDir->insertEntry("cmdline", DirectoryFile);
-	procDir->insertEntry("status",  DirectoryFile);
+	procDir->insertEntry("cmdline", RegularFile);
+	procDir->insertEntry("status",  RegularFile);
 	rootDir->insertEntry(tmp,       DirectoryFile);
 	insertFileCache(procDir, "%u",    msg.number);
 	insertFileCache(procDir, "%u/.",  msg.number);
