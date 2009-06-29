@@ -15,19 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*                                                                                                                                                                                                      
- *  linux/include/linux/ext2_fs.h                                                                                                                                                                       
- *                                                                                                                                                                                                      
- * Copyright (C) 1992, 1993, 1994, 1995                                                                                                                                                                 
- * Remy Card (card@masi.ibp.fr)                                                                                                                                                                         
- * Laboratoire MASI - Institut Blaise Pascal                                                                                                                                                            
- * Universite Pierre et Marie Curie (Paris VI)                                                                                                                                                          
- *                                                                                                                                                                                                      
- *  from                                                                                                                                                                                                
- *                                                                                                                                                                                                      
- *  linux/include/linux/minix_fs.h                                                                                                                                                                      
- *                                                                                                                                                                                                      
- *  Copyright (C) 1991, 1992  Linus Torvalds                                                                                                                                                            
+/*
+ *  linux/include/linux/ext2_fs.h
+ *
+ * Copyright (C) 1992, 1993, 1994, 1995
+ * Remy Card (card@masi.ibp.fr)
+ * Laboratoire MASI - Institut Blaise Pascal
+ * Universite Pierre et Marie Curie (Paris VI)
+ *
+ *  from
+ *
+ *  linux/include/linux/minix_fs.h
+ *
+ *  Copyright (C) 1991, 1992  Linus Torvalds
  */       
 
 #ifndef __FILESYSTEM_EXT2SUPERBLOCK_H

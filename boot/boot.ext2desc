@@ -85,7 +85,6 @@
 ./srv/filesystem/ext2/Ext2Group.h
 ./srv/filesystem/ext2/Ext2Directory.h
 ./srv/filesystem/ext2/SConscript
-./srv/filesystem/ext2/Main.cpp
 ./srv/filesystem/ext2/Ext2FileSystem.h
 ./srv/filesystem/ext2/Ext2FileSystem.cpp
 ./srv/filesystem/virtual/VirtualFileSystem.cpp

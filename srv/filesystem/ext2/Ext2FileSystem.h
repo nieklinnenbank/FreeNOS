@@ -33,6 +33,7 @@
 #ifndef __FILESYSTEM_EXT2FILESYSTEM_H
 #define __FILESYSTEM_EXT2FILESYSTEM_H
 
+#ifndef __HOST__
 #include <FileSystem.h>
 #include <FileSystemMessage.h>
 #include <FileSystemPath.h>
@@ -45,6 +46,7 @@
 #include "Ext2SuperBlock.h"
 #include "Ext2Inode.h"
 #include "Ext2Group.h"
+#endif /* __HOST__ */
 
 /**
  * @defgroup ext2 ext2fs (Extended 2 Filesystem)
@@ -318,6 +320,8 @@
  * @}
  */
 
+#ifndef __HOST__
+
 /**
  * Second Extended FileSystem (ext2).
  * @see http://e2fsprogs.sourceforge.net/ext2.html
@@ -418,6 +422,8 @@ class Ext2FileSystem : public FileSystem
 	/** Inode cache. */
 	HashTable<Integer<u32>,Ext2Inode> inodes;
 };
+
+#endif /* __HOST__ */
 
 /**
  * @}
