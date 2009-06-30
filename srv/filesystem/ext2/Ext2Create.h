@@ -29,6 +29,32 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/types.h>
+
+/**
+ * Describes an input file to be placed on the new filesystem.
+ */
+typedef struct Ext2InputFile
+{
+    /** Name of the file. */
+    char name[EXT2_NAME_LEN];
+    
+    /** Mode of the file. */
+    mode_t mode;
+    
+    /** Size of the file. */
+    size_t size;
+    
+    /** User identity. */
+    uid_t userId;
+    
+    /** Group identity. */
+    gid_t groupId;
+    
+    /** List of childs. */
+    List<Ext2InputFile> childs;
+}
+Ext2InputFile;
 
 /**
  * Class for creating new Extended 2 FileSystems.
@@ -49,6 +75,20 @@ class Ext2Create
 	int create();
 
 	/**
+	 * Traverse the input directory.
+	 * @param directory Path of the local directory to traverse.
+	 * @param parent Parent directory or ZERO if none.
+	 * @return EXIT_SUCCESS if successfull and EXIT_FAILURE otherwise.
+	 */
+	int readInput(char *directory, Ext2InputFile *parent);
+
+	/**
+	 * Writes the final image to disk.
+	 * @return EXIT_SUCCESS if successfull and EXIT_FAILURE otherwise.
+	 */
+	int writeImage();
+
+	/**
 	 * Set the program name we are invoked with.
 	 * @param progName program name.
 	 */
@@ -60,7 +100,21 @@ class Ext2Create
 	 */
 	void setImage(char *imageName);
 
+	/**
+	 * Set the input directory name.
+	 * @param inputName Input directory to use.
+	 */
+	void setInput(char *inputName);
+
     private:
+
+	/**
+	 * Adds the given input file to it's parent.
+	 * @param inputFile Path of the local file to add.
+	 * @param parent Pointer to an Ext2InputFile.
+	 * @return Pointer to the newly created Ext2InputFile.
+	 */
+	Ext2InputFile * addInputFile(char *inputFile, Ext2InputFile *parent);
     
 	/**
 	 * Allocate and initialize a superblock.
@@ -73,8 +127,14 @@ class Ext2Create
 	/** Path to the output image. */
 	char *image;
 	
+	/** Path to the input directory. */
+	char *input;
+	
 	/** Pointer to the superblock. */
 	Ext2SuperBlock *super;
+	
+	/** Contains all files to be written into the new filesystem. */
+	Ext2InputFile *inputRoot;
 	
 	/** List of file patterns to ignore. */
 	List<String> excludes;

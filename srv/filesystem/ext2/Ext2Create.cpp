@@ -25,8 +25,11 @@
 #include "Ext2Create.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <dirent.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 Ext2Create::Ext2Create()
 {
@@ -43,14 +46,100 @@ Ext2Create::Ext2Create()
 
 int Ext2Create::create()
 {
-    FILE *fp;
-
     assert(image != ZERO);
     assert(prog != ZERO);
 
     /* Allocate and initialize the superblock. */
     super = initSuperBlock();
     
+    /* Write the final image. */
+    return writeImage();
+}    
+
+Ext2InputFile * Ext2Create::addInputFile(char *inputFile, Ext2InputFile *parent)
+{
+    Ext2InputFile *file;
+    struct stat st;
+    
+    /* Stat the input file. */
+    if (stat(inputFile, &st) != 0)
+    {
+	printf("%s: failed to stat() `%s': %s\r\n",
+		prog, inputFile, strerror(errno));
+	exit(EXIT_FAILURE);
+    }
+    /* Create new input file. */
+    file = new Ext2InputFile;
+    file->mode    = st.st_mode;
+    file->size    = st.st_size;
+    file->userId  = st.st_uid;
+    file->groupId = st.st_gid;
+    strncpy(file->name, inputFile, EXT2_NAME_LEN);
+    file->name[EXT2_NAME_LEN - 1] = 0;
+    
+    /* Debug out. */
+    printf("%s mode=%x size=%lu userId=%u groupId=%u\r\n",
+	    file->name, file->mode, file->size,
+	    file->userId, file->groupId);
+    
+    /* Add it to the parent, or make it root. */
+    if (parent)
+	parent->childs.insertTail(file);
+    else
+	inputRoot = file;
+    
+    /* All done. */
+    return file;
+}
+
+int Ext2Create::readInput(char *directory, Ext2InputFile *parent)
+{
+    DIR *dir;
+    Ext2InputFile *file;
+    struct dirent *entry;
+    char path[EXT2_NAME_LEN];
+    
+    /* Open the local directory. */
+    if ((dir = opendir(directory)) == NULL)
+    {
+	return EXIT_FAILURE;
+    }
+    /* Add all entries. */
+    while ((entry = readdir(dir)) != NULL)
+    {
+	/* Skip hidden. */
+	if (entry->d_name[0] != '.')
+	{
+	    snprintf(path, sizeof(path), "%s/%s", directory, entry->d_name);
+	    file = addInputFile(path, parent);
+	    
+	    /* Traverse it in case of a directory. */
+	    if (S_ISDIR(file->mode))
+	    {
+		readInput(path, file);
+	    }
+	}
+    }
+    /* Cleanup. */
+    closedir(dir);
+
+    /* Done. */
+    return EXIT_SUCCESS;
+}
+
+int Ext2Create::writeImage()
+{
+    FILE *fp;
+
+    assert(image != ZERO);
+    assert(prog != ZERO);
+    
+    /* Construct the input root. */
+    addInputFile(input, ZERO);
+
+    /* Add the input directory contents. */
+    readInput(input, inputRoot);
+
     /* Open output image file. */
     if ((fp = fopen(image, "w")) == NULL)
     {
@@ -78,7 +167,7 @@ int Ext2Create::create()
     
     /* All done. */
     return EXIT_SUCCESS;
-}    
+}
 
 void Ext2Create::setProgram(char *progName)
 {
@@ -88,6 +177,11 @@ void Ext2Create::setProgram(char *progName)
 void Ext2Create::setImage(char *imageName)
 {
     this->image = imageName;
+}
+
+void Ext2Create::setInput(char *inputName)
+{
+    this->input = inputName;
 }
 
 Ext2SuperBlock * Ext2Create::initSuperBlock()
@@ -141,6 +235,7 @@ int main(int argc, char **argv)
     /* Process command-line arguments. */
     fs.setProgram(argv[0]);
     fs.setImage(argv[1]);
+    fs.setInput(argv[2]);
     
     /* Create a new Extended 2 FileSystem. */
     return fs.create();
