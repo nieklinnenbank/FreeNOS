@@ -17,6 +17,7 @@
 
 #include <BitMap.h>
 #include <List.h>
+#include <ListIterator.h>
 #include <String.h>
 #include "Ext2SuperBlock.h"
 #include "Ext2Inode.h"
@@ -139,9 +140,52 @@ int Ext2Create::readInput(char *directory, Ext2InputFile *parent)
     return EXIT_SUCCESS;
 }
 
+void Ext2Create::inputToGroup(List<Ext2Group> *list,
+			      Ext2InputFile *file)
+{
+    Ext2Group *group;
+
+    /* Find a group descriptor with space. */
+    for (ListIterator<Ext2Group> j(list); j.hasNext(); j++)
+    {
+	if (j.current()->freeInodesCount &&
+	    j.current()->freeBlocksCount >= file->inode.blocks)
+	{
+    	    j.current()->freeInodesCount--;
+	    j.current()->freeBlocksCount -= file->inode.blocks;
+    	    return;
+	}
+    }
+    /* Allocate a new Ext2Group. */
+    group = new Ext2Group;
+    group->blockBitmap = blockSize * 3;
+    group->inodeBitmap = blockSize * 3;
+    group->inodeTable  = blockSize * 3;
+    group->freeBlocksCount = EXT2CREATE_BLOCKS_PER_GROUP;
+    group->freeInodesCount = EXT2CREATE_INODES_PER_GROUP - 1;
+    group->usedDirsCount   = ZERO;
+    
+    /* Add it to the list. */
+    list->insertTail(group);
+}
+
+void Ext2Create::createGroups(List<Ext2Group> *list,
+			      Ext2InputFile *file)
+{
+    /* Add the file itself. */
+    inputToGroup(list, file);
+
+    /* Loop childs. */
+    for (ListIterator<Ext2InputFile> i(file->childs); i.hasNext(); i++)
+    {
+	inputToGroup(list, i.current());
+    }
+}
+
 int Ext2Create::writeImage()
 {
     FILE *fp;
+    List<Ext2Group> groups;
 
     assert(image != ZERO);
     assert(prog != ZERO);
@@ -152,9 +196,16 @@ int Ext2Create::writeImage()
     /* Add the input directory contents. */
     readInput(input, inputRoot);
 
+    /* Update block count. */
+    super->blocksCount += (super->inodesCount / blockSize) + 1;
+
+    /* Generate group descriptors. */
+    createGroups(&groups, inputRoot);
+
     /* Debug out. */
-    printf( "Writing Extended 2 FileSystem to `%s' (blocksize=%u inodes=%u)\r\n",
-	     image, blockSize, super->inodesCount);
+    printf( "Writing Extended 2 FileSystem to `%s' "
+	    "(blocksize=%u inodes=%u groups=%u)\r\n",
+	     image, blockSize, super->inodesCount, groups.count());
 
     /* Open output image file. */
     if ((fp = fopen(image, "w")) == NULL)
@@ -177,6 +228,19 @@ int Ext2Create::writeImage()
 		prog, image, strerror(errno));
 	return EXIT_FAILURE;
     }
+    /* Seek to the next block. */
+    fseek(fp, (super->firstDataBlock + 1) * blockSize,
+	  SEEK_SET);
+
+    /* Write group descriptors. */
+    for (ListIterator<Ext2Group> i(&groups); i.hasNext(); i++)
+    {
+	fwrite(i.current(), sizeof(Ext2Group), 1, fp);
+    }
+    /* Dummy. */
+    fseek(fp, blockSize * 3, SEEK_SET);
+    fwrite(" ", 1, 1, fp);
+    
     /* Cleanup. */
     fclose(fp);
     delete super;
@@ -209,8 +273,8 @@ Ext2SuperBlock * Ext2Create::initSuperBlock()
     sb->freeBlocksCount     = 0;
     sb->freeInodesCount     = 0;
     sb->firstDataBlock      = 1;
-    sb->log2BlockSize       = blockSize    >> 10;
-    sb->log2FragmentSize    = fragmentSize >> 10;
+    sb->log2BlockSize       = blockSize    >> 11;
+    sb->log2FragmentSize    = fragmentSize >> 11;
     sb->blocksPerGroup      = EXT2CREATE_BLOCKS_PER_GROUP;
     sb->fragmentsPerGroup   = EXT2CREATE_FRAGS_PER_GROUP;
     sb->inodesPerGroup      = EXT2CREATE_INODES_PER_GROUP;

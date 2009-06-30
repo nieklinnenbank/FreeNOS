@@ -115,6 +115,20 @@ class Ext2Create
 	 * @return Pointer to the newly created Ext2InputFile.
 	 */
 	Ext2InputFile * addInputFile(char *inputFile, Ext2InputFile *parent);
+
+	/**
+	 * Create group descriptors and add the given input files.
+	 * @param list List to store group descriptors in.
+	 * @param file Input file and childs to add.
+	 */
+	void createGroups(List<Ext2Group> *list, Ext2InputFile *file);
+	
+	/**
+	 * Add the given input file to any group.
+	 * @param list List of available group descriptors.
+	 * @param file The file to add.
+	 */
+	void inputToGroup(List<Ext2Group> *list, Ext2InputFile *file);
     
 	/**
 	 * Allocate and initialize a superblock.

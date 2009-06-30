@@ -57,9 +57,8 @@ template <class T> class List
 	/**
 	 * Class constructor.
 	 */
-	List()
+	List() : headNode(0), tailNode(0), nodeCount(0)
 	{
-	    headNode = tailNode = 0;
 	}
 	
 	/**
@@ -90,6 +89,7 @@ template <class T> class List
 	    if (!tailNode)
 		tailNode = n;
 	    headNode = n;
+	    nodeCount++;
 	}
 	
 	/**
@@ -107,6 +107,7 @@ template <class T> class List
 	    if (!headNode)
 		headNode = n;
 	    tailNode = n;
+	    nodeCount++;
 	}
     
 	/**
@@ -132,7 +133,8 @@ template <class T> class List
 
 		    if (i == tailNode)
 			tailNode = i->prev;
-
+		    
+		    nodeCount--;
 		    delete i;
 		    break;
 		}
@@ -171,6 +173,7 @@ template <class T> class List
 		delete i;
 	    }
 	    headNode = tailNode = ZERO;
+	    nodeCount = ZERO;
 	}
 	
 	/**
@@ -199,9 +202,21 @@ template <class T> class List
 	{
 	    return headNode ? false : true;
 	}
+	
+	/**
+	 * Get the number of items.
+	 * @return The number of items on the List.
+	 */
+	Size count() const
+	{
+	    return nodeCount;
+	}
 
 	/** Head of the List. */
 	ListNode<T> *headNode, *tailNode;
+	
+	/** Number of items currently in the List. */
+	Size nodeCount;
 };
 
 #endif /* __LIST_H */
