@@ -31,6 +31,15 @@
 #include <errno.h>
 #include <sys/types.h>
 
+/** Default number of data blocks per group descriptor. */
+#define EXT2CREATE_BLOCKS_PER_GROUP	8192
+
+/** Default number of fragments per group descriptor. */
+#define EXT2CREATE_FRAGS_PER_GROUP	8192
+
+/** Default number of inodes per group descriptor. */
+#define EXT2CREATE_INODES_PER_GROUP	128
+
 /**
  * Describes an input file to be placed on the new filesystem.
  */
@@ -38,18 +47,9 @@ typedef struct Ext2InputFile
 {
     /** Name of the file. */
     char name[EXT2_NAME_LEN];
-    
-    /** Mode of the file. */
-    mode_t mode;
-    
-    /** Size of the file. */
-    size_t size;
-    
-    /** User identity. */
-    uid_t userId;
-    
-    /** Group identity. */
-    gid_t groupId;
+
+    /** Inode of the file. */
+    Ext2Inode inode;
     
     /** List of childs. */
     List<Ext2InputFile> childs;
@@ -141,18 +141,6 @@ class Ext2Create
 	
 	/** Size of each block. */
         Size blockSize;
-	
-	/** The total number of Inode available. */
-        Size totalInodes;
-	
-	/** Number of free Inodes. */
-	Size freeInodes;
-	
-	/** The total number of blocks available. */
-	Size totalBlocks;
-	
-	/** Number of free blocks. */
-	Size freeBlocks;
 	
 	/** Size of a fragment. */
 	Size fragmentSize;

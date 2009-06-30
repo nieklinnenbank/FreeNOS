@@ -37,10 +37,6 @@ Ext2Create::Ext2Create()
     image = ZERO;
     super = ZERO;
     blockSize    = EXT2_MIN_BLOCK_SIZE;
-    totalInodes  = 1024 * 64;
-    freeInodes   = totalInodes;
-    totalBlocks  = 128;
-    freeBlocks   = totalBlocks;
     fragmentSize = EXT2_MIN_FRAG_SIZE;
 }
 
@@ -68,25 +64,41 @@ Ext2InputFile * Ext2Create::addInputFile(char *inputFile, Ext2InputFile *parent)
 		prog, inputFile, strerror(errno));
 	exit(EXIT_FAILURE);
     }
-    /* Create new input file. */
+    /* Debug out. */
+    printf("%s mode=%x size=%lu userId=%u groupId=%u\r\n",
+	    inputFile, st.st_mode, st.st_size, st.st_uid, st.st_gid);
+
+    /* Create and clear a new input file. */
     file = new Ext2InputFile;
-    file->mode    = st.st_mode;
-    file->size    = st.st_size;
-    file->userId  = st.st_uid;
-    file->groupId = st.st_gid;
+    memset(file, 0, sizeof(*file));
+
+    /* Copy the filename. */
     strncpy(file->name, inputFile, EXT2_NAME_LEN);
     file->name[EXT2_NAME_LEN - 1] = 0;
     
-    /* Debug out. */
-    printf("%s mode=%x size=%lu userId=%u groupId=%u\r\n",
-	    file->name, file->mode, file->size,
-	    file->userId, file->groupId);
-    
+    /* Fill in the inode. */
+    file->inode.mode  = st.st_mode;
+    file->inode.uid   = (le16) st.st_uid;
+    file->inode.size  = st.st_size;
+    file->inode.atime = st.st_atime;
+    file->inode.ctime = st.st_mtime;
+    file->inode.mtime = st.st_mtime;
+    file->inode.dtime = st.st_mtime;
+    file->inode.gid   = (le16) st.st_gid;
+    file->inode.linksCount = st.st_nlink;
+    file->inode.blocks     = (st.st_blocks * 512) / blockSize;
+    file->inode.uidHigh    = (le16) st.st_uid >> 16;
+    file->inode.gidHigh    = (le16) st.st_gid >> 16;
+
     /* Add it to the parent, or make it root. */
     if (parent)
 	parent->childs.insertTail(file);
     else
 	inputRoot = file;
+
+    /* Update superblock. */
+    super->inodesCount++;
+    super->blocksCount += file->inode.blocks;
     
     /* All done. */
     return file;
@@ -114,7 +126,7 @@ int Ext2Create::readInput(char *directory, Ext2InputFile *parent)
 	    file = addInputFile(path, parent);
 	    
 	    /* Traverse it in case of a directory. */
-	    if (S_ISDIR(file->mode))
+	    if (S_ISDIR(file->inode.mode))
 	    {
 		readInput(path, file);
 	    }
@@ -139,6 +151,10 @@ int Ext2Create::writeImage()
 
     /* Add the input directory contents. */
     readInput(input, inputRoot);
+
+    /* Debug out. */
+    printf( "Writing Extended 2 FileSystem to `%s' (blocksize=%u inodes=%u)\r\n",
+	     image, blockSize, super->inodesCount);
 
     /* Open output image file. */
     if ((fp = fopen(image, "w")) == NULL)
@@ -187,17 +203,17 @@ void Ext2Create::setInput(char *inputName)
 Ext2SuperBlock * Ext2Create::initSuperBlock()
 {
     Ext2SuperBlock *sb = new Ext2SuperBlock;
-    sb->inodesCount         = totalInodes;
-    sb->blocksCount         = totalBlocks;
+    sb->inodesCount         = 0;
+    sb->blocksCount         = 0;
     sb->reservedBlocksCount = ZERO;
-    sb->freeBlocksCount     = freeBlocks;
-    sb->freeInodesCount     = freeInodes;
+    sb->freeBlocksCount     = 0;
+    sb->freeInodesCount     = 0;
     sb->firstDataBlock      = 1;
-    sb->log2BlockSize       = blockSize >> 10;
+    sb->log2BlockSize       = blockSize    >> 10;
     sb->log2FragmentSize    = fragmentSize >> 10;
-    sb->blocksPerGroup      = 256;
-    sb->fragmentsPerGroup   = 128;
-    sb->inodesPerGroup      = 2048;
+    sb->blocksPerGroup      = EXT2CREATE_BLOCKS_PER_GROUP;
+    sb->fragmentsPerGroup   = EXT2CREATE_FRAGS_PER_GROUP;
+    sb->inodesPerGroup      = EXT2CREATE_INODES_PER_GROUP;
     sb->mountTime	    = ZERO;
     sb->writeTime	    = ZERO;
     sb->mountCount	    = ZERO;
@@ -207,7 +223,7 @@ Ext2SuperBlock * Ext2Create::initSuperBlock()
     sb->errors              = EXT2_ERRORS_CONTINUE;
     sb->minorRevision       = ZERO;
     sb->lastCheck           = ZERO;
-    sb->checkInterval       = 3600 * 24 * 7;
+    sb->checkInterval       = 0;
     sb->creatorOS           = EXT2_OS_FREENOS;
     sb->majorRevision       = EXT2_CURRENT_REV;
     sb->defaultReservedUid  = ZERO;
