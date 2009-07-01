@@ -20,11 +20,12 @@
 
 #include "Macros.h"
 #include "Assert.h"
+#include <string.h>
 
 /**
- * Bit map template class.
+ * Class capable of (un)marking bits inside a binary bitmap.
  */
-template <class T> class BitMap
+class BitMap
 {
     public:
 
@@ -35,6 +36,7 @@ template <class T> class BitMap
 	BitMap(Size cnt) : count(cnt), free(cnt)
 	{
 	    map = new u8[(cnt / 8) + 1];
+	    memset(map, 0, (cnt / 8) + 1);
 	}
     
 	/**
@@ -73,7 +75,7 @@ template <class T> class BitMap
     	    for (Size i = 0; i < num; i++)
     	    {
         	/* Point to the correct offset. */
-        	ptr = (Address *) (&map) + i;
+        	ptr = ((Address *) (map)) + i;
 
         	/* Any blocks free? */
         	if (*ptr != (Address) ~ZERO)
@@ -117,12 +119,21 @@ template <class T> class BitMap
 	 * @param bit Bit number to check.
 	 * @return True if marked, false otherwise.
 	 */
-	bool isMarked(Size bit)
+	bool isMarked(Size bit) const
 	{
 	    assert(bit < count);
 	    assertRead(map);
 	
 	    return map[bit / 8] & (bit % 8);
+	}
+
+	/**
+	 * Retrieve a pointer to the internal bitmap.
+	 * @return Internal bitmap.
+	 */
+	u8 * getMap() const
+	{
+	    return map;
 	}
     
     private:
