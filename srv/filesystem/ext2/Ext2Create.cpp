@@ -96,10 +96,6 @@ Ext2InputFile * Ext2Create::addInputFile(char *inputFile, Ext2InputFile *parent)
 	parent->childs.insertTail(file);
     else
 	inputRoot = file;
-
-    /* Update superblock. */
-    super->inodesCount++;
-    super->blocksCount += file->inode.blocks;
     
     /* All done. */
     return file;
@@ -140,36 +136,54 @@ int Ext2Create::readInput(char *directory, Ext2InputFile *parent)
     return EXIT_SUCCESS;
 }
 
-void Ext2Create::inputToGroup(List<Ext2Group> *list,
+void Ext2Create::inputToGroup(List<Ext2CreateGroup> *list,
 			      Ext2InputFile *file)
 {
-    Ext2Group *group;
+    Ext2CreateGroup *group = ZERO;
+    Size n = ZERO;
 
     /* Find a group descriptor with space. */
-    for (ListIterator<Ext2Group> j(list); j.hasNext(); j++)
+    for (ListIterator<Ext2CreateGroup> j(list); j.hasNext(); j++)
     {
-	if (j.current()->freeInodesCount &&
-	    j.current()->freeBlocksCount >= file->inode.blocks)
+	if (j.current()->group.freeInodesCount &&
+	    j.current()->group.freeBlocksCount >= file->inode.blocks)
 	{
-    	    j.current()->freeInodesCount--;
-	    j.current()->freeBlocksCount -= file->inode.blocks;
-    	    return;
+	    group = j.current();
+	    break;
 	}
     }
-    /* Allocate a new Ext2Group. */
-    group = new Ext2Group;
-    group->blockBitmap = blockSize * 3;
-    group->inodeBitmap = blockSize * 3;
-    group->inodeTable  = blockSize * 3;
-    group->freeBlocksCount = EXT2CREATE_BLOCKS_PER_GROUP;
-    group->freeInodesCount = EXT2CREATE_INODES_PER_GROUP - 1;
-    group->usedDirsCount   = ZERO;
+    /* Did we found an existing group? Allocate new if not. */
+    if (!group)
+    {
+	/* Allocate a new Ext2Group. */
+        group = new Ext2CreateGroup;
+	group->inodes   = new Ext2Inode[EXT2CREATE_INODES_PER_GROUP];
+	group->blockMap = new BitMap(EXT2CREATE_BLOCKS_PER_GROUP);
+	group->inodeMap = new BitMap(EXT2CREATE_INODES_PER_GROUP);
+        group->group.blockBitmap = super->blocksCount++;
+        group->group.inodeBitmap = super->blocksCount++;
+        group->group.inodeTable  = super->blocksCount;
+        group->group.freeBlocksCount   = EXT2CREATE_BLOCKS_PER_GROUP;
+        group->group.freeInodesCount   = EXT2CREATE_INODES_PER_GROUP;
+        group->group.usedDirsCount     = ZERO;
+
+	/* Increment block count for the inode table. */	
+	super->blocksCount += super->inodesPerGroup /
+			     (blockSize / sizeof(Ext2Inode));
     
-    /* Add it to the list. */
-    list->insertTail(group);
+	/* Add it to the list. */
+        list->insertTail(group);
+    }
+    /* Add the file's inode to the selected group. */
+    group->group.freeInodesCount--;
+    n = group->inodeMap->markNext();
+    memcpy(&group->inodes[n], &file->inode, sizeof(Ext2Inode));
+
+    /* Update superblock. */	    
+    super->inodesCount++;
 }
 
-void Ext2Create::createGroups(List<Ext2Group> *list,
+void Ext2Create::createGroups(List<Ext2CreateGroup> *list,
 			      Ext2InputFile *file)
 {
     /* Add the file itself. */
@@ -178,14 +192,15 @@ void Ext2Create::createGroups(List<Ext2Group> *list,
     /* Loop childs. */
     for (ListIterator<Ext2InputFile> i(file->childs); i.hasNext(); i++)
     {
-	inputToGroup(list, i.current());
+	createGroups(list, i.current());
     }
 }
 
 int Ext2Create::writeImage()
 {
     FILE *fp;
-    List<Ext2Group> groups;
+    List<Ext2CreateGroup> groups;
+    Size n = ZERO;
 
     assert(image != ZERO);
     assert(prog != ZERO);
@@ -195,9 +210,6 @@ int Ext2Create::writeImage()
 
     /* Add the input directory contents. */
     readInput(input, inputRoot);
-
-    /* Update block count. */
-    super->blocksCount += (super->inodesCount / blockSize) + 1;
 
     /* Generate group descriptors. */
     createGroups(&groups, inputRoot);
@@ -228,19 +240,30 @@ int Ext2Create::writeImage()
 		prog, image, strerror(errno));
 	return EXIT_FAILURE;
     }
-    /* Seek to the next block. */
-    fseek(fp, (super->firstDataBlock + 1) * blockSize,
-	  SEEK_SET);
 
     /* Write group descriptors. */
-    for (ListIterator<Ext2Group> i(&groups); i.hasNext(); i++)
+    for (ListIterator<Ext2CreateGroup> i(&groups); i.hasNext(); i++, n++)
     {
-	fwrite(i.current(), sizeof(Ext2Group), 1, fp);
+        /* Seek first to the correct offset for this group. */
+	fseek(fp, ((super->firstDataBlock + 1) * blockSize) +
+		   (sizeof(Ext2Group) * n), SEEK_SET);
+
+	/* Write out the Ext2Group. */
+	fwrite(&i.current()->group, sizeof(Ext2Group), 1, fp);
+	
+	/* Block bitmap of the group. */
+	fseek(fp, i.current()->group.blockBitmap * blockSize, SEEK_SET);
+	fwrite(i.current()->blockMap->getMap(), blockSize, 1, fp);
+	
+	/* Inode bitmap of the group. */
+	fseek(fp, i.current()->group.inodeBitmap * blockSize, SEEK_SET);
+	fwrite(i.current()->inodeMap->getMap(), blockSize, 1, fp);
+	
+	/* Inode table of the group. */
+	fseek(fp, i.current()->group.inodeTable * blockSize, SEEK_SET);
+	fwrite(i.current()->inodes, (super->inodesPerGroup / (blockSize / sizeof(Ext2Inode)))
+				   * blockSize, 1, fp);
     }
-    /* Dummy. */
-    fseek(fp, blockSize * 3, SEEK_SET);
-    fwrite(" ", 1, 1, fp);
-    
     /* Cleanup. */
     fclose(fp);
     delete super;
@@ -268,7 +291,7 @@ Ext2SuperBlock * Ext2Create::initSuperBlock()
 {
     Ext2SuperBlock *sb = new Ext2SuperBlock;
     sb->inodesCount         = 0;
-    sb->blocksCount         = 0;
+    sb->blocksCount         = 3;
     sb->reservedBlocksCount = ZERO;
     sb->freeBlocksCount     = 0;
     sb->freeInodesCount     = 0;

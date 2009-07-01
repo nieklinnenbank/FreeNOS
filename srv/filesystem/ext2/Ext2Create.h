@@ -38,7 +38,7 @@
 #define EXT2CREATE_FRAGS_PER_GROUP	8192
 
 /** Default number of inodes per group descriptor. */
-#define EXT2CREATE_INODES_PER_GROUP	128
+#define EXT2CREATE_INODES_PER_GROUP	1024
 
 /**
  * Describes an input file to be placed on the new filesystem.
@@ -51,10 +51,29 @@ typedef struct Ext2InputFile
     /** Inode of the file. */
     Ext2Inode inode;
     
+    /** Inode number. */
+    le32 inodeNumber;
+    
     /** List of childs. */
     List<Ext2InputFile> childs;
 }
 Ext2InputFile;
+
+typedef struct Ext2CreateGroup
+{
+    /** Group descriptor. */
+    Ext2Group group;
+    
+    /** In-memory block bitmap. */
+    BitMap *blockMap;
+    
+    /** In-memory inode bitmap. */
+    BitMap *inodeMap;
+    
+    /** In-memory inode table. */
+    Ext2Inode *inodes;
+}
+Ext2CreateGroup;
 
 /**
  * Class for creating new Extended 2 FileSystems.
@@ -121,14 +140,14 @@ class Ext2Create
 	 * @param list List to store group descriptors in.
 	 * @param file Input file and childs to add.
 	 */
-	void createGroups(List<Ext2Group> *list, Ext2InputFile *file);
+	void createGroups(List<Ext2CreateGroup> *list, Ext2InputFile *file);
 	
 	/**
 	 * Add the given input file to any group.
 	 * @param list List of available group descriptors.
 	 * @param file The file to add.
 	 */
-	void inputToGroup(List<Ext2Group> *list, Ext2InputFile *file);
+	void inputToGroup(List<Ext2CreateGroup> *list, Ext2InputFile *file);
     
 	/**
 	 * Allocate and initialize a superblock.
