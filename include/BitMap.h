@@ -33,9 +33,14 @@ class BitMap
 	 * Class constructor.
 	 * @param cnt Number of bits.
 	 */
-	BitMap(Size cnt) : count(cnt), free(cnt)
+	BitMap(Size cnt, u8 *newMap = ZERO)
+	    : count(cnt), free(cnt)
 	{
-	    map = new u8[(cnt / 8) + 1];
+	    if (newMap)
+		map = newMap;
+	    else
+		map = new u8[(cnt / 8) + 1];
+	
 	    memset(map, 0, (cnt / 8) + 1);
 	}
     
@@ -56,6 +61,19 @@ class BitMap
 		free--;
 	    }
         }
+	
+	/**
+	 * Mark a range of bits inside the map.
+	 * @param from Bit to start with.
+	 * @param to End bit (inclusive).
+	 */
+	void markRange(Size from, Size to)
+	{
+	    for (Size i = from; i <= to; i++)
+	    {
+		mark(i);
+	    }
+	}
 	
 	/**
 	 * Marks the next free bit used.
@@ -124,7 +142,7 @@ class BitMap
 	    assert(bit < count);
 	    assertRead(map);
 	
-	    return map[bit / 8] & (bit % 8);
+	    return map[bit / 8] & (1 << (bit % 8));
 	}
 
 	/**
@@ -134,6 +152,38 @@ class BitMap
 	u8 * getMap() const
 	{
 	    return map;
+	}
+
+	/**
+	 * Use the given pointer as the bitmap buffer.
+	 * @param newMap New bitmap pointer.
+	 */
+	void setMap(u8 *newMap)
+	{
+	    if (map)
+		delete map;
+		
+	    /* Reassign to the new map, and clear it. */
+	    map = newMap;
+	    memset(map, 0, count);
+	}
+	
+	/**
+	 * Get the number of bits used in the map.
+	 * @return Number of used bits.
+	 */
+	Size getUsed() const
+	{
+	    return (count - free);
+	}
+	
+	/**
+	 * Get the number of bits available in the map.
+	 * @return Number of free bits.
+	 */
+	Size getFree() const
+	{
+	    return free;
 	}
     
     private:
