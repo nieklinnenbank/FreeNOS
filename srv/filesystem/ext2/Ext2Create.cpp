@@ -84,8 +84,9 @@ Ext2Inode * Ext2Create::createInode(char *inputFile, Size *number)
         exit(EXIT_FAILURE);
     }
     /* Debug out. */
-    printf("%s mode=%x size=%lu userId=%u groupId=%u\r\n",
-            inputFile, st.st_mode, st.st_size, st.st_uid, st.st_gid);
+    printf("%s mode=%x size=%llu userId=%u groupId=%u\r\n",
+            inputFile, st.st_mode, (long long unsigned)st.st_size,
+	    st.st_uid, st.st_gid);
 
     /* Grab a new inode, or use the given number. */
     if (*number)
