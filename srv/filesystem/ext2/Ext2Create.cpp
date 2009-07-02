@@ -30,6 +30,7 @@
 #include <dirent.h>
 #include <string.h>
 #include <errno.h>
+#include <libgen.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
