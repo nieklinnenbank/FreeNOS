@@ -23,6 +23,7 @@
 #include "Ext2Inode.h"
 #include "Ext2Group.h"
 #include "Ext2FileSystem.h"
+#include "Ext2Directory.h"
 #include "Ext2Create.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,8 +38,7 @@ Ext2Create::Ext2Create()
     prog  = ZERO;
     image = ZERO;
     super = ZERO;
-    blockSize    = EXT2_MIN_BLOCK_SIZE;
-    fragmentSize = EXT2_MIN_FRAG_SIZE;
+    blockSize = EXT2_MAX_BLOCK_SIZE;
 }
 
 int Ext2Create::create()
@@ -46,67 +46,160 @@ int Ext2Create::create()
     assert(image != ZERO);
     assert(prog != ZERO);
 
-    /* Allocate and initialize the superblock. */
-    super = initSuperBlock();
+    /* Allocate blocks. */
+    blocks = new u8[blockSize * EXT2CREATE_NUM_BLOCKS];
+
+    /* Initialize superblock and group descriptor. */
+    initSuperBlock((Ext2SuperBlock *)(blocks + EXT2_SUPER_OFFSET));
+    initGroup(BLOCKPTR(Ext2Group, 1));
+    
+    /* Fill the filesystem using a local directory. */
+    readInput(input, ZERO);
+    
+    /* Update superblock and group fields. */
+    super->blocksCount = blockMap->markNext() - 1;
+    super->freeInodesCount = inodeMap->getFree();
+    super->freeBlocksCount = 0;
+    group->freeInodesCount = inodeMap->getFree();
+    group->freeBlocksCount = 0;
     
     /* Write the final image. */
     return writeImage();
 }    
 
-Ext2InputFile * Ext2Create::addInputFile(char *inputFile, Ext2InputFile *parent)
+Ext2Inode * Ext2Create::createInode(char *inputFile, Size *number)
 {
-    Ext2InputFile *file;
+    Ext2Inode *inode;
     struct stat st;
+    FILE *fp;
+    bool reading = true;
+    Size blockNr, *indirect = ZERO, numBlocks = ZERO;
     
     /* Stat the input file. */
     if (stat(inputFile, &st) != 0)
     {
-	printf("%s: failed to stat() `%s': %s\r\n",
-		prog, inputFile, strerror(errno));
-	exit(EXIT_FAILURE);
+        printf("%s: failed to stat() `%s': %s\r\n",
+                prog, inputFile, strerror(errno));
+        exit(EXIT_FAILURE);
     }
     /* Debug out. */
     printf("%s mode=%x size=%lu userId=%u groupId=%u\r\n",
-	    inputFile, st.st_mode, st.st_size, st.st_uid, st.st_gid);
+            inputFile, st.st_mode, st.st_size, st.st_uid, st.st_gid);
 
-    /* Create and clear a new input file. */
-    file = new Ext2InputFile;
-    memset(file, 0, sizeof(*file));
-
-    /* Copy the filename. */
-    strncpy(file->name, inputFile, EXT2_NAME_LEN);
-    file->name[EXT2_NAME_LEN - 1] = 0;
-    
-    /* Fill in the inode. */
-    file->inode.mode  = st.st_mode;
-    file->inode.uid   = (le16) st.st_uid;
-    file->inode.size  = st.st_size;
-    file->inode.atime = st.st_atime;
-    file->inode.ctime = st.st_mtime;
-    file->inode.mtime = st.st_mtime;
-    file->inode.dtime = st.st_mtime;
-    file->inode.gid   = (le16) st.st_gid;
-    file->inode.linksCount = st.st_nlink;
-    file->inode.blocks     = (st.st_blocks * 512) / blockSize;
-    file->inode.uidHigh    = (le16) st.st_uid >> 16;
-    file->inode.gidHigh    = (le16) st.st_gid >> 16;
-
-    /* Add it to the parent, or make it root. */
-    if (parent)
-	parent->childs.insertTail(file);
+    /* Grab a new inode, or use the given number. */
+    if (*number)
+    {
+	inode  = BLOCKPTR(Ext2Inode, group->inodeTable);
+	inode += *number - 1;
+    }
     else
-	inputRoot = file;
+    {
+	*number = inodeMap->markNext();
+	inode   = BLOCKPTR(Ext2Inode, group->inodeTable);
+	inode  += *number - 1;
+    }
+    /* Fill it. */
+    inode->mode  = st.st_mode;
+    inode->uid   = (le16) st.st_uid;
+    inode->size  = st.st_size;
+    inode->atime = st.st_atime;
+    inode->ctime = st.st_mtime;
+    inode->mtime = st.st_mtime;
+    inode->dtime = ZERO;
+    inode->gid   = (le16) st.st_gid;
+    inode->linksCount = 1;
+    inode->blocks     = ZERO;
+    inode->uidHigh    = (le16) st.st_uid >> 16;
+    inode->gidHigh    = (le16) st.st_gid >> 16;
+
+    /* In case of a directory, return it now. */
+    if (S_ISDIR(st.st_mode))
+    {
+	return inode;
+    }
+    /* Otherwise, add the contents of the file. Open it first. */
+    if ((fp = fopen(inputFile, "r")) == NULL)
+    {
+	printf("%s: failed to fopen() `%s': %s\r\n",
+	        prog, inputFile, strerror(errno));
+	exit(EXIT_FAILURE);
+    }
+    /* Now read it's contents. */
+    while (reading)
+    {
+	/* Fetch next block. */
+	blockNr = blockMap->markNext();
     
+	/* Read the block from file. */
+	if (fread(BLOCKPTR(char, blockNr), blockSize, 1, fp) != 1)
+	{
+	    /* Did we hit the end of the file? */
+	    if (feof(fp))
+		reading = false;
+	    else
+	    {
+		blockMap->unmark(blockNr);
+		break;
+	    }
+	}
+	/* Insert block into inode. */
+	if (numBlocks < EXT2_NDIR_BLOCKS)
+	{
+	    inode->block[numBlocks] = blockNr;
+	}
+	/* Indirect block. */
+	else if (numBlocks < EXT2_ADDR_PER_BLOCK(super))
+	{
+	    if (indirect == ZERO)
+	    {
+		inode->block[EXT2_IND_BLOCK] = blockMap->markNext();
+		inode->blocks += blockSize / 512;
+		indirect = BLOCKPTR(Size, inode->block[EXT2_IND_BLOCK]);
+	    }	
+	    indirect[numBlocks - EXT2_NDIR_BLOCKS] = blockNr;
+	}
+	/* We do not support double/triple indirect yet. */
+	else
+	{
+	    printf("%s: double/triple indirect blocks not supported: `%s'\r\n",
+		    prog, inputFile);
+	    exit(EXIT_FAILURE);
+	}
+	/* Increment block count. */
+	inode->blocks += blockSize / 512;
+	numBlocks++;
+    }
     /* All done. */
-    return file;
+    fclose(fp);
+    return inode;
 }
 
-int Ext2Create::readInput(char *directory, Ext2InputFile *parent)
+Size Ext2Create::readInput(char *directory, Size parent)
 {
     DIR *dir;
-    Ext2InputFile *file;
     struct dirent *entry;
     char path[EXT2_NAME_LEN];
+    Ext2Inode *inode = ZERO;
+    Ext2DirectoryEntry *dent, *dprev = ZERO;
+    Size inodeNumber = ZERO, childInodeNum = ZERO;
+    Address last;
+
+    /* Make a root inode? */
+    if (!parent)
+	inodeNumber = EXT2_ROOT_INO;
+
+    /* Create an Inode first. */
+    inode = createInode(directory, &inodeNumber);
+    inode->blocks     = blockSize / 512;
+    inode->block[0]   = blockMap->markNext();
+    inode->size       = blockSize;
+    inode->linksCount = 2;
+    dent = BLOCKPTR(Ext2DirectoryEntry, inode->block[0]);
+    last = (Address) (dent) + blockSize;
+    
+    /* Create '.' and '..' directory entries. */
+    EXT2_CREATE_DIRENT(".",  inodeNumber);
+    EXT2_CREATE_DIRENT("..", parent ? parent : inodeNumber);
     
     /* Open the local directory. */
     if ((dir = opendir(directory)) == NULL)
@@ -119,156 +212,53 @@ int Ext2Create::readInput(char *directory, Ext2InputFile *parent)
 	/* Skip hidden. */
 	if (entry->d_name[0] != '.')
 	{
-	    snprintf(path, sizeof(path), "%s/%s", directory, entry->d_name);
-	    file = addInputFile(path, parent);
+	    /* Construct the full path. */
+	    snprintf(path, sizeof(path), "%s/%s",
+		     directory, entry->d_name);
 	    
 	    /* Traverse it in case of a directory. */
-	    if (S_ISDIR(file->inode.mode))
+	    if (entry->d_type == DT_DIR)
 	    {
-		readInput(path, file);
+		childInodeNum = readInput(path, inodeNumber);
+		inode->linksCount++;
 	    }
+    	    /* Create a new Inode for the file. */
+	    else
+	    {
+		createInode(path, &childInodeNum);
+	    }
+	    EXT2_CREATE_DIRENT(basename(path), childInodeNum);
+	    childInodeNum = ZERO;
 	}
     }
     /* Cleanup. */
     closedir(dir);
 
     /* Done. */
-    return EXIT_SUCCESS;
-}
-
-void Ext2Create::inputToGroup(List<Ext2CreateGroup> *list,
-			      Ext2InputFile *file)
-{
-    Ext2CreateGroup *group = ZERO;
-    Size n = ZERO;
-
-    /* Find a group descriptor with space. */
-    for (ListIterator<Ext2CreateGroup> j(list); j.hasNext(); j++)
-    {
-	if (j.current()->group.freeInodesCount &&
-	    j.current()->group.freeBlocksCount >= file->inode.blocks)
-	{
-	    group = j.current();
-	    break;
-	}
-    }
-    /* Did we found an existing group? Allocate new if not. */
-    if (!group)
-    {
-	/* Allocate a new Ext2Group. */
-        group = new Ext2CreateGroup;
-	group->inodes   = new Ext2Inode[EXT2CREATE_INODES_PER_GROUP];
-	group->blockMap = new BitMap(EXT2CREATE_BLOCKS_PER_GROUP);
-	group->inodeMap = new BitMap(EXT2CREATE_INODES_PER_GROUP);
-        group->group.blockBitmap = super->blocksCount++;
-        group->group.inodeBitmap = super->blocksCount++;
-        group->group.inodeTable  = super->blocksCount;
-        group->group.freeBlocksCount   = EXT2CREATE_BLOCKS_PER_GROUP;
-        group->group.freeInodesCount   = EXT2CREATE_INODES_PER_GROUP;
-        group->group.usedDirsCount     = ZERO;
-
-	/* Increment block count for the inode table. */	
-	super->blocksCount += super->inodesPerGroup /
-			     (blockSize / sizeof(Ext2Inode));
-    
-	/* Add it to the list. */
-        list->insertTail(group);
-    }
-    /* Add the file's inode to the selected group. */
-    group->group.freeInodesCount--;
-    n = group->inodeMap->markNext();
-    memcpy(&group->inodes[n], &file->inode, sizeof(Ext2Inode));
-
-    /* Update superblock. */	    
-    super->inodesCount++;
-}
-
-void Ext2Create::createGroups(List<Ext2CreateGroup> *list,
-			      Ext2InputFile *file)
-{
-    /* Add the file itself. */
-    inputToGroup(list, file);
-
-    /* Loop childs. */
-    for (ListIterator<Ext2InputFile> i(file->childs); i.hasNext(); i++)
-    {
-	createGroups(list, i.current());
-    }
+    return inodeNumber;
 }
 
 int Ext2Create::writeImage()
 {
     FILE *fp;
-    List<Ext2CreateGroup> groups;
-    Size n = ZERO;
-
-    assert(image != ZERO);
-    assert(prog != ZERO);
     
-    /* Construct the input root. */
-    addInputFile(input, ZERO);
-
-    /* Add the input directory contents. */
-    readInput(input, inputRoot);
-
-    /* Generate group descriptors. */
-    createGroups(&groups, inputRoot);
-
-    /* Debug out. */
-    printf( "Writing Extended 2 FileSystem to `%s' "
-	    "(blocksize=%u inodes=%u groups=%u)\r\n",
-	     image, blockSize, super->inodesCount, groups.count());
-
-    /* Open output image file. */
+    /* Open output image. */
     if ((fp = fopen(image, "w")) == NULL)
     {
-	printf("%s: failed to fopen `%s': %s\r\n",
+	printf("%s: failed to fopen() `%s' for writing: %s\r\n",
 		prog, image, strerror(errno));
 	return EXIT_FAILURE;
     }
-    /* Seek to second block. */
-    if (fseek(fp, blockSize, SEEK_SET) != 0)
+    /* Write all blocks at once. */
+    if (fwrite(blocks, blockSize * super->blocksCount, 1, fp) != 1)
     {
-	printf("%s: failed to seek `%s' to %x: %s\r\n",
-		prog, image, blockSize, strerror(errno));
-	return EXIT_FAILURE;
-    }
-    /* Write superblock. */
-    if (fwrite(super, sizeof(*super), 1, fp) != 1)
-    {
-	printf("%s: failed to fwrite `%s': %s\r\n",
+	printf("%s: failed to fwrite() `%s': %s\r\n",
 		prog, image, strerror(errno));
+	fclose(fp);
 	return EXIT_FAILURE;
     }
-
-    /* Write group descriptors. */
-    for (ListIterator<Ext2CreateGroup> i(&groups); i.hasNext(); i++, n++)
-    {
-        /* Seek first to the correct offset for this group. */
-	fseek(fp, ((super->firstDataBlock + 1) * blockSize) +
-		   (sizeof(Ext2Group) * n), SEEK_SET);
-
-	/* Write out the Ext2Group. */
-	fwrite(&i.current()->group, sizeof(Ext2Group), 1, fp);
-	
-	/* Block bitmap of the group. */
-	fseek(fp, i.current()->group.blockBitmap * blockSize, SEEK_SET);
-	fwrite(i.current()->blockMap->getMap(), blockSize, 1, fp);
-	
-	/* Inode bitmap of the group. */
-	fseek(fp, i.current()->group.inodeBitmap * blockSize, SEEK_SET);
-	fwrite(i.current()->inodeMap->getMap(), blockSize, 1, fp);
-	
-	/* Inode table of the group. */
-	fseek(fp, i.current()->group.inodeTable * blockSize, SEEK_SET);
-	fwrite(i.current()->inodes, (super->inodesPerGroup / (blockSize / sizeof(Ext2Inode)))
-				   * blockSize, 1, fp);
-    }
-    /* Cleanup. */
-    fclose(fp);
-    delete super;
-    
     /* All done. */
+    fclose(fp);
     return EXIT_SUCCESS;
 }
 
@@ -287,17 +277,17 @@ void Ext2Create::setInput(char *inputName)
     this->input = inputName;
 }
 
-Ext2SuperBlock * Ext2Create::initSuperBlock()
+void Ext2Create::initSuperBlock(Ext2SuperBlock *sb)
 {
-    Ext2SuperBlock *sb = new Ext2SuperBlock;
-    sb->inodesCount         = 0;
+    super = sb;
+    sb->inodesCount         = EXT2CREATE_INODES_PER_GROUP;
     sb->blocksCount         = 3;
     sb->reservedBlocksCount = ZERO;
     sb->freeBlocksCount     = 0;
     sb->freeInodesCount     = 0;
-    sb->firstDataBlock      = 1;
-    sb->log2BlockSize       = blockSize    >> 11;
-    sb->log2FragmentSize    = fragmentSize >> 11;
+    sb->firstDataBlock      = 0;
+    sb->log2BlockSize       = blockSize >> 11;
+    sb->log2FragmentSize    = blockSize >> 11;
     sb->blocksPerGroup      = EXT2CREATE_BLOCKS_PER_GROUP;
     sb->fragmentsPerGroup   = EXT2CREATE_FRAGS_PER_GROUP;
     sb->inodesPerGroup      = EXT2CREATE_INODES_PER_GROUP;
@@ -315,7 +305,32 @@ Ext2SuperBlock * Ext2Create::initSuperBlock()
     sb->majorRevision       = EXT2_CURRENT_REV;
     sb->defaultReservedUid  = ZERO;
     sb->defaultReservedGid  = ZERO;
-    return sb;
+}
+
+void Ext2Create::initGroup(Ext2Group *grp)
+{
+    /* Initialize the group descriptor. */
+    group = grp;
+    group->blockBitmap = 2;
+    group->inodeBitmap = 3;
+    group->inodeTable  = 4;
+    group->freeBlocksCount = 0;
+    group->freeInodesCount = super->inodesPerGroup;
+    group->usedDirsCount   = ZERO;
+
+    /* Create BitMap instances. */
+    blockMap = new BitMap(super->blocksPerGroup,
+			  BLOCKPTR(u8, 2));
+    inodeMap = new BitMap(super->inodesPerGroup,
+			  BLOCKPTR(u8, 3));
+
+    /* Mark the appropriate blocks used. */
+    blockMap->markRange(0, 4);
+    blockMap->markRange(4,
+			super->inodesPerGroup / (blockSize / sizeof(Ext2Inode)));
+
+    /* Mark special Inodes. */
+    inodeMap->markRange(0, EXT2_GOOD_OLD_FIRST_INO);
 }
 
 int main(int argc, char **argv)

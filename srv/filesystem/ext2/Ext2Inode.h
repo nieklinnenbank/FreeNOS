@@ -178,7 +178,7 @@ typedef struct Ext2Inode
     le32 dtime;		/**< Deletion Time. */
     le16 gid;		/**< Low 16 bits of Group Id. */
     le16 linksCount;	/**< Links count. */
-    le32 blocks;	/**< Blocks count. */
+    le32 blocks;	/**< Number of 512-byte blocks. */
     le32 flags;		/**< File flags. */
     le32 reserved;	/**< Reserved bits. */
     le32 block[EXT2_N_BLOCKS]; /**< Pointers to blocks. */

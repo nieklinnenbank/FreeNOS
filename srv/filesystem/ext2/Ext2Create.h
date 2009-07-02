@@ -40,40 +40,38 @@
 /** Default number of inodes per group descriptor. */
 #define EXT2CREATE_INODES_PER_GROUP	1024
 
+/** Maximum number of blocks we support. */
+#define EXT2CREATE_NUM_BLOCKS		8192
+
 /**
- * Describes an input file to be placed on the new filesystem.
+ * @brief Macro used in Ext2Create::readInput() to create directory entries.
+ * @param f File name.
+ * @param i Inode number.
  */
-typedef struct Ext2InputFile
-{
-    /** Name of the file. */
-    char name[EXT2_NAME_LEN];
+#define EXT2_CREATE_DIRENT(f,i) \
+    if (dprev) \
+    { \
+	dprev->recordLength  = (dprev->nameLength + 8); \
+	dprev->recordLength += 4 - (dprev->recordLength % 4); \
+    } \
+    dprev = dent; \
+    dent->inode        = (i); \
+    dent->nameLength   = strlen(f); \
+    dent->recordLength = last - ((Address) dent); \
+    strncpy((dent)->name, (f), EXT2_NAME_LEN); \
+    \
+    {ulong ptr = (ulong) dent; \
+    ptr += dent->nameLength + 8; \
+    ptr += 4 - (ptr % 4); \
+    dent = (Ext2DirectoryEntry *) ptr;}
 
-    /** Inode of the file. */
-    Ext2Inode inode;
-    
-    /** Inode number. */
-    le32 inodeNumber;
-    
-    /** List of childs. */
-    List<Ext2InputFile> childs;
-}
-Ext2InputFile;
-
-typedef struct Ext2CreateGroup
-{
-    /** Group descriptor. */
-    Ext2Group group;
-    
-    /** In-memory block bitmap. */
-    BitMap *blockMap;
-    
-    /** In-memory inode bitmap. */
-    BitMap *inodeMap;
-    
-    /** In-memory inode table. */
-    Ext2Inode *inodes;
-}
-Ext2CreateGroup;
+/**
+ * @brief Returns a pointer to the correct in-memory block.
+ * @param type Data type to return a pointer for.
+ * @param nr Block number.
+ * @return A pointer of the given type.
+ */
+#define BLOCKPTR(type,nr) (type *)(blocks + (blockSize * (nr))) 
 
 /**
  * Class for creating new Extended 2 FileSystems.
@@ -96,10 +94,10 @@ class Ext2Create
 	/**
 	 * Traverse the input directory.
 	 * @param directory Path of the local directory to traverse.
-	 * @param parent Parent directory or ZERO if none.
-	 * @return EXIT_SUCCESS if successfull and EXIT_FAILURE otherwise.
+	 * @param parent Parent Inode number.
+	 * @return Inode number for the created directory.
 	 */
-	int readInput(char *directory, Ext2InputFile *parent);
+	Size readInput(char *directory, Size parent);
 
 	/**
 	 * Writes the final image to disk.
@@ -128,31 +126,24 @@ class Ext2Create
     private:
 
 	/**
-	 * Adds the given input file to it's parent.
-	 * @param inputFile Path of the local file to add.
-	 * @param parent Pointer to an Ext2InputFile.
-	 * @return Pointer to the newly created Ext2InputFile.
+	 * Initialize a superblock.
+	 * @param ptr Superblock buffer.
 	 */
-	Ext2InputFile * addInputFile(char *inputFile, Ext2InputFile *parent);
-
-	/**
-	 * Create group descriptors and add the given input files.
-	 * @param list List to store group descriptors in.
-	 * @param file Input file and childs to add.
-	 */
-	void createGroups(List<Ext2CreateGroup> *list, Ext2InputFile *file);
+	void initSuperBlock(Ext2SuperBlock *ptr);
 	
 	/**
-	 * Add the given input file to any group.
-	 * @param list List of available group descriptors.
-	 * @param file The file to add.
+	 * Initialize a group descriptor.
+	 * @param grp Group pointer.
 	 */
-	void inputToGroup(List<Ext2CreateGroup> *list, Ext2InputFile *file);
-    
+	void initGroup(Ext2Group *grp);
+
 	/**
-	 * Allocate and initialize a superblock.
-	 */
-	Ext2SuperBlock * initSuperBlock();
+	 * Allocates a new Extended 2 Inode for the given file.
+	 * @param inputFile Path to the local file.
+	 * @param Pointer to fill in the inode number.
+	 * @return Pointer to the Ext2Inode.
+	 */	
+	Ext2Inode * createInode(char *inputFile, Size *number);
 	
 	/** Program name we are invoked with. */
 	char *prog;
@@ -166,17 +157,20 @@ class Ext2Create
 	/** Pointer to the superblock. */
 	Ext2SuperBlock *super;
 	
-	/** Contains all files to be written into the new filesystem. */
-	Ext2InputFile *inputRoot;
+	/** Pointer to the group descriptor. */
+	Ext2Group *group;
+	
+	/** Block and Inode bitmaps. */
+	BitMap *blockMap, *inodeMap;
+
+	/** Array of blocks available in the filesystem. */
+	u8 *blocks;
 	
 	/** List of file patterns to ignore. */
 	List<String> excludes;
 	
 	/** Size of each block. */
         Size blockSize;
-	
-	/** Size of a fragment. */
-	Size fragmentSize;
 };
 
 #endif /* __FILESYSTEM_EXT2CREATE_H */

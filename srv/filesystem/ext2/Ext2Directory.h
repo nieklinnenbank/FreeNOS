@@ -33,11 +33,13 @@
 #ifndef __FILESYSTEM_EXT2DIRECTORY_H
 #define __FILESYSTEM_EXT2DIRECTORY_H
 
+#ifndef __HOST__
 #include <FileSystemMessage.h>
 #include <Directory.h>
 #include <Types.h>
 #include "Ext2FileSystem.h"
 #include "Ext2Inode.h"
+#endif /* __HOST__ */
 
 /**                                                                                                                                                                                                     
  * @defgroup ext2 ext2fs (Extended 2 Filesystem)
@@ -71,7 +73,7 @@ typedef struct Ext2DirectoryEntry
     /** Inode number. */
     le32 inode;
 
-    /** Directory entry length. */
+    /** Directory entry length. Must be 4-byte aligned? */
     le16 recordLength;
     
     /** Name length. */
@@ -138,6 +140,8 @@ enum
  * @}
  */
 
+#ifndef __HOST__
+
 /**
  * Extended 2 Filesystem directory.
  * @see Directory
@@ -180,6 +184,8 @@ class Ext2Directory : public Directory
 	/** Inode which describes the directory. */
 	Ext2Inode *inode;
 };
+
+#endif /* __HOST__ */
 
 /**
  * @}
