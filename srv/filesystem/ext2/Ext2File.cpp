@@ -62,6 +62,13 @@ Error Ext2File::read(FileSystemMessage *msg)
 	}
 	/* Calculate the number of bytes to copy. */
 	bytes = EXT2_BLOCK_SIZE(sb) - copyOffset;
+	
+	/* Respect the inode size. */
+	if (bytes > inode->size - copyOffset)
+	{
+	    bytes = inode->size - copyOffset;
+	}
+	/* Respect the remote process buffer. */
 	if (bytes > msg->size - total)
 	{
 	    bytes = msg->size - total;
