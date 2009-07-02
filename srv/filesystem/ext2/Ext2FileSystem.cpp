@@ -73,8 +73,8 @@ Ext2FileSystem::Ext2FileSystem(const char *p, Storage *s)
     {
 	/* Allocate buffer. */
 	group   = new Ext2Group;
-	offset  = EXT2_SUPER_OFFSET;
-	offset += le32_to_cpu(superBlock.firstDataBlock) *
+	offset  = le32_to_cpu(superBlock.firstDataBlock ?
+			      superBlock.firstDataBlock + 1 : 1) *
 	          EXT2_BLOCK_SIZE(&superBlock);
 	offset += sizeof(Ext2Group) * i;
 
