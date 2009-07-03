@@ -129,6 +129,12 @@ class Ext2Create
 	 */
 	void setExclude(char *pattern);
 
+	/**
+	 * Output verbose messages during the construction.
+	 * @param newVerbose True to turn on, false to turn off verbose messages.
+	 */
+	void setVerbose(bool newVerbose);
+
     private:
 
 	/**
@@ -159,6 +165,12 @@ class Ext2Create
 	
 	/** Path to the input directory. */
 	char *input;
+
+	/** Output verbose messages. */
+	bool verbose;
+
+	/** List of file patterns to ignore. */
+	List<String> excludes;
 	
 	/** Pointer to the superblock. */
 	Ext2SuperBlock *super;
@@ -171,10 +183,7 @@ class Ext2Create
 
 	/** Array of blocks available in the filesystem. */
 	u8 *blocks;
-	
-	/** List of file patterns to ignore. */
-	List<String> excludes;
-	
+		
 	/** Size of each block. */
         Size blockSize;
 };

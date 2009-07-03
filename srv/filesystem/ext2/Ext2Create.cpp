@@ -36,9 +36,10 @@
 
 Ext2Create::Ext2Create()
 {
-    prog  = ZERO;
-    image = ZERO;
-    super = ZERO;
+    prog      = ZERO;
+    image     = ZERO;
+    super     = ZERO;
+    verbose   = false;
     blockSize = EXT2_MAX_BLOCK_SIZE;
 }
 
@@ -84,6 +85,7 @@ Ext2Inode * Ext2Create::createInode(char *inputFile, Size *number)
         exit(EXIT_FAILURE);
     }
     /* Debug out. */
+    if (verbose)
     printf("%s mode=%x size=%llu userId=%u groupId=%u\r\n",
             inputFile, st.st_mode, (long long unsigned)st.st_size,
 	    st.st_uid, st.st_gid);
@@ -297,6 +299,11 @@ void Ext2Create::setExclude(char *pattern)
     this->excludes.insertTail(new String(pattern));
 }
 
+void Ext2Create::setVerbose(bool newVerbose)
+{
+    this->verbose = newVerbose;
+}
+
 void Ext2Create::initSuperBlock(Ext2SuperBlock *sb)
 {
     super = sb;
@@ -364,7 +371,8 @@ int main(int argc, char **argv)
 	       "Creates a new Extended 2 FileSystem\r\n"
 	       "\r\n"
 	       "-h          Show this help message.\r\n"
-	       "-e PATTERN  Exclude matching files from the created filesystem\r\n",
+	       "-e PATTERN  Exclude matching files from the created filesystem\r\n"
+	       "-v          Output verbose messages.\r\n",
 		argv[0]);
 	return EXIT_FAILURE;
     }
@@ -382,6 +390,12 @@ int main(int argc, char **argv)
 	    fs.setExclude(argv[i + 4]);
 	    i++;
 	}
+	/* Verbose output. */
+	else if (!strcmp(argv[i + 3], "-v"))
+	{
+	    fs.setVerbose(true);
+	}
+	/* Unknown argument. */
 	else
 	    printf("%s: unknown option `%s'\r\n",
 		    argv[0], argv[i + 3]);
