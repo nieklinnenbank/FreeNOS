@@ -42,13 +42,12 @@ Error Ext2File::read(FileSystemMessage *msg)
     {
 	blockNr++;
     }
-    /* We don't have __umoddi3 yet. Calculate modulus manually. */
-    while (copyOffset >= EXT2_BLOCK_SIZE(sb))
-    {
-	copyOffset -= EXT2_BLOCK_SIZE(sb);
-    }
+    /* Adjust the copy offset within this block. */
+    copyOffset -= EXT2_BLOCK_SIZE(sb) * blockNr;
+
     /* Loop all blocks. */
-    for (; blockNr < inode->blocks - 1 && total < msg->size; blockNr++)
+    for (; blockNr < inode->blocks - 1 && total < msg->size &&
+	   inode->size - (msg->offset + total); blockNr++)
     {
 	/* Calculate the offset in storage for this block. */
 	storageOffset = ext2->getOffset(inode, blockNr);
@@ -64,9 +63,9 @@ Error Ext2File::read(FileSystemMessage *msg)
 	bytes = EXT2_BLOCK_SIZE(sb) - copyOffset;
 	
 	/* Respect the inode size. */
-	if (bytes > inode->size - copyOffset)
+	if (bytes > inode->size - (msg->offset + total))
 	{
-	    bytes = inode->size - copyOffset;
+	    bytes = inode->size - (msg->offset + total);
 	}
 	/* Respect the remote process buffer. */
 	if (bytes > msg->size - total)
