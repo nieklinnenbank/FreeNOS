@@ -87,8 +87,8 @@ Ext2Inode * Ext2Create::createInode(char *inputFile, Size *number)
     /* Debug out. */
     if (verbose)
     printf("%s mode=%x size=%llu userId=%u groupId=%u\r\n",
-            inputFile, st.st_mode, (long long unsigned)st.st_size,
-	    st.st_uid, st.st_gid);
+            inputFile, (unsigned int) st.st_mode,
+	    (long long unsigned)st.st_size, st.st_uid, st.st_gid);
 
     /* Grab a new inode, or use the given number. */
     if (*number)
@@ -182,6 +182,7 @@ Size Ext2Create::readInput(char *directory, Size parent)
 {
     DIR *dir;
     struct dirent *entry;
+    struct stat st;
     char path[EXT2_NAME_LEN];
     Ext2Inode *inode = ZERO;
     Ext2DirectoryEntry *dent, *dprev = ZERO;
@@ -234,7 +235,8 @@ Size Ext2Create::readInput(char *directory, Size parent)
 		     directory, entry->d_name);
 	    
 	    /* Traverse it in case of a directory. */
-	    if (entry->d_type == DT_DIR)
+	    stat(path, &st);
+	    if (S_ISDIR(st.st_mode))
 	    {
 		childInodeNum = readInput(path, inodeNumber);
 		inode->linksCount++;
