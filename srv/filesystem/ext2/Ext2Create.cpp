@@ -58,7 +58,7 @@ int Ext2Create::create()
     readInput(input, ZERO);
     
     /* Update superblock and group fields. */
-    super->blocksCount = blockMap->markNext() - 1;
+    super->blocksCount     = blockMap->markNext();
     super->freeInodesCount = inodeMap->getFree();
     super->freeBlocksCount = 0;
     group->freeInodesCount = inodeMap->getFree();
