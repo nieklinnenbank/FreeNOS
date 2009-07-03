@@ -17,6 +17,7 @@
 
 import os
 import tempfile
+import shutil
 
 from build import *
 from SCons.Script import *
@@ -30,20 +31,19 @@ def generateExt2(target, source, env):
     # Open the list.
     list = open(str(source[0]))
     
-    # Create a temporary directory.
-    temp = tempfile.mkdtemp()
+    # Copy the entire project.
+    shutil.copytree(".", "tmproot")
+
+    # Strip all binaries.
+    os.system("strip `find tmproot` 2> /dev/null")
     
-    # Read out which file to add.
-    for line in list.readlines():
-
-        # Copy them to the temporary directory. 
-        copyWithParents(line.strip(), temp)
-
-    # Create an 16MB Extended 2 Filesystem image.
-    os.system("genext2fs -d " + temp + " -b 16384 " + str(target[0]))
+    # Create an Extended 2 Filesystem image.
+    os.system("srv/filesystem/ext2/host/create " + str(target[0]) +
+	      " tmproot -e '*.cpp' -e '*.h' -e '*.c' -e '*.o' -e 'lib*' -e 'doc' "
+	      " -e 'SCons*' -e '*.a' -e '*.S' -e '*.ld' -e 'boot*'")
 
     # Done.
-    os.system("rm -rf " + temp)
+    os.system("rm -rf tmproot")
     list.close()
 
 #
