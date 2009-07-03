@@ -37,5 +37,5 @@ targetEnv.Program('server', [ 'Ext2Directory.cpp', 'Ext2File.cpp', 'Ext2FileSyst
 #
 # Extended 2 FileSystem creation utility.
 #
-hostEnv.Program('create', [ 'Ext2Create.cpp' ],
+hostEnv.Program('host/create', [ 'host/Ext2Create.cpp' ],
 		 LIBS = hostEnv['LIBS'], LIBPATH = hostEnv['LIBPATH'])
