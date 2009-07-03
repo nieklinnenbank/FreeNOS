@@ -123,6 +123,12 @@ class Ext2Create
 	 */
 	void setInput(char *inputName);
 
+	/**
+	 * Exclude files matching the given pattern from the image.
+	 * @param pattern Pattern to match against.
+	 */
+	void setExclude(char *pattern);
+
     private:
 
 	/**

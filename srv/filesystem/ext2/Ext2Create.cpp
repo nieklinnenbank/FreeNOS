@@ -185,6 +185,7 @@ Size Ext2Create::readInput(char *directory, Size parent)
     Ext2DirectoryEntry *dent, *dprev = ZERO;
     Size inodeNumber = ZERO, childInodeNum = ZERO;
     Address last;
+    bool skip = false;
 
     /* Make a root inode? */
     if (!parent)
@@ -211,8 +212,20 @@ Size Ext2Create::readInput(char *directory, Size parent)
     /* Add all entries. */
     while ((entry = readdir(dir)) != NULL)
     {
+	/* Reset. */
+	skip = false;
+	
+	/* Skip excludes. */
+	for (ListIterator<String> i(&excludes); i.hasNext(); i++)
+	{
+	    if (i.current()->match(entry->d_name, **i.current()))
+	    {
+		skip = true;
+		break;
+	    }
+	}
 	/* Skip hidden. */
-	if (entry->d_name[0] != '.')
+	if (entry->d_name[0] != '.' && !skip)
 	{
 	    /* Construct the full path. */
 	    snprintf(path, sizeof(path), "%s/%s",
@@ -277,6 +290,11 @@ void Ext2Create::setImage(char *imageName)
 void Ext2Create::setInput(char *inputName)
 {
     this->input = inputName;
+}
+
+void Ext2Create::setExclude(char *pattern)
+{
+    this->excludes.insertTail(new String(pattern));
 }
 
 void Ext2Create::initSuperBlock(Ext2SuperBlock *sb)
@@ -346,9 +364,7 @@ int main(int argc, char **argv)
 	       "Creates a new Extended 2 FileSystem\r\n"
 	       "\r\n"
 	       "-h          Show this help message.\r\n"
-	       "-e PATTERN  Exclude matching files from the created filesystem\r\n"
-	       "-b SIZE     Block size.\r\n"
-	       "-n INODES   Number of inodes.\r\n",
+	       "-e PATTERN  Exclude matching files from the created filesystem\r\n",
 		argv[0]);
 	return EXIT_FAILURE;
     }
@@ -357,6 +373,19 @@ int main(int argc, char **argv)
     fs.setImage(argv[1]);
     fs.setInput(argv[2]);
     
+    /* Process command-line options. */
+    for (int i = 0; i < argc - 3; i++)
+    {
+	/* Exclude files matching the given pattern. */
+	if (!strcmp(argv[i + 3], "-e") && i < argc - 4)
+	{
+	    fs.setExclude(argv[i + 4]);
+	    i++;
+	}
+	else
+	    printf("%s: unknown option `%s'\r\n",
+		    argv[0], argv[i + 3]);
+    }
     /* Create a new Extended 2 FileSystem. */
     return fs.create();
 }
