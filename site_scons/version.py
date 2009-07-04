@@ -16,9 +16,6 @@
 #
 
 import datetime
-import svn
-import svn.core
-import svn.client
 import os
 import platform
 import re
@@ -41,6 +38,7 @@ expr       = re.compile("\.")
 version      = expr.split(current)
 versionCode  = 0
 versionPower = 16
+url          = None
 
 # Calculate version code.
 for v in version:
@@ -49,12 +47,15 @@ for v in version:
 
 # Include subversion revision.
 try:
+    import svn
+    import svn.client
+    import svn.core
+
     context  = svn.client.svn_client_create_context()
     rev      = svn.core.svn_opt_revision_t()
     rev.king = svn.core.svn_opt_revision_head
     path     = os.getcwd()
     currentRev = None
-    url        = None
 
     svn.client.info(path, rev, rev, info_receiver, False, context)
 
