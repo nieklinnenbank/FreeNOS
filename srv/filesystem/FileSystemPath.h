@@ -121,14 +121,14 @@ class FileSystemPath
 		cur++;
 	    }
 	    /* Create parent, if any. */
-	    if (path.headNode && path.headNode->next)
+	    if (path.firstNode() && path.firstNode()->next)
 	    {
 		/* Allocate buffer. */
 		parentStr  = new char[strlen(p)];
 		memset(parentStr, 0, strlen(p));
 
 		/* Construct parent path. */		
-		for (ListNode<String> *l = path.headNode; l && l->next; l = l->next)
+		for (ListNode<String> *l = path.firstNode(); l && l->next; l = l->next)
 		{
 		    strcat(parentStr, **l->data);
 		    if (l->next && l->next->next)

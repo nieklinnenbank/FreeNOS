@@ -65,7 +65,7 @@ template <class T> class ListIterator : public Iterator<T, List<T> *>
 	{
 	    assertRead(lst);
 	    list = lst;
-	    cur  = list ? list->headNode : ZERO;
+	    cur  = list ? list->firstNode() : ZERO;
 	    nxt  = cur  ? cur->next : ZERO;
 	}
 

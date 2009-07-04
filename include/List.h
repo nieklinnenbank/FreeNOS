@@ -177,7 +177,7 @@ template <class T> class List
 	}
 	
 	/**
-	 * Get the head ListNode of the List.
+	 * Get the data item of the head of the List.
 	 * @return First ListNode on the List.
 	 */
 	T* head()
@@ -186,12 +186,30 @@ template <class T> class List
 	}
 	
 	/**
-	 * Get the tail of the List.
-	 * @return Last entry on the list (tail).
+	 * Get the first ListNode on the List.
+	 * @return ListNode pointer or ZERO if empty.
+	 */
+	ListNode<T> * firstNode()
+	{
+	    return headNode;
+	}
+	
+	/**
+	 * Get the last item on the List.
+	 * @return Last data item on the list (tail).
 	 */
 	T* tail()
 	{
 	    return tailNode ? tailNode->data : ZERO;
+	}
+	
+	/**
+	 * Get the last ListNode on the List.
+	 * @return ListNode pointer or ZERO if empty.
+	 */
+	ListNode<T> * lastNode()
+	{
+	    return tailNode;
 	}
 
 	/**
@@ -211,6 +229,8 @@ template <class T> class List
 	{
 	    return nodeCount;
 	}
+
+    private:
 
 	/** Head of the List. */
 	ListNode<T> *headNode, *tailNode;
