@@ -57,7 +57,7 @@ int LinnCreate::create(Size blocksize)
     super->majorRevision    = LINN_SUPER_MAJOR;
     super->minorRevision    = LINN_SUPER_MINOR;
     super->state            = LINN_SUPER_VALID;
-    super->blockSize        = LINNCREATE_BLOCK_SIZE;
+    super->blockSize        = blocksize;
     super->blockAddrSize    = LINNCREATE_BLOCK_ADDR_SIZE;
     super->blocksPerGroup   = LINNCREATE_BLOCKS_PER_GROUP;
     super->inodesPerGroup   = LINNCREATE_INODES_PER_GROUP;
@@ -139,7 +139,8 @@ int main(int argc, char **argv)
 	       "\r\n"
 	       "-h          Show this help message.\r\n"
 	       "-v          Output verbose messages.\r\n"
-	       "-e PATTERN  Exclude matching files from the created filesystem\r\n",
+	       "-e PATTERN  Exclude matching files from the created filesystem\r\n"
+	       "-b SIZE     Specifies the blocksize.\r\n",
 		argv[0]);
 	return EXIT_FAILURE;
     }
@@ -161,6 +162,12 @@ int main(int argc, char **argv)
 	else if (!strcmp(argv[i + 3], "-v"))
 	{
 	    fs.setVerbose(true);
+	}
+	/* Blocksize. */
+	else if (!strcmp(argv[i + 3], "-b") && i < argc - 4)
+	{
+	    blocksize = atoi(argv[i + 4]);
+	    i++;
 	}
 	/* Unknown argument. */
 	else
