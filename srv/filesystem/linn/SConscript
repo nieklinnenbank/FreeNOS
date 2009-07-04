@@ -15,4 +15,27 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-SConscript(dirs = [ 'ext2', 'linn', 'proc', 'tmp', 'virtual' ])
+from build import *
+
+#
+# Target system environment.
+#
+targetEnv = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc' ],
+		            [ 'filesystem', 'process', 'log' ])
+
+#
+# Host system environment.
+#
+hostEnv   = Prepare(host, [ 'libexec' ], [ 'filesystem' ])
+
+#
+# Linnenbank FileSystem creation utility.
+#
+hostEnv.Program('host/create', [ 'host/LinnCreate.cpp' ],
+		 LIBS = hostEnv['LIBS'], LIBPATH = hostEnv['LIBPATH'])
+
+#
+# Linnenbank FileSystem dump utility.
+#
+hostEnv.Program('host/dump', [ 'host/LinnDump.cpp' ],
+		 LIBS = hostEnv['LIBS'], LIBPATH = hostEnv['LIBPATH'])
