@@ -103,6 +103,14 @@ int main(int argc, char **argv)
 		argv[0], argv[1], strerror(errno));
 	return EXIT_FAILURE;
     }
+    /* Verify magic. */
+    if (super.magic0 != LINN_SUPER_MAGIC0 ||
+        super.magic1 != LINN_SUPER_MAGIC1)
+    {
+	printf("%s: `%s' is not a LinnFS filesystem (magic mismatch)\n",
+		argv[0], argv[1]);
+	return EXIT_FAILURE;
+    }
     /* Dump filesystem information. */
     printf( "LinnSuperBlock\n"
 	    "[\n"
