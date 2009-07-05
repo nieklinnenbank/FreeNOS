@@ -26,11 +26,11 @@
 /** Default block size. */
 #define LINNCREATE_BLOCK_SIZE		2048
 
-/** Default block address size. */
-#define LINNCREATE_BLOCK_ADDR_SIZE	8
-
 /** Default number of blocks to allocate. */
 #define LINNCREATE_BLOCK_NUM		8192
+
+/** Default block address size. */
+#define LINNCREATE_BLOCK_ADDR_SIZE	8
 
 /** Default number of data blocks per group descriptor. */
 #define LINNCREATE_BLOCKS_PER_GROUP	8192
@@ -61,9 +61,11 @@ class LinnCreate
 	/**
 	 * Creates the LinnFS FileSystem.
 	 * @param blocksize The size of each block in the new filesystem.
+	 * @param totalnum The maximum number of blocks in the new filesystem.
 	 * @return EXIT_SUCCESS if successfull and EXIT_FAILURE otherwise.
 	 */
-	int create(Size blocksize = LINNCREATE_BLOCK_SIZE);
+	int create(Size blocksize = LINNCREATE_BLOCK_SIZE,
+		   Size blocknum  = LINNCREATE_BLOCK_NUM);
 
 	/**
 	 * Set the program name we are invoked with.

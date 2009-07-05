@@ -41,14 +41,15 @@ LinnCreate::LinnCreate()
     verbose   = false;
 }
 
-int LinnCreate::create(Size blocksize)
+int LinnCreate::create(Size blocksize, Size blocknum)
 {
     assert(image != ZERO);
     assert(prog  != ZERO);
+    assert(blocknum >= 2);
 
     /* Allocate blocks. */
-    blocks = new u8[blocksize * LINNCREATE_BLOCK_NUM];
-    memset(blocks, 0, blocksize * LINNCREATE_BLOCK_NUM);
+    blocks = new u8[blocksize * blocknum];
+    memset(blocks, 0, blocksize * blocknum);
 
     /* Create a superblock. */
     super = (LinnSuperBlock *) (blocks + LINN_SUPER_OFFSET);
@@ -62,10 +63,10 @@ int LinnCreate::create(Size blocksize)
     super->blocksPerGroup   = LINNCREATE_BLOCKS_PER_GROUP;
     super->inodesPerGroup   = LINNCREATE_INODES_PER_GROUP;
     super->inodesCount      = ZERO;
-    super->blocksCount	    = 2;
+    super->blocksCount	    = blocknum;
     super->groupsCount      = ZERO;
     super->freeInodesCount  = ZERO;
-    super->freeBlocksCount  = ZERO;
+    super->freeBlocksCount  = blocknum - 2;
     super->freeGroupsCount  = ZERO;
     super->creationTime     = time(NULL);
     super->mountTime	    = ZERO;
@@ -89,7 +90,8 @@ int LinnCreate::writeImage()
 	return EXIT_FAILURE;
     }
     /* Write all blocks at once. */
-    if (fwrite(blocks, super->blockSize * super->blocksCount, 1, fp) != 1)
+    if (fwrite(blocks, super->blockSize *
+		      (super->blocksCount - super->freeBlocksCount), 1, fp) != 1)
     {
 	printf("%s: failed to fwrite() `%s': %s\r\n",
 		prog, image, strerror(errno));
@@ -130,6 +132,7 @@ int main(int argc, char **argv)
 {
     LinnCreate fs;
     Size blocksize = LINNCREATE_BLOCK_SIZE;
+    Size blocknum  = LINNCREATE_BLOCK_NUM;
 
     /* Verify command-line arguments. */
     if (argc < 3)
@@ -140,7 +143,8 @@ int main(int argc, char **argv)
 	       "-h          Show this help message.\r\n"
 	       "-v          Output verbose messages.\r\n"
 	       "-e PATTERN  Exclude matching files from the created filesystem\r\n"
-	       "-b SIZE     Specifies the blocksize.\r\n",
+	       "-b SIZE     Specifies the blocksize.\r\n"
+	       "-n COUNT    Specifies the maximum number of blocks.\r\n",
 		argv[0]);
 	return EXIT_FAILURE;
     }
@@ -163,10 +167,21 @@ int main(int argc, char **argv)
 	{
 	    fs.setVerbose(true);
 	}
-	/* Blocksize. */
+	/* Block size. */
 	else if (!strcmp(argv[i + 3], "-b") && i < argc - 4)
 	{
 	    blocksize = atoi(argv[i + 4]);
+	    i++;
+	}
+	/* Maximum block count. */
+	else if (!strcmp(argv[i + 3], "-n") && i < argc - 4)
+	{
+	    if ((blocknum = atoi(argv[i + 4])) < 2)
+	    {
+		printf("%s: block count must be >= 2\r\n",
+			argv[0]);
+		return EXIT_FAILURE;
+	    }
 	    i++;
 	}
 	/* Unknown argument. */
@@ -175,5 +190,5 @@ int main(int argc, char **argv)
 		    argv[0], argv[i + 3]);
     }
     /* Create a new Linnenbank FileSystem. */
-    return fs.create(blocksize);
+    return fs.create(blocksize, blocknum);
 }
