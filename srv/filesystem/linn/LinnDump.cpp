@@ -100,7 +100,7 @@ int main(int argc, char **argv)
     if (fread(&super, sizeof(super), 1, fp) != 1)
     {
 	printf("%s: failed to fread() superblock from `%s': %s\n",
-		argv[0], argv[1], strerror(errno));
+		argv[0], argv[1], ferror(fp) ? strerror(errno) : "End of file");
 	return EXIT_FAILURE;
     }
     /* Verify magic. */
