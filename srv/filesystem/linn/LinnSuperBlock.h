@@ -93,16 +93,13 @@ typedef struct LinnSuperBlock
     le16 state;			/**< Describes the current status. */
 
     le32 blockSize;		/**< Size of each data block. */
-    le16 blockAddrSize;		/**< Size in bytes of block addresses. */
     le32 blocksPerGroup;	/**< Number of blocks per group. */
     le32 inodesPerGroup;	/**< Number of inodes per group. */
 
     le64 inodesCount;		/**< Total number of inodes. */
     le64 blocksCount;		/**< Total number of data blocks. */
-    le64 groupsCount;		/**< Total number of groups. */
     le64 freeBlocksCount;	/**< Number of free data blocks. */
     le64 freeInodesCount;	/**< Free inodes remaining. */
-    le64 freeGroupsCount;	/**< Free groups remaining. */
 
     le64 creationTime;		/**< Time when the filesystem was created. */
     le64 mountTime;		/**< Last time we where mounted (seconds since 1970). */

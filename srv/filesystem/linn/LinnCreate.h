@@ -29,11 +29,11 @@
 /** Default number of blocks to allocate. */
 #define LINNCREATE_BLOCK_NUM		8192
 
-/** Default block address size. */
-#define LINNCREATE_BLOCK_ADDR_SIZE	8
-
 /** Default number of data blocks per group descriptor. */
 #define LINNCREATE_BLOCKS_PER_GROUP	8192
+
+/** Default number of inodes to allocate. */
+#define LINNCREATE_INODE_NUM		1024
 
 /** Default number of inodes per group descriptor. */
 #define LINNCREATE_INODES_PER_GROUP	1024
@@ -44,7 +44,32 @@
  * @param nr Block number.
  * @return A pointer of the given type.
  */
-#define BLOCKPTR(type,nr) (type *)(blocks + (blockSize * (nr))) 
+#define BLOCKPTR(type,nr) (type *)(blocks + (super->blockSize * (nr))) 
+
+/**
+ * Retrieve a given number of free contigeous blocks.
+ * @param sb LinnSuperBlock pointer.
+ * @return Block number of the first block in the contigeous array of blocks.
+ */
+#define BLOCKS(sb,count) \
+    ({ \
+        if ((sb)->freeBlocksCount < (count)) \
+	{ \
+	    printf("%s: not enough free blocks remaining (%llu needed)\n", \
+		    prog, (count)); \
+	    exit(EXIT_FAILURE); \
+	} \
+	(sb)->freeBlocksCount -= (count); \
+	((sb)->blocksCount - (sb)->freeBlocksCount - (count)); \
+     }) 
+
+/**
+ * Retrieve on free block.
+ * @param sb LinnSuperBlock pointer.
+ * @return Block number of a free block.
+ */
+#define BLOCK(sb) \
+    BLOCKS(sb, 1)
 
 /**
  * Class for creating new Linnenbank FileSystems.
@@ -60,12 +85,12 @@ class LinnCreate
 
 	/**
 	 * Creates the LinnFS FileSystem.
-	 * @param blocksize The size of each block in the new filesystem.
-	 * @param totalnum The maximum number of blocks in the new filesystem.
+	 * @param blockSize The size of each block in the new filesystem.
+	 * @param blockNum The maximum number of blocks in the new filesystem.
+	 * @param inodeNum Number of inodes to allocate.
 	 * @return EXIT_SUCCESS if successfull and EXIT_FAILURE otherwise.
 	 */
-	int create(Size blocksize = LINNCREATE_BLOCK_SIZE,
-		   Size blocknum  = LINNCREATE_BLOCK_NUM);
+	int create(Size blockSize, Size blockNum, Size inodeNum);
 
 	/**
 	 * Set the program name we are invoked with.

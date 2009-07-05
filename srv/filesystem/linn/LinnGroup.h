@@ -1,0 +1,132 @@
+/*
+ * Copyright (C) 2009 Niek Linnenbank
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef __FILESYSTEM_LINNGROUP_H
+#define __FILESYSTEM_LINNGROUP_H
+
+#include <Types.h>
+
+/**                                                                                                                                                                                                      
+ * @defgroup linn Linnenbank Filesystem (LinnFS) 
+ * @{ 
+ */
+
+/**
+ * @brief LinnGroup Block Index numbers.
+ * @{
+ */
+
+/** Block index of the block bitmap. */
+#define LINNGROUP_BLOCK_BITMAP 0
+
+/** Block index of the inode bitmap. */
+#define LINNGROUP_INODE_BITMAP 1
+
+/** Block index of the inode table. */
+#define LINNGROUP_INODE_TABLE  2
+
+/**
+ * @}
+ */
+
+/**
+ * @brief LinnGroup Macros.
+ * @{
+ */
+
+/**
+ * @brief Calculate the number of LinnGroups in a filesystem.
+ * Calculation is based on the blocksCount and blocksPerGroup fields.
+ * @param sb LinnSuperBlock pointer.
+ * @return Number of LinnGroups in the filesystem.
+ */
+#define LINNGROUP_COUNT(sb) \
+    ((sb)->blocksCount / (sb)->blocksPerGroup ? \
+     (sb)->blocksCount / (sb)->blocksPerGroup : 1)
+
+/**
+ * Calculate the number of blocks needed for the blocks bitmap.
+ * @param sb LinnSuperBlock pointer.
+ * @return Number of blocks needed for the blocks bitmap.
+ */
+#define LINNGROUP_NUM_BLOCKMAP(sb) \
+    (u64)((sb)->blocksPerGroup / ((sb)->blockSize / sizeof(u64)))
+
+/**
+ * Calculate the number of blocks needed for the inodes bitmap.
+ * @param sb LinnSuperBlock pointer.
+ * @return Number of blocks needed for the inodes bitmap.
+ */
+#define LINNGROUP_NUM_INODEMAP(sb) \
+    (u64)((sb)->inodesPerGroup / ((sb)->blockSize / sizeof(u64)))
+
+/**
+ * Calculate the number of blocks needed for the inodes table.
+ * @param sb LinnSuperBlock pointer.
+ * @return Number of blocks needed for the inodes table.
+ */
+#define LINNGROUP_NUM_INODETAB(sb) \
+    (u64)((sb)->inodesPerGroup / ((sb)->blockSize / sizeof(LinnInode)))
+
+/**
+ * Calculate the number of LinnGroups which fit in one block.
+ * @param sb LinnSuperBlock pointer.
+ * @return Number of LinnGroups per block.
+ */
+#define LINNGROUP_PER_BLOCK(sb) \
+    ((sb)->blockSize / sizeof(LinnGroup))
+
+/**
+ * Number of blocks needed to store LinnGroups.
+ * @param sb LinnSuperBlock pointer.
+ * @return Number of blocks required for LinnGroups.
+ */
+#define LINNGROUP_BLOCKS(sb) \
+    (LINNGROUP_COUNT(sb) / LINNGROUP_PER_BLOCK(sb) ? \
+     LINNGROUP_COUNT(sb) / LINNGROUP_PER_BLOCK(sb) : 1)
+
+/**
+ * @}
+ */
+
+/**
+ * Structure of a group descriptor.
+ */
+typedef struct LinnGroup
+{
+    /** The number of free blocks in this group. */
+    le32 freeBlocksCount;
+    
+    /** Number of free inodes in this group. */
+    le32 freeInodesCount;
+
+    /** Block bitmap. Used to mark blocks used/free. */
+    le64 blockMap;
+    
+    /** Inode bitmap. Used to mark inodes used/free. */
+    le64 inodeMap;
+    
+    /** Inode table contains pre-allocated inodes. */
+    le64 inodeTable;
+}
+LinnGroup;
+
+/**
+ * @}
+ */
+
+#endif /* __FILESYSTEM_LINNGROUP_H */

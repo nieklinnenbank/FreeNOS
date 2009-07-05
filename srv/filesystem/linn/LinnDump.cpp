@@ -17,6 +17,8 @@
 
 #include <Types.h>
 #include "LinnSuperBlock.h"
+#include "LinnGroup.h"
+#include "LinnInode.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -59,7 +61,9 @@ void usage(char *prog)
 int main(int argc, char **argv)
 {
     LinnSuperBlock super;
+    LinnGroup group;
     bool verbose = false;
+    float percentFreeBlocks = 0, percentFreeInodes = 0, megabytes = 0;
     FILE *fp;
 
     /* Verify command-line arguments. */
@@ -116,7 +120,21 @@ int main(int argc, char **argv)
 		argv[0], argv[1]);
 	return EXIT_FAILURE;
     }
-    /* Dump filesystem information. */
+    /* Calculate the percentage of free blocks. */
+    if (super.blocksCount)
+	percentFreeBlocks = ((float) super.freeBlocksCount /
+			     (float) super.blocksCount) * 100.0;
+    
+    /* Percentage of free inodes. */
+    if (super.inodesCount)
+	percentFreeInodes = ((float) super.freeInodesCount /
+			     (float) super.inodesCount) * 100.0;
+			     
+    /* Maximum number of megabytes the filesystem can manage. */
+    megabytes = (float) super.blocksCount * (float) super.blockSize /
+		(1024.0 * 1024.0);
+    
+    /* Dump superblock information. */
     printf( "LinnSuperBlock\n"
 	    "[\n"
 	    "   magic0          = %x\n"
@@ -125,15 +143,12 @@ int main(int argc, char **argv)
 	    "   minorRevision   = %u\n"
 	    "   state           = %x\n"
 	    "   blockSize       = %u\n"
-	    "   blockAddrSize   = %u (%d bit)\n"
 	    "   blocksPerGroup  = %u\n"
 	    "   inodesPerGroup  = %u\n"
 	    "   inodesCount     = %llu\n"
-	    "   blocksCount     = %llu\n"
-	    "   groupsCount     = %llu\n"
-	    "   freeBlocksCount = %llu\n"
-	    "   freeInodesCount = %llu\n"
-	    "   freeGroupsCount = %llu\n"
+	    "   blocksCount     = %llu (%.2fMB)\n"
+	    "   freeBlocksCount = %llu (%.2f%%)\n"
+	    "   freeInodesCount = %llu (%.2f%%)\n"
 	    "   creationTime    = %s\n"
 	    "   mountTime       = %s\n"
 	    "   mountCount      = %u\n"
@@ -143,14 +158,52 @@ int main(int argc, char **argv)
 	    super.magic0, super.magic1,
 	    super.majorRevision, super.minorRevision,
 	    super.state,  super.blockSize,
-	    super.blockAddrSize, super.blockAddrSize * 8,
 	    super.blocksPerGroup, super.inodesPerGroup, super.inodesCount,
-	    super.blocksCount, super.groupsCount,
-	    super.freeBlocksCount, super.freeInodesCount,
-	    super.freeGroupsCount, timeString(super.creationTime),
+	    super.blocksCount, megabytes,
+	    super.freeBlocksCount, percentFreeBlocks,
+	    super.freeInodesCount, percentFreeInodes,
+	    timeString(super.creationTime),
 	    timeString(super.mountTime), super.mountCount,
 	    timeString(super.lastCheck), super.groupsTable);
-    
+
+    /* Seek to the group table. */
+    if (fseek(fp, super.groupsTable * super.blockSize, SEEK_SET) == -1)
+    {
+	printf("%s: failed to seek to LinnGroup table in `%s': %s\n",
+		argv[0], argv[1], strerror(errno));
+	return EXIT_FAILURE;
+    }
+    /* Dump group information. */
+    for (Size i = 0; i < LINNGROUP_COUNT(&super); i++)
+    {
+	/* Read the LinnGroup. */
+	if (fread(&group, sizeof(group), 1, fp) != 1)
+	{
+	    printf("%s: failed to fread() group from `%s': %s\n",
+            	    argv[0], argv[1], ferror(fp) ? strerror(errno) : "End of file");
+	    return EXIT_FAILURE;
+	}
+	/* Dump group. */
+	printf(	"LinnGroup #%u (blocks %u - %u)\n"
+		"[\n"
+		"   freeBlocksCount = %u\n"
+		"   freeInodesCount = %u\n"
+		"   blockMap        = %llu - %llu\n"
+		"   inodeMap        = %llu - %llu\n"
+		"   inodeTable      = %llu - %llu\n"
+		"]\n",
+		i,
+		i * super.blocksPerGroup,
+		(i + 1) * super.blocksPerGroup - 1,
+		group.freeBlocksCount,
+		group.freeInodesCount,
+		group.blockMap,
+		LINNGROUP_NUM_BLOCKMAP(&super),
+		group.inodeMap,
+		LINNGROUP_NUM_INODEMAP(&super),
+		group.inodeTable,
+		LINNGROUP_NUM_INODETAB(&super));
+    }
     /* Cleanup and terminate. */
     fclose(fp);
     return EXIT_FAILURE;
