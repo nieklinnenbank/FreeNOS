@@ -28,6 +28,11 @@ char * timeString(u64 timestamp)
     char *buff = (char *) malloc(128);
     struct tm *tm;
     
+    /* Check for zero timestamps. */
+    if (!timestamp)
+    {
+	return strdup("Never");
+    }
     /* Fill in the time struct. */
     tm = gmtime((const time_t *) &timestamp);
     
