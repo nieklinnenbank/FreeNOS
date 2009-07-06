@@ -18,6 +18,7 @@
 #include <API/IPCMessage.h>
 #include <API/ProcessCtl.h>
 #include <FileSystemMessage.h>
+#include <FileMode.h>
 #include <ProcessMessage.h>
 #include <LogMessage.h>
 #include <Config.h>
@@ -71,7 +72,7 @@ SerialServer::SerialServer()
 	    snprintf(path, sizeof(path), "/dev/serial%u", i);
 
 	    /* Create the file. */
-	    fs.createFile(path, CharacterDeviceFile, 0600,
+	    fs.createFile(path, CharacterDeviceFile, OwnerRW,
 			  proc.pid(), i);
 			  
 	    /* Register IRQ handler. */

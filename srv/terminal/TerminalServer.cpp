@@ -24,6 +24,7 @@
 #include <IPCServer.h>
 #include <FileSystem.h>
 #include <FileSystemMessage.h>
+#include <FileMode.h>
 #include <ProcessMessage.h>
 #include "TerminalServer.h"
 #include "Terminal.h"
@@ -58,7 +59,7 @@ TerminalServer::TerminalServer()
 	snprintf(path, sizeof(path), "/dev/tty%d", i);
 	
 	/* Create device file. */
-	fs.createFile(path, CharacterDeviceFile, 0600, proc.pid(), i);
+	fs.createFile(path, CharacterDeviceFile, OwnerRW, proc.pid(), i);
 	
 	/* Allocate a Terminal. */
 	term = new Terminal;
@@ -70,7 +71,7 @@ TerminalServer::TerminalServer()
     }
     /* Points to the currently active console. */
     snprintf(path, sizeof(path), "/dev/console");
-    fs.createFile(path, CharacterDeviceFile, 0200, proc.pid(), CONSOLE);
+    fs.createFile(path, CharacterDeviceFile, OwnerW, proc.pid(), CONSOLE);
     
     /* Activate current console. */
     current = terminals[0];

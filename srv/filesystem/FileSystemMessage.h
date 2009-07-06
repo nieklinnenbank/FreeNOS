@@ -22,6 +22,9 @@
 #include <IPCServer.h>
 #include <Types.h>
 #include <Error.h>
+#include "FileType.h"
+#include "FileMode.h"
+#include "FileStat.h"
 
 /**
  * Actions which may be performed on the filesystem.
@@ -44,47 +47,6 @@ typedef enum FileSystemAction
     IODone      = 13,
 }
 FileSystemAction;
-
-/** 
- * All possible filetypes. 
- */
-typedef enum FileType
-{
-    RegularFile         = 0,
-    DirectoryFile       = 1,
-    BlockDeviceFile     = 2,
-    CharacterDeviceFile = 3,
-    SymlinkFile         = 4,
-    FIFOFile            = 5,
-    SocketFile		= 6,
-    UnknownFile		= 7,
-}
-FileType;
-
-/**
- * Contains file information.
- */
-typedef struct FileStat
-{
-    /** File type. */
-    FileType type;
-    
-    /** Size of the file in bytes. */
-    Size size;
-    
-    /** User identity. */
-    UserID userID;
-    
-    /** Group identity. */
-    GroupID groupID;
-    
-    /** Device identity. */
-    DeviceID deviceID;
-}
-FileStat;
-
-/** File access permissions. */
-typedef uint FileMode;
 
 /**
  * FileSystem IPC message.
@@ -150,7 +112,7 @@ typedef struct FileSystemMessage : public Message
      * @param pid Process to send the request to.
      */
     void createFile(char *path, FileType type = RegularFile,
-		    FileMode mode = 0600, u16 major = ZERO,
+		    FileMode mode = OwnerRW, u16 major = ZERO,
 		    u16 minor = ZERO, ProcessID pid = VFSSRV_PID)
     {
 	this->action   = CreateFile;

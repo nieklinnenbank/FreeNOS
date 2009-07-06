@@ -55,7 +55,7 @@ int mknod(const char *path, mode_t mode, dev_t dev)
     msg.buffer   = (char *) path;
     msg.deviceID = dev;
     msg.filetype = CharacterDeviceFile;
-    msg.mode     = mode;
+    msg.mode     = (FileMode) mode;
     
     /* Ask VFS to create the file for us. */
     IPCMessage(VFSSRV_PID, SendReceive, &msg, sizeof(msg));

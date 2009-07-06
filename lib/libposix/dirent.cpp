@@ -18,7 +18,7 @@
 #include <API/IPCMessage.h>
 #include <Allocator.h>
 #include <Config.h>
-#include <FileSystemMessage.h>
+#include <FileType.h>
 #include <Directory.h>
 #include <errno.h>
 #include "dirent.h"
