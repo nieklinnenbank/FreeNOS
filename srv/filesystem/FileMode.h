@@ -18,6 +18,14 @@
 #ifndef __FILESYSTEM_FILEMODE_H
 #define __FILESYSTEM_FILEMODE_H
 
+#include <Types.h>
+
+/** Number of bits required for all FileModes. */
+#define FILEMODE_BITS 9
+
+/** Masker value for all FileMode values. */
+#define FILEMODE_MASK 0777
+
 /**
  * File access permissions.
  */
@@ -43,5 +51,8 @@ typedef enum FileMode
     OtherRWX = 0007,
 }
 FileMode;
+
+/** Multiple FileMode values combined. */
+typedef u16 FileModes;
 
 #endif /* __FILESYSTEM_FILEMODE_H */

@@ -18,6 +18,12 @@
 #ifndef __FILESYSTEM_FILETYPE_H
 #define __FILESYSTEM_FILETYPE_H
 
+/** Number of bits needed to store a FileType. */
+#define FILETYPE_BITS	3
+
+/** Masker value for all FileTypes. */
+#define FILETYPE_MASK	7
+
 /** 
  * All possible filetypes. 
  */

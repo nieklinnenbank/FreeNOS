@@ -18,7 +18,9 @@
 #ifndef __LIBPOSIX_STAT_H
 #define __LIBPOSIX_STAT_H
 
-#include <FileSystemMessage.h>
+#include <FileType.h>
+#include <FileMode.h>
+#include <FileStat.h>
 #include <Macros.h>
 #include <Error.h>
 #include "types.h"
@@ -40,28 +42,28 @@
  */
 
 /** Type of file. */
-#define S_IFMT	 0170000
+#define S_IFMT	 (FILETYPE_MASK << FILEMODE_BITS)
 
 /** Block special. */
-#define S_IFBLK	 0060000
+#define S_IFBLK	 (BlockDeviceFile << FILEMODE_BITS)
 
 /** Character special. */
-#define S_IFCHR  0020000
+#define S_IFCHR  (CharacterDeviceFile << FILEMODE_BITS)
 
 /** FIFO special. */
-#define S_IFIFO	 0010000
+#define S_IFIFO	 (FIFOFile << FILEMODE_BITS)
 
 /** Regular. */
-#define S_IFREG	 0100000
+#define S_IFREG	 (RegularFile << FILEMODE_BITS)
 
 /** Directory. */
-#define S_IFDIR	 0040000
+#define S_IFDIR	 (DirectoryFile << FILEMODE_BITS)
 
 /** Symbolic link. */
-#define S_IFLNK	 0120000
+#define S_IFLNK	 (SymlinkFile << FILEMODE_BITS)
 
 /** Socket. */
-#define S_IFSOCK 0140000
+#define S_IFSOCK (SocketFile << FILEMODE_BITS)
 
 /** @} */
 
@@ -79,46 +81,40 @@
  */
 
 /** Read, write, execute/search by owner. */
-#define S_IRWXU	 0700
+#define S_IRWXU	 OwnerRWX
 
 /** Read permission, owner. */
-#define S_IRUSR  0400
+#define S_IRUSR  OwnerR
 
 /** Write permission, owner. */
-#define S_IWUSR  0200
+#define S_IWUSR  OwnerW
 
 /** Execute/search permission, owner. */
-#define S_IXUSR  0100
+#define S_IXUSR  OwnerX
 
 /** Read, write, execute/search by group. */
-#define S_IRWXG  0070
+#define S_IRWXG  GroupRWX
 
 /** Read permission, group. */
-#define S_IRGRP  0040
+#define S_IRGRP  GroupR
 
 /** Write permission, group. */
-#define S_IWGRP  0020
+#define S_IWGRP  GroupW
 
 /** Execute/search permission, group. */
-#define S_IXGRP  0010
+#define S_IXGRP  GroupX
 
 /** Read, write, execute/search by others. */
-#define S_IRWXO  0007
+#define S_IRWXO  OtherRWX
 
 /** Read permission, others. */
-#define S_IROTH  0004
+#define S_IROTH  OtherR
 
 /** Write permission, others. */
-#define S_IWOTH  0002
+#define S_IWOTH  OtherW
 
 /** Execute/search permission, others. */
-#define S_IXOTH  0001
-
-/** Set-user-ID on execution. */
-#define S_ISUID  04000
-
-/** Set-group-ID on execution. */
-#define S_ISGID  02000
+#define S_IXOTH  OtherX
 
 /** @} */
 
@@ -172,17 +168,7 @@ struct stat
      */
     void fromFileStat(FileStat *stat)
     {
-	mode_t modes[] =
-        {
-    	    S_IFREG,
-	    S_IFDIR,
-	    S_IFBLK,
-	    S_IFCHR,
-	    S_IFLNK,
-	    S_IFIFO,
-	    S_IFSOCK,
-	};
-	this->st_mode = modes[stat->type];
+	this->st_mode = stat->type << FILEMODE_BITS;
         this->st_size = stat->size;
         this->st_uid  = stat->userID;
         this->st_gid  = stat->groupID;

@@ -29,6 +29,9 @@ typedef struct FileStat
     /** File type. */
     FileType type;
     
+    /** File access permission bits. */
+    FileMode access;
+    
     /** Size of the file in bytes. */
     Size size;
     

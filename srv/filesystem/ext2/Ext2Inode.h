@@ -35,7 +35,6 @@
 
 #ifndef __HOST__
 #include <FileSystemMessage.h>
-#include <sys/stat.h>
 #endif /* __HOST__ */
 
 /**                                                                                                                                                                                                     
@@ -157,7 +156,7 @@
 	    UnknownFile, \
 	    SocketFile, \
 	}; \
-	types[((i)->mode & S_IFMT) >> 12]; \
+	types[((i)->mode & 0170000) >> 12]; \
     })
 
 /**
