@@ -174,7 +174,7 @@ int main(int argc, char **argv)
 	return EXIT_FAILURE;
     }
     /* Dump group information. */
-    for (Size i = 0; i < LINNGROUP_COUNT(&super); i++)
+    for (Size i = 0; i < LINN_GROUP_COUNT(&super); i++)
     {
 	/* Read the LinnGroup. */
 	if (fread(&group, sizeof(group), 1, fp) != 1)
@@ -198,11 +198,11 @@ int main(int argc, char **argv)
 		group.freeBlocksCount,
 		group.freeInodesCount,
 		group.blockMap,
-		LINNGROUP_NUM_BLOCKMAP(&super),
+		LINN_GROUP_NUM_BLOCKMAP(&super),
 		group.inodeMap,
-		LINNGROUP_NUM_INODEMAP(&super),
+		LINN_GROUP_NUM_INODEMAP(&super),
 		group.inodeTable,
-		LINNGROUP_NUM_INODETAB(&super));
+		LINN_GROUP_NUM_INODETAB(&super));
     }
     /* Cleanup and terminate. */
     fclose(fp);

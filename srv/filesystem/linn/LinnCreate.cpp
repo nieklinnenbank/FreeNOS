@@ -21,6 +21,8 @@
 #include <String.h>
 #include <Types.h>
 #include <Macros.h>
+#include <FileType.h>
+#include <FileMode.h>
 #include "LinnCreate.h"
 #include "LinnSuperBlock.h"
 #include "LinnGroup.h"
@@ -40,7 +42,208 @@ LinnCreate::LinnCreate()
     prog      = ZERO;
     image     = ZERO;
     super     = ZERO;
+    input     = ZERO;
     verbose   = false;
+}
+
+LinnInode * LinnCreate::createInode(le64 inodeNum, FileType type, FileModes mode,
+		    	    	    UserID uid, GroupID gid)
+{
+    LinnGroup *group;
+    LinnInode *inode;
+
+    /* Point to the correct group. */    
+    group  = BLOCKPTR(LinnGroup, super->groupsTable);
+    group += inodeNum / super->inodesPerGroup;
+    
+    /* Use it to find the inode. */
+    inode  = BLOCKPTR(LinnInode, group->inodeTable);
+    inode += inodeNum % super->inodesPerGroup;
+    
+    /* Initialize the inode. */
+    inode->type  = type;
+    inode->mode  = mode;
+    inode->uid   = uid;
+    inode->gid   = gid;
+    inode->accessTime = ZERO;
+    inode->createTime = time(NULL);
+    inode->modifyTime = inode->createTime;
+    inode->changeTime = inode->createTime;
+    inode->links = 1;
+    
+    /* Update superblock. */
+    super->freeInodesCount--;
+    group->freeInodesCount--;
+    
+    /* Done. */
+    return inode;
+}
+
+le64 LinnCreate::createInode(char *inputFile, struct stat *st)
+{
+    LinnGroup *group;
+    LinnInode *inode;
+    BitMap *map;
+    u64 gn, in;
+
+    /* Loop all available LinnGroups. */
+    for (gn = 0; gn < LINN_GROUP_COUNT(super); gn++)
+    {
+	/* Point to the correct LinnGroup. */
+	group = BLOCKPTR(LinnGroup, super->groupsTable) + gn;
+	
+	/* Does it have any free inodes? */
+	if (!group->freeInodesCount)
+	{
+	    group = ZERO;
+	    continue;
+	}
+	else
+	    break;
+    }
+    /* Did we find an appropriate group? */
+    if (!group)
+    {
+	printf("%s: no free inode available for `%s'\n",
+		prog, inputFile);
+	exit(EXIT_FAILURE);
+    }
+    /* Find an empty inode number. */
+    map = new BitMap(super->inodesPerGroup,
+		     BLOCKPTR(u8, group->inodeMap));
+    in  = map->markNext();
+
+    /* Instantiate the inode. */
+    inode = createInode(in, FILETYPE_FROM_ST(st),
+			    FILEMODE_FROM_ST(st), st->st_uid, st->st_gid);
+
+    /* Insert file contents. */
+    if (S_ISREG(st->st_mode))
+    {
+	insertFile(inputFile, inode, st);
+    }
+    /* Debug out. */
+    if (verbose)
+    {
+	printf("%s inode=%llu size=%llu\n", inputFile, in, inode->size);
+    }
+    return in;
+}
+
+void LinnCreate::insertFile(char *inputFile, LinnInode *inode,
+			    struct stat *st)
+{
+    FILE *fp;
+    le64 blockNr;
+    bool reading = true;
+    
+    /* Open the local file. */
+    if ((fp = fopen(inputFile, "r")) == NULL)
+    {
+	printf("%s: failed to fopen() `%s': %s\n",
+		prog, inputFile, strerror(errno));
+	exit(EXIT_FAILURE);
+    }
+    /* Read blocks from the file. */
+    while (reading)
+    {
+	/* Grab a block. */
+	blockNr = BLOCK(super);
+    
+	/* Read a block. */
+	if (fread(BLOCKPTR(u8, blockNr), super->blockSize, 1, fp) != 1)
+	{
+	    /* End-of-file? */
+	    if (feof(fp))
+	    {
+		reading = false;
+	    }
+	    /* Read error occurred. */
+	    else
+	    {
+		printf("%s: failed to fread() `%s': %s\n",
+			prog, inputFile, strerror(errno));
+		exit(EXIT_FAILURE);
+	    }
+	}
+	/* Insert the block (direct). */
+	if (LINN_INODE_NUM_BLOCKS(super, inode) <
+	    LINN_INODE_DIR_BLOCKS)
+	{
+	    inode->block[LINN_INODE_NUM_BLOCKS(super,inode)] = blockNr;
+	}
+	/* Insert the block (indirect). */
+	else
+	{
+	    printf("%s: Indirect blocks not (yet) supported: `%s'.\n",
+		    prog, inputFile);
+	    break;
+	}
+	/* Increment size appropriately. */
+	if (reading)
+	    inode->size += super->blockSize;
+	else
+	    inode->size += st->st_size % super->blockSize;
+    }
+    /* Cleanup. */
+    fclose(fp);
+}
+
+void LinnCreate::insertDirectory(char *inputDir, le64 inodeNum, le64 parentNum)
+{
+    struct dirent *ent;
+    struct stat st;
+    DIR *dir;
+    char path[255];
+    le64 child;
+    bool skip = false;
+
+    /* Open the input directory. */
+    if ((dir = opendir(inputDir)) == NULL)
+    {
+	printf("%s: failed to opendir() `%s': %s\n",
+		prog, inputDir, strerror(errno));
+	exit(EXIT_FAILURE);
+    }
+    /* Read all it's entries. */
+    while ((ent = readdir(dir)))
+    {
+	/* Skip hidden. */
+	skip = ent->d_name[0] == '.';
+	
+	/* Skip excluded. */
+	for (ListIterator<String> e(&excludes); e.hasNext(); e++)
+	{
+	    if (e.current()->match(ent->d_name, **e.current()))
+	    {
+		skip = true;
+		break;
+	    }
+	}
+	if (skip) continue;
+	
+	/* Construct local path. */
+	snprintf(path, sizeof(path), "%s/%s",
+		 inputDir, ent->d_name);
+
+	/* Stat the file. */
+	if (stat(path, &st) != 0)
+	{
+	    printf("%s: failed to stat() `%s': %s\n",
+		    prog, path, strerror(errno));
+	    exit(EXIT_FAILURE);
+	}
+	/* Create an inode for the child. */
+	child = createInode(path, &st);
+	
+	/* Traverse down. */
+	if (S_ISDIR(st.st_mode))
+	{
+	    insertDirectory(path, child, inodeNum);
+	}
+    }
+    /* All done. */
+    closedir(dir);
 }
 
 int LinnCreate::create(Size blockSize, Size blockNum, Size inodeNum)
@@ -62,10 +265,10 @@ int LinnCreate::create(Size blockSize, Size blockNum, Size inodeNum)
     super->minorRevision    = LINN_SUPER_MINOR;
     super->state            = LINN_SUPER_VALID;
     super->blockSize        = blockSize;
-    super->blocksPerGroup   = LINNCREATE_BLOCKS_PER_GROUP;
+    super->blocksPerGroup   = LINN_CREATE_BLOCKS_PER_GROUP;
     super->inodesCount      = inodeNum;
     super->blocksCount	    = blockNum;
-    super->inodesPerGroup   = super->inodesCount / LINNGROUP_COUNT(super);
+    super->inodesPerGroup   = super->inodesCount / LINN_GROUP_COUNT(super);
     super->freeInodesCount  = super->inodesCount;
     super->freeBlocksCount  = blockNum - 2;
     super->creationTime     = time(NULL);
@@ -75,7 +278,7 @@ int LinnCreate::create(Size blockSize, Size blockNum, Size inodeNum)
     super->groupsTable	    = 2;
 
     /* Allocate LinnGroups. */
-    for (Size i = 0; i < LINNGROUP_COUNT(super); i++)
+    for (Size i = 0; i < LINN_GROUP_COUNT(super); i++)
     {
 	/* Point to the correct LinnGroup. */
 	LinnGroup *group = BLOCKPTR(LinnGroup, 2) + i;
@@ -83,15 +286,27 @@ int LinnCreate::create(Size blockSize, Size blockNum, Size inodeNum)
 	/* Fill the group. */
 	group->freeBlocksCount = super->blocksPerGroup;
 	group->freeInodesCount = super->inodesPerGroup;
-	group->blockMap        = BLOCKS(super, LINNGROUP_NUM_BLOCKMAP(super));
-	group->inodeMap        = BLOCKS(super, LINNGROUP_NUM_INODEMAP(super));
-	group->inodeTable      = BLOCKS(super, LINNGROUP_NUM_INODETAB(super));
+	group->blockMap        = BLOCKS(super, LINN_GROUP_NUM_BLOCKMAP(super));
+	group->inodeMap        = BLOCKS(super, LINN_GROUP_NUM_INODEMAP(super));
+	group->inodeTable      = BLOCKS(super, LINN_GROUP_NUM_INODETAB(super));
 	
 	/* Increment counter. */
-	super->freeBlocksCount -= LINNGROUP_NUM_BLOCKMAP(super) +
-				  LINNGROUP_NUM_INODEMAP(super) +
-				  LINNGROUP_NUM_INODETAB(super);
+	super->freeBlocksCount -= LINN_GROUP_NUM_BLOCKMAP(super) +
+				  LINN_GROUP_NUM_INODEMAP(super) +
+				  LINN_GROUP_NUM_INODETAB(super);
     }
+    /* Create the root inode. */
+    createInode(LINN_INODE_ROOT, DirectoryFile,
+		OwnerRWX | GroupRX | OtherRX);
+
+    /* Insert into directory contents, if set. */
+    if (input)
+    {
+	insertDirectory(input, LINN_INODE_ROOT,
+			       LINN_INODE_ROOT);
+    }
+    /* Mark block #0 -> super->blocksCount used. */
+    
     /* Write the final image. */
     return writeImage();
 }    
@@ -149,9 +364,9 @@ void LinnCreate::setVerbose(bool newVerbose)
 int main(int argc, char **argv)
 {
     LinnCreate fs;
-    Size blockSize = LINNCREATE_BLOCK_SIZE;
-    Size blockNum  = LINNCREATE_BLOCK_NUM;
-    Size inodeNum  = LINNCREATE_INODE_NUM;
+    Size blockSize = LINN_CREATE_BLOCK_SIZE;
+    Size blockNum  = LINN_CREATE_BLOCK_NUM;
+    Size inodeNum  = LINN_CREATE_INODE_NUM;
 
     /* Verify command-line arguments. */
     if (argc < 2)

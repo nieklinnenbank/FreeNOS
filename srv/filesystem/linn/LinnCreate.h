@@ -15,28 +15,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __FILESYSTEM_LINNCREATE_H
-#define __FILESYSTEM_LINNCREATE_H
+#ifndef __FILESYSTEM_LINN_CREATE_H
+#define __FILESYSTEM_LINN_CREATE_H
 
 #include <BitMap.h>
 #include <List.h>
 #include <String.h>
 #include "LinnSuperBlock.h"
+#include "LinnInode.h"
 
 /** Default block size. */
-#define LINNCREATE_BLOCK_SIZE		2048
+#define LINN_CREATE_BLOCK_SIZE		2048
 
 /** Default number of blocks to allocate. */
-#define LINNCREATE_BLOCK_NUM		8192
+#define LINN_CREATE_BLOCK_NUM		8192
 
 /** Default number of data blocks per group descriptor. */
-#define LINNCREATE_BLOCKS_PER_GROUP	8192
+#define LINN_CREATE_BLOCKS_PER_GROUP	8192
 
 /** Default number of inodes to allocate. */
-#define LINNCREATE_INODE_NUM		1024
+#define LINN_CREATE_INODE_NUM		1024
 
 /** Default number of inodes per group descriptor. */
-#define LINNCREATE_INODES_PER_GROUP	1024
+#define LINN_CREATE_INODES_PER_GROUP	1024
 
 /**
  * @brief Returns a pointer to the correct in-memory block.
@@ -64,12 +65,12 @@
      }) 
 
 /**
- * Retrieve on free block.
+ * Retrieve one free block.
  * @param sb LinnSuperBlock pointer.
  * @return Block number of a free block.
  */
 #define BLOCK(sb) \
-    BLOCKS(sb, 1)
+    BLOCKS(sb, ((u64)1))
 
 /**
  * Class for creating new Linnenbank FileSystems.
@@ -125,6 +126,38 @@ class LinnCreate
     private:
 
 	/**
+	 * Creates an empty LinnInode.
+	 * @param inodeNum Inode number.
+	 * @param type Type of file.
+	 * @param mode Access permissions.
+	 * @param uid User identity.
+	 * @param gid Group identity.
+	 * @return LinnInode pointer.
+	 */
+	LinnInode * createInode(le64 inodeNum, FileType type, FileModes mode,
+                    		UserID uid = ZERO, GroupID gid = ZERO);
+
+	/**
+	 * Copies a local file contents into an LinnInode.
+	 * @param inputFile Path to the local file to insert.
+	 * @param st POSIX stat pointer for the local file.
+	 * @return Inode number of the inserted file.
+	 */
+	le64 createInode(char *inputFile, struct stat *st);
+
+	/**
+	 * Inserts the given directory and it's childs to the filesystem image.
+	 * @param inputFile Path to a local directory.
+	 * @param inodeNum Inode number for the input directory.
+	 * @param parentNum Inode number of our parent.
+	 * @note This function is recursive.
+	 */
+	void insertDirectory(char *inputFile, le64 inodeNum, le64 parentNum);
+
+	void insertFile(char *inputFile, LinnInode *inode,
+                        struct stat *st);
+
+	/**
 	 * Writes the final image to disk.
 	 * @return EXIT_SUCCESS if successfull and EXIT_FAILURE otherwise.
 	 */
@@ -155,4 +188,4 @@ class LinnCreate
 	u8 *blocks;
 };
 
-#endif /* __FILESYSTEM_LINNCREATE_H */
+#endif /* __FILESYSTEM_LINN_CREATE_H */

@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __FILESYSTEM_LINNGROUP_H
-#define __FILESYSTEM_LINNGROUP_H
+#ifndef __FILESYSTEM_LINN_GROUP_H
+#define __FILESYSTEM_LINN_GROUP_H
 
 #include <Types.h>
 
@@ -31,13 +31,13 @@
  */
 
 /** Block index of the block bitmap. */
-#define LINNGROUP_BLOCK_BITMAP 0
+#define LINN_GROUP_BLOCK_BITMAP 0
 
 /** Block index of the inode bitmap. */
-#define LINNGROUP_INODE_BITMAP 1
+#define LINN_GROUP_INODE_BITMAP 1
 
 /** Block index of the inode table. */
-#define LINNGROUP_INODE_TABLE  2
+#define LINN_GROUP_INODE_TABLE  2
 
 /**
  * @}
@@ -54,7 +54,7 @@
  * @param sb LinnSuperBlock pointer.
  * @return Number of LinnGroups in the filesystem.
  */
-#define LINNGROUP_COUNT(sb) \
+#define LINN_GROUP_COUNT(sb) \
     ((sb)->blocksCount / (sb)->blocksPerGroup ? \
      (sb)->blocksCount / (sb)->blocksPerGroup : 1)
 
@@ -63,7 +63,7 @@
  * @param sb LinnSuperBlock pointer.
  * @return Number of blocks needed for the blocks bitmap.
  */
-#define LINNGROUP_NUM_BLOCKMAP(sb) \
+#define LINN_GROUP_NUM_BLOCKMAP(sb) \
     (u64)((sb)->blocksPerGroup / ((sb)->blockSize / sizeof(u64)))
 
 /**
@@ -71,7 +71,7 @@
  * @param sb LinnSuperBlock pointer.
  * @return Number of blocks needed for the inodes bitmap.
  */
-#define LINNGROUP_NUM_INODEMAP(sb) \
+#define LINN_GROUP_NUM_INODEMAP(sb) \
     (u64)((sb)->inodesPerGroup / ((sb)->blockSize / sizeof(u64)))
 
 /**
@@ -79,7 +79,7 @@
  * @param sb LinnSuperBlock pointer.
  * @return Number of blocks needed for the inodes table.
  */
-#define LINNGROUP_NUM_INODETAB(sb) \
+#define LINN_GROUP_NUM_INODETAB(sb) \
     (u64)((sb)->inodesPerGroup / ((sb)->blockSize / sizeof(LinnInode)))
 
 /**
@@ -87,7 +87,7 @@
  * @param sb LinnSuperBlock pointer.
  * @return Number of LinnGroups per block.
  */
-#define LINNGROUP_PER_BLOCK(sb) \
+#define LINN_GROUP_PER_BLOCK(sb) \
     ((sb)->blockSize / sizeof(LinnGroup))
 
 /**
@@ -95,9 +95,9 @@
  * @param sb LinnSuperBlock pointer.
  * @return Number of blocks required for LinnGroups.
  */
-#define LINNGROUP_BLOCKS(sb) \
-    (LINNGROUP_COUNT(sb) / LINNGROUP_PER_BLOCK(sb) ? \
-     LINNGROUP_COUNT(sb) / LINNGROUP_PER_BLOCK(sb) : 1)
+#define LINN_GROUP_BLOCKS(sb) \
+    (LINN_GROUP_COUNT(sb) / LINN_GROUP_PER_BLOCK(sb) ? \
+     LINN_GROUP_COUNT(sb) / LINN_GROUP_PER_BLOCK(sb) : 1)
 
 /**
  * @}
@@ -129,4 +129,4 @@ LinnGroup;
  * @}
  */
 
-#endif /* __FILESYSTEM_LINNGROUP_H */
+#endif /* __FILESYSTEM_LINN_GROUP_H */

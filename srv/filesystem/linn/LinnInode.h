@@ -15,33 +15,77 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __FILESYSTEM_LINNINODE_H
-#define __FILESYSTEM_LINNINODE_H
+#ifndef __FILESYSTEM_LINN_INODE_H
+#define __FILESYSTEM_LINN_INODE_H
 
 /**
  * @defgroup linn Linnenbank Filesystem (LinnFS)
  * @{
  */
 
+/** 
+ * @brief Special Inode Numbers 
+ * @{ 
+ */
+
+/** Root inode. */
+#define LINN_INODE_ROOT		0
+
+/** Boot loader inode. */
+#define LINN_INODE_LOADER	1
+
+/** Bad blocks inode. */
+#define LINN_INODE_BAD		2
+
+/** Journal inode. */
+#define LINN_INODE_JOURNAL	3
+
+/** First non-reserved inode. */
+#define LINN_INODE_FIRST	4
+
+/** 
+ * @} 
+ */
+
 /**
- * @name Inode (in)direct block counts.
+ * @brief Inode (in)direct block counts.
  * @{
  */
 
-/** Number of direct blocks. */
-#define	LINN_NDIR_BLOCKS	12
+/** Direct blocks. */
+#define LINN_INODE_DIR_BLOCKS	5
 
 /** Indirect blocks. */
-#define	LINN_IND_BLOCK		(LINN_NDIR_BLOCKS)
+#define	LINN_INODE_IND_BLOCKS	(LINN_INODE_DIR_BLOCKS  + 1)
 
 /** Double indirect blocks. */
-#define	LINN_DIND_BLOCK		(LINN_IND_BLOCK  + 1)
+#define	LINN_INODE_DIND_BLOCKS	(LINN_INODE_IND_BLOCKS  + 1)
 
 /** Triple indirect blocks. */
-#define	LINN_TIND_BLOCK		(LINN_DIND_BLOCK + 1)
+#define	LINN_INODE_TIND_BLOCKS	(LINN_INODE_DIND_BLOCKS + 1)
 
-/** Total number of blocks in an Ext2Inode. */
-#define	LINN_INODE_BLOCKS	(LINN_TIND_BLOCK + 1)
+/** Total number of block pointers in an LinnInode. */
+#define	LINN_INODE_BLOCKS	(LINN_INODE_TIND_BLOCKS + 1)
+
+/**
+ * @}
+ */
+
+/**
+ * @brief Inode macros.
+ * @{
+ */
+
+/**
+ * Calculate the number of blocks used in an LinnInode.
+ * @param super LinnSuperBlock pointer.
+ * @param inode LinnInode pointer.
+ * @return Number of blocks used.
+ */
+#define LINN_INODE_NUM_BLOCKS(super,inode) \
+    ((inode)->size % (super)->blockSize ? \
+     (inode)->size / (super)->blockSize + 1 : \
+     (inode)->size / (super)->blockSize)
 
 /**
  * @}
@@ -52,16 +96,17 @@
  */
 typedef struct LinnInode
 {
-    le16 mode;	  /**< POSIX file mode. */
-    le16 uid;	  /**< User Identity. */
-    le16 gid;	  /**< Group Identity. */
-    le64 size;	  /**< Size in bytes. */
-    le64 atime;	  /**< Access time. */
-    le64 ctime;	  /**< Creation time. */
-    le64 mtime;	  /**< Modification time. */
-    le16 links;	  /**< Links count. */
+    le16 type:3;	/**< Type of file, as an FileType. */
+    le16 mode:13;	/**< Access permissions, as an FileMode. */
+    le16 uid;		/**< User Identity. */
+    le16 gid;		/**< Group Identity. */
+    le64 size;		/**< Size in bytes. */
+    le64 accessTime;	/**< Access time. */
+    le64 createTime;	/**< Creation time. */
+    le64 modifyTime;	/**< Modification time. */
+    le64 changeTime;	/**< Status change timestamp. */
+    le16 links;		/**< Links count. */
     le64 block[LINN_INODE_BLOCKS]; /**< Pointers to blocks. */
-    le16 padding; /**< Padding for 64 bytes. */
 }
 LinnInode;
 
@@ -69,4 +114,4 @@ LinnInode;
  * @}
  */
 
-#endif /* __FILESYSTEM_LINNINODE_H */
+#endif /* __FILESYSTEM_LINN_INODE_H */
