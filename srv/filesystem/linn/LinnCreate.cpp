@@ -46,8 +46,8 @@ LinnCreate::LinnCreate()
     verbose   = false;
 }
 
-LinnInode * LinnCreate::createInode(le64 inodeNum, FileType type, FileModes mode,
-		    	    	    UserID uid, GroupID gid)
+LinnInode * LinnCreate::createInode(le64 inodeNum, FileType type,
+				    FileModes mode, UserID uid, GroupID gid)
 {
     LinnGroup *group;
     LinnInode *inode;
@@ -65,6 +65,7 @@ LinnInode * LinnCreate::createInode(le64 inodeNum, FileType type, FileModes mode
     inode->mode  = mode;
     inode->uid   = uid;
     inode->gid   = gid;
+    inode->size  = ZERO;
     inode->accessTime = ZERO;
     inode->createTime = time(NULL);
     inode->modifyTime = inode->createTime;
@@ -130,6 +131,31 @@ le64 LinnCreate::createInode(char *inputFile, struct stat *st)
     return in;
 }
 
+void LinnCreate::insertIndirect(le64 *ptr, le64 blockNumber,
+				le64 blockValue, Size depth)
+{
+    le64 max = LINN_SUPER_NUM_PTRS(super) << (2 << depth);
+    Size index;
+
+    /* Direct block. */
+    if (depth == 1)
+    {
+	index = blockNumber % LINN_SUPER_NUM_PTRS(super);
+	ptr[index] = blockValue;
+    }
+    /* Indirect block. */
+    else
+    {
+	/* Calculate index of indirect block map. */
+	index = blockNumber / (max / LINN_SUPER_NUM_PTRS(super));
+	blockNumber -= index * (max / LINN_SUPER_NUM_PTRS(super));
+	
+	/* Traverse indirection. */
+	insertIndirect(BLOCKPTR(le64,ptr[index - 1]),
+		       blockNumber, blockValue, depth - 1);
+    }
+}
+
 void LinnCreate::insertFile(char *inputFile, LinnInode *inode,
 			    struct stat *st)
 {
@@ -173,9 +199,36 @@ void LinnCreate::insertFile(char *inputFile, LinnInode *inode,
 	    inode->block[LINN_INODE_NUM_BLOCKS(super,inode)] = blockNr;
 	}
 	/* Insert the block (indirect). */
+	else if (LINN_INODE_NUM_BLOCKS(super, inode) <
+		 LINN_INODE_DIR_BLOCKS + LINN_SUPER_NUM_PTRS(super))
+	{
+	    insertIndirect(&inode->block[LINN_INODE_IND_BLOCKS-1],
+			    LINN_INODE_NUM_BLOCKS(super, inode) -
+			    LINN_INODE_DIR_BLOCKS, blockNr, 1);
+	}
+	/* Insert the block (double indirect). */
+	else if (LINN_INODE_NUM_BLOCKS(super, inode) <
+		 LINN_INODE_DIR_BLOCKS + (LINN_SUPER_NUM_PTRS(super) *
+					  LINN_SUPER_NUM_PTRS(super)))
+	{
+	    insertIndirect(&inode->block[LINN_INODE_DIND_BLOCKS-1],
+			    LINN_INODE_NUM_BLOCKS(super, inode) -
+			    LINN_INODE_DIR_BLOCKS, blockNr, 2);
+	}
+	/* Insert the blck (tripple indirect). */
+	else if (LINN_INODE_NUM_BLOCKS(super, inode) <
+		 LINN_INODE_DIR_BLOCKS + (LINN_SUPER_NUM_PTRS(super) *
+					  LINN_SUPER_NUM_PTRS(super) *
+					  LINN_SUPER_NUM_PTRS(super)))
+	{
+	    insertIndirect(&inode->block[LINN_INODE_TIND_BLOCKS-1],
+			    LINN_INODE_NUM_BLOCKS(super, inode) -
+			    LINN_INODE_DIR_BLOCKS, blockNr, 3);
+	}
+	/* Maximum file capacity reached. */
 	else
 	{
-	    printf("%s: Indirect blocks not (yet) supported: `%s'.\n",
+	    printf("%s: maximum file size reached for `%s'\n",
 		    prog, inputFile);
 	    break;
 	}

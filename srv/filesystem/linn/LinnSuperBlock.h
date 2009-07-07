@@ -82,6 +82,27 @@
 #define LINN_SUPER_OFFSET	1024
 
 /**
+ * @}
+ */
+
+/**
+ * @brief Superblock Macros.
+ * @{
+ */
+
+/**
+ * Calculate the number of block address pointers fitting in one block.
+ * @param sb LinnSuperBlock pointer.
+ * @return Number of block address pointers.
+ */
+#define LINN_SUPER_NUM_PTRS(sb) \
+    ((sb)->blockSize / sizeof(u64))
+
+/**
+ * @}
+ */
+
+/**
  * Linnenbank Filesystem (LinnFS) super block.
  */
 typedef struct LinnSuperBlock

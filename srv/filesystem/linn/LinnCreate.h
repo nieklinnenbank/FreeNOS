@@ -154,8 +154,25 @@ class LinnCreate
 	 */
 	void insertDirectory(char *inputFile, le64 inodeNum, le64 parentNum);
 
+	/**
+	 * Inserts the contents of a local file into an LinnInode.
+	 * @param inputFile Path to the local file.
+	 * @param inode Pointer to the inode to fill.
+	 * @param st POSIX stats structure of inputFile.
+	 */
 	void insertFile(char *inputFile, LinnInode *inode,
                         struct stat *st);
+
+	/**
+	 * Inserts an indirect block address.
+	 * @param ptr Buffer containing block addresses.
+	 * @param blockNumber Block index number to insert in
+	 *                    the buffer, minus LINN_INODE_DIR_BLOCKS
+	 * @param blockValue The block address to insert indirectly.
+	 * @param depth Level of indirection.
+	 */
+	void insertIndirect(le64 *ptr, le64 blockNumber,
+			    le64 blockValue, Size depth);
 
 	/**
 	 * Writes the final image to disk.

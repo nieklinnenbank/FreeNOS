@@ -19,6 +19,7 @@
 #define __FILESYSTEM_LINN_GROUP_H
 
 #include <Types.h>
+#include "LinnSuperBlock.h"
 
 /**                                                                                                                                                                                                      
  * @defgroup linn Linnenbank Filesystem (LinnFS) 
@@ -64,7 +65,7 @@
  * @return Number of blocks needed for the blocks bitmap.
  */
 #define LINN_GROUP_NUM_BLOCKMAP(sb) \
-    (u64)((sb)->blocksPerGroup / ((sb)->blockSize / sizeof(u64)))
+    (u64)((sb)->blocksPerGroup / LINN_SUPER_NUM_PTRS(sb))
 
 /**
  * Calculate the number of blocks needed for the inodes bitmap.
@@ -72,7 +73,7 @@
  * @return Number of blocks needed for the inodes bitmap.
  */
 #define LINN_GROUP_NUM_INODEMAP(sb) \
-    (u64)((sb)->inodesPerGroup / ((sb)->blockSize / sizeof(u64)))
+    (u64)((sb)->inodesPerGroup / LINN_SUPER_NUM_PTRS(sb))
 
 /**
  * Calculate the number of blocks needed for the inodes table.
