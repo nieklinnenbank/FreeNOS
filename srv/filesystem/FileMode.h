@@ -27,6 +27,14 @@
 #define FILEMODE_MASK 0777
 
 /**
+ * Converts an (host system's) POSIX struct st into a FileMode.
+ * @param st struct st pointer.
+ * @return FileMode value.
+ */
+#define FILEMODE_FROM_ST(st) \
+    (FileMode)((st)->st_mode & FILEMODE_MASK)
+
+/**
  * File access permissions.
  */
 typedef enum FileMode
