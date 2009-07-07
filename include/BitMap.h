@@ -34,14 +34,14 @@ class BitMap
 	 * @param cnt Number of bits.
 	 */
 	BitMap(Size cnt, u8 *newMap = ZERO)
-	    : count(cnt), free(cnt)
+	    :  count(cnt), free(cnt)
 	{
 	    if (newMap)
 		map = newMap;
 	    else
 		map = new u8[(cnt / 8) + 1];
 	
-	    memset(map, 0, (cnt / 8) + 1);
+	    clearMap();
 	}
     
 	/**
@@ -157,15 +157,40 @@ class BitMap
 	/**
 	 * Use the given pointer as the bitmap buffer.
 	 * @param newMap New bitmap pointer.
+	 * @param newCount New number of bits. ZERO to keep the old value.
 	 */
-	void setMap(u8 *newMap)
+	void setMap(u8 *newMap, Size newCount = ZERO)
 	{
+	    /* Release old map. */
 	    if (map)
 		delete map;
 		
+	    /* Set bits count. */
+	    if (newCount)
+		count = newCount;
+
 	    /* Reassign to the new map, and clear it. */
 	    map = newMap;
-	    memset(map, 0, count);
+	    clearMap();
+	}
+	
+	/**
+	 * Clears the given map.
+	 */
+	void clearMap()
+	{
+	    Size bytes = (count / 8);
+	    
+	    /* Partial byte. */
+	    if (count % 8)
+	    {
+		bytes++;
+	    }
+	    /* Zero it. */
+	    memset(map, 0, bytes);
+	    
+	    /* Reset free count. */
+	    free = count;
 	}
 	
 	/**
