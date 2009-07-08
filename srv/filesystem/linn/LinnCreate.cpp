@@ -287,9 +287,8 @@ void LinnCreate::insertEntry(le64 dirInode, le64 entryInode,
 	/* Fill it. */
 	entry->inode = entryInode;
 	entry->type  = type;
-	memcpy(entry->name, name,
-	       strlen(name) < LINN_DIRENT_NAME_LEN ?
-	       strlen(name) : LINN_DIRENT_NAME_LEN);
+	strncpy(entry->name, name, LINN_DIRENT_NAME_LEN);
+	entry->name[LINN_DIRENT_NAME_LEN - 1] = ZERO;
     }
     /* Indirect block. */
     else

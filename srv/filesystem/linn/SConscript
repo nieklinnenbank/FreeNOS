@@ -20,7 +20,7 @@ from build import *
 #
 # Target system environment.
 #
-targetEnv = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc' ],
+targetEnv = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc', 'libgcc' ],
 		            [ 'filesystem', 'process', 'log' ])
 
 #
@@ -39,3 +39,10 @@ hostEnv.Program('host/create', [ 'host/LinnCreate.cpp' ],
 #
 hostEnv.Program('host/dump', [ 'host/LinnDump.cpp' ],
 		 LIBS = hostEnv['LIBS'], LIBPATH = hostEnv['LIBPATH'])
+
+#
+# Linnenbank FileSystem server.
+#
+targetEnv.Program('server', [ 'LinnFileSystem.cpp', 'LinnFile.cpp',
+			      'LinnDirectory.cpp' ],
+		   LIBS = targetEnv['LIBS'], LIBPATH = targetEnv['LIBPATH'])

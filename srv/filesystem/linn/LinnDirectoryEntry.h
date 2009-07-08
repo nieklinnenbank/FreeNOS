@@ -20,6 +20,18 @@
 
 #include <Types.h>
 
+/**
+ * @defgroup linn Linnenbank Filesystem (LinnFS)
+ * @{
+ */
+
+/**
+ * Calculates the number of LinnDirectoryEntry's fitting in one block.
+ * @return Number of entries.
+ */
+#define LINN_DIRENT_PER_BLOCK(sb) \
+    ((sb)->blockSize / sizeof(LinnDirectoryEntry))
+
 /** Length of the name field in an directory entry. */
 #define LINN_DIRENT_NAME_LEN 55
 
@@ -34,7 +46,7 @@ typedef struct LinnDirectoryEntry
     /** Type of file, as an FileType. */
     u8 type;
 
-    /** File name. */
+    /** File name. Null terminated. */
     char name[LINN_DIRENT_NAME_LEN];
 }
 LinnDirectoryEntry;
