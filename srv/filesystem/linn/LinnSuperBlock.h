@@ -26,7 +26,7 @@
  */
 
 /**
- * @brief Filesystem Magic Numbers.
+ * @brief Magic Numbers.
  * @{
  */
 
@@ -41,7 +41,7 @@
  */
 
 /**
- * @brief Filesystem Revision Numbers.
+ * @brief Revision Numbers.
  * @{
  */
 
@@ -74,7 +74,7 @@
  */
 
 /**
- * @brief Filesystem Constants.
+ * @brief Superblock Constants.
  * @{
  */
 

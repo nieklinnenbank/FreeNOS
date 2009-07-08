@@ -27,6 +27,7 @@
 #include "LinnSuperBlock.h"
 #include "LinnGroup.h"
 #include "LinnInode.h"
+#include "LinnDirectoryEntry.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <dirent.h>
@@ -51,6 +52,7 @@ LinnInode * LinnCreate::createInode(le64 inodeNum, FileType type,
 {
     LinnGroup *group;
     LinnInode *inode;
+    BitMap inodeMap;
 
     /* Point to the correct group. */    
     group  = BLOCKPTR(LinnGroup, super->groupsTable);
@@ -72,6 +74,11 @@ LinnInode * LinnCreate::createInode(le64 inodeNum, FileType type,
     inode->changeTime = inode->createTime;
     inode->links = 1;
     
+    /* Update inode bitmap, if needed. */
+    inodeMap.setMap(BLOCKPTR(u8, group->inodeMap),
+		    super->inodesPerGroup);
+    inodeMap.mark(inodeNum % super->inodesPerGroup);
+    
     /* Update superblock. */
     super->freeInodesCount--;
     group->freeInodesCount--;
@@ -84,7 +91,7 @@ le64 LinnCreate::createInode(char *inputFile, struct stat *st)
 {
     LinnGroup *group;
     LinnInode *inode;
-    BitMap *map;
+    BitMap inodeMap;
     u64 gn, in;
 
     /* Loop all available LinnGroups. */
@@ -110,9 +117,9 @@ le64 LinnCreate::createInode(char *inputFile, struct stat *st)
 	exit(EXIT_FAILURE);
     }
     /* Find an empty inode number. */
-    map = new BitMap(super->inodesPerGroup,
-		     BLOCKPTR(u8, group->inodeMap));
-    in  = map->markNext();
+    inodeMap.setMap(BLOCKPTR(u8, group->inodeMap),
+		    super->inodesPerGroup);
+    in = inodeMap.markNext();
 
     /* Instantiate the inode. */
     inode = createInode(in, FILETYPE_FROM_ST(st),
@@ -242,6 +249,59 @@ void LinnCreate::insertFile(char *inputFile, LinnInode *inode,
     fclose(fp);
 }
 
+void LinnCreate::insertEntry(le64 dirInode, le64 entryInode,
+			     char *name, FileType type)
+{
+    LinnGroup *group;
+    LinnInode *inode;
+    LinnDirectoryEntry *entry;
+    le64 entryNum, blockNum;
+    
+    /* Point to the correct group. */
+    group = BLOCKPTR(LinnGroup, super->groupsTable);
+    if (dirInode != ZERO)
+    {
+	group += (super->inodesPerGroup / dirInode);
+    }
+    /* Fetch inode. */
+    inode = BLOCKPTR(LinnInode, group->inodeTable) +
+		    (dirInode % super->inodesPerGroup);
+
+    /* Calculate entry and block number. */
+    entryNum = inode->size / sizeof(LinnDirectoryEntry);
+    blockNum = (entryNum * sizeof(LinnDirectoryEntry)) /
+		super->blockSize;
+
+    /* Direct block. */
+    if (blockNum < LINN_INODE_DIR_BLOCKS)
+    {
+	/* Allocate a new block, if needed. */
+	if (!inode->block[blockNum])
+	{
+	    inode->block[blockNum] = BLOCK(super);
+	}
+	/* Point to the fresh entry. */
+	entry = BLOCKPTR(LinnDirectoryEntry, inode->block[blockNum]) +
+			((entryNum * sizeof(LinnDirectoryEntry)) %
+			  super->blockSize);
+	/* Fill it. */
+	entry->inode = entryInode;
+	entry->type  = type;
+	memcpy(entry->name, name,
+	       strlen(name) < LINN_DIRENT_NAME_LEN ?
+	       strlen(name) : LINN_DIRENT_NAME_LEN);
+    }
+    /* Indirect block. */
+    else
+    {
+	printf("%s: indirect blocks not (yet) supported for directories\n",
+		prog);
+	exit(EXIT_FAILURE);
+    }
+    /* Increment directory size. */
+    inode->size += sizeof(LinnDirectoryEntry);
+}
+
 void LinnCreate::insertDirectory(char *inputDir, le64 inodeNum, le64 parentNum)
 {
     struct dirent *ent;
@@ -250,6 +310,10 @@ void LinnCreate::insertDirectory(char *inputDir, le64 inodeNum, le64 parentNum)
     char path[255];
     le64 child;
     bool skip = false;
+
+    /* Create '.' and '..' */
+    insertEntry(inodeNum, inodeNum,  ".",  DirectoryFile);
+    insertEntry(inodeNum, parentNum, "..", DirectoryFile);
 
     /* Open the input directory. */
     if ((dir = opendir(inputDir)) == NULL)
@@ -261,10 +325,10 @@ void LinnCreate::insertDirectory(char *inputDir, le64 inodeNum, le64 parentNum)
     /* Read all it's entries. */
     while ((ent = readdir(dir)))
     {
-	/* Skip hidden. */
+	/* Hidden files. */
 	skip = ent->d_name[0] == '.';
 	
-	/* Skip excluded. */
+	/* Excluded files. */
 	for (ListIterator<String> e(&excludes); e.hasNext(); e++)
 	{
 	    if (e.current()->match(ent->d_name, **e.current()))
@@ -273,6 +337,7 @@ void LinnCreate::insertDirectory(char *inputDir, le64 inodeNum, le64 parentNum)
 		break;
 	    }
 	}
+	/* Skip file? */
 	if (skip) continue;
 	
 	/* Construct local path. */
@@ -348,7 +413,7 @@ int LinnCreate::create(Size blockSize, Size blockNum, Size inodeNum)
 				  LINN_GROUP_NUM_INODEMAP(super) +
 				  LINN_GROUP_NUM_INODETAB(super);
     }
-    /* Create the root inode. */
+    /* Create special inodes. */
     createInode(LINN_INODE_ROOT, DirectoryFile,
 		OwnerRWX | GroupRX | OtherRX);
 

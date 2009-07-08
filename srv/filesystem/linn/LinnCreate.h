@@ -146,6 +146,16 @@ class LinnCreate
 	le64 createInode(char *inputFile, struct stat *st);
 
 	/**
+	 * Inserts an LinnDirectoryEntry to the given directory inode.
+	 * @param dirInode Inode number of the directory.
+	 * @param entryInode Inode number of the entry to create.
+	 * @param name Unique name (inside this directory) for the entry.
+	 * @param type FileType for the entry to insert.
+	 */
+	void insertEntry(le64 dirInode, le64 entryInode,
+			 char *name, FileType type);
+
+	/**
 	 * Inserts the given directory and it's childs to the filesystem image.
 	 * @param inputFile Path to a local directory.
 	 * @param inodeNum Inode number for the input directory.
