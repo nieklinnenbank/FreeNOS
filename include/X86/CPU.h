@@ -18,6 +18,8 @@
 #ifndef __X86_CPU_H
 #define __X86_CPU_H
 
+#include <Macros.h>
+
 /**   
  * @defgroup x86kernel kernel (x86)
  * @{   
@@ -26,7 +28,7 @@
 /** Intel is little endian. */
 #define CPU_LITTLE_ENDIAN	1
 
-#ifndef __HOST__
+#if !defined(__HOST__) && defined(CPP)
 
 /** Paged Mode. */
 #define CR0_PG		0x80000000
@@ -229,5 +231,5 @@ extern TSS kernelTss;
  */
 
 #endif /* __ASSEMBLER__ */
-#endif /* __HOST__ */
+#endif /* !defined(__HOST__) && !defined(CPP) */
 #endif /* __X86_CPU_H */
