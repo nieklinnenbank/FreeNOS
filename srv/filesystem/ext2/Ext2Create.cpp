@@ -348,10 +348,14 @@ void Ext2Create::initGroup(Ext2Group *grp)
     group->usedDirsCount   = ZERO;
 
     /* Create BitMap instances. */
-    blockMap = new BitMap(super->blocksPerGroup,
-			  BLOCKPTR(u8, 2));
-    inodeMap = new BitMap(super->inodesPerGroup,
-			  BLOCKPTR(u8, 3));
+    blockMap = new BitMap(BLOCKPTR(u8, 2),
+			  super->blocksPerGroup);
+    inodeMap = new BitMap(BLOCKPTR(u8, 3),
+			  super->inodesPerGroup);
+
+    /* Clear them. */
+    blockMap->clear();
+    inodeMap->clear();
 
     /* Mark the appropriate blocks used. */
     blockMap->markRange(0, 4);
