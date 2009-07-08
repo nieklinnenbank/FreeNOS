@@ -366,6 +366,9 @@ void LinnCreate::insertDirectory(char *inputDir, le64 inodeNum, le64 parentNum)
 
 int LinnCreate::create(Size blockSize, Size blockNum, Size inodeNum)
 {
+    LinnGroup *group;
+    BitMap map;
+
     assert(image != ZERO);
     assert(prog  != ZERO);
     assert(blockNum >= 2);
@@ -388,7 +391,7 @@ int LinnCreate::create(Size blockSize, Size blockNum, Size inodeNum)
     super->blocksCount	    = blockNum;
     super->inodesPerGroup   = super->inodesCount / LINN_GROUP_COUNT(super);
     super->freeInodesCount  = super->inodesCount;
-    super->freeBlocksCount  = blockNum - 2;
+    super->freeBlocksCount  = blockNum - 3;
     super->creationTime     = time(NULL);
     super->mountTime	    = ZERO;
     super->mountCount	    = ZERO;
@@ -399,7 +402,7 @@ int LinnCreate::create(Size blockSize, Size blockNum, Size inodeNum)
     for (Size i = 0; i < LINN_GROUP_COUNT(super); i++)
     {
 	/* Point to the correct LinnGroup. */
-	LinnGroup *group = BLOCKPTR(LinnGroup, 2) + i;
+	group = BLOCKPTR(LinnGroup, 2) + i;
 
 	/* Fill the group. */
 	group->freeBlocksCount = super->blocksPerGroup;
@@ -416,6 +419,12 @@ int LinnCreate::create(Size blockSize, Size blockNum, Size inodeNum)
     /* Create special inodes. */
     createInode(LINN_INODE_ROOT, DirectoryFile,
 		OwnerRWX | GroupRX | OtherRX);
+    createInode(LINN_INODE_LOADER, RegularFile,
+		OwnerRWX | GroupRX | OtherRX);
+    createInode(LINN_INODE_BAD, RegularFile,
+		OwnerRW | GroupR | OtherR);
+    createInode(LINN_INODE_JOURNAL, RegularFile,
+		OwnerRW | GroupR | OtherR);
 
     /* Insert into directory contents, if set. */
     if (input)
@@ -423,8 +432,18 @@ int LinnCreate::create(Size blockSize, Size blockNum, Size inodeNum)
 	insertDirectory(input, LINN_INODE_ROOT,
 			       LINN_INODE_ROOT);
     }
-    /* Mark block #0 -> super->blocksCount used. */
-    
+    /* Mark blocks used. */
+    for (le64 block = 0; block < super->freeBlocksCount; block++)
+    {
+	/* Point to group. */
+	group = BLOCKPTR(LinnGroup, super->groupsTable) +
+			(block / super->blocksPerGroup);
+	
+	/* Mark the block used. */
+	map.setMap(BLOCKPTR(u8, group->blockMap),
+		   super->blocksPerGroup);
+	map.mark(block % super->blocksPerGroup);
+    }
     /* Write the final image. */
     return writeImage();
 }    
