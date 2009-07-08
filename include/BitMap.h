@@ -157,11 +157,6 @@ class BitMap
 	 */
 	void setMap(u8 *newMap, Size newCount = ZERO)
 	{
-	    /* Release old map. */
-	    if (map)
-	    {
-		delete map;
-	    }	
 	    /* Set bits count. */
 	    if (newCount)
 	    {
