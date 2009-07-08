@@ -18,8 +18,6 @@
 #ifndef __X86_CPU_H
 #define __X86_CPU_H
 
-#include <Macros.h>
-
 /**   
  * @defgroup x86kernel kernel (x86)
  * @{   
@@ -28,7 +26,7 @@
 /** Intel is little endian. */
 #define CPU_LITTLE_ENDIAN	1
 
-#if !defined(__HOST__) && defined(CPP)
+#if !defined(__HOST__)
 
 /** Paged Mode. */
 #define CR0_PG		0x80000000
@@ -59,6 +57,7 @@
 #ifndef __ASSEMBLER__
 
 #include <Types.h>
+#include <Macros.h>
 
 /**
  * Retrieve the IRQ number from CPUState.
@@ -149,6 +148,8 @@
 /** I/O bitmap. */
 extern Address kernelioBitMap[1024];
 
+#ifdef CPP
+
 /** 
  * Intel's Task State Segment. 
  */
@@ -225,6 +226,8 @@ extern Segment gdt[];
 
 /** Task State Segment. */
 extern TSS kernelTss;
+
+#endif /* CPP */
 
 /**
  * @}
