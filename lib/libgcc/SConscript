@@ -15,5 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-SConscript( dirs = [ 'liballoc', 'libc', 'libcrt', 'libexec',
-		     'libparse', 'libposix', 'libteken', 'libregexp', 'libgcc' ])
+from build import *
+
+env = Prepare(target, [ 'libc', 'libposix' ])
+env.Library('libgcc', [ Glob('*.c') ])
