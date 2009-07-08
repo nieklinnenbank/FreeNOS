@@ -31,17 +31,13 @@ class BitMap
 
 	/**
 	 * Class constructor.
+	 * @param newMap Pointer to the bitmap to manage.
 	 * @param cnt Number of bits.
 	 */
-	BitMap(Size cnt, u8 *newMap = ZERO)
+	BitMap(u8 *newMap = ZERO, Size cnt = ZERO)
 	    :  count(cnt), free(cnt)
 	{
-	    if (newMap)
-		map = newMap;
-	    else
-		map = new u8[(cnt / 8) + 1];
-	
-	    clearMap();
+	    map = newMap;
 	}
     
 	/**
@@ -85,7 +81,7 @@ class BitMap
 	    Size num = count / sizeof(Address);
 
     	    /* At least one, and include partially used bytes. */
-    	    if (!num || sizeof(Address) % count)
+    	    if (!num || count % sizeof(Address))
 	    {
 		num++;
 	    }
@@ -163,21 +159,22 @@ class BitMap
 	{
 	    /* Release old map. */
 	    if (map)
+	    {
 		delete map;
-		
+	    }	
 	    /* Set bits count. */
 	    if (newCount)
+	    {
 		count = newCount;
-
-	    /* Reassign to the new map, and clear it. */
+	    }
+	    /* Reassign to the new map. */
 	    map = newMap;
-	    clearMap();
 	}
 	
 	/**
 	 * Clears the given map.
 	 */
-	void clearMap()
+	void clear()
 	{
 	    Size bytes = (count / 8);
 	    
