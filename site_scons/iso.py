@@ -20,6 +20,7 @@ import shutil
 import tempfile
 import version
 import checksum
+import linn
 
 from build import *
 from SCons.Script import *
@@ -77,6 +78,9 @@ isoImageSha1 = target.Checksum('#boot/boot.iso.sha1', '#boot/boot.iso')
 #
 # Dependencies and target aliases.
 #
-Depends(isoImage, ['bin', 'lib', 'kernel', 'sbin', 'srv', '#boot/boot.ext2', '#boot/boot.img'])
+target.AddPreAction(isoImage, linn.action)
+target.Clean(isoImage, 'boot/boot.linn.gz')
+
+Depends(isoImage, ['bin', 'lib', 'kernel', 'sbin', 'srv', '#boot/boot.img'])
 Alias('iso', [ isoImage, isoImageMd5, isoImageSha1 ])
 AlwaysBuild(isoImage, isoImageMd5, isoImageSha1)

@@ -3,7 +3,7 @@
 ./srv/memory/server
 ./srv/filesystem/tmp/server
 ./srv/log/server
-./srv/filesystem/ext2/server
+./srv/filesystem/linn/server
 ./srv/idle/server
 ./srv/terminal/server
 ./sbin/init/init

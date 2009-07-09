@@ -15,25 +15,27 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import build
-import version
-import linn
-import img
-import iso
-import emulate
-import dist
+import os
+from SCons.Action import *
 
 #
-# Update versioning header file.
+# Generate an LinnFS filesystem image.
 #
-version.regenerateHeader()
+def generateLinnFS(target=None, source=None, env=None):
+
+    os.system("srv/filesystem/linn/host/create boot/boot.linn" \
+	      " -d . -n 16384 -e '*.cpp' -e '*.h' -e '*.c' -e '*.o' -e 'lib*' -e 'doc' " \
+	      " -e 'SCons*' -e '*.a' -e '*.S' -e '*.ld' -e 'boot*'")
+    os.system("gzip -f boot/boot.linn")
 
 #
-# Process subscripts.
+# Prints out a user friendly command-line string.
 #
-SConscript(dirs = ['lib', 'kernel', 'bin', 'sbin', 'srv'])
+def generateLinnFSStr(target, source, env):
+
+    return "  LINN    boot/boot.linn.gz"
 
 #
-# Per default, build libraries, kernel and user programs.
+# Create LinnFS Action.
 #
-Default(['lib', 'kernel', 'bin', 'sbin', 'srv'])
+action  = Action(generateLinnFS, generateLinnFSStr)
