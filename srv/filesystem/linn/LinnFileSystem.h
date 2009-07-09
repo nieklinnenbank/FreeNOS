@@ -44,7 +44,7 @@
 #define LINN_MIN_BLOCK_SIZE 1024
 
 /** Maximum blocksize. */
-#define	LINN_MAX_BLOCK_SIZE 8192
+#define	LINN_MAX_BLOCK_SIZE 4096
 
 /**
  * @}
@@ -92,7 +92,7 @@ class LinnFileSystem : public FileSystem
 	 * @return Pointer to an LinnInode on success, ZERO on failure.
 	 * @see LinnInode
 	 */
-	LinnInode * getInode(u64 inodeNum);
+	LinnInode * getInode(u32 inodeNum);
 
 	/**
 	 * Read a group descriptor from the filesystem.
@@ -100,7 +100,7 @@ class LinnFileSystem : public FileSystem
 	 * @return Pointer to an LinnGroup on success, ZERO on failure.
 	 * @see LinnGroup
 	 */
-	LinnGroup * getGroup(u64 groupNum);
+	LinnGroup * getGroup(u32 groupNum);
 
 	/**
 	 * Read a group descriptor from the filesystem, given an inode number.
@@ -109,7 +109,7 @@ class LinnFileSystem : public FileSystem
 	 * @see LinnGroup
 	 * @see LinnInode
 	 */
-	LinnGroup * getGroupByInode(u64 inodeNum);
+	LinnGroup * getGroupByInode(u32 inodeNum);
 
 	/**
 	 * Calculates the offset inside storage for a given block.
@@ -118,7 +118,7 @@ class LinnFileSystem : public FileSystem
 	 * @return Offset in bytes in storage.
 	 * @see LinnInode
 	 */
-	u64 getOffset(LinnInode *inode, u64 blk);
+	u64 getOffset(LinnInode *inode, u32 blk);
 
 	/**
          * Load a file corresponding to the given path from underlying storage.
@@ -147,7 +147,7 @@ class LinnFileSystem : public FileSystem
 	Array<LinnGroup> *groups;
 
 	/** Inode cache. */
-	HashTable<Integer<u64>,LinnInode> inodes;
+	HashTable<Integer<u32>,LinnInode> inodes;
 };
 
 #endif /* __HOST__ */

@@ -47,7 +47,7 @@ LinnCreate::LinnCreate()
     verbose   = false;
 }
 
-LinnInode * LinnCreate::createInode(le64 inodeNum, FileType type,
+LinnInode * LinnCreate::createInode(le32 inodeNum, FileType type,
 				    FileModes mode, UserID uid, GroupID gid)
 {
     LinnGroup *group;
@@ -87,12 +87,12 @@ LinnInode * LinnCreate::createInode(le64 inodeNum, FileType type,
     return inode;
 }
 
-le64 LinnCreate::createInode(char *inputFile, struct stat *st)
+le32 LinnCreate::createInode(char *inputFile, struct stat *st)
 {
     LinnGroup *group;
     LinnInode *inode;
     BitMap inodeMap;
-    u64 gn, in;
+    u32 gn, in;
 
     /* Loop all available LinnGroups. */
     for (gn = 0; gn < LINN_GROUP_COUNT(super); gn++)
@@ -133,33 +133,39 @@ le64 LinnCreate::createInode(char *inputFile, struct stat *st)
     /* Debug out. */
     if (verbose)
     {
-	printf("%s inode=%llu size=%llu\n", inputFile, in, inode->size);
+	printf("%s inode=%u size=%u\n", inputFile, in, inode->size);
     }
     return in;
 }
 
-void LinnCreate::insertIndirect(le64 *ptr, le64 blockNumber,
-				le64 blockValue, Size depth)
+void LinnCreate::insertIndirect(le32 *ptr, le32 blockNumber,
+				le32 blockValue, Size depth)
 {
-    le64 max = LINN_SUPER_NUM_PTRS(super) << (2 << depth);
-    Size index;
+    Size remain = 1;
 
-    /* Direct block. */
-    if (depth == 1)
+    /* Does the block map itself have a block? */
+    if (!*ptr)
     {
-	index = blockNumber % LINN_SUPER_NUM_PTRS(super);
-	ptr[index] = blockValue;
+	*ptr = BLOCK(super);
     }
-    /* Indirect block. */
+    /* Point to the block map. */
+    ptr = BLOCKPTR(u32, *ptr);
+    
+    /* Calculate the number of blocks remaining per entry. */
+    for (Size i = 0; i < depth - 1; i++)
+    {
+        remain *= LINN_SUPER_NUM_PTRS(super);
+    }
+    /* More indirection? */
+    if (remain == 1)
+    {
+	ptr[blockNumber % LINN_SUPER_NUM_PTRS(super)] = blockValue;
+    }
+    /* Traverse indirection. */
     else
     {
-	/* Calculate index of indirect block map. */
-	index = blockNumber / (max / LINN_SUPER_NUM_PTRS(super));
-	blockNumber -= index * (max / LINN_SUPER_NUM_PTRS(super));
-	
-	/* Traverse indirection. */
-	insertIndirect(BLOCKPTR(le64,ptr[index - 1]),
-		       blockNumber, blockValue, depth - 1);
+	insertIndirect(&ptr[blockNumber / remain],
+			blockNumber, blockValue, depth - 1);
     }
 }
 
@@ -167,7 +173,7 @@ void LinnCreate::insertFile(char *inputFile, LinnInode *inode,
 			    struct stat *st)
 {
     FILE *fp;
-    le64 blockNr;
+    le32 blockNr;
     bool reading = true;
     
     /* Open the local file. */
@@ -249,19 +255,19 @@ void LinnCreate::insertFile(char *inputFile, LinnInode *inode,
     fclose(fp);
 }
 
-void LinnCreate::insertEntry(le64 dirInode, le64 entryInode,
+void LinnCreate::insertEntry(le32 dirInode, le32 entryInode,
 			     char *name, FileType type)
 {
     LinnGroup *group;
     LinnInode *inode;
     LinnDirectoryEntry *entry;
-    le64 entryNum, blockNum;
+    le32 entryNum, blockNum;
     
     /* Point to the correct group. */
     group = BLOCKPTR(LinnGroup, super->groupsTable);
     if (dirInode != ZERO)
     {
-	group += (super->inodesPerGroup / dirInode);
+	group += (dirInode / super->inodesPerGroup);
     }
     /* Fetch inode. */
     inode = BLOCKPTR(LinnInode, group->inodeTable) +
@@ -282,8 +288,7 @@ void LinnCreate::insertEntry(le64 dirInode, le64 entryInode,
 	}
 	/* Point to the fresh entry. */
 	entry = BLOCKPTR(LinnDirectoryEntry, inode->block[blockNum]) +
-			((entryNum * sizeof(LinnDirectoryEntry)) %
-			  super->blockSize);
+			(entryNum % super->blockSize);
 	/* Fill it. */
 	entry->inode = entryInode;
 	entry->type  = type;
@@ -301,13 +306,13 @@ void LinnCreate::insertEntry(le64 dirInode, le64 entryInode,
     inode->size += sizeof(LinnDirectoryEntry);
 }
 
-void LinnCreate::insertDirectory(char *inputDir, le64 inodeNum, le64 parentNum)
+void LinnCreate::insertDirectory(char *inputDir, le32 inodeNum, le32 parentNum)
 {
     struct dirent *ent;
     struct stat st;
     DIR *dir;
     char path[255];
-    le64 child;
+    le32 child;
     bool skip = false;
 
     /* Create '.' and '..' */
@@ -352,6 +357,10 @@ void LinnCreate::insertDirectory(char *inputDir, le64 inodeNum, le64 parentNum)
 	}
 	/* Create an inode for the child. */
 	child = createInode(path, &st);
+	
+	/* Insert directory entry. */
+	insertEntry(inodeNum, child, ent->d_name,
+		    FILETYPE_FROM_ST(&st));
 	
 	/* Traverse down. */
 	if (S_ISDIR(st.st_mode))
@@ -409,11 +418,6 @@ int LinnCreate::create(Size blockSize, Size blockNum, Size inodeNum)
 	group->blockMap        = BLOCKS(super, LINN_GROUP_NUM_BLOCKMAP(super));
 	group->inodeMap        = BLOCKS(super, LINN_GROUP_NUM_INODEMAP(super));
 	group->inodeTable      = BLOCKS(super, LINN_GROUP_NUM_INODETAB(super));
-	
-	/* Increment counter. */
-	super->freeBlocksCount -= LINN_GROUP_NUM_BLOCKMAP(super) +
-				  LINN_GROUP_NUM_INODEMAP(super) +
-				  LINN_GROUP_NUM_INODETAB(super);
     }
     /* Create special inodes. */
     createInode(LINN_INODE_ROOT, DirectoryFile,
@@ -432,11 +436,12 @@ int LinnCreate::create(Size blockSize, Size blockNum, Size inodeNum)
 			       LINN_INODE_ROOT);
     }
     /* Mark blocks used. */
-    for (le64 block = 0; block < super->freeBlocksCount; block++)
+    for (le32 block = 0; block < super->freeBlocksCount; block++)
     {
 	/* Point to group. */
 	group = BLOCKPTR(LinnGroup, super->groupsTable) +
 			(block / super->blocksPerGroup);
+	group->freeBlocksCount--;
 	
 	/* Mark the block used. */
 	map.setMap(BLOCKPTR(u8, group->blockMap),

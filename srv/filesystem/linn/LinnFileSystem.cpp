@@ -27,11 +27,11 @@
 
 int main(int argc, char **argv)
 {
-    BootModule module("/boot/boot.linn");
+    BootModule module("/boot/boot.linn.gz");
     
     if (module.load())
     {
-        LinnFileSystem server("/mnt", &module);
+        LinnFileSystem server("/img", &module);
         return server.run();
     }
     return EXIT_FAILURE;
@@ -62,11 +62,10 @@ LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
 	exit(EXIT_FAILURE);
     }
     /* Create groups vector. */
-    Size cnt = LINN_GROUP_COUNT(&super);
-    groups   = new Array<LinnGroup>(cnt);
+    groups = new Array<LinnGroup>(LINN_GROUP_COUNT(&super));
 
     /* Read out group descriptors. */
-    for (le64 i = 0; i < LINN_GROUP_COUNT(&super); i++)
+    for (Size i = 0; i < LINN_GROUP_COUNT(&super); i++)
     {
 	/* Allocate buffer. */
 	group  = new LinnGroup;
@@ -105,13 +104,13 @@ Error LinnFileSystem::createFile(FileSystemMessage *msg,
     return ENOTSUP;
 }
 
-LinnInode * LinnFileSystem::getInode(u64 inodeNum)
+LinnInode * LinnFileSystem::getInode(u32 inodeNum)
 {
     LinnGroup *group;
     LinnInode *inode;
     Size offset;
     Error e;
-    Integer<u64> inodeInt = inodeNum;
+    Integer<u32> inodeInt = inodeNum;
     
     /* Validate the inode number. */
     if (inodeNum >= super.inodesCount)
@@ -131,7 +130,7 @@ LinnInode * LinnFileSystem::getInode(u64 inodeNum)
     /* Allocate inode buffer. */
     inode  = new LinnInode;
     offset = (group->inodeTable * super.blockSize) +
-    	     (inodeNum % super.inodesPerGroup);
+    	    ((inodeNum % super.inodesPerGroup) * sizeof(LinnInode));
 	     
     /* Read inode from storage. */
     if ((e = storage->read(offset, (u8 *) inode, sizeof(LinnInode))) <= 0)
@@ -141,25 +140,25 @@ LinnInode * LinnFileSystem::getInode(u64 inodeNum)
 	return ZERO;
     }
     /* Insert into the cache. */
-    inodes.insert(new Integer<u64>(inodeNum), inode);
+    inodes.insert(new Integer<u32>(inodeNum), inode);
     return inode;
 }
 
-LinnGroup * LinnFileSystem::getGroup(u64 groupNum)
+LinnGroup * LinnFileSystem::getGroup(u32 groupNum)
 {
     return (*groups)[groupNum];
 }
 
-LinnGroup * LinnFileSystem::getGroupByInode(u64 inodeNum)
+LinnGroup * LinnFileSystem::getGroupByInode(u32 inodeNum)
 {
-    return getGroup((inodeNum - 1) / super.inodesPerGroup);
+    return getGroup(inodeNum ? inodeNum / super.inodesPerGroup : 0);
 }
 
-u64 LinnFileSystem::getOffset(LinnInode *inode, u64 blk)
+u64 LinnFileSystem::getOffset(LinnInode *inode, u32 blk)
 {
     u64 numPerBlock = LINN_SUPER_NUM_PTRS(&super), offset;
-    u64 *block = ZERO;
-    Size depth = ZERO;
+    u32 *block = ZERO;
+    Size depth = ZERO, remain = 1;
 
     /* Direct blocks. */
     if (blk < LINN_INODE_DIR_BLOCKS)
@@ -181,12 +180,12 @@ u64 LinnFileSystem::getOffset(LinnInode *inode, u64 blk)
 	depth = 3;
     
     /* Allocate temporary block. */
-    block   = new u64[LINN_SUPER_NUM_PTRS(&super)];
+    block   = new u32[LINN_SUPER_NUM_PTRS(&super)];
     offset  = inode->block[(LINN_INODE_DIR_BLOCKS + depth - 1)];
     offset *= super.blockSize;
     
     /* Lookup the block number. */
-    while (depth > 0)
+    while (true)
     {
 	/* Fetch block. */
 	if (storage->read(offset, (u8 *) block, super.blockSize) < 0)
@@ -195,15 +194,17 @@ u64 LinnFileSystem::getOffset(LinnInode *inode, u64 blk)
 	    return 0;
 	}
 	/* Calculate the number of blocks remaining per entry. */
-	Size remain = LINN_SUPER_NUM_PTRS(&super);
-	
-	/* Effectively the pow() function. */
 	for (Size i = 0; i < depth - 1; i++)
 	{
-	    remain *= remain;
+	    remain *= LINN_SUPER_NUM_PTRS(&super);
+	}
+	/* More indirection? */
+	if (remain == 1)
+	{
+	    break;
 	}
 	/* Calculate the next offset. */
-	offset  = block[ remain / (blk - LINN_INODE_DIR_BLOCKS + 1) ];
+	offset  = block[ (blk - LINN_INODE_DIR_BLOCKS) / remain ];
 	offset *= super.blockSize;
 	depth--;
     }

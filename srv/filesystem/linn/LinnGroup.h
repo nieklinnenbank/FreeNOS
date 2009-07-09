@@ -65,7 +65,8 @@
  * @return Number of blocks needed for the blocks bitmap.
  */
 #define LINN_GROUP_NUM_BLOCKMAP(sb) \
-    (u64)((sb)->blocksPerGroup / LINN_SUPER_NUM_PTRS(sb))
+    ((sb)->blocksPerGroup / LINN_SUPER_NUM_PTRS(sb) ? \
+     (sb)->blocksPerGroup / LINN_SUPER_NUM_PTRS(sb) : 1)
 
 /**
  * Calculate the number of blocks needed for the inodes bitmap.
@@ -73,7 +74,8 @@
  * @return Number of blocks needed for the inodes bitmap.
  */
 #define LINN_GROUP_NUM_INODEMAP(sb) \
-    (u64)((sb)->inodesPerGroup / LINN_SUPER_NUM_PTRS(sb))
+    ((sb)->inodesPerGroup / LINN_SUPER_NUM_PTRS(sb) ? \
+     (sb)->inodesPerGroup / LINN_SUPER_NUM_PTRS(sb) : 1)
 
 /**
  * Calculate the number of blocks needed for the inodes table.
@@ -81,7 +83,8 @@
  * @return Number of blocks needed for the inodes table.
  */
 #define LINN_GROUP_NUM_INODETAB(sb) \
-    (u64)((sb)->inodesPerGroup / ((sb)->blockSize / sizeof(LinnInode)))
+    ((sb)->inodesPerGroup / ((sb)->blockSize / sizeof(LinnInode)) ? \
+     (sb)->inodesPerGroup / ((sb)->blockSize / sizeof(LinnInode)) : 1)
 
 /**
  * Calculate the number of LinnGroups which fit in one block.
@@ -116,13 +119,13 @@ typedef struct LinnGroup
     le32 freeInodesCount;
 
     /** Block bitmap. Used to mark blocks used/free. */
-    le64 blockMap;
+    le32 blockMap;
     
     /** Inode bitmap. Used to mark inodes used/free. */
-    le64 inodeMap;
+    le32 inodeMap;
     
     /** Inode table contains pre-allocated inodes. */
-    le64 inodeTable;
+    le32 inodeTable;
 }
 LinnGroup;
 

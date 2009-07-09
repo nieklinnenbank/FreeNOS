@@ -18,6 +18,8 @@
 #ifndef __FILESYSTEM_LINN_INODE_H
 #define __FILESYSTEM_LINN_INODE_H
 
+#include <Types.h>
+
 /**
  * @defgroup linn Linnenbank Filesystem (LinnFS)
  * @{
@@ -53,7 +55,7 @@
  */
 
 /** Direct blocks. */
-#define LINN_INODE_DIR_BLOCKS	5
+#define LINN_INODE_DIR_BLOCKS	4
 
 /** Indirect blocks. */
 #define	LINN_INODE_IND_BLOCKS	(LINN_INODE_DIR_BLOCKS  + 1)
@@ -100,13 +102,13 @@ typedef struct LinnInode
     le16 mode:13;	/**< Access permissions, as an FileMode. */
     le16 uid;		/**< User Identity. */
     le16 gid;		/**< Group Identity. */
-    le64 size;		/**< Size in bytes. */
-    le64 accessTime;	/**< Access time. */
-    le64 createTime;	/**< Creation time. */
-    le64 modifyTime;	/**< Modification time. */
-    le64 changeTime;	/**< Status change timestamp. */
+    le32 size;		/**< Size in bytes. */
+    le32 accessTime;	/**< Access time. */
+    le32 createTime;	/**< Creation time. */
+    le32 modifyTime;	/**< Modification time. */
+    le32 changeTime;	/**< Status change timestamp. */
     le16 links;		/**< Links count. */
-    le64 block[LINN_INODE_BLOCKS]; /**< Pointers to blocks. */
+    le32 block[LINN_INODE_BLOCKS]; /**< Pointers to blocks. */
 }
 LinnInode;
 

@@ -51,9 +51,9 @@ Error LinnFile::read(FileSystemMessage *msg)
     copyOffset -= sb->blockSize * blockNr;
 
     /* Loop all blocks. */
-    while (blockNr < LINN_INODE_NUM_BLOCKS(sb, inode) - 1 &&
+    while (blockNr < LINN_INODE_NUM_BLOCKS(sb, inode) &&
 	   total   < msg->size &&
-	   inode->size - (msg->offset + total))
+	   inode->size - (msg->offset + total) > 0)
     {
 	/* Calculate the offset in storage for this block. */
 	storageOffset = fs->getOffset(inode, blockNr);

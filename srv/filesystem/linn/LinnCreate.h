@@ -56,7 +56,7 @@
     ({ \
         if ((sb)->freeBlocksCount < (count)) \
 	{ \
-	    printf("%s: not enough free blocks remaining (%llu needed)\n", \
+	    printf("%s: not enough free blocks remaining (%lu needed)\n", \
 		    prog, (count)); \
 	    exit(EXIT_FAILURE); \
 	} \
@@ -70,7 +70,7 @@
  * @return Block number of a free block.
  */
 #define BLOCK(sb) \
-    BLOCKS(sb, ((u64)1))
+    BLOCKS(sb, (ulong)1)
 
 /**
  * Class for creating new Linnenbank FileSystems.
@@ -134,7 +134,7 @@ class LinnCreate
 	 * @param gid Group identity.
 	 * @return LinnInode pointer.
 	 */
-	LinnInode * createInode(le64 inodeNum, FileType type, FileModes mode,
+	LinnInode * createInode(le32 inodeNum, FileType type, FileModes mode,
                     		UserID uid = ZERO, GroupID gid = ZERO);
 
 	/**
@@ -143,7 +143,7 @@ class LinnCreate
 	 * @param st POSIX stat pointer for the local file.
 	 * @return Inode number of the inserted file.
 	 */
-	le64 createInode(char *inputFile, struct stat *st);
+	le32 createInode(char *inputFile, struct stat *st);
 
 	/**
 	 * Inserts an LinnDirectoryEntry to the given directory inode.
@@ -152,7 +152,7 @@ class LinnCreate
 	 * @param name Unique name (inside this directory) for the entry.
 	 * @param type FileType for the entry to insert.
 	 */
-	void insertEntry(le64 dirInode, le64 entryInode,
+	void insertEntry(le32 dirInode, le32 entryInode,
 			 char *name, FileType type);
 
 	/**
@@ -162,7 +162,7 @@ class LinnCreate
 	 * @param parentNum Inode number of our parent.
 	 * @note This function is recursive.
 	 */
-	void insertDirectory(char *inputFile, le64 inodeNum, le64 parentNum);
+	void insertDirectory(char *inputFile, le32 inodeNum, le32 parentNum);
 
 	/**
 	 * Inserts the contents of a local file into an LinnInode.
@@ -181,8 +181,8 @@ class LinnCreate
 	 * @param blockValue The block address to insert indirectly.
 	 * @param depth Level of indirection.
 	 */
-	void insertIndirect(le64 *ptr, le64 blockNumber,
-			    le64 blockValue, Size depth);
+	void insertIndirect(le32 *ptr, le32 blockNumber,
+			    le32 blockValue, Size depth);
 
 	/**
 	 * Writes the final image to disk.
@@ -207,9 +207,6 @@ class LinnCreate
 	
 	/** Pointer to the superblock. */
 	LinnSuperBlock *super;
-	
-	/** Block and Inode bitmaps. */
-	BitMap *blockMap, *inodeMap;
 
 	/** Array of blocks available in the filesystem. */
 	u8 *blocks;

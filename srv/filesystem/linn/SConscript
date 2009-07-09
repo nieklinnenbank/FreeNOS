@@ -20,7 +20,7 @@ from build import *
 #
 # Target system environment.
 #
-targetEnv = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc', 'libgcc' ],
+targetEnv = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc' ],
 		            [ 'filesystem', 'process', 'log' ])
 
 #

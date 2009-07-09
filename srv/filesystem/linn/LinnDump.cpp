@@ -25,9 +25,10 @@
 #include <errno.h>
 #include <time.h>
 
-char * timeString(u64 timestamp)
+char * timeString(u32 timestamp)
 {
     char *buff = (char *) malloc(128);
+    time_t timeval = (time_t) timestamp;
     struct tm *tm;
     
     /* Check for zero timestamps. */
@@ -36,7 +37,7 @@ char * timeString(u64 timestamp)
 	return strdup("Never");
     }
     /* Fill in the time struct. */
-    tm = gmtime((const time_t *) &timestamp);
+    tm = gmtime(&timeval);
     
     /* Format time. */
     if (!strftime(buff, 128, "%F %T", tm))
@@ -145,15 +146,15 @@ int main(int argc, char **argv)
 	    "   blockSize       = %u\n"
 	    "   blocksPerGroup  = %u\n"
 	    "   inodesPerGroup  = %u\n"
-	    "   inodesCount     = %llu\n"
-	    "   blocksCount     = %llu (%.2fMB)\n"
-	    "   freeBlocksCount = %llu (%.2f%%)\n"
-	    "   freeInodesCount = %llu (%.2f%%)\n"
+	    "   inodesCount     = %u\n"
+	    "   blocksCount     = %u (%.2fMB)\n"
+	    "   freeBlocksCount = %u (%.2f%%)\n"
+	    "   freeInodesCount = %u (%.2f%%)\n"
 	    "   creationTime    = %s\n"
 	    "   mountTime       = %s\n"
 	    "   mountCount      = %u\n"
 	    "   lastCheck       = %s\n"
-	    "   groupsTable     = %llu\n"
+	    "   groupsTable     = %u\n"
 	    "]\n",
 	    super.magic0, super.magic1,
 	    super.majorRevision, super.minorRevision,
@@ -188,9 +189,9 @@ int main(int argc, char **argv)
 		"[\n"
 		"   freeBlocksCount = %u\n"
 		"   freeInodesCount = %u\n"
-		"   blockMap        = %llu - %llu\n"
-		"   inodeMap        = %llu - %llu\n"
-		"   inodeTable      = %llu - %llu\n"
+		"   blockMap        = %u - %lu\n"
+		"   inodeMap        = %u - %lu\n"
+		"   inodeTable      = %u - %lu\n"
 		"]\n",
 		i,
 		i * super.blocksPerGroup,
@@ -198,11 +199,11 @@ int main(int argc, char **argv)
 		group.freeBlocksCount,
 		group.freeInodesCount,
 		group.blockMap,
-		LINN_GROUP_NUM_BLOCKMAP(&super),
+		group.blockMap + LINN_GROUP_NUM_BLOCKMAP(&super),
 		group.inodeMap,
-		LINN_GROUP_NUM_INODEMAP(&super),
+		group.inodeMap + LINN_GROUP_NUM_INODEMAP(&super),
 		group.inodeTable,
-		LINN_GROUP_NUM_INODETAB(&super));
+		group.inodeTable + LINN_GROUP_NUM_INODETAB(&super));
     }
     /* Cleanup and terminate. */
     fclose(fp);

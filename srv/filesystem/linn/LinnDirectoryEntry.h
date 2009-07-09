@@ -33,7 +33,7 @@
     ((sb)->blockSize / sizeof(LinnDirectoryEntry))
 
 /** Length of the name field in an directory entry. */
-#define LINN_DIRENT_NAME_LEN 55
+#define LINN_DIRENT_NAME_LEN 59
 
 /**
  * Struct of an directory entry in LinnFS.
@@ -41,7 +41,7 @@
 typedef struct LinnDirectoryEntry
 {
     /** Inode number. */
-    le64 inode;
+    le32 inode;
 
     /** Type of file, as an FileType. */
     u8 type;

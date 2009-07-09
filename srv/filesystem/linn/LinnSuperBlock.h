@@ -96,7 +96,7 @@
  * @return Number of block address pointers.
  */
 #define LINN_SUPER_NUM_PTRS(sb) \
-    ((sb)->blockSize / sizeof(u64))
+    ((sb)->blockSize / sizeof(u32))
 
 /**
  * @}
@@ -117,17 +117,17 @@ typedef struct LinnSuperBlock
     le32 blocksPerGroup;	/**< Number of blocks per group. */
     le32 inodesPerGroup;	/**< Number of inodes per group. */
 
-    le64 inodesCount;		/**< Total number of inodes. */
-    le64 blocksCount;		/**< Total number of data blocks. */
-    le64 freeBlocksCount;	/**< Number of free data blocks. */
-    le64 freeInodesCount;	/**< Free inodes remaining. */
+    le32 inodesCount;		/**< Total number of inodes. */
+    le32 blocksCount;		/**< Total number of data blocks. */
+    le32 freeBlocksCount;	/**< Number of free data blocks. */
+    le32 freeInodesCount;	/**< Free inodes remaining. */
 
-    le64 creationTime;		/**< Time when the filesystem was created. */
-    le64 mountTime;		/**< Last time we where mounted (seconds since 1970). */
+    le32 creationTime;		/**< Time when the filesystem was created. */
+    le32 mountTime;		/**< Last time we where mounted (seconds since 1970). */
     le16 mountCount;		/**< Number of times we where mounted. */
-    le64 lastCheck;		/**< Timestamp of the last check. */
+    le32 lastCheck;		/**< Timestamp of the last check. */
     
-    le64 groupsTable;		/**< Block address of the LinnGroup table. */
+    le32 groupsTable;		/**< Block address of the LinnGroup table. */
 }
 LinnSuperBlock;
 
