@@ -77,11 +77,11 @@ class BitMap
 	 */
 	Error markNext()
 	{
-	    Address *ptr;                                
-	    Size num = count / sizeof(Address);
+	    u32 *ptr;
+	    Size num = count / sizeof(u32);
 
     	    /* At least one, and include partially used bytes. */
-    	    if (!num || count % sizeof(Address))
+    	    if (!num || count % sizeof(u32))
 	    {
 		num++;
 	    }
@@ -89,19 +89,19 @@ class BitMap
     	    for (Size i = 0; i < num; i++)
     	    {
         	/* Point to the correct offset. */
-        	ptr = ((Address *) (map)) + i;
+        	ptr = ((u32 *) (map)) + i;
 
         	/* Any blocks free? */
-        	if (*ptr != (Address) ~ZERO)
+        	if (*ptr != (u32) ~ZERO)
         	{
             	    /* Find the first free bit. */
-            	    for (Size bit = 0; bit < sizeof(Address) * 8; bit++)
+            	    for (Size bit = 0; bit < sizeof(u32) * 8; bit++)
             	    {
-            		if (!(*ptr & 1 << bit))
+            		if (!(*ptr & (1 << bit)))
                 	{
                     	    *ptr |= (1 << bit);
                 	    free--;
-			    return bit + (sizeof(Address) * 8 * i);
+			    return bit + (sizeof(u32) * 8 * i);
                 	}
             	    }
 		}
