@@ -16,4 +16,4 @@
 #
 
 SConscript( dirs = [ 'liballoc', 'libc', 'libcrt', 'libexec',
-		     'libparse', 'libposix', 'libteken', 'libregexp', 'libgcc' ])
+		     'libparse', 'libposix', 'libteken', 'libregexp' ])
