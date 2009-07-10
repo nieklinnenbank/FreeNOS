@@ -24,7 +24,7 @@ from SCons.Action import *
 def generateLinnFS(target=None, source=None, env=None):
 
     os.system("srv/filesystem/linn/host/create boot/boot.linn" \
-	      " -d . -n 16384 -e '*.cpp' -e '*.h' -e '*.c' -e '*.o' -e 'lib*' -e 'doc' " \
+	      " -d . -s -n 16384 -e '*.cpp' -e '*.h' -e '*.c' -e '*.o' -e 'lib*' -e 'doc' " \
 	      " -e 'SCons*' -e '*.a' -e '*.S' -e '*.ld' -e 'boot*'")
     os.system("gzip -f boot/boot.linn")
 

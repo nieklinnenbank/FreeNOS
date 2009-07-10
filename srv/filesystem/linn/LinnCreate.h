@@ -123,6 +123,12 @@ class LinnCreate
 	 */
 	void setVerbose(bool newVerbose);
 
+	/**
+	 * Invoke strip(1) on executable input files.
+	 * @param newStrip True to enable stripping, false to disable.
+	 */
+	void setStrip(bool newStrip);
+
     private:
 
 	/**
@@ -144,6 +150,15 @@ class LinnCreate
 	 * @return Inode number of the inserted file.
 	 */
 	le32 createInode(char *inputFile, struct stat *st);
+
+	/**
+	 * Opens the given input file. Optionally strips the input file.
+	 * @param inputFile Path to the file to open.
+	 * @param st File information.
+	 * @param fd Pointer to file handle buffer.
+	 * @return True if stripped, false if not.
+	 */
+	bool openFile(char *inputFile, struct stat *st, int *fd);
 
 	/**
 	 * Inserts an LinnDirectoryEntry to the given directory inode.
@@ -201,6 +216,9 @@ class LinnCreate
 
 	/** Output verbose messages. */
 	bool verbose;
+	
+	/** Strip executable files. */
+	bool strip;
 
 	/** List of file patterns to ignore. */
 	List<String> excludes;

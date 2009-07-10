@@ -35,6 +35,8 @@
 #include <string.h>
 #include <errno.h>
 #include <libgen.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -45,6 +47,7 @@ LinnCreate::LinnCreate()
     super     = ZERO;
     input     = ZERO;
     verbose   = false;
+    strip     = false;
 }
 
 LinnInode * LinnCreate::createInode(le32 inodeNum, FileType type,
@@ -138,6 +141,54 @@ le32 LinnCreate::createInode(char *inputFile, struct stat *st)
     return in;
 }
 
+bool LinnCreate::openFile(char *inputFile, struct stat *st, int *fd)
+{
+    int tmp, bytes, total = 0;
+    char buf[1024];
+
+    /* Open the local file. */
+    if ((*fd = open(inputFile, O_RDONLY)) < 0)
+    {
+	printf("%s: failed to fopen() `%s': %s\n",
+		prog, inputFile, strerror(errno));
+	exit(EXIT_FAILURE);
+    }
+    /* Attempt to strip(1) the file. */
+    if (strip && S_ISREG(st->st_mode) && st->st_mode & S_IXUSR)
+    {
+	strncpy(inputFile, "execXXXXXX", 11);
+    
+	/* Open temporary file. */
+	if ((tmp = mkstemp(inputFile)) == -1)
+	{
+	    printf("%s: failed to mkstemp() for `%s': %s\n",
+		    prog, inputFile, strerror(errno));
+	    exit(EXIT_FAILURE);
+	}
+	/* Copy contents. */
+	while ((bytes = read(*fd, buf, sizeof(buf))) > 0)
+	{
+	    write(tmp, buf, bytes);
+	    total += bytes;
+	}
+	/* Switch file descriptor. */
+	close(*fd);
+	close(tmp);
+	
+	/* Now attempt to strip it. */
+	snprintf(buf, sizeof(buf), "strip '%s' &> /dev/null", inputFile);
+	system(buf);
+	
+	/* Reopen. */
+	*fd = open(inputFile, O_RDONLY);
+	
+	/* Update file information. */
+	st->st_size = total;
+	return true;
+    }
+    return false;
+}
+
 void LinnCreate::insertIndirect(le32 *ptr, le32 blockNumber,
 				le32 blockValue, Size depth)
 {
@@ -172,39 +223,30 @@ void LinnCreate::insertIndirect(le32 *ptr, le32 blockNumber,
 void LinnCreate::insertFile(char *inputFile, LinnInode *inode,
 			    struct stat *st)
 {
-    FILE *fp;
+    int fd, bytes;
     le32 blockNr;
-    bool reading = true;
-    
-    /* Open the local file. */
-    if ((fp = fopen(inputFile, "r")) == NULL)
-    {
-	printf("%s: failed to fopen() `%s': %s\n",
-		prog, inputFile, strerror(errno));
-	exit(EXIT_FAILURE);
-    }
+    bool stripped;
+    char *tmpPath = strdup(inputFile);
+
+    /* Get file handle. */
+    stripped = openFile(tmpPath, st, &fd);
+
     /* Read blocks from the file. */
-    while (reading)
+    while (true)
     {
 	/* Grab a block. */
 	blockNr = BLOCK(super);
     
 	/* Read a block. */
-	if (fread(BLOCKPTR(u8, blockNr), super->blockSize, 1, fp) != 1)
+	if ((bytes = read(fd, BLOCKPTR(u8, blockNr), super->blockSize)) < 0)
 	{
-	    /* End-of-file? */
-	    if (feof(fp))
-	    {
-		reading = false;
-	    }
-	    /* Read error occurred. */
-	    else
-	    {
-		printf("%s: failed to fread() `%s': %s\n",
-			prog, inputFile, strerror(errno));
-		exit(EXIT_FAILURE);
-	    }
+	    printf("%s: failed to read() `%s': %s\n",
+		    prog, inputFile, strerror(errno));
+	    exit(EXIT_FAILURE);
 	}
+	/* End of file? */
+	if (!bytes) break;
+	
 	/* Insert the block (direct). */
 	if (LINN_INODE_NUM_BLOCKS(super, inode) <
 	    LINN_INODE_DIR_BLOCKS)
@@ -246,13 +288,11 @@ void LinnCreate::insertFile(char *inputFile, LinnInode *inode,
 	    break;
 	}
 	/* Increment size appropriately. */
-	if (reading)
-	    inode->size += super->blockSize;
-	else
-	    inode->size += st->st_size % super->blockSize;
+	inode->size += bytes;
     }
     /* Cleanup. */
-    fclose(fp);
+    close(fd);
+    if (stripped) unlink(tmpPath);
 }
 
 void LinnCreate::insertEntry(le32 dirInode, le32 entryInode,
@@ -502,6 +542,11 @@ void LinnCreate::setVerbose(bool newVerbose)
     this->verbose = newVerbose;
 }
 
+void LinnCreate::setStrip(bool newStrip)
+{
+    this->strip = newStrip;
+}
+
 int main(int argc, char **argv)
 {
     LinnCreate fs;
@@ -519,6 +564,7 @@ int main(int argc, char **argv)
 	       " -v           Output verbose messages.\r\n"
 	       " -d DIRECTORY Insert files from the given directory into the image\r\n"
 	       " -e PATTERN   Exclude matching files from the created filesystem\r\n"
+	       " -s           Use strip(1) on executable input files.\r\n"
 	       " -b SIZE      Specifies the blocksize in bytes.\r\n"
 	       " -n COUNT     Specifies the maximum number of blocks.\r\n"
 	       " -i COUNT     Specifies the number of inodes to allocate.\r\n",
@@ -548,6 +594,11 @@ int main(int argc, char **argv)
 	{
 	    fs.setInput(argv[i + 3]);
 	    i++;
+	}
+	/* Strip executable files. */
+	else if (!strcmp(argv[i + 2], "-s"))
+	{
+	    fs.setStrip(true);
 	}
 	/* Block size. */
 	else if (!strcmp(argv[i + 2], "-b") && i < argc - 3)
