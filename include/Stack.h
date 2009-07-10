@@ -51,15 +51,15 @@ template <class T> class Stack
 	 */
 	void push(Element<T>* node)
 	{
-		if( _top == NULL )
-		{
-			_top = node;
-			return;
-		}
-		
-		Element<T>* temp = _top;
+	    if( _top == NULL )
+	    {
 		_top = node;
-		_top->setNext(temp);
+		return;
+	    }
+		
+	    Element<T>* temp = _top;
+	    _top = node;
+	    _top->setNext(temp);
 	}
 	
 	/**
@@ -69,9 +69,9 @@ template <class T> class Stack
 	 */
 	Element<T>* pop()
 	{
-		Element<T>* temp = _top;
-		_top = temp->getNext();
-		return temp;
+	    Element<T>* temp = _top;
+	    _top = temp->getNext();
+	    return temp;
 	}
 	
 	/**
@@ -79,14 +79,13 @@ template <class T> class Stack
 	 */
 	Size length()
 	{
-		Size s = 0;
+	    Size s = 0;
 		
-		for( Element<T>* node = _top; node != NULL; node = node->getNext() )
-		{
-			s++;
-		}
-		
-		return s;
+	    for( Element<T>* node = _top; node != NULL; node = node->getNext() )
+	    {
+		s++;
+	    }
+	    return s;
 	}
 	
 	/**
@@ -94,7 +93,7 @@ template <class T> class Stack
 	 */
 	T* peek()
 	{
-		return _top->getData();
+	    return _top->getData();
 	}
     private:
 
