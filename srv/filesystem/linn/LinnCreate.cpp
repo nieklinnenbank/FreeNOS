@@ -72,7 +72,7 @@ LinnInode * LinnCreate::createInode(le32 inodeNum, FileType type,
     inode->gid   = gid;
     inode->size  = ZERO;
     inode->accessTime = ZERO;
-    inode->createTime = time(NULL);
+    inode->createTime = time(ZERO);
     inode->modifyTime = inode->createTime;
     inode->changeTime = inode->createTime;
     inode->links = 1;
@@ -174,9 +174,9 @@ bool LinnCreate::openFile(char *inputFile, struct stat *st, int *fd)
 	/* Switch file descriptor. */
 	close(*fd);
 	close(tmp);
-	
+
 	/* Now attempt to strip it. */
-	snprintf(buf, sizeof(buf), "strip '%s' &> /dev/null", inputFile);
+	snprintf(buf, sizeof(buf), "strip %s", inputFile);
 	system(buf);
 	
 	/* Reopen. */
@@ -440,7 +440,7 @@ int LinnCreate::create(Size blockSize, Size blockNum, Size inodeNum)
     super->inodesPerGroup   = super->inodesCount / LINN_GROUP_COUNT(super);
     super->freeInodesCount  = super->inodesCount;
     super->freeBlocksCount  = blockNum - 3;
-    super->creationTime     = time(NULL);
+    super->creationTime     = time(ZERO);
     super->mountTime	    = ZERO;
     super->mountCount	    = ZERO;
     super->lastCheck	    = ZERO;
