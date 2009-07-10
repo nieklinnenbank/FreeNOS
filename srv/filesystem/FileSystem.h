@@ -142,10 +142,11 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
          */    
 	void ioHandler(FileSystemMessage *msg)
 	{
+	    FileSystemMessage vfs;
 	    FileSystemPath path;
 	    FileCache *fc = ZERO; 
 	    File *f = ZERO;
-	    char buf[PATHLEN];
+	    char buf[PATHLEN], tmp[PATHLEN];
 
 	    /*
 	     * Find the file, either in cache, storage or via
@@ -159,15 +160,35 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 
 		    /* Copy the path first. */
 		    if (VMCopy(msg->procID, Read, (Address) buf,
-			      (Address) msg->buffer + strlen(mountPath), PATHLEN) <= 0)
+			      (Address) msg->buffer, PATHLEN) <= 0)
 		    {
 			msg->error(EACCES, IODone);
 			return;
 		    }
 		    else
 		    {
-			/* Parse the path. */
-		        path.parse(buf);
+			/* Is the path relative? */
+			if (buf[0] != '/')
+		        {
+			    vfs.action = GetCurrentDir;
+			    vfs.buffer = tmp;
+			    vfs.procID = msg->procID;
+			    
+			    /*
+			     * Ask for their current directory.
+			     * TODO: this can be much more efficient, if we can
+			     *       map the user process table in our address space!
+			     * TODO: this is also buggy... what if VFS tries to contact us meanwhile...
+			     */
+			    IPCMessage(VFSSRV_PID, SendReceive, &vfs, sizeof(vfs));
+			    
+			    /* Reconstruct path. */
+    			    snprintf(tmp, sizeof(tmp), "%s/%s", tmp,
+				     buf);
+			    path.parse(tmp);
+			}
+			else
+			    path.parse(buf + strlen(mountPath));
 
 			/* No need to lookup caches for creation. */	    
 			if (msg->action == CreateFile)

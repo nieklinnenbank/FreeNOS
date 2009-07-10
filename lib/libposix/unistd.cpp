@@ -152,3 +152,22 @@ int gethostname(char *name, size_t namelen)
     strlcpy(name, "localhost", namelen);
     return 0;
 }
+
+char *getcwd(char *buf, size_t size)
+{
+    FileSystemMessage msg;
+    
+    /* Fill message. */
+    msg.buffer = buf;
+    msg.procID = getpid();
+    msg.action = GetCurrentDir;
+    
+    /* Ask VFS. */
+    IPCMessage(VFSSRV_PID, SendReceive, &msg, sizeof(msg));
+    
+    /* Set errno. */
+    errno = msg.result;
+
+    /* All done. */
+    return errno == ESUCCESS ? buf : ZERO;
+}

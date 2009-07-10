@@ -143,13 +143,17 @@ char * Shell::getCommand()
 
 void Shell::prompt()
 {
-    char tmp[128];
+    char host[128], cwd[128];
     
     /* Retrieve current hostname. */
-    gethostname(tmp, sizeof(tmp));
+    gethostname(host, sizeof(host));
+    
+    /* Retrieve current working directory. */
+    getcwd(cwd, sizeof(cwd));
     
     /* Print out the prompt. */
-    printf(WHITE "(" GREEN "%s" WHITE ") # ", tmp);
+    printf(WHITE "(" GREEN "%s" WHITE ") " BLUE "%s" WHITE " # ",
+	   host, cwd);
 }
 
 Size Shell::parse(char *cmdline, char **argv, Size maxArgv)

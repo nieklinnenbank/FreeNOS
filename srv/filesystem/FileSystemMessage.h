@@ -31,20 +31,22 @@
  */
 typedef enum FileSystemAction
 {
-    CreateFile  = 0,
-    OpenFile    = 1,
-    ReadFile    = 2,
-    WriteFile   = 3,
-    SeekFile    = 4,
-    StatFile    = 5,
-    ChangeFile  = 6,
-    CloseFile   = 7,
-    Mount	= 8,
-    Unmount	= 9,
-    MountInfo   = 10,
-    NewProcess  = 11,
-    KillProcess = 12,
-    IODone      = 13,
+    CreateFile    = 0,
+    OpenFile      = 1,
+    ReadFile      = 2,
+    WriteFile     = 3,
+    SeekFile      = 4,
+    StatFile      = 5,
+    ChangeFile    = 6,
+    CloseFile     = 7,
+    Mount	  = 8,
+    Unmount  	  = 9,
+    MountInfo     = 10,
+    NewProcess    = 11,
+    KillProcess   = 12,
+    IODone        = 13,
+    GetCurrentDir = 14,
+    SetCurrentDir = 15,
 }
 FileSystemAction;
 

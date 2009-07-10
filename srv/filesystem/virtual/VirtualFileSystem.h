@@ -90,13 +90,8 @@ typedef struct UserProcessFSEntry
     /** Total number of open files. */
     Size fileCount;
     
-    /** Current working directory.
-     char curdir[len];
-     */
-    
-    /** Root directory
-     char rootdir[len];
-      */
+    /** Current working directory. */
+    char currentDir[PATHLEN];
 }
 UserProcessFSEntry;
 
@@ -151,6 +146,12 @@ class VirtualFileSystem : public IPCServer<VirtualFileSystem, FileSystemMessage>
 	void killProcessHandler(FileSystemMessage *msg);
 
 	/**
+	 * Get or set the current directory.
+	 * @param msg Input message.
+	 */
+	void currentDirHandler(FileSystemMessage *msg);
+
+	/**
 	 * Creats a new mount.
 	 * @param path Full path of the new mount.
 	 * @param pid Process which handles the mountpoint.
@@ -160,10 +161,10 @@ class VirtualFileSystem : public IPCServer<VirtualFileSystem, FileSystemMessage>
 
 	/**
 	 * Lookup the mount for a given path.
-	 * @param path Path of the mountpoint to find.
+	 * @param msg Message containing a path pointer.
 	 * @return Pointer to mount if found, ZERO otherwise.
 	 */
-	FileSystemMount * findMount(char *path);
+	FileSystemMount * findMount(FileSystemMessage *msg);
 	
 	/** Mounted filesystems. */
 	static FileSystemMount mounts[MAX_MOUNTS];

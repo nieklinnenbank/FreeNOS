@@ -248,6 +248,23 @@ extern C int forkexec(const char *path, const char *argv[]);
 extern C int gethostname(char *name, size_t namelen);
 
 /**
+ * @brief Get the pathname of the current working directory.
+ *
+ * The getcwd() function shall place an absolute pathname of the
+ * current working directory in the array pointed to by buf, and
+ * return buf. The pathname shall contain no components that are
+ * dot or dot-dot, or are symbolic links.
+ *
+ * @param buf Output buffer, to store the current directory.
+ * @param size Size of the output buffer.
+ * @return Upon successful completion, getcwd() shall return
+ *         the buf argument. Otherwise, getcwd() shall return
+ *         a null pointer and set errno to indicate the error.
+ *         The contents of the array pointed to by buf are then undefined.
+ */
+extern C char *getcwd(char *buf, size_t size);
+
+/**
  * @}
  */
 

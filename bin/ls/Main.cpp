@@ -20,25 +20,29 @@
 #include <dirent.h>
 #include <string.h>
 #include <errno.h>
+#include <unistd.h>
 #include <TerminalCodes.h>
 
 int main(int argc, char **argv)
 {
     DIR *d;
     struct dirent *dent;
+    char path[255];
 
-    /* Verify command-line arguments. */
-    if (argc <= 1)
+    /* Grab command-line arguments, if any */
+    if (argc > 1)
     {
-	printf("usage: %s DIRECTORY\r\n",
-		argv[0]);
-	return EXIT_FAILURE;
+	strncpy(path, argv[1], sizeof(path));
+	path[sizeof(path) - 1] = 0;
     }
+    else
+	getcwd(path, sizeof(path));
+
     /* Attempt to open the directory. */
-    if (!(d = opendir(argv[1])))
+    if (!(d = opendir(path)))
     {
 	printf("%s: failed to open '%s': %s\r\n",
-		argv[0], argv[1], strerror(errno));
+		argv[0], path, strerror(errno));
 	return EXIT_FAILURE;
     }
     /* Read directory. */

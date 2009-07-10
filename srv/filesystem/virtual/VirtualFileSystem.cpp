@@ -44,6 +44,8 @@ VirtualFileSystem::VirtualFileSystem()
     addIPCHandler(MountInfo,   &VirtualFileSystem::mountInfoHandler);
     addIPCHandler(NewProcess,  &VirtualFileSystem::newProcessHandler);
     addIPCHandler(KillProcess, &VirtualFileSystem::killProcessHandler);
+    addIPCHandler(GetCurrentDir, &VirtualFileSystem::currentDirHandler);
+    addIPCHandler(SetCurrentDir, &VirtualFileSystem::currentDirHandler);
 
     /* Wait for process server to sync BootPrograms from BootImages. */
     for (Size i = 0; i < info.moduleCount; i++)
@@ -75,7 +77,6 @@ VirtualFileSystem::VirtualFileSystem()
 
 void VirtualFileSystem::ioHandler(FileSystemMessage *msg)
 {
-    char path[PATHLEN];
     FileSystemMount *mount;
     FileDescriptor *fd;
     ProcessID fsID;
@@ -95,15 +96,8 @@ void VirtualFileSystem::ioHandler(FileSystemMessage *msg)
 	case OpenFile:
 	case StatFile:
     
-	    /* Obtain full path first. */
-	    if ((msg->result = VMCopy(msg->from, Read, (Address) path,
-				     (Address) msg->buffer, PATHLEN)) < 0)
-	    {
-		msg->error(msg->result);
-		return;
-	    }
 	    /* Retrieve mountpoint. */
-	    if (!(mount = findMount(path)))
+	    if (!(mount = findMount(msg)))
 	    {
 		msg->error(ENOENT);
 		return;
@@ -154,9 +148,7 @@ void VirtualFileSystem::ioHandler(FileSystemMessage *msg)
 void VirtualFileSystem::ioDoneHandler(FileSystemMessage *msg)
 {
     FileDescriptor *fd;
-    char path[PATHLEN];
     FileSystemMount *mount;
-    Error err;
 
     /* Retrieve correct mountpoint or filedescriptor. */
     switch (msg->savedAction)
@@ -164,15 +156,8 @@ void VirtualFileSystem::ioDoneHandler(FileSystemMessage *msg)
 	case OpenFile:
 	case StatFile:
 
-	    /* Obtain full path first. */
-	    if ((err = VMCopy(msg->procID, Read, (Address) path,
-				     (Address) msg->buffer, PATHLEN) < 0))
-	    {
-		msg->error(err, IODone, msg->procID);
-		return;
-	    }
 	    /* Retrieve mountpoint. */
-	    if (!(mount = findMount(path)))
+	    if (!(mount = findMount(msg)))
 	    {
 		msg->error(ENOENT, IODone, msg->procID);
 		return;
@@ -255,17 +240,23 @@ void VirtualFileSystem::mountInfoHandler(FileSystemMessage *msg)
 
 void VirtualFileSystem::newProcessHandler(FileSystemMessage *msg)
 {
-    /* Fill in the new process. */
+    /* Fill in identities. */
     procs[msg->procID].userID  = msg->userID;
     procs[msg->procID].groupID = msg->groupID;
     
-    /* Copy file descriptor from parent, if any. */
+    /* Copy file descriptors, and current directory from parent, if any. */
     if (msg->parentID != ANY)
+    {
 	procs[msg->procID].files = new Array<FileDescriptor>(
 					procs[msg->parentID].files);
+	strlcpy(procs[msg->procID].currentDir,
+		procs[msg->parentID].currentDir, PATHLEN);
+    }
     else
+    {
 	procs[msg->procID].files = new Array<FileDescriptor>;
-    
+	strncpy(procs[msg->procID].currentDir, "/", PATHLEN);
+    }
     /* Success. */
     msg->result = ESUCCESS;
 }
@@ -283,6 +274,38 @@ void VirtualFileSystem::killProcessHandler(FileSystemMessage *msg)
     msg->result = ESUCCESS;
 }
 
+void VirtualFileSystem::currentDirHandler(FileSystemMessage *msg)
+{
+    /* Only allow same owner. */
+    if (!(procs[msg->from].userID == 0 ||
+         (procs[msg->from].userID == procs[msg->procID].userID)))
+    {
+	msg->result = EPERM;
+	return;
+    }
+    /* Handle request. */
+    switch (msg->action)
+    {
+	case GetCurrentDir:
+	    msg->result = VMCopy(msg->from, Write,
+			        (Address) procs[msg->procID].currentDir,
+			        (Address) msg->buffer, PATHLEN);
+	    break;
+	
+	case SetCurrentDir:
+	    msg->result = VMCopy(msg->from, Read,
+				(Address) procs[msg->procID].currentDir,
+				(Address) msg->buffer, PATHLEN);
+	default:
+	    break;
+    }
+    /* Mark with ESUCCESS? */
+    if (msg->result > 0)
+    {
+	msg->size   = msg->result;
+	msg->result = ESUCCESS;
+    }
+}
 
 void VirtualFileSystem::insertMount(char *path, ProcessID pid, ulong opts)
 {
@@ -299,11 +322,28 @@ void VirtualFileSystem::insertMount(char *path, ProcessID pid, ulong opts)
     }
 }
 
-FileSystemMount * VirtualFileSystem::findMount(char *path)
+FileSystemMount * VirtualFileSystem::findMount(FileSystemMessage *msg)
 {
-    Size length = 0, len;
     FileSystemMount *m = ZERO;
+    Size length = 0, len;
+    char path[PATHLEN], tmp[PATHLEN];
 
+    /* Obtain full path first. */
+    if (VMCopy(msg->procID, Read, (Address) path,
+	      (Address) msg->buffer, PATHLEN) < 0)
+    {
+	return ZERO;
+    }
+    /* Force string terminate. */
+    path[PATHLEN-1] = ZERO;
+    
+    /* Is the path relative? */
+    if (path[0] != '/')
+    {
+	snprintf(tmp, sizeof(tmp), "%s/%s",
+		 procs[msg->procID].currentDir, path);
+	strlcpy(path, tmp, PATHLEN);
+    }
     /* Find the longest match. */
     for (Size i = 0; i < MAX_MOUNTS; i++)
     {
@@ -322,5 +362,6 @@ FileSystemMount * VirtualFileSystem::findMount(char *path)
 	    }
 	}
     }
+    /* All done. */
     return m;
 }

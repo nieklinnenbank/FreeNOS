@@ -21,5 +21,6 @@ env = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc', 'li
 		      [ 'memory', 'filesystem', 'filesystem/virtual', 'terminal' ])
 
 env.Program('sh', [ 'Main.cpp', 'Shell.cpp', 'HelpCommand.cpp', 
-		    'ShellCommand.cpp', 'WriteCommand.cpp', 'ExitCommand.cpp' ],
+		    'ShellCommand.cpp', 'WriteCommand.cpp', 'ExitCommand.cpp',
+		    'ChangeDirCommand.cpp' ],
 		     LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])
