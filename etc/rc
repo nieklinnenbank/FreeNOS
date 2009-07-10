@@ -1,4 +1,4 @@
-/img/srv/filesystem/proc/server
-/img/srv/serial/server
-/img/srv/pci/server
-/img/bin/sh/sh
+/srv/filesystem/proc/server
+/srv/serial/server
+/srv/pci/server
+/bin/sh/sh

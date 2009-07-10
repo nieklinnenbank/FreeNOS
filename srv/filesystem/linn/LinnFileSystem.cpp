@@ -31,7 +31,7 @@ int main(int argc, char **argv)
     
     if (module.load())
     {
-        LinnFileSystem server("/img", &module);
+        LinnFileSystem server("/", &module);
         return server.run();
     }
     return EXIT_FAILURE;

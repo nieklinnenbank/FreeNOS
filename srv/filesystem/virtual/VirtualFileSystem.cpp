@@ -301,18 +301,26 @@ void VirtualFileSystem::insertMount(char *path, ProcessID pid, ulong opts)
 
 FileSystemMount * VirtualFileSystem::findMount(char *path)
 {
-    /* Find a match. */
+    Size length = 0, len;
+    FileSystemMount *m = ZERO;
+
+    /* Find the longest match. */
     for (Size i = 0; i < MAX_MOUNTS; i++)
     {
 	if (mounts[i].path[0])
 	{
-	    Size len = strlen(mounts[i].path);
+	    len = strlen(mounts[i].path);
     
-	    if (strncmp(path, mounts[i].path, len) == 0)
+	    /*
+	     * Only choose this mount, if it matches,
+	     * and is longer than the last match.
+	     */
+	    if (strncmp(path, mounts[i].path, len) == 0 && len > length)
 	    {
-		return &mounts[i];
+		length = len;
+		m = &mounts[i];
 	    }
 	}
     }
-    return (FileSystemMount *) ZERO;
+    return m;
 }
