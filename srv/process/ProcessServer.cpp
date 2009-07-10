@@ -56,7 +56,7 @@ ProcessServer::ProcessServer()
     for (Size i = 0; i < info.moduleCount; i++)
     {
 	/* BootImage have the '.img' suffix. */
-	if (str.match(info.modules[i].string, "*.img"))
+	if (str.match(info.modules[i].string, "*.img.gz"))
 	{
 	    /* Map BootImage into our address space. */
 	    VMCtl(Map, SELF, info.modules[i].modStart, 0xa1000000);

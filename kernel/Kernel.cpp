@@ -36,7 +36,7 @@ Kernel::Kernel()
 	mod     = &((MultibootModule *) multibootInfo.modsAddress)[n];
 
 	/* Is this a BootImage? */
-	if (str.match((char *) mod->string, "*.img"))
+	if (str.match((char *) mod->string, "*.img.gz"))
 	{
 	    /* Map the BootImage into our address space. */
 	    image = (BootImage *) memory->mapVirtual(mod->modStart);

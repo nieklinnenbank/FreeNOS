@@ -1,6 +1,6 @@
 ./boot/grub/stage1
 ./boot/grub/stage2_eltorito
 ./boot/boot.linn.gz
-./boot/boot.img
+./boot/boot.img.gz
 ./boot/grub/menu.lst
 ./kernel/kernel
