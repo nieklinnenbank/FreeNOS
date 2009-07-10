@@ -199,11 +199,11 @@ int main(int argc, char **argv)
 		group.freeBlocksCount,
 		group.freeInodesCount,
 		group.blockMap,
-		group.blockMap + LINN_GROUP_NUM_BLOCKMAP(&super),
+		(ulong) group.blockMap + LINN_GROUP_NUM_BLOCKMAP(&super),
 		group.inodeMap,
-		group.inodeMap + LINN_GROUP_NUM_INODEMAP(&super),
+		(ulong) group.inodeMap + LINN_GROUP_NUM_INODEMAP(&super),
 		group.inodeTable,
-		group.inodeTable + LINN_GROUP_NUM_INODETAB(&super));
+		(ulong) group.inodeTable + LINN_GROUP_NUM_INODETAB(&super));
     }
     /* Cleanup and terminate. */
     fclose(fp);

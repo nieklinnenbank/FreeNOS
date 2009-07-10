@@ -57,7 +57,7 @@
         if ((sb)->freeBlocksCount < (count)) \
 	{ \
 	    printf("%s: not enough free blocks remaining (%lu needed)\n", \
-		    prog, (count)); \
+		    prog, (ulong)(count)); \
 	    exit(EXIT_FAILURE); \
 	} \
 	(sb)->freeBlocksCount -= (count); \
