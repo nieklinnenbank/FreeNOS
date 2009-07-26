@@ -15,40 +15,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <String.h>
-#include <string.h>
-#include <URI.h>
-#include <FileURI.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
+#include <string.h>
+#include "FileURI.h"
 
-void usage(char*);
-
-int main(int argc, char **argv)
+FileURI::FileURI(char* uri) : URI(uri)
 {
+    if( _scheme == 0 )
+    {
+        // Temporary until exception support is added to FreeNOS
+        printf("Illegal FileURI.\n");
+        exit(1);
+    } else {
+        if( strcasecmp(_scheme, "file") != 0 )
+        {
+            printf("Not a FileURI: %s.\n", _uri);
+            // Temporary until exception support is added to FreeNOS
+            exit(1);
+        }
+    }
 
-    if( argc == 1 )
-    {
-        usage(argv[0]);
-    }
-    
-    String u1(argv[1]);
-    URI uri1(*u1);
-    
-    if( strcasecmp("file", uri1.getScheme() ) == 0 )
-    {
-        FileURI fu(*u1);
-        printf("%s\n", fu.getRawURI() );
-    }else {
-        printf("Unknown scheme: %s\n", uri1.getRawURI() );
-    }
-    
-    return EXIT_SUCCESS;
 }
 
-void usage(char* prog)
+FileURI::~FileURI()
 {
-    printf("usage: %s [--uri <uri> | <value>]\n", prog);
-    exit(0);
 }

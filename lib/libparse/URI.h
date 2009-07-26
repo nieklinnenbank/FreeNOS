@@ -136,6 +136,9 @@ class URI
         /** The fragment part of the URI. */
         char* _fragment;
 
+        /** The scheme of the URI. */
+        char* _scheme;
+        
         /**
          * Decodes the given encoded char* (hex)
          * and returns the decoded char.
@@ -143,11 +146,6 @@ class URI
          * @return char The decoded char.
          */
         char _decode(char* encoded);
-
-    private:
-
-        /** The scheme of the URI. */
-        char* _scheme;
         
 };
 

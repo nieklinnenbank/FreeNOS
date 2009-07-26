@@ -24,6 +24,13 @@
 
 URI::URI(char* uri) : _uri(uri)
 {
+    if( _uri == (char*)0 )
+    {
+        // TODO: Throw exception if support is added to FreeNOS.
+        printf("ERROR: Illegal URI.\n");
+        exit(1);
+    }
+    
     _scheme = 0;
     _hierarchical = 0;
     _query = 0;

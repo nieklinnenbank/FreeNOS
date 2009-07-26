@@ -15,40 +15,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <String.h>
-#include <string.h>
-#include <URI.h>
-#include <FileURI.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
+#ifndef __LIBPARSE_FILEURI_H
+#define __LIBPARSE_FILEURI_H
 
-void usage(char*);
+#include "URI.h"
 
-int main(int argc, char **argv)
+/**
+ * Represents a FileURI according to RFC 1630 and 1738
+ *
+ * Foo.
+ *
+ * @see http://tools.ietf.org/html/rfc1630
+ * @see http://tools.ietf.org/html/rfc1738
+ */
+class FileURI : public URI
 {
+    public:
 
-    if( argc == 1 )
-    {
-        usage(argv[0]);
-    }
-    
-    String u1(argv[1]);
-    URI uri1(*u1);
-    
-    if( strcasecmp("file", uri1.getScheme() ) == 0 )
-    {
-        FileURI fu(*u1);
-        printf("%s\n", fu.getRawURI() );
-    }else {
-        printf("Unknown scheme: %s\n", uri1.getRawURI() );
-    }
-    
-    return EXIT_SUCCESS;
-}
+        /**
+         * Constructor
+         */
+        FileURI(char* uri);
+        
+        /**
+         * Destructor
+         */
+        virtual ~FileURI();
+        
+};
 
-void usage(char* prog)
-{
-    printf("usage: %s [--uri <uri> | <value>]\n", prog);
-    exit(0);
-}
+#endif /* __LIBPARSE_FILEURI */
