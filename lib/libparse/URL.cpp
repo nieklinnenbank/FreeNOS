@@ -17,19 +17,32 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "FileURI.h"
+#include "URL.h"
+#include "StringTokenizer.h"
 
-FileURI::FileURI(char* uri) : URI(uri)
+URL::URL(char* uri) : URI(uri)
 {
     if( _scheme == 0 )
     {
         // Temporary until exception support is added to FreeNOS
-        printf("Illegal FileURI.\n");
+        printf("Empty scheme not allowed.\n");
         exit(1);
     } else {
-        if( strcasecmp(_scheme, "file") != 0 )
+        StringTokenizer st(KNOWN_SCHEMES, ' ');
+        bool known = false;
+        
+        while( st.hasNext() )
         {
-            printf("Not a FileURI: %s.\n", _uri);
+            if( strcasecmp( st.next(), _scheme) == 0 )
+            {
+                known = true;
+                break;
+            }
+        }
+        
+        if( !known )
+        {
+            printf("Unknown scheme: %s.\n", _uri);
             // Temporary until exception support is added to FreeNOS
             exit(1);
         }
@@ -37,6 +50,11 @@ FileURI::FileURI(char* uri) : URI(uri)
 
 }
 
-FileURI::~FileURI()
+URL::~URL()
 {
+}
+
+char** URL::split()
+{
+    return (char**)0;
 }

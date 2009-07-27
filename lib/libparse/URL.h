@@ -15,33 +15,39 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBPARSE_FILEURI_H
-#define __LIBPARSE_FILEURI_H
+#ifndef __LIBPARSE_URL_H
+#define __LIBPARSE_URL_H
 
 #include "URI.h"
 
+#define KNOWN_SCHEMES "ftp http gopher mailto news nntp telnet wais file prospero"
+
 /**
- * Represents a FileURI according to RFC 1630 and 1738
+ * Represents an URL according to RFC 1738
  *
  * Foo.
  *
- * @see http://tools.ietf.org/html/rfc1630
  * @see http://tools.ietf.org/html/rfc1738
  */
-class FileURI : public URI
+class URL : public URI
 {
     public:
 
         /**
          * Constructor
          */
-        FileURI(char* uri);
+        URL(char* uri);
         
         /**
          * Destructor
          */
-        virtual ~FileURI();
+        virtual ~URL();
+        
+        /**
+         * Splits this URL 
+         */
+        char** split();
         
 };
 
-#endif /* __LIBPARSE_FILEURI */
+#endif /* __LIBPARSE_URL */

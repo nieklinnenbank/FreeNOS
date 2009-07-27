@@ -18,7 +18,7 @@
 #include <String.h>
 #include <string.h>
 #include <URI.h>
-#include <FileURI.h>
+#include <URL.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -36,13 +36,8 @@ int main(int argc, char **argv)
     String u1(argv[1]);
     URI uri1(*u1);
     
-    if( strcasecmp("file", uri1.getScheme() ) == 0 )
-    {
-        FileURI fu(*u1);
-        printf("%s\n", fu.getRawURI() );
-    }else {
-        printf("Unknown scheme: %s\n", uri1.getRawURI() );
-    }
+    URL fu(*u1);
+    printf("%s\n", fu.getRawURI() );
     
     return EXIT_SUCCESS;
 }
