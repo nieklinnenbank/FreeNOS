@@ -53,11 +53,11 @@ Vector<String>* FileURL::split(char sep)
         // Example: file:///var/log/apache2/access.log
     
         String url(_uri);
-        String sub = url.substring(0, 5);
+        String sub = url.substring(0, 7);
     
-        if( strcasecmp( *sub, "file:") == 0 )
+        if( strcasecmp( *sub, "file://") == 0 )
         {
-            url = url.substring(6);
+            url = url.substring(8);
             StringTokenizer st(url, sep);
 
             Vector<String>* ret = new Vector<String>();
