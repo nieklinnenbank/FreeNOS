@@ -20,41 +20,43 @@
 #include "URL.h"
 #include "StringTokenizer.h"
 
-URL::URL(char* uri) : URI(uri)
+URL* URL::create(char* scheme, char* url)
 {
-    if( _scheme == 0 )
+    if( scheme == (char*)0 )
     {
-        // Temporary until exception support is added to FreeNOS
-        printf("Empty scheme not allowed.\n");
-        exit(1);
-    } else {
-        StringTokenizer st(KNOWN_SCHEMES, ' ');
-        bool known = false;
-        
-        while( st.hasNext() )
+        return (URL*)0;
+    }
+    
+    StringTokenizer st(KNOWN_SCHEMES, ' ');
+    bool known = false;
+    
+    while( st.hasNext() )
+    {
+        if( strcasecmp( st.next(), scheme) == 0 )
         {
-            if( strcasecmp( st.next(), _scheme) == 0 )
-            {
-                known = true;
-                break;
-            }
-        }
-        
-        if( !known )
-        {
-            printf("Unknown scheme: %s.\n", _uri);
-            // Temporary until exception support is added to FreeNOS
-            exit(1);
+            known = true;
+            break;
         }
     }
+    
+    if( !known )
+    {
+        printf("Unknown scheme: %s.\n", scheme);
+        return (URL*)0;
+    }
+    
+    if( strcasecmp("file", scheme) == 0 )
+    {
+        return new URL(url);
+    }
+    
+    return (URL*)0;
+}
 
+URL::URL(char* uri) : URI(uri)
+{
 }
 
 URL::~URL()
 {
-}
-
-char** URL::split()
-{
-    return (char**)0;
 }

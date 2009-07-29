@@ -233,6 +233,41 @@ class String : public Comparable<String>
             return( strcmp(pt, suffix) == 0);
         }
         
+        /**
+         * Returns a new String that contains a copy of this String
+         * starting from the given index (inclusive).
+         *
+         * @param index The begin index to create the substring of.
+         * @return String* a pointer to the newly created substring.
+         */
+        String substring(unsigned int index)
+        {
+            return substring(index, strlen(value) - index);
+        }
+        
+        /**
+         * Returns a new String that contains a copy of this String,
+         * starting from index (inclusive), and copies at most
+         * size characters.
+         *
+         * @param index The begin index to create the substring of.
+         * @param size The maximum size of the substring.
+         * @return String* a pointer to the newly created substring.
+         */
+        String substring(unsigned int index, unsigned int size)
+        {
+            size_t length = strlen(value);
+            if( index >= length )
+            {
+                index = length - 1;
+            }
+            
+            char* copy = strndup(value + index, size);
+            String s(copy);
+            free(copy);
+            return s;
+        }
+        
 	/**
 	 * Matches the given string against a mask.
 	 * @param string Input string.

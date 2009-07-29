@@ -18,7 +18,7 @@
 #include <String.h>
 #include <string.h>
 #include <URI.h>
-#include <URL.h>
+#include <FileURL.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -34,10 +34,25 @@ int main(int argc, char **argv)
     }
     
     String u1(argv[1]);
-    URI uri1(*u1);
     
-    URL fu(*u1);
-    printf("%s\n", fu.getRawURI() );
+    FileURL* url = new FileURL(*u1);
+    printf("%s\n", url->getRawURI() );
+    
+    Vector<String>* splits = url->split();
+    printf("splitted.\n");
+    
+    for(Size size = 0; size < splits->count(); size++)
+    {
+        String* s = splits->get(size);
+        char* split = s->operator*();
+        
+        if( split )
+        {
+            printf("part: %s\n", split);
+        } else {
+            printf("part is NULL\n");
+        }
+    }
     
     return EXIT_SUCCESS;
 }

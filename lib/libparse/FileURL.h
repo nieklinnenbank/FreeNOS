@@ -15,39 +15,45 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBPARSE_URL_H
-#define __LIBPARSE_URL_H
+#ifndef __LIBPARSE_FILEURL_H
+#define __LIBPARSE_FILEURL_H
 
-#include "URI.h"
+#include <Vector.h>
+#include <String.h>
+#include "URL.h"
 
-#define KNOWN_SCHEMES "ftp http gopher mailto news nntp telnet wais file prospero"
+#define FILEURL_DEFAULT_SEPARATOR '/'
 
 /**
- * Represents an URL according to RFC 1738
- *
- * Foo.
- *
- * @see http://tools.ietf.org/html/rfc1738
+ * Represents a file url
  */
-class URL : public URI
+class FileURL : public URL
 {
         
     public:
     
         /**
-         *
-         */
-        static URL* create(char* scheme, char* url);
-
-        /**
          * Constructor
          */
-        URL(char* uri);
+        FileURL(char* url);
         
         /**
          * Destructor
          */
-        virtual ~URL();
+        virtual ~FileURL();
+        
+        /**
+         * Splits this FileURL in pieces separated by sep.
+         *
+         * @param sep The separater character. This defaults 
+         * to FILEURL_DEFAULT_SEPARATOR
+         * @return Array<String> The splitted url.
+         */
+        Vector<String>* split(char sep = FILEURL_DEFAULT_SEPARATOR);
+    
+    private:
+        
+        Vector<String>* _splitted;
 };
 
-#endif /* __LIBPARSE_URL */
+#endif /* __LIBPARSE_FILEURL */
