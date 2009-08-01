@@ -36,22 +36,9 @@ int main(int argc, char **argv)
     String u1(argv[1]);
     
     FileURL* url = new FileURL(*u1);
-    printf("%s\n", url->getRawURI() );
-    
-    Vector<String>* splits = url->split();
-    
-    for(Size size = 0; size < splits->count(); size++)
-    {
-        String* s = splits->get(size);
-        char* split = s->operator*();
-        
-        if( split )
-        {
-            printf("part: '%s'\n", split);
-        } else {
-            printf("part is NULL\n");
-        }
-    }
+    printf("FileURL::full() == %s\n", url->full()->operator*() );
+    printf("FileURL::parent()->full() == %s\n", url->parent()->full()->operator*() );
+    printf("FileURL::base() == %s\n", url->base()->operator*() );
     
     delete url;
     return EXIT_SUCCESS;

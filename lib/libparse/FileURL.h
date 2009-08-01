@@ -48,15 +48,48 @@ class FileURL : public URL
          * file:///var/log/apache2/access.log
          * the URL will by default be splitted in var, log, apache2, access.log
          *
-         * @param sep The separater character. This defaults
-         * to FILEURL_DEFAULT_SEPARATOR
          * @return Array<String> The splitted url.
          */
-        Vector<String>* split(char sep = FILEURL_DEFAULT_SEPARATOR);
+        Vector<String>* split();
+        
+        /**
+         * Returns the original full path as a String instance.
+         * @return String instance containing the original full path.
+         */
+        String* full();
+        
+        /**
+         * Returns the URL of our parent's path.
+         * If we are the root path, (FileURL*)0 is returned.
+         * @return the parent path.
+         */
+        FileURL* parent();
+        
+        /**
+         * Returns the name of the last element in this FileURL.
+         * @return Name of the base.
+         */
+        String* base();
+        
+        /**
+         * Returns the length of our full path.
+         * @return the length.
+         */
+        Size length();
     
     private:
         
+        // The parts in this FileURL.
         Vector<String>* _splitted;
+        
+        // The original full path as a String instance.
+        String* _fullPath;
+        
+        // Our parent path
+        FileURL* _parent;
+        
+        // The length of the original path
+        Size _length;
 };
 
 #endif /* __LIBPARSE_FILEURL */

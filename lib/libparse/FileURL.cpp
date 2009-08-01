@@ -18,6 +18,7 @@
 #include <stdlib.h> // EXIT_SUCCESS & EXIT_FAILURE
 #include <stdio.h>
 #include <string.h>
+#include <StringBuffer.h>
 #include "StringTokenizer.h"
 #include "FileURL.h"
 
@@ -30,6 +31,9 @@ FileURL::FileURL(char* url) : URL(url)
     }
     
     _splitted = (Vector<String>*)0;
+    _fullPath = (String*)0;
+    _parent = (FileURL*)0;
+    _length = strlen(_hierarchical);
 }
 
 FileURL::~FileURL()
@@ -43,9 +47,19 @@ FileURL::~FileURL()
         
         delete _splitted;
     }
+    
+    if( _fullPath )
+    {
+        delete _fullPath;
+    }
+    
+    if( _parent )
+    {
+        delete _parent;
+    }
 }
 
-Vector<String>* FileURL::split(char sep)
+Vector<String>* FileURL::split()
 {
 
     // Are we already splitted?
@@ -60,7 +74,7 @@ Vector<String>* FileURL::split(char sep)
             hier = hier.substring(2);
         }
         
-        StringTokenizer st(hier, sep);
+        StringTokenizer st(hier, FILEURL_DEFAULT_SEPARATOR);
 
         Vector<String>* ret = new Vector<String>();
 
@@ -80,4 +94,54 @@ Vector<String>* FileURL::split(char sep)
     }
     
     return _splitted;
+}
+
+String* FileURL::full()
+{
+    if( ! _fullPath )
+    {
+        _fullPath = new String(_hierarchical);
+    }
+    
+    return _fullPath;
+}
+
+FileURL* FileURL::parent()
+{
+    if( ! _parent )
+    {
+        // Check if we are the root path
+        if( split()->count() == 1 )
+        {
+            _parent = (FileURL*)0;
+        } else {
+            StringBuffer* sb = new StringBuffer();
+            
+            sb->append("file://");
+            
+            for(Size pos = 0; pos < _splitted->count() - 1; pos++ )
+            {
+                sb->append(FILEURL_DEFAULT_SEPARATOR);
+                String* part = _splitted->get(pos);
+                sb->append( part->operator*() );
+            }
+            
+            String* s = sb->toString();
+            _parent = new FileURL( sb->toString()->operator*() );
+            delete sb;
+        }
+    }
+    
+    return _parent;
+}
+
+String* FileURL::base()
+{
+    Size count = split()->count();
+    return _splitted->get(count - 1);
+}
+
+Size FileURL::length()
+{
+    return _length;
 }
