@@ -28,7 +28,7 @@ URI::URI(char* uri) : _uri(uri)
     {
         // TODO: Throw exception if support is added to FreeNOS.
         printf("ERROR: Illegal URI.\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     
     _scheme = 0;
@@ -38,10 +38,14 @@ URI::URI(char* uri) : _uri(uri)
     _normalized = 0;
     
     StringTokenizer st(_uri, ':');
+    unsigned int count = st.count();
     
-    if( st.count() > 0 )
+    if( count > 1 )
     {
         _scheme = strdup(st.next());
+    } else {
+        printf("Illegal URI: %s\n", _uri);
+        exit(EXIT_FAILURE);
     }
     
     StringTokenizer querySt(st.next(), '?');

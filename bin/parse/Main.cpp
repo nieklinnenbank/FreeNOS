@@ -39,7 +39,6 @@ int main(int argc, char **argv)
     printf("%s\n", url->getRawURI() );
     
     Vector<String>* splits = url->split();
-    printf("splitted.\n");
     
     for(Size size = 0; size < splits->count(); size++)
     {
@@ -48,12 +47,13 @@ int main(int argc, char **argv)
         
         if( split )
         {
-            printf("part: %s\n", split);
+            printf("part: '%s'\n", split);
         } else {
             printf("part is NULL\n");
         }
     }
     
+    delete url;
     return EXIT_SUCCESS;
 }
 

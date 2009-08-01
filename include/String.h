@@ -203,6 +203,51 @@ class String : public Comparable<String>
             }
             return false;
         }
+
+        /**
+         * Tests if this String starts with the specified prefix.
+         * @param prefix The prefix.
+         * @return true If the character sequence represented by the 
+         * argument is a prefix of the character sequence represented by
+         * this String; false otherwise.
+         */
+        bool startsWith(String& prefix)
+        {
+            return startsWith(*prefix);
+        }
+        
+        /**
+         * Tests if this String starts with the specified prefix.
+         * @param prefix The prefix.
+         * @return true If the character sequence represented by the 
+         * argument is a prefix of the character sequence represented by
+         * this String; false otherwise.
+         */
+        bool startsWith(char* prefix)
+        {
+            if( ! prefix )
+            {
+                return false;
+            }
+            
+            Size pLength = strlen(prefix);
+            Size vLength = strlen(value);
+            
+            if( pLength > vLength )
+            {
+                return false;
+            }
+            
+            for( Size pos = 0; pos < pLength; pos++ )
+            {
+                if( value[pos] != prefix[pos] )
+                {
+                    return false;
+                }
+            }
+            
+            return true;
+        }
         
         /**
          * Tests if this String ends with the specified suffix.
@@ -266,6 +311,59 @@ class String : public Comparable<String>
             String s(copy);
             free(copy);
             return s;
+        }
+        
+        /**
+         * Returns an exact copy of this String.
+         * The memory for the cloned String is allocated with the 'new'
+         * operator, and has to be cleaned up with 'delete'.
+         * @return The cloned String.
+         */
+        String* clone()
+        {
+            // The constructor of String creates a copy
+            // of the specified char*
+            String* clone = new String(value);
+            return clone;
+        }
+        
+        /**
+         * Returns a copy of this String, with leading and trailing
+         * whitespace omitted
+         */
+        String* trim()
+        {
+            Size from = 0;
+            Size to = 0;
+            Size length = strlen(value);
+            
+            for( Size pos = 0; pos < length; pos++ )
+            {
+                if( ! isWhitespace(value[pos]) )
+                {
+                    from = pos;
+                    break;
+                }
+            }
+            
+            for( Size pos = length - 1; true ; pos-- )
+            {
+                if( pos <= from || ! isWhitespace(value[pos]) )
+                {
+                    to = pos;
+                    break;
+                }
+            }
+            
+            if( from == to )
+            {
+                return (String*)0;
+            }
+            
+            char* trimmed = strndup(value + from, to - from + 1);
+            String* t = new String(trimmed);
+            free(trimmed);
+            return t;
         }
         
 	/**
@@ -452,6 +550,11 @@ class String : public Comparable<String>
 	char * operator * ()
 	{
 	    return value;
+	}
+	
+	static bool isWhitespace(char c)
+	{
+	    return (c == ' ' || c == '\t' || c == '\r' || c == '\n');
 	}
 
     private:

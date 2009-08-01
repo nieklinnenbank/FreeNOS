@@ -44,8 +44,11 @@ class FileURL : public URL
         
         /**
          * Splits this FileURL in pieces separated by sep.
+         * So if, for example, the FileURL to split is the following:
+         * file:///var/log/apache2/access.log
+         * the URL will by default be splitted in var, log, apache2, access.log
          *
-         * @param sep The separater character. This defaults 
+         * @param sep The separater character. This defaults
          * to FILEURL_DEFAULT_SEPARATOR
          * @return Array<String> The splitted url.
          */

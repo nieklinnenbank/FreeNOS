@@ -23,7 +23,7 @@
 
 FileURL::FileURL(char* url) : URL(url)
 {
-    if( strcasecmp( _scheme, "file" ) != 0 )
+    if( strcasecmp( "file", _scheme ) != 0 )
     {
         printf("Not a FileURL: %s.\n", _uri);
         exit(EXIT_FAILURE);
@@ -48,28 +48,35 @@ FileURL::~FileURL()
 Vector<String>* FileURL::split(char sep)
 {
 
+    // Are we already splitted?
     if( !_splitted )
     {
         // Example: file:///var/log/apache2/access.log
     
-        String url(_uri);
-        String sub = url.substring(0, 7);
+        String hier(_hierarchical);
     
-        if( strcasecmp( *sub, "file://") == 0 )
+        if( hier.startsWith("//") )
         {
-            url = url.substring(8);
-            StringTokenizer st(url, sep);
-
-            Vector<String>* ret = new Vector<String>();
-
-            while( st.hasNext() )
-            {
-                String* s  = new String(st.next());
-                ret->insert( s );
-            }
-
-            _splitted = ret;
+            hier = hier.substring(2);
         }
+        
+        StringTokenizer st(hier, sep);
+
+        Vector<String>* ret = new Vector<String>();
+
+        while( st.hasNext() )
+        {
+            String* s  = new String(st.next());
+            String* trim = s->trim();
+            
+            if( trim != (String*)0 && trim->size() > 0)
+            {
+                ret->insert( trim );
+            }
+            delete s;
+        }
+
+        _splitted = ret;
     }
     
     return _splitted;
