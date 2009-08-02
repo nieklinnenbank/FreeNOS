@@ -81,6 +81,12 @@ class Memory
 	 */
 	void releasePhysical(Address paddr);
 
+	/**
+	 * Check if a physical memory page is marked.
+	 * @param addr Physical address to check.
+	 */
+	bool isMarked(Address paddr);
+
         /**
          * Allocate a new virtual memory page.
 	 * @param vaddr Virtual address.
@@ -151,12 +157,6 @@ class Memory
 	static u8 *memoryMap, *memoryMapEnd;
 
     private:
-
-	/**
-	 * Check if a physical memory page is marked.
-	 * @param addr Physical address to check.
-	 */
-	bool isMarked(Address paddr);
 
         /**
 	 * (Un)mark a physical page.
