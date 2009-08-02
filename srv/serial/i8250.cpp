@@ -71,7 +71,7 @@ Error i8250::read(s8 *buffer, Size size, Size offset)
     {
 	buffer[bytes++] = inb(base);
     }
-    return bytes ? bytes : EAGAIN;
+    return bytes ? (Error) bytes : EAGAIN;
 }
 								     
 Error i8250::write(s8 *buffer, Size size, Size offset)
@@ -83,5 +83,5 @@ Error i8250::write(s8 *buffer, Size size, Size offset)
     {
     	outb(base, buffer[bytes++]);
     }
-    return bytes ? bytes : EAGAIN;
+    return bytes ? (Error) bytes : EAGAIN;
 }

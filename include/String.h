@@ -305,8 +305,11 @@ class String : public Comparable<String>
             {
                 index = length - 1;
             }
-            
-            char* copy = strndup(value + index, size);
+
+            char *copy;
+            copy = (char *)malloc(size);
+            memcpy(copy, value+index, size);
+
             String s(copy);
             free(copy);
             return s;
@@ -358,8 +361,11 @@ class String : public Comparable<String>
             {
                 return (String*)0;
             }
-            
-            char* trimmed = strndup(value + from, to - from + 1);
+
+            char* trimmed;
+            trimmed = (char *)malloc(to - from + 1);
+            memcpy(trimmed, value + from, to - from + 1);
+
             String* t = new String(trimmed);
             free(trimmed);
             return t;
