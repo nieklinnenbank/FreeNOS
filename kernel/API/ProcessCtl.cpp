@@ -83,6 +83,7 @@ int ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
 	    info->id    = proc->getID();
 	    info->state = proc->getState();
 	    info->stack = proc->getStack();
+	    info->pageDirectory = proc->getPageDirectory();
 	    break;
 	    
 	case SetStack:
