@@ -16,6 +16,7 @@
  */
 
 #include <MemoryMessage.h>
+#include <Config.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -25,12 +26,13 @@ int main(int argc, char **argv)
     MemoryMessage mem;
 
     /* Query memory usage stats. */
-    mem.usage();
+    mem.action = SystemMemory;
+    mem.ipc(MEMSRV_PID, SendReceive, sizeof(mem));
     
     /* Print it. */
     printf("Total:     %u KB\r\n"
            "Available: %u KB\r\n",
-           mem.bytes / 1024, mem.bytesFree / 1024);
+            mem.bytes / 1024, mem.free / 1024);
     
     /* Done. */
     return EXIT_SUCCESS;
