@@ -17,51 +17,35 @@
 
 #include <API/IPCMessage.h>
 #include <FileSystemMessage.h>
+#include <FileType.h>
+#include <FileMode.h>
 #include <Config.h>
+#include "POSIXSupport.h"
 #include <errno.h>
-#include "stat.h"
-
-int stat(const char *path, struct stat *buf)
-{
-    FileSystemMessage msg;
-    FileStat st;
-
-    /* Fill message. */
-    msg.action = StatFile;
-    msg.buffer = (char *) path;
-    msg.stat   = &st;
-    
-    /* Ask VFS for the information. */
-    IPCMessage(VFSSRV_PID, SendReceive, &msg, sizeof(msg));
-
-    /* Copy information into buf. */
-    if (msg.result == ESUCCESS)
-    {
-	buf->fromFileStat(&st);
-    }
-    /* Set errno. */
-    errno = msg.result;
-    
-    /* Success. */
-    return msg.result == ESUCCESS ? 0 : -1;
-}
+#include "sys/stat.h"
 
 int mknod(const char *path, mode_t mode, dev_t dev)
 {
     FileSystemMessage msg;
+    ProcessID mnt = findMount(path);
     
     /* Fill in the message. */
     msg.action   = CreateFile;
     msg.buffer   = (char *) path;
     msg.deviceID = dev;
-    msg.filetype = CharacterDeviceFile;
-    msg.mode     = (FileMode) mode;
+    msg.filetype = (FileType) ((mode >> FILEMODE_BITS) & FILETYPE_MASK);
+    msg.mode     = (FileModes) (mode & FILEMODE_MASK);
     
-    /* Ask VFS to create the file for us. */
-    IPCMessage(VFSSRV_PID, SendReceive, &msg, sizeof(msg));
+    /* Ask FileSystem to create the file for us. */
+    if (mnt)
+    {
+	IPCMessage(mnt, SendReceive, &msg, sizeof(msg));
     
-    /* Set errno. */
-    errno = msg.result;
+	/* Set errno. */
+	errno = msg.result;
+    }
+    else
+	errno = ENOENT;
 
     /* Report result. */
     return msg.result == ESUCCESS ? 0 : -1;

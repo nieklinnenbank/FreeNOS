@@ -17,7 +17,14 @@
 
 from build import *
 
-env = Prepare(target, [ 'liballoc', 'libc', 'libexec' ],
-		      [ 'filesystem', 'process' ])
-env.Library('libposix', [ 'dirent.cpp','fcntl.cpp', 'sys/stat.cpp',
-			  'unistd.cpp','sys/utsname.cpp', 'sys/wait.cpp' ])
+env = Prepare(target, [ 'liballoc', 'libc', 'libcrt', 'libexec' ],
+		      [ 'filesystem', 'process', 'memory' ])
+
+env.Library('libposix', [ Glob('sys/stat/*.cpp'),
+			  Glob('sys/wait/*.cpp'),
+			  Glob('sys/utsname/*.cpp'),
+			  Glob('unistd/*.cpp'),
+			  Glob('fcntl/*.cpp'),
+			  Glob('dirent/*.cpp'),
+			  Glob('syslog/*.cpp'),
+			  Glob('*.cpp') ])

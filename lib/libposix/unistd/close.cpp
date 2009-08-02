@@ -15,19 +15,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Version.h>
-#include <string.h>
-#include "utsname.h"
+#include <API/IPCMessage.h>
+#include <FileSystemMessage.h>
+#include <Config.h>
+#include "POSIXSupport.h"
+#include <errno.h>
+#include "unistd.h"
 
-int uname(struct utsname *name)
+int close(int fildes)
 {
-    /* Fill in the struct. */
-    strlcpy(name->sysname, "FreeNOS", UTSBUF);
-    strlcpy(name->nodename, "localhost", UTSBUF);
-    strlcpy(name->release, RELEASE, UTSBUF);
-    strlcpy(name->version, COMPILER " " DATETIME, UTSBUF);
-    strlcpy(name->machine, ARCH, UTSBUF);
-
-    /* Success. */
-    return 0;
+    FileSystemMessage msg;
+    ProcessID mnt = findMount(fildes);
+    
+    /* Fill the message. */
+    msg.action = CloseFile;
+    msg.fd     = fildes;
+    
+    /* Ask the FileSystem. */
+    if (mnt)
+    {
+	IPCMessage(mnt, SendReceive, &msg, sizeof(msg));
+    
+	/* Set error number. */
+	errno = msg.result;
+    }
+    else
+	errno = ENOENT;
+    
+    /* All done. */
+    return errno == ESUCCESS ? 0 : -1;
 }

@@ -16,7 +16,6 @@
  */
 
 #include <API/IPCMessage.h>
-#include <Allocator.h>
 #include <Config.h>
 #include <FileType.h>
 #include <Directory.h>
@@ -89,25 +88,4 @@ DIR * opendir(const char *dirname)
     
     /* Success. */
     return dir;
-}
-
-struct dirent * readdir(DIR *dirp)
-{
-    if (dirp->current < dirp->count)
-	return &dirp->buffer[dirp->current++];
-    else
-	return (struct dirent *) ZERO;
-}
-
-int closedir(DIR *dirp)
-{
-    /* Close file handle. */
-    close(dirp->fd);
-
-    /* Free buffers. */
-    delete dirp->buffer;
-    delete dirp;
-    
-    /* Success. */
-    return 0;
 }

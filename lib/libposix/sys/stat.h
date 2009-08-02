@@ -162,18 +162,21 @@
  */
 struct stat
 {
+#ifdef CPP
     /**
      * Instantiates the structure given an FileStat object.
      * @param stat FileStat pointer to copy from.
      */
     void fromFileStat(FileStat *stat)
     {
-	this->st_mode = stat->type << FILEMODE_BITS;
-        this->st_size = stat->size;
-        this->st_uid  = stat->userID;
-        this->st_gid  = stat->groupID;
-	this->st_dev  = stat->deviceID;
+	this->st_mode  = stat->access;
+	this->st_mode |= stat->type << FILEMODE_BITS;
+        this->st_size  = stat->size;
+        this->st_uid   = stat->userID;
+        this->st_gid   = stat->groupID;
+	this->st_dev   = stat->deviceID;
     }
+#endif /* CPP */
 
     /** Device ID of device containing file. */
     dev_t st_dev;

@@ -18,23 +18,37 @@
 #include <API/IPCMessage.h>
 #include <FileSystemMessage.h>
 #include <Config.h>
+#include "POSIXSupport.h"
 #include <errno.h>
-#include "fcntl.h"
+#include "sys/stat.h"
 
-int open(const char *path, int oflag, ...)
+int stat(const char *path, struct stat *buf)
 {
     FileSystemMessage msg;
-    
+    FileStat st;
+    ProcessID mnt = findMount(path);
+
     /* Fill message. */
-    msg.action = OpenFile;
+    msg.action = StatFile;
     msg.buffer = (char *) path;
+    msg.stat   = &st;
     
-    /* Ask VFS. */
-    IPCMessage(VFSSRV_PID, SendReceive, &msg, sizeof(msg));
-    
-    /* Set errno. */
-    errno = msg.result;
+    /* Ask the FileSystem for the information. */
+    if (mnt)
+    {
+	IPCMessage(mnt, SendReceive, &msg, sizeof(msg));
+
+        /* Copy information into buf. */
+	if (msg.result == ESUCCESS)
+	{
+	    buf->fromFileStat(&st);
+	}
+	/* Set errno. */
+	errno = msg.result;
+    }
+    else
+	errno = ENOENT;
     
     /* Success. */
-    return msg.result == ESUCCESS ? msg.fd : -1;
+    return msg.result == ESUCCESS ? 0 : -1;
 }
