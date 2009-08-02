@@ -87,8 +87,8 @@ class Directory : public File
 		/* Can we read another entry? */
 		if (bytes + sizeof(Dirent) <= msg->size)
 		{
-		    if ((e = VMCopy(msg->procID, Write, (Address) i.current(),
-					    	        (Address) (dent++), sizeof(Dirent))) < 0)
+		    if ((e = VMCopy(msg->from, Write, (Address) i.current(),
+					    	      (Address) (dent++), sizeof(Dirent))) < 0)
 		    {
 			return e;
 		    }
