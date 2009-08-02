@@ -15,17 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <API/ProcessCtl.h>
 #include <FreeNOS/Memory.h>
 #include <Types.h>
 #include <Macros.h>
 #include <Init.h>
 #include <PageAllocator.h>
 #include <PoolAllocator.h>
+#include <VMCtlAllocator.h>
 #include <ProcessServer.h>
 #include <stdlib.h>
 #include "Runtime.h"
 
-extern C int __cxa_atexit(void (*func) (void *), void * arg, void * dso_handle)
+extern C int __cxa_atexit(void (*func) (void *),
+			  void * arg, void * dso_handle)
 {
     return (0);
 }
@@ -60,24 +63,43 @@ void destructors()
 
 void heap()
 {
-    PageAllocator pa(PAGESIZE * 4), *p;
-    PoolAllocator *li;
-    Address heapAddr = pa.getHeapStart(), heapOff;
-    
-    /* Allocate instance copy on vm pages itself. */
-    p  = new (heapAddr) PageAllocator(&pa);
-    li = new (heapAddr + sizeof(PageAllocator)) PoolAllocator();
+    Allocator *parent;
+    PoolAllocator *pool;
+    Address heapAddr, heapOff;
+    Size parentSize;
+
+    /* Only the memory server allocates directly. */
+    if (ProcessCtl(SELF, GetPID) == MEMSRV_PID)
+    {
+	VMCtlAllocator alloc(PAGESIZE * 4);
+
+	/* Allocate instance copy on vm pages itself. */
+	heapAddr   = alloc.getHeapStart();
+	parent     = new (heapAddr) VMCtlAllocator(&alloc);
+	parentSize = sizeof(VMCtlAllocator);
+    }
+    else
+    {
+	PageAllocator alloc(PAGESIZE * 4);
+	
+	/* Allocate instance copy on vm pages itself. */
+	heapAddr   = alloc.getStart();
+	parent     = new (heapAddr) PageAllocator(&alloc);
+	parentSize = sizeof(PageAllocator);
+    }
+    /* Make a pool. */
+    pool = new (heapAddr + parentSize) PoolAllocator();
     
     /* Point to the next free space. */
-    heapOff   = sizeof(PageAllocator) + sizeof(PoolAllocator);
+    heapOff   = parentSize + sizeof(PoolAllocator);
     heapAddr += heapOff;
 
     /* Setup the userspace heap allocator region. */
-    li->region(heapAddr, (PAGESIZE * 4) - heapOff);
-    li->setParent(p);
+    pool->region(heapAddr, (PAGESIZE * 4) - heapOff);
+    pool->setParent(parent);
 
     /* Set default allocator. */
-    Allocator::setDefault(li);
+    Allocator::setDefault(pool);
 }
 
 extern C void SECTION(".entry") _entry() 

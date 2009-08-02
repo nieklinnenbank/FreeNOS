@@ -17,5 +17,6 @@
 
 from build import *
 
-env = Prepare(target, [ 'libposix', 'libc', 'liballoc' ], [ 'process' ])
+env = Prepare(target, [ 'libposix', 'libc', 'liballoc' ],
+		      [ 'process', 'memory', 'filesystem' ])
 env.Library('libcrt', [ 'Runtime.cpp', 'Assert.cpp' ])
