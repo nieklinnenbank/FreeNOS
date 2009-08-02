@@ -37,27 +37,62 @@
  */
 typedef enum MemoryOperation
 {
-    Map         = 0,
-    Lookup      = 1,
-    Access      = 2,
-    MapTables   = 3,
-    UnMapTables = 4,
+    Map            = 0,
+    LookupVirtual  = 1,
+    LookupPhysical = 2,
+    Access         = 3,
+    MapTables      = 4,
+    UnMapTables    = 5,
 }
 MemoryOperation;
 
 /**
+ * Describes a range of memory pages.
+ */
+typedef struct MemoryRange
+{
+    /**
+     * Constructor initializes the MemoryRange.
+     */
+    MemoryRange()
+    {
+	virtualAddress  = ZERO;
+	physicalAddress = ZERO;
+	bytes      = PAGESIZE;
+	protection = PAGE_PRESENT | PAGE_USER | PAGE_RW;
+    }
+    /** Virtual address start. */
+    Address virtualAddress;
+    
+    /** Physical address start. */
+    Address physicalAddress;
+    
+    /** Number of pages requested, in bytes. */
+    Size bytes;
+    
+    /**
+     * Used to signify a number of free bytes.
+     * @note Not used by the kernel, but the MemoryServer.
+     * @see MemoryServer
+     */
+    Size free;
+    
+    /** Page protection flags. */
+    ulong protection;
+}
+MemoryRange;
+
+/**
  * Prototype for user applications. Examines and modifies virtual memory pages.
+ * @param procID Remote process.
  * @param op Determines which operation to perform.
- * @param proc Remote process.
- * @param paddr Physical address which we map. ZERO to pick a free paddr.
- * @param vaddr Virtual address to map paddr.
- * @param prot Protection bits. Set PAGE_PRESENT to allocate, ~PAGE_PRESENT to release.
+ * @param range Describes the memory pages to operate on.
  * @return Zero on success or error code on failure.
  */
-inline Error VMCtl(MemoryOperation op, ProcessID proc, Address paddr = ZERO,
-		   Address vaddr = ZERO, ulong prot = PAGE_PRESENT|PAGE_USER|PAGE_RW)
+inline Error VMCtl(ProcessID procID, MemoryOperation op,
+		   MemoryRange *range = ZERO)
 {
-    return trapKernel5(VMCTL, op, proc, paddr, vaddr, prot);
+    return trapKernel3(VMCTL, procID, op, (Address) range);
 }
 
 /**

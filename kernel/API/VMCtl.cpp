@@ -19,48 +19,83 @@
 #include <Error.h>
 #include <Config.h>
 
-Error VMCtlHandler(MemoryOperation op, ProcessID procID, Address paddr,
-		   Address vaddr, ulong prot = PAGE_PRESENT|PAGE_USER|PAGE_RW)
+Error VMCtlHandler(ProcessID procID, MemoryOperation op, MemoryRange *range)
 {
     ArchProcess *proc = ZERO;
     Address  page     = ZERO;
-    Address *remotePG = (Address *) PAGETABADDR_FROM(PAGEUSERFROM, PAGEUSERFROM);
+    Address *remotePG = (Address *) PAGETABADDR_FROM(PAGETABFROM,
+						     PAGEUSERFROM);
     
     /* Find the given process. */
     if (!(proc = Process::byID(procID)))
     {
 	return ESRCH;
     }
+    /* Validate the given MemoryRange pointer, if needed. */
+    if (op != MapTables && op != UnMapTables &&
+        !memory->access(scheduler->current(),
+		       (Address) range, sizeof(MemoryRange)))
+    {
+	return EFAULT;
+    }
+    /* Perform operation. */
     switch (op)
     {
-	case Lookup:
-	    return ENOTSUP;
+	case LookupVirtual:
+	    range->physicalAddress = memory->lookupVirtual(proc,
+						    range->virtualAddress);
+	    break;
+
+	case LookupPhysical:
+	    return memory->isMarked(range->physicalAddress);
 
 	case Map:
 
 	    /* Map the memory page. */
-	    if (prot & PAGE_PRESENT)
+	    if (range->protection & PAGE_PRESENT)
 	    {
-		page = paddr ? paddr : memory->allocatePhysical(PAGESIZE);
-		memory->mapVirtual(proc, page, vaddr, prot & ~PAGEMASK);
+		/* Acquire physical page(s) first. */
+		if (!range->physicalAddress)
+		{
+		    range->physicalAddress = memory->allocatePhysical(range->bytes);
+		}
+		/* Insert virtual page(s). */
+		for (Size i = 0; i < range->bytes; i += PAGESIZE)
+		{
+		    memory->mapVirtual(proc,
+				       range->physicalAddress + i,
+				       range->virtualAddress  + i,
+				       range->protection & ~PAGEMASK);
+		}
 	    }
-	    /* Release memory page (if not pinned). */
-	    else if (!memory->access(proc, vaddr, PAGE_PINNED))
+	    /* Release memory page(s). */
+	    else
 	    {
-		page = memory->lookupVirtual(proc, vaddr) & PAGEMASK;
-		if (page)
-		    memory->releasePhysical(page);
+		for (Size i = 0; i < range->bytes; i += PAGESIZE)
+		{
+		    /* Don't release pinned pages. */
+		    if (memory->access(proc, range->virtualAddress + i,
+				       PAGE_PINNED))
+			continue;
+		
+		    if ((page = memory->lookupVirtual(proc,
+						 range->virtualAddress + i)))
+		    {
+			memory->releasePhysical(page & PAGEMASK);
+		    }
+		}
 	    }
 	    break;
 
 	case Access:
-	    return memory->access(proc, vaddr, sizeof(Address), prot);
+	    return memory->access(proc, range->virtualAddress,
+				        range->bytes, range->protection);
 	    
 	case MapTables:
 
 	    /* Map remote page tables. */
 	    memory->mapRemote(proc, 0,
-			     (Address) PAGETABADDR_FROM(PAGEUSERFROM, PAGEUSERFROM),
+			     (Address) PAGETABADDR_FROM(PAGETABFROM, PAGEUSERFROM),
 			      PAGE_USER);
 	    
 	    /* Temporarily allow userlevel access to the page tables. */
