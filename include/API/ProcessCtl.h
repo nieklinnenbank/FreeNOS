@@ -54,9 +54,17 @@ ProcessOperation;
  */
 typedef struct ProcessInfo
 {
+    /** Process Identity number. Must be unique. */
     ProcessID id;
+    
+    /** Defines the current state of the Process. */
     ProcessState state;
+    
+    /** Virtual address of the stack. */
     Address stack;
+    
+    /** Physical address of the page directory. */
+    Address pageDirectory;
 }
 ProcessInfo;
 
