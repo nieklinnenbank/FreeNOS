@@ -88,6 +88,7 @@ class String : public Comparable<String>
 	    size_t len = strlen(s);
 	    if (len > max)
 		len = max;
+
 	    value = (char *) malloc(len + 1);
 	    memcpy(value, s, len + 1);
 	    value[len] = ZERO;
@@ -162,8 +163,7 @@ class String : public Comparable<String>
 	}
 	
 	/**
-	 * Returns true if and only if this String contains the specified
-	 * String.
+	 * Returns true if and only if this String contains the specified String.
 	 * @param sequence The String searched for in this String.
 	 * @return bool Whether the specified String is contained in this String.
 	 */
@@ -173,8 +173,7 @@ class String : public Comparable<String>
         }
         
         /**
-         * Returns true if and only if this String contains the specified
-         * char*.
+         * Returns true if and only if this String contains the specified char*.
          * @param sequence The char* searched for in this String.
          * @return bool Whether the specified char* is contained in this String.
          */
@@ -467,7 +466,7 @@ class String : public Comparable<String>
 	 */
         bool equalsIgnoreCase(String& s)
         {
-                return equalsIgnoreCase(*s);
+            return equalsIgnoreCase(*s);
         }
         
         /**
@@ -478,7 +477,7 @@ class String : public Comparable<String>
          */
         bool equalsIgnoreCase(char* s)
         {
-                return strcasecmp(value, s);
+            return strcasecmp(value, s);
         }
 	
 	/**
