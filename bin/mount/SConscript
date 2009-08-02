@@ -18,6 +18,6 @@
 from build import *
 
 env = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc' ],
-		      [ 'filesystem', 'filesystem/virtual' ])
+		      [ 'filesystem', 'filesystem/virtual', 'memory', 'process' ])
 env.Program('mount',  [ 'Main.cpp' ],
 	     LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])

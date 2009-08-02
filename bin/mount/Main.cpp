@@ -15,32 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/IPCMessage.h>
-#include <FileSystemMessage.h>
-#include <VirtualFileSystem.h>
-#include <Config.h>
+#include <FileSystemMount.h>
+#include <Shared.h>
+#include <Types.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <fcntl.h>
 
 int main(int argc, char **argv)
 {
-    FileSystemMessage msg;
-    FileSystemMount mounts[MAX_MOUNTS];
-
-    /* Ask filesystem for active mounts. */
-    msg.action = MountInfo;
-    msg.buffer = (char *) &mounts;
-    msg.size   = sizeof(mounts);
-        
-    /* Trap. */
-    IPCMessage(VFSSRV_PID, SendReceive, &msg, sizeof(msg));
+    Shared<FileSystemMount> mounts(FILE_SYSTEM_MOUNT_KEY, MAX_MOUNTS);
 
     /* Print out. */
     for (Size i = 0; i < MAX_MOUNTS; i++)
     {
-        if (mounts[i].path[0])
-            printf("%s\r\n", mounts[i].path);
+        if (mounts[i]->path[0])
+            printf("%s : PID %u\r\n", mounts[i]->path,
+				      mounts[i]->procID);
     }
     /* Success. */
     return EXIT_SUCCESS;
