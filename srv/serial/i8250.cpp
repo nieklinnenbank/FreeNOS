@@ -22,8 +22,12 @@
 #include <Config.h>
 #include "i8250.h"
 
-i8250::i8250(u16 b, u16 i)
-    : SerialDevice(b, i)
+i8250::i8250(u16 b, u16 q)
+    : base(b), irq(q)
+{
+}
+
+Error i8250::initialize()
 {
     /* Aquire I/O port and IRQ line permissions. */
     ProcessCtl(SELF, AllowIO,  base);
@@ -53,9 +57,12 @@ i8250::i8250(u16 b, u16 i)
     outb(base + DIVISORLOW,  (11500 / BAUDRATE) & 0xff);
     outb(base + DIVISORHIGH, (11500 / BAUDRATE) >> 8);
     outb(base + LINECONTROL, inb(base + LINECONTROL) & ~DLAB);
+    
+    /* Done! */
+    return ESUCCESS;
 }
 
-Error i8250::read(s8 *buffer, Size size)
+Error i8250::read(s8 *buffer, Size size, Size offset)
 {
     Size bytes = 0;
     
@@ -64,10 +71,10 @@ Error i8250::read(s8 *buffer, Size size)
     {
 	buffer[bytes++] = inb(base);
     }
-    return (bytes);
+    return bytes ? bytes : EAGAIN;
 }
 								     
-Error i8250::write(s8 *buffer, Size size)
+Error i8250::write(s8 *buffer, Size size, Size offset)
 {
     Size bytes = 0;
 
@@ -76,5 +83,5 @@ Error i8250::write(s8 *buffer, Size size)
     {
     	outb(base, buffer[bytes++]);
     }
-    return (bytes);
+    return bytes ? bytes : EAGAIN;
 }
