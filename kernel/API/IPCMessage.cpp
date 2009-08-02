@@ -49,12 +49,16 @@ int IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg, Size siz
 		return ESRCH;
 	    }
 	    /* Put our message on their list, and try to let them execute! */
-	    proc->getMessages()->insertTail(new UserMessage(msg, size));
-	    scheduler->executeAttempt(proc);
+	    proc->getMessages()->insertHead(new UserMessage(msg, size));
 
+	    if (action == SendReceive)
+		scheduler->current()->setState(Sleeping);
+	    
+	    scheduler->executeAttempt(proc);
+	    
 	    if (action == Send)
 		break;
-
+	    
 	case Receive:
 
 	    /* Block until we have a message. */
