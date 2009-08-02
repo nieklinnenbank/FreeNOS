@@ -40,10 +40,24 @@ void __assertFailure(const char *fmt, ...)
 
 int __assertRead(Address addr)
 {
-    return VMCtl(Access, SELF, ZERO, addr, PAGE_PRESENT|PAGE_USER);
+    MemoryRange range;
+
+    range.virtualAddress  = addr;
+    range.physicalAddress = ZERO;
+    range.bytes           = sizeof(Address);
+    range.protection      = PAGE_PRESENT | PAGE_USER;
+
+    return VMCtl(SELF, Access, &range);
 }
 
 int __assertWrite(Address addr)
 {
-    return VMCtl(Access, SELF, ZERO, addr, PAGE_PRESENT|PAGE_USER|PAGE_RW);
+    MemoryRange range;
+
+    range.virtualAddress  = addr;
+    range.physicalAddress = ZERO;
+    range.bytes           = sizeof(Address);
+    range.protection      = PAGE_PRESENT | PAGE_USER | PAGE_RW;
+
+    return VMCtl(SELF, Access, &range);
 }
