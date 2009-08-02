@@ -21,39 +21,43 @@
 #include <Config.h>
 #include "PageAllocator.h"
 
-PageAllocator::PageAllocator()
-    : heapStart(ZERO), heapEnd(ZERO), allocated(ZERO)
-{
-}
-
 PageAllocator::PageAllocator(Size size)
-    : heapStart(ZERO), heapEnd(ZERO), allocated(ZERO)
+    : start(ZERO), allocated(ZERO)
 {
+    MemoryMessage mem;
+
+    /* First reserve ~128MB virtual memory. */
+    mem.action = ReservePrivate;
+    mem.bytes  = 1024 * 1024 * 128;
+    mem.virtualAddress = 1024 * 1024 * 16;
+    mem.ipc(MEMSRV_PID, SendReceive, sizeof(mem));
+
+    /* Set heap pointer. */
+    start = mem.virtualAddress;
+
+    /* Allocate the given bytes. */
     allocate(&size);
 }
 
 PageAllocator::PageAllocator(PageAllocator *p)
-    : heapStart(p->heapStart), heapEnd(p->heapEnd),
-      allocated(p->allocated)
+    : start(p->start), allocated(p->allocated)
 {
 }
 
 Address PageAllocator::allocate(Size *size)
 {
     MemoryMessage msg;
-    Address ret  = heapStart + allocated;
-    Size bytes = *size > PAGEALLOC_MINIMUM ? *size : PAGEALLOC_MINIMUM;
+    Address ret = start + allocated;
+    Size bytes  = *size > PAGEALLOC_MINIMUM ?
+		  *size : PAGEALLOC_MINIMUM;
 
     /* Fill in the message. */
-    msg.action =  HeapGrow;
-    msg.bytes  =  bytes;
-
-    /* Grow heap. */
-    IPCMessage(MEMSRV_PID, SendReceive, &msg, sizeof(msg));
-
-    /* Update heap pointers. */
-    heapStart  = msg.startAddr;
-    heapEnd    = msg.endAddr;
+    msg.action = CreatePrivate;
+    msg.bytes  = bytes;
+    msg.protection      = PAGE_RW | PAGE_RESERVED;
+    msg.virtualAddress  = (1024 * 1024 * 16) + allocated;
+    msg.physicalAddress = ZERO;
+    msg.ipc(MEMSRV_PID, SendReceive, sizeof(msg));
 
     /* Update count. */
     allocated += msg.bytes;
@@ -65,21 +69,5 @@ Address PageAllocator::allocate(Size *size)
 
 void PageAllocator::release(Address addr)
 {
-    MemoryMessage msg;
-
-    /* Release heap pages. */
-    for (Address i = heapStart + allocated; i > addr; i += PAGESIZE)
-    {
-	if (i - addr >= PAGESIZE)
-	{
-	    /* Fill in the message. */
-	    msg.action =  HeapShrink;
-	    msg.bytes  =  PAGESIZE;
-	    
-	    /* Shrink heap. */
-	    IPCMessage(MEMSRV_PID, SendReceive, &msg, sizeof(msg));
-	}
-    }
-    /* Update counter. */
-    allocated = addr - heapStart;
+    // TODO
 }

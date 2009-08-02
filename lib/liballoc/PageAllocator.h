@@ -38,11 +38,6 @@ class PageAllocator : public Allocator
     public:
 
 	/**
-	 * Empty class constructor.
-	 */
-	PageAllocator();
-
-	/**
 	 * Class constructor.
 	 * @param size Initial size in bytes.
 	 */
@@ -70,21 +65,18 @@ class PageAllocator : public Allocator
         void release(Address addr);
 
 	/**
-	 * Get start address of the heap.
-	 * @return Start heap address.
+	 * Get the first address of the allocated memory region.
+	 * @return Start address.
 	 */
-	Address getHeapStart()
+	Address getStart()
 	{
-	    return heapStart;
+	    return start;
 	}
 
     private:
 
-	/** Start of the current heap. */
-	Address heapStart;
-	
-	/** End of the heap. */
-	Address heapEnd;
+	/** Start of the allocated memory region. */
+	Address start;
 	
 	/** Total number of bytes allocated. */
 	Size allocated;
