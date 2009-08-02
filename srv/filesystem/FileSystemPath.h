@@ -23,12 +23,17 @@
 #include <Types.h>
 #include <String.h>
 
+/** Maximum length of a filesystem path. */
+#define PATHLEN	64
+
 /** The default FileSystemPath separator. */
 #define DEFAULT_SEPARATOR '/'
 
+/** Shortcut to the separator field. */
 #define SEPARATOR(x) \
     (this->separator == (x))
 
+/** Test for an End of Line. */
 #define EOL(s,x) \
     ((x) == (s) + length - 1)
 
