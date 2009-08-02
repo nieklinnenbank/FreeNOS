@@ -61,6 +61,9 @@ void Scheduler::executeNext()
 
 void Scheduler::executeAttempt(ArchProcess *p)
 {
+    /* Don't switch if it's the current process. */
+    if (p == currentProcess) return;
+    
     /* Wakeup process if needed. */
     if (p->getState() == Sleeping)
     {
