@@ -21,7 +21,7 @@
 #include <FreeNOS/Scheduler.h>
 #include <FreeNOS/Multiboot.h>
 #include <FreeNOS/BootImage.h>
-#include <ProcessServer.h>
+#include <UserProcess.h>
 #include <String.h>
 
 Kernel::Kernel()
@@ -33,7 +33,7 @@ Kernel::Kernel()
     /* Startup boot modules. */
     for (Size n = 0; n <  multibootInfo.modsCount; n++)
     {
-	mod     = &((MultibootModule *) multibootInfo.modsAddress)[n];
+	mod = &((MultibootModule *) multibootInfo.modsAddress)[n];
 
 	/* Is this a BootImage? */
 	if (str.match((char *) mod->string, "*.img.gz"))
