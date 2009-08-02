@@ -15,13 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <API/IPCMessage.h>
 #include <ProcessMessage.h>
+#include <Config.h>
 #include "stdlib.h"
 
 void exit(int status)
 {
-    ProcessMessage proc;
+    ProcessMessage msg;
 
     /* Request immediate termination. */
-    proc.exit(status);
+    msg.action = ExitProcess;
+    msg.number = status;
+    msg.ipc(PROCSRV_PID, SendReceive, sizeof(msg));
 }    
