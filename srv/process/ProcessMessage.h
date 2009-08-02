@@ -36,7 +36,8 @@ typedef enum ProcessAction
     ExitProcess  = 2,
     SpawnProcess = 3,
     CloneProcess = 4,
-    WaitProcess  = 5
+    WaitProcess  = 5,
+    SetCurrentDirectory = 6,
 }
 ProcessAction;
 
@@ -45,49 +46,6 @@ ProcessAction;
  */
 typedef struct ProcessMessage : public Message
 {
-    /**
-     * Default constructor.
-     */
-    ProcessMessage() : action(GetID), number(ZERO), buffer(ZERO)
-    {
-    }
-
-    /**
-     * Assignment operator.
-     * @param m ProcessMessage pointer to copy from.
-     */
-    void operator = (ProcessMessage *m)
-    {
-	from    = m->from;
-	type    = m->type;
-	action  = m->action;
-	number  = m->number;
-	buffer  = m->buffer;
-    }
-
-    /**
-     * Terminate ourselves.
-     * @param status Exit code.
-     * @return Never.
-     */
-    void exit(int status)
-    {
-	number = status;
-	action = ExitProcess;
-	ipc(PROCSRV_PID, SendReceive, sizeof(*this));
-    }
-
-    /**
-     * Retrieve our process ID number (PID).
-     * @return Process ID number.
-     */
-    ProcessID pid()
-    {
-	action = GetID;
-	ipc(PROCSRV_PID, SendReceive, sizeof(*this));
-	return number;
-    }
-
     union
     {
 	/** Action to perform. */

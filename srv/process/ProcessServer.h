@@ -19,40 +19,13 @@
 #define __PROCESS_PROCESSSERVER_H
 
 #include <IPCServer.h>
+#include <Shared.h>
+#include <Array.h>
 #include <Types.h>
 #include <Error.h>
 #include "ProcessMessage.h"
-
-/** Maximum length of a command (as saved in the user process table). */
-#define COMMANDLEN 64
-
-/** Virtual memory address of the array of arguments for new processes. */
-#define ARGV_ADDR  0x9ffff000
-
-/** Maximum size of each argument. */
-#define ARGV_SIZE  128
-
-/** Number of arguments at maximum. */
-#define ARGV_COUNT (PAGESIZE / ARGV_SIZE)
-
-/**
- * Userlevel process information.
- */
-typedef struct UserProcess
-{
-    /** Command string. */
-    char command[COMMANDLEN];
-
-    /** User and Group ID. */
-    u16 uid, gid;
-    
-    /** Process state. */
-    ProcessState state;
-    
-    /** Waits for exit of this Process. */
-    ProcessID waitProcessID;
-}
-UserProcess;
+#include "FileDescriptor.h"
+#include "UserProcess.h"
 
 /**
  * Process management server.
@@ -68,12 +41,6 @@ class ProcessServer : public IPCServer<ProcessServer, ProcessMessage>
 
     private:
     
-	/**
-	 * Retrieves the PID of the caller.
-	 * @param msg Incoming message.
-	 */
-	void getIDHandler(ProcessMessage *msg);
-
 	/**
 	 * Read the user process table.
 	 * @param msg Incoming message.
@@ -104,8 +71,17 @@ class ProcessServer : public IPCServer<ProcessServer, ProcessMessage>
 	 */
 	void waitProcessHandler(ProcessMessage *msg);
 
+	/**
+	 * Change the current working directory.
+	 * @param msg Incoming message.
+	 */
+	void setCurrentDirectory(ProcessMessage *msg);
+
 	/** User Process table. */
-	static UserProcess procs[MAX_PROCS];
+	Shared<UserProcess> procs;
+	
+	/** Per-process FileDescriptor table. */
+	Array<Shared<FileDescriptor> > *files;
 };
 
 #endif /* __PROCESS_PROCESSSERVER_H */
