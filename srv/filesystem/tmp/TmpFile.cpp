@@ -41,8 +41,8 @@ Error TmpFile::read(FileSystemMessage *msg)
 	bytes = size - msg->offset > msg->size ? msg->size : size - msg->offset;
     
     /* Copy the buffers. */
-    return VMCopy(msg->procID, Write, (Address) buffer + msg->offset,
-				      (Address) msg->buffer, bytes);
+    return VMCopy(msg->from, Write, (Address) buffer + msg->offset,
+				    (Address) msg->buffer, bytes);
 }
 
 Error TmpFile::write(FileSystemMessage *msg)

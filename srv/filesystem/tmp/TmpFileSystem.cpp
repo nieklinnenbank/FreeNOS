@@ -17,7 +17,7 @@
 
 #include <File.h>
 #include <Directory.h>
-#include <Device.h>
+#include <Special.h>
 #include "TmpFileSystem.h"
 #include "TmpFile.h"
 
@@ -51,7 +51,13 @@ Error TmpFileSystem::createFile(FileSystemMessage *msg,
 	    break;
 	
 	case CharacterDeviceFile:
-	    insertFileCache(new Device(msg->deviceID), "%s", **path->full());
+	    insertFileCache(new Special(CharacterDeviceFile, msg->deviceID),
+			    "%s", **path->full());
+	    break;
+	    
+	case BlockDeviceFile:
+	    insertFileCache(new Special(BlockDeviceFile, msg->deviceID),
+			    "%s", **path->full());
 	    break;
 	
 	default:
