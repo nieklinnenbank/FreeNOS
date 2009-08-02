@@ -126,7 +126,6 @@ FileURL* FileURL::parent()
                 sb->append( part->operator*() );
             }
             
-            String* s = sb->toString();
             _parent = new FileURL( sb->toString()->operator*() );
             delete sb;
         }
