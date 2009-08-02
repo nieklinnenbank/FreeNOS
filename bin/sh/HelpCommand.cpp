@@ -29,8 +29,8 @@ int HelpCommand::execute(Size nparams, char **params)
 	printf("%s -- %s\r\n", i.current()->getName(), i.current()->help());
     }
     printf("\r\n");
-    printf("Type 'ls /img/bin' to see available user commands\r\n");
-    printf("Type 'ls /img/sbin' to see available system commands\r\n");
+    printf("Type 'ls /bin' to see available user commands\r\n");
+    printf("Type 'ls /sbin' to see available system commands\r\n");
     
     return 0;
 }
