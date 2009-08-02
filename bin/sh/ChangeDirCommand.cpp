@@ -18,7 +18,7 @@
 #include <API/IPCMessage.h>
 #include <FileSystem.h>
 #include <FileSystemPath.h>
-#include <FileSystemMessage.h>
+#include <ProcessMessage.h>
 #include <Config.h>
 #include <Macros.h>
 #include <String.h>
@@ -33,7 +33,7 @@
 
 int ChangeDirCommand::execute(Size nparams, char **params)
 {
-    FileSystemMessage msg;
+    ProcessMessage msg;
     FileSystemPath path;
     String *last = ZERO;
     List<String> lst;
@@ -83,10 +83,10 @@ int ChangeDirCommand::execute(Size nparams, char **params)
 	    strcat(buf, "/");
 	    strcat(buf, **i.current());
 	}
-	msg.buffer = buf;
+	msg.path = buf;
     }
     else
-	msg.buffer = params[0];
+	msg.path = params[0];
     
     /* Fall back to slash? */
     if (!buf[0])
@@ -94,11 +94,10 @@ int ChangeDirCommand::execute(Size nparams, char **params)
 	strcpy(buf, "/");
     }
     /* Fill the message. */
-    msg.action = SetCurrentDir;
-    msg.procID = getpid();
+    msg.action = SetCurrentDirectory;
     
-    /* Ask VFS. */
-    IPCMessage(VFSSRV_PID, SendReceive, &msg, sizeof(msg));
+    /* Ask the process server. */
+    IPCMessage(PROCSRV_PID, SendReceive, &msg, sizeof(msg));
 
     /* Done. */
     return msg.result;
