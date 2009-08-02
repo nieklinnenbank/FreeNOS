@@ -15,10 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <API/ProcessCtl.h>
+#include <Config.h>
 #include <StringTokenizer.h>
 #include "Shell.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include <sys/stat.h>
 
 int main(int argc, char **argv)
@@ -75,6 +79,12 @@ int main(int argc, char **argv)
     /* Run an interactive Shell. */
     else
     {
+	/* Reopen standard I/O. */
+	for (Size i = 0; i < 2; i++)
+	{
+	    close(i);
+	    open("/dev/tty0", O_RDWR);
+	}
 	/* Show the user where to get help. */
 	printf("\r\n"
     	       "Entering Shell. Type 'help' for the command list.\r\n"
