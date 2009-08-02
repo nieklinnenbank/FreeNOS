@@ -54,7 +54,7 @@ Error Ext2Directory::read(FileSystemMessage *msg)
 	    offset = inode->block[blk] * EXT2_BLOCK_SIZE(sb) + ent;
 
 	    /* Get the next entry. */
-	    if (ext2->getStorage()->read(offset, (u8 *) &ext2Dent,
+	    if (ext2->getStorage()->read(offset, &ext2Dent,
 				         sizeof(Ext2DirectoryEntry)) < 0)
 	    {
 		return EACCES;
@@ -76,7 +76,7 @@ Error Ext2Directory::read(FileSystemMessage *msg)
 		dent.type = EXT2_FILETYPE(ext2Inode);
 
 		/* Copy to the remote process. */		    
-                if ((e = VMCopy(msg->procID, Write, (Address) &dent,
+                if ((e = VMCopy(msg->from, Write, (Address) &dent,
                                (Address) (buf++), sizeof(Dirent))) < 0)
                 {
                     return e;
@@ -111,7 +111,7 @@ Error Ext2Directory::getEntry(Ext2DirectoryEntry *dent, char *name)
 	    offset = inode->block[blk] * EXT2_BLOCK_SIZE(sb) + ent;
 
 	    /* Get the next entry. */
-	    if (ext2->getStorage()->read(offset, (u8 *) dent,
+	    if (ext2->getStorage()->read(offset, dent,
 				         sizeof(Ext2DirectoryEntry)) < 0)
 	    {
 		return EACCES;

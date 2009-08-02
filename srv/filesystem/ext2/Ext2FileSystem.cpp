@@ -19,7 +19,6 @@
 #include <BootModule.h> 
 #include <Directory.h>
 #include <Device.h>
-#include <LogMessage.h>
 #include "Ext2FileSystem.h"
 #include "Ext2SuperBlock.h"
 #include "Ext2File.h"
@@ -28,6 +27,7 @@
 #include "Ext2Group.h"
 #include <stdlib.h>
 #include <string.h>
+#include <syslog.h>
 
 int main(int argc, char **argv)
 {
@@ -50,18 +50,21 @@ Ext2FileSystem::Ext2FileSystem(const char *p, Storage *s)
     Size offset;
     Error e;
 
+    /* Open the system logs. */
+    openlog("Ext2", LOG_PID, LOG_USER);
+
     /* Read out the superblock. */
-    if ((e = s->read(EXT2_SUPER_OFFSET, (u8 *) &superBlock,
+    if ((e = s->read(EXT2_SUPER_OFFSET, &superBlock,
 		     sizeof(superBlock))) <= 0)
     {
-	log("Ext2: reading superblock failed: %s",
-	     strerror(e));
+	syslog(LOG_ERR, "reading superblock failed: %s",
+	       strerror(e));
 	exit(EXIT_FAILURE);
     }
     /* Verify magic. */
     if (superBlock.magic != EXT2_SUPER_MAGIC)
     {
-	log("Ext2: %x != EXT2_SUPER_MAGIC",
+	syslog(LOG_ERR, "%x != EXT2_SUPER_MAGIC",
 	     superBlock.magic);
 	exit(EXIT_FAILURE);
     }
@@ -79,26 +82,26 @@ Ext2FileSystem::Ext2FileSystem(const char *p, Storage *s)
 	offset += sizeof(Ext2Group) * i;
 
 	/* Read from storage. */
-	if ((e = s->read(offset, (u8 *) group, sizeof(Ext2Group))) <= 0)
+	if ((e = s->read(offset, group, sizeof(Ext2Group))) <= 0)
 	{
-	    log("Ext2: reading group descriptor failed: %s",
-		 strerror(e));
+	    syslog(LOG_ERR, "reading group descriptor failed: %s",
+		   strerror(e));
 	    exit(EXIT_FAILURE);
 	}
 	/* Insert in the groups vector. */
 	groups->insert(i, group);
     }
-    log("Ext2: %d group descriptors",
+    syslog(LOG_INFO, "%d group descriptors",
 	 EXT2_GROUPS_COUNT(&superBlock));
     
-    /* Debug out superblock information. */
-    log("Ext2: %d inodes, %d blocks",
-	 superBlock.inodesCount, superBlock.blocksCount);
+    /* Print out superblock information. */
+    syslog(LOG_INFO, "%d inodes, %d blocks",
+	   superBlock.inodesCount, superBlock.blocksCount);
 
     /* Read out the root directory. */
     rootInode = getInode(EXT2_ROOT_INO);
     root = new FileCache(&slash, new Ext2Directory(this, rootInode), ZERO);
-    log("Ext2: mounted '%s'", p);
+    syslog(LOG_INFO, "mounted as '%s'", p);
 }
 
 Error Ext2FileSystem::createFile(FileSystemMessage *msg,
@@ -138,10 +141,10 @@ Ext2Inode * Ext2FileSystem::getInode(u32 inodeNum)
     offset += le32_to_cpu(group->inodeTable) * EXT2_BLOCK_SIZE(&superBlock);
 	     
     /* Read inode from storage. */
-    if ((e = storage->read(offset, (u8 *) inode, sizeof(Ext2Inode))) <= 0)
+    if ((e = storage->read(offset, inode, sizeof(Ext2Inode))) <= 0)
     {
-        log("Ext2: reading inode failed: %s",
-	     strerror(e));
+        syslog(LOG_ERR, "reading inode failed: %s",
+	       strerror(e));
 	return ZERO;
     }
     /* Insert into the cache. */
@@ -194,7 +197,7 @@ u64 Ext2FileSystem::getOffset(Ext2Inode *inode, Size blk)
     while (depth > 0)
     {
 	/* Fetch block. */
-	if (storage->read(offset, (u8 *) block,
+	if (storage->read(offset, block,
 			  EXT2_BLOCK_SIZE(&superBlock)) < 0)
 	{
 	    delete block;

@@ -73,7 +73,7 @@ Error Ext2File::read(FileSystemMessage *msg)
 	    bytes = msg->size - total;
 	}
         /* Copy to the remote process. */
-        if ((e = VMCopy(msg->procID, Write,
+        if ((e = VMCopy(msg->from, Write,
 	               ((Address) (block)) + copyOffset,
                         (Address) (buffer), bytes)) < 0)
         {
