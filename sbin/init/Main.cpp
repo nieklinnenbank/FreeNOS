@@ -28,22 +28,11 @@
 int main(int argc, char **argv)
 {
     const char *av[] = { "/bin/sh/sh", "/etc/rc", ZERO };
-    struct stat st;
 
     /*
-     * TODO: give up all priviledges: run us in priviledge level 0.
+     * TODO: give up all priviledges.
      */
 
-    /* Wait for the root filesystem. */
-    while (stat("/", &st) == -1)
-    {
-	ProcessCtl(ANY, Schedule);
-    }
-    /* Initialize terminal as standard I/O. */
-    for (int i = 0; i < 3; i++)
-    {
-        while (open("/dev/tty0", ZERO) == -1) ;
-    }
     /* Execute the run commands file. */
     forkexec("/bin/sh/sh", av);
 
