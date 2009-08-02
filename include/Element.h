@@ -44,7 +44,7 @@ template <class T> class Element
 	 */
 	T* getData() const
 	{
-		return _data;
+	    return _data;
 	}
 	
 	/**
@@ -52,7 +52,7 @@ template <class T> class Element
 	 */
 	Element<T>* getNext() const
 	{
-		return _next;
+	    return _next;
 	}
 	
 	/**
@@ -61,7 +61,7 @@ template <class T> class Element
 	 */
 	void setData(T* data)
 	{
-		_data = data;
+	    _data = data;
 	}
 	
 	/**
@@ -70,10 +70,11 @@ template <class T> class Element
 	 */
 	void setNext(Element<T>* next)
 	{
-		_next = next;
+	    _next = next;
 	}
 	
     private:
+    
 	T* _data;
 	Element<T>* _next;
 };

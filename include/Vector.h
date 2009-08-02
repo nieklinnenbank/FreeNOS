@@ -108,17 +108,16 @@ template <class T> class Vector
 	    {
 		vec[pos] = ZERO;
 		
-		/** Shift the rest of the items to the left */
+		/* Shift the rest of the items to the left */
 		for( Size index = pos; index < _size; index++ )
 		{
-			if( index == (_size - 1) )
-			{
-				vec[index] = ZERO;
-			} else {
-				vec[index] = vec[index + 1];
-			}
+		    if( index == (_size - 1) )
+		    {
+			vec[index] = ZERO;
+		    } else {
+			vec[index] = vec[index + 1];
+		    }
 		}
-		
 		_count--;
 	    }
 	}
@@ -162,13 +161,13 @@ template <class T> class Vector
 	 */
 	Vector<T> clone()
 	{
-		Vector<T> clone;
-		for(Size index = 0; index < _size; index++)
-		{
-			clone.insert(index, vec[index]);
-		}
-		
-		return clone;
+	    Vector<T> clone;
+	    
+	    for(Size index = 0; index < _size; index++)
+	    {
+		clone.insert(index, vec[index]);
+	    }
+	    return clone;
 	}
     
         /**
@@ -197,24 +196,22 @@ template <class T> class Vector
 	 */
 	void _expand()
 	{
-		T** newVec = new T*[_size + VECTOR_DEFAULT_SIZE];
+	    T** newVec = new T*[_size + VECTOR_DEFAULT_SIZE];
 		
-		/* Copy the old array in the new one */
-		for( Size i = 0; i < _size; i++)
-		{
-			newVec[i] = vec[i];
-		}
-		
-		/* Set the new items to 0 */
-		for( Size i = _size; i < (_size + VECTOR_DEFAULT_SIZE); i++)
-		{
-			newVec[i] = 0;
-		}
-		
-		/* Clean up the old vector and set the new one */
-		delete vec;
-		vec = newVec;
-		_size += VECTOR_DEFAULT_SIZE;
+	    /* Copy the old array in the new one */
+	    for( Size i = 0; i < _size; i++)
+	    {
+		newVec[i] = vec[i];
+	    }	
+	    /* Set the new items to 0 */
+	    for( Size i = _size; i < (_size + VECTOR_DEFAULT_SIZE); i++)
+	    {
+		newVec[i] = 0;
+	    }
+	    /* Clean up the old vector and set the new one */
+	    delete vec;
+	    vec = newVec;
+	    _size += VECTOR_DEFAULT_SIZE;
 	}
 };
 
