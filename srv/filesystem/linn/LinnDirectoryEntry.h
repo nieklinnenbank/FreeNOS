@@ -21,7 +21,7 @@
 #include <Types.h>
 
 /**
- * @defgroup linn Linnenbank Filesystem (LinnFS)
+ * @defgroup linn LinnFS (Linnenbank Filesystem) 
  * @{
  */
 

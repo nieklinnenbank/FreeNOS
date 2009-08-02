@@ -21,12 +21,12 @@
 #include <Types.h>
 
 /**
- * @defgroup linn Linnenbank Filesystem (LinnFS)
+ * @defgroup linn LinnFS (Linnenbank Filesystem) 
  * @{
  */
 
 /** 
- * @brief Special Inode Numbers 
+ * @name Special Inode Numbers 
  * @{ 
  */
 
@@ -50,7 +50,7 @@
  */
 
 /**
- * @brief Inode (in)direct block counts.
+ * @name Inode (in)direct block counts.
  * @{
  */
 
@@ -74,7 +74,7 @@
  */
 
 /**
- * @brief Inode macros.
+ * @name Inode macros.
  * @{
  */
 

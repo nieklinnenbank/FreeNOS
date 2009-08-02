@@ -22,12 +22,12 @@
 #include "LinnSuperBlock.h"
 
 /**                                                                                                                                                                                                      
- * @defgroup linn Linnenbank Filesystem (LinnFS) 
+ * @defgroup linn LinnFS (Linnenbank Filesystem) 
  * @{ 
  */
 
 /**
- * @brief LinnGroup Block Index numbers.
+ * @name LinnGroup Block Index numbers.
  * @{
  */
 
@@ -45,7 +45,7 @@
  */
 
 /**
- * @brief LinnGroup Macros.
+ * @name LinnGroup Macros.
  * @{
  */
 

@@ -28,7 +28,7 @@
 #include "LinnInode.h"
 
 /**
- * @defgroup linn Linnenbank Filesystem (LinnFS)
+ * @defgroup linn LinnFS (Linnenbank Filesystem) 
  * @{
  */
 

@@ -21,12 +21,12 @@
 #include <Types.h>
 
 /**                                                                                                                                                                                                     
- * @defgroup linn Linnenbank Filesystem (LinnFS)
+ * @defgroup linn LinnFS (Linnenbank Filesystem) 
  * @{
  */
 
 /**
- * @brief Magic Numbers.
+ * @name Magic Numbers.
  * @{
  */
 
@@ -41,7 +41,7 @@
  */
 
 /**
- * @brief Revision Numbers.
+ * @name Revision Numbers.
  * @{
  */
 
@@ -56,7 +56,7 @@
  */
 
 /**
- * @brief Filesystem States.
+ * @name Filesystem States.
  * @{
  */
 
@@ -74,7 +74,7 @@
  */
 
 /**
- * @brief Superblock Constants.
+ * @name Superblock Constants.
  * @{
  */
 
@@ -86,7 +86,7 @@
  */
 
 /**
- * @brief Superblock Macros.
+ * @name Superblock Macros.
  * @{
  */
 
