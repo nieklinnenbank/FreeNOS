@@ -31,6 +31,7 @@ int main(int argc, char **argv)
     u64 t1 = 0, t2 = 0;
     ProcessID pid = 0;
     ProcessInfo info;
+    MemoryRange range;
     char *foo[128];
 
     t1 = timestamp();
@@ -51,8 +52,11 @@ int main(int argc, char **argv)
 
     printf("SystemCall (Schedule) Ticks: %u\r\n", t2 - t1);
 	
+    range.virtualAddress = 0x80000000;
+    range.bytes = PAGESIZE;
+    
     t1 = timestamp();
-    VMCtl(Lookup, SELF, ZERO, 0x80000000);
+    VMCtl(SELF, LookupVirtual, &range);
     t2 = timestamp();
 	
     printf("SystemCall (VMCtl) Ticks: %u\r\n", t2 - t1);
