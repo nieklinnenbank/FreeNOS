@@ -67,6 +67,9 @@
 /** This page has been marked for temporary operations. */
 #define PAGE_MARKED	(1 << 10)
 
+/** Page has been reserved for future use. */
+#define PAGE_RESERVED	(1 << 11)
+
 /** We map page tables into virtual memory, at a fixed address. */
 #define PAGETABFROM		ADDRESS (1024 * 1024 * 4)
 
