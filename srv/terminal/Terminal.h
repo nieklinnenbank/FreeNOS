@@ -18,90 +18,119 @@
 #ifndef __TERMINAL_TERMINAL_H
 #define __TERMINAL_TERMINAL_H
 
+#include <Version.h>
+#include <Device.h>
 #include <Macros.h>
 #include <Types.h>
 #include <Error.h>
 #include <teken.h>
-#include <FileSystemMessage.h>
-#include "VGA.h"
-#include "Keyboard.h"
+
+/** 
+ * @brief Print this banner per default on new Terminals. 
+ */
+#define BANNER \
+    "FreeNOS " RELEASE " (" BUILDUSER "@" BUILDHOST ") (" COMPILER ") " DATETIME "\r\n"
 
 /**
- * A Terminal is the combination of a VGA screen and PS2 keyboard.
+ * @brief A Terminal enables user to interact with the system.
  */
-class Terminal : public VGA, public Keyboard
+class Terminal : public Device
 {
     public:
 
 	/**
-	 * Class constructor.
+	 * @brief Class constructor.
+	 *
+	 * @param inputFile Path to the (device) file to use as input source.
+	 * @param outputFile Path to the (device) file to use as
+	 *        an output source.
+	 * @param width Width of the Terminal.
+	 * @param height Height of the Terminal.
 	 */
-	Terminal();
+	Terminal(const char *inputFile  = "/dev/keyboard0",
+		 const char *outputFile = "/dev/vga0",
+		 Size width = 80, Size height = 25);
 
 	/**
-	 * Class destructor.
+	 * @brief Class destructor.
 	 */
 	~Terminal();
 
-        /**
-         * Switches the currently active buffer to VGA.
-         * Makes the VGA video memory the currently active buffer for
-	 * output operations. The contents of the localMemory buffer are
-	 * copied to the vgaMemory buffer.
-         * @see videoMemory
-	 * @see vgaMemory
-         * @see localMemory
-         */
-	void activate();
-
 	/**
-	 * Switches the currently active buffer to local memory.
-	 * The contents of the VGA video memory are copies to the
-	 * localMemory buffer before switching.
-	 * @see videoMemory
-	 * @see vgaMemory
-	 * @see localMemory
+	 * @brief Retrieve the width of the Terminal.
+	 * @return Terminal width.
 	 */
-	void deactivate();
+	Size getWidth();
+	
+	/**
+	 * @brief Retrieve the height of the Terminal.
+	 * @return Terminal height.
+	 */
+	Size getHeight();
+	
+	/**
+	 * @brief Retrieve file descriptor of the input source.
+	 * @return File descriptor number.
+	 */
+	int getInput();
+	
+	/**
+	 * @brief Retrieve file descriptor of the output source.
+	 * @return File descriptor number.
+	 */
+	int getOutput();
+	
+	/**
+	 * @brief Retrieve a pointer to the local buffer.
+	 * @return Pointer to the local buffer.
+	 */
+	u16 * getBuffer();
+
+        /** 
+         * Saved byte and attribute value at cursor position. 
+         * @return Saved value. 
+         */
+        u16 * getCursorValue();
+
+        /** 
+         * Hides the cursor from the VGA screen. 
+         */
+	void hideCursor();
+
+        /** 
+         * Sets the new position of the cursor. 
+         * @param pos New position coordinates. 
+         */
+	void setCursor(const teken_pos_t *pos);
+
+        /** 
+         * Show the VGA cursor. 
+	 */
+        void showCursor();
 
 	/**
-	 * Read bytes from the Terminal (keyboard buffer).
+	 * @brief Initializes the Terminal.
+	 * @return Error result code.
+	 */
+	Error initialize();
+
+	/**
+	 * Read bytes from the Terminal.
 	 * @param buffer Output buffer.
 	 * @param size Number of bytes to read.
-	 * @return Number of bytes read.
+	 * @param offset Unused.
+	 * @return Number of bytes read or error code on failure.
 	 */
-	Size read(char *buffer, Size size);
+	Error read(s8 *buffer, Size size, Size offset);
 
 	/**
 	 * Write bytes to the Terminal (vga memory).
 	 * @param buffer Contains the bytes to write.
 	 * @param size Number of bytes to write.
+	 * @param offset Unused.
+	 * @return Number of bytes written or error code on failure.
 	 */
-	void write(char *buffer, Size size);
-	
-	/**
-	 * Retrieve the request being processed.
-	 * @return Current request for this Terminal.
-	 */
-	FileSystemMessage * getRequest()
-	{
-	    return requestActive ? &request : ZERO;
-	}
-	
-	/**
-	 * Sets the request currently being processed.
-	 * @param msg Request message.
-	 */
-	void setRequest(FileSystemMessage *msg)
-	{
-	    if (msg)
-	    {
-		request       = msg;
-		requestActive = true;
-	    }
-	    else
-		requestActive = false;
-	}
+	Error write(s8 *buffer, Size size, Size offset);
 
     private:
 
@@ -110,15 +139,28 @@ class Terminal : public VGA, public Keyboard
 
 	/** Terminal function handlers. */
 	teken_funcs_t funcs;
+
+	/** Buffer for local Terminal updates. */
+	u16 *buffer;
+
+	/** Saved cursor position. */
+	teken_pos_t cursorPos;
+
+	/** Saved value at cursor position. */
+        u16 cursorValue;
+
+	/**
+	 * @brief Path to the input and output files.
+	 */
+	const char *inputFile, *outputFile;
 	
-	/** Process which owns this terminal. */
-	ProcessID owner;
+	/**
+	 * @brief Width and height of the Terminal.
+	 */
+	const Size width, height;
 	
-	/** Request to be processed by the Terminal. */
-	FileSystemMessage request;
-	
-	/** Do we have an active request? */
-	bool requestActive;
+	/** Input and output file descriptors. */
+	int input, output;
 };
 
 /**
@@ -155,7 +197,7 @@ void fill(Terminal *ctx, const teken_rect_t *rect,
 	  teken_char_t ch, const teken_attr_t *attr);
 
 /**
- * Copy VGA memory.
+ * Copy bytes to the terminal.
  * @param ctx Terminal object pointer.
  * @param rect Source rectagular area with VGA memory buffer.
  * @param pos Position to copy the rect to.
@@ -172,7 +214,7 @@ void copy(Terminal *ctx, const teken_rect_t *rect,
 void param(Terminal *ctx, int key, int value);
 
 /**
- * ???
+ * @brief Unused.
  */
 void respond(Terminal *ctx, const void *buf, size_t size);
 

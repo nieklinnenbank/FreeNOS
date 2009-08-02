@@ -15,10 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "TerminalServer.h"
+#include <DeviceServer.h>
+#include "Terminal.h"
+#include <stdlib.h>
+#include <unistd.h>
 
 int main(int argc, char **argv)
 {
-    TerminalServer server;
+    DeviceServer server("tty", CharacterDeviceFile);
+
+    /*
+     * Start serving requests.
+     */
+    server.add(new Terminal);
     return server.run();
 }

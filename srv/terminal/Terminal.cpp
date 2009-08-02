@@ -16,14 +16,58 @@
  */
 
 #include <Types.h>
-#include <string.h>
+#include <Macros.h>
+#include <VGA.h>
 #include "Terminal.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <string.h>
+#include <errno.h>
 
-Terminal::Terminal()
-    : VGA((u16 *) VGA_VADDR), requestActive(false)
+u8 tekenToVGA[] =
+{
+    BLACK,
+    RED,
+    LIGHTGREEN,
+    LIGHTBROWN,
+    LIGHTBLUE,
+    LIGHTMAGENTA,
+    LIGHTCYAN,
+    LIGHTGREY,
+    LIGHTGREY,
+};
+
+Terminal::Terminal(const char *in, const char *out,
+		   Size w, Size h)
+    : inputFile(in), outputFile(out), width(w), height(h)
+{
+    buffer = new u16[width * height];
+}
+
+Error Terminal::initialize()
 {
     teken_pos_t winsz;
 
+    /*
+     * Attempt to open input file.
+     */
+    if ((input = open(inputFile, O_RDONLY)) < 0)
+    {
+	printf("failed to open `%s': %s\r\n",
+		inputFile, strerror(errno));
+	exit(EXIT_FAILURE);
+    }
+    /*
+     * Then open the output file.
+     */
+    if ((output = open(outputFile, O_RDWR)) < 0)
+    {
+	printf("failed to open `%s': %s\r\n",
+		outputFile, strerror(errno));
+	exit(EXIT_FAILURE);
+    }
     /* Fill in function pointers. */
     funcs.tf_bell    = (tf_bell_t *)    bell;
     funcs.tf_cursor  = (tf_cursor_t *)  cursor;
@@ -37,50 +81,119 @@ Terminal::Terminal()
     teken_init(&state, &funcs, this);
     
     /* Set appropriate terminal sizes. */
-    winsz.tp_col = width;
-    winsz.tp_row = height;
+    winsz.tp_col = 80;
+    winsz.tp_row = 25;
     teken_set_winsize(&state, &winsz);
+    
+    /* Print banners. */
+    this->write((s8 *) BANNER, strlen(BANNER), ZERO);
+    this->write((s8 *) COPYRIGHT, strlen(COPYRIGHT), ZERO);
+    
+    /* Done! */
+    return ESUCCESS;
 }
 
 Terminal::~Terminal()
 {
-    delete localMemory;
+    delete buffer;
+    close(input);
+    close(output);
 }
 
-void Terminal::activate()
+Size Terminal::getWidth()
 {
-    memcpy(vgaMemory, localMemory, width * height * sizeof(u16));
-    videoMemory = vgaMemory;
+    return width;
 }
 
-Size Terminal::read(char *buffer, Size size)
+Size Terminal::getHeight()
 {
-    Size num = readBytes < size ? readBytes : size;
-
-    if (num)
-    {
-	memcpy(buffer, keyboardBuffer, num);
-        readBytes -= num;
-    }
-    return num;
+    return height;
 }
 
-void Terminal::write(char *buffer, Size size)
+int Terminal::getInput()
 {
-    char cr  = '\r';
+    return input;
+}
 
+int Terminal::getOutput()
+{
+    return output;
+}
+
+u16 * Terminal::getBuffer()
+{
+    return buffer;
+}
+
+u16 * Terminal::getCursorValue()
+{
+    return &cursorValue;
+}
+
+Error Terminal::read(s8 *buffer, Size size, Size offset)
+{
+    return ::read(input, buffer, size);
+}
+
+Error Terminal::write(s8 *buffer, Size size, Size offset)
+{
+    char cr = '\r';
+
+    /* Initialize buffer with the current screen first. */
+    ::lseek(output, 0, SEEK_SET);
+    ::read(output, this->buffer, width * height * 2);
+    
+    /* 
+     * Loop all input characters. Add an additional carriage return 
+     * whenever a linefeed is detected. 
+     */
     for (Size i = 0; i < size; i++)
     {
-	if (*buffer == '\n')
-	{
-	    teken_input(&state, &cr, 1);
-	}
-	teken_input(&state, buffer++, 1);
+        if (*buffer == '\n')
+        {
+            teken_input(&state, &cr, 1);
+        }
+        teken_input(&state, buffer++, 1);
     }
+    /* Flush changes back to our output device. */
+    ::lseek(output, 0, SEEK_SET);
+    ::write(output, this->buffer, width * height * 2);
+    
+    /* Done. */
+    return size;
+}
+
+void Terminal::hideCursor()
+{
+    u16 index = cursorPos.tp_col + (cursorPos.tp_row * width);
+
+    /* Restore old attributes. */
+    buffer[index] &= 0xff;
+    buffer[index] |= (cursorValue & 0xff00);
+}
+    
+void Terminal::setCursor(const teken_pos_t *pos)
+{
+    /* Save value. */
+    cursorValue = buffer[pos->tp_col + (pos->tp_row * width)];
+    cursorPos   = *pos;
+}
+
+void Terminal::showCursor()
+{
+    u16 index = cursorPos.tp_col + (cursorPos.tp_row * width);
+    
+    /* Refresh cursorValue first. */
+    setCursor(&cursorPos);
+    
+    /* Write cursor. */
+    buffer[index] &= 0xff;
+    buffer[index] |= VGA_ATTR(LIGHTGREY, LIGHTGREY) << 8;
 }
 
 void bell(Terminal *term)
 {
+    /* Does nothing yet. */
 }
 
 void putchar(Terminal *term, const teken_pos_t *pos,
@@ -95,8 +208,8 @@ void putchar(Terminal *term, const teken_pos_t *pos,
 
     /* Write the buffer. */
     buffer[pos->tp_col + (pos->tp_row * width)] =
-	VGA_CHAR(ch, tekenToVGA[attr->ta_fgcolor], BLACK);
-
+        VGA_CHAR(ch, tekenToVGA[attr->ta_fgcolor], BLACK);
+    
     /* Show cursor again. */
     term->showCursor();
 }
@@ -113,18 +226,18 @@ void fill(Terminal *term, const teken_rect_t *rect,
 {
     /* Make sure we don't overwrite the cursor. */
     term->hideCursor();
-
+        
     /* Fill video memory; loop rows. */
     for (Size row = rect->tr_begin.tp_row;
-	            row < rect->tr_end.tp_row; row++)
+                    row < rect->tr_end.tp_row; row++)
     {
-	/* Loop columns. */
-	for (Size col = rect->tr_begin.tp_col;
-	                col < rect->tr_end.tp_col; col++)
-	{
-	    term->getBuffer()[col + (row * term->getWidth())] =
-		VGA_CHAR(ch, tekenToVGA[attr->ta_fgcolor], BLACK);
-	}
+        /* Loop columns. */
+        for (Size col = rect->tr_begin.tp_col;
+                        col < rect->tr_end.tp_col; col++)
+        {
+            term->getBuffer()[col + (row * term->getWidth())] =
+                VGA_CHAR(ch, tekenToVGA[attr->ta_fgcolor], BLACK);
+        }
     }
     /* Show cursor again. */
     term->showCursor();
@@ -144,10 +257,10 @@ void copy(Terminal *term, const teken_rect_t *rect,
     /* Hide cursor first. */
     term->hideCursor();
 
-    /* Copy video memory. */    
+    /* Copy video memory. */
     memcpy(buffer + pos->tp_col + (pos->tp_row * width),
-	   buffer + rect->tr_begin.tp_col + (rect->tr_begin.tp_row * width),
-	   numCols + (numRows * width) * sizeof(u16));
+           buffer + rect->tr_begin.tp_col + (rect->tr_begin.tp_row * width),
+           numCols + (numRows * width) * sizeof(u16));
 
     /* Show cursor again. */
     term->showCursor();
@@ -155,8 +268,10 @@ void copy(Terminal *term, const teken_rect_t *rect,
 
 void param(Terminal *term, int key, int value)
 {
+    /* Do nothing. */
 }
 
 void respond(Terminal *ctx, const void *buf, size_t size)
 {
+    /* Do nothing. */
 }
