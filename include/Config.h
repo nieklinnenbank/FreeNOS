@@ -28,10 +28,9 @@
 #define KERNEL_PID	65533
 
 #define PROCSRV_PID	0
-#define VFSSRV_PID	1
-#define MEMSRV_PID	2
-#define DEVSRV_PID	3
-#define LOGSRV_PID	4
+#define MEMSRV_PID	1
+#define DEVSRV_PID	2
+#define ROOTSRV_PID	3
 
 /**
  * @}

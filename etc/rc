@@ -1,3 +1,7 @@
+/srv/input/keyboard/server
+/srv/video/vga/server
+/srv/terminal/server
+/srv/log/server
 /srv/filesystem/proc/server
 /srv/serial/server
 /srv/pci/server
