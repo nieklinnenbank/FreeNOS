@@ -21,13 +21,15 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
+#include <sys/stat.h>
 #include <TerminalCodes.h>
 
 int main(int argc, char **argv)
 {
     DIR *d;
     struct dirent *dent;
-    char path[255];
+    struct stat st;
+    char path[255], tmp[255];
 
     /* Grab command-line arguments, if any */
     if (argc > 1)
@@ -62,7 +64,18 @@ int main(int argc, char **argv)
 	
 	    case DT_REG:
 	    default:
-		printf("%s", WHITE);
+	    
+		/* Construct full path. */
+		snprintf(tmp, sizeof(tmp),
+			 "%s/%s", path, dent->d_name);
+		
+		/* Is the file executable? */
+		if (stat(tmp, &st) != -1 && st.st_mode & 0100)
+		{
+		    printf("%s", GREEN);
+		}
+		else
+		    printf("%s", WHITE);
 	}
 	printf("%s ", dent->d_name);
     }

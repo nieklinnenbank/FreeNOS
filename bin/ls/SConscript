@@ -18,5 +18,5 @@
 from build import *
 
 env = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc' ],
-		      [ 'terminal' ])
+		      [ 'terminal', 'filesystem' ])
 env.Program('ls',  [ 'Main.cpp' ], LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])
