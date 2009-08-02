@@ -15,10 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <API/VMCopy.h>
 #include "MemoryServer.h"
+#include "MemoryMessage.h"
 
-int main(int argc, char **argv)
+void MemoryServer::createShared(MemoryMessage *msg)
 {
-    MemoryServer server;
-    return server.run();
+    char key[256];
+    Error num = msg->keyLength < sizeof(key) ?
+	        msg->keyLength : sizeof(key);
+    
+    /* Obtain key. */
+    if ((msg->result = VMCopy(msg->from, Read, (Address) key,
+			     (Address) msg->key, num)) != num)
+    {
+	return;
+    }
+    /* Null-terminate. */
+    key[num] = ZERO;
+    
+    /* Insert shared mapping. */
+    insertShared(msg->from, key, msg->bytes, msg, &msg->created);
 }

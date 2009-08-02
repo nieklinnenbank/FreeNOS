@@ -15,10 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __MEMORY_MEMORYMESSAGE_H
-#define __MEMORY_MEMORYMESSAGE_H
+#ifndef __MEMORY_MEMORY_MESSAGE_H
+#define __MEMORY_MEMORY_MESSAGE_H
 
 #include <API/IPCMessage.h>
+#include <API/VMCtl.h>
 #include <Types.h>
 #include <Macros.h>
 #include <Error.h>
@@ -28,47 +29,29 @@
  */
 typedef enum MemoryAction
 {
-    HeapGrow    = 0,
-    HeapShrink  = 1,
-    HeapReset   = 2,
-    HeapClone   = 3,
-    MemoryUsage = 4
+    /* Shared mappings. */
+    CreateShared   = 4,
+    DeleteShared   = 5,
+    ReleaseShared  = 6,
+    ListShared     = 7,
+    
+    /* Private mappings. */
+    CreatePrivate  = 8,
+    ReservePrivate = 9,
+    ReleasePrivate = 10,
+    ListPrivate    = 11,
+    
+    /* Diagnostics. */
+    SystemMemory   = 12,
+    ProcessMemory  = 13,
 }
 MemoryAction;
 
 /**
  * Memory operation message.
  */
-typedef struct MemoryMessage : public Message
+typedef struct MemoryMessage : public Message, public MemoryRange
 {
-    /**
-     * Default constructor.
-     */
-    MemoryMessage() : action(HeapGrow), bytes(ZERO)
-    {
-    }
-
-    /**
-     * Assignment operator.
-     * @param m MemoryMessage pointer to copy from.
-     */
-    void operator = (MemoryMessage *m)
-    {
-	from   = m->from;
-	type   = m->type;
-	action = m->action;
-	bytes  = m->bytes;
-    }
-
-    /**
-     * Get the current system wide memory usage.
-     */
-    void usage()
-    {
-	action = MemoryUsage;
-	ipc(MEMSRV_PID, SendReceive, sizeof(MemoryMessage));
-    }
-
     union
     {
 	/** Action to perform. */
@@ -77,16 +60,16 @@ typedef struct MemoryMessage : public Message
 	/** Result code. */
 	Error result;
     };
-
-    /** Indicates a number of bytes. */
-    Size bytes, bytesFree;
-
-    /** Start and end addresses (e.g. of the heap). */
-    Address startAddr, endAddr;
     
-    /** Target Process(es) ID number. */
-    ProcessID pid, ppid;
+    /** Shared memory key. */
+    char *key;
+    
+    /** Length of the key. */
+    Size keyLength;
+    
+    /** Indicates if a shared mapping is newly created, or reused. */
+    bool created;
 }
 MemoryMessage;
 
-#endif /* __MEMORY_MEMORYMESSAGE_H */
+#endif /* __MEMORY_MEMORY_MESSAGE_H */

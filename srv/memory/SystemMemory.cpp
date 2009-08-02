@@ -16,9 +16,13 @@
  */
 
 #include "MemoryServer.h"
+#include "MemoryMessage.h"
 
-int main(int argc, char **argv)
+void MemoryServer::systemMemory(MemoryMessage *msg)
 {
-    MemoryServer server;
-    return server.run();
+    SystemInformation info;
+    
+    /* Fill in the reply. */
+    msg->bytes = info.memorySize;
+    msg->free  = info.memoryAvail;
 }

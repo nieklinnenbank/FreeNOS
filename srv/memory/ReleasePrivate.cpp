@@ -16,9 +16,23 @@
  */
 
 #include "MemoryServer.h"
+#include "MemoryMessage.h"
 
-int main(int argc, char **argv)
+void MemoryServer::releasePrivate(MemoryMessage *msg)
 {
-    MemoryServer server;
-    return server.run();
+    msg->protection |= PAGE_PRESENT | PAGE_USER;
+    
+    /* Only allow unmapping of user pages. */
+    if (!VMCtl(msg->from, Access, msg))
+    {
+        msg->result = EFAULT;
+        return;
+    }
+    msg->protection = ZERO;
+	
+    /* Unmap now. */
+    VMCtl(msg->from, Map, msg);
+
+    /* Done. */
+    msg->result = ESUCCESS;
 }
