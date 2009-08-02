@@ -45,7 +45,7 @@ Error ProcFile::read(FileSystemMessage *msg)
 		    			  msg->size : size - msg->offset;
     
 	/* Copy the buffers. */
-	msg->size = VMCopy(msg->procID, Write, (Address) buffer + msg->offset,
+	msg->size = VMCopy(msg->from, Write, (Address) buffer + msg->offset,
 			  (Address) msg->buffer, bytes);
     }
     return ESUCCESS;
