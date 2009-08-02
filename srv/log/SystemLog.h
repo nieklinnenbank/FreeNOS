@@ -15,36 +15,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LOG_LOGSERVER_H
-#define __LOG_LOGSERVER_H
+#ifndef __LOG_SYSTEMLOG_H
+#define __LOG_SYSTEMLOG_H
 
-#include <API/IPCMessage.h>
-#include <IPCServer.h>
+#include <Device.h>
 #include <Types.h>
 #include <Macros.h>
 #include <Error.h>
-#include "LogMessage.h"
 
 /**
  * Logs output and debug messages.
  */
-class LogServer : public IPCServer<LogServer, LogMessage>
+class SystemLog : public Device
 {
     public:
     
-	/**
-	 * Class constructor function.
-	 */
-	LogServer();
+        /** 
+         * @brief Opens the system log.
+	 *
+	 * This function currently opens the system console
+	 * to perform all logging operations.
+	 *
+         * @return Error result code. 
+         */
+	Error initialize();
 
-    private:
-    
-	/**
-	 * Write a message to the log.
-	 * @param msg Request message.
-	 */
-	void writeLogHandler(LogMessage *msg);
-
+        /** 
+         * Write bytes to the system log.
+         * @param buffer Buffer containing bytes to write. 
+         * @param size Number of bytes to write. 
+         * @return Number of bytes on success and an error code on failure. 
+         */
+	Error write(s8 *buffer, Size size, Size offset);
 };
 
-#endif /* __LOG_LOGSERVER_H */
+#endif /* __LOG_SYSTEMLOG_H */

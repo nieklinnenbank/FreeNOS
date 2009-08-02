@@ -15,25 +15,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/VMCopy.h>
+#include "SystemLog.h"
 #include <stdio.h>
 #include <fcntl.h>
-#include "LogServer.h"
-#include "LogMessage.h"
 
-LogServer::LogServer() : IPCServer<LogServer, LogMessage>(this)
+Error SystemLog::initialize()
 {
     /* Open standard I/O. */
     for (int i = 0; i < 3; i++)
     {
-	while (open("/dev/console", ZERO) == -1) ;
+	open("/dev/tty0", O_RDWR);
     }
-    /* Register message handlers. */
-    addIPCHandler(WriteLog, &LogServer::writeLogHandler, false);
+    return ESUCCESS;
 }
 
-void LogServer::writeLogHandler(LogMessage *msg)
+Error SystemLog::write(s8 *buffer, Size size, Size offset)
 {
-    /* Write to the system console. */
-    printf("PID[%d]: %s\r\n", msg->from, msg->buffer);
+    /* Null terminate first. */
+    buffer[size] = ZERO;
+    
+    /* Print out. */
+    printf("%s", buffer);
+    return size;
 }

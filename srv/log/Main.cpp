@@ -15,11 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Macros.h>
-#include "LogServer.h"
+#include <DeviceServer.h>
+#include "SystemLog.h"
 
 int main(int argc, char **argv)
 {
-    LogServer server;
+    DeviceServer server("log", CharacterDeviceFile);
+
+    /*
+     * Start serving requests.
+     */
+    server.add(new SystemLog);
     return server.run();
 }
