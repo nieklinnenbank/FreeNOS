@@ -21,7 +21,7 @@ from build import *
 # Target system environment.
 #
 targetEnv = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc' ],
-		            [ 'filesystem', 'process', 'log' ])
+		            [ 'filesystem', 'process', 'memory', 'log' ])
 
 #
 # Host system environment.

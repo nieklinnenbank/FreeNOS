@@ -22,7 +22,8 @@ LinnDirectory::LinnDirectory(LinnFileSystem *f,
 			     LinnInode *i)
     : fs(f), inode(i)
 {
-    size = inode->size;
+    size   = inode->size;
+    access = inode->mode;
 }
 
 Error LinnDirectory::read(FileSystemMessage *msg)
@@ -48,7 +49,7 @@ Error LinnDirectory::read(FileSystemMessage *msg)
 	    	     (ent * sizeof(LinnDirectoryEntry));
 
 	/* Get the next entry. */
-	if (fs->getStorage()->read(offset, (u8 *) &dent,
+	if (fs->getStorage()->read(offset, &dent,
 			           sizeof(LinnDirectoryEntry)) < 0)
 	{
 	    return EACCES;
@@ -67,7 +68,7 @@ Error LinnDirectory::read(FileSystemMessage *msg)
 	tmp.type = (FileType) dInode->type;
 
 	/* Copy to the remote process. */		    
-        if ((e = VMCopy(msg->procID, Write, (Address) &tmp,
+        if ((e = VMCopy(msg->from, Write, (Address) &tmp,
                        (Address) (buf++), sizeof(Dirent))) < 0)
         {
             return e;
@@ -95,7 +96,7 @@ Error LinnDirectory::getEntry(LinnDirectoryEntry *dent, char *name)
 		     (sizeof(LinnDirectoryEntry) * ent);
 
 	    /* Get the next entry. */
-	    if (fs->getStorage()->read(offset, (u8 *) dent,
+	    if (fs->getStorage()->read(offset, dent,
 				       sizeof(LinnDirectoryEntry)) < 0)
 	    {
 		return EACCES;

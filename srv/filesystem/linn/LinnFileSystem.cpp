@@ -18,12 +18,12 @@
 #include <Types.h>
 #include <BootModule.h>
 #include <Storage.h>
-#include <LogMessage.h>
 #include "LinnFileSystem.h"
 #include "LinnInode.h"
 #include "LinnFile.h"
 #include "LinnDirectory.h"
 #include <stdlib.h>
+#include <syslog.h>
 
 int main(int argc, char **argv)
 {
@@ -46,19 +46,22 @@ LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
     Size offset;
     Error e;
 
+    /* Open the system log. */
+    openlog("LinnFS", LOG_PID, LOG_USER);
+
     /* Read out the superblock. */
-    if ((e = s->read(LINN_SUPER_OFFSET, (u8 *) &super,
+    if ((e = s->read(LINN_SUPER_OFFSET, &super,
 		     sizeof(super))) <= 0)
     {
-	log("LinnFS: reading superblock failed: %s",
-	     strerror(e));
+	syslog(LOG_ERR, "reading superblock failed: %s",
+	       strerror(e));
 	exit(EXIT_FAILURE);
     }
     /* Verify magic. */
     if (super.magic0 != LINN_SUPER_MAGIC0 ||
         super.magic1 != LINN_SUPER_MAGIC1)
     {
-	log("LinnFS: magic mismatch");
+	syslog(LOG_ERR, "magic mismatch");
 	exit(EXIT_FAILURE);
     }
     /* Create groups vector. */
@@ -73,29 +76,29 @@ LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
 		 (sizeof(LinnGroup)  * i);
 
 	/* Read from storage. */
-	if ((e = s->read(offset, (u8 *) group, sizeof(LinnGroup))) <= 0)
+	if ((e = s->read(offset, group, sizeof(LinnGroup))) <= 0)
 	{
-	    log("LinnFS: reading group descriptor failed: %s",
-		 strerror(e));
+	    syslog(LOG_ERR, "reading group descriptor failed: %s",
+		   strerror(e));
 	    exit(EXIT_FAILURE);
 	}
 	/* Insert in the groups vector. */
 	groups->insert(i, group);
     }
-    log("LinnFS: %d group descriptors",
-	 LINN_GROUP_COUNT(&super));
+    syslog(LOG_INFO, "%d group descriptors",
+	   LINN_GROUP_COUNT(&super));
     
-    /* Debug out superblock information. */
-    log("LinnFS: %d inodes, %d blocks",
-	 super.inodesCount - super.freeInodesCount,
-	 super.blocksCount - super.freeBlocksCount);
+    /* Print out superblock information. */
+    syslog(LOG_INFO, "%d inodes, %d blocks",
+	   super.inodesCount - super.freeInodesCount,
+	   super.blocksCount - super.freeBlocksCount);
 
     /* Read out the root directory. */
     rootInode = getInode(LINN_INODE_ROOT);
     root = new FileCache(&slash, new LinnDirectory(this, rootInode), ZERO);
     
     /* Done. */
-    log("LinnFS: mounted '%s'", p);
+    syslog(LOG_INFO, "mounted as '%s'", p);
 }
 
 Error LinnFileSystem::createFile(FileSystemMessage *msg,
@@ -133,10 +136,10 @@ LinnInode * LinnFileSystem::getInode(u32 inodeNum)
     	    ((inodeNum % super.inodesPerGroup) * sizeof(LinnInode));
 	     
     /* Read inode from storage. */
-    if ((e = storage->read(offset, (u8 *) inode, sizeof(LinnInode))) <= 0)
+    if ((e = storage->read(offset, inode, sizeof(LinnInode))) <= 0)
     {
-        log("LinnFS: reading inode failed: %s",
-	     strerror(e));
+        syslog(LOG_ERR, "reading inode failed: %s",
+	       strerror(e));
 	return ZERO;
     }
     /* Insert into the cache. */
@@ -188,7 +191,7 @@ u64 LinnFileSystem::getOffset(LinnInode *inode, u32 blk)
     while (true)
     {
 	/* Fetch block. */
-	if (storage->read(offset, (u8 *) block, super.blockSize) < 0)
+	if (storage->read(offset, block, super.blockSize) < 0)
 	{
 	    delete block;
 	    return 0;
