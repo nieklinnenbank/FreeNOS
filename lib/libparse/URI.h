@@ -122,22 +122,22 @@ class URI
     protected:
 
         /** The raw URI. */
-        char* _uri;
+        char* uri;
         
         /** The normalized URI. */
-        char* _normalized;
+        char* normalized;
         
         /** The hierarchical part of the URI. */
-        char* _hierarchical;
+        char* hierarchical;
         
         /** The query part of the URI. */
-        char* _query;
+        char* query;
         
         /** The fragment part of the URI. */
-        char* _fragment;
+        char* fragment;
 
         /** The scheme of the URI. */
-        char* _scheme;
+        char* scheme;
         
         /**
          * Decodes the given encoded char* (hex)
@@ -145,7 +145,7 @@ class URI
          * @param encoded The char* to decode.
          * @return char The decoded char.
          */
-        char _decode(char* encoded);
+        char decode(char* encoded);
         
 };
 

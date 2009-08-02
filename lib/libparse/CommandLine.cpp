@@ -19,28 +19,28 @@
 
 CommandLine::CommandLine(String* line, Vector<Delimeter>* delimeters 
     = (Vector<Delimeter>*)NULL )
-    : _line( *(*line) ), _delimeters( delimeters )
+    : line( *(*line) ), delimeters( delimeters )
 {
-	this->_parse();
+	this->parse();
 }
 
 CommandLine::CommandLine(char* line, Vector<Delimeter>* delimeters 
     = (Vector<Delimeter>*)NULL )
-    : _line(line), _delimeters( delimeters )
+    : line(line), delimeters( delimeters )
 {
-	this->_parse();
+	this->parse();
 }
 
 Vector< CommandLineOption<String, String> > CommandLine::getOptions()
 {
-	return _options;
+	return options;
 }
 
 CommandLineOption<String, String>* CommandLine::getOption(String& name)
 {
-	for( unsigned int i = 0; i < _options.count(); i++ )
+	for( unsigned int i = 0; i < options.count(); i++ )
 	{
-		CommandLineOption<String, String>* clo = _options[i];
+		CommandLineOption<String, String>* clo = options[i];
 		if( name.equals(clo->getKey()) )
 		{
 			return clo;
@@ -56,7 +56,7 @@ CommandLineOption<String, String>* CommandLine::getOption(char* name)
 	return this->getOption(nm);
 }
 
-void CommandLine::_parse()
+void CommandLine::parse()
 {
 	
 }

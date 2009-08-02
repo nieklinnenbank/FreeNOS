@@ -77,14 +77,14 @@ class StringTokenizer
 
     private:
 
-	char*	_sequence;
-	char	_delimiter;
-	int	_currentLocation;
-	unsigned int	_count;
-	char*	_currentToken;
-	char*	_nextToken;
+	char* sequence;
+	char delimiter;
+	int currentLocation;
+	unsigned int cnt;
+	char* currentToken;
+	char* nextToken;
 	
-	void _init(char* seq, char delim);
+	void init(char* seq, char delim);
 };
 
 #endif /* __LIBPARSE_STRINGTOKENIZER_H */

@@ -65,11 +65,11 @@ class CommandLine
 
     private:
 
-	char* _line;
-	Vector< Delimeter >* _delimeters;
-	Vector< CommandLineOption<String, String> > _options;
+	char* line;
+	Vector< Delimeter >* delimeters;
+	Vector< CommandLineOption<String, String> > options;
 	
-	void _parse();
+	void parse();
 };
 
 #endif /* __LIBPARSE_COMMANDLINE_H */

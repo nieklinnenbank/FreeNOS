@@ -24,50 +24,50 @@
 
 FileURL::FileURL(char* url) : URL(url)
 {
-    if( strcasecmp( "file", _scheme ) != 0 )
+    if( strcasecmp( "file", scheme ) != 0 )
     {
-        printf("Not a FileURL: %s.\n", _uri);
+        printf("Not a FileURL: %s.\n", uri);
         exit(EXIT_FAILURE);
     }
     
-    _splitted = (Vector<String>*)0;
-    _fullPath = (String*)0;
-    _parent = (FileURL*)0;
-    _length = strlen(_hierarchical);
+    splitted = (Vector<String>*)0;
+    fullPath = (String*)0;
+    par = (FileURL*)0;
+    len = strlen(hierarchical);
 }
 
 FileURL::~FileURL()
 {
-    if( _splitted )
+    if( this->splitted )
     {
-        for( Size size = 0; size < _splitted->count(); size++ )
+        for( Size size = 0; size < this->splitted->count(); size++ )
         {
-            delete _splitted->get(size);
+            delete this->splitted->get(size);
         }
         
-        delete _splitted;
+        delete this->splitted;
     }
     
-    if( _fullPath )
+    if( this->fullPath )
     {
-        delete _fullPath;
+        delete this->fullPath;
     }
     
-    if( _parent )
+    if( this->par )
     {
-        delete _parent;
+        delete this->par;
     }
 }
 
 Vector<String>* FileURL::split()
 {
 
-    // Are we already splitted?
-    if( !_splitted )
+    /* Are we already splitted? */
+    if( !splitted )
     {
-        // Example: file:///var/log/apache2/access.log
+        /* Example: file:///var/log/apache2/access.log */
     
-        String hier(_hierarchical);
+        String hier(hierarchical);
     
         if( hier.startsWith("//") )
         {
@@ -90,57 +90,57 @@ Vector<String>* FileURL::split()
             delete s;
         }
 
-        _splitted = ret;
+        splitted = ret;
     }
     
-    return _splitted;
+    return splitted;
 }
 
 String* FileURL::full()
 {
-    if( ! _fullPath )
+    if( !fullPath )
     {
-        _fullPath = new String(_hierarchical);
+        fullPath = new String(hierarchical);
     }
     
-    return _fullPath;
+    return fullPath;
 }
 
 FileURL* FileURL::parent()
 {
-    if( ! _parent )
+    if( ! par )
     {
-        // Check if we are the root path
+        /* Check if we are the root path */
         if( split()->count() == 1 )
         {
-            _parent = (FileURL*)0;
+            par = (FileURL*)0;
         } else {
             StringBuffer* sb = new StringBuffer();
             
             sb->append("file://");
             
-            for(Size pos = 0; pos < _splitted->count() - 1; pos++ )
+            for(Size pos = 0; pos < splitted->count() - 1; pos++ )
             {
                 sb->append(FILEURL_DEFAULT_SEPARATOR);
-                String* part = _splitted->get(pos);
+                String* part = splitted->get(pos);
                 sb->append( part->operator*() );
             }
             
-            _parent = new FileURL( sb->toString()->operator*() );
+            par = new FileURL( sb->toString()->operator*() );
             delete sb;
         }
     }
     
-    return _parent;
+    return par;
 }
 
 String* FileURL::base()
 {
     Size count = split()->count();
-    return _splitted->get(count - 1);
+    return splitted->get(count - 1);
 }
 
 Size FileURL::length()
 {
-    return _length;
+    return len;
 }

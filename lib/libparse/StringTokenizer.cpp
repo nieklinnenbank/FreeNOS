@@ -23,120 +23,120 @@
 
 StringTokenizer::StringTokenizer(String& seq, char delim)
 {
-	this->_init(*seq, delim);
+    this->init(*seq, delim);
 }
 
 StringTokenizer::StringTokenizer(char* seq, char delim)
 {
-	this->_init(seq, delim);
+    this->init(seq, delim);
 }
 
 StringTokenizer::~StringTokenizer()
 {
-	free( _currentToken );
-	free( _nextToken );
-	free( _sequence );
+    free( currentToken );
+    free( nextToken );
+    free( sequence );
 }
 
 bool StringTokenizer::hasNext()
 {
-	return !( _nextToken == 0 );
+    return !( nextToken == 0 );
 }
 
 unsigned int StringTokenizer::count()
 {
-	if( _count == 0 )
-	{
-		_count = 1;
-		
-		for( unsigned int i = 0; i < strlen( _sequence ); i++)
-		{
-		        if( _delimiter == _sequence[i] )
-		        {
-		                _count++;
-		        }
-		}
-		
-	}
-	
-	return _count;
+    if( cnt == 0 )
+    {
+        cnt = 1;
+        
+        for( unsigned int i = 0; i < strlen( sequence ); i++)
+        {
+            if( delimiter == sequence[i] )
+            {
+                cnt++;
+            }
+        }
+        
+    }
+    
+    return cnt;
 }
 
 char* StringTokenizer::next()
 {
-	char* ptr = 0;
-	char* ptr2 = 0;
-	
-	if( _nextToken == 0 )
-	{
-		return (char*) NULL;
-	}
-	
-	if( _currentToken != 0 )
-	{
-		free( _currentToken );
-	}
-	
-	// Copy _nextToken into _currentToken
-	_currentToken = strdup(_nextToken);
-	
-	// Shift until next _delimiter
-        for( ptr = _sequence + _currentLocation; 
-          ptr[0] != '\0' && ptr[0] != _delimiter; ptr++){};
+    char* ptr = 0;
+    char* ptr2 = 0;
+    
+    if( nextToken == 0 )
+    {
+        return (char*) NULL;
+    }
+    
+    if( currentToken != 0 )
+    {
+        free( currentToken );
+    }
+    
+    /* Copy nextToken into currentToken. */
+    currentToken = strdup(nextToken);
+    
+    /* Shift until next delimiter */
+    for( ptr = sequence + currentLocation; 
+        ptr[0] != '\0' && ptr[0] != delimiter; ptr++){};
+    
+    /* (re)fill nextToken */
+    free( nextToken );
+    if( ptr[0] == '\0' )
+    {
+        nextToken = 0;
+    } else {
+        ptr++;
+        ptr2 = strchr(ptr, delimiter);
         
-	// (re)fill _nextToken
-	free( _nextToken );
-	if( ptr[0] == '\0' )
-	{
-		_nextToken = 0;
-	} else {
-	        ptr++;
-	        ptr2 = strchr(ptr, _delimiter);
-	        
-	        if( ptr2 == 0 )
-	        {
-	            // This is the last token
-	            _nextToken = strdup(ptr);
-	        } else {
-	            _nextToken = (char*)malloc(ptr2 - ptr + 1);
-	            memset(_nextToken, 0, ptr2 - ptr + 1);
-	            strncpy(_nextToken, ptr, ptr2 - ptr);
-	        }
-	        
-	        _currentLocation += strlen(_nextToken) +1;
-	}
-	
-	return _currentToken;
-}
-
-void StringTokenizer::_init(char* seq, char delim)
-{
-	char* ptr;
-	char* value = seq;
-	
-	assert( value != 0 && strlen(value) > 0);
-	_sequence = strdup(value);
-	
-	if( delim == '\0' )
-	{
-	    delim = ' ';
-	}
-        
-        _delimiter = delim;
-	
-	// Initialize the other variables
-	_currentLocation = 0;
-	_currentToken = 0;
-	_count = 0;
-        
-        if( (ptr = strchr( _sequence, delim )) == 0)
+        if( ptr2 == 0 )
         {
-            _nextToken = strdup(_sequence);
+            /* This is the last token */
+            nextToken = strdup(ptr);
         } else {
-            _nextToken = (char*)malloc(ptr - _sequence + 1);
-            memset(_nextToken, 0, ptr - _sequence + 1);
-            strncpy(_nextToken, _sequence, ptr - _sequence);
-            _currentLocation = ptr - _sequence;
+            nextToken = (char*)malloc(ptr2 - ptr + 1);
+            memset(nextToken, 0, ptr2 - ptr + 1);
+            strncpy(nextToken, ptr, ptr2 - ptr);
         }
         
+        currentLocation += strlen(nextToken) +1;
+        }
+        
+        return currentToken;
+}
+
+void StringTokenizer::init(char* seq, char delim)
+{
+    char* ptr;
+    char* value = seq;
+    
+    assert( value != 0 && strlen(value) > 0);
+    sequence = strdup(value);
+    
+    if( delim == '\0' )
+    {
+        delim = ' ';
+    }
+    
+    delimiter = delim;
+    
+    /* Initialize the other variables */
+    currentLocation = 0;
+    currentToken = 0;
+    cnt = 0;
+    
+    if( (ptr = strchr( sequence, delim )) == 0)
+    {
+        nextToken = strdup(sequence);
+    } else {
+        nextToken = (char*)malloc(ptr - sequence + 1);
+        memset(nextToken, 0, ptr - sequence + 1);
+        strncpy(nextToken, sequence, ptr - sequence);
+        currentLocation = ptr - sequence;
+    }
+    
 }

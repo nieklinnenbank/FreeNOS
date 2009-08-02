@@ -26,17 +26,17 @@ class Parser
 {
     public:
 
-	/**
-	 * Constructor
-	 */
-	Parser();
-	
-	/**
-	 * Destructor
-	 */
-	virtual ~Parser();
-	
-	
+    /**
+     * Constructor
+     */
+    Parser();
+    
+    /**
+     * Destructor
+     */
+    virtual ~Parser();
+    
+    
 };
 
 #endif

@@ -22,29 +22,29 @@
 
 #include <stdio.h>
 
-URI::URI(char* uri) : _uri(uri)
+URI::URI(char* u) : uri(u)
 {
-    if( _uri == (char*)0 )
+    if( uri == (char*)0 )
     {
-        // TODO: Throw exception if support is added to FreeNOS.
+        /* TODO: Throw exception if support is added to FreeNOS. */
         printf("ERROR: Illegal URI.\n");
         exit(EXIT_FAILURE);
     }
     
-    _scheme = 0;
-    _hierarchical = 0;
-    _query = 0;
-    _fragment = 0;
-    _normalized = 0;
+    scheme = 0;
+    hierarchical = 0;
+    query = 0;
+    fragment = 0;
+    normalized = 0;
     
-    StringTokenizer st(_uri, ':');
+    StringTokenizer st(uri, ':');
     unsigned int count = st.count();
     
     if( count > 1 )
     {
-        _scheme = strdup(st.next());
+        scheme = strdup(st.next());
     } else {
-        printf("Illegal URI: %s\n", _uri);
+        printf("Illegal URI: %s\n", uri);
         exit(EXIT_FAILURE);
     }
     
@@ -52,17 +52,17 @@ URI::URI(char* uri) : _uri(uri)
     
     if( querySt.count() > 0 )
     {
-        _hierarchical = strdup(querySt.next());
+        hierarchical = strdup(querySt.next());
         
         if( querySt.count() > 1 )
         {
     
             StringTokenizer fragmentSt(querySt.next(), '#');
-            _query = strdup(fragmentSt.next());
+            query = strdup(fragmentSt.next());
             
             if( fragmentSt.count() > 1 )
             {
-                _fragment = strdup(fragmentSt.next());
+                fragment = strdup(fragmentSt.next());
             }
         }
     }
@@ -71,60 +71,55 @@ URI::URI(char* uri) : _uri(uri)
 
 URI::~URI()
 {
-    if( _scheme != 0 )
+    if( scheme != 0 )
     {
-        free( _scheme );
-        _scheme = 0;
+        free( scheme );
     }
     
-    if( _hierarchical != 0 )
+    if( hierarchical != 0 )
     {
-        free( _hierarchical );
-        _hierarchical = 0;
+        free( hierarchical );
     }
     
-    if( _query != 0 )
+    if( query != 0 )
     {
-        free( _query );
-        _query = 0;
+        free( query );
     }
     
-    if( _fragment != 0 )
+    if( fragment != 0 )
     {
-        free( _fragment );
-        _fragment = 0;
+        free( fragment );
     }
     
-    if( _normalized != 0 )
+    if( normalized != 0 )
     {
-        free( _normalized );
-        _normalized = 0;
+        free( normalized );
     }
 }
 
 char* URI::getScheme() const
 {
-    return _scheme;
+    return scheme;
 }
 
 char* URI::getHierarchical() const
 {
-    return _hierarchical;
+    return hierarchical;
 }
 
 char* URI::getQuery() const
 {
-    return _query;
+    return query;
 }
 
 char* URI::getFragment() const
 {
-    return _fragment;
+    return fragment;
 }
 
 char* URI::getRawURI() const
 {
-    return _uri;
+    return uri;
 }
 
 bool URI::equals(URI& uri)
@@ -154,7 +149,7 @@ bool URI::equals(URI& uri)
             } else {
                 if( own[i] != other[i] )
                 {
-                    // Compare them in a case insensitive way
+                    /* Compare them in a case insensitive way. */
                     int result = (int)(own[i] - other[i]);
                     if( result != 32 && result != -32 )
                     {
@@ -162,7 +157,7 @@ bool URI::equals(URI& uri)
                     }
                 }
                 
-                // See if we are at the end of the encoded string
+                /* See if we are at the end of the encoded string */
                 if( i > 0 && ( own[i - 1] != '%' ) )
                 {
                     inEncoding = false;
@@ -176,11 +171,11 @@ bool URI::equals(URI& uri)
 
 char* URI::normalize()
 {
-    Size size = strlen(_uri);
+    Size size = strlen(uri);
     
-    if( _normalized == (char*)NULL )
+    if( normalized == (char*)NULL )
     {
-        char* original = _uri;
+        char* original = uri;
         char* copy = (char*)malloc( size + 1);
         memset(copy, 0, size + 1);
         unsigned int copyPointer = 0;
@@ -205,7 +200,7 @@ char* URI::normalize()
                     encoded[0] = original[i];
                 } else {
                     encoded[1] = original[i];
-                    char decoded = _decode(encoded);
+                    char decoded = decode(encoded);
                     
                     if( strchr(UNRESERVED_CHARS, (int)decoded) != NULL ){
                         copy[copyPointer++] = decoded;
@@ -222,14 +217,14 @@ char* URI::normalize()
             }
         }
         
-        free(encoded);
-        _normalized = copy;
+        free( encoded );
+        normalized = copy;
     }
     
-    return _normalized;
+    return normalized;
 }
 
-char URI::_decode(char* encoded)
+char URI::decode(char* encoded)
 {
     long int dec = strtol(encoded, (char**)NULL, 16);
     return (char)dec;

@@ -54,8 +54,8 @@ class Delimeter
 
     private:
 	
-	char _open;
-	char _close;
+	char open;
+	char close;
 };
 
 #endif /* __LIBPARSE_DELIMETER_H */

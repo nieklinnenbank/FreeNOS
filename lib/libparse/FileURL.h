@@ -79,17 +79,17 @@ class FileURL : public URL
     
     private:
         
-        // The parts in this FileURL.
-        Vector<String>* _splitted;
+        /* The parts in this FileURL. */
+        Vector<String>* splitted;
         
-        // The original full path as a String instance.
-        String* _fullPath;
+        /* The original full path as a String instance. */
+        String* fullPath;
         
-        // Our parent path
-        FileURL* _parent;
+        /* Our parent path */
+        FileURL* par;
         
-        // The length of the original path
-        Size _length;
+        /* The length of the original path */
+        Size len;
 };
 
 #endif /* __LIBPARSE_FILEURL */

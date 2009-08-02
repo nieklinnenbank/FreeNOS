@@ -30,7 +30,7 @@ template <class K, class V> class CommandLineOption
 	/**
 	 * Constructor
 	 */
-	CommandLineOption(K* key, V* value = NULL) : _key(key), _value(value)
+	CommandLineOption(K* key, V* value = NULL) : key(key), value(value)
 	{
 	}
 	
@@ -41,19 +41,19 @@ template <class K, class V> class CommandLineOption
 	
 	K* getKey() const
 	{
-		return _key;
+		return key;
 	}
 	
 	V* getValue() const
 	{
-		return _value;
+		return value;
 	}
 	
 
     private:
 
-	K* _key;
-	V* _value;
+	K* key;
+	V* value;
 };
 
 #endif /* __LIBPARSE_COMMANDLINEOPTION_H */

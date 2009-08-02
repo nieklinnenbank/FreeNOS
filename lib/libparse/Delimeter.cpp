@@ -17,16 +17,16 @@
 
 #include <Delimeter.h>
 
-Delimeter::Delimeter(char open, char close) : _open(open), _close(close)
+Delimeter::Delimeter(char op, char cl) : open(op), close(cl)
 {
 }
 
 char Delimeter::getOpen() const
 {
-	return _open;
+	return open;
 }
 
 char Delimeter::getClose() const
 {
-	return _close;
+	return close;
 }
