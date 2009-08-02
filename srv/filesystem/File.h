@@ -23,9 +23,12 @@
 #include <Types.h>
 #include <Error.h>
 #include "FileSystemMessage.h"
+#include "FileType.h"
+#include "FileMode.h"
 
 /**
- * Abstracts a file which is opened by a process.
+ * @brief Abstracts a file present on a FileSystem.
+ * @see FileSystem
  */
 class File
 {
@@ -38,8 +41,8 @@ class File
 	 * @param g Group identity.
 	 */
 	File(FileType t = RegularFile, UserID u = ZERO, GroupID g = ZERO)
-	    : type(t), size(ZERO), refCount(ZERO), openCount(ZERO),
-	      uid(u), gid(g)
+	    : type(t), access(OwnerRWX), size(ZERO),
+	      openCount(ZERO), uid(u), gid(g)
 	{
 	}
 
@@ -60,35 +63,6 @@ class File
 	}
 
 	/**
-	 * Get the number of times we are referenced internally.
-	 * @return Reference count.
-	 * @see refCount
-	 */
-	Size getRefCount()
-	{
-	    return refCount;
-	}
-	
-	/**
-	 * Enlarge the number of times we are referenced by one.
-	 * @see refCount
-	 */
-	void incrementRefCount()
-	{
-	    refCount++;
-	}
-
-	/**
-	 * Shrink the number of times we are referenced by one.
-	 * @see refCount
-	 */
-	void decrementRefCount()
-	{
-	    if (refCount > 0) refCount--;
-	}
-
-
-	/**
 	 * Get the number of times we are opened by a process.
 	 * @return Open count.
 	 * @see openCount
@@ -97,32 +71,30 @@ class File
 	{
 	    return openCount;
 	}
-	
-	/**
-	 * Enlarge the number of times we are opened by one.
-	 * @see openCount
-	 */
-	void incrementOpenCount()
-	{
-	    openCount++;
-	}
-
-	/**
-	 * Shrink the number of times we are opened by one.
-	 * @see openCount
-	 */
-	void decrementOpenCount()
-	{
-	    if (openCount > 0) openCount--;
-	}
 
 	/**
 	 * Attempt to open a file.
 	 * @param msg Describes the open request.
+	 * @param pid Process Identity to serve us from. May be changed
+	 *            to redirect to other servers.
+	 * @param ident Identity to be filled in the FileDescriptor.
 	 * @return Error code status.
 	 */
-	virtual Error open(FileSystemMessage *msg)
+	virtual Error open(FileSystemMessage *msg,
+			   ProcessID *pid, Address *ident)
 	{
+	    openCount++;
+	    return ESUCCESS;
+	}
+
+	/**
+	 * @brief Attempt to close a file.
+	 * @param msg Describes the closing request.
+	 * @return Error code status.
+	 */
+	virtual Error close(FileSystemMessage *msg)
+	{
+	    openCount--;
 	    return ESUCCESS;
 	}
     
@@ -157,12 +129,13 @@ class File
 	
 	    /* Fill in the status structure. */
 	    st.type     = type;
+	    st.access   = access;
 	    st.size     = size;
 	    st.userID   = uid;
 	    st.groupID  = gid;
 	    
 	    /* Copy to the remote process. */
-	    if ((e = VMCopy(msg->procID, Write, (Address) &st,
+	    if ((e = VMCopy(msg->from, Write, (Address) &st,
 			   (Address) msg->stat, sizeof(st)) > 0))
 	    {
 		return ESUCCESS;
@@ -173,14 +146,14 @@ class File
     
     protected:
 
-	/** File of this file. */
+	/** Type of this file. */
 	FileType type;
+	
+	/** Access permissions. */
+	FileModes access;
 	
 	/** Size of the file, in bytes. */
 	Size size;
-	
-	/** Number of times the File is referenced internally. */
-	Size refCount;
 	
 	/** Number of times the File has been opened by a process. */
 	Size openCount;

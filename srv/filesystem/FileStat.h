@@ -30,7 +30,7 @@ typedef struct FileStat
     FileType type;
     
     /** File access permission bits. */
-    FileMode access;
+    FileModes access;
     
     /** Size of the file in bytes. */
     Size size;
