@@ -50,10 +50,15 @@ int statFile(char *prog, char *file)
 	printf("Minor ID: %u\r\n", st.st_dev.minor);
     }
     else if (S_ISBLK(st.st_mode))
+    {
 	printf("Block Device\r\n");
+	printf("Major ID: %u\r\n", st.st_dev.major);
+	printf("Minor ID: %u\r\n", st.st_dev.minor);	
+    }
     else
 	printf("Unknown\r\n");
 
+    printf("Mode: %u\r\n", st.st_mode);
     printf("Size: %u\r\n", st.st_size);   
     printf("Uid:  %u\r\n", st.st_uid);
     printf("Gid:  %u\r\n", st.st_gid);
