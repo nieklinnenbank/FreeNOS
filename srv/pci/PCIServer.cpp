@@ -16,14 +16,17 @@
  */
 
 #include <API/ProcessCtl.h>
-#include <LogMessage.h>
-#include <stdlib.h>
 #include "PCIServer.h"
+#include <stdlib.h>
+#include <syslog.h>
     
 PCIServer::PCIServer()
     : IPCServer<PCIServer, PCIMessage>(this)
 {
     PCIDevice dev;
+
+    /* Open the system log. */
+    openlog("PCI", LOG_PID, LOG_USER);
 
     /* Request I/O ports. */
     for (int i = 0; i < 4; i++)
@@ -38,11 +41,13 @@ PCIServer::PCIServer()
     if (PCI_READ_WORD(0, 0, 0, PCI_VID) == 0xffff ||
         PCI_READ_WORD(0, 0, 0, PCI_DID) == 0xffff)
     {
-	log("PCI: no host controller found");
+	syslog(LOG_INFO, "no host controller found");
 	exit(1);
     }
     else
-	log("PCI: host controller found");
+    {
+	syslog(LOG_INFO, "host controller found");
+    }
     
     /* Scan the PCI bus. */
     for (u16 bus = 0; bus < 0xff; bus++)
@@ -71,9 +76,9 @@ PCIServer::PCIServer()
 		devices.insertTail(new PCIDevice(&dev));
 
 		/* Log the device. */
-	        log("[%x:%x] %x:%x (rev %d)",
-        	     bus, slot,    dev.vendorID,
-		     dev.deviceID, dev.revisionID);
+	        syslog(LOG_INFO, "[%x:%x] %x:%x (rev %d)",
+        	       bus, slot,    dev.vendorID,
+		       dev.deviceID, dev.revisionID);
     	    }
 	}
     }
