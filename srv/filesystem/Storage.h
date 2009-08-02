@@ -46,7 +46,7 @@ class Storage
 	 * @param buffer Output buffer.
 	 * @param size Number of bytes to copied.
 	 */
-	virtual Error read(u64 offset, u8 *buffer, Size size)
+	virtual Error read(u64 offset, void *buffer, Size size)
 	{
 	    return ENOTSUP;
 	}
@@ -57,7 +57,7 @@ class Storage
 	 * @param buffer Input buffer.
 	 * @param size Number of bytes to written.
 	 */
-	virtual Error write(u64 offset, u8 *buffer, Size size)
+	virtual Error write(u64 offset, void *buffer, Size size)
 	{
 	    return ENOTSUP;
 	}
