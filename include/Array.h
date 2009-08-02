@@ -124,7 +124,7 @@ template <class T> class Array
 	{
 	    if( position >= _size )
 	    {
-		return NULL;
+		return ZERO;
 	    }
 	    return _array[position];
 	}
