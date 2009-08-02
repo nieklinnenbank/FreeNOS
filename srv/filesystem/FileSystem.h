@@ -21,16 +21,20 @@
 #include <API/IPCMessage.h>
 #include <API/VMCopy.h>
 #include <IPCServer.h>
+#include <UserProcess.h>
 #include <Config.h>
+#include <Shared.h>
+#include <Array.h>
 #include <HashTable.h>
 #include <HashIterator.h>
+#include <POSIXSupport.h>
 #include "Directory.h"
 #include "File.h"
 #include "FileSystemPath.h"
 #include "FileSystemMessage.h"
-
-/** Maximum length of a filesystem path. */
-#define PATHLEN 64
+#include "FileSystemMount.h"
+#include "FileDescriptor.h"
+#include <unistd.h>
 
 /**
  * Cached in-memory file.
@@ -48,7 +52,6 @@ typedef struct FileCache
     {
 	if (p && p != this)
 	{
-	    file->incrementRefCount();
 	    p->entries.insert(new String(path->base()), this);
 	}
     }
@@ -87,25 +90,33 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	 */
 	FileSystem(const char *path)
 	    : IPCServer<FileSystem, FileSystemMessage>(this),
-	      root(ZERO), mountPath((char*)path)
+	      root(ZERO), mountPath(path)
 	{
-	    FileSystemMessage msg;
-	    
 	    /* Register message handlers. */
-	    addIPCHandler(CreateFile, &FileSystem::ioHandler, false);
-	    addIPCHandler(OpenFile,   &FileSystem::ioHandler, false);
-	    addIPCHandler(ReadFile,   &FileSystem::ioHandler, false);
-	    addIPCHandler(WriteFile,  &FileSystem::ioHandler, false);
-	    addIPCHandler(CloseFile,  &FileSystem::ioHandler, false);
-	    addIPCHandler(StatFile,   &FileSystem::ioHandler, false);
-	    addIPCHandler(IODone,     &FileSystem::ioDoneHandler, false);
+	    addIPCHandler(CreateFile, &FileSystem::pathHandler);
+	    addIPCHandler(OpenFile,   &FileSystem::pathHandler);
+	    addIPCHandler(StatFile,   &FileSystem::pathHandler);	    
+	    addIPCHandler(ReadFile,   &FileSystem::fileDescriptorHandler);
+	    addIPCHandler(WriteFile,  &FileSystem::fileDescriptorHandler);
+	    addIPCHandler(CloseFile,  &FileSystem::fileDescriptorHandler);
+	    addIPCHandler(SeekFile,   &FileSystem::fileDescriptorHandler);
+
+	    /* Load shared tables. */
+	    procs.load(USER_PROCESS_KEY, MAX_PROCS);
+	    mounts.load(FILE_SYSTEM_MOUNT_KEY, MAX_MOUNTS);
+	    files = new Array<Shared<FileDescriptor> >(MAX_PROCS);
 	    
 	    /* Mount ourselves. */
-	    msg.action = Mount;
-	    msg.buffer = (char *) path;
-	    
-	    /* Request VFS mount. */
-	    IPCMessage(VFSSRV_PID, SendReceive, &msg, sizeof(msg));
+	    for (Size i = 0; i < MAX_MOUNTS; i++)
+	    {
+		if (!mounts[i]->path[0] || !strcmp(mounts[i]->path, path))
+		{
+		    strlcpy(mounts[i]->path, path, PATHLEN);
+		    mounts[i]->procID  = getpid();
+		    mounts[i]->options = ZERO;
+		    break;
+		}
+	    }
 	}
     
 	/**
@@ -137,154 +148,149 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	}
 
 	/**
-         * Perform Input/Output on a file.
-	 * @param msg Incoming message.
+         * @brief Process an incoming filesystem request using a path.
+	 *
+	 * This message handler is responsible for processing any
+	 * kind of FileSystemMessages which have an FileSystemAction using
+	 * the path field, such as OpenFile.
+	 *
+	 * @param msg Incoming request message.
+	 * @see FileSystemMessage
+	 * @see FileSystemAction
          */    
-	void ioHandler(FileSystemMessage *msg)
+	void pathHandler(FileSystemMessage *msg)
 	{
-	    FileSystemMessage vfs;
 	    FileSystemPath path;
-	    FileCache *fc = ZERO; 
-	    File *f = ZERO;
+	    FileCache *cache = ZERO; 
+	    File *file;
+	    ProcessID pid;
+	    Address ident;
 	    char buf[PATHLEN], tmp[PATHLEN];
+    
+	    /*
+	     * Attempt to copy the input path first.
+	     */
+	    if ((msg->result = VMCopy(msg->from, Read, (Address) buf,
+			    	     (Address) msg->buffer, PATHLEN)) <= 0)
+	    {
+		return;
+	    }
+	    /* Is the path relative? */
+	    if (buf[0] != '/')
+	    {
+		/* Reconstruct path. */
+    		snprintf(tmp, sizeof(tmp), "%s/%s",
+			 procs[msg->from]->currentDirectory, buf);
+		path.parse(tmp);
+	    }
+	    else
+		path.parse(buf + strlen(mountPath));
 
 	    /*
-	     * Find the file, either in cache, storage or via
-	     * the message itself. 
+	     * Do we have this file cached?
 	     */
-	    switch (msg->action)
+	    if ((cache = findFileCache(&path)) ||
+	        (cache = lookupFile(&path)))
 	    {
-		case CreateFile:
-		case OpenFile:
-		case StatFile:
-
-		    /* Copy the path first. */
-		    if (VMCopy(msg->procID, Read, (Address) buf,
-			      (Address) msg->buffer, PATHLEN) <= 0)
-		    {
-			msg->error(EACCES, IODone);
-			return;
-		    }
-		    else
-		    {
-			/* Is the path relative? */
-			if (buf[0] != '/')
-		        {
-			    vfs.action = GetCurrentDir;
-			    vfs.buffer = tmp;
-			    vfs.procID = msg->procID;
-			    
-			    /*
-			     * Ask for their current directory.
-			     * TODO: this can be much more efficient, if we can
-			     *       map the user process table in our address space!
-			     * TODO: this is also buggy... what if VFS tries to contact us meanwhile...
-			     */
-			    IPCMessage(VFSSRV_PID, SendReceive, &vfs, sizeof(vfs));
-			    
-			    /* Reconstruct path. */
-    			    snprintf(tmp, sizeof(tmp), "%s/%s", tmp,
-				     buf);
-			    path.parse(tmp);
-			}
-			else
-			    path.parse(buf + strlen(mountPath));
-
-			/* No need to lookup caches for creation. */	    
-			if (msg->action == CreateFile)
-			{
-			    break;
-			}
-			/* Do we have this file cached? */
-		    	if ((fc = findFileCache(&path)) || (fc = lookupFile(&path)))
-			{
-			    f = fc->file;
-			    f->incrementRefCount();
-			    msg->ident = (Address) f;
-			}
-			else
-			{
-			    msg->error(ENOENT, IODone);
-			    return;
-			}
-		    }
-		    break;
-		
-		default:
-
-		    /* Simply use the message identity. */
-		    f = (File *) msg->ident;
+		file = cache->file;
 	    }
+	    /* Sorry, no such file! */
+	    else if (msg->action != CreateFile)
+	    {
+		msg->result = ENOENT;
+		return;
+	    }			
 	    /* Perform I/O on the file. */
 	    switch (msg->action)
 	    {
 		case CreateFile:
-		    msg->result = createFile(msg, &path);
+		    if (cache)
+			msg->result = EEXIST;
+		    else
+			msg->result = createFile(msg, &path);
 		    break;
 		
 		case OpenFile:
-		    msg->result = f->open(msg);
+		    
+		    /*
+		     * Attempt to open the file.
+		     */
+		    pid   = getpid();
+		    ident = (Address) file;
+		    msg->result = cache->file->open(msg, &pid, &ident);
+
+		    /* Create a FileDescriptor on success. */
+		    if (msg->result == ESUCCESS)
+		    {
+        		msg->fd = insertFileDescriptor(msg->from, pid, ident);
+		    }
 		    break;
 
 		case StatFile:
-		    msg->result = f->status(msg);
-		    break;
-
-		case ReadFile:
-		    msg->result = f->read(msg);
-		    break;
-		
-		case WriteFile:
-		    msg->result = f->write(msg);
-		    break;
-		
-		case CloseFile:
-	    	    msg->result = ESUCCESS;	// TODO: for devices, we must inform them!!!
-						// TODO: incrementReferenceCount() here aswell.
-		    break;
-
 		default:
-		    msg->error(ENOTSUP);
+		    msg->result = file->status(msg);
 		    break;
-	    }
-	    /* Did the operation complete already? */
-	    if (msg->result != EAGAIN)
-	    {
-		ioDoneHandler(msg);
 	    }
 	}
 
 	/**
-	 * Allows devices to inform the filesystem that an I/O operation has completed.
-	 * @param msg Incoming message.
-	 */
-	void ioDoneHandler(FileSystemMessage *msg)
+         * @brief Process an incoming filesystem request using a FileDescriptor.
+	 *
+	 * This message handler is responsible for processing any
+	 * kind of FileSystemMessages which have an FileSystemAction using
+	 * a FileDescriptor, such as ReadFile.
+	 *
+	 * @param msg Incoming request message.
+	 * @see FileSystemMessage
+	 * @see FileSystemAction
+	 * @see FileDescriptor
+         */    
+	void fileDescriptorHandler(FileSystemMessage *msg)
 	{
-	    File *f = (File *) msg->ident;
-	
-	    if (msg->result == ESUCCESS)
+	    FileDescriptor *fd;
+	    File *file = ZERO;
+
+	    /*
+	     * Obtain the FileDescriptor.
+	     */
+	    if (!(fd = getFileDescriptor(files, msg->from, msg->fd)))
 	    {
-		switch (msg->savedAction)
-	        {
-		    case OpenFile:
-			f->incrementOpenCount();
-		
-		    case StatFile:
-			f->decrementRefCount();
-			break;
-
-		    case CloseFile:
-			f->decrementOpenCount();
-			// TODO: decrementReferenceCount()
-			break;
-		
-		    default:
-			;
-		}
+		msg->result = EBADF;
+		return;
 	    }
-	    msg->ioDone(VFSSRV_PID, msg->procID, msg->size, msg->result);
-	}
+	    /* Copy FileDescriptor properties. */
+	    if (msg->action != SeekFile)
+    	    {
+            	msg->offset = fd->position;
+		file = (File *) fd->identifier;
+    	    }
+	    /* Perform I/O on the file. */
+	    switch (msg->action)
+	    {
+		case ReadFile:
+		    msg->result   = file->read(msg);
+		    fd->position += msg->size;
+		    break;
+		
+		case WriteFile:
+		    msg->result = file->write(msg);
+		    fd->position += msg->size;
+		    break;
 
+		case CloseFile:
+		    msg->result = file->close(msg);
+		    memset(getFileDescriptor(files, msg->from, msg->fd), 0,
+			   sizeof(FileDescriptor));
+		    break;
+
+		case SeekFile:
+		default:
+		    fd->position = msg->offset;
+		    msg->result  = ESUCCESS;
+		    break;
+	    }
+	}
+    
     protected:
 
 	/**
@@ -409,18 +415,16 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 		    clearFileCache(i.current());
 
 		    /* May we remove reference to this entry? */
-		    if (i.current()->file->getRefCount()  >= 1 &&
-		        i.current()->file->getOpenCount() == 0)
+		    if (i.current()->file->getOpenCount() == 0)
 		    
 		    {
-			i.current()->file->decrementRefCount();
 			cache->entries.remove(i.key(), true);
 		    }
 		}
 	    }
 	    /* Remove the entry itself, if empty. */
-	    if (!cache->valid && cache->file->getRefCount() == 0 &&
-		 cache->entries.count() == 0 && cache->file->getOpenCount() == 0)
+	    if (!cache->valid && cache->entries.count() == 0 &&
+	         cache->file->getOpenCount() == 0)
 	    {
 		delete cache->file;
 		delete cache;
@@ -431,7 +435,46 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	FileCache *root;
 	
 	/** Mount point. */
-	char *mountPath;
+	const char *mountPath;
+
+        /** Mounted filesystems. */
+        Shared<FileSystemMount> mounts;
+        
+        /** User process table. */
+        Shared<UserProcess> procs;
+
+        /** Per-process File descriptors. */
+        Array<Shared<FileDescriptor> > *files;
+
+    private:
+    	
+	/** 
+         * Fills a new FileDescriptor entry. 
+         * @param procID Process Identity to insert the FileDescriptor for. 
+         * @param mount Process identity of the filesystem server. 
+         * @param ident Unique identifier for the file. 
+         * @return FileDescriptor index number. 
+         */
+        int insertFileDescriptor(ProcessID procID, ProcessID mount,
+                                 Address ident)
+	{
+	    Shared<FileDescriptor> *fds = getFileDescriptors(files, procID);
+    
+	    /* Loop the FileDescriptor table. */
+	    for (Size i = 0; i < FILE_DESCRIPTOR_MAX; i++)
+	    {
+    		/* Use the entry, if the mount field is ZERO. */
+    		if (!fds->get(i)->mount)
+    		{
+        	    fds->get(i)->mount      = mount;
+        	    fds->get(i)->identifier = ident;
+        	    fds->get(i)->position   = ZERO;
+        	    return i;
+    		}
+	    }
+	    /* Maximum number of FileDescriptors reached. */
+	    return -1;
+	}
 };
 
 #endif /* __FILESYSTEM_FILESYSTEM_H */

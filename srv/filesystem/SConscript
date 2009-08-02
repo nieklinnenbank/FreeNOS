@@ -15,4 +15,4 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-SConscript(dirs = [ 'ext2', 'linn', 'proc', 'tmp', 'virtual' ])
+SConscript(dirs = [ 'ext2', 'linn', 'proc', 'tmp' ])
