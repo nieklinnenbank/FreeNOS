@@ -19,16 +19,12 @@
 #define __FILESYSTEM_BOOTMODULE_H
 
 #include <API/SystemInfo.h>
-#include <API/VMCtl.h>
-#include <FreeNOS/Memory.h>
+#include <MemoryMessage.h>
 #include <Types.h>
 #include <Error.h>
 #include <Config.h>
-#include <string.h>
 #include "Storage.h"
-
-/** Virtual address of the loaded image in memory. */
-#define BOOTMODULE_VADDR 0xa000f000
+#include <string.h>
 
 /**
  * Uses a GRUB boot module as a filesystem storage provider.
@@ -42,7 +38,7 @@ class BootModule : public Storage
 	 * @param m Name of the boot image loaded by GRUB.
 	 */
 	BootModule(const char *m)
-	    : moduleName(m), image((u8 *)BOOTMODULE_VADDR)
+	    : moduleName(m), image(ZERO)
 	{
 	}
 
@@ -53,25 +49,33 @@ class BootModule : public Storage
 	bool load()
 	{
 	    SystemInformation info;
-	    Address vaddr = BOOTMODULE_VADDR;
+	    MemoryMessage mem;
 	    
-	    /* Search for the boot image. */
+	    /* Search for the boot module. */
 	    for (Size i = 0; i < info.moduleCount; i++)
 	    {
-		if (strcmp(info.modules[i].string, (char *)moduleName) == 0)
+		if (strcmp(info.modules[i].string,
+			  (char *) moduleName) == 0)
 		{
-		    /* Map bootimage into virtual memory. */
-		    for (Address a = info.modules[i].modStart;
-		                 a < info.modules[i].modEnd; a += PAGESIZE)
-		    {
-			VMCtl(Map, SELF, a, vaddr);
-			vaddr += PAGESIZE;
-		    }
+		    /* Ask memory server to map GRUB module. */
+		    mem.action     = CreatePrivate;
+		    mem.protection = PAGE_PINNED;
+		    mem.bytes      = info.modules[i].modEnd -
+				     info.modules[i].modStart;
+		    mem.virtualAddress  = ZERO;
+		    mem.physicalAddress = info.modules[i].modStart;
+		    mem.ipc(MEMSRV_PID, SendReceive, sizeof(mem));
+		    
+		    /* Update our state. */
 		    imageSize = info.modules[i].modEnd -
-				info.modules[i].modStart;
+			        info.modules[i].modStart;
+		    image     = (u8 *) mem.virtualAddress;
+		    
+		    /* Success! */
 		    return true;
 		}
 	    }
+	    /* GRUB module not found. */
 	    return false;
 	}
 
@@ -81,21 +85,10 @@ class BootModule : public Storage
 	 * @param buffer Output buffer.
 	 * @param size Number of bytes to copied.
 	 */
-	Error read(u64 offset, u8 *buffer, Size size)
+	Error read(u64 offset, void *buffer, Size size)
 	{
 	    memcpy(buffer, image + offset, size);
 	    return size;
-	}
-	
-	/**
-	 * Writing is not supported.
-	 * @param offset Offset to start writing to.
-	 * @param buffer Input buffer.
-	 * @param size Number of bytes to written.
-	 */
-	Error write(u64 offset, u8 *buffer, Size size)
-	{
-	    return ENOTSUP;
 	}
 
 	/**
