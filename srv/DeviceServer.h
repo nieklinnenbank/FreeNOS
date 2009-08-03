@@ -360,7 +360,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	    result = dev->read(buffer, msg->size, msg->offset);
 		
 	    /* Did it complete successfully? */
-	    if (result > 0)
+	    if (result >= 0)
 	    {
 		msg->result = ESUCCESS;
 	        msg->size   = result;
@@ -377,9 +377,10 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 		/* Take care that we may need to try again. */
 		msg->result = result;
 	    }
-	    /* Send a reply if processed. */
+	    /* Update FileDescriptor and send a reply if processed. */
 	    if (msg->result != EAGAIN)
 	    {
+		getFileDescriptor(files, msg->from, msg->fd)->position += msg->size;
 		msg->ipc(msg->from, Send, sizeof(*msg));
 	    }
 	    /* Release memory. And return. */
@@ -416,7 +417,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 		result = dev->write(buffer, msg->size, msg->offset);
 		    
 		/* Did it complete successfully? */
-		if (result > 0)
+		if (result >= 0)
 		{
 		    msg->result = ESUCCESS;
 		    msg->size   = result;
@@ -430,6 +431,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	    /* Send a reply if processed. */
 	    if (msg->result != EAGAIN)
 	    {
+		getFileDescriptor(files, msg->from, msg->fd)->position += msg->size;
 		msg->ipc(msg->from, Send, sizeof(*msg));
 	    }
 	    /* Release memory. And return. */
