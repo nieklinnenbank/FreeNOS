@@ -15,39 +15,34 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <String.h>
+#include <API/ProcessCtl.h>
+#include <FreeNOS/CPU.h>
+#include <Macros.h>
+#include <Types.h>
+#include <Config.h>
 #include <string.h>
-#include <URI.h>
-#include <FileURL.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
+#include "Time.h"
 
-void usage(char*);
-
-int main(int argc, char **argv)
+Time::Time()
 {
-
-    if( argc == 1 )
-    {
-        usage(argv[0]);
-    }
-    
-    String u1(argv[1]);
-    
-    FileURL* url = new FileURL(*u1);
-    FileURL* parent = url->parent();
-    printf("FileURL::full() == %s\n", url->full()->operator*() );
-    printf("FileURL::parent()->full() == %s\n", parent->full()->operator*() );
-    printf("FileURL::base() == %s\n", url->base()->operator*() );
-    
-    delete url;
-    delete parent;
-    return EXIT_SUCCESS;
 }
 
-void usage(char* prog)
+Error Time::initialize()
 {
-    printf("usage: %s [--uri <uri> | <value>]\n", prog);
-    exit(0);
+    
+    /* Done! */
+    return ESUCCESS;
+}
+
+Error Time::read(s8 *buffer, Size size, Size offset)
+{
+    /* PHONY read */
+    if( offset >= 10 )
+    {
+        return 0;
+    }
+    
+    memcpy((void*)buffer, (const void*)"1234567890", size);
+    
+    return (Error) size;
 }

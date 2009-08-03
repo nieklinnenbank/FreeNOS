@@ -5,4 +5,5 @@
 /srv/filesystem/proc/server
 /srv/serial/server
 /srv/pci/server
+/srv/time/server
 /bin/sh/sh

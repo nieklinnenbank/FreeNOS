@@ -15,5 +15,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-SConscript(dirs = [ 'log', 'idle', 'memory', 'pci', 'video', 'input',
-		    'process', 'serial', 'terminal', 'time', 'filesystem' ])
+from build import *
+
+env = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc' ],
+		      [ 'filesystem', 'log', 'process', 'memory' ])
+
+env.Program('server', [ 'Time.cpp', 'Main.cpp' ],
+		         LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])

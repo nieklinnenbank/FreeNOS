@@ -15,39 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <String.h>
-#include <string.h>
-#include <URI.h>
-#include <FileURL.h>
-#include <stdio.h>
+#include <DeviceServer.h>
 #include <stdlib.h>
-#include <fcntl.h>
+#include <unistd.h>
+#include <syslog.h>
 
-void usage(char*);
+#include "Time.h"
 
 int main(int argc, char **argv)
 {
-
-    if( argc == 1 )
-    {
-        usage(argv[0]);
-    }
+    DeviceServer server("time", CharacterDeviceFile);
     
-    String u1(argv[1]);
-    
-    FileURL* url = new FileURL(*u1);
-    FileURL* parent = url->parent();
-    printf("FileURL::full() == %s\n", url->full()->operator*() );
-    printf("FileURL::parent()->full() == %s\n", parent->full()->operator*() );
-    printf("FileURL::base() == %s\n", url->base()->operator*() );
-    
-    delete url;
-    delete parent;
-    return EXIT_SUCCESS;
-}
-
-void usage(char* prog)
-{
-    printf("usage: %s [--uri <uri> | <value>]\n", prog);
-    exit(0);
+    /*
+     * Start serving requests
+     */
+    Time* t = new Time();
+    server.add(t);
+    return server.run();
 }

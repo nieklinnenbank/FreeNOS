@@ -24,7 +24,10 @@
 
 FileURL::FileURL(char* url) : URL(url)
 {
-    if( strcasecmp( "file", scheme ) != 0 )
+    printf("FileURL::FileURL(%s) with scheme %s\n", url, scheme);
+    printf("strcasecmp( \"FILE\", \"%s\") == %d\n"
+        , scheme, strcasecmp("FILE", scheme) );
+    if( strcasecmp( "FILE", scheme ) != 0 )
     {
         printf("Not a FileURL: %s.\n", uri);
         exit(EXIT_FAILURE);
