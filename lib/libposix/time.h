@@ -38,6 +38,9 @@ struct timespec
     long tv_nsec;
 };
 
+extern unsigned long mktime(const unsigned int year, const unsigned int month,
+                            const unsigned int day, const unsigned int hour,
+                            const unsigned int min, const unsigned int sec);
 /**
  * @}
  */

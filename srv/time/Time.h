@@ -22,6 +22,22 @@
 #include <Types.h>
 #include <Device.h>
 
+#define RTC_PORT(x) (0x70 + (x))
+
+#define RTC_SECONDS             0
+#define RTC_MINUTES             2
+#define RTC_HOURS               4
+#define RTC_DAY_OF_WEEK         6
+#define RTC_DAY_OF_MONTH        7
+#define RTC_MONTH               8
+#define RTC_YEAR                9
+
+/* Assume that a two-digit year is after 2000 */
+#define CMOS_YEARS_OFFS         2000
+
+#define RTC_FREQ_SELECT         10
+#define RTC_UIP                 0x80
+
 class Time : public Device
 {
     public:
@@ -55,6 +71,25 @@ class Time : public Device
 	 */
 	/* Error write(s8 *buffer, Size size, Size offset); */
 
+    private:
+    
+        /**
+         * Returns the value stored at the given address
+         * from the CMOS.
+         * I actually almost copied this code from the linux source
+         * from the file arch/x86/kernel/rtc.h so you should also
+         * take a look over there how they do it.
+         * @param addr The address to read from the CMOS
+         * @return The value at the given address.
+         */
+        unsigned char readCMOS(unsigned char addr);
+        
+        /**
+         * Requests that the cpu does a nop.
+         */
+        static inline void cpuRelax();
+        
+        unsigned bcd2bin(unsigned char val);
 };
 
 #endif /* __TIME_TIME_H */
