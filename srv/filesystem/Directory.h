@@ -22,11 +22,11 @@
 #include <List.h>
 #include "File.h"
 
-/** Maximum length of a filename. */
+/** @brief Maximum length of a filename. */
 #define DIRENT_LEN	64
 
 /**
- * Describes an entry inside a Directory.
+ * @brief Describes an entry inside a Directory.
  */
 typedef struct Dirent
 {
@@ -49,21 +49,30 @@ typedef struct Dirent
 Dirent;
 
 /**
- * In-memory directory object.
+ * @brief Directory File functionality.
+ *
+ * A Directory is a File which may have several child File's. Each
+ * child File which also is a Directory, may in turn have child File's.
+ * This way, a FileSystem can form a tree of File's and Directories.
+ *
+ * @see FileSystem
+ * @see File
  */
 class Directory : public File
 {
     public:
     
 	/**
-	 * Constructor function.
+	 * @brief Constructor function.
 	 */
 	Directory() : File(DirectoryFile)
 	{
+	    insert(".",  DirectoryFile);
+            insert("..", DirectoryFile);
 	}
 
 	/**
-	 * Destructor function.
+	 * @brief Destructor function.
 	 */
 	~Directory()
 	{
@@ -71,76 +80,102 @@ class Directory : public File
 	}
     
 	/**
-	 * Read directory entries.
-	 * @param msg Read request.
-	 * @return Number of bytes read on success, Error on failure.
+	 * @brief Read directory entries.
+	 *
+	 * This default read implementation reads the private
+	 * List of Dirent entries from memory. It can be usefull
+	 * for pseudo filesystems which don't have any real data
+	 * on Storage. Filesystem that do have date on Storage should
+	 * implement their version of read().
+	 *
+	 * @param buffer Input/Output buffer to output bytes to.
+         * @param size Number of bytes to read, at maximum. 
+         * @param offset Offset inside the file to start reading. 
+         * @return Number of bytes read on success, Error on failure.
+	 *
+	 * @see FileSystem
+	 * @see Storage
+	 * @see Dirent
 	 */
-	virtual Error read(FileSystemMessage *msg)
+        virtual Error read(IOBuffer *buffer, Size size, Size offset)
 	{
 	    Size bytes = 0;
-	    Dirent *dent = (Dirent *) msg->buffer;
-	    Error e;
 	
 	    /* Loop our list of Dirents. */
 	    for (ListIterator<Dirent> i(&entries); i.hasNext(); i++)
 	    {
 		/* Can we read another entry? */
-		if (bytes + sizeof(Dirent) <= msg->size)
+		if (bytes + sizeof(Dirent) <= size)
 		{
-		    if ((e = VMCopy(msg->from, Write, (Address) i.current(),
-					    	      (Address) (dent++), sizeof(Dirent))) < 0)
-		    {
-			return e;
-		    }
-		    bytes += e;
+		    buffer->write(i.current(), sizeof(Dirent), bytes);
+		    bytes += sizeof(Dirent);
 		}
 		else break;
 	    }
 	    /* Report results. */
-	    msg->size = bytes;
-	    return ESUCCESS;
+	    return bytes;
 	}
 
 	/**
-	 * Adds a directory entry.
+	 * @brief Retrieve a File from storage.
+	 *
+	 * This virtual function is responsible for reading a
+	 * directory entry from storage which is not already in
+	 * the FileCache. It creates a File object for the directory entry
+	 * and returns a pointer to it, if found.
+	 *
+	 * @param name Name of the directory entry to lookup.
+	 * @return Pointer to a File on success, ZERO otherwise.
+	 *
+	 * @see File
+	 * @see Dirent
+	 * @see Storage
+	 */
+	virtual File * lookup(const char *name)
+	{
+	    return ZERO;
+	}
+
+	/**
+	 * @brief Insert a new directory entry.
+	 *
+	 * FileSystem implementations should implement this function
+	 * to insert a new implementation defined directory entry into
+	 * the underlying Storage.
+	 *
 	 * @param name Name of the entry to add.
 	 * @param type File type.
-	 * @note Entry names must be unique within the same Dirent.
+	 *
+	 * @note Entry names must be unique within the same Directory.
+	 * @see FileSystem
+	 * @see Storage
 	 */
-	virtual void insertEntry(char *name, FileType type)
+	void insert(const char *name, FileType type)
 	{
-	    if (!getEntry(name))
-	    {
-	        Dirent *d = new Dirent;
-	        strlcpy(d->name, name, DIRENT_LEN);
+	    Dirent *d = new Dirent;
+
+	    if (!get(name))
+	    {	    
+		strlcpy(d->name, name, DIRENT_LEN);
 	        d->type = type;
-		entries.insertTail(d);
+	        entries.insertTail(d);
 		size += sizeof(*d);
 	    }
 	}
-	
-	/**
-	 * Retrieve a directory entry by it's name.
-	 * @param name Name of the entry to get.
-	 * @return Direct pointer on success, ZERO otherwise.
-	 */
-	Dirent * getEntry(char *name)
-	{
-	    for (ListIterator<Dirent> i(&entries); i.hasNext(); i++)
-	    {
-		if (strcmp(i.current()->name, name) == 0)
-		{
-		    return i.current();
-		}
-	    }
-	    return (Dirent *) ZERO;
-	}
 
 	/**
-	 * Removes an entry.
+	 * @brief Remove a directory entry.
+	 *
+	 * A FileSystem implemenatation should lookup the internal
+	 * entry for the given name, and update the underlying Storage
+	 * to remove any references for it inside this Directory.
+	 *
 	 * @param name Name of the entry to remove.
+	 *
+	 * @see FileSystem
+	 * @see Storage
 	 */	
-	virtual void removeEntry(char *name)
+	void remove(const char *name)
 	{
 	    for (ListIterator<Dirent> i(&entries); i.hasNext(); i++)
 	    {
@@ -153,18 +188,48 @@ class Directory : public File
 		}
 	    }
 	}
-	
-	/**
-	 * Clears the list of entries.
-	 */
-	void clear()
-	{
-	    entries.clear(true);
-	}
+
+    protected:
+    
+	/** 
+         * @brief Clears the internal list of entries. 
+         */
+        void clear()
+        {
+            entries.clear(true);
+        }
 
     private:
 
-	/** List of directory entries. */
+	/** 
+         * @brief Retrieve a directory entry by it's name. 
+         * @param name Name of the entry to get. 
+         * @return Direct pointer on success, ZERO otherwise. 
+         */
+        Dirent * get(const char *name)
+        {
+            for (ListIterator<Dirent> i(&entries); i.hasNext(); i++)
+            {
+                if (strcmp(i.current()->name, name) == 0)
+                {
+                    return i.current();
+                }
+            }
+            return (Dirent *) ZERO;
+        }
+	
+
+	/**
+	 * @brief List of directory entries.
+	 * 
+	 * This List should only be used for pseudo filesystems,
+	 * which use the default implementations of read(), insert() and remove().
+	 *
+	 * @see List
+	 * @see Directory::read
+	 * @see Directory::insert
+	 * @see Directory::remove
+	 */
 	List<Dirent> entries;
 };
 
