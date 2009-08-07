@@ -284,9 +284,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 		
 		    if ((msg->result = file->read(&io, msg->size, fd->position)) >= 0)
 		    {
-			 fd->position += msg->result;
-			 msg->size = msg->result;
-			 msg->result = ESUCCESS;
+			fd->position += msg->result;
 		    }
 		    break;
 		
@@ -295,8 +293,6 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 		    if ((msg->result = file->write(&io, msg->size, fd->position)) >= 0)
 		    {
 		    	fd->position += msg->result;
-			msg->size = msg->result;
-			msg->result = ESUCCESS;
 		    }
 		    break;
 

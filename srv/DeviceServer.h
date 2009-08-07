@@ -347,7 +347,6 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	 */
 	bool performRead(FileSystemMessage *msg)
 	{
-	    Error result;
 	    Device *dev = devices[msg->deviceID.minor];
 	
 	    /* Allocate a temporary buffer. */
@@ -357,30 +356,17 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	     * Perform the read operation using the underlying
 	     * read() implementation of the Device.
 	     */
-	    result = dev->read(buffer, msg->size, msg->offset);
-		
-	    /* Did it complete successfully? */
-	    if (result >= 0)
+	    if ((msg->result = dev->read(buffer, msg->size, msg->offset)) >= 0)
 	    {
-		msg->result = ESUCCESS;
-	        msg->size   = result;
-
 		/* Write the result into the process' buffer. */
-	        if (VMCopy(msg->from, Write, (Address) buffer,
-					     (Address) msg->buffer, msg->size) < 0)
-		{
-	    	    msg->result = EFAULT;
-		}
-	    }
-	    else
-	    {
-		/* Take care that we may need to try again. */
-		msg->result = result;
+	        msg->result = VMCopy(msg->from, Write, (Address) buffer,
+				    (Address) msg->buffer, msg->result);
 	    }
 	    /* Update FileDescriptor and send a reply if processed. */
 	    if (msg->result != EAGAIN)
 	    {
-		getFileDescriptor(files, msg->from, msg->fd)->position += msg->size;
+		if (msg->result > 0)
+		    getFileDescriptor(files, msg->from, msg->fd)->position += msg->result;
 		msg->ipc(msg->from, Send, sizeof(*msg));
 	    }
 	    /* Release memory. And return. */
@@ -396,42 +382,26 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	 */
 	bool performWrite(FileSystemMessage *msg)
 	{
-	    Error result;
 	    Device *dev = devices[msg->deviceID.minor];
 
 	    /* Allocate a temporary buffer. */
 	    s8 *buffer = new s8[msg->size];
 
 	    /* Obtain input bytes from the process' buffer. */
-	    if (VMCopy(msg->from, Read, (Address) buffer,
-					(Address) msg->buffer, msg->size) < 0)
+	    if ((msg->result = VMCopy(msg->from, Read, (Address) buffer,
+				     (Address) msg->buffer, msg->size)) >= 0)
 	    {
-		msg->result = EFAULT;
-	    }
-	    else
-	    {		
 		/*
 		 * Perform the write operation using the underlying
 		 * write() implementation of the Device.
 	    	 */
-		result = dev->write(buffer, msg->size, msg->offset);
-		    
-		/* Did it complete successfully? */
-		if (result >= 0)
-		{
-		    msg->result = ESUCCESS;
-		    msg->size   = result;
-	    	}
-		/* Take care that we may need to try again. */
-		else
-		{
-		    msg->result = result;
-		}
+		msg->result = dev->write(buffer, msg->size, msg->offset);
 	    }
 	    /* Send a reply if processed. */
 	    if (msg->result != EAGAIN)
 	    {
-		getFileDescriptor(files, msg->from, msg->fd)->position += msg->size;
+		if (msg->result > 0)
+		    getFileDescriptor(files, msg->from, msg->fd)->position += msg->result;
 		msg->ipc(msg->from, Send, sizeof(*msg));
 	    }
 	    /* Release memory. And return. */

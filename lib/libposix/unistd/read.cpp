@@ -44,5 +44,5 @@ ssize_t read(int fildes, void *buf, size_t nbyte)
 	errno = ENOENT;
     
     /* Success. */
-    return errno == ESUCCESS ? msg.size : (ssize_t) -1;
+    return errno >= 0 ? errno : (ssize_t) -1;
 }
