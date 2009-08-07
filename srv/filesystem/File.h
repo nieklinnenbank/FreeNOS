@@ -25,6 +25,7 @@
 #include "FileSystemMessage.h"
 #include "FileType.h"
 #include "FileMode.h"
+#include "IOBuffer.h"
 
 /**
  * @brief Abstracts a file present on a FileSystem.
@@ -80,8 +81,7 @@ class File
 	 * @param ident Identity to be filled in the FileDescriptor.
 	 * @return Error code status.
 	 */
-	virtual Error open(FileSystemMessage *msg,
-			   ProcessID *pid, Address *ident)
+	virtual Error open(ProcessID *pid, Address *ident)
 	{
 	    openCount++;
 	    return ESUCCESS;
@@ -89,31 +89,34 @@ class File
 
 	/**
 	 * @brief Attempt to close a file.
-	 * @param msg Describes the closing request.
 	 * @return Error code status.
 	 */
-	virtual Error close(FileSystemMessage *msg)
+	virtual Error close()
 	{
 	    openCount--;
 	    return ESUCCESS;
 	}
     
 	/**
-	 * Read bytes from the file.
-	 * @param msg Describes the read request.
+	 * @brief Read bytes from the file.
+	 * @param buffer Input/Output buffer to output bytes to.
+	 * @param size Number of bytes to read, at maximum.
+	 * @param offset Offset inside the file to start reading.
 	 * @return Number of bytes read on success, Error on failure.
 	 */
-	virtual Error read(FileSystemMessage *msg)
+	virtual Error read(IOBuffer *buffer, Size size, Size offset)
 	{
 	    return ENOTSUP;
 	}
 
 	/**
 	 * Write bytes to the file.
-	 * @param msg Describes the write request.
+	 * @param buffer Input/Output buffer to input bytes from.
+	 * @param size Number of bytes to write, at maximum.
+	 * @param offset Offset inside the file to start writing.
 	 * @return Number of bytes written on success, Error on failure.
 	 */
-	virtual Error write(FileSystemMessage *msg)
+	virtual Error write(IOBuffer *buffer, Size size, Size offset)
 	{
 	    return ENOTSUP;
 	}

@@ -22,6 +22,7 @@
 #include <FileSystemMessage.h>
 #include <Types.h>
 #include <Error.h>
+#include "IOBuffer.h"
 
 /**
  * @defgroup tmpfs tmpfs (Temporary Filesystem)
@@ -47,17 +48,12 @@ class TmpFile : public File
 
 	/**
 	 * Reads out the buffer.
-	 * @param msg Read request.
-	 * @return Number of bytes read, or Error number.
+	 * @param buffer Output buffer. 
+         * @param size Number of bytes to read, at maximum. 
+         * @param offset Offset inside the file to start reading. 
+         * @return Number of bytes read on success, Error on failure. 
 	 */
-	Error read(FileSystemMessage *msg);
-
-        /** 
-         * Write bytes to the file.
-	 * @param msg Write request.
-         * @return Number of bytes written on success, Error on failure.
-         */
-	Error write(FileSystemMessage *msg);
+	Error read(IOBuffer *buffer, Size size, Size offset);
 
     private:
     

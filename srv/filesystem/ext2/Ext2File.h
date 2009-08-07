@@ -24,6 +24,7 @@
 #include <Error.h>
 #include "Ext2FileSystem.h"
 #include "Ext2Inode.h"
+#include "IOBuffer.h"
 
 /**
  * @defgroup ext2 ext2fs (Extended 2 Filesystem)
@@ -50,18 +51,13 @@ class Ext2File : public File
 	~Ext2File();
 
 	/**
-	 * Read out the file.
-	 * @param msg Read request.
-	 * @return Number of bytes read, or Error number.
+	 * @brief Read out the file.
+         * @param buffer Input/Output buffer to output bytes to. 
+         * @param size Number of bytes to read, at maximum. 
+         * @param offset Offset inside the file to start reading. 
+         * @return Number of bytes read on success, Error on failure. 
 	 */
-	Error read(FileSystemMessage *msg);
-
-        /** 
-         * Write bytes to the file.
-	 * @param msg Write request.
-         * @return Number of bytes written on success, Error on failure.
-         */
-	Error write(FileSystemMessage *msg);
+	Error read(IOBuffer *buffer, Size size, Size offset);
 
     private:
 

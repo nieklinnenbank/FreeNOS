@@ -28,24 +28,18 @@ TmpFile::~TmpFile()
     if (buffer)	delete buffer;
 }
 
-Error TmpFile::read(FileSystemMessage *msg)
+Error TmpFile::read(IOBuffer *buffer, Size size, Size offset)
 {
     Size bytes;
 
     /* Bounds checking. */
-    if (msg->offset >= size)
+    if (offset >= this->size)
     {
 	return 0;
     }
     else
-	bytes = size - msg->offset > msg->size ? msg->size : size - msg->offset;
+	bytes = this->size - offset > size ? size : this->size - offset;
     
     /* Copy the buffers. */
-    return VMCopy(msg->from, Write, (Address) buffer + msg->offset,
-				    (Address) msg->buffer, bytes);
-}
-
-Error TmpFile::write(FileSystemMessage *msg)
-{
-    return EACCES;
+    return buffer->write(this->buffer + offset, bytes);
 }

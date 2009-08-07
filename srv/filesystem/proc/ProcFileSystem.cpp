@@ -36,10 +36,8 @@ char * ProcFileSystem::states[] =
 ProcFileSystem::ProcFileSystem(const char *path)
     : FileSystem(path)
 {
-    FileSystemPath slash("/");
-
     rootDir = new ProcRootDirectory(this);
-    root    = new FileCache(&slash, rootDir, ZERO);
+    setRoot(rootDir);
 }
 
 void ProcFileSystem::refresh()
@@ -55,8 +53,10 @@ void ProcFileSystem::refresh()
     clearFileCache();
     
     /* Update root. */
-    rootDir->insertEntry(".",  DirectoryFile);
-    rootDir->insertEntry("..", DirectoryFile);
+    rootDir->insert(".",  DirectoryFile);
+    rootDir->insert("..", DirectoryFile);
+    
+    /* Reinsert into the cache. */
     insertFileCache(rootDir, ".");
     insertFileCache(rootDir, "..");
 
@@ -74,14 +74,16 @@ void ProcFileSystem::refresh()
 	    break;
 	}
 	snprintf(tmp, sizeof(tmp), "%u", msg.number);
-	
+
 	/* Per-process directory. */
 	procDir = new Directory;
-	procDir->insertEntry(".",       DirectoryFile);
-	procDir->insertEntry("..",      DirectoryFile);
-	procDir->insertEntry("cmdline", RegularFile);
-	procDir->insertEntry("status",  RegularFile);
-	rootDir->insertEntry(tmp,       DirectoryFile);
+        procDir->insert(".",       DirectoryFile);
+        procDir->insert("..",      DirectoryFile);
+        procDir->insert("cmdline", RegularFile);
+        procDir->insert("status",  RegularFile);
+        rootDir->insert(tmp,       DirectoryFile);
+
+	/* Reinsert into the cache. */
 	insertFileCache(procDir, "%u",    msg.number);
 	insertFileCache(procDir, "%u/.",  msg.number);
 	insertFileCache(rootDir, "%u/..", msg.number);

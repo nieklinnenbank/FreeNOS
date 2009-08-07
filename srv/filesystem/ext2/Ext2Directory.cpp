@@ -19,6 +19,7 @@
 #include <dirent.h>
 #include "Ext2Directory.h"
 #include "Ext2FileSystem.h"
+#include "Ext2File.h"
 #include "Ext2Inode.h"
 
 Ext2Directory::Ext2Directory(Ext2FileSystem *f,
@@ -28,14 +29,14 @@ Ext2Directory::Ext2Directory(Ext2FileSystem *f,
     size = inode->size;
 }
 
-Error Ext2Directory::read(FileSystemMessage *msg)
+Error Ext2Directory::read(IOBuffer *buffer, Size size, Size offset)
 {
     Ext2DirectoryEntry ext2Dent;
     Ext2Inode *ext2Inode;
     Ext2SuperBlock *sb = ext2->getSuperBlock();
-    Dirent dent, *buf = (Dirent *) msg->buffer;
+    Dirent dent;
     Size bytes = ZERO;
-    u64 offset;
+    u64 off;
     Error e;
 
     /* Loop all blocks. */
@@ -51,10 +52,10 @@ Error Ext2Directory::read(FileSystemMessage *msg)
 	for (Size ent = 0; ent < EXT2_BLOCK_SIZE(sb); )
 	{
 	    /* Calculate offset to read. */
-	    offset = inode->block[blk] * EXT2_BLOCK_SIZE(sb) + ent;
+	    off = inode->block[blk] * EXT2_BLOCK_SIZE(sb) + ent;
 
 	    /* Get the next entry. */
-	    if (ext2->getStorage()->read(offset, &ext2Dent,
+	    if (ext2->getStorage()->read(off, &ext2Dent,
 				         sizeof(Ext2DirectoryEntry)) < 0)
 	    {
 		return EACCES;
@@ -65,7 +66,7 @@ Error Ext2Directory::read(FileSystemMessage *msg)
 		break;
 	    }
 	    /* Can we read another entry? */
-            else if (bytes + sizeof(Dirent) <= msg->size)
+            else if (bytes + sizeof(Dirent) <= size)
             {
 		/* Fill in the Dirent. */
 		if (!(ext2Inode = ext2->getInode(ext2Dent.inode)))
@@ -75,12 +76,11 @@ Error Ext2Directory::read(FileSystemMessage *msg)
 		strlcpy(dent.name, ext2Dent.name, ext2Dent.nameLength + 1);
 		dent.type = EXT2_FILETYPE(ext2Inode);
 
-		/* Copy to the remote process. */		    
-                if ((e = VMCopy(msg->from, Write, (Address) &dent,
-                               (Address) (buf++), sizeof(Dirent))) < 0)
-                {
-                    return e;
-                }
+		/* Copy to the output buffer. */
+		if ((e = buffer->write(&dent, sizeof(Dirent))) < 0)
+		{
+		    return e;
+		} 
                 bytes += e;
 		ent   += ext2Dent.recordLength;
             }
@@ -92,11 +92,40 @@ Error Ext2Directory::read(FileSystemMessage *msg)
 	}
     }
     /* All done. */
-    msg->size = bytes;
-    return ESUCCESS;
+    return bytes;
 }
 
-Error Ext2Directory::getEntry(Ext2DirectoryEntry *dent, char *name)
+File * Ext2Directory::lookup(const char *name)
+{
+    Ext2DirectoryEntry entry;
+    Ext2Inode *inode;
+
+    /* Try to find the given Ext2DirectoryEntry. */
+    if (!getExt2DirectoryEntry(&entry, name))
+    {
+        return ZERO;
+    }
+    /* Then retrieve it's Ext2Inode. */
+    if (!(inode = ext2->getInode(entry.inode)))
+    {
+        return ZERO;
+    }
+    /* Create the appropriate in-memory file. */
+    switch (EXT2_FILETYPE(inode))
+    {
+        case DirectoryFile:
+            return new Ext2Directory(ext2, inode);
+
+        case RegularFile:
+            return new Ext2File(ext2, inode);
+
+        default:
+            return ZERO;
+    }
+}
+
+bool Ext2Directory::getExt2DirectoryEntry(Ext2DirectoryEntry *dent,
+					   const char *name)
 {
     Ext2SuperBlock *sb = ext2->getSuperBlock();
     Size offset;
@@ -114,22 +143,22 @@ Error Ext2Directory::getEntry(Ext2DirectoryEntry *dent, char *name)
 	    if (ext2->getStorage()->read(offset, dent,
 				         sizeof(Ext2DirectoryEntry)) < 0)
 	    {
-		return EACCES;
+		return false;
 	    }
 	    /* Does it have a valid length? */
 	    else if (!dent->recordLength)
 	    {
-		return EINVAL;
+		return false;
 	    }
 	    /* Is it the entry we are looking for? */
 	    if (strncmp(name, dent->name,
 			      dent->nameLength > strlen(name) ?
 			      dent->nameLength : strlen(name)) == 0)
 	    {
-		return ESUCCESS;
+		return true;
 	    }
 	    ent += dent->recordLength;
 	}
     }
-    return ENOENT;
+    return false;
 }

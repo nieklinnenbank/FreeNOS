@@ -31,22 +31,20 @@ ProcFile::~ProcFile()
     delete buffer;
 }
 
-Error ProcFile::read(FileSystemMessage *msg)
+Error ProcFile::read(IOBuffer *buffer, Size size, Size offset)
 {
     /* Bounds checking. */
-    if (msg->offset >= size)
+    if (offset >= this->size)
     {
-	msg->size = 0;
+	return 0;
     }
     else
     {
 	/* How much bytes to copy? */
-	Size bytes = size - msg->offset > msg->size ?
-		    			  msg->size : size - msg->offset;
+	Size bytes = this->size - offset > size ?
+		    			   size : this->size - offset;
     
 	/* Copy the buffers. */
-	msg->size = VMCopy(msg->from, Write, (Address) buffer + msg->offset,
-			  (Address) msg->buffer, bytes);
+	return buffer->write(this->buffer + offset, bytes);
     }
-    return ESUCCESS;
 }

@@ -53,7 +53,16 @@
 #ifndef __HOST__
 
 /**
- * Linnenbank FileSystem (LinnFS).
+ * @brief Linnenbank FileSystem (LinnFS).
+ *
+ * This filesystem is rougly based on the Extended 2 FileSystem. Some
+ * changes have been made to the superblock: leaving out unused fields
+ * and simplified the meaning of existing onces. Directory entries are now
+ * static in size, i.e. 64-bytes. Those changes make it easier to program
+ * the FileSystem implementation, thus easier to understand and learn from.
+ *
+ * @see FileSystem
+ * @see Ext2FileSystem
  */
 class LinnFileSystem : public FileSystem
 {
@@ -120,22 +129,7 @@ class LinnFileSystem : public FileSystem
 	 */
 	u64 getOffset(LinnInode *inode, u32 blk);
 
-	/**
-         * Load a file corresponding to the given path from underlying storage.
-         * @param path Full path to the file to load.
-         * @return Pointer to FileCache object if the file exists, or ZERO otherwise.
-         */
-	FileCache * lookupFile(FileSystemPath *path);
-
     private:
-	
-	/**
-	 * Creates a new LinnFile.
-	 * @param msg Describes the file creation request.
-	 * @param path Full path to the file to create.
-	 */
-	Error createFile(FileSystemMessage *msg,
-                         FileSystemPath *path);
 
 	/** Provides storage. */
 	Storage *storage;

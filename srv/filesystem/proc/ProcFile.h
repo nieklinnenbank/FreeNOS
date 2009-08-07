@@ -22,6 +22,7 @@
 #include <Directory.h>
 #include <Types.h>
 #include <Error.h>
+#include "IOBuffer.h"
 
 /**
  * @defgroup procfs procfs (Process Filesystem)
@@ -46,12 +47,17 @@ class ProcFile : public File
 	 */
 	~ProcFile();
 
-	/**
-	 * Reads out the buffer.
-	 * @param msg Read request.
-	 * @return Number of bytes read, or Error number.
-	 */
-	Error read(FileSystemMessage *msg);
+	/** 
+         * @brief Read bytes from the file. 
+	 *
+         * @param buffer Output buffer. 
+         * @param size Number of bytes to read, at maximum. 
+         * @param offset Offset inside the file to start reading. 
+         * @return Number of bytes read on success, Error on failure. 
+	 *
+	 * @see IOBuffer
+         */
+        Error read(IOBuffer *buffer, Size size, Size offset);
 
     private:
     

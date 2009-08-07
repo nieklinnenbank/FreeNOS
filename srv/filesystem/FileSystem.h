@@ -42,17 +42,18 @@
 typedef struct FileCache
 {
     /**
-     * Constructor function.
-     * @param path Full path of the new file to insert.
+     * @brief Constructor function.
+     *
      * @param f File to insert into the cache.
+     * @param name Entry name of the File in the parent, if any.
      * @param p Our parent. ZERO if we have no parent.
      */
-    FileCache(FileSystemPath *path, File *f, FileCache *p)
+    FileCache(File *f, const char *name, FileCache *p)
 	: file(f), valid(true)
     {
 	if (p && p != this)
 	{
-	    p->entries.insert(new String(path->base()), this);
+	    p->entries.insert(new String(name), this);
 	}
     }
     
@@ -127,24 +128,14 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	}
 
 	/**
-	 * Create a new file.
-	 * @param msg Describes the file to create.
-	 * @param path Full path to the file to create.
+	 * @brief Create a new file.
+	 * @param type Describes the type of file to create.
+	 * @param deviceID Optionally specifies the device identities to create.
+	 * @return Pointer to a new File on success or ZERO on failure.
 	 */
-	virtual Error createFile(FileSystemMessage *msg,
-				 FileSystemPath *path)
+	virtual File * createFile(FileType type, DeviceID deviceID)
 	{
-	    return ENOTSUP;
-	}
-
-	/**
-	 * Load a file corresponding to the given path from underlying storage.
-	 * @param path Full path to the file to load.
-	 * @return Pointer to FileCache object if the file exists, or ZERO otherwise.
-	 */
-	virtual FileCache * lookupFile(FileSystemPath *path)
-	{
-	    return (FileCache *) ZERO;
+	    return (File *) ZERO;
 	}
 
 	/**
@@ -163,6 +154,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	    FileSystemPath path;
 	    FileCache *cache = ZERO; 
 	    File *file;
+	    Directory *parent;
 	    ProcessID pid;
 	    Address ident;
 	    char buf[PATHLEN], tmp[PATHLEN];
@@ -204,10 +196,30 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	    switch (msg->action)
 	    {
 		case CreateFile:
+		    
 		    if (cache)
 			msg->result = EEXIST;
 		    else
-			msg->result = createFile(msg, &path);
+		    {
+			/* Attempt to create the new file. */
+			if ((file = createFile(msg->filetype, msg->deviceID)))
+			{
+    			    insertFileCache(file, "%s", **path.full());
+			    
+			    /* Add directory entry to our parent. */
+			    if (path.parent())
+			    {
+			        parent = (Directory *) findFileCache(**path.parent())->file;
+			    }
+			    else
+			        parent = (Directory *) root->file;
+
+			    parent->insert(**path.full(), file->getType());
+			    msg->result = ESUCCESS;
+			}
+			else
+			    msg->result = EIO;
+		    }
 		    break;
 		
 		case OpenFile:
@@ -217,7 +229,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 		     */
 		    pid   = getpid();
 		    ident = (Address) file;
-		    msg->result = cache->file->open(msg, &pid, &ident);
+		    msg->result = cache->file->open(&pid, &ident);
 
 		    /* Create a FileDescriptor on success. */
 		    if (msg->result == ESUCCESS)
@@ -247,6 +259,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
          */    
 	void fileDescriptorHandler(FileSystemMessage *msg)
 	{
+	    IOBuffer io(msg);
 	    FileDescriptor *fd;
 	    File *file = ZERO;
 
@@ -268,17 +281,28 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	    switch (msg->action)
 	    {
 		case ReadFile:
-		    msg->result   = file->read(msg);
-		    fd->position += msg->size;
+		
+		    if ((msg->result = file->read(&io, msg->size, fd->position)) >= 0)
+		    {
+			 fd->position += msg->result;
+			 msg->size = msg->result;
+			 msg->result = ESUCCESS;
+		    }
 		    break;
 		
 		case WriteFile:
-		    msg->result = file->write(msg);
-		    fd->position += msg->size;
+		
+		    if ((msg->result = file->write(&io, msg->size, fd->position)) >= 0)
+		    {
+		    	fd->position += msg->result;
+			msg->size = msg->result;
+			msg->result = ESUCCESS;
+		    }
 		    break;
 
 		case CloseFile:
-		    msg->result = file->close(msg);
+		    file->close();
+		    msg->result = ESUCCESS;
 		    memset(getFileDescriptor(files, msg->from, msg->fd), 0,
 			   sizeof(FileDescriptor));
 		    break;
@@ -292,6 +316,77 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	}
     
     protected:
+
+	/**
+	 * @brief Change the filesystem root directory.
+	 *
+	 * This function set the root member to the given
+	 * Directory pointer. Additionally, it inserts '/.' and '/..'
+	 * references to the file cache.
+	 *
+	 * @param newRoot A Directory pointer to set as the new root.
+	 *
+	 * @see root
+	 * @see insertFileCache
+	 */
+	void setRoot(Directory *newRoot)
+	{
+	    root = new FileCache(newRoot, "/", ZERO);
+	    insertFileCache(newRoot, ".");
+	    insertFileCache(newRoot, "..");
+	}
+
+	/**
+	 * @brief Retrieve a File from storage.
+	 *
+	 * This function is responsible for walking the
+	 * given FileSystemPath, retrieving each uncached File into
+	 * the FileCache, and returning a pointer to corresponding FileCache
+	 * of the last entry in the given path.
+	 *
+	 * @param path A path to lookup from storage.
+	 * @return Pointer to a FileCache on success, ZERO otherwise.
+	 */
+	FileCache * lookupFile(FileSystemPath *path)
+	{
+	    List<String> *entries = path->split();
+	    FileCache *c = ZERO;
+	    File *file = ZERO;
+	    Directory *dir;
+
+	    /* Loop the entire path. */
+	    for (ListIterator<String> i(entries); i.hasNext(); i++)
+	    {
+		/* Start at root? */
+		if (!c)
+		{
+		    c = root;
+		}
+    	        /* Do we have this entry cached already? */
+    	        if (!c->entries[i.current()])
+    		{
+    		    /* If this isn't a directory, we cannot perform a lookup. */
+    		    if (c->file->getType() != DirectoryFile)
+    		    {
+            		return ZERO;
+        	    }
+        	    dir = (Directory *) c->file;
+            
+        	    /* Fetch next file, if possible. */
+		    if (!(file = dir->lookup(**i.current())))
+		    {
+        	        return ZERO;
+        	    }
+		    /* Insert into the FileCache. */
+		    c = new FileCache(file, **i.current(), c);
+    		}
+    	        /* Move to the next entry. */
+    		else
+        	    c = c->entries[i.current()];
+	    }
+	    /* All done. */
+	    return c;
+	}
 
 	/**
 	 * Inserts a file into the in-memory filesystem tree.
@@ -325,7 +420,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 		return ZERO;
 	    }
     	    /* Create new cache. */
-	    return new FileCache(&path, file, parent);
+	    return new FileCache(file, **path.base(), parent);
 	}
 
 	/**

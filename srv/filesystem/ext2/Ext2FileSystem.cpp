@@ -44,7 +44,6 @@ int main(int argc, char **argv)
 Ext2FileSystem::Ext2FileSystem(const char *p, Storage *s)
     : FileSystem(p), storage(s), groups(ZERO)
 {
-    FileSystemPath slash("/");
     Ext2Inode *rootInode;
     Ext2Group *group;
     Size offset;
@@ -100,14 +99,8 @@ Ext2FileSystem::Ext2FileSystem(const char *p, Storage *s)
 
     /* Read out the root directory. */
     rootInode = getInode(EXT2_ROOT_INO);
-    root = new FileCache(&slash, new Ext2Directory(this, rootInode), ZERO);
+    setRoot(new Ext2Directory(this, rootInode));
     syslog(LOG_INFO, "mounted as '%s'", p);
-}
-
-Error Ext2FileSystem::createFile(FileSystemMessage *msg,
-				 FileSystemPath *path)
-{
-    return ENOTSUP;
 }
 
 Ext2Inode * Ext2FileSystem::getInode(u32 inodeNum)
@@ -224,58 +217,4 @@ u64 Ext2FileSystem::getOffset(Ext2Inode *inode, Size blk)
     /* All done. */
     delete block;
     return offset;	
-}
-
-FileCache * Ext2FileSystem::lookupFile(FileSystemPath *path)
-{
-    List<String> *entries = path->split();
-    FileCache *c = root;
-    Ext2Inode *inode;
-    Ext2DirectoryEntry entry;
-    Ext2Directory *dir;
-
-    /* Loop the entire path. */
-    for (ListIterator<String> i(entries); i.hasNext(); i++)
-    {
-	/* Do we have this entry? */
-        if (!c->entries[i.current()])
-	{
-	    /* If this isn't a directory, we cannot perform a lookup. */
-	    if (c->file->getType() != DirectoryFile)
-	    {
-		return ZERO;
-	    }
-	    /* Then retrieve it, if possible. */	
-	    dir = (Ext2Directory *) c->file;
-	    if (dir->getEntry(&entry, **i.current()) != ESUCCESS)
-	    {
-		return ZERO;
-	    }
-	    /* Lookup corresponding inode. */
-	    if (!(inode = getInode(entry.inode)))
-	    {
-		return ZERO;
-	    }
-	    /* Create the appropriate in-memory file. */
-	    switch (EXT2_FILETYPE(inode))
-	    {
-	        case DirectoryFile:
-		    c = insertFileCache(new Ext2Directory(this, inode),
-		    			**i.current());
-		    break;
-
-		case RegularFile:
-		    c = insertFileCache(new Ext2File(this, inode),
-					**i.current());
-		    break;
-
-		default:
-		    return ZERO;
-	    }
-	}
-	/* Move to the next entry. */
-	else
-	    c = c->entries[i.current()];
-    }
-    return c;
 }

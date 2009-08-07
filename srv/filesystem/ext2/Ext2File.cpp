@@ -29,13 +29,13 @@ Ext2File::~Ext2File()
 {
 }
 
-Error Ext2File::read(FileSystemMessage *msg)
+Error Ext2File::read(IOBuffer *buffer, Size size, Size offset)
 {
     Ext2SuperBlock *sb = ext2->getSuperBlock();
-    u8 *block = new u8[EXT2_BLOCK_SIZE(sb)], *buffer = (u8 *) msg->buffer;
+    u8 *block = new u8[EXT2_BLOCK_SIZE(sb)];
     Size bytes = 0, total = 0, blockNr = 0;
     Error e = ESUCCESS;
-    u64 storageOffset, copyOffset = msg->offset;
+    u64 storageOffset, copyOffset = offset;
 
     /* Skip ahead blocks. */
     while ((EXT2_BLOCK_SIZE(sb) * (blockNr + 1)) <= copyOffset)
@@ -46,8 +46,8 @@ Error Ext2File::read(FileSystemMessage *msg)
     copyOffset -= EXT2_BLOCK_SIZE(sb) * blockNr;
 
     /* Loop all blocks. */
-    for (; blockNr < inode->blocks - 1 && total < msg->size &&
-	   inode->size - (msg->offset + total); blockNr++)
+    for (; blockNr < inode->blocks - 1 && total < size &&
+	   inode->size - (offset + total); blockNr++)
     {
 	/* Calculate the offset in storage for this block. */
 	storageOffset = ext2->getOffset(inode, blockNr);
@@ -63,21 +63,19 @@ Error Ext2File::read(FileSystemMessage *msg)
 	bytes = EXT2_BLOCK_SIZE(sb) - copyOffset;
 	
 	/* Respect the inode size. */
-	if (bytes > inode->size - (msg->offset + total))
+	if (bytes > inode->size - (offset + total))
 	{
-	    bytes = inode->size - (msg->offset + total);
+	    bytes = inode->size - (offset + total);
 	}
 	/* Respect the remote process buffer. */
-	if (bytes > msg->size - total)
+	if (bytes > size - total)
 	{
-	    bytes = msg->size - total;
+	    bytes = size - total;
 	}
-        /* Copy to the remote process. */
-        if ((e = VMCopy(msg->from, Write,
-	               ((Address) (block)) + copyOffset,
-                        (Address) (buffer), bytes)) < 0)
-        {
-	    break;
+        /* Copy to the output buffer. */
+	if ((e = buffer->write(block + copyOffset, bytes, total)) < 0)
+	{
+	    return e;
 	}
 	/* Update state. */
 	buffer     += bytes;
@@ -86,12 +84,6 @@ Error Ext2File::read(FileSystemMessage *msg)
 	e           = ESUCCESS;
      }
     /* Success. */
-    msg->size = total;
     delete block;
-    return e;
-}
-
-Error Ext2File::write(FileSystemMessage *msg)
-{
-    return ENOTSUP;
+    return total;
 }

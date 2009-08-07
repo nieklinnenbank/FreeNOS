@@ -40,7 +40,6 @@ int main(int argc, char **argv)
 LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
     : FileSystem(p), storage(s), groups(ZERO)
 {
-    FileSystemPath slash("/");
     LinnInode *rootInode;
     LinnGroup *group;
     Size offset;
@@ -95,16 +94,10 @@ LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
 
     /* Read out the root directory. */
     rootInode = getInode(LINN_INODE_ROOT);
-    root = new FileCache(&slash, new LinnDirectory(this, rootInode), ZERO);
+    setRoot(new LinnDirectory(this, rootInode));
     
     /* Done. */
     syslog(LOG_INFO, "mounted as '%s'", p);
-}
-
-Error LinnFileSystem::createFile(FileSystemMessage *msg,
-				 FileSystemPath *path)
-{
-    return ENOTSUP;
 }
 
 LinnInode * LinnFileSystem::getInode(u32 inodeNum)
@@ -219,59 +212,4 @@ u64 LinnFileSystem::getOffset(LinnInode *inode, u32 blk)
     /* All done. */
     delete block;
     return offset;	
-}
-
-FileCache * LinnFileSystem::lookupFile(FileSystemPath *path)
-{
-    List<String> *entries = path->split();
-    FileCache *c = root;
-    LinnInode *inode;
-    LinnDirectoryEntry entry;
-    LinnDirectory *dir;
-
-    /* Loop the entire path. */
-    for (ListIterator<String> i(entries); i.hasNext(); i++)
-    {
-	/* Do we have this entry? */
-        if (!c->entries[i.current()])
-	{
-	    /* If this isn't a directory, we cannot perform a lookup. */
-	    if (c->file->getType() != DirectoryFile)
-	    {
-		return ZERO;
-	    }
-	    dir = (LinnDirectory *) c->file;
-	    
-	    /* Then retrieve it, if possible. */	
-	    if (dir->getEntry(&entry, **i.current()) != ESUCCESS)
-	    {
-		return ZERO;
-	    }
-	    /* Lookup corresponding inode. */
-	    if (!(inode = getInode(entry.inode)))
-	    {
-		return ZERO;
-	    }
-	    /* Create the appropriate in-memory file. */
-	    switch ((FileType)inode->type)
-	    {
-	        case DirectoryFile:
-		    c = insertFileCache(new LinnDirectory(this, inode),
-		    			**i.current());
-		    break;
-
-		case RegularFile:
-		    c = insertFileCache(new LinnFile(this, inode),
-					**i.current());
-		    break;
-
-		default:
-		    return ZERO;
-	    }
-	}
-	/* Move to the next entry. */
-	else
-	    c = c->entries[i.current()];
-    }
-    return c;
 }

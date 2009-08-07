@@ -45,14 +45,13 @@ class Special : public File
 	}
 
         /** 
-         * Attempt to open a file. 
-         * @param msg Describes the open request. 
+         * @brief Attempt to open a file. 
          * @param pid Process Identity to serve us from. May be changed 
          *            to redirect to other servers. 
+	 * @param ident Identity number to be put into the FileDescriptor.
          * @return Error code status. 
          */
-        Error open(FileSystemMessage *msg,
-                   ProcessID *pid, Address *ident)
+        Error open(ProcessID *pid, Address *ident)
 	{
 	    *ident = deviceID.minor;
 	    *pid   = deviceID.major;

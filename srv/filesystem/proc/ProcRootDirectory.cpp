@@ -24,9 +24,9 @@ ProcRootDirectory::ProcRootDirectory(ProcFileSystem *p)
     size = MAX_PROCS * sizeof(Dirent);
 }
 
-Error ProcRootDirectory::read(FileSystemMessage *msg)
+Error ProcRootDirectory::read(IOBuffer *buffer, Size size, Size offset)
 {
     clear();
     proc->refresh();
-    return Directory::read(msg);
+    return Directory::read(buffer, size, offset);
 }

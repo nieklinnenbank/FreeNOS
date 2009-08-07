@@ -24,55 +24,27 @@
 TmpFileSystem::TmpFileSystem(const char *path)
     : FileSystem(path)
 {
-    FileSystemPath slash("/");
-    Directory *rdir = new Directory;
-
-    root = new FileCache(&slash, rdir, ZERO);
-    rdir->insertEntry(".",  DirectoryFile);
-    rdir->insertEntry("..", DirectoryFile);
-    insertFileCache(rdir, ".");
-    insertFileCache(rdir, "..");
+    setRoot(new Directory);
 }
 
-Error TmpFileSystem::createFile(FileSystemMessage *msg,
-				FileSystemPath *path)
+File * TmpFileSystem::createFile(FileType type, DeviceID deviceID)
 {
-    Directory *pdir;
-
     /* Create the appropriate file type. */
-    switch (msg->filetype)
+    switch (type)
     {
 	case RegularFile:
-	    insertFileCache(new File, "%s", **path->full());
-	    break;
+	    return new TmpFile;
 	
 	case DirectoryFile:
-	    insertFileCache(new Directory, "%s", **path->full());
-	    break;
+	    return new Directory;
 	
 	case CharacterDeviceFile:
-	    insertFileCache(new Special(CharacterDeviceFile, msg->deviceID),
-			    "%s", **path->full());
-	    break;
-	    
+	    return new Special(CharacterDeviceFile, deviceID);
+	
 	case BlockDeviceFile:
-	    insertFileCache(new Special(BlockDeviceFile, msg->deviceID),
-			    "%s", **path->full());
-	    break;
+	    return new Special(BlockDeviceFile, deviceID);
 	
 	default:
-	    return EINVAL;
+	    return ZERO;
     }
-    /* Add directory entry. */
-    if (path->parent())
-    {
-	pdir = (Directory *) findFileCache(**path->parent())->file;
-    }
-    else
-	pdir = (Directory *) root->file;
-	
-    pdir->insertEntry(**path->full(), msg->filetype);
-    
-    /* All done. */
-    return ESUCCESS;
 }

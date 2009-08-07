@@ -25,6 +25,7 @@
 #include <Error.h>
 #include "LinnFileSystem.h"
 #include "LinnInode.h"
+#include "IOBuffer.h"
 
 /**
  * @defgroup linn LinnFS (Linnenbank Filesystem) 
@@ -51,18 +52,16 @@ class LinnFile : public File
 	~LinnFile();
 
 	/**
-	 * Read out the file.
-	 * @param msg Read request.
+	 * @brief Read out the file.
+	 *
+	 * @param buffer Input/Output buffer to write bytes to.
+	 * @param size Number of bytes to copy at maximum.
+	 * @param offset Offset in the file to start reading.
 	 * @return Number of bytes read, or Error number.
+	 *
+	 * @see IOBuffer
 	 */
-	Error read(FileSystemMessage *msg);
-
-        /** 
-         * Write bytes to the file.
-	 * @param msg Write request.
-         * @return Number of bytes written on success, Error on failure.
-         */
-	Error write(FileSystemMessage *msg);
+	Error read(IOBuffer *buffer, Size size, Size offset);
 
     private:
 

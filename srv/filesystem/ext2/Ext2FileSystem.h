@@ -393,22 +393,7 @@ class Ext2FileSystem : public FileSystem
 	 */
 	u64 getOffset(Ext2Inode *inode, Size blk);
 
-	/**
-         * Load a file corresponding to the given path from underlying storage.
-         * @param path Full path to the file to load.
-         * @return Pointer to FileCache object if the file exists, or ZERO otherwise.
-         */
-	FileCache * lookupFile(FileSystemPath *path);
-
     private:
-	
-	/**
-	 * Creates a new Ext2File.
-	 * @param msg Describes the file creation request.
-	 * @param path Full path to the file to create.
-	 */
-	Error createFile(FileSystemMessage *msg,
-                         FileSystemPath *path);
 
 	/** Provides storage. */
 	Storage *storage;

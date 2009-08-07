@@ -30,18 +30,18 @@ LinnFile::~LinnFile()
 {
 }
 
-Error LinnFile::read(FileSystemMessage *msg)
+Error LinnFile::read(IOBuffer *buffer, Size size, Size offset)
 {
     LinnSuperBlock *sb;
-    u8 *block, *buffer;
-    Size bytes = 0, total = 0, blockNr = 0;
-    u64 storageOffset, copyOffset = msg->offset;
-    Error e = ESUCCESS;
+    Size bytes = 0, blockNr = 0;
+    u64 storageOffset, copyOffset = offset;
+    u8 *block;
+    Size total = 0;
+    Error e;
 
     /* Initialize variables. */
     sb     = fs->getSuperBlock();
     block  = new u8[sb->blockSize];
-    buffer = (u8 *) msg->buffer;
 
     /* Skip ahead blocks. */
     while ((sb->blockSize * (blockNr + 1)) <= copyOffset)
@@ -53,8 +53,7 @@ Error LinnFile::read(FileSystemMessage *msg)
 
     /* Loop all blocks. */
     while (blockNr < LINN_INODE_NUM_BLOCKS(sb, inode) &&
-	   total   < msg->size &&
-	   inode->size - (msg->offset + total) > 0)
+	   total < size && inode->size - (offset + total) > 0)
     {
 	/* Calculate the offset in storage for this block. */
 	storageOffset = fs->getOffset(inode, blockNr);
@@ -62,43 +61,34 @@ Error LinnFile::read(FileSystemMessage *msg)
         /* Fetch the next block. */
         if (fs->getStorage()->read(storageOffset, block, sb->blockSize) < 0)
 	{
-	    e = EACCES;
-	    break;
+	    delete block;
+	    return EIO;
 	}
 	/* Calculate the number of bytes to copy. */
 	bytes = sb->blockSize - copyOffset;
 	
 	/* Respect the inode size. */
-	if (bytes > inode->size - (msg->offset + total))
+	if (bytes > inode->size - (offset + total))
 	{
-	    bytes = inode->size - (msg->offset + total);
+	    bytes = inode->size - (offset + total);
 	}
 	/* Respect the remote process buffer. */
-	if (bytes > msg->size - total)
+	if (bytes > size - total)
 	{
-	    bytes = msg->size - total;
+	    bytes = size - total;
 	}
-        /* Copy to the remote process. */
-        if ((e = VMCopy(msg->from, Write,
-	               ((Address) (block)) + copyOffset,
-                        (Address) (buffer), bytes)) < 0)
-        {
-	    break;
+        /* Copy into the buffer. */
+	if ((e = buffer->write(block + copyOffset, bytes, total)) < 0)
+	{
+	    delete block;
+	    return e;
 	}
 	/* Update state. */
-	buffer     += bytes;
 	total      += bytes;
 	copyOffset  = 0;
-	e           = ESUCCESS;
 	blockNr++;
     }
     /* Success. */
-    msg->size = total;
     delete block;
-    return e;
-}
-
-Error LinnFile::write(FileSystemMessage *msg)
-{
-    return ENOTSUP;
+    return (Error) total;
 }

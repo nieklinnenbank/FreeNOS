@@ -17,6 +17,7 @@
 
 #include <API/VMCopy.h>
 #include "LinnDirectory.h"
+#include "LinnFile.h"
 
 LinnDirectory::LinnDirectory(LinnFileSystem *f,
 			     LinnInode *i)
@@ -26,14 +27,14 @@ LinnDirectory::LinnDirectory(LinnFileSystem *f,
     access = inode->mode;
 }
 
-Error LinnDirectory::read(FileSystemMessage *msg)
+Error LinnDirectory::read(IOBuffer *buffer, Size size, Size offset)
 {
     LinnSuperBlock *sb = fs->getSuperBlock();
     LinnDirectoryEntry dent;
     LinnInode *dInode;
     Size bytes = ZERO, blk;
-    Dirent tmp, *buf = (Dirent *) msg->buffer;
     Error e;
+    Dirent tmp;
 
     /* Read directory entries. */
     for (u32 ent = 0; ent < inode->size / sizeof(LinnDirectoryEntry); ent++)
@@ -45,17 +46,17 @@ Error LinnDirectory::read(FileSystemMessage *msg)
 	    break;
 	}
 	/* Calculate offset to read. */
-	u64 offset = (inode->block[blk] * sb->blockSize) +
-	    	     (ent * sizeof(LinnDirectoryEntry));
+	u64 off = (inode->block[blk] * sb->blockSize) +
+	    	  (ent * sizeof(LinnDirectoryEntry));
 
 	/* Get the next entry. */
-	if (fs->getStorage()->read(offset, &dent,
+	if (fs->getStorage()->read(off, &dent,
 			           sizeof(LinnDirectoryEntry)) < 0)
 	{
 	    return EACCES;
 	}
 	/* Can we read another entry? */
-        if (bytes + sizeof(Dirent) > msg->size)
+        if (bytes + sizeof(Dirent) > size)
         {
 	    return EFAULT;
 	}
@@ -67,20 +68,48 @@ Error LinnDirectory::read(FileSystemMessage *msg)
 	strlcpy(tmp.name, dent.name, LINN_DIRENT_NAME_LEN);
 	tmp.type = (FileType) dInode->type;
 
-	/* Copy to the remote process. */		    
-        if ((e = VMCopy(msg->from, Write, (Address) &tmp,
-                       (Address) (buf++), sizeof(Dirent))) < 0)
-        {
-            return e;
-        }
-        bytes += e;
+	/* Copy to the buffer. */
+	if (( e = buffer->write(&tmp, sizeof(Dirent), bytes)) < 0)
+	{
+	    return e;
+	}
+	bytes += sizeof(Dirent);
     }
     /* All done. */
-    msg->size = bytes;
-    return ESUCCESS;
+    return bytes;
 }
 
-Error LinnDirectory::getEntry(LinnDirectoryEntry *dent, char *name)
+File * LinnDirectory::lookup(const char *name)
+{
+    LinnDirectoryEntry entry;
+    LinnInode *inode;
+    
+    /* Try to find the given LinnDirectoryEntry. */
+    if (!getLinnDirectoryEntry(&entry, name))
+    {
+	return ZERO;
+    }
+    /* Then retrieve it's LinnInode. */
+    if (!(inode = fs->getInode(entry.inode)))
+    {
+	return ZERO;
+    }
+    /* Create the appropriate in-memory file. */
+    switch ((FileType)inode->type)
+    {
+        case DirectoryFile:
+	    return new LinnDirectory(fs, inode);
+
+        case RegularFile:
+	    return new LinnFile(fs, inode);
+    
+        default:
+            return ZERO;
+    }
+}
+
+bool LinnDirectory::getLinnDirectoryEntry(LinnDirectoryEntry *dent,
+					  const char *name)
 {
     LinnSuperBlock *sb = fs->getSuperBlock();
     u64 offset;
@@ -99,15 +128,15 @@ Error LinnDirectory::getEntry(LinnDirectoryEntry *dent, char *name)
 	    if (fs->getStorage()->read(offset, dent,
 				       sizeof(LinnDirectoryEntry)) < 0)
 	    {
-		return EACCES;
+		return false;
 	    }
 	    /* Is it the entry we are looking for? */
 	    if (strcmp(name, dent->name) == 0)
 	    {
-		return ESUCCESS;
+		return true;
 	    }
 	}
     }
     /* Not found. */
-    return ENOENT;
+    return false;
 }

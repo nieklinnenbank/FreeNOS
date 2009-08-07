@@ -39,6 +39,7 @@
 #include <Types.h>
 #include "Ext2FileSystem.h"
 #include "Ext2Inode.h"
+#include "IOBuffer.h"
 #endif /* __HOST__ */
 
 /**                                                                                                                                                                                                     
@@ -162,21 +163,39 @@ class Ext2Directory : public Directory
 	Ext2Directory(Ext2FileSystem *fs, Ext2Inode *inode);
 
         /** 
-         * Read directory entries. 
-         * @param msg Read request. 
+         * @brief Read directory entries. 
+         * @param buffer Input/Output buffer to output bytes to. 
+         * @param size Number of bytes to read, at maximum. 
+         * @param offset Offset inside the file to start reading. 
          * @return Number of bytes read on success, Error on failure. 
          */
-	Error read(FileSystemMessage *msg);
+	Error read(IOBuffer *buffer, Size size, Size offset);
+
+        /** 
+         * @brief Retrieves a File pointer for the given entry name. 
+         * 
+         * This function reads a file from disk corresponding 
+         * to the Ext2Inode of the given entry name. It returns 
+         * an File object associated with that LinnInode. 
+         * 
+         * @param name Name of the entry to lookup. 
+         * @return Pointer to a File if found, or ZERO otherwise. 
+         * 
+         * @see File 
+         * @see Ext2Inode 
+         */
+        File * lookup(const char *name);
+
+    private:
 
 	/**
 	 * Retrieve a directory entry.
 	 * @param dent Ext2DirectoryEntry buffer pointer.
 	 * @param name Unique name of the entry.
-	 * @return ESUCCESS if found, or an error code otherwise.
+	 * @return True if found, false otherwise.
 	 */
-	Error getEntry(Ext2DirectoryEntry *dent, char *name);
-
-    private:
+	bool getExt2DirectoryEntry(Ext2DirectoryEntry *dent,
+				   const char *name);
 
 	/** Filesystem pointer. */
 	Ext2FileSystem *ext2;
