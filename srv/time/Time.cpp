@@ -33,65 +33,58 @@ Error Time::initialize()
 {
     ProcessCtl(SELF, AllowIO, RTC_PORT(0));
     ProcessCtl(SELF, AllowIO, RTC_PORT(1));
+
     /* Done! */
     return ESUCCESS;
 }
 
 Error Time::read(s8 *buffer, Size size, Size offset)
 {
-    /*
-     * NOTICE:
-     * A lot of this code comes from the linux kernel source,
-     * particularly from the file arch/x86/kernel/rtc.c.
-     * As a result, the code (from mainly Time::readCMOS()) may
-     * have to be replaced to something like kernel/X86/RTC.cpp
-    */
-    
+    unsigned int year, month, day, hour, min, sec = 0, time;
+
     /* PHONY read */
-    if( offset >= 10 )
+    if(offset >= 10)
     {
         return 0;
     }
     
-    //unsigned int status;
-    //unsigned int century;
-    unsigned int year, month, day, hour, min, sec = 0;
-    
-    /*
-     * This code comes from arch/x86/kernel/rtc.c from the linux source
+    /* 
+     * If UIP is clear, then we have >= 244 microseconds before 
+     * RTC registers will be updated.  Spec sheet says that this 
+     * is the reliable way to read RTC - registers. If UIP is set 
+     * then the register access might be invalid. 
      */
-    while( (readCMOS(RTC_FREQ_SELECT) & RTC_UIP ))
+    while((readCMOS(RTC_STATUS_A) & RTC_UIP))
     {
-        Time::cpuRelax();
+        cpuRelax();
     }
     
-    sec = bcd2bin(readCMOS(RTC_SECONDS));
-    min = bcd2bin(readCMOS(RTC_MINUTES));
-    hour = bcd2bin(readCMOS(RTC_HOURS));
-    day = bcd2bin(readCMOS(RTC_DAY_OF_MONTH));
+    /* Convert from binary coded decimal (bcd) to machine numbers. */
+    sec   = bcd2bin(readCMOS(RTC_SECONDS));
+    min   = bcd2bin(readCMOS(RTC_MINUTES));
+    hour  = bcd2bin(readCMOS(RTC_HOURS));
+    day   = bcd2bin(readCMOS(RTC_DAY_OF_MONTH));
     month = bcd2bin(readCMOS(RTC_MONTH));
-    year = bcd2bin(readCMOS(RTC_YEAR));
-    
-    if( year < 100 )
+    year  = bcd2bin(readCMOS(RTC_YEAR));
+
+    /* Assume that a two-digit year is after 2000 */
+    if(year < 100)
     {
         year += CMOS_YEARS_OFFS;
     }
     
-    unsigned long time = mktime(year, month, day, hour, min, sec);
-    
+    /* Format as an ASCII string. */
+    time = mktime(year, month, day, hour, min, sec);
     snprintf((char*)buffer, size, "%u", time);
+    
+    /* All done. */
     return (Error) size;
 }
 
 unsigned char Time::readCMOS(unsigned char addr)
 {
-    unsigned char val;
-    
-    //lock_cmos_prefix(addr);
     outb(RTC_PORT(0), addr);
-    val = inb(RTC_PORT(1));
-    // lock_cmos_suffix(addr);
-    return val;
+    return inb(RTC_PORT(1));
 }
 
 void Time::cpuRelax()
