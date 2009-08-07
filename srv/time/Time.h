@@ -57,8 +57,20 @@
 /** @brief Offset in CMOS for the status A register. */
 #define RTC_STATUS_A		10
 
+/** @brief Offset in CMOS for the status B register. */
+#define RTC_STATUS_B            11
+
 /** @brief Update in progress flag. */
 #define RTC_UIP                 0x80
+
+/** @brief Daylight savings flag.  */
+#define RTC_DLS                 0x01
+
+/** @brief 24 hour mode flag. */
+#define RTC_24H                 0x02
+
+/** @brief Time/date in binary/BCD flag. */
+#define RTC_BCD                 0x04
 
 /**
  * @brief System Time server.

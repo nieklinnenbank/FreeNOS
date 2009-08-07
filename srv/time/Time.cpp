@@ -59,14 +59,26 @@ Error Time::read(s8 *buffer, Size size, Size offset)
         cpuRelax();
     }
     
-    /* Convert from binary coded decimal (bcd) to machine numbers. */
-    sec   = bcd2bin(readCMOS(RTC_SECONDS));
-    min   = bcd2bin(readCMOS(RTC_MINUTES));
-    hour  = bcd2bin(readCMOS(RTC_HOURS));
-    day   = bcd2bin(readCMOS(RTC_DAY_OF_MONTH));
-    month = bcd2bin(readCMOS(RTC_MONTH));
-    year  = bcd2bin(readCMOS(RTC_YEAR));
+    /* Read the date/time values from the CMOS. */
+    sec   = readCMOS(RTC_SECONDS);
+    min   = readCMOS(RTC_MINUTES);
+    hour  = readCMOS(RTC_HOURS);
+    day   = readCMOS(RTC_DAY_OF_MONTH);
+    month = readCMOS(RTC_MONTH);
+    year  = readCMOS(RTC_YEAR);
 
+    /* Check if the time values are stored in binary or BCD format. */
+    if( (readCMOS(RTC_STATUS_B) & RTC_BCD) )
+    {
+        /* Convert from binary coded decimal (bcd) to machine numbers. */
+        sec = bcd2bin(sec);
+        min = bcd2bin(min);
+        hour = bcd2bin(hour);
+        day = bcd2bin(day);
+        month = bcd2bin(month);
+        year = bcd2bin(year);
+    }
+    
     /* Assume that a two-digit year is after 2000 */
     if(year < 100)
     {
