@@ -49,7 +49,7 @@
     ((VGA_ATTR(front,back) << 8) | (ch & 0xff))
 
 /**
- * VGA color attributes.
+ * @brief VGA color attributes.
  */
 enum Colors
 {
@@ -72,14 +72,21 @@ enum Colors
 };
 
 /**
- * Video Graphics Array (VGA) support.
+ * @brief Video Graphics Array (VGA) support.
+ *
+ * This class implements a VGA driver. Applications may read and write
+ * from the /dev/vga0 device file to retrieve and modify the current screen.
+ * Currently the Terminal driver uses the /dev/vga device file to implement
+ * the system console in FreeNOS.
+ *
+ * @see Terminal
  */
 class VGA : public Device
 {
     public:
     
 	/**
-	 * Class constructor function.
+	 * @brief Class constructor function.
 	 * @param width Number of characters horizontally.
 	 * @param height Number of characters vertically.
 	 */
@@ -124,13 +131,13 @@ class VGA : public Device
 	
     private:
     
-	/** VGA video memory address. */
+	/** @brief VGA video memory address. */
 	u16 *vga;
 	
-	/** Number of characters horizontally. */
+	/** @brief Number of characters horizontally. */
 	Size width;
 	
-	/** Number of characters vertically. */
+	/** @brief Number of characters vertically. */
 	Size height;
 };
 
