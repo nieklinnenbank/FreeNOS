@@ -40,6 +40,16 @@ template <class T> class Comparable
 	virtual bool equals(const T &t) = 0;
 	
 	/**
+	 * Compares this Comparable to the given
+	 * Comparable and returns whether this Comparable
+	 * is equal to, less, or greater then the given Comparable.
+	 * @param c The Comparable to compare us to.
+	 * @return an int < 0, 0, > 0 if we are respectively less then,
+	 * equal to or greater then the given Comparable.
+	 */
+	virtual int compareTo(const T &t) = 0;
+	
+	/**
 	 * Get the size of the object.
 	 * @return Size in bytes.
 	 */

@@ -465,6 +465,36 @@ class String : public Comparable<String>
 	}
 	
 	/**
+	 * Compares this String to the given String. 
+	 * @param s The String to compare us to.
+	 * @return int < 0, 0, > 0 if we are greater then, equal to
+	 * or less then the given String.
+	 */
+	int compareTo(const String & s)
+	{
+	    assertRead(s.value);
+	    Size length = strlen(value);
+	    
+	    if(strlen(s.value) < length)
+	    {
+	        length = strlen(s.value);
+	    }
+	    
+	    for(Size pos = 0; pos < length; pos++)
+	    {
+	        if( value[pos] > s.value[pos] )
+	        {
+	            return 1;
+	        } else if( value[pos] < s.value[pos] )
+	        {
+	            return -1;
+	        }
+	    }
+	    
+	    return 0; 
+	}
+	
+	/**
 	 * Compares this String to the given String, ignoring
 	 * case considerations.
 	 * @param s The String to compare to this String.

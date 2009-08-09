@@ -77,6 +77,25 @@ template <class Int> class Integer : public Comparable<Integer<Int> >
 	{
 	    return value == i.value;
         }
+        
+        /**
+         * Compares two Integers.
+         * @param i Constant Integer instance.
+         * @return an int < 0, 0 or > 0 if this Integer is
+         * less than, equal to or greater than i.
+         */
+        int compareTo(const Integer<Int> &i)
+        {
+            if( value == i.value )
+            {
+                return 0;
+            } else if( value < i.value )
+            {
+                return -1;
+            }
+            
+            return 1;
+        }
 	
         /**
 	 * Compare two Integers's.

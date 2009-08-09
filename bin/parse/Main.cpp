@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <SortedList.h>
 
 void usage(char*);
 
@@ -43,6 +44,7 @@ int main(int argc, char **argv)
     
     delete url;
     delete parent;
+    
     return EXIT_SUCCESS;
 }
 
