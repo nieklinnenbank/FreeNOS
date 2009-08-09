@@ -129,6 +129,56 @@ template <class T = class Comparable<class T> > class SortedList
     }
     
     /**
+     * Removes the node that contains the given data from the list.
+     * Note that only the node is deleted, not the data contained in it.
+     * This function runs in O(n).
+     * @param t The data to remove from the list.
+     * @see http://en.wikipedia.org/wiki/Big_O_notation
+     */
+    void remove(T* t)
+    {
+        if(!t)
+        {
+            return;
+        }
+        
+        SortedListNode<T>* tmp = headNode;
+        
+        while(tmp)
+        {
+            if( tmp->data == t )
+            {
+                SortedListNode<T>* p = tmp->prev;
+                SortedListNode<T>* n = tmp->next;
+                
+                if(p && n)
+                {
+                    n->prev = p;
+                    p->next = n;
+                } else if(!p) {
+                    n->prev = p;
+                } else {
+                    p->next = n;
+                }
+                delete tmp;
+                return;
+            }
+            tmp = tmp->next;
+        }
+    }
+    
+    /**
+     * Removes the given node from the list. The data contained in the node
+     * is preserved. This function runs in O(n).
+     * @param n The node to be removed from the list.
+     * @see http://en.wikipedia.org/wiki/Big_O_notation
+     */
+    void remove(SortedListNode<T>* n)
+    {
+        remove(n->data);
+    }
+    
+    /**
      * Returns the head node of the list.
      * @return The head node if this list.
      */
@@ -147,9 +197,11 @@ template <class T = class Comparable<class T> > class SortedList
     
         /**
          * Returns the SortedListNode at the nth position.
+         * This function runs in O(n).
          * @param n The position of the node to get.
          * @return The node at position n or (SortedListNode<Comparable<T> >*)0
          * if it doesn't exist.
+         * @see http://en.wikipedia.org/wiki/Big_O_notation
          */
         SortedListNode<T>* get(Size n)
         {
@@ -172,8 +224,10 @@ template <class T = class Comparable<class T> > class SortedList
          * Inserts the SortedListNode in the SortedList, but starts comparing
          * as of the given position. This prevents unnecessary searches through
          * the SortedList and can save up to half the SortedList's length.
+         * This function runs at a minimum speed of O(n/2).
          * @param t The SortedListNode to add.
          * @param pos The position to start the insert.
+         * @see http://en.wikipedia.org/wiki/Big_O_notation
          */
         void insert(SortedListNode<T>* t, 
             SortedListNode<T>* from)
