@@ -104,7 +104,7 @@ char* StringTokenizer::next()
         }
         
         currentLocation += strlen(nextToken) +1;
-        }
+    }
         
         return currentToken;
 }
@@ -113,6 +113,15 @@ void StringTokenizer::init(char* seq, char delim)
 {
     char* ptr;
     char* value = seq;
+    
+    /*
+     * If the sequence starts with a (number of)
+     * delimiters, ignore them.
+     */
+    while(value && value[0] == delim)
+    {
+        value++;
+    }
     
     assert( value != 0 && strlen(value) > 0);
     sequence = strdup(value);

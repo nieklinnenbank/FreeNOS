@@ -45,6 +45,9 @@ int main(int argc, char **argv)
     delete url;
     delete parent;
     
+    String s("foo");
+    String t("foobar");
+    printf("%u\n", s.compareTo(t));
     return EXIT_SUCCESS;
 }
 

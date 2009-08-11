@@ -364,6 +364,7 @@ class String : public Comparable<String>
 
             char* trimmed;
             trimmed = (char *)malloc(to - from + 1);
+            memset(trimmed, 0, (to - from + 1));
             memcpy(trimmed, value + from, to - from + 1);
 
             String* t = new String(trimmed);
@@ -472,41 +473,7 @@ class String : public Comparable<String>
 	 */
 	int compareTo(const String & s)
 	{
-	    assertRead(s.value);
-	    Size length = strlen(value);
-	    Size otherLength = strlen(s.value);
-	    
-	    if(otherLength < length)
-	    {
-	        length = otherLength;
-	    }
-	    
-	    for(Size pos = 0; pos < length; pos++)
-	    {
-	        if( value[pos] > s.value[pos] )
-	        {
-	            return 1;
-	        } else if( value[pos] < s.value[pos] )
-	        {
-	            return -1;
-	        }
-	    }
-	    
-	    /* 
-	     * If our length equals the length of s, we're equal,
-	     * so return 0.
-	     * If we are longer than s, we are greater. Otherwise
-	     * we're less.
-	     */
-	    if (length > otherLength)
-	    {
-	        return 1;
-	    }
-	    else if (length < otherLength)
-	    {
-	        return -1;
-	    }
-	    return 0; 
+	    return strcmp(value, s.value);
 	}
 	
 	/**

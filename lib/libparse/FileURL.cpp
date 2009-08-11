@@ -24,9 +24,6 @@
 
 FileURL::FileURL(char* url) : URL(url)
 {
-    printf("FileURL::FileURL(%s) with scheme %s\n", url, scheme);
-    printf("strcasecmp( \"FILE\", \"%s\") == %d\n"
-        , scheme, strcasecmp("FILE", scheme) );
     if( strcasecmp( "FILE", scheme ) != 0 )
     {
         printf("Not a FileURL: %s.\n", uri);
@@ -71,11 +68,6 @@ Vector<String>* FileURL::split()
         /* Example: file:///var/log/apache2/access.log */
     
         String hier(hierarchical);
-    
-        if( hier.startsWith("//") )
-        {
-            hier = hier.substring(2);
-        }
         
         StringTokenizer st(hier, FILEURL_DEFAULT_SEPARATOR);
 
@@ -84,13 +76,7 @@ Vector<String>* FileURL::split()
         while( st.hasNext() )
         {
             String* s  = new String(st.next());
-            String* trim = s->trim();
-            
-            if( trim != (String*)0 && trim->size() > 0)
-            {
-                ret->insert( trim );
-            }
-            delete s;
+            ret->insert(s);
         }
 
         splitted = ret;
@@ -103,7 +89,16 @@ String* FileURL::full()
 {
     if( !fullPath )
     {
-        fullPath = new String(hierarchical);
+        if( strncmp("///", hierarchical, 3) == 0)
+        {
+            char* shorter = strdup(hierarchical + 2);
+            fullPath = new String(shorter);
+            free(shorter);
+        }
+        else
+        {
+            fullPath = new String(hierarchical);
+        }
     }
     
     return fullPath;

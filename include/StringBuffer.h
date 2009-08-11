@@ -63,7 +63,6 @@ class StringBuffer
          */
         void append(char* c)
         {
-            printf("StringBuffer::append(%s)\n", c);
             for(Size pos = 0; pos < strlen(c); pos++)
             {
                 append(c[pos]);
