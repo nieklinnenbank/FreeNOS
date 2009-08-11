@@ -21,7 +21,7 @@
 #include <ProcessServer.h>
 #include <FileSystemPath.h>
 #include <Error.h>
-#include "ProcFile.h"
+#include <PseudoFile.h>
 #include "ProcRootDirectory.h"
 #include "ProcFileSystem.h"
 
@@ -89,11 +89,11 @@ void ProcFileSystem::refresh()
 	insertFileCache(rootDir, "%u/..", msg.number);
 
 	/* Command line string. */
-	insertFileCache(new ProcFile(uproc.command),
+	insertFileCache(new PseudoFile(uproc.command),
 			"%u/cmdline", msg.number);
 	
 	/* Process status. */
-	insertFileCache(new ProcFile(states[uproc.state]),
+	insertFileCache(new PseudoFile(states[uproc.state]),
 		        "%u/status",  msg.number);
 	
 	/* Move to next PID. */

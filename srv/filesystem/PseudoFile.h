@@ -15,37 +15,50 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __FILESYSTEM_PROCFILE_H
-#define __FILESYSTEM_PROCFILE_H
+#ifndef __FILESYSTEM_PSEUDO_FILE_H
+#define __FILESYSTEM_PSEUDO_FILE_H
 
-#include <File.h>
-#include <Directory.h>
 #include <Types.h>
 #include <Error.h>
+#include "File.h"
+#include "Directory.h"
 #include "IOBuffer.h"
+#include <string.h>
 
 /**
- * @defgroup procfs procfs (Process Filesystem)
- * @{
+ * @brief Pseudo files only exist in memory.
  */
-
-/**
- * Maps running processes into the filesystem.
- */
-class ProcFile : public File
+class PseudoFile : public File
 {
     public:
 
 	/**
-	 * Constructor function.
-	 * @param str Input string.
+	 * @brief Empty constructor.
 	 */
-	ProcFile(char *str);
+	PseudoFile()
+	{
+	    size   = ZERO;
+	    buffer = ZERO;
+	}
 
 	/**
-	 * Destructor function, which releases the buffer.
+	 * @brief Constructor function.
+	 * @param str Input string.
 	 */
-	~ProcFile();
+	PseudoFile(char *str)
+	{
+	    size   = strlen(str);
+    	    buffer = new char[size + 1];
+            strlcpy(buffer, str, size + 1);
+	}
+
+	/**
+	 * @brief Destructor function, which releases the buffer.
+	 */
+	~PseudoFile()
+	{
+	    delete buffer;
+	}
 
 	/** 
          * @brief Read bytes from the file. 
@@ -57,7 +70,23 @@ class ProcFile : public File
 	 *
 	 * @see IOBuffer
          */
-        Error read(IOBuffer *buffer, Size size, Size offset);
+        Error read(IOBuffer *buffer, Size size, Size offset)
+	{
+	    /* Bounds checking. */
+	    if (offset >= this->size)
+	    {
+		return 0;
+            }
+	    else
+	    {
+		/* How much bytes to copy? */
+		Size bytes = this->size - offset > size ?
+		    				   size : this->size - offset;
+    
+	        /* Copy the buffers. */
+		return buffer->write(this->buffer + offset, bytes);
+	    }
+	}
 
     private:
     
@@ -72,4 +101,4 @@ class ProcFile : public File
  * @}
  */
 
-#endif /* __FILESYSTEM_PROCFILE_H */
+#endif /* __FILESYSTEM_PSEUDO_FILE_H */

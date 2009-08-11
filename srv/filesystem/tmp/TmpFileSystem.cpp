@@ -16,10 +16,10 @@
  */
 
 #include <File.h>
+#include <PseudoFile.h>
 #include <Directory.h>
 #include <Special.h>
 #include "TmpFileSystem.h"
-#include "TmpFile.h"
 
 TmpFileSystem::TmpFileSystem(const char *path)
     : FileSystem(path)
@@ -33,7 +33,7 @@ File * TmpFileSystem::createFile(FileType type, DeviceID deviceID)
     switch (type)
     {
 	case RegularFile:
-	    return new TmpFile;
+	    return new PseudoFile;
 	
 	case DirectoryFile:
 	    return new Directory;
