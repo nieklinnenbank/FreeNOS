@@ -115,7 +115,7 @@ class Time : public Device
          * @param addr The address to read from the CMOS
          * @return The value at the given address.
 	 *
-	 * @note I actually almost copied this code from the linux source
+	 * @note I almost copied this code completely from the linux source
          *       from the file arch/x86/kernel/rtc.h so you should also
          *       take a look over there how they do it.
          */
