@@ -18,7 +18,7 @@
 from build import *
 
 env = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc' ],
-		      [ 'log' ])
+		      [ 'log', 'filesystem', 'process', 'memory' ])
 
-env.Program('server', [ 'PCIServer.cpp', 'Main.cpp' ],
+env.Program('server', [ 'PCIServer.cpp' ],
 		         LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])
