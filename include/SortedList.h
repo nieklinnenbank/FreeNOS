@@ -103,7 +103,6 @@ template <class T = class Comparable<class T> > class SortedList
     void insert(T* t)
     {
         assertRead(t);
-        assert(t);
         
         /* Create a new node from the given data. */
         SortedListNode<T>* n 
