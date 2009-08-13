@@ -21,8 +21,11 @@
 #include <Types.h>
 #include <Error.h>
 #include "File.h"
+#include "FileMode.h"
 #include "Directory.h"
 #include "IOBuffer.h"
+#include <stdio.h>
+#include <stdarg.h>
 #include <string.h>
 
 /**
@@ -39,6 +42,7 @@ class PseudoFile : public File
 	{
 	    size   = ZERO;
 	    buffer = ZERO;
+	    access = OwnerRW;
 	}
 
 	/**
@@ -47,9 +51,31 @@ class PseudoFile : public File
 	 */
 	PseudoFile(char *str)
 	{
+	    access = OwnerRW;
 	    size   = strlen(str);
     	    buffer = new char[size + 1];
             strlcpy(buffer, str, size + 1);
+	}
+	
+	/**
+	 * @brief Constructor with formatted input.
+	 * @param format Format string.
+	 * @param ... Argument list.
+	 */
+	PseudoFile(const char *format, ...)
+	{
+	    va_list args;
+	    
+	    /* Allocate buffer. */
+	    buffer = new char[512];
+	    
+	    /* Format the input. */
+	    va_start(args, format);
+	    size = vsnprintf(buffer, 512, format, args);
+	    va_end(args);
+	    
+	    /* Set permissions. */
+	    access = OwnerRW;
 	}
 
 	/**
