@@ -47,14 +47,13 @@ void ProcFileSystem::refresh()
     UserProcess uproc;    
     String slash("/");
     Directory *procDir;
-    char tmp[PATHLEN];
 
     /* Clear the current cache. */
     clearFileCache();
     
     /* Update root. */
-    rootDir->insert(".",  DirectoryFile);
-    rootDir->insert("..", DirectoryFile);
+    rootDir->insert(DirectoryFile, ".");
+    rootDir->insert(DirectoryFile, "..");
     
     /* Reinsert into the cache. */
     insertFileCache(rootDir, ".");
@@ -73,15 +72,13 @@ void ProcFileSystem::refresh()
 	{
 	    break;
 	}
-	snprintf(tmp, sizeof(tmp), "%u", msg.number);
-
 	/* Per-process directory. */
 	procDir = new Directory;
-        procDir->insert(".",       DirectoryFile);
-        procDir->insert("..",      DirectoryFile);
-        procDir->insert("cmdline", RegularFile);
-        procDir->insert("status",  RegularFile);
-        rootDir->insert(tmp,       DirectoryFile);
+        procDir->insert(DirectoryFile, ".");
+        procDir->insert(DirectoryFile, "..");
+        procDir->insert(RegularFile, "cmdline");
+        procDir->insert(RegularFile, "status");
+        rootDir->insert(DirectoryFile, "%u", msg.number);
 
 	/* Reinsert into the cache. */
 	insertFileCache(procDir, "%u",    msg.number);
@@ -89,11 +86,11 @@ void ProcFileSystem::refresh()
 	insertFileCache(rootDir, "%u/..", msg.number);
 
 	/* Command line string. */
-	insertFileCache(new PseudoFile(uproc.command),
+	insertFileCache(new PseudoFile("%s", uproc.command),
 			"%u/cmdline", msg.number);
 	
 	/* Process status. */
-	insertFileCache(new PseudoFile(states[uproc.state]),
+	insertFileCache(new PseudoFile("%s", states[uproc.state]),
 		        "%u/status",  msg.number);
 	
 	/* Move to next PID. */

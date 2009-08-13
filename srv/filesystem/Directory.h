@@ -21,6 +21,7 @@
 #include <API/VMCopy.h>
 #include <List.h>
 #include "File.h"
+#include "FileSystemPath.h"
 
 /** @brief Maximum length of a filename. */
 #define DIRENT_LEN	64
@@ -67,8 +68,8 @@ class Directory : public File
 	 */
 	Directory() : File(DirectoryFile)
 	{
-	    insert(".",  DirectoryFile);
-            insert("..", DirectoryFile);
+	    insert(DirectoryFile, ".");
+            insert(DirectoryFile, "..");
 	}
 
 	/**
@@ -143,20 +144,31 @@ class Directory : public File
 	 * to insert a new implementation defined directory entry into
 	 * the underlying Storage.
 	 *
-	 * @param name Name of the entry to add.
 	 * @param type File type.
+	 * @param name Formatted name of the entry to add.
+	 * @param ... Argument list.
 	 *
 	 * @note Entry names must be unique within the same Directory.
 	 * @see FileSystem
 	 * @see Storage
 	 */
-	void insert(const char *name, FileType type)
+	void insert(FileType type, const char *name, ...)
 	{
-	    Dirent *d = new Dirent;
-
+	    char path[PATHLEN];
+	    va_list args;
+	    Dirent *d;
+	    
+	    /* Only insert if not already in. */
 	    if (!get(name))
-	    {	    
-		strlcpy(d->name, name, DIRENT_LEN);
+	    {
+		/* Format the path variable. */
+	        va_start(args, name);
+	        vsnprintf(path, sizeof(path), name, args);
+	        va_end(args);
+
+		/* Create an fill entry object. */
+		d = new Dirent;
+		strlcpy(d->name, path, DIRENT_LEN);
 	        d->type = type;
 	        entries.insertTail(d);
 		size += sizeof(*d);

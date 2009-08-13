@@ -214,7 +214,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 			    else
 			        parent = (Directory *) root->file;
 
-			    parent->insert(**path.full(), file->getType());
+			    parent->insert(file->getType(), **path.full());
 			    msg->result = ESUCCESS;
 			}
 			else
