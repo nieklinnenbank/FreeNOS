@@ -261,6 +261,23 @@ extern C int stat(const char *path, struct stat *buf);
 extern C int mknod(const char *path, mode_t mode, dev_t dev);
 
 /**
+ * @brief Create a new directory.
+ *
+ * The mkdir() function shall create a new directory with name path.
+ * The file permission bits of the new directory shall be initialized
+ * from mode. These file permission bits of the mode argument shall be
+ * modified by the process' file creation mask.
+ *
+ * @param path Full path to the directory to create.
+ * @param mode Initial access permissions on the directory.
+ * @return Upon successful completion, these functions shall return 0.
+ *         Otherwise, these functions shall return -1 and set errno to
+ *         indicate the error. If -1 is returned, no directory shall
+ *         be created.
+ */
+extern C int mkdir(const char *path, mode_t mode);
+
+/**
  * @}
  */
 
