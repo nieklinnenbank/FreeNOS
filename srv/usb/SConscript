@@ -15,5 +15,4 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-SConscript(dirs = [ 'log', 'idle', 'memory', 'pci', 'usb', 'video', 'input',
-		    'process', 'serial', 'terminal', 'time', 'filesystem' ])
+SConscript(dirs = [ 'uhci' ])
