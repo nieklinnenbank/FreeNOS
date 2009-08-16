@@ -17,7 +17,7 @@
 
 #include <API/ProcessCtl.h>
 #include <Config.h>
-#include <PseudoFile.h>
+#include "PCIFile.h"
 #include "PCIServer.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,17 +28,27 @@
 
 int main(int argc, char **argv)
 {
+    /* (Re)create target directory. */
+    mkdir("/dev/pci", S_IWUSR | S_IRUSR);
+
+    /* Create instance. */
+    PCIServer server("/dev/pci");
+
+    /* Start serving requests. */
     if (!fork())
     {
-	/* (Re)create target directory. */
-        mkdir("/dev/pci", S_IWUSR | S_IRUSR);
-
 	/*
-	 * Start serving requests.
+	 * TODO: Please see issue 76:
+	 *  http://code.google.com/p/freenos/issues/detail?id=76
 	 */
-	PCIServer server("/dev/pci");
+        for (int i = 0; i < 4; i++)
+	{
+	    ProcessCtl(SELF, AllowIO, PCI_CONFADDR + i);
+	    ProcessCtl(SELF, AllowIO, PCI_CONFDATA + i);
+	}
 	return server.run();
     }
+    return EXIT_FAILURE;
 }
 
 PCIServer::PCIServer(const char *path)
@@ -60,108 +70,136 @@ PCIServer::PCIServer(const char *path)
     if (PCI_READ_WORD(0, 0, 0, PCI_VID) == 0xffff ||
         PCI_READ_WORD(0, 0, 0, PCI_DID) == 0xffff)
     {
-	syslog(LOG_INFO, "no host controller found");
+	syslog(LOG_INFO, "No Host Controller found");
 	exit(EXIT_FAILURE);
     }
     else
     {
-	syslog(LOG_INFO, "host controller found");
+	syslog(LOG_INFO, "Host Controller found");
 	scan();
     }
 }
 
 void PCIServer::scan()
 {
-    u16 vendorID, deviceID, rev, irq;
-    u32 bar0, bar1, bar2, bar3, bar4, bar5;    
     Directory *busDir = ZERO, *slotDir = ZERO;
-
-    /* Scan the PCI bus. */
-    for (u16 bus = 0; bus < 0xff; bus++)
+    u16 vendorID, deviceID, revisionID;
+    
+    /*
+     * Walk the PCI bus by performing a read
+     * on the vendor and device ID's for each possible
+     * bus, slot and function combination.
+     */
+    for (u16 bus = 0; bus < 256; bus++)
     {
-	for (u16 slot = 0; slot < 0x8; slot++)
-        {
-	    /* Read device ID's. */
-    	    vendorID = PCI_READ_WORD(bus, slot, 0, PCI_VID);
-    	    deviceID = PCI_READ_WORD(bus, slot, 0, PCI_DID);
+	for (u16 slot = 0; slot < 32; slot++)
+	{
+	    for (u16 func = 0; func < 8; func++)
+	    {
+	        /* Read ID's. */
+	        vendorID   = PCI_READ_WORD(bus, slot, func, PCI_VID);
+	        deviceID   = PCI_READ_WORD(bus, slot, func, PCI_DID);
+		revisionID = PCI_READ_BYTE(bus, slot, func, PCI_RID);
 
-	    /* Is this a valid device? */
-    	    if (vendorID != 0xffff && deviceID != 0xffff)
-    	    {
-		/* Read out configuration. */
-		rev  = PCI_READ_BYTE(bus, slot, 0, PCI_RID);
-		irq  = PCI_READ_BYTE(bus, slot, 0, PCI_IRQ);
-		bar0 = PCI_READ_LONG(bus, slot, 0, PCI_BAR0);
-		bar1 = PCI_READ_LONG(bus, slot, 0, PCI_BAR1);
-		bar2 = PCI_READ_LONG(bus, slot, 0, PCI_BAR2);
-		bar3 = PCI_READ_LONG(bus, slot, 0, PCI_BAR3);
-		bar4 = PCI_READ_LONG(bus, slot, 0, PCI_BAR4);
-		bar5 = PCI_READ_LONG(bus, slot, 0, PCI_BAR5);
-
-		/* Create bus directory, if needed. */
-		if (!busDir)
-		{
+	        /* Is this a valid device? */
+	        if (vendorID == 0xffff || deviceID == 0xffff)
+	        {
+		    continue;
+	        }
+	        /* Create bus directory, if needed. */
+	        if (!busDir)
+	        {
 		    busDir = new Directory;
 		    rootDir->insert(DirectoryFile, "%x", bus);
 		    insertFileCache(busDir, "%x", bus);
 		}
-		/* Create slot directory. */
-		slotDir = new Directory;
-		slotDir->insert(DirectoryFile, ".");
-		slotDir->insert(DirectoryFile, "..");
-		slotDir->insert(RegularFile, "vendor");
-		slotDir->insert(RegularFile, "device");
-		slotDir->insert(RegularFile, "revision");
-		slotDir->insert(RegularFile, "interrupt");
-		slotDir->insert(RegularFile, "bar0");
-		slotDir->insert(RegularFile, "bar1");
-		slotDir->insert(RegularFile, "bar2");
-		slotDir->insert(RegularFile, "bar3");
-		slotDir->insert(RegularFile, "bar4");
-		slotDir->insert(RegularFile, "bar5");
+		/* Make slot directory, if needed. */
+		if (!slotDir)
+		{
+		    slotDir = new Directory;
 
-		/* Add the slot directory to the bus directory. */
-		busDir->insert(DirectoryFile, "%x", slot);
-		
-    	        /* Insert into the cache. */
-	        insertFileCache(slotDir, "%x/%x", bus, slot);
-		insertFileCache(new PseudoFile("%x", vendorID),
-				"%x/%x/vendor", bus, slot);
-		insertFileCache(new PseudoFile("%x", deviceID),
-				"%x/%x/device", bus, slot);
-		insertFileCache(new PseudoFile("%u", rev),
-				"%x/%x/revision",  bus, slot);
-		insertFileCache(new PseudoFile("%u", irq),
-				"%x/%x/interrupt", bus, slot);
-		insertFileCache(new PseudoFile("%x", bar0),
-				"%x/%x/bar0", bus, slot);
-		insertFileCache(new PseudoFile("%x", bar1),
-				"%x/%x/bar1", bus, slot);
-		insertFileCache(new PseudoFile("%x", bar2),
-				"%x/%x/bar2", bus, slot);
-		insertFileCache(new PseudoFile("%x", bar3),
-				"%x/%x/bar3", bus, slot);
-		insertFileCache(new PseudoFile("%x", bar4),
-				"%x/%x/bar4", bus, slot);
-		insertFileCache(new PseudoFile("%x", bar5),
-				"%x/%x/bar5", bus, slot);
+		    busDir->insert(DirectoryFile, "%x", slot);
+	    	    insertFileCache(slotDir, "%x/%x", bus, slot);
+		}
+		/* Then make & fill the function directory. */
+		detect(bus, slot, func);
+		slotDir->insert(DirectoryFile, "%x", func);
 
 	        /* Log the device. */
-		syslog(LOG_INFO, "[%x:%x] %x:%x (rev %d)",
-    		       bus, slot, vendorID, deviceID, rev);
-    	    }
+		syslog(LOG_INFO, "[%x:%x:%x] %x:%x (rev %d)",
+		       bus, slot, func, vendorID, deviceID, revisionID);
+		       
+		/* Execute a device server. */
+		runDeviceServer(bus, slot, func, vendorID, deviceID);
+	    }
 	    slotDir = ZERO;
 	}
-	busDir  = ZERO;
+	busDir = ZERO;
     }
 }
 
-void PCIServer::runDeviceServer(u16 vendorID, u16 deviceID)
+void PCIServer::detect(u16 bus, u16 slot, u16 func)
+{
+    Directory *dir;
+
+    /* Create PCI function directory. Fill it with entries. */
+    dir = new Directory;
+    dir->insert(DirectoryFile, ".");
+    dir->insert(DirectoryFile, "..");
+    dir->insert(RegularFile, "vendor");
+    dir->insert(RegularFile, "device");
+    dir->insert(RegularFile, "revision");
+    dir->insert(RegularFile, "interrupt");
+    dir->insert(RegularFile, "bar0");
+    dir->insert(RegularFile, "bar1");
+    dir->insert(RegularFile, "bar2");
+    dir->insert(RegularFile, "bar3");
+    dir->insert(RegularFile, "bar4");
+    dir->insert(RegularFile, "bar5");
+    insertFileCache(dir, "%x/%x/%x", bus, slot, func);
+
+    /*
+     * Now create actual files.
+     * Put them into the cache.
+     */
+    insertFileCache(new PCIFile(bus, slot, func, PCI_VID, 2),
+		    "%x/%x/%x/vendor", bus, slot, func);
+	
+    insertFileCache(new PCIFile(bus, slot, func, PCI_DID, 2),
+		    "%x/%x/%x/device", bus, slot, func);
+				
+    insertFileCache(new PCIFile(bus, slot, func, PCI_RID, 1),
+		    "%x/%x/%x/revision",  bus, slot, func);
+
+    insertFileCache(new PCIFile(bus, slot, func, PCI_IRQ, 1),
+		    "%x/%x/%x/interrupt", bus, slot, func);
+
+    insertFileCache(new PCIFile(bus, slot, func, PCI_BAR0, 4),
+		    "%x/%x/%x/bar0", bus, slot, func);
+
+    insertFileCache(new PCIFile(bus, slot, func, PCI_BAR1, 4),
+		    "%x/%x/%x/bar1", bus, slot, func);
+
+    insertFileCache(new PCIFile(bus, slot, func, PCI_BAR2, 4),
+		    "%x/%x/%x/bar2", bus, slot, func);
+
+    insertFileCache(new PCIFile(bus, slot, func, PCI_BAR3, 4),
+		    "%x/%x/%x/bar3", bus, slot, func);
+
+    insertFileCache(new PCIFile(bus, slot, func, PCI_BAR4, 4),
+		    "%x/%x/%x/bar4", bus, slot, func);
+
+    insertFileCache(new PCIFile(bus, slot, func, PCI_BAR5, 4),
+		    "%x/%x/%x/bar5", bus, slot, func);
+}
+
+void PCIServer::runDeviceServer(u16 bus, u16 slot, u16 func,
+				u16 vendorID, u16 deviceID)
 {
     ProcessID pid;
     struct stat st;
     char path[PATHLEN];
-    const char *args[4];
+    const char *args[5];
     int status;
 
     /*
@@ -169,7 +207,7 @@ void PCIServer::runDeviceServer(u16 vendorID, u16 deviceID)
      * to handle I/O for the PCI device. First we construct
      * the full path to the handler, if any.
      */
-    snprintf(path, sizeof(path), "/srv/pci/%x/%x",
+    snprintf(path, sizeof(path), "/etc/pci/%x:%x",
 	     vendorID, deviceID);
 
     /* If there is no device server, forget it. */
@@ -181,14 +219,15 @@ void PCIServer::runDeviceServer(u16 vendorID, u16 deviceID)
     /*
      * Construct an argument list.
      */
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 4; i++)
     {
 	args[i] = new char[PATHLEN];
     }
-    args[3] = ZERO;
+    args[4] = ZERO;
     snprintf((char*)args[0], PATHLEN, "%s", path);
-    snprintf((char*)args[1], PATHLEN, "%x", vendorID);
-    snprintf((char*)args[2], PATHLEN, "%x", deviceID);
+    snprintf((char*)args[1], PATHLEN, "%x", bus);
+    snprintf((char*)args[2], PATHLEN, "%x", slot);
+    snprintf((char*)args[3], PATHLEN, "%x", func);
 
     /*
      * Try to fork off a child for the device server.

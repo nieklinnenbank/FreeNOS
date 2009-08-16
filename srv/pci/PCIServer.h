@@ -152,6 +152,12 @@
 
 /**
  * @brief Peripheral Component Interface FileSystem server.
+ *
+ * This program maps registers from the PCI configuration
+ * space to regular (pseudo)files. To access the PCI bus
+ * from a user program, simply use the files in /dev/pci/$bus/$slot/$func.
+ *
+ * @see FileSystem
  */
 class PCIServer : public FileSystem
 {
@@ -169,13 +175,30 @@ class PCIServer : public FileSystem
 	void scan();
 	
     private:
+
+	/**
+	 * @brief Create a PCI slot directory.
+	 *
+	 * The created directory will contain a (pseudo)file
+	 * for PCI configuration registers available via the PCI
+	 * configuration space.
+	 *
+	 * @param bus PCI Bus number.
+	 * @param slot Slot number in the PCI bus.
+	 * @param func Device function number in the slot.
+	 */
+	void detect(u16 bus, u16 slot, u16 func);
     
 	/**
 	 * @brief Runs a PCI device server.
+	 * @param bus PCI Bus number on which the device was detected.
+	 * @param slot Slot number in the PCI bus.
+	 * @param func Device function number in the slot.
 	 * @param vendorID Numeric vendor ID read from PCI configuration space.
 	 * @param deviceID Numeric device ID read from PCI configuration space.
 	 */
-	void runDeviceServer(u16 vendorID, u16 deviceID);
+	void runDeviceServer(u16 bus, u16 slot, u16 func,
+			     u16 vendorID, u16 deviceID);
 
 	/** @brief Root directory pointer. */
 	Directory *rootDir;
