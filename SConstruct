@@ -19,6 +19,7 @@ import build
 import version
 import linn
 import img
+import pci
 import iso
 import emulate
 import dist
@@ -36,4 +37,4 @@ SConscript(dirs = ['lib', 'kernel', 'bin', 'sbin', 'srv'])
 #
 # Per default, build libraries, kernel and user programs.
 #
-Default(['lib', 'kernel', 'bin', 'sbin', 'srv'])
+Default(['lib', 'kernel', 'bin', 'sbin', 'srv', 'etc'])
