@@ -81,6 +81,6 @@ isoImageSha1 = target.Checksum('#boot/boot.iso.sha1', '#boot/boot.iso')
 target.AddPreAction(isoImage, linn.action)
 target.Clean(isoImage, 'boot/boot.linn.gz')
 
-Depends(isoImage, ['bin', 'lib', 'kernel', 'sbin', 'srv', '#boot/boot.img'])
+Depends(isoImage, ['bin', 'lib', 'kernel', 'sbin', 'srv', 'etc', '#boot/boot.img'])
 Alias('iso', [ isoImage, isoImageMd5, isoImageSha1 ])
 AlwaysBuild(isoImage, isoImageMd5, isoImageSha1)
