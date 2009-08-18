@@ -15,11 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <File.h>
+#include <FileMode.h>
 #include "PCIServer.h"
 #include "PCIFile.h"
 
 PCIFile::PCIFile(u16 bus, u16 slot, u16 func, u16 reg, Size size)
 {
+    this->access = OwnerRW;
     this->bus  = bus;
     this->slot = slot;
     this->func = func;
