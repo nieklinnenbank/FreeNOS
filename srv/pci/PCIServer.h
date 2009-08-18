@@ -188,17 +188,6 @@ class PCIServer : public FileSystem
 	 * @param func Device function number in the slot.
 	 */
 	void detect(u16 bus, u16 slot, u16 func);
-    
-	/**
-	 * @brief Runs a PCI device server.
-	 * @param bus PCI Bus number on which the device was detected.
-	 * @param slot Slot number in the PCI bus.
-	 * @param func Device function number in the slot.
-	 * @param vendorID Numeric vendor ID read from PCI configuration space.
-	 * @param deviceID Numeric device ID read from PCI configuration space.
-	 */
-	void runDeviceServer(u16 bus, u16 slot, u16 func,
-			     u16 vendorID, u16 deviceID);
 
 	/** @brief Root directory pointer. */
 	Directory *rootDir;

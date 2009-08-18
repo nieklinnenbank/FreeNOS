@@ -28,14 +28,16 @@
 
 int main(int argc, char **argv)
 {
-    /* (Re)create target directory. */
-    mkdir("/dev/pci", S_IWUSR | S_IRUSR);
-
     /* Create instance. */
     PCIServer server("/dev/pci");
 
-    /* Start serving requests. */
-    if (!fork())
+    /* (Re)create target directory. */
+    mkdir("/dev/pci", S_IWUSR | S_IRUSR);
+
+    /*
+     * Mount the filesystem.
+     */
+    if (server.mount())
     {
 	/*
 	 * TODO: Please see issue 76:
@@ -70,12 +72,12 @@ PCIServer::PCIServer(const char *path)
     if (PCI_READ_WORD(0, 0, 0, PCI_VID) == 0xffff ||
         PCI_READ_WORD(0, 0, 0, PCI_DID) == 0xffff)
     {
-	syslog(LOG_INFO, "No Host Controller found");
+	syslog(LOG_INFO, "No Host Controller");
 	exit(EXIT_FAILURE);
     }
     else
     {
-	syslog(LOG_INFO, "Host Controller found");
+	syslog(LOG_INFO, "Intel Host Controller");
 	scan();
     }
 }
@@ -124,13 +126,6 @@ void PCIServer::scan()
 		/* Then make & fill the function directory. */
 		detect(bus, slot, func);
 		slotDir->insert(DirectoryFile, "%x", func);
-
-	        /* Log the device. */
-		syslog(LOG_INFO, "[%x:%x:%x] %x:%x (rev %d)",
-		       bus, slot, func, vendorID, deviceID, revisionID);
-		       
-		/* Execute a device server. */
-		runDeviceServer(bus, slot, func, vendorID, deviceID);
 	    }
 	    slotDir = ZERO;
 	}
@@ -191,52 +186,4 @@ void PCIServer::detect(u16 bus, u16 slot, u16 func)
 
     insertFileCache(new PCIFile(bus, slot, func, PCI_BAR5, 4),
 		    "%x/%x/%x/bar5", bus, slot, func);
-}
-
-void PCIServer::runDeviceServer(u16 bus, u16 slot, u16 func,
-				u16 vendorID, u16 deviceID)
-{
-    ProcessID pid;
-    struct stat st;
-    char path[PATHLEN];
-    const char *args[5];
-    int status;
-
-    /*
-     * Attempt to execute an external driver program
-     * to handle I/O for the PCI device. First we construct
-     * the full path to the handler, if any.
-     */
-    snprintf(path, sizeof(path), "/etc/pci/%x:%x",
-	     vendorID, deviceID);
-
-    /* If there is no device server, forget it. */
-    if (stat(path, &st) == -1)
-    {
-	return;
-    }
-
-    /*
-     * Construct an argument list.
-     */
-    for (int i = 0; i < 4; i++)
-    {
-	args[i] = new char[PATHLEN];
-    }
-    args[4] = ZERO;
-    snprintf((char*)args[0], PATHLEN, "%s", path);
-    snprintf((char*)args[1], PATHLEN, "%x", bus);
-    snprintf((char*)args[2], PATHLEN, "%x", slot);
-    snprintf((char*)args[3], PATHLEN, "%x", func);
-
-    /*
-     * Try to fork off a child for the device server.
-     */
-    if ((pid = forkexec(path, args)) == (pid_t) -1)
-    {
-	syslog(LOG_ERR, "failed to forkexec() `%s': %s\r\n",
-			 path, strerror(errno));
-    }
-    else
-	waitpid(pid, &status, 0);
 }
