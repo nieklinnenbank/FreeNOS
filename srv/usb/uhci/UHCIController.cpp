@@ -15,14 +15,52 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <syslog.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 int main(int argc, char **argv)
 {
+    char path[256];
+    int fd;
+    u8 irq;
+
+    /*
+     * Verify command-line arguments.
+     */
+    if (argc < 4)
+    {
+	return EXIT_SUCCESS;
+    }
+    /* Open the system log. */
     openlog("USB", LOG_PID | LOG_CONS, LOG_USER);
-    syslog(LOG_INFO, "UHCI Host Controller");
-    closelog();
     
+    /* Construct path to read PCI interrupt. */
+    snprintf(path, sizeof(path), "/dev/pci/%s/%s/%s/interrupt",
+	     argv[1], argv[2], argv[3]);
+    
+    /* Attempt to open the file. */
+    if ((fd = open(path, O_RDONLY)) < 0)
+    {
+	syslog(LOG_ERR, "failed to open() `%s': %s",
+	       path, strerror(errno));
+	return EXIT_FAILURE;
+    }
+    /* Read out PCI information. */
+    if ((read(fd, &irq, sizeof(irq))) < 0)
+    {
+	syslog(LOG_ERR, "failed to read() `%s': %s",
+	       path, strerror(errno));
+	return EXIT_FAILURE;
+    }
+    syslog(LOG_INFO, "UHCI Host Controller at IRQ %d", irq);
+
+    /* All done. */
+    close(fd);
+    closelog();
     return EXIT_SUCCESS;
 }
