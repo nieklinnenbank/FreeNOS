@@ -20,5 +20,12 @@
 int main(int argc, char **argv)
 {
     TmpFileSystem server("/dev");
-    return server.run();
+    
+    /*
+     * Mount, then start serving requests.
+     */
+    if (server.mount(false))
+    {
+	return server.run();
+    }
 }

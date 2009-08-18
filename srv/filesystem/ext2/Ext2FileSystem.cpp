@@ -32,13 +32,23 @@
 int main(int argc, char **argv)
 {
     BootModule module("/boot/boot.ext2");
+
+    /*
+     * Load the GRUB filesystem image from memory.
+     */
     if (module.load())
     {
         Ext2FileSystem server("/img", &module);
-        return server.run();
+
+        /*
+	 * Mount, then start serving requests.
+         */
+	if (server.mount(false))
+	{
+    	    return server.run();
+	}
     }
-    exit(1);
-    return 1;
+    return EXIT_FAILURE;
 }
 
 Ext2FileSystem::Ext2FileSystem(const char *p, Storage *s)

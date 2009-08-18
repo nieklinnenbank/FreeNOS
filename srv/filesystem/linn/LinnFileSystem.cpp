@@ -29,10 +29,20 @@ int main(int argc, char **argv)
 {
     BootModule module("/boot/boot.linn.gz");
     
+    /*
+     * Load the GRUB filesystem image from memory.
+     */
     if (module.load())
     {
         LinnFileSystem server("/", &module);
-        return server.run();
+
+        /*
+	 * Mount, then start serving requests.
+         */
+	if (server.mount(false))
+	{
+    	    return server.run();
+	}
     }
     return EXIT_FAILURE;
 }

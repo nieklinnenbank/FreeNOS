@@ -21,9 +21,13 @@
 
 int main(int argc, char **argv)
 {
-    if (!fork())
+    ProcFileSystem server("/proc");
+    
+    /*
+     * Mount, then start serving requests.
+     */
+    if (server.mount())
     {
-	ProcFileSystem server("/proc");
 	return server.run();
     }
     return EXIT_SUCCESS;

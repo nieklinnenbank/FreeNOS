@@ -101,23 +101,6 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	    addIPCHandler(WriteFile,  &FileSystem::fileDescriptorHandler);
 	    addIPCHandler(CloseFile,  &FileSystem::fileDescriptorHandler);
 	    addIPCHandler(SeekFile,   &FileSystem::fileDescriptorHandler);
-
-	    /* Load shared tables. */
-	    procs.load(USER_PROCESS_KEY, MAX_PROCS);
-	    mounts.load(FILE_SYSTEM_MOUNT_KEY, MAX_MOUNTS);
-	    files = new Array<Shared<FileDescriptor> >(MAX_PROCS);
-	    
-	    /* Mount ourselves. */
-	    for (Size i = 0; i < MAX_MOUNTS; i++)
-	    {
-		if (!mounts[i]->path[0] || !strcmp(mounts[i]->path, path))
-		{
-		    strlcpy(mounts[i]->path, path, PATHLEN);
-		    mounts[i]->procID  = getpid();
-		    mounts[i]->options = ZERO;
-		    break;
-		}
-	    }
 	}
     
 	/**
@@ -125,6 +108,44 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	 */
 	virtual ~FileSystem()
 	{
+	}
+
+	/**
+	 * @brief Mount the FileSystem.
+	 *
+	 * This function is responsible for mounting the
+	 * FileSystem. This happends by creating a new entry
+	 * in the FileSystemMounts table, which is a Shared object.
+	 *
+	 * @param background Set to true to run as a background process (default).
+	 * @return True if mounted successfully, false otherwise.
+	 */
+	bool mount(bool background = true)
+	{
+	    /* Load shared tables. */
+	    procs.load(USER_PROCESS_KEY, MAX_PROCS);
+	    mounts.load(FILE_SYSTEM_MOUNT_KEY, MAX_MOUNTS);
+	    files = new Array<Shared<FileDescriptor> >(MAX_PROCS);
+	    
+	    /*
+	     * Fork in the background first, if requested.
+	     */
+	    if (background && fork())
+	    {
+		exit(EXIT_SUCCESS);
+	    }
+	    /* Mount ourselves. */
+	    for (Size i = 0; i < MAX_MOUNTS; i++)
+	    {
+		if (!mounts[i]->path[0] || !strcmp(mounts[i]->path, mountPath))
+		{
+		    strlcpy(mounts[i]->path, mountPath, PATHLEN);
+		    mounts[i]->procID  = getpid();
+		    mounts[i]->options = ZERO;
+		    break;
+		}
+	    }
+	    return true;
 	}
 
 	/**
