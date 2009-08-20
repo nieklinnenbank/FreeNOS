@@ -40,6 +40,7 @@ ProcessServer::ProcessServer()
     addIPCHandler(SpawnProcess, &ProcessServer::spawnProcessHandler);
     addIPCHandler(CloneProcess, &ProcessServer::cloneProcessHandler, false);
     addIPCHandler(WaitProcess,  &ProcessServer::waitProcessHandler,  false);
+    addIPCHandler(SetCurrentDirectory, &ProcessServer::setCurrentDirectory);
 
     /* Load shared objects. */
     procs.load(USER_PROCESS_KEY, MAX_PROCS);

@@ -125,7 +125,8 @@ void ProcessServer::spawnProcessHandler(ProcessMessage *msg)
     /* Inherit user and group identities. */
     procs[pid]->userID  = procs[msg->from]->userID;
     procs[pid]->groupID = procs[msg->from]->groupID;
-    strncpy(procs[pid]->currentDirectory, "/", PATHLEN);
+    strncpy(procs[pid]->currentDirectory,
+	    procs[msg->from]->currentDirectory, PATHLEN);
 
     /* Begin execution. */
     ProcessCtl(pid, Resume);

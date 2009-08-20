@@ -265,6 +265,21 @@ extern C int gethostname(char *name, size_t namelen);
 extern C char *getcwd(char *buf, size_t size);
 
 /**
+ * @brief Change working directory.
+ *
+ * The chdir() function shall cause the directory named by the
+ * pathname pointed to by the path argument to become the current
+ * working directory; that is, the starting point for path searches
+ * for pathnames not beginning with '/' .
+ *
+ * @param path Path to the directory to use as working directory.
+ * @return Upon successful completion, 0 shall be returned. Otherwise,
+ *         -1 shall be returned, the current working directory shall
+ *         remain unchanged, and errno shall be set to indicate the error.
+ */
+extern C int chdir(const char *path);
+
+/**
  * @}
  */
 
