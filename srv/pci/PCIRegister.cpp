@@ -18,21 +18,23 @@
 #include <File.h>
 #include <FileMode.h>
 #include "PCIServer.h"
-#include "PCIFile.h"
+#include "PCIRegister.h"
 
-PCIFile::PCIFile(u16 bus, u16 slot, u16 func, u16 reg, Size size)
+PCIRegister::PCIRegister(u16 bus, u16 slot, u16 func, u16 reg, Size size)
 {
     this->access = OwnerRW;
-    this->bus  = bus;
-    this->slot = slot;
-    this->func = func;
-    this->reg  = reg;
-    this->size = size;
+    this->bus    = bus;
+    this->slot   = slot;
+    this->func   = func;
+    this->reg    = reg;
+    this->size   = size;
 }
 
-Error PCIFile::read(IOBuffer *buffer, Size size, Size offset)
+Error PCIRegister::read(IOBuffer *buffer, Size size, Size offset)
 {
-    char buf[4];
+    char buf[32];
+    ulong value = 0;
+    Size bytes;
 	
     /* Bounds checking. */
     if (offset >= this->size)
@@ -45,20 +47,24 @@ Error PCIFile::read(IOBuffer *buffer, Size size, Size offset)
 	switch (this->size)
 	{
 	    case 1:
-		buf[0] = PCI_READ_BYTE(bus, slot, func, reg);
+		value = PCI_READ_BYTE(bus, slot, func, reg);
 		break;
 			
 	    case 2:
-		*(u16 *)(&buf) = PCI_READ_WORD(bus, slot, func, reg);
+		value = PCI_READ_WORD(bus, slot, func, reg);
 		break;
 			
 	    default:
-		*(u32 *)(&buf) = PCI_READ_LONG(bus, slot, func, reg);
+		value = PCI_READ_LONG(bus, slot, func, reg);
 		break;
 	}
+	itoa(buf, 16, value);
+	
 	/* How much bytes to copy? */
-	Size bytes = this->size - offset > size ?
-	    				   size : this->size - offset;
+	bytes = strlen(buf) + 1;
+
+	if (bytes > size)
+	    bytes = size;
         
         /* Copy the buffers. */
 	return buffer->write(buf + offset, bytes);

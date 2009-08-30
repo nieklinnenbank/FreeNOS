@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PCI_PCI_FILE_H
-#define __PCI_PCI_FILE_H
+#ifndef __PCI_PCIREGISTER_H
+#define __PCI_PCIREGISTER_H
 
 #include <Types.h>
 #include <Error.h>
@@ -37,7 +37,7 @@
  * @see PCIServer
  * @see File
  */
-class PCIFile : public File
+class PCIRegister : public File
 {
     public:
 
@@ -49,7 +49,7 @@ class PCIFile : public File
 	 * @param reg PCI configuration register to access.
 	 * @param size The size of the register.
 	 */
-	PCIFile(u16 bus, u16 slot, u16 func, u16 reg, Size size);
+	PCIRegister(u16 bus, u16 slot, u16 func, u16 reg, Size size);
 
 	/** 
          * @brief Read bytes from the file. 
@@ -86,4 +86,4 @@ class PCIFile : public File
  * @}
  */
 
-#endif /* __FILESYSTEM_PSEUDO_FILE_H */
+#endif /* __PCI_PCIREGISTER_H */
