@@ -20,10 +20,10 @@ import build
 
 build.target.Append(ENV = os.environ)
 build.PhonyTargets(build.target,
-		   qemu        = 'qemu -usb -cdrom boot/boot.iso -s',
+		   qemu        = 'qemu -usb -cdrom boot/boot.iso',
 		   qemu_debug  = 'qemu -curses -usb -cdrom boot/boot.iso -s -S -d int,pcall,exec',
-		   qemu_curses = 'qemu -curses -usb -cdrom boot/boot.iso -s',
-		   qemu_sdl    = 'qemu -sdl -cdrom boot/boot.iso -s',
+		   qemu_curses = 'qemu -curses -usb -cdrom boot/boot.iso',
+		   qemu_sdl    = 'qemu -sdl -cdrom boot/boot.iso',
 		   bochs       = 'bochs -q "ata0-slave: type=cdrom, path=boot/boot.iso, status=inserted" ' \
 				           '"boot: cdrom"',
 		   bochs_debug = 'bochs -q "ata0-slave: type=cdrom, path=boot/boot.iso, status=inserted" ' \
