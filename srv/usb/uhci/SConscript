@@ -18,9 +18,9 @@
 from build import *
 
 env = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc' ],
-		      [ 'log', 'filesystem', 'process', 'memory' ])
+		      [ 'log', 'filesystem', 'process', 'memory', 'pci'])
 
-env.Program('server', [ 'UHCIController.cpp' ],
+env.Program('server', [ 'UHCIController.cpp', 'Main.cpp' ],
 		         LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])
 
-e = env.PCI('server', 0x8086, 0x7020)
+env.PCI('server', 0x8086, 0x7020)

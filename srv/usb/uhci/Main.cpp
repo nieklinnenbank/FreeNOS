@@ -15,40 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/ProcessCtl.h>
 #include <DeviceServer.h>
-#include <MemoryMessage.h>
-#include <Config.h>
 #include "UHCIController.h"
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <syslog.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <unistd.h>
 
-UHCIController::UHCIController(const char *bus,
-			       const char *slot,
-			       const char *func)
-    : PCIDevice(bus, slot, func)
+int main(int argc, char **argv)
 {
-}
+    DeviceServer server("usbhost", CharacterDeviceFile);
 
-Error UHCIController::initialize()
-{
-    /* Open the system log. */
-    openlog("USB", LOG_PID | LOG_CONS, LOG_USER);
-    
-    /* Print out UHCI Controller information. */
-    syslog(LOG_INFO, "UHCI Host Controller at IOADDR=%x IRQ=%x",
-	   readLong(PCI_BAR4), readByte(PCI_IRQ));
-    
-    return ESUCCESS;
-}
-
-Error UHCIController::interrupt(Size vector)
-{
-    syslog(LOG_INFO, "UHCI Interrupt on IRQ %u", vector);
-    return ESUCCESS;
+    /*
+     * Verify command-line arguments.
+     */
+    if (argc < 4)
+    {
+	return EXIT_SUCCESS;
+    }
+    /*
+     * Start serving requests.
+     */
+    server.add(new UHCIController(argv[1], argv[2], argv[3]));
+    return server.run();
 }
