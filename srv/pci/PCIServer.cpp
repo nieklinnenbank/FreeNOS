@@ -17,7 +17,8 @@
 
 #include <API/ProcessCtl.h>
 #include <Config.h>
-#include "PCIFile.h"
+#include "PCIRegister.h"
+#include "PCIConfig.h"
 #include "PCIServer.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -141,6 +142,7 @@ void PCIServer::detect(u16 bus, u16 slot, u16 func)
     dir = new Directory;
     dir->insert(DirectoryFile, ".");
     dir->insert(DirectoryFile, "..");
+    dir->insert(RegularFile, "config");
     dir->insert(RegularFile, "vendor");
     dir->insert(RegularFile, "device");
     dir->insert(RegularFile, "revision");
@@ -157,33 +159,36 @@ void PCIServer::detect(u16 bus, u16 slot, u16 func)
      * Now create actual files.
      * Put them into the cache.
      */
-    insertFileCache(new PCIFile(bus, slot, func, PCI_VID, 2),
+    insertFileCache(new PCIConfig(bus, slot, func),
+		    "%x/%x/%x/config", bus, slot, func);
+    
+    insertFileCache(new PCIRegister(bus, slot, func, PCI_VID, 2),
 		    "%x/%x/%x/vendor", bus, slot, func);
 	
-    insertFileCache(new PCIFile(bus, slot, func, PCI_DID, 2),
+    insertFileCache(new PCIRegister(bus, slot, func, PCI_DID, 2),
 		    "%x/%x/%x/device", bus, slot, func);
 				
-    insertFileCache(new PCIFile(bus, slot, func, PCI_RID, 1),
+    insertFileCache(new PCIRegister(bus, slot, func, PCI_RID, 1),
 		    "%x/%x/%x/revision",  bus, slot, func);
 
-    insertFileCache(new PCIFile(bus, slot, func, PCI_IRQ, 1),
+    insertFileCache(new PCIRegister(bus, slot, func, PCI_IRQ, 1),
 		    "%x/%x/%x/interrupt", bus, slot, func);
 
-    insertFileCache(new PCIFile(bus, slot, func, PCI_BAR0, 4),
+    insertFileCache(new PCIRegister(bus, slot, func, PCI_BAR0, 4),
 		    "%x/%x/%x/bar0", bus, slot, func);
 
-    insertFileCache(new PCIFile(bus, slot, func, PCI_BAR1, 4),
+    insertFileCache(new PCIRegister(bus, slot, func, PCI_BAR1, 4),
 		    "%x/%x/%x/bar1", bus, slot, func);
 
-    insertFileCache(new PCIFile(bus, slot, func, PCI_BAR2, 4),
+    insertFileCache(new PCIRegister(bus, slot, func, PCI_BAR2, 4),
 		    "%x/%x/%x/bar2", bus, slot, func);
 
-    insertFileCache(new PCIFile(bus, slot, func, PCI_BAR3, 4),
+    insertFileCache(new PCIRegister(bus, slot, func, PCI_BAR3, 4),
 		    "%x/%x/%x/bar3", bus, slot, func);
 
-    insertFileCache(new PCIFile(bus, slot, func, PCI_BAR4, 4),
+    insertFileCache(new PCIRegister(bus, slot, func, PCI_BAR4, 4),
 		    "%x/%x/%x/bar4", bus, slot, func);
 
-    insertFileCache(new PCIFile(bus, slot, func, PCI_BAR5, 4),
+    insertFileCache(new PCIRegister(bus, slot, func, PCI_BAR5, 4),
 		    "%x/%x/%x/bar5", bus, slot, func);
 }

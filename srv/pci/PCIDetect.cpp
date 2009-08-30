@@ -30,30 +30,31 @@
 int readint(struct dirent *bus, struct dirent *slot,
 	    struct dirent *func, const char *file)
 {
-    char path[256];
-    int fd, value = 0;
+    char str[256];
+    int fd;
     
     /* Construct target path. */
-    snprintf(path, sizeof(path), "/dev/pci/%s/%s/%s/%s",
+    snprintf(str, sizeof(str), "/dev/pci/%s/%s/%s/%s",
 	     bus->d_name, slot->d_name, func->d_name, file);
     
     /* Open the target file. */
-    if ((fd = open(path, O_RDONLY)) < 0)
+    if ((fd = open(str, O_RDONLY)) < 0)
     {
 	syslog(LOG_ERR, "failed to open() `%s': %s",
-	       path, strerror(errno));
+	       str, strerror(errno));
 	exit(EXIT_FAILURE);
     }
-    /* Read out the integer. */
-    if (read(fd, &value, sizeof(value)) <= 0)
+    /* Read out the number as a string. */
+    if (read(fd, str, sizeof(str)) <= 0)
     {
 	syslog(LOG_ERR, "failed to read() `%s': %s",
-	       path, strerror(errno));
+	       str, strerror(errno));
 	exit(EXIT_FAILURE);
     }
-    /* Done. */
     close(fd);
-    return value;
+    
+    /* Convert string to binary number. */
+    return strtol(str, ZERO, 0);
 }
 
 int main(int argc, char **argv)
