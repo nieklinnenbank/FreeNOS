@@ -24,9 +24,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-void outputf(char *fmt, ...)
+void readfile(char *buf, Size size, char *fmt, ...)
 {
-    char path[128], buf[1025];
+    char path[128];
     int fd;
     Error e;
     va_list av;
@@ -36,9 +36,6 @@ void outputf(char *fmt, ...)
     vsnprintf(path, sizeof(path), fmt, av);
     va_end(av);
 
-    /* Clear buffer. */
-    memset(buf, 0, sizeof(buf));
-
     /* Attempt to open the file first. */
     if ((fd = open(path, ZERO)) < 0)
     {
@@ -47,41 +44,36 @@ void outputf(char *fmt, ...)
 	exit(EXIT_FAILURE);
     }
     /* Read contents. */
-    while (1)
+    switch ((e = read(fd, buf, size)))
     {
-	e = read(fd, buf, sizeof(buf) - 1);
-	switch (e)
-        {
-	    /* Error occurred. */
-	    case -1:
-		printf("Failed to read '%s': %s\r\n",
-		        path, strerror(errno));
-		close(fd);
-		exit(EXIT_FAILURE);
+        /* Error occurred. */
+	case -1:
+	    printf("Failed to read '%s': %s\r\n",
+	            path, strerror(errno));
+	    close(fd);
+	    exit(EXIT_FAILURE);
     
-	    /* End of file. */
-	    case 0:
-		close(fd);
-		return;
+	/* End of file. */
+	case 0:
+	    close(fd);
+	    return;
 	
-	    /* Print out results. */
-	    default:
-		buf[e] = 0;
-		printf("%s", buf);
-	        break;
-	}
+	/* Success. */
+	default:
+	    buf[e] = ZERO;
+	    return;
     }
-    /* Not reached. */
-    exit(EXIT_FAILURE);
 }
 
 int main(int argc, char **argv)
 {
     DIR *d;
     struct dirent *dent;
+    char status[11];
+    char cmdline[64];
 
     /* Print header. */
-    printf("PID STATUS CMD\r\n");
+    printf("PID   STATUS     CMD\r\n");
     
     /* Attempt to open the directory. */
     if (!(d = opendir("/proc")))
@@ -95,11 +87,15 @@ int main(int argc, char **argv)
     {
 	if (dent->d_name[0] != '.')
 	{
-	    printf("%s ", dent->d_name);
-	    outputf("/proc/%s/status",  dent->d_name);
-	    printf(" ");
-	    outputf("/proc/%s/cmdline", dent->d_name);
-	    printf("\r\n");
+	    /* Read the process' status. */
+	    readfile(status,  sizeof(status),
+		    "/proc/%s/status",  dent->d_name);
+	    readfile(cmdline, sizeof(cmdline),
+		    "/proc/%s/cmdline", dent->d_name);
+
+	    /* Output a line. */	
+	    printf("%5s %10s %32s\r\n",
+		    dent->d_name, status, cmdline);
 	}
     }
     /* Close it. */
