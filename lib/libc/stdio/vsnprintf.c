@@ -22,7 +22,7 @@
 int vsnprintf(char *buffer, unsigned int size, const char *fmt, va_list args)
 {
     char buf[20], *ptr;
-    int ch;
+    int ch, length = -1, i;
     unsigned int written = 0;
     
     /* Loop formatted message. */
@@ -35,46 +35,72 @@ int vsnprintf(char *buffer, unsigned int size, const char *fmt, va_list args)
 	}
 	else
 	{
+	switch_again:
+	
 	    switch (*fmt)
 	    {
-	    case 'd':
-	    case 'u':
-	    	itoa(buf, 10, va_arg(args, int));
-		ptr = buf;
-		goto string;
+		/* Length modifier. */
+	        case '0' ... '9':
+	    
+		    for (i = 0; i < 19 && *fmt >= '0' && *fmt <= '9'; i++)
+		    {
+			buf[i]   = *fmt++;
+		        buf[i+1] = ZERO;
+		    }
+		    length = atoi(buf);
+		    goto switch_again;
 	
-	    case 'l':
-		itoa(buf, 10, va_arg(args, long));
-		ptr = buf;
-		goto string;
+		/* Integer. */    
+	        case 'd':
+	        case 'u':
+		    itoa(buf, 10, va_arg(args, int));
+		    ptr = buf;
+		    goto string;
 	
-	    case 'x':
-		itoa(buf, 16, va_arg(args, int));
-		ptr = buf;
-		goto string;
+		/* Long integer. */
+		case 'l':
+		    itoa(buf, 10, va_arg(args, long));
+		    ptr = buf;
+		    goto string;
 	
-	    case 'c':
-		buf[0] = va_arg(args, int);
-		buf[1] = ZERO;
-		ptr    = buf;
-		goto string;
+		/* Hexadecimal. */
+	        case 'x':
+		    itoa(buf, 16, va_arg(args, int));
+		    ptr = buf;
+		    goto string;
 	
-	    case 's':
-		ptr = va_arg(args, char *);
+		/* Character. */
+		case 'c':
+		    buf[0] = va_arg(args, int);
+		    buf[1] = ZERO;
+		    ptr    = buf;
+		    goto string;
 	
-	    string:
-		while(*ptr && written++ < size)
-		{
-		    *buffer++ = *ptr++;
-		}
-		break;
+		/* String. */
+		case 's':
+		    ptr = va_arg(args, char *);
 	
-	    default:
-		*buffer++ = ch;
-		written++;
-		break;
+		string:
+		    while( ((length == -1 && *ptr) ||
+			    (length > 0 && length--)) && written++ < size)
+		    {
+			if (*ptr)
+			{
+			    *buffer++ = *ptr++;
+			}
+			else
+			    *buffer++ = ' ';
+		    }
+		    break;
+	
+		/* Unsupported. */
+	        default:
+	    	    *buffer++ = ch;
+		    written++;
+		    break;
 	    }
 	    fmt++;
+	    length = -1;
 	}
     }
     /* Null terminate. */
