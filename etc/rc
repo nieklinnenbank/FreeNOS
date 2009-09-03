@@ -2,6 +2,7 @@
 /srv/video/vga/server
 /srv/terminal/server
 /srv/log/server
+/srv/ata/server
 /srv/filesystem/proc/server
 /srv/serial/server
 /srv/pci/server

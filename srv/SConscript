@@ -15,5 +15,5 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-SConscript(dirs = [ 'log', 'idle', 'memory', 'pci', 'usb', 'ide', 'video', 'input',
+SConscript(dirs = [ 'log', 'idle', 'memory', 'pci', 'usb', 'ata', 'video', 'input',
 		    'process', 'serial', 'terminal', 'time', 'filesystem' ])
