@@ -121,6 +121,18 @@
     b; \
 })
 
+/**
+ * Read a word from a port.
+ * @param port The I/O port to read from.
+ * @return Word read from the port.
+ */
+#define inw(port) \
+({ \
+    unsigned short w; \
+    asm volatile ("inw %%dx, %%ax" : "=a" (w) : "d" (port)); \
+    w; \
+})
+
 /**  
  * Output a byte to a port.  
  * @param port Port to write to.  
