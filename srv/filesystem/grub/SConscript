@@ -15,4 +15,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-SConscript(dirs = [ 'ext2', 'linn', 'proc', 'tmp', 'grub' ])
+from build import *
+
+env = Prepare(target, [ 'libcrt', 'liballoc', 'libposix', 'libexec', 'libc' ],
+		      [ 'filesystem', 'process', 'log', 'memory' ])
+
+env.Program('server', [ 'Main.cpp', 'GRUBFileSystem.cpp', 'GRUBModule.cpp' ],
+		         LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])

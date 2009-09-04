@@ -4,6 +4,7 @@
 /srv/log/server
 /srv/ata/server
 /srv/filesystem/proc/server
+/srv/filesystem/grub/server
 /srv/serial/server
 /srv/pci/server
 /srv/pci/detect
