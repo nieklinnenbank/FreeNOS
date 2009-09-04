@@ -28,4 +28,5 @@ env.Library('libposix', [ Glob('sys/stat/*.cpp'),
 			  Glob('dirent/*.cpp'),
 			  Glob('syslog/*.cpp'),
 			  Glob('time/*.cpp'),
+			  Glob('libgen/*.cpp'),
 			  Glob('*.cpp') ])
