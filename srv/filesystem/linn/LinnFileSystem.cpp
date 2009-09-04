@@ -16,8 +16,8 @@
  */
 
 #include <Types.h>
+#include <FileStorage.h>
 #include <BootModule.h>
-#include <Storage.h>
 #include "LinnFileSystem.h"
 #include "LinnInode.h"
 #include "LinnFile.h"
@@ -27,19 +27,37 @@
 
 int main(int argc, char **argv)
 {
-    BootModule module("/boot/boot.linn.gz");
-    
-    /*
-     * Load the GRUB filesystem image from memory.
-     */
-    if (module.load())
-    {
-        LinnFileSystem server("/", &module);
+    Storage *storage = ZERO;
+    bool background  = false;
+    const char *path = "/";
 
-        /*
-	 * Mount, then start serving requests.
-         */
-	if (server.mount(false))
+    /*
+     * Mount the given file, or use the default GRUB boot module.
+     */
+    if (argc > 2)
+    {
+	storage    = new FileStorage(argv[1]);
+	background = true;
+	path       = argv[2];
+    }
+    else
+    {
+	BootModule *bm = new BootModule("/boot/boot.linn.gz");
+	
+	if (bm->load())
+	{
+	    storage = bm;
+	}
+    }
+
+    /*
+     * Mount, then start serving requests.
+     */
+    if (storage)
+    {
+	LinnFileSystem server(path, storage);
+	
+	if (server.mount(background))
 	{
     	    return server.run();
 	}
