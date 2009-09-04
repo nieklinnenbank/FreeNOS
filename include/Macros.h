@@ -42,6 +42,16 @@
 #define IQUOTE(x) \
     QUOTE(x)
 
+/**
+ * Calculate a division, and round to up any remaining.
+ * @param number Input number.
+ * @param divisor Divisor number.
+ * @return Ceiled number.
+ */
+#define CEIL(number,divisor) \
+     (number) % (divisor) ?  \
+    ((number) / (divisor)) + 1 : (number) / (divisor)
+
 /** Calculates offsets in data structures. */
 #define offsetof(TYPE, MEMBER) \
     ((Size) &((TYPE *)0)->MEMBER)
