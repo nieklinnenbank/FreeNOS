@@ -108,12 +108,14 @@ Error ATAController::initialize()
 
 Error ATAController::read(s8 *buffer, Size size, Size offset)
 {
-    u16 sectors = (size / 512), word;
-    u32 lba     = (offset / 512);
+    u8 sectors = CEIL(size, 512);
+    u16 block[256];
+    u32 lba     = offset / 512;
     Size result = 0;
 
     /* Verify LBA. */
-    if (lba > drives.head()->identity.sectors28)
+    if (!drives.head() ||
+         drives.head()->identity.sectors28 < lba)
     {
 	return EIO;
     }
@@ -136,11 +138,18 @@ Error ATAController::read(s8 *buffer, Size size, Size offset)
         /* Read out bytes. */
 	for (int i = 0; i < 256; i++)
 	{
-	    word = inw(ATA_BASE_CMD0 + ATA_REG_DATA);
-	    buffer[(i * 2)]     = (u8)  (word & 0xff);
-	    buffer[(i * 2) + 1] = (u8) ((word & 0xff00) >> 8);
+	    block[i] = inw(ATA_BASE_CMD0 + ATA_REG_DATA);
 	}
-	result += 512;
+	/* Calculate maximum bytes. */
+	Size bytes = (size - result) < 512 - (offset % 512) ?
+		     (size - result) : 512 - (offset % 512);
+
+	/* Copy to buffer. */
+	memcpy(buffer + result, ((u8 *)block) + (offset % 512), bytes);
+	
+	/* Update state. */
+	result += bytes;
+	offset += bytes;
     }
     return result;
 }
