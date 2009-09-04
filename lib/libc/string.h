@@ -198,6 +198,20 @@ extern C char * strerror(int errnum);
 extern C char * strchr(const char *s, int c);
 
 /**
+ * @brief String scanning operation.
+ *
+ * The strrchr() function shall locate the last occurrence of c
+ * (converted to a char) in the string pointed to by s. The terminating
+ * NUL character is considered to be part of the string.
+ *
+ * @param s String to search in.
+ * @param c Character to look for.
+ * @return Upon successful completion, strrchr() shall return a pointer
+ *         to the byte or a null pointer if c does not occur in the string.
+ */
+extern C char * strrchr(const char *s, int c);
+
+/**
  * @}
  */
 
