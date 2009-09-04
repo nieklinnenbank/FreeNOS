@@ -114,13 +114,10 @@ class PseudoFile : public File
 	    }
 	}
 
-    private:
+    protected:
     
 	/** Buffer from which we read. */
 	char *buffer;
-	
-	/** Size of the buffer. */
-	Size size;
 };
 
 /**
