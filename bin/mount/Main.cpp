@@ -15,22 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <POSIXSupport.h>
 #include <FileSystemMount.h>
-#include <Shared.h>
-#include <Types.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 int main(int argc, char **argv)
 {
-    Shared<FileSystemMount> mounts(FILE_SYSTEM_MOUNT_KEY, MAX_MOUNTS);
+    /* Print header. */
+    printf("PATH       FILESYSTEM\r\n");
 
     /* Print out. */
     for (Size i = 0; i < MAX_MOUNTS; i++)
     {
         if (mounts[i]->path[0])
-            printf("%s : PID %u\r\n", mounts[i]->path,
-				      mounts[i]->procID);
+	{
+	    printf("%10s %s\r\n",
+		    mounts[i]->path, procs[mounts[i]->procID]->command);
+	}
     }
     /* Success. */
     return EXIT_SUCCESS;
