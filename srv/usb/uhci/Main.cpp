@@ -21,7 +21,7 @@
 
 int main(int argc, char **argv)
 {
-    DeviceServer server("usbhost", CharacterDeviceFile);
+    DeviceServer server("usb", CharacterDeviceFile);
 
     /*
      * Verify command-line arguments.
