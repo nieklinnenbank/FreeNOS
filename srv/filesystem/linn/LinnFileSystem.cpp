@@ -230,6 +230,7 @@ u64 LinnFileSystem::getOffset(LinnInode *inode, u32 blk)
 	/* Calculate the next offset. */
 	offset  = block[ (blk - LINN_INODE_DIR_BLOCKS) / remain ];
 	offset *= super.blockSize;
+	remain  = 1;
 	depth--;
     }
     /* Calculate the final offset. */
