@@ -77,7 +77,7 @@ Error Ext2Directory::read(IOBuffer *buffer, Size size, Size offset)
 		dent.type = EXT2_FILETYPE(ext2Inode);
 
 		/* Copy to the output buffer. */
-		if ((e = buffer->write(&dent, sizeof(Dirent))) < 0)
+		if ((e = buffer->write(&dent, sizeof(Dirent), bytes)) < 0)
 		{
 		    return e;
 		} 
