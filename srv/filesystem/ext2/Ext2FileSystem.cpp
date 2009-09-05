@@ -17,6 +17,7 @@
 
 #include <File.h>
 #include <BootModule.h> 
+#include <FileStorage.h>
 #include <Directory.h>
 #include <Device.h>
 #include "Ext2FileSystem.h"
@@ -31,22 +32,40 @@
 
 int main(int argc, char **argv)
 {
-    BootModule module("/boot/boot.ext2");
-
-    /*
-     * Load the GRUB filesystem image from memory.
+    Storage *storage = ZERO;
+    bool background  = false;
+    const char *path = "/";
+    
+    /* 
+     * Mount the given file, or use the default GRUB boot module. 
      */
-    if (module.load())
+    if (argc > 2)
     {
-        Ext2FileSystem server("/img", &module);
+        storage    = new FileStorage(argv[1]);
+        background = true;
+        path       = argv[2];
+    }
+    else
+    {
+        BootModule *bm = new BootModule("/boot/boot.ext2.gz");
+    
+        if (bm->load())
+        {
+            storage = bm;
+        }
+    }
+    
+    /* 
+     * Mount, then start serving requests. 
+     */
+    if (storage)
+    {
+        Ext2FileSystem server(path, storage);
 
-        /*
-	 * Mount, then start serving requests.
-         */
-	if (server.mount(false))
-	{
-    	    return server.run();
-	}
+        if (server.mount(background))
+        {
+            return server.run();
+        }
     }
     return EXIT_FAILURE;
 }
@@ -60,7 +79,7 @@ Ext2FileSystem::Ext2FileSystem(const char *p, Storage *s)
     Error e;
 
     /* Open the system logs. */
-    openlog("Ext2", LOG_PID, LOG_USER);
+    openlog("Ext2FS", LOG_PID, LOG_USER);
 
     /* Read out the superblock. */
     if ((e = s->read(EXT2_SUPER_OFFSET, &superBlock,
@@ -168,7 +187,7 @@ Ext2Group * Ext2FileSystem::getGroupByInode(u32 inodeNum)
 u64 Ext2FileSystem::getOffset(Ext2Inode *inode, Size blk)
 {
     Size numPerBlock = EXT2_ADDR_PER_BLOCK(&superBlock);
-    Size depth = 0;
+    Size depth = 0, remain = 1;
     u32 *block;
     u64 offset;
 
@@ -207,17 +226,20 @@ u64 Ext2FileSystem::getOffset(Ext2Inode *inode, Size blk)
 	    return 0;
 	}
 	/* Calculate the number of blocks remaining per entry. */
-	Size remain = EXT2_ADDR_PER_BLOCK(&superBlock);
-	
-	/* Effectively the pow() function. */
-	for (Size i = 0; i < depth - 1; i++)
-	{
-	    remain *= remain;
-	}
+        for (Size i = 0; i < depth - 1; i++)
+        {
+            remain *= EXT2_ADDR_PER_BLOCK(&superBlock);
+        }
+        /* More indirection? */
+        if (remain == 1)
+        {
+            break;
+        }
 	/* Calculate the next offset. */
-	offset  = block[ remain / (blk - EXT2_NDIR_BLOCKS + 1) ];
-	offset *= EXT2_BLOCK_SIZE(&superBlock);
-	depth--;
+	offset  = block[ (blk - EXT2_NDIR_BLOCKS) / remain ];
+        offset *= EXT2_BLOCK_SIZE(&superBlock);
+	remain  = 1;
+        depth--;
     }
     /* Calculate the final offset. */
     offset  = block[ (blk - EXT2_NDIR_BLOCKS) %
