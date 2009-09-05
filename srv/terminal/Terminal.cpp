@@ -77,6 +77,9 @@ Error Terminal::initialize()
     funcs.tf_param   = (tf_param_t *)   param;
     funcs.tf_respond = (tf_respond_t *) respond;
 
+    /* Reset cursor. */
+    memset(&cursorPos, 0, sizeof(cursorPos));
+
     /* Initialize libteken. */
     teken_init(&state, &funcs, this);
     
