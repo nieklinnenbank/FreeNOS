@@ -36,10 +36,12 @@ class FileStorage : public Storage
 	/**
 	 * @brief Constructor function.
 	 * @param path Full path to the file to use.
+	 * @param offset Offset in the file as a base for I/O.
 	 */
-	FileStorage(const char *path)
+	FileStorage(const char *path, Size offset = ZERO)
 	{
-	    file = open(path, O_RDWR);
+	    this->file   = open(path, O_RDWR);
+	    this->offset = offset;
 	    stat(path, &st);
 	}
 
@@ -63,7 +65,7 @@ class FileStorage : public Storage
 	    
 	    if (file >= 0)
 	    {
-		lseek(file, offset, SEEK_SET);
+		lseek(file, this->offset + offset, SEEK_SET);
 		result = ::read(file, buffer, size);
 		
 		return result >= 0 ? result : errno;
@@ -84,7 +86,7 @@ class FileStorage : public Storage
 	
 	    if (file >= 0)
 	    {
-		lseek(file, offset, SEEK_SET);
+		lseek(file, this->offset + offset, SEEK_SET);
 	        result = ::write(file, buffer, size);
 		
 		return result >= 0 ? result : errno;
@@ -109,6 +111,9 @@ class FileStorage : public Storage
 	
 	/** @brief Status of the file for Storage I/O. */
 	struct stat st;
+	
+	/** @brief Offset used as a base for I/O. */
+	Size offset;
 };
 
 #endif /* __FILESYSTEM_STORAGE_H */

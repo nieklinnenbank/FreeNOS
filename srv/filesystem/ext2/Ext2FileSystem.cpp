@@ -39,11 +39,11 @@ int main(int argc, char **argv)
     /* 
      * Mount the given file, or use the default GRUB boot module. 
      */
-    if (argc > 2)
+    if (argc > 3)
     {
-        storage    = new FileStorage(argv[1]);
+        storage    = new FileStorage(argv[1], atoi(argv[2]));
         background = true;
-        path       = argv[2];
+        path       = argv[3];
     }
     else
     {
