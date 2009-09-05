@@ -29,9 +29,6 @@
 /** The flags for the Multiboot header. */
 #define MULTIBOOT_HEADER_FLAGS		0x00000003
 
-/** Marks an ELF-compatible executable. */
-#define MULTIBOOT_HEADER_ELF_FLAGS	0x00010003
-
 /** Size of the multiboot header structure. */
 #define MULTIBOOT_HEADER_SIZE		52
 

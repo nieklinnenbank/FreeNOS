@@ -68,13 +68,9 @@ _start:
 
 multibootHeader:
         .long  (MULTIBOOT_HEADER_MAGIC)
-        .long  (MULTIBOOT_HEADER_ELF_FLAGS)
-        .long -(MULTIBOOT_HEADER_MAGIC + MULTIBOOT_HEADER_ELF_FLAGS)
+        .long  (MULTIBOOT_HEADER_FLAGS)
+        .long -(MULTIBOOT_HEADER_MAGIC + MULTIBOOT_HEADER_FLAGS)
         .long  (multibootHeader)
-        .long  (kernelStart)
-        .long  (0)
-        .long  (1024 * 1024 * 4)
-        .long  (_start)
 
 _jump_entry:
 	/* Disable interrupts. */
