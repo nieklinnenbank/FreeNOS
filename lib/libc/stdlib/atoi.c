@@ -19,5 +19,5 @@
 
 int atoi(const char *nptr)
 {
-    return (int) strtol(nptr, ZERO, 10);
+    return (int) strtol(nptr, 0, 0);
 }
