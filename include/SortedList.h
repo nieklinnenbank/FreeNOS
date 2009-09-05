@@ -25,7 +25,7 @@
  * Represents an item in the SortedList. The data in a SortedListNode
  * cannot be (U*)0.
  */
-template <class U = class Comparable<class U> > class SortedListNode
+template <class U> class SortedListNode
 {
     public:
     
@@ -35,7 +35,7 @@ template <class U = class Comparable<class U> > class SortedListNode
          * @param p Previous SortedListNode.
          * @param n Next SortedListNode.
          */
-        SortedListNode(U* t
+        SortedListNode(Comparable<U> *t
             , SortedListNode<U>* p
             , SortedListNode<U>* n)
             : data(t), prev(p), next(n)
@@ -56,7 +56,7 @@ template <class U = class Comparable<class U> > class SortedListNode
  * Represents a sorted list. Every item in a SortedList must implement
  * the functions of the Comparable class as to sort the items in the list.
  */
-template <class T = class Comparable<class T> > class SortedList
+template <class T> class SortedList
 {
     public:
     
@@ -100,7 +100,7 @@ template <class T = class Comparable<class T> > class SortedList
      * @param t The data to insert to the list.
      * @see SortedList::insert(SortedListNode<T>* t, SortedListNode<T>* from)
      */
-    void insert(T* t)
+    void insert(Comparable<T> *t)
     {
         assertRead(t);
         
@@ -134,7 +134,7 @@ template <class T = class Comparable<class T> > class SortedList
      * @param t The data to remove from the list.
      * @see http://en.wikipedia.org/wiki/Big_O_notation
      */
-    void remove(T* t)
+    void remove(Comparable <T> *t)
     {
         if(!t)
         {
