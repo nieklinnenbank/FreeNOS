@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FreeBSD: head/sys/dev/syscons/teken/teken_subr_compat.h 187382 2009-01-18 09:44:33Z ed $
+ * $FreeBSD$
  */
 
 static void
@@ -66,12 +66,3 @@ teken_subr_cons25_switch_virtual_terminal(teken_t *t, unsigned int vt)
 	teken_funcs_param(t, TP_SWITCHVT, vt);
 }
 
-#if 0
-static void
-teken_subr_vt52_decid(teken_t *t)
-{
-	const char response[] = "\x1B/Z";
-
-	teken_funcs_respond(t, response, sizeof response - 1);
-}
-#endif

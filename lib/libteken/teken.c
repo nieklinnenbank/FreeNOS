@@ -23,34 +23,22 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FreeBSD: head/sys/dev/syscons/teken/teken.c 190157 2009-03-20 14:31:08Z ed $
+ * $FreeBSD$
  */
 
-#if defined(__FreeBSD__) && defined(_KERNEL)
-#include <sys/param.h>
-#include <sys/lock.h>
-#include <sys/systm.h>
-#define	teken_assert(x)		MPASS(x)
-#define	teken_printf(x,...)
-#else /* !(__FreeBSD__ && _KERNEL) */
-#include <sys/types.h>
 #define __unused __attribute((unused))
+#include <sys/types.h>
+#include <Assert.h>
 #include <stdio.h>
 #include <string.h>
-#include <Assert.h>
 #define	teken_assert(x)		assert(x)
-/*
- #define	teken_printf(x,...)	do { \
+#define	teken_printf(x,...)	do { \
 	if (df != NULL) \
-		fprintf(df, x, ## __VA_ARGS__); \
- } while (0)
- */
-#define teken_printf(x,...) \
-    printf(x, ## __VA_ARGS__);
+		printf(x, ## __VA_ARGS__); \
+} while (0)
 
 /* debug messages */
-//static FILE *df;
-#endif /* __FreeBSD__ && _KERNEL */
+static FILE *df;
 
 #include "teken.h"
 
@@ -73,9 +61,6 @@
 #define	teken_scs_set(t, g, ts)
 #define	teken_scs_switch(t, g)
 #endif /* TEKEN_XTERM && TEKEN_UTF8 */
-
-/* Private flags for teken_format_t. */
-#define	TF_REVERSE	0x08
 
 /* Private flags for t_stateflags. */
 #define	TS_FIRSTDIGIT	0x01	/* First numeric digit in escape sequence. */
@@ -118,18 +103,9 @@ static inline void
 teken_funcs_putchar(teken_t *t, const teken_pos_t *p, teken_char_t c,
     const teken_attr_t *a)
 {
-	teken_attr_t ta;
 
 	teken_assert(p->tp_row < t->t_winsize.tp_row);
 	teken_assert(p->tp_col < t->t_winsize.tp_col);
-
-	/* Apply inversion. */
-	if (a->ta_format & TF_REVERSE) {
-		ta.ta_format = a->ta_format;
-		ta.ta_fgcolor = a->ta_bgcolor;
-		ta.ta_bgcolor = a->ta_fgcolor;
-		a = &ta;
-	}
 
 	t->t_funcs->tf_putchar(t->t_softc, p, c, a);
 }
@@ -138,20 +114,11 @@ static inline void
 teken_funcs_fill(teken_t *t, const teken_rect_t *r,
     const teken_char_t c, const teken_attr_t *a)
 {
-	teken_attr_t ta;
 
 	teken_assert(r->tr_end.tp_row > r->tr_begin.tp_row);
 	teken_assert(r->tr_end.tp_row <= t->t_winsize.tp_row);
 	teken_assert(r->tr_end.tp_col > r->tr_begin.tp_col);
 	teken_assert(r->tr_end.tp_col <= t->t_winsize.tp_col);
-
-	/* Apply inversion. */
-	if (a->ta_format & TF_REVERSE) {
-		ta.ta_format = a->ta_format;
-		ta.ta_fgcolor = a->ta_bgcolor;
-		ta.ta_bgcolor = a->ta_fgcolor;
-		a = &ta;
-	}
 
 	t->t_funcs->tf_fill(t->t_softc, r, c, a);
 }
@@ -171,7 +138,7 @@ teken_funcs_copy(teken_t *t, const teken_rect_t *r, const teken_pos_t *p)
 }
 
 static inline void
-teken_funcs_param(teken_t *t, int cmd, int value)
+teken_funcs_param(teken_t *t, int cmd, unsigned int value)
 {
 
 	t->t_funcs->tf_param(t->t_softc, cmd, value);
@@ -195,12 +162,6 @@ void
 teken_init(teken_t *t, const teken_funcs_t *tf, void *softc)
 {
 	teken_pos_t tp = { .tp_row = 24, .tp_col = 80 };
-
-#if 0 && !(defined(__FreeBSD__) && defined(_KERNEL))
-	df = fopen("teken.log", "w");
-	if (df != NULL)
-		setvbuf(df, NULL, _IOLBF, BUFSIZ);
-#endif /* !(__FreeBSD__ && _KERNEL) */
 
 	t->t_funcs = tf;
 	t->t_softc = softc;
@@ -304,7 +265,7 @@ teken_input_byte(teken_t *t, unsigned char c)
 		t->t_utf8_left--;
 		t->t_utf8_partial = (t->t_utf8_partial << 6) | (c & 0x3f);
 		if (t->t_utf8_left == 0) {
-			teken_printf("Got UTF-8 char %u\n", t->t_utf8_partial);
+			teken_printf("Got UTF-8 char %x\n", t->t_utf8_partial);
 			teken_input_char(t, t->t_utf8_partial);
 		}
 	}

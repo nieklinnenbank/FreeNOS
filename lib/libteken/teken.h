@@ -23,17 +23,11 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FreeBSD: head/sys/dev/syscons/teken/teken.h 189617 2009-03-10 11:28:54Z ed $
+ * $FreeBSD$
  */
 
 #ifndef _TEKEN_H_
 #define	_TEKEN_H_
-#ifndef __ASSEMBLER__
-
-/**
- * @defgroup libteken libteken
- * @{
- */
 
 /*
  * libteken: terminal emulation library.
@@ -59,6 +53,7 @@ typedef unsigned char teken_format_t;
 #define	TF_BOLD		0x01
 #define	TF_UNDERLINE	0x02
 #define	TF_BLINK	0x04
+#define	TF_REVERSE	0x08
 typedef unsigned char teken_color_t;
 #define	TC_BLACK	0
 #define	TC_RED		1
@@ -103,13 +98,16 @@ typedef void tf_putchar_t(void *, const teken_pos_t *, teken_char_t,
 typedef void tf_fill_t(void *, const teken_rect_t *, teken_char_t,
     const teken_attr_t *);
 typedef void tf_copy_t(void *, const teken_rect_t *, const teken_pos_t *);
-typedef void tf_param_t(void *, int, int);
+typedef void tf_param_t(void *, int, unsigned int);
 #define	TP_SHOWCURSOR	0
 #define	TP_CURSORKEYS	1
 #define	TP_KEYPADAPP	2
 #define	TP_AUTOREPEAT	3
 #define	TP_SWITCHVT	4
 #define	TP_132COLS	5
+#define	TP_SETBELLPD	6
+#define	TP_SETBELLPD_PITCH(pd)		((pd) >> 16)
+#define	TP_SETBELLPD_DURATION(pd)	((pd) & 0xffff)
 typedef void tf_respond_t(void *, const void *, size_t);
 
 typedef struct {
@@ -183,9 +181,4 @@ extern C void teken_set_curattr(teken_t *, const teken_attr_t *);
 extern C void teken_set_defattr(teken_t *, const teken_attr_t *);
 extern C void teken_set_winsize(teken_t *, const teken_pos_t *);
 
-/** 
- * @}
- */
-
-#endif /* __ASSEMBLER__ */
 #endif /* !_TEKEN_H_ */

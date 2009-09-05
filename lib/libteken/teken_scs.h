@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FreeBSD: head/sys/dev/syscons/teken/teken_scs.h 187562 2009-01-21 19:43:10Z ed $
+ * $FreeBSD$
  */
 
 static void

@@ -23,7 +23,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FreeBSD: head/sys/dev/syscons/teken/teken_subr.h 190158 2009-03-20 14:32:51Z ed $
+ * $FreeBSD$
  */
 
 static void teken_subr_cursor_up(teken_t *, unsigned int);
