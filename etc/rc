@@ -5,7 +5,7 @@
 /srv/ata/server
 /srv/filesystem/proc/server
 /srv/filesystem/grub/server
-/srv/filesystem/linn/server /dev/ata0 /usr
+/srv/filesystem/linn/server /dev/ata0 0x400000 /usr
 /srv/serial/server
 /srv/pci/server
 /srv/pci/detect
