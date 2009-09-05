@@ -18,6 +18,11 @@
 #ifndef __TERMINAL_CODES_H
 #define __TERMINAL_CODES_H
 
+/**   
+ * @defgroup terminal Terminal (System Console Device)   
+ * @{     
+ */
+
 /** Set Graphic Rendition. */
 #define _SGR(x) "\033[" #x "m"
 
@@ -36,6 +41,10 @@
 #define CYAN	_SGR(36)
 #define WHITE	_SGR(37)
 #define RESET	_SGR(39)
+
+/**
+ * @}
+ */
 
 /**
  * @}

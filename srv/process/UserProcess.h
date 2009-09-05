@@ -17,6 +17,11 @@
 
 #ifndef __PROCESS_USER_PROCESS_H
 #define __PROCESS_USER_PROCESS_H
+        
+/**  
+ * @defgroup process ProcessServer (Trusted Process Server)  
+ * @{    
+ */
 
 #include <FreeNOS/Process.h>
 #include <FreeNOS/Memory.h>
@@ -64,5 +69,9 @@ typedef struct UserProcess
     char currentDirectory[PATHLEN];
 }
 UserProcess;
+
+/**
+ * @}
+ */
 
 #endif /* __PROCESS_USER_PROCESS_H */

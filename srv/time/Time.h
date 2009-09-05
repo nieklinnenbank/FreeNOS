@@ -18,6 +18,11 @@
 #ifndef __TIME_TIME_H
 #define __TIME_TIME_H
 
+/**     
+ * @defgroup time Time (System Time Device)   
+ * @{     
+ */
+
 #include <Macros.h>
 #include <Types.h>
 #include <Device.h>
@@ -133,5 +138,9 @@ class Time : public Device
 	 */        
         unsigned bcd2bin(unsigned char val);
 };
+
+/**
+ * @}
+ */
 
 #endif /* __TIME_TIME_H */

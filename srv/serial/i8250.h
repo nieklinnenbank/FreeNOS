@@ -17,6 +17,11 @@
 
 #ifndef __SERIAL_I8250_H
 #define __SERIAL_I8250_H
+        
+/**  
+ * @defgroup i8250 i8250 (Intel 8250)
+ * @{    
+ */
 
 #include <Macros.h>
 #include <Types.h>
@@ -88,5 +93,9 @@ class i8250 : public Device
 	/** Interrupt vector. */
 	u16 irq;
 };
+
+/**
+ * @}
+ */
 
 #endif /* __SERIAL_I8250_H */

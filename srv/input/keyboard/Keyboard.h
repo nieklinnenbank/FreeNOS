@@ -18,6 +18,11 @@
 #ifndef __INPUT_KEYBOARD_H
 #define __INPUT_KEYBOARD_H
 
+/**
+ * @defgroup ps2 PS2 Keyboard (IBM Personal System/2 Keyboard)  
+ * @{  
+ */
+
 #include <Device.h>
 #include <Macros.h>
 #include <Types.h>
@@ -84,5 +89,9 @@ class Keyboard : public Device
 	/** Do we have a byte ready? */
 	bool pending;
 };
+
+/**
+ * @}
+ */
 
 #endif /* __INPUT_KEYBOARD_H */

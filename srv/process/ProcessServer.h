@@ -18,6 +18,11 @@
 #ifndef __PROCESS_PROCESSSERVER_H
 #define __PROCESS_PROCESSSERVER_H
 
+/** 
+ * @defgroup process ProcessServer (Trusted Process Server) 
+ * @{   
+ */
+
 #include <IPCServer.h>
 #include <Shared.h>
 #include <Array.h>
@@ -28,7 +33,7 @@
 #include "UserProcess.h"
 
 /**
- * Process management server.
+ * @brief Process management server.
  */
 class ProcessServer : public IPCServer<ProcessServer, ProcessMessage>
 {
@@ -83,5 +88,9 @@ class ProcessServer : public IPCServer<ProcessServer, ProcessMessage>
 	/** Per-process FileDescriptor table. */
 	Array<Shared<FileDescriptor> > *files;
 };
+
+/**
+ * @}
+ */
 
 #endif /* __PROCESS_PROCESSSERVER_H */

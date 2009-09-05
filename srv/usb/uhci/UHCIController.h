@@ -18,6 +18,11 @@
 #ifndef __USB_UHCI_CONTROLLER_H
 #define __USB_UHCI_CONTROLLER_H
 
+/**     
+ * @defgroup usb USB (Universal Serial Bus)   
+ * @{     
+ */
+
 #include <PCIDevice.h>
 
 /**
@@ -166,5 +171,9 @@ class UHCIController : public PCIDevice
 	 */
 	Error interrupt(Size vector);        
 };
+
+/**
+ * @}
+ */
 
 #endif /* __USB_UHCI_CONTROLLER_H */

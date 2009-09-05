@@ -22,6 +22,11 @@
 #include <Device.h>
 
 /**
+ * @defgroup ata ATA (Advanced Technology Attachment)  
+ * @{  
+ */
+
+/**
  * @name ATA I/O Bases.
  * @{
  */
@@ -291,5 +296,9 @@ class ATAController : public Device
 	/** @brief Drives detected on the ATA bus. */
 	List<ATADrive> drives;
 };
+
+/**
+ * @}
+ */
 
 #endif /* __ATA_ATACONTROLLER_H */

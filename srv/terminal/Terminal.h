@@ -17,6 +17,11 @@
 
 #ifndef __TERMINAL_TERMINAL_H
 #define __TERMINAL_TERMINAL_H
+        
+/**  
+ * @defgroup terminal Terminal (System Console Device)  
+ * @{    
+ */
 
 #include <Version.h>
 #include <Device.h>
@@ -217,5 +222,9 @@ void param(Terminal *ctx, int key, int value);
  * @brief Unused.
  */
 void respond(Terminal *ctx, const void *buf, size_t size);
+
+/**
+ * @}
+ */
 
 #endif /* __TERMINAL_TERMINAL_H */

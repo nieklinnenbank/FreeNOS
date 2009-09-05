@@ -18,6 +18,11 @@
 #ifndef __MEMORY_MEMORY_SERVER_H
 #define __MEMORY_MEMORY_SERVER_H
 
+/**
+ * @defgroup memory MemoryServer (Trusted Memory Server)
+ * @{  
+ */
+
 #include <API/IPCMessage.h>
 #include <API/VMCtl.h>
 #include <API/SystemInfo.h>
@@ -152,5 +157,9 @@ class MemoryServer : public IPCServer<MemoryServer, MemoryMessage>
 	/** Pointer to the filesystem mounts table. */
 	FileSystemMount *mounts;
 };
+
+/**
+ * @}
+ */
 
 #endif /* __MEMORY_MEMORY_SERVER_H */

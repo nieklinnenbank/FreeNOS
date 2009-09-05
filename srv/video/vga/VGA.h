@@ -18,6 +18,11 @@
 #ifndef __VIDEO_VGA_SERVER_H
 #define __VIDEO_VGA_SERVER_H
 
+/**     
+ * @defgroup vga VGA (Vector Graphics Array)   
+ * @{     
+ */
+
 #include <DeviceServer.h>
 #include <Types.h>
 #include <Version.h>
@@ -140,5 +145,9 @@ class VGA : public Device
 	/** @brief Number of characters vertically. */
 	Size height;
 };
+
+/**
+ * @}
+ */
 
 #endif /* __VIDEO_VGA_SERVER_H */

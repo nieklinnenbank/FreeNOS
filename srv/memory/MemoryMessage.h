@@ -18,6 +18,11 @@
 #ifndef __MEMORY_MEMORY_MESSAGE_H
 #define __MEMORY_MEMORY_MESSAGE_H
 
+/** 
+ * @defgroup memory MemoryServer (Trusted Memory Server) 
+ * @{   
+ */
+
 #include <API/IPCMessage.h>
 #include <API/VMCtl.h>
 #include <Types.h>
@@ -71,5 +76,9 @@ typedef struct MemoryMessage : public Message, public MemoryRange
     bool created;
 }
 MemoryMessage;
+
+/**
+ * @}
+ */
 
 #endif /* __MEMORY_MEMORY_MESSAGE_H */

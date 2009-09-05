@@ -18,6 +18,11 @@
 #ifndef __LOG_SYSTEMLOG_H
 #define __LOG_SYSTEMLOG_H
 
+/**
+ * @defgroup systemlog SystemLog (Generic Logging Device)
+ * @{  
+ */
+
 #include <Device.h>
 #include <Types.h>
 #include <Macros.h>
@@ -48,5 +53,9 @@ class SystemLog : public Device
          */
 	Error write(s8 *buffer, Size size, Size offset);
 };
+
+/**
+ * @}
+ */
 
 #endif /* __LOG_SYSTEMLOG_H */

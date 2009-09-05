@@ -17,6 +17,11 @@
 
 #ifndef __PROCESS_PROCESSMESSAGE_H
 #define __PROCESS_PROCESSMESSAGE_H
+        
+/**  
+ * @defgroup process ProcessServer (Trusted Process Server)  
+ * @{    
+ */
 
 #include <API/IPCMessage.h>
 #include <Types.h>
@@ -74,5 +79,9 @@ typedef struct ProcessMessage : public Message
     ulong unused[2];
 }
 ProcessMessage;
+
+/**
+ * @}
+ */
 
 #endif /* __PROCESS_PROCESSMESSAGE_H */
