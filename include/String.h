@@ -202,6 +202,16 @@ class String : public Comparable<String>
             }
             return false;
         }
+        
+        /**
+         * Returns true if and only if this String contains the specified char.
+         * @param c The char to search for.
+         * @return bool Whether the specified char is contained in this String.
+         */
+        bool contains(char c)
+        {
+            return (strchr(value, c) != NULL);
+        }
 
         /**
          * Tests if this String starts with the specified prefix.
