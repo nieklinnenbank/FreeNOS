@@ -87,7 +87,7 @@ class Ext2Create
 
 	/**
 	 * Creates a new Extended 2 FileSystem.
-	 * @return EXIT_SUCCESS if successfull and EXIT_FAILURE otherwise.
+	 * @return EXIT_SUCCESS if successful and EXIT_FAILURE otherwise.
 	 */
 	int create();
 
@@ -101,7 +101,7 @@ class Ext2Create
 
 	/**
 	 * Writes the final image to disk.
-	 * @return EXIT_SUCCESS if successfull and EXIT_FAILURE otherwise.
+	 * @return EXIT_SUCCESS if successful and EXIT_FAILURE otherwise.
 	 */
 	int writeImage();
 

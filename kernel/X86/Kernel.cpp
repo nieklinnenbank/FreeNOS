@@ -102,7 +102,7 @@ X86Kernel::X86Kernel() : ticks(0)
     gdt[USER_TSS].baseLow     = ((Address) &kernelTss) & 0xffff;
     gdt[USER_TSS].baseMid     = (((Address) &kernelTss) >> 16) & 0xff;
     gdt[USER_TSS].type        = 9;
-    gdt[USER_TSS].priviledge  = 0;
+    gdt[USER_TSS].privilege  = 0;
     gdt[USER_TSS].present     = 1;
     gdt[USER_TSS].limitHigh   = 0;
     gdt[USER_TSS].granularity = 8;

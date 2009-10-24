@@ -206,7 +206,7 @@ typedef struct Segment
     u32 baseLow:16;
     u32 baseMid:8;
     u32 type:5;
-    u32 priviledge:2;
+    u32 privilege:2;
     u32 present:1;
     u32 limitHigh:4;
     u32 granularity:4;

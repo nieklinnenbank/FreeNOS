@@ -58,7 +58,7 @@ class Shell
 	void prompt();
 
 	/**
-	 * Parses an input string into seperate pieces.
+	 * Parses an input string into separate pieces.
 	 * @param cmdline Command input string.
 	 * @param argv Argument list buffer.
 	 * @param maxArgv Maximum number of entries in argv.

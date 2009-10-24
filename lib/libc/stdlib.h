@@ -40,10 +40,10 @@
  * the behaviour is undefined.
  *
  * @param status If the value of status is zero or EXIT_SUCCESS, an
- *		 implementation defined form of the status successfull
+ *		 implementation defined form of the status successful
  *		 termination is returned. If the value of status is
  *		 EXIT_FAILURE, an implementation-defined form of the status
- *		 unsuccesfull termination is returned. Otherwise the status
+ *		 unsuccesful termination is returned. Otherwise the status
  *		 is implementation-defined.
  * @return The exit function cannot return to its caller.
  */

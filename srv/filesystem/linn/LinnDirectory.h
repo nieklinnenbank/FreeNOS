@@ -85,7 +85,7 @@ class LinnDirectory : public Directory
 	 * Retrieve a directory entry.
 	 * @param dent LinnDirectoryEntry buffer pointer.
 	 * @param name Unique name of the entry.
-	 * @return True if successfull, false otherwise.
+	 * @return True if successful, false otherwise.
 	 */
 	bool getLinnDirectoryEntry(LinnDirectoryEntry *dent,
 				   const char *name);

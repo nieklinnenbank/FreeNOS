@@ -43,7 +43,7 @@ typedef enum PrivOperation
 PrivOperation;
 
 /**
- * Prototype for user applications. Performs various priviledged operations.
+ * Prototype for user applications. Performs various privileged operations.
  * @param op The operation to perform.
  * @return Zero on success and error code on failure.
  */

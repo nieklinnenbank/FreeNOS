@@ -21,7 +21,7 @@
 #include "Element.h"
 
 /**
- * This is an implementaion of the stack datastructure.
+ * This is an implementation of the stack datastructure.
  */
 template <class T> class Stack
 {

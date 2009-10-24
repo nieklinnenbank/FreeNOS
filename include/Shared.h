@@ -58,7 +58,7 @@ template <class T> class Shared
 	 * Load a shared memory object by it's key.
 	 * @param key Unique key.
 	 * @param count Number of objects shared.
-	 * @return True if successfull, false otherwise.
+	 * @return True if successful, false otherwise.
 	 */
 	bool load(const char *key, Size count)
 	{

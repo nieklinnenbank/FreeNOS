@@ -30,7 +30,7 @@ int main(int argc, char **argv)
     const char *av[] = { "/bin/sh/sh", "/etc/rc", ZERO };
 
     /*
-     * TODO: give up all priviledges.
+     * TODO: give up all privileges.
      */
 
     /* Execute the run commands file. */

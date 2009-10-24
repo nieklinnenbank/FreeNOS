@@ -173,7 +173,7 @@ class FileSystemPath
 	}
 
 	/**
-	 * Returns a List of seperate path elements.
+	 * Returns a List of separate path elements.
 	 * @return Pointer to a List.
 	 */
 	List<String> * split()

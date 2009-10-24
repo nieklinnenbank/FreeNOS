@@ -206,7 +206,7 @@ u64 Ext2FileSystem::getOffset(Ext2Inode *inode, Size blk)
     {
 	depth = 2;
     }
-    /* Tripple indirect blocks. */
+    /* Triple indirect blocks. */
     else
 	depth = 3;
     

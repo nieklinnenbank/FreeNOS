@@ -41,7 +41,7 @@ class Storage
 	virtual ~Storage() {}
 
 	/**
-	 * Read a contigeous set of data.
+	 * Read a contiguous set of data.
 	 * @param offset Offset to start reading from.
 	 * @param buffer Output buffer.
 	 * @param size Number of bytes to copied.
@@ -52,7 +52,7 @@ class Storage
 	}
 	
 	/**
-	 * Write a contigeous set of data.
+	 * Write a contiguous set of data.
 	 * @param offset Offset to start writing to.
 	 * @param buffer Input buffer.
 	 * @param size Number of bytes to written.

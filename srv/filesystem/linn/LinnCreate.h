@@ -48,9 +48,9 @@
 #define BLOCKPTR(type,nr) (type *)(blocks + (super->blockSize * (nr))) 
 
 /**
- * Retrieve a given number of free contigeous blocks.
+ * Retrieve a given number of free contiguous blocks.
  * @param sb LinnSuperBlock pointer.
- * @return Block number of the first block in the contigeous array of blocks.
+ * @return Block number of the first block in the contiguous array of blocks.
  */
 #define BLOCKS(sb,count) \
     ({ \
@@ -89,7 +89,7 @@ class LinnCreate
 	 * @param blockSize The size of each block in the new filesystem.
 	 * @param blockNum The maximum number of blocks in the new filesystem.
 	 * @param inodeNum Number of inodes to allocate.
-	 * @return EXIT_SUCCESS if successfull and EXIT_FAILURE otherwise.
+	 * @return EXIT_SUCCESS if successful and EXIT_FAILURE otherwise.
 	 */
 	int create(Size blockSize, Size blockNum, Size inodeNum);
 
@@ -201,7 +201,7 @@ class LinnCreate
 
 	/**
 	 * Writes the final image to disk.
-	 * @return EXIT_SUCCESS if successfull and EXIT_FAILURE otherwise.
+	 * @return EXIT_SUCCESS if successful and EXIT_FAILURE otherwise.
 	 */
 	int writeImage();
 	

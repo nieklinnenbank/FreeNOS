@@ -270,7 +270,7 @@ void LinnCreate::insertFile(char *inputFile, LinnInode *inode,
 			    LINN_INODE_NUM_BLOCKS(super, inode) -
 			    LINN_INODE_DIR_BLOCKS, blockNr, 2);
 	}
-	/* Insert the blck (tripple indirect). */
+	/* Insert the blck (triple indirect). */
 	else if (LINN_INODE_NUM_BLOCKS(super, inode) <
 		 LINN_INODE_DIR_BLOCKS + (LINN_SUPER_NUM_PTRS(super) *
 					  LINN_SUPER_NUM_PTRS(super) *

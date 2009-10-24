@@ -30,7 +30,7 @@
 #define DEFAULT_SIZE	64
 
 /**
- * Describes a bucket in the HashTable, for collition avoidance.
+ * Describes a bucket in the HashTable, for collision avoidance.
  */
 template <class Key, class Value> class HashBucket
 {

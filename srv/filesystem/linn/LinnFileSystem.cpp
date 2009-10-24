@@ -199,7 +199,7 @@ u64 LinnFileSystem::getOffset(LinnInode *inode, u32 blk)
     {
 	depth = 2;
     }
-    /* Tripple indirect blocks. */
+    /* Triple indirect blocks. */
     else
 	depth = 3;
     
