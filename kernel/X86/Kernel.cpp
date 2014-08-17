@@ -97,7 +97,7 @@ X86Kernel::X86Kernel() : ticks(0)
     /* Install PIT (i8253) IRQ handler. */
     hookInterrupt(IRQ(0), clocktick, 0);
 
-    /* Initialize TSS Segment. */                                                                                                                                                                       
+    /* Initialize TSS Segment. */
     gdt[USER_TSS].limitLow    = sizeof(TSS) + (0xfff / 8);
     gdt[USER_TSS].baseLow     = ((Address) &kernelTss) & 0xffff;
     gdt[USER_TSS].baseMid     = (((Address) &kernelTss) >> 16) & 0xff;

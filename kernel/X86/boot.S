@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,7 +19,7 @@
 #include <FreeNOS/CPU.h>
 #include <FreeNOS/Memory.h>
 
-/* The size of our stack (16KB).  */                                                                                                                                                                    
+/* The size of our stack (16KB).  */
 #define STACK_SIZE 0x4000
 
 /**
@@ -146,7 +146,7 @@ _jump_entry:
 	movl $kernelPageTab, %ebx
 	orl  $(PAGE_PRESENT | PAGE_RW | PAGE_PINNED), %ebx
 	movl %ebx, (%eax)
-	
+
 	/* Identity map the first 4MB. */
 	movl $kernelPageTab, %eax
 	xorl %ebx, %ebx

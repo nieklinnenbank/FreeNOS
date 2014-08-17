@@ -42,7 +42,7 @@ targetVars.AddVariables(
 		[ '-fno-rtti', '-fno-exceptions' ]),
     ('CPPFLAGS',  'Change target C preprocessor flags', '-Iinclude'),
     ('LINKFLAGS', 'Change the flags for the target linker',
-		[ '--whole-archive', '-nostdlib', '-T', 'kernel/X86/user.ld' ])
+		[ '--whole-archive', '-nostdlib', '-T', 'kernel/X86/user.ld', '-melf_i386' ])
 )
 
 #
@@ -67,17 +67,17 @@ except:
 # Perform autoconf-a-like checks on the selected target compiler chain.
 #
 if not target.GetOption('clean'):
-
-    configure.TryCCFlag(target, '-fno-stack-protector')    
+    configure.TryCCFlag(target, '-m32')
+    configure.TryCCFlag(target, '-fno-stack-protector')
     configure.TryCCFlag(target, '-O0')
     configure.TryCCFlag(target, '-g3')
     configure.TryCCFlag(target, '-Wall')
     configure.TryCCFlag(target, '-W')
     configure.TryCCFlag(target, '-Wno-unused-parameter')
-    configure.TryCCFlag(target, '-Werror')
     configure.TryCCFlag(target, '-fno-builtin')
     configure.TryCCFlag(target, '-nostdinc')
     configure.TryCCFlag(target, '-Wno-write-strings')
+    target['ASFLAGS'] = target['CCFLAGS']
 
 #
 # Command-line options for the host build chain.
@@ -87,7 +87,7 @@ hostVars.AddVariables(
     ('HOSTCC',       'Set the host C compiler to use',   'gcc'),
     ('HOSTCXX',      'Set the host C++ compiler to use', 'g++'),
     ('HOSTCCFLAGS',  'Change host C compiler flags',
-		[ '-O0', '-g3', '-Wall', '-Werror', '-Wno-write-strings' ]),
+		[ '-O0', '-g3', '-Wall', '-Wno-write-strings' ]),
     ('HOSTCXXFLAGS', 'Change host C++ compiler flags',
 		[ '' ]),
     ('HOSTCPPFLAGS',  'Change host C preprocessor flags',

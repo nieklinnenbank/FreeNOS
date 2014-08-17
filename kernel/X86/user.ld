@@ -16,6 +16,7 @@
  */
 
 ENTRY(_entry)
+TARGET("elf32-i386")
 OUTPUT_FORMAT("elf32-i386")
 
 SECTIONS

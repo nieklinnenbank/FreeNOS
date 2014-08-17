@@ -16,6 +16,7 @@
  */
 
 ENTRY(_start)
+TARGET("elf32-i386")
 OUTPUT_FORMAT("elf32-i386")
 
 phys = 0x00100000;
@@ -25,6 +26,11 @@ SECTIONS
 {
     . = 0x00100000;
     kernelStart = .;
+
+    /DISCARD/ :
+    {
+        *(.note.gnu.build-id)
+    }
 
     .text virt : AT(phys)
     {
@@ -48,14 +54,14 @@ SECTIONS
 	KEEP (*(.ctors))
 	LONG(0)
         CTOR_END = .;
-	
+
         DTOR_LIST = .;
 	KEEP (*(SORT(.dtors.*)))
 	KEEP (*(.dtors))
         LONG(0)
         DTOR_END = .;
 	. += 4;
-	
+
 	initStart = .;
 	KEEP (*(SORT(.init*)))
 	initEnd   = .;
