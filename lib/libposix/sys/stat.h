@@ -278,6 +278,24 @@ extern C int mknod(const char *path, mode_t mode, dev_t dev);
 extern C int mkdir(const char *path, mode_t mode);
 
 /**
+ * @brief Create a new file or rewrite an existing one
+ *
+ * The creat() function is redundant. Its services are also provided by
+ * the open() function. It has been included primarily for historical
+ * purposes since many existing applications depend on it. It is best
+ * considered a part of the C binding rather than a function that should
+ * be provided in other languages.
+ *
+ * @param path Full path to the file to create
+ * @param mode Initial access permissions for the file.
+ * @return Upon successful completion, these functions shall return 0.
+ *         Otherwise, these functions shall return -1 and set errno to
+ *         indicate the error. If -1 is returned, no file shall
+ *         be created.
+ */
+extern C int creat(const char *path, mode_t mode);
+
+/**
  * @}
  */
 
