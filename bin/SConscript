@@ -17,5 +17,5 @@
 
 SConscript(dirs = [ 'sh', 'ps', 'memstat', 'mount',
 		    'bench', 'hostname', 'parse',
-		    'uname', 'cat', 'ls', 'stat',
+		    'uname', 'cat', 'ls', 'stat', 'touch',
 		    'mknod', 'echo' ])

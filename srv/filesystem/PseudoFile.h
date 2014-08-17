@@ -108,14 +108,45 @@ class PseudoFile : public File
 		/* How much bytes to copy? */
 		Size bytes = this->size - offset > size ?
 		    				   size : this->size - offset;
-    
+
 	        /* Copy the buffers. */
 		return buffer->write(this->buffer + offset, bytes);
 	    }
 	}
 
+        /**
+         * Write bytes to the file.
+         * @param buffer Input/Output buffer to input bytes from.
+         * @param size Number of bytes to write, at maximum.
+         * @param offset Offset inside the file to start writing.
+         * @return Number of bytes written on success, Error on failure.
+         */
+        Error write(IOBuffer *buffer, Size size, Size offset)
+        {
+            /* Check for the buffer size. */
+            if (!this->buffer || this->size < (size + offset))
+            {
+                /* Allocate a new buffer and copy the old data */
+                char *new_buffer = new char[size+offset];
+                memset(new_buffer, 0, sizeof(new_buffer));
+
+                /* Inherit from the old buffer, if needed. */
+                if (this->buffer)
+                {
+                    memcpy(new_buffer, this->buffer, this->size);
+                    delete this->buffer;
+                }
+                /* Assign buffer */
+                this->buffer = new_buffer;
+                this->size = size+offset;
+            }
+            /* Copy the input data in the current buffer. */
+            buffer->read(this->buffer + offset, size);
+            return size;
+        }
+
     protected:
-    
+
 	/** Buffer from which we read. */
 	char *buffer;
 };
