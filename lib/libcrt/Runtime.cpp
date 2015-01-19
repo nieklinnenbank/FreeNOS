@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef HOST
 #include <API/ProcessCtl.h>
 #include <FreeNOS/Memory.h>
 #include <Types.h>
@@ -132,3 +133,5 @@ extern C void SECTION(".entry") _entry()
 
 INITFUNC(heap, LIBCRT_HEAP)
 INITFUNC(constructors, LIBCRT_CTOR)
+
+#endif /* HOST */

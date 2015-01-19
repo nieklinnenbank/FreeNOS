@@ -1,6 +1,6 @@
 #
-# Copyright (C) 2009 Niek Linnenbank
-# 
+# Copyright (C) 2010 Niek Linnenbank
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -10,77 +10,52 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 import os
-import shutil
 import tempfile
-import version
-import checksum
-import linn
-
-from build import *
-from SCons.Script import *
-from SCons.Action import *
+import shutil
 
 #
-# Generate an ISO 9660 image.
+# Generate a bootable ISO image.
 #
-def generateISO(target, source, env):
+def iso_func(target, source, env):
 
-    # Open the list.
-    list = open(str(source[0]))
-    
     # Create a temporary directory.
     temp = tempfile.mkdtemp()
-    
-    # Read out which file to add.
-    for line in list.readlines():
 
-	# Copy them to the temporary directory.
-	copyWithParents(line.strip(), temp)
+    # Copy required files to temp directory.
+    for s in source:
+	shutil.copy(str(s), temp)
 
-    # Create an bootable ISO image.
-    os.system("mkisofs -R -b boot/grub/stage2_eltorito -no-emul-boot " +
-	      "        -boot-load-size 4 -boot-info-table -V 'FreeNOS " + version.currentRev + "'" +
-	      "        -o " + str(target[0]) + " " + temp)
+    # Generate the ISO.
+    os.system('mkisofs -quiet -R -b cd.img -no-emul-boot ' +
+              '-boot-load-size 4 -boot-info-table -o ' + str(target[0]) +
+              ' -V "FreeNOS ' + env['RELEASE'] + '" ' + temp);
 
-    # Done.
-    os.system("rm -rf " + temp)
-    list.close()
+    # Clean up temporary directory.
+    shutil.rmtree(temp);
 
 #
-# Output a user friendly command.
+# String command representation for ISO builder.
 #
-def generateISOstr(target, source, env):
+def iso_str(target, source, env):
 
-    return "  ISO     " + str(target[0])
-
-#
-# Create the ISO builder.
-#
-isoBuilder = Builder(action     = Action(generateISO, generateISOstr),
-	    	     suffix     = '.iso',
-		     src_suffix = '.isodesc')
-
-target.Append(BUILDERS = { 'ISO' : isoBuilder })
+    return "  ISO " + str(target[0])
 
 #
-# Instructs to build an ISO and MD5+SHA1 checksums.
+# Add ourselves to the given environment.
 #
-isoImage     = target.ISO('#boot/boot.iso', ['#boot/boot.isodesc'])
-isoImageMd5  = target.Checksum('#boot/boot.iso.md5',  '#boot/boot.iso')
-isoImageSha1 = target.Checksum('#boot/boot.iso.sha1', '#boot/boot.iso')
+def generate(env):
+
+    builder = env.Builder(action  = env.Action(iso_func, iso_str))
+    env.Append(BUILDERS = { 'ISO' : builder })
 
 #
-# Dependencies and target aliases.
+# We always exist.
 #
-target.AddPreAction(isoImage, linn.action)
-target.Clean(isoImage, 'boot/boot.linn.gz')
-
-Depends(isoImage, ['bin', 'lib', 'kernel', 'sbin', 'srv', 'etc', '#boot/boot.img'])
-Alias('iso', [ isoImage, isoImageMd5, isoImageSha1 ])
-AlwaysBuild(isoImage, isoImageMd5, isoImageSha1)
+def exists(env):
+    return Env.Detect('mkisofs')

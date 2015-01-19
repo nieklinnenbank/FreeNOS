@@ -1,6 +1,6 @@
 #
-# Copyright (C) 2009 Niek Linnenbank
-# 
+# Copyright (C) 2010 Niek Linnenbank
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -10,23 +10,25 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from build import *
+Import('build_env')
 
-env = Prepare(target, [ 'liballoc', 'libc', 'libcrt', 'libexec' ],
-		      [ 'filesystem', 'process', 'memory' ])
-
-env.Library('libposix', [ Glob('sys/stat/*.cpp'),
-			  Glob('sys/wait/*.cpp'),
-			  Glob('sys/utsname/*.cpp'),
-			  Glob('unistd/*.cpp'),
-			  Glob('fcntl/*.cpp'),
-			  Glob('dirent/*.cpp'),
-			  Glob('syslog/*.cpp'),
-			  Glob('time/*.cpp'),
-			  Glob('libgen/*.cpp'),
-			  Glob('*.cpp') ])
+env = build_env.Clone()
+env.Append(CPPPATH = [ '.' ])
+env.UseLibraries(['liballoc', 'libc', 'libcrt', 'libexec'])
+env.UseServers([ 'filesystem', 'process', 'memory', '' ])
+env.TargetLibrary('libposix', [ Glob('dirent/*.cpp'),
+				Glob('fcntl/*.cpp'),
+				Glob('libgen/*.cpp'),
+				Glob('sys/*.cpp'),
+			        Glob('sys/stat/*.cpp'),
+				Glob('sys/utsname/*.cpp'),
+			        Glob('sys/wait/*.cpp'),
+				Glob('syslog/*.cpp'),
+				Glob('time/*.cpp'),
+				Glob('unistd/*.cpp'),
+				Glob('*.cpp') ])

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2009 Niek Linnenbank
+# Copyright (C) 2015 Niek Linnenbank
 # 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,9 +15,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from build import *
+Import('build_env')
 
-env = Prepare(target, [ 'libposix', 'libc' ], [ 'memory' ])
-env.Library('liballoc', [ 'Allocator.cpp', 'BubbleAllocator.cpp',
-			  'ListAllocator.cpp', 'PageAllocator.cpp',
-			  'PoolAllocator.cpp', 'VMCtlAllocator.cpp' ])
+env = build_env.Clone()
+env.UseLibraries([ 'libc', 'libposix' ])
+env.UseServers([ 'memory' ])
+env.Append(CPPPATH = [ '.' ])
+env.Library('liballoc', [ Glob('*.cpp') ])
+
+
+#from build import *
+#
+#env = Prepare(target, [ 'libposix', 'libc' ], [ 'memory' ])
+#env.Library('liballoc', [ 'Allocator.cpp', 'BubbleAllocator.cpp',
+#			  'ListAllocator.cpp', 'PageAllocator.cpp',
+#			  'PoolAllocator.cpp', 'VMCtlAllocator.cpp' ])

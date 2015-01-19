@@ -19,6 +19,7 @@
 #define __LIBALLOC_POOLALLOCATOR_H
 
 #include <Types.h>
+#include <Macros.h>
 #include "Allocator.h"
 
 /** 

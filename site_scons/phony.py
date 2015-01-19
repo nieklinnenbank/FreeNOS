@@ -1,6 +1,6 @@
 #
-# Copyright (C) 2009 Niek Linnenbank
-# 
+# Copyright (C) 2010 Niek Linnenbank
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -10,23 +10,29 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from build import *
+from SCons.Script import *
+import os
 
 #
-# Copies a program to the /srv/pci directory. When
-# the PCIServer detects the given device, it will forkexec()
-# it using the bus, slot and function number as an argument.
-# A symbolic link may be a cleaner solution, when the
-# FileSystems support it.
+# Always execute the given commands as SCons targets.
 #
-def PCIRegister(env, program, vendor, device):
+# @author GregNoel
+# @see http://www.scons.org/wiki/PhonyTargets
+#
+def Targets(env = None, **kw):
 
-    target.Command('#/etc/pci/' + hex(vendor) + ':' + hex(device),
-		    str(program), Copy("$TARGET", "$SOURCE"))
+    # Generate an environment, if not given.
+    if not env: env = DefaultEnvironment()
 
-target.AddMethod(PCIRegister, 'PCI')
+    # Make sure to pass the whole environment to the command.
+    env.Append(ENV = os.environ)
+
+    # Execute all targets
+    for target,action in kw.items():
+        env.AlwaysBuild(env.Alias(target, [], action))
+

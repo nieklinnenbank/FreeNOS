@@ -8,3 +8,4 @@ config.log
 boot/boot.*
 host/
 include/FreeNOS
+.gdbinit
