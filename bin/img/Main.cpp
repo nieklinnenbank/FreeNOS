@@ -120,7 +120,7 @@ int main(int argc, char **argv)
     image.magic[1]       = BOOTIMAGE_MAGIC1;
     image.layoutRevision = BOOTIMAGE_REVISION;
     image.variablesTableOffset = sizeof(BootImage);
-    image.variablesTableCount  = 13;
+    image.variablesTableCount  = 12;
     image.programsTableOffset  = image.variablesTableOffset + 
 				 image.variablesTableCount  * sizeof(BootVariable);
     image.programsTableCount   = numEntries;
@@ -136,11 +136,10 @@ int main(int argc, char **argv)
     VARIABLE(variables[5],  BUILDHOST);
     VARIABLE(variables[6],  BUILDOS);
     VARIABLE(variables[7],  BUILDARCH);
-    VARIABLE(variables[8],  BUILDCPU);
-    VARIABLE(variables[9],  BUILDPY);
-    VARIABLE(variables[10], BUILDER);
-    VARIABLE(variables[11], BUILDPATH);
-    VARIABLE(variables[12], BUILDURL);
+    VARIABLE(variables[8],  BUILDPY);
+    VARIABLE(variables[9], BUILDER);
+    VARIABLE(variables[10], BUILDPATH);
+    VARIABLE(variables[11], BUILDURL);
 
     /* Fill in the boot programs. */
     for (Size i = 0; i < numEntries; i++)

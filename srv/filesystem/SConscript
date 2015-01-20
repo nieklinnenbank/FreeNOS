@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2009 Niek Linnenbank
+# Copyright (C) 2015 Niek Linnenbank
 # 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,4 +15,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-SConscript(dirs = [ 'ext2', 'linn', 'proc', 'tmp', 'grub' ])
+Import('*')
+
+SubDirectories()

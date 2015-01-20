@@ -1,6 +1,6 @@
 #
-# Copyright (C) 2009 Niek Linnenbank
-# 
+# Copyright (C) 2015 Niek Linnenbank
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -10,18 +10,14 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from build import *
+Import('build_env')
 
-env = Prepare(target, [ 'liballoc', 'libposix', 'libexec', 'libc', 'libcrt' ],
-		      [ 'process', 'log', 'filesystem' ])
-
-env.Program('server', [ 'MemoryServer.cpp',
-			'CreatePrivate.cpp', 'ReservePrivate.cpp',
-			'ReleasePrivate.cpp', 'CreateShared.cpp',
-			'SystemMemory.cpp', 'Main.cpp' ],
-			 LIBS = env['LIBS'], LIBPATH = env['LIBPATH'])
+env = build_env.Clone()
+env.UseServers(['log', 'filesystem', 'process', 'memory'])
+env.UseLibraries([ 'libposix', 'libc', 'liballoc', 'libcrt', 'libexec' ])
+env.TargetProgram('server', [ Glob('*.cpp') ])

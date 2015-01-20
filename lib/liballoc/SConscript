@@ -21,12 +21,4 @@ env = build_env.Clone()
 env.UseLibraries([ 'libc', 'libposix' ])
 env.UseServers([ 'memory' ])
 env.Append(CPPPATH = [ '.' ])
-env.Library('liballoc', [ Glob('*.cpp') ])
-
-
-#from build import *
-#
-#env = Prepare(target, [ 'libposix', 'libc' ], [ 'memory' ])
-#env.Library('liballoc', [ 'Allocator.cpp', 'BubbleAllocator.cpp',
-#			  'ListAllocator.cpp', 'PageAllocator.cpp',
-#			  'PoolAllocator.cpp', 'VMCtlAllocator.cpp' ])
+env.TargetLibrary('liballoc', [ Glob('*.cpp') ])

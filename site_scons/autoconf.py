@@ -33,7 +33,7 @@ def TryCompileC(context):
 		  "}\n"
 
     # Try to compile and link it.
-    result = context.TryLink(source_file, '.cpp')
+    result = context.TryLink(source_file, '.c')
 
     # Return the result status.
     context.Result(result)
@@ -84,7 +84,7 @@ def TryCompileCXX(context):
 		  "}\n"
 
     # Try to compile and link it.
-    result = context.TryLink(source_file, '.cpp')
+    result = context.TryCompile(source_file, '.cpp')
 
     # Return the result status.
     context.Result(result)

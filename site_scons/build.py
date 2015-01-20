@@ -22,7 +22,6 @@ def UseLibraries(env, libs = [], arch = None):
     """
     Prepares a given environment, by adding library dependencies.
     """
-
     # By default exclude host. If arch filter is set, apply it.
     if (not arch and env['ARCH'] == 'host') or (arch and env['ARCH'] != arch):
         return
@@ -58,6 +57,19 @@ def TargetLibrary(env, lib, source):
     if env['ARCH'] != 'host':
 	env.Library(lib, source)
 
+def SubDirectories():
+    dir_list = []
+    dir_src  = Dir('.').srcnode().abspath
+
+    if dir_src:
+	for f in os.listdir(dir_src):
+	    if os.path.isdir(dir_src + os.sep + f):
+		dir_list.append(f)
+
+	SConscript( dirs = dir_list )
+
+Export('SubDirectories')
+
 # Create target, host and kernel environments.
 host = Environment()
 host.AddMethod(HostProgram, "HostProgram")
@@ -74,9 +86,9 @@ kernel = None
 global_vars = Variables('build.conf')
 global_vars.Add('VERSION', 'FreeNOS release version number')
 global_vars.Add(EnumVariable('ARCH', 'Target machine CPU architecture', 'x86',
-			      allowed_values = ('x86')))
+			      allowed_values = ("x86",)))
 global_vars.Add(EnumVariable('SYSTEM', 'Target machine system type', 'pc',
-			      allowed_values = ('pc')))
+			      allowed_values = ("pc",)))
 global_vars.Add(PathVariable('COMPILER', 'Target compiler chain', None))
 global_vars.Add('BUILDROOT','Object output directory')
 global_vars.Add(BoolVariable('VERBOSE', 'Output verbose compilation commands', False))
@@ -89,6 +101,7 @@ system_vars.Add('CC', 'C Compiler')
 system_vars.Add('AS', 'Assembler')
 system_vars.Add('LD', 'Linker')
 system_vars.Add('CCFLAGS', 'C/C++ Compiler flags')
+system_vars.Add('CXXFLAGS', 'C++ Compiler flags')
 system_vars.Add('ASFLAGS', 'Assembler flags')
 system_vars.Add('LINKFLAGS', 'Linker flags')
 system_vars.Add('LINKKERN', 'Linker flags for the kernel linker script')
@@ -98,17 +111,18 @@ system_vars.Update(target)
 
 # Enables verbose compilation command output.
 if not target['VERBOSE']:
-    target['CXXCOMSTR']    = host['CXXCOMSTR']    = "  CXX $TARGET"
-    target['CCCOMSTR']     = host['CCCOMSTR']     = "  CC  $TARGET"
-    target['ASCOMSTR']     = host['ASCOMSTR']     = "  AS  $TARGET"
-    target['ASPPCOMSTR']   = host['ASPPCOMSTR']   = "  AS  $TARGET"
-    target['ARCOMSTR']     = host['ARCOMSTR']     = "  AR  $TARGET"
-    target['RANLIBCOMSTR'] = host['RANLIBCOMSTR'] = "  LIB $TARGET"
-    target['LINKCOMSTR']   = host['LINKCOMSTR']   = "  LD  $TARGET"
+    target['CXXCOMSTR']    = host['CXXCOMSTR']    = "  CXX  $TARGET"
+    target['CCCOMSTR']     = host['CCCOMSTR']     = "  CC   $TARGET"
+    target['ASCOMSTR']     = host['ASCOMSTR']     = "  AS   $TARGET"
+    target['ASPPCOMSTR']   = host['ASPPCOMSTR']   = "  AS   $TARGET"
+    target['ARCOMSTR']     = host['ARCOMSTR']     = "  AR   $TARGET"
+    target['RANLIBCOMSTR'] = host['RANLIBCOMSTR'] = "  LIB  $TARGET"
+    target['LINKCOMSTR']   = host['LINKCOMSTR']   = "  LD   $TARGET"
 
 # Verify the configured CFLAGS.
 if not GetOption('clean'):
     CheckCCFlags(target)
+    CheckCXXFlags(target)
 
 # Kernel environment is the same as target, except for linker scripts.
 kernel = target.Clone()
@@ -121,7 +135,7 @@ target.Append(LINKFLAGS = target['LINKUSER'])
 host.Replace(ARCH      = 'host')
 host.Replace(SYSTEM    = 'host')
 host.Replace(BUILDROOT = 'build/host')
-host.Append (CPPFLAGS  = '-DHOST')
+host.Append (CPPFLAGS  = '-D__HOST__')
 host.Append (CPPPATH   = [ '#include' ])
 
 # Provide configuration help.

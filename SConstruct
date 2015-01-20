@@ -29,12 +29,10 @@ Export('build_env')
 # Build programs, libraries and servers.
 VariantDir(target['BUILDROOT'] + '/lib', '#lib', duplicate = 0)
 VariantDir(target['BUILDROOT'] + '/bin', '#bin', duplicate = 0)
-VariantDir(target['BUILDROOT'] + '/server', '#server', duplicate = 0)
-VariantDir(target['BUILDROOT'] + '/regress', '#regress', duplicate = 0)
+VariantDir(target['BUILDROOT'] + '/srv', '#srv', duplicate = 0)
 SConscript(target['BUILDROOT'] + '/lib/SConscript')
 SConscript(target['BUILDROOT'] + '/bin/SConscript')
-SConscript(target['BUILDROOT'] + '/server/SConscript')
-SConscript(target['BUILDROOT'] + '/regress/SConscript')
+SConscript(target['BUILDROOT'] + '/srv/SConscript')
 
 #
 # Host build
@@ -45,10 +43,10 @@ Export('build_env')
 # Build programs and libraries.
 VariantDir(host['BUILDROOT'] + '/lib', '#lib', duplicate = 0)
 VariantDir(host['BUILDROOT'] + '/bin', '#bin', duplicate = 0)
-VariantDir(host['BUILDROOT'] + '/regress', '#regress', duplicate = 0)
+VariantDir(host['BUILDROOT'] + '/srv', '#srv', duplicate = 0)
 SConscript(host['BUILDROOT'] + '/lib/SConscript')
 SConscript(host['BUILDROOT'] + '/bin/SConscript')
-SConscript(host['BUILDROOT'] + '/regress/SConscript')
+SConscript(host['BUILDROOT'] + '/srv/SConscript')
 
 #
 # Kernel build
