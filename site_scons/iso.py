@@ -44,7 +44,7 @@ def iso_func(target, source, env):
 #
 def iso_str(target, source, env):
 
-    return "  ISO " + str(target[0])
+    return "  ISO  " + str(target[0])
 
 #
 # Add ourselves to the given environment.

@@ -3,4 +3,4 @@
 ./srv/filesystem/tmp/server
 ./srv/filesystem/linn/server
 ./srv/idle/server
-./sbin/init/init
+./bin/init/init

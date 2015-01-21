@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2010 Niek Linnenbank
+# Copyright (C) 2015 Niek Linnenbank
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,9 +30,13 @@ Export('build_env')
 VariantDir(target['BUILDROOT'] + '/lib', '#lib', duplicate = 0)
 VariantDir(target['BUILDROOT'] + '/bin', '#bin', duplicate = 0)
 VariantDir(target['BUILDROOT'] + '/srv', '#srv', duplicate = 0)
+VariantDir(target['BUILDROOT'] + '/kernel', '#kernel', duplicate = 0)
+#VariantDir(target['BUILDROOT'] + '/kernel/' + target['ARCH'] + '/' + target['SYSTEM'],
+#				 '#kernel/' + target['ARCH'] + '/' + target['SYSTEM'], duplicate = 0)
 SConscript(target['BUILDROOT'] + '/lib/SConscript')
 SConscript(target['BUILDROOT'] + '/bin/SConscript')
 SConscript(target['BUILDROOT'] + '/srv/SConscript')
+SConscript(target['BUILDROOT'] + '/kernel/' + target['ARCH'] + '/' + target['SYSTEM'] + '/SConscript')
 
 #
 # Host build
@@ -47,15 +51,3 @@ VariantDir(host['BUILDROOT'] + '/srv', '#srv', duplicate = 0)
 SConscript(host['BUILDROOT'] + '/lib/SConscript')
 SConscript(host['BUILDROOT'] + '/bin/SConscript')
 SConscript(host['BUILDROOT'] + '/srv/SConscript')
-
-#
-# Kernel build
-#
-build_env = kernel
-Export('build_env')
-
-# Build the kernel.
-VariantDir(kernel['BUILDROOT'] + '/kernel',
-	    '#kernel/' + kernel['ARCH'] + '/' + kernel['SYSTEM'], duplicate = 0)
-SConscript(kernel['BUILDROOT'] + '/kernel/SConscript')
-

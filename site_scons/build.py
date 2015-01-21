@@ -77,10 +77,8 @@ host.AddMethod(TargetProgram, "TargetProgram")
 host.AddMethod(TargetLibrary, "TargetLibrary")
 host.AddMethod(UseLibraries, "UseLibraries")
 host.AddMethod(UseServers, "UseServers")
-
 target = host.Clone(tools    = ["default", "bootimage", "iso", "binary"],
 		    toolpath = ["site_scons"])
-kernel = None
 
 # Global top-level configuration.
 global_vars = Variables('build.conf')
@@ -108,6 +106,7 @@ system_vars.Add('LINKKERN', 'Linker flags for the kernel linker script')
 system_vars.Add('LINKUSER', 'Linker flags for user programs linker script')
 system_vars.Add('CPPPATH', 'C Preprocessor include directories')
 system_vars.Update(target)
+target.Append(LINKFLAGS = target['LINKUSER'])
 
 # Enables verbose compilation command output.
 if not target['VERBOSE']:
@@ -123,13 +122,6 @@ if not target['VERBOSE']:
 if not GetOption('clean'):
     CheckCCFlags(target)
     CheckCXXFlags(target)
-
-# Kernel environment is the same as target, except for linker scripts.
-kernel = target.Clone()
-
-# Append linker script flags.
-kernel.Append(LINKFLAGS = target['LINKKERN'])
-target.Append(LINKFLAGS = target['LINKUSER'])
 
 # Host environment uses a different output directory.
 host.Replace(ARCH      = 'host')

@@ -63,7 +63,6 @@ except:
 
 # Set the full version revision in environments.
 target['RELEASE'] = currentRev
-kernel['RELEASE'] = currentRev
 host['RELEASE']   = currentRev
 
 # Attempt to retrieve the correct compiler version

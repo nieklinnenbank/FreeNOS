@@ -100,7 +100,7 @@ int main(int argc, char **argv)
     /* Verify command-line arguments. */
     if (argc < 3)
     {
-	fprintf(stderr, "usage: %s FILE FILE\n",
+	fprintf(stderr, "usage: %s CONFFILE OUTFILE\n",
 		argv[0]);
 	return EXIT_FAILURE;
     }
