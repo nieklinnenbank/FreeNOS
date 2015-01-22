@@ -96,8 +96,10 @@ global_vars.Update(host)
 # System-specific configuration.
 system_vars = Variables(target['COMPILER'])
 system_vars.Add('CC', 'C Compiler')
+system_vars.Add('CXX', 'C++ Compiler')
 system_vars.Add('AS', 'Assembler')
 system_vars.Add('LD', 'Linker')
+system_vars.Add('CROSS_COMPILE', 'Cross Compiler toolchain prefix', '')
 system_vars.Add('CCFLAGS', 'C/C++ Compiler flags')
 system_vars.Add('CXXFLAGS', 'C++ Compiler flags')
 system_vars.Add('ASFLAGS', 'Assembler flags')
@@ -106,6 +108,11 @@ system_vars.Add('LINKKERN', 'Linker flags for the kernel linker script')
 system_vars.Add('LINKUSER', 'Linker flags for user programs linker script')
 system_vars.Add('CPPPATH', 'C Preprocessor include directories')
 system_vars.Update(target)
+
+target.Prepend(CC  = target['CROSS_COMPILE'],
+               CXX = target['CROSS_COMPILE'],
+               AS  = target['CROSS_COMPILE'],
+               LD  = target['CROSS_COMPILE'])
 target.Append(LINKFLAGS = target['LINKUSER'])
 
 # Enables verbose compilation command output.
