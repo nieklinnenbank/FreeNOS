@@ -19,4 +19,4 @@ Import('build_env')
 
 env = build_env.Clone()
 env.UseLibraries([ 'libcrt', 'libposix', 'libc', 'libexec', 'liballoc', 'libparse' ])
-env.TargetProgram('parse', 'Main.cpp')
+env.TargetProgram('parse', 'Main.cpp', env['bin'])

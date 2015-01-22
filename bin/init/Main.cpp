@@ -27,14 +27,14 @@
 
 int main(int argc, char **argv)
 {
-    const char *av[] = { "/bin/sh/sh", "/etc/rc", ZERO };
+    const char *av[] = { "/bin/sh", "/etc/rc", ZERO };
 
     /*
      * TODO: give up all privileges.
      */
 
     /* Execute the run commands file. */
-    forkexec("/bin/sh/sh", av);
+    forkexec("/bin/sh", av);
 
     /* Exit immediately. */
     return EXIT_SUCCESS;

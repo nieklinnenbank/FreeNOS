@@ -76,10 +76,8 @@ int Shell::execute(char *command)
 	    return status;
 	}
 	/* Try to find it on the livecd filesystem. (temporary hardcoded PATH) */
-	else if ((snprintf(tmp, sizeof(tmp), "/bin/%s/%s",  argv[0], argv[0]) &&
-	        ((pid = forkexec(tmp, (const char **) argv)) >= 0)) ||
-		 (snprintf(tmp, sizeof(tmp), "/sbin/%s/%s", argv[0], argv[0]) &&
-	        ((pid = forkexec(tmp, (const char **) argv)) >= 0)))
+	else if (snprintf(tmp, sizeof(tmp), "/bin/%s",  argv[0], argv[0]) &&
+	        (pid = forkexec(tmp, (const char **) argv)) >= 0)
 	{
 	    waitpid(pid, &status, 0);
 	    return status;

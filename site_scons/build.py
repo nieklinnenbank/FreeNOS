@@ -15,8 +15,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os.path
 from SCons.Script import *
 from autoconf import *
+
+""" A list of files which are installed in the final RootFS """
+rootfs_files = []
+Export('rootfs_files')
 
 def UseLibraries(env, libs = [], arch = None):
     """
@@ -49,13 +54,30 @@ def HostProgram(env, target, source):
     if env['ARCH'] == 'host':
 	env.Program(target, source)
 
-def TargetProgram(env, target, source):
+def TargetProgram(env, target, source, install_dir = None):
     if env['ARCH'] != 'host':
 	env.Program(target, source)
+	env.TargetInstall(target, install_dir)
 
 def TargetLibrary(env, lib, source):
     if env['ARCH'] != 'host':
 	env.Library(lib, source)
+
+def CopyStrFunc(target, source, env):
+    return "  " + env.subst_target_source("COPY $SOURCE => $TARGET", 0, target, source)
+
+def DirStrFunc(target):
+    return "  MKDIR " + target
+
+def TargetInstall(env, source, target = None):
+    if env['ARCH'] != 'host':
+	SCons.Tool.install.install_action.strfunction = CopyStrFunc
+
+	if not target:
+	    target = '${ROOTFS}/' + Dir('.').srcnode().path
+
+	env.Install(target, source)
+	rootfs_files.append(str(target) + os.sep + os.path.basename(source))
 
 def SubDirectories():
     dir_list = []
@@ -70,6 +92,7 @@ def SubDirectories():
 
 Export('SubDirectories')
 
+
 # Create target, host and kernel environments.
 host = Environment()
 host.AddMethod(HostProgram, "HostProgram")
@@ -77,7 +100,15 @@ host.AddMethod(TargetProgram, "TargetProgram")
 host.AddMethod(TargetLibrary, "TargetLibrary")
 host.AddMethod(UseLibraries, "UseLibraries")
 host.AddMethod(UseServers, "UseServers")
-target = host.Clone(tools    = ["default", "bootimage", "iso", "binary"],
+host.AddMethod(TargetInstall, "TargetInstall")
+host.Append(ROOTFS = '#${BUILDROOT}/rootfs')
+host.Append(ROOTFS_FILES = [])
+host.Append(bin  = '${ROOTFS}/bin',
+	    etc  = '${ROOTFS}/etc',
+	    srv  = '${ROOTFS}/srv',
+            boot = '${ROOTFS}/boot')
+
+target = host.Clone(tools    = ["default", "bootimage", "iso", "binary", "linn"],
 		    toolpath = ["site_scons"])
 
 # Global top-level configuration.
@@ -117,6 +148,7 @@ if not target['VERBOSE']:
     target['ARCOMSTR']     = host['ARCOMSTR']     = "  AR   $TARGET"
     target['RANLIBCOMSTR'] = host['RANLIBCOMSTR'] = "  LIB  $TARGET"
     target['LINKCOMSTR']   = host['LINKCOMSTR']   = "  LD   $TARGET"
+    target['COPYSTR']      = host['COPYSTR']      = "  COPY $SOURCE => $TARGET"
 
 # Verify the configured CFLAGS.
 if not GetOption('clean'):

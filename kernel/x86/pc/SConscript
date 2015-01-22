@@ -16,6 +16,7 @@
 #
 
 Import('build_env')
+Import('rootfs_files')
 
 env = build_env.Clone()
 
@@ -28,7 +29,8 @@ env.UseServers(['process', 'filesystem', 'memory'])
 env.TargetProgram('kernel', [ Glob('*.cpp'),
 			      Glob('*.S'),
 			      Glob('#' + env['BUILDROOT'] + '/kernel/*.cpp'),
-			      Glob('#' + env['BUILDROOT'] + '/kernel/API/*.cpp') ])
+			      Glob('#' + env['BUILDROOT'] + '/kernel/API/*.cpp') ]
+		          , env['boot'])
 
 #
 # Boot Image
@@ -36,13 +38,20 @@ env.TargetProgram('kernel', [ Glob('*.cpp'),
 env.BootImage('#${BUILDROOT}/boot.img', '#${BUILDROOT}/kernel/x86/pc/boot.imgdesc')
 
 #
-# Make a bootable LiveCD.
+# RootFS
+#
+env.LinnImage('#${BUILDROOT}/boot.linn.gz', rootfs_files)
+env.Depends('#${BUILDROOT}/boot.linn.gz', '#build/host')
+
+#
+# Boot ISO (LiveCD)
 #
 cd = env.ISO('#${BUILDROOT}/boot.iso',
            [ '#kernel/x86/pc/cd.img',
              '#kernel/x86/pc/grub.cfg',
              '#${BUILDROOT}/kernel/x86/pc/kernel',
-             '#${BUILDROOT}/boot.img' ])
+             '#${BUILDROOT}/boot.img',
+	     '#${BUILDROOT}/boot.linn.gz' ])
 
 # Shortcut to build the ISO.
 Alias('iso', cd)
