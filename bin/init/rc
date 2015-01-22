@@ -10,4 +10,4 @@
 /srv/pci/server
 /srv/pci/detect
 /srv/time/server
-/bin/sh/sh
+/bin/sh
