@@ -31,12 +31,13 @@ VariantDir(target['BUILDROOT'] + '/lib', '#lib', duplicate = 0)
 VariantDir(target['BUILDROOT'] + '/bin', '#bin', duplicate = 0)
 VariantDir(target['BUILDROOT'] + '/srv', '#srv', duplicate = 0)
 VariantDir(target['BUILDROOT'] + '/kernel', '#kernel', duplicate = 0)
-#VariantDir(target['BUILDROOT'] + '/kernel/' + target['ARCH'] + '/' + target['SYSTEM'],
-#				 '#kernel/' + target['ARCH'] + '/' + target['SYSTEM'], duplicate = 0)
 SConscript(target['BUILDROOT'] + '/lib/SConscript')
 SConscript(target['BUILDROOT'] + '/bin/SConscript')
 SConscript(target['BUILDROOT'] + '/srv/SConscript')
 SConscript(target['BUILDROOT'] + '/kernel/' + target['ARCH'] + '/' + target['SYSTEM'] + '/SConscript')
+
+# Install files to the target RootFS
+#target.TargetInstall('VERSION')
 
 #
 # Host build

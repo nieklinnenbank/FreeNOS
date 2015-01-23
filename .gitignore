@@ -6,7 +6,8 @@ include/Version.h
 config.log
 .sconf_temp
 .sconsign.dblite
-boot/boot.*
-host/
 include/FreeNOS
 .gdbinit
+build.conf
+build.host.conf
+

@@ -16,6 +16,7 @@
 #
 
 import os.path
+import config
 from SCons.Script import *
 from autoconf import *
 
@@ -92,7 +93,6 @@ def SubDirectories():
 
 Export('SubDirectories')
 
-
 # Create target, host and kernel environments.
 host = Environment()
 host.AddMethod(HostProgram, "HostProgram")
@@ -111,40 +111,8 @@ host.Append(bin  = '${ROOTFS}/bin',
 target = host.Clone(tools    = ["default", "bootimage", "iso", "binary", "linn"],
 		    toolpath = ["site_scons"])
 
-# Global top-level configuration.
-global_vars = Variables('build.conf')
-global_vars.Add('VERSION', 'FreeNOS release version number')
-global_vars.Add(EnumVariable('ARCH', 'Target machine CPU architecture', 'x86',
-			      allowed_values = ("x86",)))
-global_vars.Add(EnumVariable('SYSTEM', 'Target machine system type', 'pc',
-			      allowed_values = ("pc",)))
-global_vars.Add(PathVariable('COMPILER', 'Target compiler chain', None))
-global_vars.Add('BUILDROOT','Object output directory')
-global_vars.Add(BoolVariable('VERBOSE', 'Output verbose compilation commands', False))
-global_vars.Update(target)
-global_vars.Update(host)
-
-# System-specific configuration.
-system_vars = Variables(target['COMPILER'])
-system_vars.Add('CC', 'C Compiler')
-system_vars.Add('CXX', 'C++ Compiler')
-system_vars.Add('AS', 'Assembler')
-system_vars.Add('LD', 'Linker')
-system_vars.Add('CROSS_COMPILE', 'Cross Compiler toolchain prefix', '')
-system_vars.Add('CCFLAGS', 'C/C++ Compiler flags')
-system_vars.Add('CXXFLAGS', 'C++ Compiler flags')
-system_vars.Add('ASFLAGS', 'Assembler flags')
-system_vars.Add('LINKFLAGS', 'Linker flags')
-system_vars.Add('LINKKERN', 'Linker flags for the kernel linker script')
-system_vars.Add('LINKUSER', 'Linker flags for user programs linker script')
-system_vars.Add('CPPPATH', 'C Preprocessor include directories')
-system_vars.Update(target)
-
-target.Prepend(CC  = target['CROSS_COMPILE'],
-               CXX = target['CROSS_COMPILE'],
-               AS  = target['CROSS_COMPILE'],
-               LD  = target['CROSS_COMPILE'])
-target.Append(LINKFLAGS = target['LINKUSER'])
+# Apply configuration
+config.initialize(target, host, ARGUMENTS)
 
 # Enables verbose compilation command output.
 if not target['VERBOSE']:
@@ -162,17 +130,6 @@ if not GetOption('clean'):
     CheckCCFlags(target)
     CheckCXXFlags(target)
 
-# Host environment uses a different output directory.
-host.Replace(ARCH      = 'host')
-host.Replace(SYSTEM    = 'host')
-host.Replace(BUILDROOT = 'build/host')
-host.Append (CPPFLAGS  = '-D__HOST__')
-host.Append (CPPPATH   = [ '#include' ])
-
-# Provide configuration help.
-Help(global_vars.GenerateHelpText(target))
-Help(system_vars.GenerateHelpText(target))
-
 # Make a symbolic link to the system-specific headers.
 try:
     os.unlink("include/FreeNOS")
@@ -183,4 +140,3 @@ try:
     os.symlink(target['ARCH'], "include/FreeNOS")
 except:
     pass
-

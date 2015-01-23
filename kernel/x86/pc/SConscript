@@ -35,7 +35,7 @@ env.TargetProgram('kernel', [ Glob('*.cpp'),
 #
 # Boot Image
 #
-env.BootImage('#${BUILDROOT}/boot.img', '#${BUILDROOT}/kernel/x86/pc/boot.imgdesc')
+env.BootImage('#${BUILDROOT}/boot.img', '#kernel/x86/pc/boot.imgdesc')
 
 #
 # RootFS
