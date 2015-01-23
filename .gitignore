@@ -8,6 +8,5 @@ config.log
 .sconsign.dblite
 include/FreeNOS
 .gdbinit
-./build.conf
-./build.host.conf
-
+/build.conf
+/build.host.conf
