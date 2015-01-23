@@ -22,7 +22,7 @@
 #include <API/VMCopy.h>
 #include <IPCServer.h>
 #include <UserProcess.h>
-#include <Config.h>
+#include <ProcessID.h>
 #include <Shared.h>
 #include <Array.h>
 #include <HashTable.h>

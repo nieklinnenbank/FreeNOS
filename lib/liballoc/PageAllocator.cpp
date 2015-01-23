@@ -18,7 +18,7 @@
 #include <API/IPCMessage.h>
 #include <API/ProcessCtl.h>
 #include <MemoryMessage.h>
-#include <Config.h>
+#include <ProcessID.h>
 #include "PageAllocator.h"
 
 PageAllocator::PageAllocator(Size size)

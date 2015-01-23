@@ -19,7 +19,7 @@
 #include <FileSystemMessage.h>
 #include <FileType.h>
 #include <FileMode.h>
-#include <Config.h>
+#include <ProcessID.h>
 #include "POSIXSupport.h"
 #include <errno.h>
 #include "sys/stat.h"

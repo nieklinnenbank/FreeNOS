@@ -77,6 +77,7 @@ except:
 def escape(obj):
     return str(obj).replace('"', '\\"')
 
+
 #
 # Write all gathered data to the version.h file.
 #

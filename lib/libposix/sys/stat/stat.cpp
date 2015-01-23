@@ -17,7 +17,7 @@
 
 #include <API/IPCMessage.h>
 #include <FileSystemMessage.h>
-#include <Config.h>
+#include <ProcessID.h>
 #include "POSIXSupport.h"
 #include <errno.h>
 #include "sys/stat.h"

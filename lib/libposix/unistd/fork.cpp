@@ -18,7 +18,7 @@
 #include <API/IPCMessage.h>
 #include <ProcessServer.h>
 #include <FileDescriptor.h>
-#include <Config.h>
+#include <ProcessID.h>
 #include "POSIXSupport.h"
 #include <errno.h>
 #include "unistd.h"

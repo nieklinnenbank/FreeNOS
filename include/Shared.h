@@ -23,7 +23,7 @@
 #include "Comparable.h"
 #include "Types.h"
 #include "String.h"
-#include "Config.h"
+#include "ProcessID.h"
 
 /**
  * Enables sharing objects between processes.

@@ -19,7 +19,7 @@
 #include <FreeNOS/CPU.h>
 #include <Macros.h>
 #include <Types.h>
-#include <Config.h>
+#include <ProcessID.h>
 #include "i8250.h"
 
 i8250::i8250(u16 b, u16 q)

@@ -16,7 +16,7 @@
  */
 
 #include <API/ProcessCtl.h>
-#include <Config.h>
+#include <ProcessID.h>
 #include "unistd.h"
 
 pid_t getpid()

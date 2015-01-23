@@ -17,7 +17,7 @@
 
 #include <API/IPCMessage.h>
 #include <ProcessMessage.h>
-#include <Config.h>
+#include <ProcessID.h>
 #include "stdlib.h"
 
 void exit(int status)

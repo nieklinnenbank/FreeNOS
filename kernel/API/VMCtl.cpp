@@ -17,7 +17,7 @@
 
 #include <API/VMCtl.h>
 #include <Error.h>
-#include <Config.h>
+#include <ProcessID.h>
 
 Error VMCtlHandler(ProcessID procID, MemoryOperation op, MemoryRange *range)
 {

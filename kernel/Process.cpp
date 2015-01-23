@@ -18,7 +18,7 @@
 #include <FreeNOS/Process.h>
 #include <Array.h>
 #include <Types.h>
-#include <Config.h>
+#include <ProcessID.h>
 #include <ListIterator.h>
 
 Array<Process> Process::procs(MAX_PROCS);

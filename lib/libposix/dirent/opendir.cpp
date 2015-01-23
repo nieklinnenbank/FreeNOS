@@ -16,7 +16,7 @@
  */
 
 #include <API/IPCMessage.h>
-#include <Config.h>
+#include <ProcessID.h>
 #include <FileType.h>
 #include <Directory.h>
 #include <errno.h>

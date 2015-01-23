@@ -26,7 +26,7 @@
 #include <API/IPCMessage.h>
 #include <Types.h>
 #include <Macros.h>
-#include <Config.h>
+#include <ProcessID.h>
 
 /** @see ProcessServer.h */
 class UserProcess;

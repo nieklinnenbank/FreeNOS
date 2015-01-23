@@ -24,7 +24,7 @@
 #include <String.h>
 #include <Error.h>
 #include <Macros.h>
-#include <Config.h>
+#include <ProcessID.h>
 #include "ProcessMessage.h"
 #include "ProcessServer.h"
 #include <stdio.h>

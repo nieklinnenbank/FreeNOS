@@ -22,7 +22,7 @@
 #include <PseudoFile.h>
 #include <Types.h>
 #include <Error.h>
-#include <Config.h>
+#include <ProcessID.h>
 
 /**
  * @brief GRUB Boot Module File.

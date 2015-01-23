@@ -20,7 +20,7 @@
 
 #include <API/IPCMessage.h>
 #include <Error.h>
-#include <Config.h>
+#include <ProcessID.h>
 
 /**
  * Message handler function (dummy) container.

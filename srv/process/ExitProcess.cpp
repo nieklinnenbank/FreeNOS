@@ -19,7 +19,7 @@
 #include <API/ProcessCtl.h> 
 #include <FreeNOS/Process.h>
 #include <Types.h>
-#include <Config.h>
+#include <ProcessID.h>
 #include <Error.h>
 #include "ProcessMessage.h"
 #include "ProcessServer.h"

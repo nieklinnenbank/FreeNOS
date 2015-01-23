@@ -19,7 +19,7 @@
 #include <FreeNOS/CPU.h>
 #include <Macros.h>
 #include <Types.h>
-#include <Config.h>
+#include <ProcessID.h>
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>

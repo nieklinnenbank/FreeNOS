@@ -20,7 +20,7 @@
 #include <FreeNOS/Init.h>
 #include <FreeNOS/Memory.h>
 #include <FreeNOS/Scheduler.h>
-#include <Config.h>
+#include <ProcessID.h>
 #include <Error.h>
 
 int IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg, Size size)
