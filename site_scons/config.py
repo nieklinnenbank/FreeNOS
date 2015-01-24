@@ -126,7 +126,10 @@ def set_default_variables(env):
 
     # Set the full version revision in environments.
     # TODO: include the git commit/branch etc.
-    env['RELEASE'] = env['VERSION']
+    try:
+	env['RELEASE'] = env['VERSION'] + '-git(' + os.popen('git rev-parse --short HEAD').read().strip() + ')'
+    except:
+	env['RELEASE'] = env['VERSION']
 
     # Attempt to retrieve the correct compiler version
     try:
