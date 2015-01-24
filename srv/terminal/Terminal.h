@@ -23,7 +23,7 @@
  * @{    
  */
 
-#include <Config.h>
+#include <FreeNOS/Config.h>
 #include <Device.h>
 #include <Macros.h>
 #include <Types.h>

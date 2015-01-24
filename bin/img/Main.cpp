@@ -17,7 +17,7 @@
 
 #include <FreeNOS/BootImage.h>
 #include <FreeNOS/Memory.h>
-#include <Config.h>
+#include <FreeNOS/Config.h>
 #include <Array.h>
 #include <ExecutableFormat.h>
 #include <stdio.h>
