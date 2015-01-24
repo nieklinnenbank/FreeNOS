@@ -17,6 +17,8 @@
 
 import os.path
 import shutil
+import datetime
+import platform
 from SCons.Script import *
 from autoconf import *
 
@@ -60,10 +62,9 @@ def initialize(target, host, params):
 	    set_value(local_dict, key[5:], params[key])
     apply_file('build.host.conf', host)
 
-    # Apply the current VERSION to the environments.
-    version = open('VERSION').read().strip()
-    target['VERSION'] = version
-    host['VERSION'] = version
+    # Apply default variables
+    set_default_variables(target)
+    set_default_variables(host)
 
     # Reapply commandline arguments. This overwrites anything from build*.conf
     for key in params:
@@ -71,6 +72,77 @@ def initialize(target, host, params):
 	    set_value(host, key[5:], params[key])
 	else:
 	    set_value(target, key, params[key])
+
+def escape(obj):
+    return str(obj).replace('"', '\\"')
+
+def write_header(env, filename):
+    out = open(filename, "w")
+    name, ext = os.path.splitext(filename)
+    name = name.replace('/', '_')
+    
+    out.write('#ifndef __' + name.upper() + '_H\n')
+    out.write('#define __' + name.upper() + '_H\n\n')
+    out.write('#define VERSION_GET_CODE(a,b,c) (((a) << 16) + ((b) << 8) + (c))\n')
+    out.write('#define DATETIME  __DATE__ " " __TIME__\n')
+    out.write('#define COPYRIGHT "Copyright (C) ' + escape(datetime.datetime.today().year) + ' Niek Linnenbank\\r\\n" \\\n' + \
+                                '"This is free software; see the source for copying conditions.  There is NO\\r\\n" \\\n' + \
+                                '"warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE\\r\\n"\n')
+
+    for item in env.items():
+	if type(item[1]) is str:
+	    out.write("#define " + item[0].upper() + ' "' + escape(item[1]) + '"\n')
+	elif type(item[1]) is int:
+	    out.write("#define " + item[0].upper() + ' ' + str(item[1]) + '\n')
+	elif type(item[1]) is list:
+	    out.write("#define " + item[0].upper() + ' "')
+	    for subitem in item[1]:
+		if type(subitem) is str:
+		    out.write(escape(subitem) + ' ')
+	    out.write('"\n')
+
+    out.write('#endif\n\n')
+    out.close()
+
+def set_default_variables(env):
+
+    # Read the current version from the VERSION file.
+    version = open('VERSION').read().strip()
+    env['VERSION'] = version
+
+    # Calculate a version integer code.
+    current      = env['VERSION']
+    expr         = re.compile("\.")
+    version      = expr.split(current)
+    versionCode  = 0
+    versionPower = 16
+
+    # Calculate version code.
+    for v in version:
+	versionCode  += int(v) * pow(2, versionPower)
+	versionPower -= 8
+
+    env['VERSIONCODE'] = versionCode
+
+    # Set the full version revision in environments.
+    # TODO: include the git commit/branch etc.
+    env['RELEASE'] = env['VERSION']
+
+    # Attempt to retrieve the correct compiler version
+    try:
+	compiler = os.popen(env['CC'] + " --version | head -n 1").read().strip()
+    except:
+	compiler = env['CC'] + ' ' + env['CCVERSION']
+
+    env['COMPILER_VERSION'] = compiler
+    env['BUILDUSER'] = os.environ['USER']
+    env['BUILDHOST'] = platform.node()
+    env['BUILDOS'] = platform.system() + ' ' + platform.release()
+    env['BUILDARCH'] = platform.machine()
+    env['BUILDPY'] = "Python " + platform.python_version()
+    env['BUILDER'] = "SCons " + SCons.__version__
+    env['BUILDURL'] = os.getcwd()
+    env['BUILDPATH'] = os.getcwd()
 
 def set_value(env, key, value):
     """

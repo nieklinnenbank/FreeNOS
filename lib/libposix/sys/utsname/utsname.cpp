@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Version.h>
+#include <Config.h>
 #include <string.h>
 #include "sys/utsname.h"
 
@@ -25,7 +25,7 @@ int uname(struct utsname *name)
     strlcpy(name->sysname, "FreeNOS", UTSBUF);
     strlcpy(name->nodename, "localhost", UTSBUF);
     strlcpy(name->release, RELEASE, UTSBUF);
-    strlcpy(name->version, COMPILER " " DATETIME, UTSBUF);
+    strlcpy(name->version, COMPILER_VERSION " " DATETIME, UTSBUF);
     strlcpy(name->machine, ARCH, UTSBUF);
 
     /* Success. */

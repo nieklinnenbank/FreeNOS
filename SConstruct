@@ -16,7 +16,6 @@
 #
 
 from build import *
-from version import *
 from archive import *
 from gdbinit import *
 
@@ -37,7 +36,9 @@ SConscript(target['BUILDROOT'] + '/srv/SConscript')
 SConscript(target['BUILDROOT'] + '/kernel/' + target['ARCH'] + '/' + target['SYSTEM'] + '/SConscript')
 
 # Install files to the target RootFS
-#target.TargetInstall('VERSION')
+target.TargetInstall('VERSION')
+target.TargetInstall('build.conf', target['etc'])
+target.TargetInstall('build.host.conf', target['etc'])
 
 #
 # Host build

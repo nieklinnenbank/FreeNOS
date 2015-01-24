@@ -23,7 +23,7 @@
  * @{    
  */
 
-#include <Version.h>
+#include <Config.h>
 #include <Device.h>
 #include <Macros.h>
 #include <Types.h>

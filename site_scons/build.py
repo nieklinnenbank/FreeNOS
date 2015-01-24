@@ -113,6 +113,8 @@ target = host.Clone(tools    = ["default", "bootimage", "iso", "binary", "linn"]
 
 # Apply configuration
 config.initialize(target, host, ARGUMENTS)
+config.write_header(target, 'include/Config.h')
+config.write_header(host, 'include/HostConfig.h')
 
 # Enables verbose compilation command output.
 if not target['VERBOSE']:

@@ -22,7 +22,7 @@
 #include <FreeNOS/Init.h>
 #include <FreeNOS/Multiboot.h>
 #include <FreeNOS/Memory.h>
-#include <Version.h>
+#include <Config.h>
 #include <Error.h>
 #include <Types.h>
 

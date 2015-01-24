@@ -25,7 +25,6 @@
 
 #include <DeviceServer.h>
 #include <Types.h>
-#include <Version.h>
 
 /** VGA physical video memory address. */
 #define VGA_PADDR (0xb8000) 
