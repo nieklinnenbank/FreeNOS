@@ -1,0 +1,7 @@
+timeout 0
+
+title FreeNOS
+root (cd)
+kernel /kernel
+module /boot.img.gz
+module /boot.linn.gz

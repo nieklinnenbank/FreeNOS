@@ -22,9 +22,11 @@ env = build_env.Clone()
 
 for item in env['LINKUSER']:
     env['LINKFLAGS'].remove(item)
-env.Append(LINKFLAGS = env['LINKKERN'])
 
-env.UseLibraries([ 'libposix', 'libc', 'liballoc', 'libexec' ])
+env.Append(LINKFLAGS = env['LINKKERN'])
+env.Append(CPPFLAGS = '-D__KERNEL__')
+
+env.UseLibraries(['liballoc', 'libstd'])
 env.UseServers(['process', 'filesystem', 'memory'])
 env.TargetProgram('kernel', [ Glob('*.cpp'),
 			      Glob('*.S'),
@@ -35,7 +37,7 @@ env.TargetProgram('kernel', [ Glob('*.cpp'),
 #
 # Boot Image
 #
-env.BootImage('#${BUILDROOT}/boot.img', '#kernel/x86/pc/boot.imgdesc')
+env.BootImage('#${BUILDROOT}/boot.img.gz', '#kernel/x86/pc/boot.imgdesc')
 
 #
 # RootFS
@@ -47,11 +49,18 @@ env.Depends('#${BUILDROOT}/boot.linn.gz', '#build/host')
 # Boot ISO (LiveCD)
 #
 cd = env.ISO('#${BUILDROOT}/boot.iso',
-           [ '#kernel/x86/pc/cd.img',
-             '#kernel/x86/pc/grub.cfg',
+           [ '#kernel/x86/pc/stage1',
+             '#kernel/x86/pc/stage2_eltorito',
+             '#kernel/x86/pc/menu.lst',
              '#${BUILDROOT}/kernel/x86/pc/kernel',
-             '#${BUILDROOT}/boot.img',
+             '#${BUILDROOT}/boot.img.gz',
 	     '#${BUILDROOT}/boot.linn.gz' ])
 
 # Shortcut to build the ISO.
 Alias('iso', cd)
+
+#
+# Qemu targets
+#
+env.Targets(qemu         = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT'] + '/boot.iso')
+env.Targets(qemu_curses  = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -curses')
