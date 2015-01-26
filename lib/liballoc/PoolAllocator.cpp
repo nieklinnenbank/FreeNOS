@@ -15,12 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string.h>
+#include <FreeNOS/Memory.h>
 #include "PoolAllocator.h"
+#include <MemoryBlock.h>
 
 PoolAllocator::PoolAllocator()
 {
-    memset(pools, 0, sizeof(pools));
+    MemoryBlock::set(pools, 0, sizeof(pools));
 }
 
 Address PoolAllocator::allocate(Size *size)
@@ -69,17 +70,18 @@ MemoryPool * PoolAllocator::newPool(Size index, Size cnt)
     sz  = cnt * (1 << (index + 1));
     sz += sizeof(MemoryPool);
     sz += BITMAP_NUM_BYTES(cnt);
+    sz += MEMALIGN;
 
     /* Ask parent for memory, then fill in the pool. */
     if ((pool = (MemoryPool *) parent->allocate(&sz)))
     {
 	pool->count  = cnt;
-        pool->addr   = ((Address) (pool + 1)) + BITMAP_NUM_BYTES(pool->count);
+        pool->addr   = aligned( ((Address) (pool + 1)) + BITMAP_NUM_BYTES(pool->count) );
         pool->next   = pools[index];
         pool->free   = pool->count;
 	pool->size   = (1 << (index + 1));
 	pools[index] = pool;
-	memset(pool->blocks, 0, BITMAP_NUM_BYTES(pool->count));
+	MemoryBlock::set(pool->blocks, 0, BITMAP_NUM_BYTES(pool->count));
     }
     return pool;
 }

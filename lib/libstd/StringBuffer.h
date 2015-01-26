@@ -18,79 +18,37 @@
 #ifndef __STRINGBUFFER_H
 #define __STRINGBUFFER_H
 
-#include <Vector.h>
-#include <String.h>
-#include <string.h>
-#include <stdio.h>
+#include "Vector.h"
+#include "String.h"
 
 class StringBuffer
 {
     private:
         Vector<char>* _chars;
-        
+
     public:
-        StringBuffer()
-        {
-            _chars = new Vector<char>();
-        }
-        
-        ~StringBuffer()
-        {
-            for( Size s = 0; s < _chars->count(); s++ )
-            {
-                delete _chars->get(s);
-            }
-            
-            delete _chars;
-        }
-        
+        StringBuffer();
+
+        ~StringBuffer();
+
         /**
          * Appends a char to the buffer.
          * @param c The char to add to the buffer.
          */
-        void append(char c)
-        {
-            if( c != 0 )
-            {
-                char* d = new char(c);
-                _chars->insert(&d[0]);
-            }
-        }
-        
+        void append(char c);
+
         /**
          * Convenience method to add an char* to the buffer.
          * @param c The char* to add to the buffer.
          */
-        void append(char* c)
-        {
-            for(Size pos = 0; pos < strlen(c); pos++)
-            {
-                append(c[pos]);
-            }
-        }
-        
+        void append(char* c);
+
         /**
          * Reads the buffer and creates a new String from the current 
          * contents.
          * @return The String* representing the current contents of the buffer.
          */
-        String* toString()
-        {
-            Size count = _chars->count();
-            
-            char* c = (char*)malloc(count + 1);
-            memset(c, 0, count + 1);
-            
-            for( Size pos = 0; pos < count; pos++ )
-            {
-                c[pos] = _chars->get(pos)[0];
-            }
-            
-            String* s = new String(c);
-            free(c);
-            return s;
-        }
-        
+        String* toString();
 };
 
 #endif /* __STRINGBUFFER_H */

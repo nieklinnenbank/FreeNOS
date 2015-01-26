@@ -20,8 +20,8 @@
 #include <FreeNOS/CPU.h>
 #include <FreeNOS/Scheduler.h>
 #include <Types.h>
-#include <string.h>
 #include <ListIterator.h>
+#include <MemoryBlock.h>
 
 X86Process::X86Process(Address entry) : Process(entry)
 {
@@ -37,8 +37,8 @@ X86Process::X86Process(Address entry) : Process(entry)
     ioMap       = (Address *) memory->mapVirtual(ioMapAddr);
 
     /* Clear them first. */
-    memset(pageDir,   0, PAGESIZE);
-    memset(ioMap,  0xff, PAGESIZE);
+    MemoryBlock::set(pageDir,   0, PAGESIZE);
+    MemoryBlock::set(ioMap,  0xff, PAGESIZE);
 
     /* Setup mappings. */
     pageDir[0] = kernelPageDir[0];
@@ -63,7 +63,7 @@ X86Process::X86Process(Address entry) : Process(entry)
 	
     /* Setup initial registers. */
     regs = (CPUState *) (((u32)tmpStack) + PAGESIZE - sizeof(CPUState));
-    memset(regs, 0, sizeof(CPUState));
+    MemoryBlock::set(regs, 0, sizeof(CPUState));
     regs->ss0    = KERNEL_DS_SEL;
     regs->fs     = USER_DS_SEL;
     regs->gs     = USER_DS_SEL;

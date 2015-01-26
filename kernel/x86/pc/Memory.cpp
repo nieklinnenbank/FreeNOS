@@ -18,8 +18,8 @@
 #include <FreeNOS/Memory.h>
 #include <FreeNOS/Init.h>
 #include <FreeNOS/Process.h>
+#include <MemoryBlock.h>
 #include <Types.h>
-#include <string.h>
 
 X86Memory::X86Memory() : Memory(), remPageDir(PAGEDIRADDR_REMOTE),
 			 remPageTab(ZERO), myPageDir(PAGEDIRADDR),
@@ -49,7 +49,7 @@ Address X86Memory::mapVirtual(Address paddr, Address vaddr, ulong prot)
 	tlb_flush(myPageTab);
 
 	/* Zero the new page table. */
-	memset(myPageTab, 0, PAGESIZE);
+	MemoryBlock::set(myPageTab, 0, PAGESIZE);
     }
     /* Map physical to virtual address. */
     myPageTab[TABENTRY(vaddr)] = (paddr & PAGEMASK) | prot;
@@ -87,7 +87,7 @@ Address X86Memory::mapVirtual(X86Process *p, Address paddr,
 	tlb_flush(remPageTab);
 	
 	/* Zero the new page. */
-	memset(remPageTab, 0, PAGESIZE);
+	MemoryBlock::set(remPageTab, 0, PAGESIZE);
     }
     /* Map physical address to remote virtual address. */
     remPageTab[TABENTRY(vaddr)] = (paddr & PAGEMASK) | prot;

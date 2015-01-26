@@ -100,5 +100,5 @@ def ReleaseAction(target, source, env):
     Checksum('FreeNOS-' + build.target['VERSION'] + '.tar.bz2.sha1',
 	     'FreeNOS-' + build.target['VERSION'] + '.tar.bz2', env)
 
-phony.Targets(release = SCons.Action.Action(ReleaseAction, None))
+#phony.Targets(release = SCons.Action.Action(ReleaseAction, None))
 

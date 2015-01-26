@@ -16,7 +16,7 @@
  */
 
 #include <API/SystemInfo.h>
-#include <string.h>
+#include <String.h>
 
 int SystemInfoHandler(SystemInformation *info)
 {
@@ -31,7 +31,7 @@ int SystemInfoHandler(SystemInformation *info)
     info->memorySize  = memory->getTotalMemory();
     info->memoryAvail = memory->getAvailableMemory();
     info->moduleCount = multibootInfo.modsCount;
-    strlcpy(info->cmdline, (char *)multibootInfo.cmdline, 64);
+    String::strlcpy(info->cmdline, (char *)multibootInfo.cmdline, 64);
     
     /* Include multiboot modules information. */
     for (Size i = 0; i < info->moduleCount; i++)
@@ -41,7 +41,7 @@ int SystemInfoHandler(SystemInformation *info)
 	info->modules[i].modStart   = m->modStart;
 	info->modules[i].modEnd     = m->modEnd;
 	info->modules[i].string[31] = ZERO;
-	strncpy(info->modules[i].string, (char *)m->string, 32);
+	String::strlcpy(info->modules[i].string, (char *)m->string, 32);
     }
     return 0;
 }

@@ -91,7 +91,7 @@ int main(int argc, char **argv)
 {
     Array<BootEntry> entries(128);
     BootImage image;
-    BootVariable variables[13];
+    BootVariable variables[12];
     BootProgram *programs;
     BootSegment *segments;
     FILE *fp;
@@ -122,10 +122,10 @@ int main(int argc, char **argv)
     image.variablesTableOffset = sizeof(BootImage);
     image.variablesTableCount  = 12;
     image.programsTableOffset  = image.variablesTableOffset + 
-				 image.variablesTableCount  * sizeof(BootVariable);
+				 (image.variablesTableCount  * sizeof(BootVariable));
     image.programsTableCount   = numEntries;
     image.segmentsTableOffset  = image.programsTableOffset  +
-				 image.programsTableCount   * sizeof(BootProgram);
+				 (image.programsTableCount   * sizeof(BootProgram));
 
     /* Fill in the boot variables. */
     VARIABLE(variables[0],  RELEASE);
@@ -137,7 +137,7 @@ int main(int argc, char **argv)
     VARIABLE(variables[6],  BUILDOS);
     VARIABLE(variables[7],  BUILDARCH);
     VARIABLE(variables[8],  BUILDPY);
-    VARIABLE(variables[9], BUILDER);
+    VARIABLE(variables[9],  BUILDER);
     VARIABLE(variables[10], BUILDPATH);
     VARIABLE(variables[11], BUILDURL);
 

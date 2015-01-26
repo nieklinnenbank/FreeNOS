@@ -90,7 +90,7 @@ Error Terminal::initialize()
     
     /* Print banners. */
     this->write((s8 *) BANNER, strlen(BANNER), ZERO);
-    this->write((s8 *) COPYRIGHT, strlen(COPYRIGHT), ZERO);
+    this->write((s8 *) COPYRIGHT "\r\n", strlen(COPYRIGHT "\r\n"), ZERO);
     
     /* Done! */
     return ESUCCESS;

@@ -108,7 +108,7 @@ host.Append(bin  = '${ROOTFS}/bin',
 	    srv  = '${ROOTFS}/srv',
             boot = '${ROOTFS}/boot')
 
-target = host.Clone(tools    = ["default", "bootimage", "iso", "binary", "linn"],
+target = host.Clone(tools    = ["default", "bootimage", "iso", "binary", "linn", "phony"],
 		    toolpath = ["site_scons"])
 
 # Apply configuration

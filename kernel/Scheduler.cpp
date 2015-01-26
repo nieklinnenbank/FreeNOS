@@ -110,7 +110,7 @@ ArchProcess * Scheduler::findNextReady()
 	
 	    /* We walked the whole list already. */
 	    else if (queuePtr.current() == saved)
-	    {
+            {
 		return ret;
 	    }
 	    /* Is this process ready? */

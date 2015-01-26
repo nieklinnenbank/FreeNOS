@@ -18,7 +18,7 @@
 Import('build_env')
 
 env = build_env.Clone()
-env.UseLibraries([ 'libposix' ])
+env.UseLibraries([ 'libposix', 'libstd' ])
 env.UseServers([ 'process' ])
 env.Append(CPPPATH = [ '.' ])
 env.TargetLibrary('libc', [ Glob('stdio/*.c'),

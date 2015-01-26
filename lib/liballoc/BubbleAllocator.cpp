@@ -30,11 +30,13 @@ BubbleAllocator::BubbleAllocator(Address start, Size size)
 
 Address BubbleAllocator::allocate(Size *sz)
 {
+    Size needed = aligned(*sz);
+
     /* Do we still have enough room? */
-    if (current + *sz < start + size)
+    if (current + needed < start + size)
     {
-	current += *sz;
-	return (Address) (current - *sz);
+	current += needed;
+	return (Address) (current - needed);
     }
     /* No more memory available. */
     return (Address) 0;

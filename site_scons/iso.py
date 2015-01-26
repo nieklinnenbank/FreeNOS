@@ -31,8 +31,12 @@ def iso_func(target, source, env):
     for s in source:
 	shutil.copy(str(s), temp)
 
+    # Temporary workaround for x86/pc. Place grub menu.lst in /boot/grub.
+    os.makedirs(temp + '/boot/grub')
+    shutil.copy('kernel/x86/pc/menu.lst', temp + '/boot/grub')
+
     # Generate the ISO.
-    os.system('mkisofs -quiet -R -b cd.img -no-emul-boot ' +
+    os.system('mkisofs -quiet -R -b stage2_eltorito -no-emul-boot ' +
               '-boot-load-size 4 -boot-info-table -o ' + str(target[0]) +
               ' -V "FreeNOS ' + env['RELEASE'] + '" ' + temp);
 

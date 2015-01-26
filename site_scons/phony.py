@@ -24,7 +24,7 @@ import os
 # @author GregNoel
 # @see http://www.scons.org/wiki/PhonyTargets
 #
-def Targets(env = None, **kw):
+def Targets(env, **kw):
 
     # Generate an environment, if not given.
     if not env: env = DefaultEnvironment()
@@ -36,3 +36,14 @@ def Targets(env = None, **kw):
     for target,action in kw.items():
         env.AlwaysBuild(env.Alias(target, [], action))
 
+#
+# Add ourselves to the given environment.
+#
+def generate(env):
+    env.AddMethod(Targets)
+
+#
+# We always exist.
+#
+def exists(env):
+    return True

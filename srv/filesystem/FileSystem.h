@@ -35,6 +35,7 @@
 #include "FileSystemMount.h"
 #include "FileDescriptor.h"
 #include <unistd.h>
+#include <stdlib.h>
 
 /**
  * Cached in-memory file.

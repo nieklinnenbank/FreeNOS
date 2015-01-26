@@ -24,6 +24,7 @@
 #include "Types.h"
 #include "String.h"
 #include "ProcessID.h"
+#include "MemoryBlock.h"
 
 /**
  * Enables sharing objects between processes.
@@ -72,7 +73,7 @@ template <class T> class Shared
 	    mem.action = CreateShared;
 	    mem.bytes  = sizeof(T) * count;
 	    mem.key    = (char *) key;
-	    mem.keyLength  = strlen(key);
+	    mem.keyLength  = String::strlen(key);
 	    mem.protection = PAGE_RW;
 	    mem.virtualAddress  = ZERO;
 	    mem.physicalAddress = ZERO;
@@ -84,7 +85,7 @@ template <class T> class Shared
 	    /* Clear new mappings. */
 	    if (mem.created)
 	    {
-		memset(object, 0, size());
+		MemoryBlock::set(object, 0, size());
 	    }
 	    /* Done. */
 	    return mem.result == ESUCCESS;

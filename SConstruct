@@ -17,7 +17,6 @@
 
 from build import *
 from archive import *
-from gdbinit import *
 
 #
 # Target build
@@ -30,15 +29,17 @@ VariantDir(target['BUILDROOT'] + '/lib', '#lib', duplicate = 0)
 VariantDir(target['BUILDROOT'] + '/bin', '#bin', duplicate = 0)
 VariantDir(target['BUILDROOT'] + '/srv', '#srv', duplicate = 0)
 VariantDir(target['BUILDROOT'] + '/kernel', '#kernel', duplicate = 0)
-SConscript(target['BUILDROOT'] + '/lib/SConscript')
-SConscript(target['BUILDROOT'] + '/bin/SConscript')
-SConscript(target['BUILDROOT'] + '/srv/SConscript')
-SConscript(target['BUILDROOT'] + '/kernel/' + target['ARCH'] + '/' + target['SYSTEM'] + '/SConscript')
 
 # Install files to the target RootFS
 target.TargetInstall('VERSION')
 target.TargetInstall('build.conf', target['etc'])
 target.TargetInstall('build.host.conf', target['etc'])
+
+SConscript(target['BUILDROOT'] + '/lib/SConscript')
+SConscript(target['BUILDROOT'] + '/bin/SConscript')
+SConscript(target['BUILDROOT'] + '/srv/SConscript')
+SConscript(target['BUILDROOT'] + '/kernel/' + target['ARCH'] + '/' + target['SYSTEM'] + '/SConscript')
+
 
 #
 # Host build

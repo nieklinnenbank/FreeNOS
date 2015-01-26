@@ -98,6 +98,17 @@ class Allocator
 
     protected:
 
+	/**
+	 * Calculate correctly aligned memory address.
+	 *
+	 * Any alignment corrections on the input address will result
+	 * in an address which is higher than the input address.
+	 * 
+	 * @param input Input address which need to be aligned.
+	 * @return Aligned input address.
+	 */
+	Address aligned(Address input);
+
 	/** Our parent Allocator, if any. */
 	Allocator *parent;
 	

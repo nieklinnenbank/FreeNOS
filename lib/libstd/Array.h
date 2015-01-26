@@ -21,6 +21,7 @@
 #include "Assert.h"
 #include "Comparable.h"
 #include "Types.h"
+#include "Macros.h"
 
 /** Default size of an Array */
 #define ARRAY_DEFAULT_SIZE	64

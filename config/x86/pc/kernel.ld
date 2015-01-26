@@ -35,6 +35,7 @@ SECTIONS
     .text virt : AT(phys)
     {
 	code = .;
+	*(.boot)
 	*(.text)
 	*(*.text)
 	*(.gnu.linkonce.*)

@@ -19,6 +19,7 @@ Import('build_env')
 
 env = build_env.Clone()
 env.Append(CCFLAGS = [ '-DTEKEN_XTERM' ])
-env.UseLibraries(['libposix', 'libc'])
+env.UseLibraries(['libposix', 'libc', 'libstd'])
+env.UseLibraries(['libstd'], 'host')
 env.UseServers([ 'terminal', 'process' ])
 env.Library('libteken', [ Glob('*.c') ])

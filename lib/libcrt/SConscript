@@ -18,6 +18,6 @@
 Import('build_env')
 
 env = build_env.Clone()
-env.UseLibraries([ 'libposix', 'libc', 'liballoc' ])
+env.UseLibraries([ 'libposix', 'libc', 'liballoc', 'libstd' ])
 env.UseServers([ 'process', 'memory', 'filesystem' ])
 env.TargetLibrary('libcrt', [ Glob('*.cpp') ])

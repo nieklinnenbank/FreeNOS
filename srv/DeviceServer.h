@@ -30,6 +30,7 @@
 #include "IPCServer.h"
 #include "Device.h"
 #include <unistd.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 
 /** Maximum number of devices handled simultaneously by a DeviceServer. */

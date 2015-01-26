@@ -24,7 +24,7 @@
 #include <Types.h>
 #include <Error.h>
 #include <ProcessID.h>
-#include <string.h>
+#include <MemoryBlock.h>
 
 /** 
  * @defgroup kernelapi kernel (API)
@@ -131,7 +131,7 @@ class UserMessage : public Message
 	UserMessage(Message *u, Size sz) : Message(u), size(sz)
 	{
 	    data = new s8[size];
-	    memcpy(data, u, size);
+	    MemoryBlock::copy(data, u, size);
 	}
 
 	/**

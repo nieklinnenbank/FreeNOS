@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
- * 
+ * Copyright (C) 2015 Niek Linnenbank
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -15,26 +15,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/Memory.h>
-#include <Macros.h>
-#include "Allocator.h"
+#ifndef __MEMORYBLOCK_H
+#define __MEMORYBLOCK_H
 
-Allocator * Allocator::_default = ZERO;
-
-Allocator::Allocator() : parent(ZERO)
+class MemoryBlock
 {
-}
+    public:
 
-Allocator::~Allocator()
-{
-}
+    /**
+     * Fill memory with a constant byte.
+     * @param dest Memory to write to.
+     * @param ch Constant byte.
+     * @return Pointer to dest.
+     */
+    static void * set(void *dest, int ch, unsigned count);
 
-Address Allocator::aligned(Address input)
-{
-    Address corrected = input;
+    /**
+     * Copy memory from one place to another.
+     * @param dest Destination address.
+     * @param src Source address.
+     * @param count Number of bytes to copy.
+     * @return The destination address.
+     */
+    static void * copy(void *dest, const void *src, unsigned count);
+};
 
-    if (input % MEMALIGN)
-	corrected += MEMALIGN - (input % MEMALIGN);
-    
-    return corrected;
-}
+#endif /* __MEMORYBLOCK_H */

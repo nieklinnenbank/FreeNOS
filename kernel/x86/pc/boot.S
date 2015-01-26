@@ -53,13 +53,7 @@ i\vnum:
 
 .global _start, multibootHeader, multibootInfo, gdt, kernelPageDir, kernelPageTab, kernelTss, kernelioBitMap
 
-.section ".text"
-
-/**
- * Entry point.
- */
-_start:
-	jmp _jump_entry
+.section ".boot"
 
 /*
  * Multiboot header, 32-bit aligned.
@@ -72,7 +66,13 @@ multibootHeader:
         .long -(MULTIBOOT_HEADER_MAGIC + MULTIBOOT_HEADER_FLAGS)
         .long  (multibootHeader)
 
-_jump_entry:
+.section ".text"
+.code32
+
+/**
+ * Entry point.
+ */
+_start:
 	/* Disable interrupts. */
 	cli
 

@@ -22,6 +22,7 @@
 #include <FreeNOS/Scheduler.h>
 #include <ProcessID.h>
 #include <Error.h>
+#include <MemoryBlock.h>
 
 int IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg, Size size)
 {
@@ -70,7 +71,7 @@ int IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg, Size siz
 		{
 		    if (i.current()->from == id || id == ANY)
 		    {
-			memcpy(msg, i.current()->data, size < i.current()->size ?
+			MemoryBlock::copy(msg, i.current()->data, size < i.current()->size ?
 						       size : i.current()->size);
 			scheduler->current()->getMessages()->remove(i.current());
 			delete i.current();

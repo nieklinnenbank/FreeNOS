@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
- * 
+ * Copyright (C) 2015 Niek Linnenbank
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -15,26 +15,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/Memory.h>
-#include <Macros.h>
-#include "Allocator.h"
+#include "MemoryBlock.h"
 
-Allocator * Allocator::_default = ZERO;
-
-Allocator::Allocator() : parent(ZERO)
+void * MemoryBlock::set(void *dest, int ch, unsigned count)
 {
+    char *temp;
+
+    for(temp = (char *) dest; count != 0; count--)
+    {
+        *temp++ = ch;
+    }
+    return (dest);
 }
 
-Allocator::~Allocator()
+void * MemoryBlock::copy(void *dest, const void *src, unsigned count)
 {
-}
+    const char *sp = (const char *)src;
+    char *dp = (char *)dest;
 
-Address Allocator::aligned(Address input)
-{
-    Address corrected = input;
+    for(; count != 0; count--)
+        *dp++ = *sp++;
 
-    if (input % MEMALIGN)
-	corrected += MEMALIGN - (input % MEMALIGN);
-    
-    return corrected;
+    return (dest);
 }

@@ -19,6 +19,6 @@ Import('build_env')
 
 env = build_env.Clone()
 env.UseServers(['log', 'filesystem', 'process', 'memory'])
-env.UseLibraries([ 'libposix', 'libc', 'liballoc', 'libcrt', 'libexec' ])
+env.UseLibraries([ 'libposix', 'libc', 'liballoc', 'libcrt', 'libexec', 'libstd' ])
 env.TargetProgram('server', [ 'PCIServer.cpp', 'PCIRegister.cpp', 'PCIConfig.cpp' ])
 env.TargetProgram('detect', [ 'PCIDetect.cpp' ])

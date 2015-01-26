@@ -23,12 +23,16 @@
  * @{    
  */
 
+#ifndef __KERNEL__
+
 #include <FreeNOS/Process.h>
 #include <FreeNOS/Memory.h>
 #include <FileSystemPath.h>
 #include <FileDescriptor.h>
 #include <Array.h>
 #include <Types.h>
+
+#endif /* __KERNEL__ */
 
 /** Maximum length of a command (as saved in the user process table). */
 #define COMMANDLEN PATHLEN
@@ -44,6 +48,8 @@
 
 /** Key for the UserProcess shared mapping. */
 #define USER_PROCESS_KEY "UserProcess"
+
+#ifndef __KERNEL__
 
 /**
  * Userlevel process information.
@@ -69,6 +75,8 @@ typedef struct UserProcess
     char currentDirectory[PATHLEN];
 }
 UserProcess;
+
+#endif /* __KERNEL__ */
 
 /**
  * @}

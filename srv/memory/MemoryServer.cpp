@@ -62,7 +62,7 @@ MemoryServer::MemoryServer()
     /* Attempt to load the boot image. */
     for (Size i = 0; i < info.moduleCount; i++)
     {
-        if (strcmp(info.modules[i].string, "/boot/boot.img.gz") == 0)
+        if (strcmp(info.modules[i].string, "/boot.img.gz") == 0)
         {
 	    range.virtualAddress  = findFreeRange(SELF, PAGESIZE * 2);
 	    range.physicalAddress = info.modules[i].modStart;

@@ -18,6 +18,8 @@
 #ifndef __TYPES_H
 #define __TYPES_H
 
+#ifndef __ASSEMBLER__
+
 /** 
  * @defgroup types types
  * @{ 
@@ -160,4 +162,5 @@ typedef slong Error;
  * @}
  */
 
+#endif /* __ASSEMBLER__ */
 #endif /* __TYPES_H */

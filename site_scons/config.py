@@ -125,17 +125,27 @@ def set_default_variables(env):
     env['VERSIONCODE'] = versionCode
 
     # Set the full version revision in environments.
-    # TODO: include the git commit/branch etc.
     try:
-	env['RELEASE'] = env['VERSION'] + '-git(' + os.popen('git rev-parse --short HEAD').read().strip() + ')'
+        env['RELEASE'] = env['VERSION'] + '-git(' + os.popen('git rev-parse --short HEAD').read().strip() + ')'
     except:
-	env['RELEASE'] = env['VERSION']
+        env['RELEASE'] = env['VERSION']
+
+    # Append extra version information
+    if 'VERSION_EXTRA' in env:
+        env['RELEASE'] += env['VERSION_EXTRA']
+
+    # Mark with an asterisk if the user made any changes in the local git checkout (if any)
+    try:
+        if os.system('git diff|grep -i git 2>&1 > /dev/null') == 0:
+            env['RELEASE'] += '*'
+    except:
+        pass
 
     # Attempt to retrieve the correct compiler version
     try:
-	compiler = os.popen(env['CC'] + " --version | head -n 1").read().strip()
+        compiler = os.popen(env['CC'] + " --version | head -n 1").read().strip()
     except:
-	compiler = env['CC'] + ' ' + env['CCVERSION']
+        compiler = env['CC'] + ' ' + env['CCVERSION']
 
     env['COMPILER_VERSION'] = compiler
     env['BUILDUSER'] = os.environ['USER']

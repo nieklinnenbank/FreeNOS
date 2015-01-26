@@ -87,7 +87,7 @@ void Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Size index)
     /* Map and copy program arguments. */
     args = memory->allocatePhysical(PAGESIZE);
     memory->mapVirtual(proc, args, ARGV_ADDR, PAGE_PRESENT | PAGE_USER | PAGE_RW);
-    strlcpy( (char *) memory->mapVirtual(args), program->path, ARGV_SIZE);
+    String::strlcpy( (char *) memory->mapVirtual(args), program->path, ARGV_SIZE);
     
     /* Schedule process. */
     scheduler->enqueue(proc);

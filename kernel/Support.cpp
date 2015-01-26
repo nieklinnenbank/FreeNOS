@@ -17,6 +17,8 @@
 
 #include <FreeNOS/Support.h>
 #include <FreeNOS/Init.h>
+#include <FreeNOS/Memory.h>
+#include <FreeNOS/Scheduler.h>
 #include <Macros.h>
 #include <Assert.h>
 

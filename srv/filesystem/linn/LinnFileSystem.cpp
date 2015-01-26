@@ -42,7 +42,7 @@ int main(int argc, char **argv)
     }
     else
     {
-	BootModule *bm = new BootModule("/boot/boot.linn.gz");
+	BootModule *bm = new BootModule("/boot.linn.gz");
 	
 	if (bm->load())
 	{

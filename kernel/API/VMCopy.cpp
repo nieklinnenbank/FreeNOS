@@ -20,7 +20,7 @@
 #include <FreeNOS/API.h>
 #include <FreeNOS/Memory.h>
 #include <Error.h>
-#include <string.h>
+#include <MemoryBlock.h>
 
 int VMCopyHandler(ProcessID procID, Operation how, Address ours,
 				    Address theirs, Size sz)
@@ -59,11 +59,11 @@ int VMCopyHandler(ProcessID procID, Operation how, Address ours,
         switch (how)
 	{
 	    case Read:
-		memcpy((void *)ours, (void *)(tmpAddr + pageOff), bytes);
+		MemoryBlock::copy((void *)ours, (void *)(tmpAddr + pageOff), bytes);
 		break;
 			
 	    case Write:
-		memcpy((void *)(tmpAddr + pageOff), (void *)ours, bytes);
+		MemoryBlock::copy((void *)(tmpAddr + pageOff), (void *)ours, bytes);
 		break;
 	    
 	    default:

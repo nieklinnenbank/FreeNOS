@@ -18,5 +18,5 @@
 Import('build_env')
 
 env = build_env.Clone()
-env.UseLibraries([ 'libexec' ], 'host')
+env.UseLibraries([ 'libexec', 'libstd' ], 'host')
 env.HostProgram('img', 'Main.cpp')

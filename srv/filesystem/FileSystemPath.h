@@ -22,6 +22,7 @@
 #include <ListIterator.h>
 #include <Types.h>
 #include <String.h>
+#include <string.h>
 
 /** Maximum length of a filesystem path. */
 #define PATHLEN	64
