@@ -66,7 +66,11 @@ int Shell::execute(char *command)
     }
     /* Attempt to extract arguments. */
     argc = parse(command, argv, MAX_ARGV);
-	
+
+    /* Ignore comments */
+    if (argv[0][0] == '#')
+        return EXIT_SUCCESS;
+
     /* Do we have a matching ShellCommand? */
     if (!(cmd = ShellCommand::byName(argv[0])))
     {

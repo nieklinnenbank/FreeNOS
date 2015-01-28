@@ -80,19 +80,13 @@ int main(int argc, char **argv)
     /* Run an interactive Shell. */
     else
     {
-	/* Reopen standard I/O. */
-	for (Size i = 0; i < 2; i++)
-	{
-	    close(i);
-	    open("/dev/tty0", O_RDWR);
-	}
-	/* Show the user where to get help. */
-	printf("\r\n"
-    	       "Entering Shell. Type 'help' for the command list.\r\n"
-    	       "\r\n");
+        /* Show the user where to get help. */
+        printf( "\r\n"
+                "Entering interactive Shell. Type 'help' for the command list.\r\n"
+                "\r\n");
 
-	/* Begin loop. */
-	return sh.run();
+        /* Begin loop. */
+        return sh.run();
     }
     /* Success. */
     return EXIT_SUCCESS;
