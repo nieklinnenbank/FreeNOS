@@ -21,6 +21,10 @@
 
 void closelog(void)
 {
-    free(logIdentity);
-    close(logFile);
+    if (logIdentity)
+    {
+        free(logIdentity);
+        logIdentity = (char *) NULL;
+    }
+    // Dont actually close standard output.
 }

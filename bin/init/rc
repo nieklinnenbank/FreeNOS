@@ -1,12 +1,22 @@
+/srv/serial/server
 /srv/input/keyboard/server
 /srv/video/vga/server
 /srv/terminal/server
-/srv/log/server
+
+#
+# Use keyboard and vga text-mode as console.
+#
+stdio /dev/tty0 /dev/tty0
+
+#
+# Uncomment to use serial port as console.
+#
+#stdio /dev/serial0 /dev/serial0
+
 /srv/ata/server
 /srv/filesystem/proc/server
 /srv/filesystem/grub/server
 /srv/filesystem/linn/server /dev/ata0 0x400000 /usr
-/srv/serial/server
 /srv/pci/server
 /srv/pci/detect
 /srv/time/server

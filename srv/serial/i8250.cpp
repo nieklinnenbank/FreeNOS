@@ -17,8 +17,10 @@
 
 #include <API/ProcessCtl.h>
 #include <FreeNOS/CPU.h>
+#include <FreeNOS/Config.h>
 #include <Macros.h>
 #include <Types.h>
+#include <string.h>
 #include <ProcessID.h>
 #include "i8250.h"
 
@@ -57,7 +59,16 @@ Error i8250::initialize()
     outb(base + DIVISORLOW,  (11500 / BAUDRATE) & 0xff);
     outb(base + DIVISORHIGH, (11500 / BAUDRATE) >> 8);
     outb(base + LINECONTROL, inb(base + LINECONTROL) & ~DLAB);
-    
+
+    // TODO: this should be done from the kernel.
+    // A user-process should monitor the kernel console buffer and write
+    // it to the selected console for the kernel.
+#define BANNER \
+    "FreeNOS " RELEASE " [" ARCH "/" SYSTEM "] (" BUILDUSER "@" BUILDHOST ") (" COMPILER_VERSION ") " DATETIME "\r\n"
+
+    write((s8 *) BANNER, strlen(BANNER), ZERO);
+    write((s8 *) COPYRIGHT "\r\n", strlen(COPYRIGHT "\r\n"), ZERO);
+
     /* Done! */
     return ESUCCESS;
 }

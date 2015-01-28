@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,11 +19,15 @@
 #include "fcntl.h"
 #include "syslog.h"
 
-int logFile;
-char * logIdentity;
+int logFile = 1;
+char * logIdentity = (char *) NULL;
 
 void openlog(const char *ident, int logopt, int facility)
 {
+    // Close any existing logs
+    closelog();
+
+    // Log to standard output by default.
     logIdentity = strdup(ident);
-    logFile = open("/dev/log0", O_WRONLY);
+    logFile = 1;
 }
