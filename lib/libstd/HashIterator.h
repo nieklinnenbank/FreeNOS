@@ -77,7 +77,7 @@ template <class Key, class Value> class HashIterator
 	void reset(HashTable<Key, Value> *h)
 	{
 	    assertRead(h);
-	    index    = ZERO;
+	    index    = -1;
 	    if (listIter) delete listIter;
 	    listIter = ZERO;
 	    next();
@@ -122,7 +122,7 @@ template <class Key, class Value> class HashIterator
 	    /* Look for next item on the List, otherwise find next List. */
 	    if (!listIter || !(n = listIter->next()))
 	    {
-		while (index++ < hash->size() - 1)
+		while (++index < hash->size() - 1)
 		{
 		    if ((lst = &(hash->map()[index])) && lst->head())
 		    {
