@@ -19,7 +19,7 @@
 #define __API_PROCESSCTL_H
 
 #include <FreeNOS/API.h>
-#include <FreeNOS/Process.h>
+#include <FreeNOS/Scheduler.h>
 #include <Error.h>
 #include <Types.h>
 

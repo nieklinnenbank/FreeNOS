@@ -14,16 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <API/ProcessCtl.h>
-#include <Macros.h>
-#include <ProcessID.h>
-#include <stdio.h>
+
 #include <stdlib.h>
 #include <unistd.h>
-#include <string.h>
-#include <errno.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 
 int main(int argc, char **argv)
 {

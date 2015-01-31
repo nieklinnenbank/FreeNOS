@@ -28,5 +28,3 @@ int ExitCommand::execute(Size nparams, char **params)
     exit(EXIT_SUCCESS);
     return EXIT_SUCCESS;
 }
-
-INITOBJ(ExitCommand, exitCmd, LIBCRT_DEFAULT)

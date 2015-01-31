@@ -15,10 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/Memory.h>
-#include <FreeNOS/Multiboot.h>
-#include <FreeNOS/Init.h>
-#include <FreeNOS/Kernel.h>
+#include <Arch/Memory.h>
+#include "Multiboot.h"
+#include "Kernel.h"
+#include <Init.h>
 #include <Allocator.h>
 #include <BubbleAllocator.h>
 #include <PoolAllocator.h>
@@ -43,6 +43,16 @@ Memory::Memory()
     }
 }
 
+Size Memory::getTotalMemory()
+{
+    return memorySize;
+}
+        
+Size Memory::getAvailableMemory()
+{
+    return memoryAvail;
+}
+
 void Memory::initialize()
 {
     Address page = 0x00300000;
@@ -60,7 +70,7 @@ void Memory::initialize()
     /* Clear memory map. */
     for (u8 *p = memoryMap; p < memoryMapEnd; p++)
     {
-	*p = 0;
+        *p = 0;
     }
     /* Setup the dynamic memory heap. */
     bubble = new (page) BubbleAllocator();
@@ -82,32 +92,32 @@ Address Memory::allocatePhysical(Size sz, Address paddr)
     /* Loop the memoryMap for a free block. */
     for (Address i = start; i < end; i += PAGESIZE)
     {
-	if (!isMarked(i))
-	{
-	    /* Remember this page. */
-	    if (!count)
-	    {
-		from  = i;
-		count = 1;
-	    }
-	    else
-		count++;
+        if (!isMarked(i))
+        {
+            /* Remember this page. */
+            if (!count)
+            {
+                from  = i;
+                count = 1;
+            }
+            else
+                count++;
 
-	    /* Are there enough contigious pages? */
-	    if (count * PAGESIZE >= sz)
-	    {
-		for (Address j = from; j < from + (count * PAGESIZE); j += PAGESIZE)
-		{
-		    setMark(j, true);
-		}
-		memoryAvail -= count * PAGESIZE;
-		return from;
-	    }
-	}
-	else
-	{
-	    from = count = 0;
-	}
+            /* Are there enough contigious pages? */
+            if (count * PAGESIZE >= sz)
+            {
+                for (Address j = from; j < from + (count * PAGESIZE); j += PAGESIZE)
+                {
+                    setMark(j, true);
+                }
+                memoryAvail -= count * PAGESIZE;
+                return from;
+            }
+        }
+        else
+        {
+            from = count = 0;
+        }
     }
     /* Out of memory! */
     return (Address) ZERO;
@@ -128,7 +138,7 @@ Address Memory::allocateVirtual(Address vaddr, ulong prot)
     return mapVirtual(newPage, vaddr, prot);
 }
 
-Address Memory::allocateVirtual(ArchProcess *p, Address vaddr, ulong prot)
+Address Memory::allocateVirtual(Process *p, Address vaddr, ulong prot)
 {
     /* Allocate new physical page. */
     Address newPage = allocatePhysical(PAGESIZE);
@@ -151,9 +161,9 @@ void Memory::setMark(Address addr, bool marked)
     Size bit   = (addr >> PAGESHIFT) % 8;
 
     if (marked)
-	memoryMap[index] |=  (1 << bit);
+        memoryMap[index] |=  (1 << bit);
     else
-	memoryMap[index] &= ~(1 << bit);
+        memoryMap[index] &= ~(1 << bit);
 }
 
 INITCLASS(Memory, initialize, PMEMORY)

@@ -15,13 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/Process.h>
-#include <FreeNOS/Memory.h>
-#include <FreeNOS/CPU.h>
 #include <FreeNOS/Scheduler.h>
 #include <Types.h>
 #include <ListIterator.h>
 #include <MemoryBlock.h>
+#include "CPU.h"
+#include "Process.h"
+#include "Memory.h"
 
 X86Process::X86Process(Address entry) : Process(entry)
 {
@@ -108,7 +108,7 @@ void X86Process::execute()
     memory->mapVirtual(ioMapAddr, (Address) &kernelioBitMap);
 
     /* Perform a context switch. */
-    contextSwitch( scheduler->old() ? &scheduler->old()->stackAddr
+    contextSwitch( scheduler->old() ? &((X86Process *)scheduler->old())->stackAddr
 				    :  ZERO,
 		   pageDirAddr,
 		   stackAddr,

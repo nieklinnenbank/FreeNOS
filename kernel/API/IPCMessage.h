@@ -18,7 +18,7 @@
 #ifndef __API_IPCMESSAGE_H
 #define __API_IPCMESSAGE_H
 
-#include <FreeNOS/Process.h>
+#include <FreeNOS/Scheduler.h>
 #include <FreeNOS/API.h>
 #include <Macros.h>
 #include <Types.h>

@@ -19,5 +19,5 @@ Import('build_env')
 
 env = build_env.Clone()
 env.UseServers(['log', 'filesystem', 'memory', 'process'])
-env.UseLibraries([ 'libposix', 'libc', 'liballoc', 'libcrt', 'libexec', 'libparse', 'libstd'])
+env.UseLibraries([ 'libposix', 'libc', 'liballoc', 'libexec', 'libstd'])
 env.TargetProgram('server', [ Glob('*.cpp') ])

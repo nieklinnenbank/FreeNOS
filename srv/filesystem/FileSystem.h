@@ -27,7 +27,7 @@
 #include <Array.h>
 #include <HashTable.h>
 #include <HashIterator.h>
-#include <POSIXSupport.h>
+#include <Runtime.h>
 #include "Directory.h"
 #include "File.h"
 #include "FileSystemPath.h"

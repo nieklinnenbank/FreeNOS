@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/Scheduler.h>
-#include <FreeNOS/Init.h>
+#include "Scheduler.h"
+#include "Kernel.h"
 #include <List.h>
 #include <ListIterator.h>
 #include <Macros.h>
@@ -29,7 +29,7 @@ Scheduler::Scheduler()
 
 void Scheduler::executeNext()
 {
-    ArchProcess *next;
+    Process *next;
 
     /* Save the old process. */
     oldProcess = currentProcess ? currentProcess : ZERO;
@@ -37,17 +37,17 @@ void Scheduler::executeNext()
     /* Process any pending wakeups. */
     for (ListIterator<Process> i(Process::getWakeups()); i.hasNext(); i++)
     {
-	/* Only wakeup when it sleeps. */
-	if (i.current()->getState() == Sleeping)
-	{
-	    i.current()->setState(Ready);
-	    Process::getWakeups()->remove(i.current());
-	}
+        /* Only wakeup when it sleeps. */
+        if (i.current()->getState() == Sleeping)
+        {
+            i.current()->setState(Ready);
+            Process::getWakeups()->remove(i.current());
+        }
     }
     /* Find the next ready Process in line. */
     if (!(next = findNextReady()))
     {
-	next = idleProcess;
+        next = idleProcess;
     }
     /* Update current. */
     currentProcess = next;
@@ -55,11 +55,11 @@ void Scheduler::executeNext()
     /* Run it. */
     if (currentProcess != oldProcess)
     {
-	currentProcess->execute();
+        currentProcess->execute();
     }
 }
 
-void Scheduler::executeAttempt(ArchProcess *p)
+void Scheduler::executeAttempt(Process *p)
 {
     /* Don't switch if it's the current process. */
     if (p == currentProcess) return;
@@ -67,7 +67,7 @@ void Scheduler::executeAttempt(ArchProcess *p)
     /* Wakeup process if needed. */
     if (p->getState() == Sleeping)
     {
-	p->setState(Ready);
+        p->setState(Ready);
         Process::getWakeups()->remove(p);
     }
     /* Update pointers. */
@@ -78,55 +78,71 @@ void Scheduler::executeAttempt(ArchProcess *p)
     p->execute();
 }
 
-void Scheduler::enqueue(ArchProcess *proc)
+void Scheduler::enqueue(Process *proc)
 {
     queue.insertTail(proc);
 }
 
-void Scheduler::dequeue(ArchProcess *proc)
+void Scheduler::dequeue(Process *proc)
 {
     queue.remove(proc);
     queuePtr.reset(&queue);
 
     if (currentProcess == proc)
-	currentProcess = ZERO;
+        currentProcess = ZERO;
 
     if (oldProcess == proc)
-	oldProcess = ZERO;
+        oldProcess = ZERO;
 }
 
-ArchProcess * Scheduler::findNextReady()
+Process * Scheduler::findNextReady()
 {
-    ArchProcess *ret = ZERO, *saved = ZERO;
+    Process *ret = ZERO, *saved = ZERO;
 
     while (!ret)
     {
-	/* Search the whole list. */
-	while (queuePtr.hasNext())
-	{
-	    /* Save the current. */
-	    if (!saved)
-		saved = queuePtr.current();
-	
-	    /* We walked the whole list already. */
-	    else if (queuePtr.current() == saved)
+        /* Search the whole list. */
+        while (queuePtr.hasNext())
+        {
+            /* Save the current. */
+            if (!saved)
+                saved = queuePtr.current();
+
+            /* We walked the whole list already. */
+            else if (queuePtr.current() == saved)
             {
-		return ret;
-	    }
-	    /* Is this process ready? */
-	    if (queuePtr.current()->getState() == Ready)
-	    {
-		ret = queuePtr.current();
-		queuePtr++;
-		return ret;
-	    }
-	    /* Try the next. */
-	    queuePtr++;
-	}
-	/* Start again at the front. */
-	queuePtr.reset(&queue);
+                return ret;
+            }
+            /* Is this process ready? */
+            if (queuePtr.current()->getState() == Ready)
+            {
+                ret = queuePtr.current();
+                queuePtr++;
+                return ret;
+            }
+            /* Try the next. */
+            queuePtr++;
+        }
+        /* Start again at the front. */
+        queuePtr.reset(&queue);
     }
     return ret;
+}
+
+Process * Scheduler::current()
+{
+    return currentProcess;
+}
+
+Process * Scheduler::old()
+{
+    return oldProcess;
+}
+
+void Scheduler::setIdle(Process *p)
+{
+    idleProcess = p;
+    queue.remove(p);
 }
 
 INITOBJ(Scheduler, scheduler, SCHEDULER)

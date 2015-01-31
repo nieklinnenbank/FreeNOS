@@ -31,6 +31,11 @@ class Shell
 {
     public:
 
+        /**
+         * Constructor
+         */
+        Shell();
+
 	/**
 	 * Executes the Shell by entering an infinite loop.
 	 * @return Never.

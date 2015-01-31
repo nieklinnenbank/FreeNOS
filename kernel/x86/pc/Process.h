@@ -32,7 +32,7 @@
 #define ArchProcess X86Process
 class ArchProcess;
 
-#include <kernel/Process.h>
+#include <FreeNOS/Process.h>
 #include "CPU.h"
 #include "Memory.h"
 #include <Types.h>

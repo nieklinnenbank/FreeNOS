@@ -19,22 +19,22 @@
 #define __KERNEL_BOOTIMAGE_H
 
 /** First magic byte. */
-#define BOOTIMAGE_MAGIC0	('F') + ('r' << 8) + ('e' << 16) + ('e' << 24)
+#define BOOTIMAGE_MAGIC0        ('F') + ('r' << 8) + ('e' << 16) + ('e' << 24)
 
 /** Second magic byte. */
-#define BOOTIMAGE_MAGIC1	('N') + ('O' << 8) + ('S' << 16) + (0x1 << 24)
+#define BOOTIMAGE_MAGIC1        ('N') + ('O' << 8) + ('S' << 16) + (0x1 << 24)
 
 /** Version of the boot image layout. */
-#define BOOTIMAGE_REVISION	1
+#define BOOTIMAGE_REVISION      1
 
 /** Maximum length of BootVariable keys. */
-#define BOOTIMAGE_KEY		32
+#define BOOTIMAGE_KEY           32
 
 /** Maximum length of BootVariable values. */
-#define BOOTIMAGE_VALUE		64
+#define BOOTIMAGE_VALUE         64
 
 /** Maximum length of the filesystem path in a BootProgram. */
-#define BOOTIMAGE_PATH		128
+#define BOOTIMAGE_PATH          128
 
 /**
  * BootImage contains executable programs to be loaded at system bootup.

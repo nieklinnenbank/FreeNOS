@@ -20,7 +20,7 @@
 
 #ifndef __ASSEMBLY__
 
-#include <kernel/Kernel.h>
+#include <FreeNOS/Kernel.h>
 #include <Singleton.h>
 #include <Types.h>
 #include "Interrupt.h"
@@ -44,25 +44,25 @@
 #define PIC2_DATA       0xa1 
 
 /** End of Interrupt (EOI). */
-#define PIC_EOI		0x20
+#define PIC_EOI         0x20
 
 /** Base of IRQ's from the PIC's. */
-#define PIC_IRQ_BASE	0x20
+#define PIC_IRQ_BASE    0x20
 
 /** PIT maximum frequency. */
 #define PIT_FREQUENCY   1193182
 
 /** PIT IRQ interval. */
-#define PIT_HZ		250
+#define PIT_HZ          250
 
 /** PIT divisor. */
-#define PIT_DIVISOR	(PIT_FREQUENCY / PIT_HZ)
+#define PIT_DIVISOR     (PIT_FREQUENCY / PIT_HZ)
 
 /** PIT command port. */
-#define PIT_CMD		0x43
+#define PIT_CMD         0x43
 
 /** PIT channel zero. */
-#define PIT_CHAN0	0x40
+#define PIT_CHAN0       0x40
 
 /**
  * Implements an x86 compatible kernel.
@@ -74,15 +74,15 @@ class X86Kernel : public Kernel, public Singleton<X86Kernel>
         /**
          * Constructor function.
          */
-	X86Kernel();
-	
-	/**
-	 * Hooks a function to an hardware interrupt.
-	 * @param vec Interrupt vector to hook on.
-	 * @param h Handler function.
-	 * @param p Parameter to pass to the handler function.
-	 */
-	void hookInterrupt(int vec, InterruptHandler h, ulong p);
+        X86Kernel();
+        
+        /**
+         * Hooks a function to an hardware interrupt.
+         * @param vec Interrupt vector to hook on.
+         * @param h Handler function.
+         * @param p Parameter to pass to the handler function.
+         */
+        void hookInterrupt(int vec, InterruptHandler h, ulong p);
 
         /** 
          * Uses the PIC to (un)mask an IRQ. 
@@ -91,38 +91,45 @@ class X86Kernel : public Kernel, public Singleton<X86Kernel>
          */
         void enableIRQ(uint vector, bool enabled);
 
+        /**
+         * Create a new process.
+         * @param entry Entry point of the program.
+         * @return X86Process on success or ZERO on failure.
+         */
+        Process * createProcess(Address entry);
+
     private:
     
-	/** 
+        /** 
          * Called when the CPU detects a fault. 
          * @param state Contains CPU registers, interrupt vector and error code. 
          * @param param Not used. 
          */
         static void exception(CPUState *state, ulong param);
-	
-	/** 
+        
+        /** 
          * Default interrupt handler. 
          * @param state Contains CPU registers, interrupt vector and error code. 
          * @param param Not used. 
          */
         static void interrupt(CPUState *state, ulong param);
 
-	/**
-	 * Kernel trap handler (system calls).
-	 * @param state Contains the arguments for the APIHandler, in CPU registers.
-	 * @param param Not used.
-	 */
-	static void trap(CPUState *state, ulong param);
-	
-	/** 
+        /**
+         * Kernel trap handler (system calls).
+         * @param state Contains the arguments for the APIHandler, in CPU registers.
+         * @param param Not used.
+         */
+        static void trap(CPUState *state, ulong param);
+        
+        /** 
          * i8253 system clock interrupt handler. 
          * @param state CPU registers on time of interrupt. 
-	 * @param param Not used.
+         * @param param Not used.
          */
-	static void clocktick(CPUState *state, ulong param);
+        static void clocktick(CPUState *state, ulong param);
         
-	/** Amount of i8253 ticks (interrupts) counted so far. */
-	Size ticks;
+        /** Amount of i8253 ticks (interrupts) counted so far. */
+        Size ticks;
 };
 
 /** Points to the kernel. */

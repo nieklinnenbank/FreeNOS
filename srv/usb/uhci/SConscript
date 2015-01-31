@@ -19,6 +19,6 @@ Import('build_env')
 
 env = build_env.Clone()
 env.UseServers(['log', 'filesystem', 'process', 'memory', 'pci'])
-env.UseLibraries([ 'libposix', 'libc', 'liballoc', 'libcrt', 'libexec', 'libstd' ])
+env.UseLibraries([ 'libposix', 'libc', 'liballoc', 'libstd' ])
 env.TargetProgram('server', [ Glob('*.cpp') ])
 #env.PCI('server', 0x8086, 0x7020)

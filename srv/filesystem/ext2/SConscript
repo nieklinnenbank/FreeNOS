@@ -19,8 +19,8 @@ Import('build_env')
 
 env = build_env.Clone()
 env.UseServers(['log', 'filesystem', 'process', 'memory'])
-env.UseLibraries(['libexec', 'libstd'], 'host')
+env.UseLibraries(['libstd'], 'host')
 env.HostProgram('create', [ 'Ext2Create.cpp' ])
 
-env.UseLibraries([ 'libposix', 'libc', 'liballoc', 'libcrt', 'libstd', 'libexec' ])
+env.UseLibraries([ 'libposix', 'libc', 'liballoc', 'libstd', 'libexec' ])
 env.TargetProgram('server', [ 'Ext2Directory.cpp', 'Ext2File.cpp', 'Ext2FileSystem.cpp' ])

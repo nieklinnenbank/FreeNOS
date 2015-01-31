@@ -41,5 +41,3 @@ int StdioCommand::execute(Size nparams, char **params)
 
     return 0;
 }
-
-INITOBJ(StdioCommand, stdioCmd, LIBCRT_DEFAULT)

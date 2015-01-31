@@ -27,7 +27,7 @@
 #define ADDRESS
 #define ADDRESSP
 #else
-#define ADDRESS	  (Address)
+#define ADDRESS   (Address)
 #define ADDRESSP  (Address *)
 #endif
 
@@ -41,16 +41,16 @@
 #define PAGESIZE        4096
 
 /** Number of entries in the page directory. */
-#define PAGEDIR_MAX	1024
+#define PAGEDIR_MAX     1024
 
 /** Number of entries in a page table. */
-#define PAGETAB_MAX	1024
+#define PAGETAB_MAX     1024
 
 /** Mask to find the page. */
 #define PAGEMASK        0xfffff000 
 
 /** Memory address alignment. */
-#define MEMALIGN	4
+#define MEMALIGN        4
 
 /** Marks a page entry present. */
 #define PAGE_PRESENT    1
@@ -62,22 +62,22 @@
 #define PAGE_USER       4
 
 /** Pinned pages cannot be released. */
-#define PAGE_PINNED	(1 << 9)
+#define PAGE_PINNED     (1 << 9)
 
 /** This page has been marked for temporary operations. */
-#define PAGE_MARKED	(1 << 10)
+#define PAGE_MARKED     (1 << 10)
 
 /** Page has been reserved for future use. */
-#define PAGE_RESERVED	(1 << 11)
+#define PAGE_RESERVED   (1 << 11)
 
 /** We map page tables into virtual memory, at a fixed address. */
-#define PAGETABFROM		ADDRESS (1024 * 1024 * 4)
+#define PAGETABFROM             ADDRESS (1024 * 1024 * 4)
 
 /** Address space for modifing remote page tables. */
-#define PAGETABFROM_REMOTE	ADDRESS (1024 * 1024 * 8)
+#define PAGETABFROM_REMOTE      ADDRESS (1024 * 1024 * 8)
 
 /** Address space for userspace pagetable mapping. */
-#define PAGEUSERFROM		ADDRESS (1024 * 1024 * 12)
+#define PAGEUSERFROM            ADDRESS (1024 * 1024 * 12)
 
 /**
  * Entry inside the page directory of a given virtual address.
@@ -144,9 +144,9 @@
  */
 #define tlb_flush_all() \
     asm volatile("mov %cr3, %eax\n" \
-	         "mov %eax, %cr3\n")
+                 "mov %eax, %cr3\n")
 
-#include <kernel/Memory.h>
+#include <FreeNOS/Memory.h>
 #include <Singleton.h>
 #include "Process.h"
 #include <Types.h>
@@ -159,83 +159,83 @@ class X86Memory : public Memory, public Singleton<X86Memory>
 {
     public:
 
-	/**
-	 * Constructor function.
-	 */
-	X86Memory();
+        /**
+         * Constructor function.
+         */
+        X86Memory();
 
-	/**
-	 * Map a physical page to a virtual address, using intel's paged virtual memory.
-	 * @param paddr Physical address.
-	 * @param vaddr Virtual address.
-	 * @param prot Page entry protection flags.
-	 * @return Mapped virtual address.
-	 */	
-	Address mapVirtual(Address paddr, Address vaddr = ZERO,
-			   ulong prot = PAGE_PRESENT | PAGE_RW);
+        /**
+         * Map a physical page to a virtual address, using intel's paged virtual memory.
+         * @param paddr Physical address.
+         * @param vaddr Virtual address.
+         * @param prot Page entry protection flags.
+         * @return Mapped virtual address.
+         */     
+        Address mapVirtual(Address paddr, Address vaddr = ZERO,
+                           ulong prot = PAGE_PRESENT | PAGE_RW);
 
-	/**
-	 * Map a physical page to a virtual address, using intel's paged virtual memory.
-	 * @param p Process to map memory for.
-	 * @param paddr Physical address.
-	 * @param vaddr Virtual address.
-	 * @param prot Page entry protection flags.
-	 * @return Mapped virtual address.
-	 */	
-	Address mapVirtual(X86Process *p, Address paddr,
-			   Address vaddr, ulong prot = PAGE_PRESENT | PAGE_RW);
+        /**
+         * Map a physical page to a virtual address, using intel's paged virtual memory.
+         * @param p Process to map memory for.
+         * @param paddr Physical address.
+         * @param vaddr Virtual address.
+         * @param prot Page entry protection flags.
+         * @return Mapped virtual address.
+         */     
+        Address mapVirtual(Process *p, Address paddr,
+                           Address vaddr, ulong prot = PAGE_PRESENT | PAGE_RW);
 
         /**
          * Lookup a pagetable entry for the given (remote) virtual address.
          * @param p Target process.
-	 * @param vaddr Virtual address to lookup.
-	 * @return Page table entry if vaddr is mapped, or ZERO if not.
-	 */
-	Address lookupVirtual(X86Process *p, Address vaddr);
+         * @param vaddr Virtual address to lookup.
+         * @return Page table entry if vaddr is mapped, or ZERO if not.
+         */
+        Address lookupVirtual(Process *p, Address vaddr);
 
-	/**
-	 * Verify protection access flags in the page directory and page table.
-	 * @param p Target process to verify protection bits for.
-	 * @param vaddr Virtual address.
-	 * @param sz Size of the byte range to check.
-	 * @return True if the current process has access, false otherwise.
-	 */
-	bool access(X86Process *p, Address vaddr, Size sz,
-		    ulong prot = PAGE_PRESENT|PAGE_RW|PAGE_USER);
+        /**
+         * Verify protection access flags in the page directory and page table.
+         * @param p Target process to verify protection bits for.
+         * @param vaddr Virtual address.
+         * @param sz Size of the byte range to check.
+         * @return True if the current process has access, false otherwise.
+         */
+        bool access(Process *p, Address vaddr, Size sz,
+                    ulong prot = PAGE_PRESENT|PAGE_RW|PAGE_USER);
 
         /** 
          * Marks all physical pages used by a process as free (if not pinned). 
          * @param p Target process. 
          */
-	void releaseAll(ArchProcess *p);
+        void releaseAll(Process *p);
 
-	/**
-	 * Maps remote pages into the current process.
-	 * @param p Other process for which we map tables.
-	 * @param pageTabAddr Point page table pointer for this address.
-	 * @param pageDirAddr Map the remote page remote directory on this address.
-	 * @param prot Extra memory protection flags for the mapping.
-	 */
-	void mapRemote(X86Process *p, Address pageTabaddr,
-		       Address pageDirAddr = (Address) PAGEDIRADDR_REMOTE,
-		       ulong prot = ZERO);
+        /**
+         * Maps remote pages into the current process.
+         * @param p Other process for which we map tables.
+         * @param pageTabAddr Point page table pointer for this address.
+         * @param pageDirAddr Map the remote page remote directory on this address.
+         * @param prot Extra memory protection flags for the mapping.
+         */
+        void mapRemote(X86Process *p, Address pageTabaddr,
+                       Address pageDirAddr = (Address) PAGEDIRADDR_REMOTE,
+                       ulong prot = ZERO);
 
     private:
     
-	/**
-	 * Find a free virtual page.
-	 * @param pageTabFrom Address of the first page table.
-	 * @param pageDirAddr Pointer to the page directory to use.
-	 * @return Free virtual address, if any.
-	 */
-	Address findFree(Address pageTabFrom, Address *pageDir);
+        /**
+         * Find a free virtual page.
+         * @param pageTabFrom Address of the first page table.
+         * @param pageDirAddr Pointer to the page directory to use.
+         * @return Free virtual address, if any.
+         */
+        Address findFree(Address pageTabFrom, Address *pageDir);
 
-	
-	/** Remote page directory and page tables. */
-	Address *remPageDir, *remPageTab;
-	
-	/** Local (i.e. currently executing process) page directory and tables. */
-	Address *myPageDir, *myPageTab;
+        
+        /** Remote page directory and page tables. */
+        Address *remPageDir, *remPageTab;
+        
+        /** Local (i.e. currently executing process) page directory and tables. */
+        Address *myPageDir, *myPageTab;
 };
 
 /** Instance of Intel memory. */

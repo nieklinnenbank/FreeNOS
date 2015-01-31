@@ -15,16 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/Kernel.h>
-#include <FreeNOS/CPU.h>
 #include <FreeNOS/API.h>
-#include <FreeNOS/Init.h>
-#include <FreeNOS/Interrupt.h>
 #include <FreeNOS/Scheduler.h>
 #include <Macros.h>
 #include <List.h>
 #include <ListIterator.h>
 #include <Array.h>
+#include "Kernel.h"
+#include "CPU.h"
+#include "Interrupt.h"
+#include "Memory.h"
 
 /** Interrupt handlers. */
 Array<List<InterruptHook> > interrupts(256);
@@ -47,7 +47,7 @@ void executeInterrupt(CPUState state)
     }
 }
 
-X86Kernel::X86Kernel() : ticks(0)
+X86Kernel::X86Kernel() : Kernel(), ticks(0)
 {
     /* ICW1: Initialize PIC's (Edge triggered, Cascade) */
     outb(PIC1_CMD, 0x11);
@@ -147,6 +147,11 @@ void X86Kernel::enableIRQ(uint irq, bool enabled)
     	else
     	    outb(PIC2_DATA, inb(PIC2_DATA) | (1 << (irq - 8)));
     }
+}
+
+Process * X86Kernel::createProcess(Address entry)
+{
+    return new X86Process(entry);
 }
 
 void X86Kernel::exception(CPUState *state, ulong param)

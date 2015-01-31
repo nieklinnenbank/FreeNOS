@@ -15,14 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/Kernel.h>
-#include <FreeNOS/Init.h>
-#include <FreeNOS/Scheduler.h>
+#include <Arch/Kernel.h>
+#include "Scheduler.h"
 
 void kmain()
 {
-    /* Initialize kernel. */
+    /* Initialize subsystems. */
     INITRUN(&initStart, &initEnd);
+
+    /* Load boot image. */
+    kernel->loadBootImage();
     
     /* Start scheduling. */
     scheduler->executeNext();

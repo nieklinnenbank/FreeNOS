@@ -15,65 +15,66 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/VMCopy.h>
+#include "VMCopy.h"
 #include <FreeNOS/Process.h>
 #include <FreeNOS/API.h>
-#include <FreeNOS/Memory.h>
+#include <FreeNOS/Kernel.h>
+#include <Arch/Memory.h>
 #include <Error.h>
 #include <MemoryBlock.h>
 
 int VMCopyHandler(ProcessID procID, Operation how, Address ours,
-				    Address theirs, Size sz)
+                                    Address theirs, Size sz)
 {
-    ArchProcess *proc;
+    Process *proc;
     Address paddr, tmpAddr;
     Size bytes = 0, pageOff, total = 0;
     
-    /* Find the corresponding ArchProcess. */
-    if (!(proc = ArchProcess::byID(procID)))
+    /* Find the corresponding Process. */
+    if (!(proc = Process::byID(procID)))
     {
-	return ESRCH;
+        return ESRCH;
     }
     /* Verify memory addresses. */
     if (!memory->access(scheduler->current(), ours, sz) ||
         !memory->access(proc, theirs, sz))
     {
-	return EFAULT;
+        return EFAULT;
     }
     /* Keep on going until all memory is processed. */
     while (total < sz)
     {
-	/* Update variables. */
-	paddr   = memory->lookupVirtual(proc, theirs) & PAGEMASK;
-	pageOff = theirs & ~PAGEMASK;
-	bytes   = (PAGESIZE - pageOff) < (sz - total) ?
-		  (PAGESIZE - pageOff) : (sz - total);
-		
-	/* Valid address? */
-	if (!paddr) break;
-		
-	/* Map the physical page. */
-	tmpAddr = memory->mapVirtual(paddr);
+        /* Update variables. */
+        paddr   = memory->lookupVirtual(proc, theirs) & PAGEMASK;
+        pageOff = theirs & ~PAGEMASK;
+        bytes   = (PAGESIZE - pageOff) < (sz - total) ?
+                  (PAGESIZE - pageOff) : (sz - total);
+                
+        /* Valid address? */
+        if (!paddr) break;
+                
+        /* Map the physical page. */
+        tmpAddr = memory->mapVirtual(paddr);
 
-	/* Process the action appropriately. */
+        /* Process the action appropriately. */
         switch (how)
-	{
-	    case Read:
-		MemoryBlock::copy((void *)ours, (void *)(tmpAddr + pageOff), bytes);
-		break;
-			
-	    case Write:
-		MemoryBlock::copy((void *)(tmpAddr + pageOff), (void *)ours, bytes);
-		break;
-	    
-	    default:
-		;
-	}	
-	/* Remove mapping. */
-	memory->mapVirtual((Address) 0, (Address) tmpAddr, 0);
-	ours   += bytes;
-	theirs += bytes;
-	total  += bytes;
+        {
+            case Read:
+                MemoryBlock::copy((void *)ours, (void *)(tmpAddr + pageOff), bytes);
+                break;
+                        
+            case Write:
+                MemoryBlock::copy((void *)(tmpAddr + pageOff), (void *)ours, bytes);
+                break;
+            
+            default:
+                ;
+        }       
+        /* Remove mapping. */
+        memory->mapVirtual((Address) 0, (Address) tmpAddr, 0);
+        ours   += bytes;
+        theirs += bytes;
+        total  += bytes;
     }
     /* Success. */
     return total;

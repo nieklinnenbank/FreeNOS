@@ -16,8 +16,8 @@
  */
 
 #include <FreeNOS/Multiboot.h>
-#include <FreeNOS/CPU.h>
-#include <FreeNOS/Memory.h>
+#include "CPU.h"
+#include "Memory.h"
 
 /* The size of our stack (16KB).  */
 #define STACK_SIZE 0x4000

@@ -18,7 +18,7 @@
 #ifndef __PCI_PCISERVER_H
 #define __PCI_PCISERVER_H
 
-#include <FreeNOS/CPU.h>
+#include <Arch/CPU.h>
 #include <FileSystem.h>
 #include <Directory.h>
 #include <Types.h>

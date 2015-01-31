@@ -19,10 +19,11 @@
 #define __API_SYSTEMINFO_H
 
 #include <FreeNOS/API.h>
-#include <FreeNOS/Init.h>
+#include <FreeNOS/Scheduler.h>
 #include <FreeNOS/Multiboot.h>
-#include <FreeNOS/Memory.h>
+#include <Arch/Memory.h>
 #include <FreeNOS/Config.h>
+#include <FreeNOS/Kernel.h>
 #include <Error.h>
 #include <Types.h>
 

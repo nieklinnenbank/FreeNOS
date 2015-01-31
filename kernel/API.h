@@ -20,9 +20,9 @@
 
 #include <Types.h>
 #include <Array.h>
-/* #include <Array.h> */
 #include <Init.h>
 #include "Init.h"
+#include <Arch/API.h>
 
 /**
  * @defgroup kernel kernel (generic)
@@ -37,7 +37,7 @@
 #define INITAPI(nr,handler) \
     void __api_##nr##handler () \
     { \
-	apis.insert(nr, (APIHandler *)handler); \
+        apis.insert(nr, (APIHandler *)handler); \
     } \
     INITFUNC(__api_##nr##handler, API)
 
@@ -52,13 +52,13 @@ typedef ulong APIHandler(ulong, ulong, ulong, ulong, ulong);
  */
 typedef enum Operation
 {
-    Create 	= 0,
-    Delete 	= 1,
-    Send   	= 2,
-    Receive 	= 3,
+    Create      = 0,
+    Delete      = 1,
+    Send        = 2,
+    Receive     = 3,
     SendReceive = 4,
-    Read 	= 5,
-    Write 	= 6,
+    Read        = 5,
+    Write       = 6,
 }
 Operation;
 

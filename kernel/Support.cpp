@@ -15,18 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/Support.h>
-#include <FreeNOS/Init.h>
-#include <FreeNOS/Memory.h>
-#include <FreeNOS/Scheduler.h>
 #include <Macros.h>
 #include <Assert.h>
+#include "Support.h"
+#include "Scheduler.h"
+#include <Arch/Memory.h>
+#include "Kernel.h"
 
 extern C void constructors()
 {
     for (void (**ctor)() = &CTOR_LIST; *ctor; ctor++)
     {
-	(*ctor)();
+        (*ctor)();
     }
 }
 
@@ -34,7 +34,7 @@ extern C void destructors()
 {
     for (void (**dtor)() = &DTOR_LIST; *dtor; dtor++)
     {
-	(*dtor)();
+        (*dtor)();
     }
 }
 
@@ -47,8 +47,8 @@ extern C int __assertRead(Address addr)
 {
     if (memory && scheduler && scheduler->current())
     {
-	return memory->access(scheduler->current(), addr,
-			      sizeof(Address), PAGE_PRESENT|PAGE_USER);
+        return memory->access(scheduler->current(), addr,
+                              sizeof(Address), PAGE_PRESENT|PAGE_USER);
     }
     return true;
 }
@@ -57,8 +57,8 @@ extern C int __assertWrite(Address addr)
 {
     if (memory && scheduler && scheduler->current())
     {
-	return memory->access(scheduler->current(), addr,
-			      sizeof(Address), PAGE_PRESENT|PAGE_USER|PAGE_RW);
+        return memory->access(scheduler->current(), addr,
+                              sizeof(Address), PAGE_PRESENT|PAGE_USER|PAGE_RW);
     }
     return true;
 }

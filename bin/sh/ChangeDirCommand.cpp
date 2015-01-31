@@ -22,5 +22,3 @@ int ChangeDirCommand::execute(Size nparams, char **params)
 {
     return chdir(params[0]);
 }
-
-INITOBJ(ChangeDirCommand, cdCmd, LIBCRT_DEFAULT)

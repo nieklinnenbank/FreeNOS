@@ -53,5 +53,3 @@ int WriteCommand::execute(Size nparams, char **params)
     close(fd);
     return 0;
 }
-
-INITOBJ(WriteCommand, writeCmd, LIBCRT_DEFAULT)

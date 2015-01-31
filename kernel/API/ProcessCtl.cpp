@@ -17,11 +17,11 @@
 
 #include <API/ProcessCtl.h>
 #include <API/IPCMessage.h>
-#include <FreeNOS/Init.h>
-#include <FreeNOS/Kernel.h>
+#include <Arch/Kernel.h>
+#include <Arch/Memory.h>
 #include <Error.h>
 
-void interruptNotify(CPUState *st, ArchProcess *p)
+void interruptNotify(CPUState *st, Process *p)
 {
     p->getMessages()->insertHead(new UserMessage(new InterruptMessage(IRQ_REG(st)),
 						 sizeof(InterruptMessage)));
@@ -30,7 +30,7 @@ void interruptNotify(CPUState *st, ArchProcess *p)
 
 int ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
 {
-    ArchProcess *proc = ZERO;
+    X86Process *proc = ZERO;
     ProcessInfo *info = (ProcessInfo *) addr;
 
     /* Verify memory address. */
@@ -42,7 +42,7 @@ int ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
 	}
     }
     /* Does the target process exist? */
-    if(action != GetPID && action != Spawn && !(proc = Process::byID(procID)))
+    if(action != GetPID && action != Spawn && !(proc = (X86Process *) Process::byID(procID)))
     {
 	return ESRCH;
     }
@@ -50,7 +50,7 @@ int ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
     switch (action)
     {
 	case Spawn:
-	    proc = new ArchProcess(addr);
+	    proc = (X86Process *) kernel->createProcess(addr);
 	    return proc->getID();
 	
 	case KillPID:

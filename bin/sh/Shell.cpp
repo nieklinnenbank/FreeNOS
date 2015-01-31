@@ -17,6 +17,11 @@
 
 #include <TerminalCodes.h>
 #include "Shell.h"
+#include "ChangeDirCommand.h"
+#include "ExitCommand.h"
+#include "StdioCommand.h"
+#include "WriteCommand.h"
+#include "HelpCommand.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,6 +31,17 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <fcntl.h>
+
+Shell::Shell()
+{
+    /* Create command objects. They will register
+     * themselves in the ShellCommand class. */
+    new ChangeDirCommand();
+    new ExitCommand();
+    new StdioCommand();
+    new WriteCommand();
+    new HelpCommand();
+}
 
 int Shell::run()
 {

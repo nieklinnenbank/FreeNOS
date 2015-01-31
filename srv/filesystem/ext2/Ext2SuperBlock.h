@@ -33,7 +33,7 @@
 #ifndef __FILESYSTEM_EXT2SUPERBLOCK_H
 #define __FILESYSTEM_EXT2SUPERBLOCK_H
 
-#include <FreeNOS/ByteOrder.h>
+#include <ByteOrder.h>
 #include <Types.h>
 
 /**                                                                                                                                                                                                     

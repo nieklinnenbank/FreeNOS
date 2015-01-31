@@ -16,7 +16,7 @@
  */
 
 #include <API/ProcessCtl.h>
-#include <FreeNOS/CPU.h>
+#include <Arch/CPU.h>
 #include <Macros.h>
 #include <Types.h>
 #include <ProcessID.h>

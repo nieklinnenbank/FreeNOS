@@ -134,11 +134,11 @@ if not GetOption('clean'):
 
 # Make a symbolic link to the system-specific headers.
 try:
-    os.unlink("include/FreeNOS")
+    os.unlink('kernel/Arch')
 except:
     pass
 
 try:
-    os.symlink(target['ARCH'], "include/FreeNOS")
+    os.symlink(target['ARCH'] + os.sep + target['SYSTEM'], 'kernel/Arch')
 except:
     pass

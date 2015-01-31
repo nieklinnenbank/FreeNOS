@@ -18,9 +18,9 @@
 #ifndef __API_VMCTL_H
 #define __API_VMCTL_H
 
-#include <FreeNOS/Process.h>
+#include <FreeNOS/Scheduler.h>
 #include <FreeNOS/API.h>
-#include <FreeNOS/Memory.h>
+#include <Arch/Memory.h>
 #include <Error.h>
 #include <Types.h>
 
@@ -56,10 +56,10 @@ typedef struct MemoryRange
      */
     MemoryRange()
     {
-	virtualAddress  = ZERO;
-	physicalAddress = ZERO;
-	bytes      = PAGESIZE;
-	protection = PAGE_PRESENT | PAGE_USER | PAGE_RW;
+        virtualAddress  = ZERO;
+        physicalAddress = ZERO;
+        bytes      = PAGESIZE;
+        protection = PAGE_PRESENT | PAGE_USER | PAGE_RW;
     }
     /** Virtual address start. */
     Address virtualAddress;
@@ -90,7 +90,7 @@ MemoryRange;
  * @return Zero on success or error code on failure.
  */
 inline Error VMCtl(ProcessID procID, MemoryOperation op,
-		   MemoryRange *range = ZERO)
+                   MemoryRange *range = ZERO)
 {
     return trapKernel3(VMCTL, procID, op, (Address) range);
 }

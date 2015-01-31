@@ -15,11 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/Process.h>
+#include "Process.h"
 #include <Array.h>
 #include <Types.h>
 #include <ProcessID.h>
 #include <ListIterator.h>
+#include <Arch/Interrupt.h>
+#include <Types.h>
+#include <Array.h>
+#include <List.h>
+#include "Scheduler.h"
 
 Array<Process> Process::procs(MAX_PROCS);
 List<Process> Process::wakeups;
@@ -35,12 +40,49 @@ Process::~Process()
     procs.remove(pid);
 }
 
-ArchProcess * Process::byID(ProcessID id)
+ProcessID Process::getID()
+{
+    return pid;
+}
+        
+ProcessState Process::getState()
+{
+    return status;
+}
+
+void Process::setState(ProcessState st)
+{
+    status = st;
+}
+
+void Process::wakeup()
+{
+    ulong t = irq_disable();
+    wakeups.insertTail(this);
+    irq_restore(t);
+}
+
+List<Process> * Process::getWakeups()
+{
+    return &wakeups;
+}
+
+List<UserMessage> * Process::getMessages()
+{
+    return &messages;
+}
+
+Array<Process> * Process::getProcessTable()
+{
+    return &procs;
+}
+
+Process * Process::byID(ProcessID id)
 {
     if (id == SELF && scheduler->current())
-	return scheduler->current();
+        return scheduler->current();
     else
-	return (ArchProcess *) procs[id];
+        return procs[id];
 }
 
 bool Process::operator == (Process *p)

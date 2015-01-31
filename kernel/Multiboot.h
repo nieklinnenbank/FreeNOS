@@ -24,16 +24,16 @@
  */
 
 /** The magic number for the Multiboot header. */
-#define MULTIBOOT_HEADER_MAGIC		0x1BADB002
+#define MULTIBOOT_HEADER_MAGIC          0x1BADB002
 
 /** The flags for the Multiboot header. */
-#define MULTIBOOT_HEADER_FLAGS		0x00000003
+#define MULTIBOOT_HEADER_FLAGS          0x00000003
 
 /** Size of the multiboot header structure. */
-#define MULTIBOOT_HEADER_SIZE		52
+#define MULTIBOOT_HEADER_SIZE           52
 
 /** The magic number passed by a Multiboot-compliant boot loader.  */
-#define MULTIBOOT_BOOTLOADER_MAGIC	0x2BADB002
+#define MULTIBOOT_BOOTLOADER_MAGIC      0x2BADB002
 
 /* Do not include in assembler source. */
 #ifndef __ASSEMBLER__
@@ -51,7 +51,7 @@ typedef struct AoutSymbolTable
     u32 reserved;
 }
 AoutSymbolTable;
-	
+        
 /**
  * The section header table for ELF.
  */
@@ -62,7 +62,7 @@ typedef struct ElfSectionHeaderTable
     u32 address;
     u32 shndx;
 }
-ElfSectionHeaderTable;		
+ElfSectionHeaderTable;          
 
 /**
  * The Multiboot information.

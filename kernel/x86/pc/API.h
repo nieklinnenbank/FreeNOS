@@ -19,7 +19,7 @@
 #define __X86_API_H
 
 #include <Types.h>
-#include <kernel/API.h>
+#include <FreeNOS/API.h>
 
 /**  
  * @defgroup x86kernel kernel (x86) 

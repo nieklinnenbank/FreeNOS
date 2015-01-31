@@ -16,10 +16,10 @@
  */
 
 #include <API/PrivExec.h>
-#include <FreeNOS/Init.h>
-#include <FreeNOS/Interrupt.h>
+#include <Arch/Interrupt.h>
 #include <FreeNOS/Scheduler.h>
-#include <FreeNOS/CPU.h>
+#include <Arch/CPU.h>
+#include <FreeNOS/Kernel.h>
 #include <Error.h>
 
 int PrivExecHandler(PrivOperation op)

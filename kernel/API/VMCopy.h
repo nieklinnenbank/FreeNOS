@@ -18,7 +18,7 @@
 #ifndef __API_VMCOPY_H
 #define __API_VMCOPY_H
 
-#include <FreeNOS/Process.h>
+#include <FreeNOS/Scheduler.h>
 #include <FreeNOS/API.h>
 #include <Error.h>
 
@@ -40,7 +40,7 @@
  * @return Total number of bytes copied on success and error code on failure.
  */
 inline Error VMCopy(ProcessID proc, Operation how, Address ours,
-				    Address theirs, Size sz)
+                                    Address theirs, Size sz)
 {
     return trapKernel5(VMCOPY, proc, how, ours, theirs, sz);
 }

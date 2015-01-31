@@ -17,7 +17,7 @@
 
 #include <API/VMCtl.h>
 #include <API/ProcessCtl.h>
-#include <FreeNOS/Memory.h>
+#include <Arch/Memory.h>
 #include <Macros.h>
 #include <ProcessID.h>
 #include "VMCtlAllocator.h"

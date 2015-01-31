@@ -23,6 +23,8 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <Types.h>
+#include <Macros.h>
 
 void readfile(char *buf, Size size, char *fmt, ...)
 {
@@ -85,7 +87,7 @@ int main(int argc, char **argv)
     /* Read directory. */
     while ((dent = readdir(d)))
     {
-	if (dent->d_name[0] != '.')
+	if (dent->d_name[0] != '.' && dent->d_name[0] >= '0' && dent->d_name[0] <= '9')
 	{
 	    /* Read the process' status. */
 	    readfile(status,  sizeof(status),
