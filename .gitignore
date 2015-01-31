@@ -9,6 +9,5 @@ config.log
 .sconsign.dblite
 include/FreeNOS
 /kernel/Arch
-/kernel/FreeNOS
 .gdbinit
 /build*.conf
