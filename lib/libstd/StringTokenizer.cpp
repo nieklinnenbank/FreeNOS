@@ -15,11 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <StringTokenizer.h>
+#include "StringTokenizer.h"
+#include "MemoryBlock.h"
+#include "String.h"
 
 StringTokenizer::StringTokenizer(String& seq, char delim)
 {
@@ -33,9 +31,9 @@ StringTokenizer::StringTokenizer(char* seq, char delim)
 
 StringTokenizer::~StringTokenizer()
 {
-    free( currentToken );
-    free( nextToken );
-    free( sequence );
+    delete currentToken;
+    delete nextToken;
+    delete sequence;
 }
 
 bool StringTokenizer::hasNext()
@@ -49,7 +47,7 @@ unsigned int StringTokenizer::count()
     {
         cnt = 1;
         
-        for( unsigned int i = 0; i < strlen( sequence ); i++)
+        for( unsigned int i = 0; i < String::strlen( sequence ); i++)
         {
             if( delimiter == sequence[i] )
             {
@@ -74,36 +72,36 @@ char* StringTokenizer::next()
     
     if( currentToken != 0 )
     {
-        free( currentToken );
+        delete currentToken;
     }
     
     /* Copy nextToken into currentToken. */
-    currentToken = strdup(nextToken);
+    currentToken = String::strdup(nextToken);
     
     /* Shift until next delimiter */
     for( ptr = sequence + currentLocation; 
         ptr[0] != '\0' && ptr[0] != delimiter; ptr++){};
     
     /* (re)fill nextToken */
-    free( nextToken );
+    delete nextToken;
     if( ptr[0] == '\0' )
     {
         nextToken = 0;
     } else {
         ptr++;
-        ptr2 = strchr(ptr, delimiter);
+        ptr2 = String::strchr(ptr, delimiter);
         
         if( ptr2 == 0 )
         {
             /* This is the last token */
-            nextToken = strdup(ptr);
+            nextToken = String::strdup(ptr);
         } else {
-            nextToken = (char*)malloc(ptr2 - ptr + 1);
-            memset(nextToken, 0, ptr2 - ptr + 1);
-            strncpy(nextToken, ptr, ptr2 - ptr);
+            nextToken = new char[ptr2 - ptr + 1];
+            MemoryBlock::set(nextToken, 0, ptr2 - ptr + 1);
+            String::strlcpy(nextToken, ptr, (ptr2 - ptr)+1);
         }
         
-        currentLocation += strlen(nextToken) +1;
+        currentLocation += String::strlen(nextToken) +1;
     }
         
         return currentToken;
@@ -123,8 +121,8 @@ void StringTokenizer::init(char* seq, char delim)
         value++;
     }
     
-    assert( value != 0 && strlen(value) > 0);
-    sequence = strdup(value);
+    assert( value != 0 && String::strlen(value) > 0);
+    sequence = String::strdup(value);
     
     if( delim == '\0' )
     {
@@ -138,13 +136,13 @@ void StringTokenizer::init(char* seq, char delim)
     currentToken = 0;
     cnt = 0;
     
-    if( (ptr = strchr( sequence, delim )) == 0)
+    if( (ptr = String::strchr( sequence, delim )) == 0)
     {
-        nextToken = strdup(sequence);
+        nextToken = String::strdup(sequence);
     } else {
-        nextToken = (char*)malloc(ptr - sequence + 1);
-        memset(nextToken, 0, ptr - sequence + 1);
-        strncpy(nextToken, sequence, ptr - sequence);
+        nextToken = new char[ptr - sequence + 1];
+        MemoryBlock::set(nextToken, 0, ptr - sequence + 1);
+        String::strlcpy(nextToken, sequence, (ptr - sequence)+1);
         currentLocation = ptr - sequence;
     }
     

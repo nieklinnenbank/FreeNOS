@@ -1,4 +1,4 @@
- /*
+/*
  * Copyright (C) 2009 Coen Bijlsma
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -21,11 +21,7 @@
 #include <String.h>
 
 /**
- * @brief Class for splitting Strings into tokens
- * @since 2009-06-11
- * @changed $Date: $
- * @version: $Id $
- *
+ * Class for splitting Strings into tokens
  * This class takes a String and chops it up into pieces.
  */
 class StringTokenizer
