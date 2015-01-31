@@ -20,7 +20,7 @@
 #include <FileType.h>
 #include <FileMode.h>
 #include <ProcessID.h>
-#include "POSIXSupport.h"
+#include "Runtime.h"
 #include <errno.h>
 #include "sys/stat.h"
 

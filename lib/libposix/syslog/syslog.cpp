@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "POSIXSupport.h"
+#include "Runtime.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -65,7 +65,7 @@ void syslog(int priority, const char *message, ...)
     
     /* Create final message. */
     snprintf(line, sizeof(line), "%s %s[%u]: %s\r\n",
-	     priorityStr, procs[getpid()]->command, getpid(), input);
+	     priorityStr, (*getProcesses())[getpid()]->command, getpid(), input);
 	     
     /* Write it to the log device. */
     write(logFile, line, strlen(line));

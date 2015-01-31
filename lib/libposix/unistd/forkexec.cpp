@@ -16,7 +16,7 @@
  */
 
 #include <API/IPCMessage.h>
-#include <FreeNOS/Memory.h>
+#include <Arch/Memory.h>
 #include <ProcessServer.h>
 #include <ProcessMessage.h>
 #include <ProcessID.h>

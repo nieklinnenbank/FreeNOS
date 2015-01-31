@@ -15,21 +15,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBPOSIX_SUPPORT_H
-#define __LIBPOSIX_SUPPORT_H
+#ifndef __LIBPOSIX_RUNTIME_H
+#define __LIBPOSIX_RUNTIME_H
 
-#include <FileSystemMount.h>
-#include <FileDescriptor.h>
-#include <UserProcess.h>
-#include <Types.h>
 #include <Macros.h>
-#include <Array.h>
-#include <Shared.h>
+#include <Types.h>
+#include <UserProcess.h>
+#include <FileDescriptor.h>
+#include <FileSystemMount.h>
 
 /**
  * @defgroup libposix libposix (POSIX.1-2008) 
  * @{ 
  */
+
+/**
+ * C(++) program entry point.
+ * @param argc Argument count.
+ * @param argv Argument values.
+ * @return Exit status.
+ */
+extern C int main(int argc, char **argv);
 
 /**
  * Retrieve the ProcessID of the FileSystemMount for the given path.
@@ -45,17 +51,26 @@ ProcessID findMount(const char *path);
  */
 ProcessID findMount(int fildes);
 
-/** Mounted filesystems. */
-extern Shared<FileSystemMount> mounts;
+/**
+ * Returns list of all mounts.
+ */
+Shared<FileSystemMount> * getMounts();
 
-/** User process table. */
-extern Shared<UserProcess> procs;
+/**
+ * Return the UserProcess pointer for the given PID.
+ * @param pid ProcessID number.
+ * @return UserProcess pointer on success and ZERO otherwise..
+ */
+Shared<UserProcess> * getProcesses();
 
-/** File descriptors. */
-extern Shared<FileDescriptor> files;
+/**
+ * Retrieve file descriptors for the current process.
+ * @return Filedescriptors
+ */
+Shared<FileDescriptor> * getFiles();
 
 /**
  * @}
  */
 
-#endif /* __LIBPOSIX_FILESYSTEM_H */
+#endif /* __LIBPOSIX_RUNTIME_H */

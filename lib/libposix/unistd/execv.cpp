@@ -15,11 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <ExecutableFormat.h>
 #include "unistd.h"
 
 int execv(const char *path, const char *argv[])
 {
-    ExecutableFormat *fmt = ExecutableFormat::find(path);
-    return fmt ? 0 : -1;
+    return -1;
 }

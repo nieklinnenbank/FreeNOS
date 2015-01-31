@@ -17,17 +17,17 @@
 
 #include <string.h>
 #include <errno.h>
-#include "POSIXSupport.h"
+#include "Runtime.h"
 #include "unistd.h"
 
 char *getcwd(char *buf, size_t size)
 {
     /* Copy our current working directory. */
-    memcpy(buf, procs[getpid()]->currentDirectory, size);
+    memcpy(buf, (*getProcesses())[getpid()]->currentDirectory, size);
 
     /* Set errno. */
     errno = ESUCCESS;
 
     /* All done. */
-    return procs[getpid()]->currentDirectory;
+    return buf;
 }
