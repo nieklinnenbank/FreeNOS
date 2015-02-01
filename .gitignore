@@ -7,7 +7,6 @@ build/
 config.log
 .sconf_temp
 .sconsign.dblite
-include/FreeNOS
 /kernel/Arch
 .gdbinit
 /build*.conf
