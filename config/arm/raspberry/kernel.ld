@@ -18,72 +18,44 @@
 ENTRY(_start)
 TARGET("elf32-littlearm")
 OUTPUT_FORMAT("elf32-littlearm")
-
-phys = 0x00100000;
-virt = 0x00100000;
-
+ 
 SECTIONS
 {
-    . = 0x00100000;
-    kernelStart = .;
-
-    /DISCARD/ :
+    /* Starts at LOADER_ADDR. */
+    . = 0x8000;
+    __start = .;
+    __text_start = .;
+    .text :
     {
-        *(.note.gnu.build-id)
+        KEEP(*(.text.boot))
+        *(.text)
     }
-
-    .text virt : AT(phys)
+    . = ALIGN(4096); /* align to page size */
+    __text_end = .;
+ 
+    __rodata_start = .;
+    .rodata :
     {
-	code = .;
-	*(.boot)
-	*(.text)
-	*(*.text)
-	*(.gnu.linkonce.*)
-	*(.rodata)
-	*(.rodata.*)
-	*(.eh_frame)
-	. = ALIGN(4096);
+        *(.rodata)
     }
-
-    .data : AT (phys + (data - code))
+    . = ALIGN(4096); /* align to page size */
+    __rodata_end = .;
+ 
+    __data_start = .;
+    .data :
     {
-	data = .;
-	*(.data)
-
-        CTOR_LIST = .;
-	KEEP (*(SORT(.ctors.*)))
-	KEEP (*(.ctors))
-        KEEP (*(.preinit_array))
-        KEEP (*(.init_array.*))
-        KEEP (*(.init_array))
-	LONG(0)
-        CTOR_END = .;
-
-        DTOR_LIST = .;
-	KEEP (*(SORT(.dtors.*)))
-	KEEP (*(.dtors))
-        KEEP (*(.fini_array.*))
-        KEEP (*(.fini_array))
-        LONG(0)
-        DTOR_END = .;
-	. += 4;
-
-	initStart = .;
-	KEEP (*(SORT(.init*)))
-	initEnd   = .;
-	. = ALIGN(4096);
+        *(.data)
     }
-
-    .bss : AT(phys + (bss - code))
+    . = ALIGN(4096); /* align to page size */
+    __data_end = .;
+ 
+    __bss_start = .;
+    .bss :
     {
-	bss = .;
-	*(.bss)
-	*(.bss.*)
-	*(COMMON)
-
-        . += 4;
-	kernelEnd = .;
-
-	. = 0x00400000;
+        bss = .;
+        *(.bss)
     }
+    . = ALIGN(4096); /* align to page size */
+    __bss_end = .;
+    __end = .;
 }
