@@ -25,9 +25,7 @@ for item in env['LINKUSER']:
 env.Append(LINKFLAGS = env['LINKKERN'])
 env.Append(CPPFLAGS = '-D__KERNEL__')
 
-#env.UseLibraries(['liballoc', 'libstd'])
-#env.UseServers(['process', 'filesystem', 'memory'])
-
+env.UseLibraries(['liballoc', 'libstd'])
 env.TargetProgram('kernel', [ Glob('*.S'),
 			      Glob('*.cpp') ]
 		          , env['boot'])
@@ -36,4 +34,4 @@ env.TargetProgram('kernel', [ Glob('*.S'),
 # Qemu targets
 #
 env.Targets(qemu = 'qemu-system-arm -kernel ' + build_env['BUILDROOT'] +
-		   '/kernel/arm/raspberry/kernel -cpu arm1176 -M versatilepb -serial stdio -m 64')
+		   '/kernel/arm/raspberry/kernel -cpu arm1176 -M raspi -nographic')

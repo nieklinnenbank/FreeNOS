@@ -10,27 +10,45 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/Config.h>
-#include <Macros.h>
-#include "UART.h"
+#ifndef __ARM_MEMORY_H
+#define __ARM_MEMORY_H
 
-extern C void __cxa_pure_virtual()
-{
-}
- 
-extern C int kmain(void)
-{
-    UART console;
+/**
+ * @defgroup armkernel kernel (arm)
+ * @{
+ */
 
-    console.put("FreeNOS " RELEASE "\r\n");
+/** ARM uses 4K pages. */
+#define PAGESIZE        4096
 
-    while (true)
-	console.put(console.get());
+/** Memory address alignment. */
+#define MEMALIGN        4
 
-    return 0;
-}
+/** Marks a page entry present. */
+#define PAGE_PRESENT    1
+
+/** Marks a page entry read/write. */
+#define PAGE_RW         1
+
+/** Marks a page accessible by user programs. */
+#define PAGE_USER       1
+
+/** Pinned pages cannot be released. */
+#define PAGE_PINNED     1
+
+/** This page has been marked for temporary operations. */
+#define PAGE_MARKED     1
+
+/** Page has been reserved for future use. */
+#define PAGE_RESERVED   1
+
+/**
+ * @}
+ */
+
+#endif /* __ARM_MEMORY_H */

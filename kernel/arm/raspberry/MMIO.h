@@ -15,22 +15,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/Config.h>
-#include <Macros.h>
-#include "UART.h"
+#ifndef __ARM_MMIO_H
+#define __ARM_MMIO_H
 
-extern C void __cxa_pure_virtual()
+#include <Types.h>
+
+class MMIO
 {
-}
- 
-extern C int kmain(void)
-{
-    UART console;
+public:
 
-    console.put("FreeNOS " RELEASE "\r\n");
+    /**
+     * write to MMIO register
+     */
+    static inline void write(u32 reg, u32 data)
+    {
+	u32 *ptr = (u32 *) reg;
+	asm volatile("str %[data], [%[reg]]"
+		     : : [reg]"r"(ptr), [data]"r"(data));
+    }
 
-    while (true)
-	console.put(console.get());
+    /**
+     * read from MMIO register
+     */
+    static inline u32 read(u32 reg)
+    {
+	u32 *ptr = (u32 *) reg;
+	u32 data;
+	asm volatile("ldr %[data], [%[reg]]"
+		     : [data]"=r"(data) : [reg]"r"(ptr));
+	return data;
+    }
+};
 
-    return 0;
-}
+#endif /* __ARM_MMIO_H */
