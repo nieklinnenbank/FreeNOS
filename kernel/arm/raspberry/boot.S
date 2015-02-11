@@ -53,8 +53,3 @@ _start:
 	/* Call kmain */
 	ldr r3, =kmain
 	blx r3
- 
-	/* halt */
-halt:
-	wfe
-	b halt
