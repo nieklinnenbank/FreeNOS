@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Arch/Memory.h>
+#include <System/Constant.h>
 #include "PoolAllocator.h"
 #include <MemoryBlock.h>
 

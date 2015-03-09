@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Arch/Memory.h>
+#include <FreeNOS/System/Constant.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
@@ -101,9 +101,9 @@ int ELF::regions(MemoryRegion *regions, Size max)
 	    continue;
 	}
 	regions[i].virtualAddress = segments[i].virtualAddress;
-	regions[i].size  = segments[i].memorySize;
-	regions[i].flags = PAGE_RW;
-	regions[i].data  = new u8[segments[i].memorySize];
+	regions[i].size   = segments[i].memorySize;
+	regions[i].access = Memory::Present | Memory::User | Memory::Readable | Memory::Writable;
+	regions[i].data   = new u8[segments[i].memorySize];
 	
 	/* Read segment contents from file. */
 	if (lseek(fd, segments[i].offset, SEEK_SET) == -1 ||
@@ -112,10 +112,11 @@ int ELF::regions(MemoryRegion *regions, Size max)
 	    errno = ENOEXEC;
 	    return -1;
 	}
+
 	/* Nulify remaining space. */
 	if (segments[i].memorySize > segments[i].fileSize)
 	{
-	    memset(regions[i].data + segments[i].memorySize, 0,
+	    memset(regions[i].data + segments[i].fileSize, 0,
 		   segments[i].memorySize - segments[i].fileSize);
 	}
 	/* Increment counter. */

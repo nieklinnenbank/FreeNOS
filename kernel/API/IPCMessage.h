@@ -18,8 +18,8 @@
 #ifndef __API_IPCMESSAGE_H
 #define __API_IPCMESSAGE_H
 
-#include <FreeNOS/Scheduler.h>
 #include <FreeNOS/API.h>
+#include <FreeNOS/Process.h>
 #include <Macros.h>
 #include <Types.h>
 #include <Error.h>
@@ -31,16 +31,9 @@
  * @{ 
  */
 
-/** SystemCall number for IPCMessage(). */
-#define IPCMESSAGE 1
-
 /** Maximum size of an Message, in bytes. */
 #define MAX_MESSAGE_SIZE 64
 
-/**
- * Forward declaration.
- * @see Message
- */
 class Message;
 
 /**
@@ -53,8 +46,13 @@ class Message;
  */
 inline Error IPCMessage(ProcessID proc, Operation action, Message *msg, Size sz)
 {
-    return trapKernel4(IPCMESSAGE, proc, action, (ulong) msg, sz);
+    return trapKernel4(IPCMessageNumber, proc, action, (ulong) msg, sz);
 }
+
+/**
+ * Prototype for the kernel handler implementation.
+ */
+extern Error IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg, Size size);
 
 /**
  * Determines the type a Message can be.
@@ -177,6 +175,7 @@ class InterruptMessage : public Message
 	/** Interrupt vector. */
 	ulong vector;
 };
+
 
 /**
  * @}

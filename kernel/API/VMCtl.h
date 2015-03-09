@@ -18,9 +18,9 @@
 #ifndef __API_VMCTL_H
 #define __API_VMCTL_H
 
-#include <FreeNOS/Scheduler.h>
 #include <FreeNOS/API.h>
-#include <Arch/Memory.h>
+#include <System/Constant.h>
+#include <System/Function.h>
 #include <Error.h>
 #include <Types.h>
 
@@ -28,9 +28,6 @@
  * @defgroup kernelapi kernel (API) 
  * @{  
  */
-
-/** SystemCall number for VMCtl(). */
-#define VMCTL 5
 
 /**
  * Memory operations which may be used as an argument to VMCtl().
@@ -59,7 +56,7 @@ typedef struct MemoryRange
         virtualAddress  = ZERO;
         physicalAddress = ZERO;
         bytes      = PAGESIZE;
-        protection = PAGE_PRESENT | PAGE_USER | PAGE_RW;
+        access     = Memory::Present | Memory::User | Memory::Readable | Memory::Writable;
     }
     /** Virtual address start. */
     Address virtualAddress;
@@ -77,8 +74,8 @@ typedef struct MemoryRange
      */
     Size free;
     
-    /** Page protection flags. */
-    ulong protection;
+    /** Page access flags. */
+    Memory::MemoryAccess access;
 }
 MemoryRange;
 
@@ -92,8 +89,10 @@ MemoryRange;
 inline Error VMCtl(ProcessID procID, MemoryOperation op,
                    MemoryRange *range = ZERO)
 {
-    return trapKernel3(VMCTL, procID, op, (Address) range);
+    return trapKernel3(VMCtlNumber, procID, op, (Address) range);
 }
+
+extern Error VMCtlHandler(ProcessID procID, MemoryOperation op, MemoryRange *range);
 
 /**
  * @}

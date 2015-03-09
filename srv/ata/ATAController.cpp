@@ -57,18 +57,18 @@ Error ATAController::initialize()
 	ProcessCtl(SELF, AllowIO, ATA_BASE_CMD0 + i);
     }
     /* Detect ATA Controller. */
-    if (inb(ATA_BASE_CMD0 + ATA_REG_STATUS) == 0xff)
+    if (ReadByte(ATA_BASE_CMD0 + ATA_REG_STATUS) == 0xff)
     {
 	exit(EXIT_FAILURE);
     }
     pollReady(true);
     
     /* Attempt to detect first drive. */
-    outb(ATA_BASE_CMD0 + ATA_REG_SELECT, ATA_SEL_MASTER);
+    WriteByte(ATA_BASE_CMD0 + ATA_REG_SELECT, ATA_SEL_MASTER);
     pollReady(true);
-    outb(ATA_BASE_CMD0 + ATA_REG_CMD,    ATA_CMD_IDENTIFY);
+    WriteByte(ATA_BASE_CMD0 + ATA_REG_CMD,    ATA_CMD_IDENTIFY);
 
-    switch (inb(ATA_BASE_CMD0 + ATA_REG_STATUS))
+    switch (ReadByte(ATA_BASE_CMD0 + ATA_REG_STATUS))
     {
 	case 0:
 	    syslog(LOG_INFO, "No ATA drive(s) detected");
@@ -85,7 +85,7 @@ Error ATAController::initialize()
 	    /* Read IDENTIFY data. */
 	    for (int i = 0; i < 256; i++)
 	    {
-		((u16 *) &drive->identity)[i] = inw(ATA_BASE_CMD0 + ATA_REG_DATA);
+		((u16 *) &drive->identity)[i] = ReadWord(ATA_BASE_CMD0 + ATA_REG_DATA);
 	    }
 	    /* Fixup ASCII bytes. */
 	    IDENTIFY_TEXT_SWAP(drive->identity.firmware, 8);
@@ -120,12 +120,12 @@ Error ATAController::read(s8 *buffer, Size size, Size offset)
 	return EIO;
     }
     /* Perform ATA Read Command. */
-    outb(ATA_BASE_CMD0 + ATA_REG_SELECT, ATA_SEL_MASTER_28);
-    outb(ATA_BASE_CMD0 + ATA_REG_COUNT,  sectors);
-    outb(ATA_BASE_CMD0 + ATA_REG_ADDR0,  (lba) & 0xff);
-    outb(ATA_BASE_CMD0 + ATA_REG_ADDR1,  (lba >> 8) & 0xff);
-    outb(ATA_BASE_CMD0 + ATA_REG_ADDR2,  (lba >> 16) & 0xff);
-    outb(ATA_BASE_CMD0 + ATA_REG_CMD, ATA_CMD_READ);
+    WriteByte(ATA_BASE_CMD0 + ATA_REG_SELECT, ATA_SEL_MASTER_28);
+    WriteByte(ATA_BASE_CMD0 + ATA_REG_COUNT,  sectors);
+    WriteByte(ATA_BASE_CMD0 + ATA_REG_ADDR0,  (lba) & 0xff);
+    WriteByte(ATA_BASE_CMD0 + ATA_REG_ADDR1,  (lba >> 8) & 0xff);
+    WriteByte(ATA_BASE_CMD0 + ATA_REG_ADDR2,  (lba >> 16) & 0xff);
+    WriteByte(ATA_BASE_CMD0 + ATA_REG_CMD, ATA_CMD_READ);
     
     /*
      * Read out all requested sectors.
@@ -138,7 +138,7 @@ Error ATAController::read(s8 *buffer, Size size, Size offset)
         /* Read out bytes. */
 	for (int i = 0; i < 256; i++)
 	{
-	    block[i] = inw(ATA_BASE_CMD0 + ATA_REG_DATA);
+	    block[i] = ReadWord(ATA_BASE_CMD0 + ATA_REG_DATA);
 	}
 	/* Calculate maximum bytes. */
 	Size bytes = (size - result) < 512 - (offset % 512) ?
@@ -164,7 +164,7 @@ void ATAController::pollReady(bool noData)
 {
     while (true)
     {
-	u8 status = inb(ATA_BASE_CMD0 + ATA_REG_STATUS);
+	u8 status = ReadByte(ATA_BASE_CMD0 + ATA_REG_STATUS);
 	
 	if (!(status & ATA_STATUS_BUSY) &&
 	     (status & ATA_STATUS_DATA || noData))

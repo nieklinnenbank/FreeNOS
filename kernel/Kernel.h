@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,50 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __KERNEL_KERNEL_H
-#define __KERNEL_KERNEL_H
+#ifndef __KERNEL_H
+#define __KERNEL_H
 
-#include <Arch/Interrupt.h>
+#include <System/Function.h>
 #include <Macros.h>
 #include <Types.h>
-#include <Init.h>
+#include <Singleton.h>
 #include "BootImage.h"
-#include "Multiboot.h"
 #include "Process.h"
-
-/**
- * @defgroup kernel kernel initialization settings.
- * @see Init.h
- * @{
- */
-
-/** (Physical) memory must be initialized first. */
-#define PMEMORY "0"
-
-/** (Virtual) memory initialization. */
-#define VMEMORY "1"
-
-/** Constructors for C++ objects. */
-#define CTOR "2"
-
-/** Register APIHandlers. */
-#define API "3"
-
-/** Starts the scheduler. */
-#define SCHEDULER "4"
-
-/** Core kernel initialization. */
-#define KERNEL "5"
-
-/** Start of initialization routines. */
-extern Address initStart;
-
-/** Marks the end of all initialization functions. */
-extern Address initEnd;
-
-/**
- * @}
- */
+#include "Memory.h"
+#include "ProcessFactory.h"
+#include "ProcessManager.h"
+#include "API.h"
 
 /** 
  * @defgroup kernel kernel (generic)
@@ -68,57 +37,77 @@ extern Address initEnd;
 /**
  * Represents the kernel core.
  */
-class Kernel
+class Kernel : public Singleton<Kernel>
 {
-    public:
+  public:
+
+    /**
+     * Constructor function.
+     *
+     * @param memory Pointer to a Memory implementation
+     */
+    Kernel(Memory *memory, ProcessManager *proc);
+
+    /**
+     * Get memory.
+     */
+    Memory * getMemory();
+
+    /**
+     * Get process manager.
+     */
+    ProcessManager * getProcessManager();
+
+    /**
+     * Execute the kernel.
+     */
+    void run();
+
+    /**
+     * Execute a generic API function.
+     */
+    virtual Error invokeAPI(APINumber number,
+                            ulong arg1, ulong arg2, ulong arg3, ulong arg4, ulong arg5);
+
+    /**
+     * Hooks a function to an hardware interrupt.
+     * @param vec Interrupt vector to hook on.
+     * @param h Handler function.
+     * @param p Parameter to pass to the handler function.
+     */
+    virtual void hookInterrupt(int vec, InterruptHandler h, ulong p) = 0;
+
+    /** 
+     * Enable or disable an hardware interrupt (IRQ). 
+     * @param vector IRQ number. 
+     * @param enabled True to enable, and false to disable. 
+     */
+    virtual void enableIRQ(uint vector, bool enabled) = 0;
+
+protected:
+
+    /**
+     * Loads the boot image.
+     */
+    bool loadBootImage();
     
-        /**
-         * Constructor function.
-         */
-        Kernel();
+    /**
+     * Creates a new Process from a BootProcess.
+     * @param image BootImage pointer loaded by the bootloader in kernel virtual memory.
+     * @param imagePAddr Physical memory address of the boot image.
+     * @param index Index in the BootProcess table.
+     */
+    void loadBootProcess(BootImage *image, Address imagePAddr, Size index);
 
-        /**
-         * Loads the boot image.
-         */
-        bool loadBootImage();
+    /** Memory object */
+    Memory *m_memory;
 
-        /**
-         * Hooks a function to an hardware interrupt.
-         * @param vec Interrupt vector to hook on.
-         * @param h Handler function.
-         * @param p Parameter to pass to the handler function.
-         */
-        virtual void hookInterrupt(int vec, InterruptHandler h, ulong p) = 0;
+    /** Process Manager */
+    ProcessManager *m_procs;
 
-        /** 
-         * Enable or disable an hardware interrupt (IRQ). 
-         * @param vector IRQ number. 
-         * @param enabled True to enable, and false to disable. 
-         */
-        virtual void enableIRQ(uint vector, bool enabled) = 0;
-
-        /**
-         * Create a new process.
-         * @param entry Entry address of the new process.
-         * @return Process pointer on success or ZERO on failure.
-         */
-        virtual Process * createProcess(Address entry) = 0;
-
-    private:
-    
-        /**
-         * Creates a new Process from a BootProcess.
-         * @param image BootImage pointer loaded by the bootloader in kernel virtual memory.
-         * @param imagePAddr Physical memory address of the boot image.
-         * @param index Index in the BootProcess table.
-         */
-        void loadBootProcess(BootImage *image, Address imagePAddr, Size index);
+    /** API handlers */
+    Array<APIHandler> m_apis;
 };
-
-/**
- * Kernel entry point.
- */
-extern C void kmain();
 
 /** Start of kernel text and data. */
 extern Address kernelStart;
@@ -130,4 +119,4 @@ extern Address kernelEnd;
  * @}
  */
 
-#endif /* __KERNEL_KERNEL_H */
+#endif /* __KERNEL_H */

@@ -15,29 +15,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/IPCMessage.h>
+#include <Log.h>
+#include <ListIterator.h>
 #include <FreeNOS/API.h>
 #include <FreeNOS/Kernel.h>
-#include <FreeNOS/Scheduler.h>
-#include <Arch/Memory.h>
-#include <ProcessID.h>
-#include <Error.h>
-#include <Init.h>
-#include <MemoryBlock.h>
+#include "IPCMessage.h"
 
-int IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg, Size size)
+Error IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg, Size size)
 {
     Process *proc;
-
+    ProcessManager *procs = Kernel::instance->getProcessManager();
+    Memory *memory = Kernel::instance->getMemory();
+    
     /* Verify memory read/write access. */
-    if (size > MAX_MESSAGE_SIZE || !memory->access(scheduler->current(),
+    if (size > MAX_MESSAGE_SIZE || !memory->access(procs->current(),
                                                   (Address) msg, sizeof(UserMessage)))
     {
         return EFAULT;
     }
     /* Enforce correct fields. */
-    msg->from = scheduler->current()->getID();
+    msg->from = procs->current()->getID();
     msg->type = IPCType;
+
+    DEBUG("#" << msg->from << " " << action << " -> #" << id);
 
     /* Handle IPC request appropriately. */
     switch (action)
@@ -46,18 +46,19 @@ int IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg, Size siz
         case SendReceive:
   
             /* Find the remote process to send to. */
-            if (!(proc = Process::byID(id)))
+            if (!(proc = procs->get(id)))
             {
                 return ESRCH;
             }
             /* Put our message on their list, and try to let them execute! */
             proc->getMessages()->insertHead(new UserMessage(msg, size));
+            proc->setState(Process::Ready);
 
-            if (action == SendReceive)
-                scheduler->current()->setState(Sleeping);
-            
-            scheduler->executeAttempt(proc);
-            
+            if (action == SendReceive && proc != procs->current())
+            {
+                procs->current()->setState(Process::Sleeping);
+                procs->schedule(proc);
+            }
             if (action == Send)
                 break;
             
@@ -67,21 +68,21 @@ int IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg, Size siz
             while (true)
             {
                 /* Look for a message, with origin 'id'. */
-                for (ListIterator<UserMessage> i(scheduler->current()->getMessages());
+                for (ListIterator<UserMessage> i(procs->current()->getMessages());
                      i.hasNext(); i++)
                 {
                     if (i.current()->from == id || id == ANY)
                     {
                         MemoryBlock::copy(msg, i.current()->data, size < i.current()->size ?
                                                        size : i.current()->size);
-                        scheduler->current()->getMessages()->remove(i.current());
+                        procs->current()->getMessages()->remove(i.current());
                         delete i.current();
                         return 0;
                     }
                 }
                 /* Let some other process run while we wait. */
-                scheduler->current()->setState(Sleeping);
-                scheduler->executeNext();
+                procs->current()->setState(Process::Sleeping);
+                procs->schedule();
             }
 
         default:
@@ -90,5 +91,3 @@ int IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg, Size siz
     /* Success. */
     return 0;
 }
-
-INITAPI(IPCMESSAGE, IPCMessageHandler)

@@ -19,9 +19,7 @@
 #define __API_SYSTEMINFO_H
 
 #include <FreeNOS/API.h>
-#include <FreeNOS/Scheduler.h>
-#include <FreeNOS/Multiboot.h>
-#include <Arch/Memory.h>
+#include <System/Multiboot.h>
 #include <FreeNOS/Config.h>
 #include <FreeNOS/Kernel.h>
 #include <Error.h>
@@ -31,9 +29,6 @@
  * @defgroup kernelapi kernel (API) 
  * @{  
  */
-
-/** SystemCall number for SystemInfo(). */
-#define SYSTEMINFO 6
 
 /**
  * Forward declaration.
@@ -47,8 +42,13 @@ class SystemInformation;
  */
 inline Error SystemInfo(SystemInformation *info)
 {
-    return trapKernel1(SYSTEMINFO, (Address) info);
+    return trapKernel1(SystemInfoNumber, (Address) info);
 }
+
+/**
+ * Kernel prototype.
+ */
+extern Error SystemInfoHandler(SystemInformation *info);
 
 /**
  * System information structure.

@@ -48,13 +48,15 @@ Address PageAllocator::allocate(Size *size)
 {
     MemoryMessage msg;
     Address ret = start + allocated;
+
+#warning TODO: perhaps align to page size???
     Size bytes  = *size > PAGEALLOC_MINIMUM ?
 		  *size : PAGEALLOC_MINIMUM;
 
     /* Fill in the message. */
     msg.action = CreatePrivate;
     msg.bytes  = bytes;
-    msg.protection      = PAGE_RW | PAGE_RESERVED;
+    msg.access = Memory::Present | Memory::User | Memory::Readable | Memory::Writable | Memory::Reserved;
     msg.virtualAddress  = (1024 * 1024 * 16) + allocated;
     msg.physicalAddress = ZERO;
     msg.ipc(MEMSRV_PID, SendReceive, sizeof(msg));

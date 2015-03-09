@@ -44,7 +44,7 @@ def initialize(target, host, params):
     This will create a build.conf / build.host.conf if already existing.
     """
     if not os.path.exists('build.conf'):
-	shutil.copyfile('config/' + params.get('ARCH', 'x86') + '/'
+	shutil.copyfile('config/' + params.get('ARCH', 'intel') + '/'
 				  + params.get('SYSTEM', 'pc') + '/'
 			          + params.get('CONF', 'build') + '.conf', 'build.conf')
 
@@ -147,6 +147,7 @@ def set_default_variables(env):
     except:
         compiler = env['CC'] + ' ' + env['CCVERSION']
 
+    env['FREENOS'] = 1
     env['COMPILER_VERSION'] = compiler
     env['BUILDUSER'] = os.environ['USER']
     env['BUILDHOST'] = platform.node()

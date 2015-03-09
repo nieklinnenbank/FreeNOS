@@ -18,6 +18,7 @@
 #ifndef __SHARED_H
 #define __SHARED_H
 
+#include <FreeNOS/Memory.h>
 #include <MemoryMessage.h>
 #include "Assert.h"
 #include "Comparable.h"
@@ -74,7 +75,7 @@ template <class T> class Shared
 	    mem.bytes  = sizeof(T) * count;
 	    mem.key    = (char *) key;
 	    mem.keyLength  = String::strlen(key);
-	    mem.protection = PAGE_RW;
+	    mem.access = Memory::Present | Memory::User | Memory::Readable | Memory::Writable;
 	    mem.virtualAddress  = ZERO;
 	    mem.physicalAddress = ZERO;
 	    mem.ipc(MEMSRV_PID, SendReceive, sizeof(mem));

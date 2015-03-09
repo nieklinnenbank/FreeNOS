@@ -191,6 +191,20 @@ template <class T> class Array
 	    return (u8) _array[index];
 	}
 	
+        /**
+         * Find the first empty index inside the Array.
+         * @return Index of empty position or -1 if full.
+         */
+        int findEmpty() const
+        {
+            for (Size i = 0; i < _size; i++)
+            {
+                if (_array[i] == ZERO)
+                    return i;
+            }
+            return -1;
+        }
+
 	/**
 	 * Returns the item at the given position in the Array.
 	 * @param i The index of the item to return.

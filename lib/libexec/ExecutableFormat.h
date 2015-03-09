@@ -19,6 +19,7 @@
 #define __LIBEXEC_EXECUTABLEFORMAT_H
 #ifndef __ASSEMBLER__
 
+#include <FreeNOS/Memory.h>
 #include <List.h>
 #include <Types.h>
 
@@ -55,7 +56,7 @@ typedef struct MemoryRegion
     Size size;
 
     /** Page protection flags. */
-    u16 flags;
+    Memory::MemoryAccess access;
     
     /** Memory contents. */
     u8 *data;

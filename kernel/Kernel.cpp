@@ -15,17 +15,64 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <Log.h>
 #include "Kernel.h"
-#include <Arch/Memory.h>
+#include "Memory.h"
 #include "Process.h"
-#include "Scheduler.h"
-#include "Multiboot.h"
+#include "ProcessManager.h"
+#include <System/Multiboot.h>
+#include <System/Constant.h>
 #include "BootImage.h"
 #include <UserProcess.h>
 #include <String.h>
 
-Kernel::Kernel()
+Kernel::Kernel(Memory *memory, ProcessManager *procs)
+    : Singleton<Kernel>(this)
 {
+    DEBUG("");
+
+    /* Initialize members */
+    m_memory = memory;
+    m_procs  = procs;
+
+    /* Register generic API handlers */
+    m_apis.insert(IPCMessageNumber, (APIHandler *) IPCMessageHandler);
+    m_apis.insert(PrivExecNumber,   (APIHandler *) PrivExecHandler);
+    m_apis.insert(ProcessCtlNumber, (APIHandler *) ProcessCtlHandler);
+    m_apis.insert(SystemInfoNumber, (APIHandler *) SystemInfoHandler);
+    m_apis.insert(VMCopyNumber,     (APIHandler *) VMCopyHandler);
+    m_apis.insert(VMCtlNumber,      (APIHandler *) VMCtlHandler);
+    m_apis.insert(IOCtlNumber,      (APIHandler *) IOCtlHandler);
+
+    /* Load boot image programs */
+    loadBootImage();
+}
+
+Memory * Kernel::getMemory()
+{
+    return m_memory;
+}
+
+ProcessManager * Kernel::getProcessManager()
+{
+    return m_procs;
+}
+
+void Kernel::run()
+{
+    DEBUG("");
+    m_procs->schedule();
+}
+
+Error Kernel::invokeAPI(APINumber number,
+                        ulong arg1, ulong arg2, ulong arg3, ulong arg4, ulong arg5)
+{
+    APIHandler *handler = m_apis.get(number);
+
+    if (handler)
+        return handler(arg1, arg2, arg3, arg4, arg5);
+    else
+        return EINVAL;
 }
 
 bool Kernel::loadBootImage()
@@ -35,17 +82,26 @@ bool Kernel::loadBootImage()
     String str;
     bool found = false;
 
+#warning Do not assume multiboot support for an architecture
+
     /* Startup boot modules. */
-    for (Size n = 0; n <  multibootInfo.modsCount; n++)
+    for (Size n = 0; n < multibootInfo.modsCount; n++)
     {
         mod = &((MultibootModule *) multibootInfo.modsAddress)[n];
+
+        /* Mark its memory used */
+        for (Address a = mod->modStart; a < mod->modEnd; a += PAGESIZE)
+        {
+            m_memory->allocatePhysicalAddress(a);
+        }
 
         /* Is this a BootImage? */
         if (str.match((char *) mod->string, "*.img.gz"))
         {
             /* Map the BootImage into our address space. */
-            image = (BootImage *) memory->mapVirtual(mod->modStart);
-                                  memory->mapVirtual(mod->modStart + PAGESIZE);
+            image = (BootImage *) m_memory->map(mod->modStart);
+                                  m_memory->map(mod->modStart + PAGESIZE);
+
             found = true;        
 
             /* Verify this is a correct BootImage. */
@@ -77,8 +133,8 @@ void Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Size index)
     segment = &((BootSegment *) (imageVAddr + image->segmentsTableOffset))[program->segmentsOffset];
 
     /* Create process. */
-    proc = createProcess(program->entry);
-    proc->setState(Ready);
+    proc = m_procs->create(program->entry);
+    proc->setState(Process::Ready);
                     
     /* Loop program segments. */
     for (Size i = 0; i < program->segmentsCount; i++)
@@ -86,17 +142,15 @@ void Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Size index)
         /* Map program segment into it's virtual memory. */
         for (Size j = 0; j < segment[i].size; j += PAGESIZE)
         {
-            memory->mapVirtual(proc,
-                               imagePAddr + segment[i].offset + j,
-                               segment[i].virtualAddress + j,
-                               PAGE_PRESENT | PAGE_USER | PAGE_RW);
+
+            m_memory->map(proc,
+                          imagePAddr + segment[i].offset + j,
+                          segment[i].virtualAddress + j,
+                          Memory::Present | Memory::User | Memory::Readable | Memory::Writable);
         }
     }
     /* Map and copy program arguments. */
-    args = memory->allocatePhysical(PAGESIZE);
-    memory->mapVirtual(proc, args, ARGV_ADDR, PAGE_PRESENT | PAGE_USER | PAGE_RW);
-    String::strlcpy( (char *) memory->mapVirtual(args), program->path, ARGV_SIZE);
-    
-    /* Schedule process. */
-    scheduler->enqueue(proc);
+    args = m_memory->allocatePhysical(PAGESIZE);
+    m_memory->map(proc, args, ARGV_ADDR, Memory::Present | Memory::User | Memory::Writable);
+    String::strlcpy( (char *) m_memory->map(args), program->path, ARGV_SIZE);
 }

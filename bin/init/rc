@@ -1,4 +1,4 @@
-/srv/serial/server
+#/srv/serial/server
 /srv/input/keyboard/server
 /srv/video/vga/server
 /srv/terminal/server
@@ -13,11 +13,13 @@ stdio /dev/tty0 /dev/tty0
 #
 #stdio /dev/serial0 /dev/serial0
 
-/srv/ata/server
+#/srv/ata/server
 /srv/filesystem/proc/server
-/srv/filesystem/grub/server
-/srv/filesystem/linn/server /dev/ata0 0x400000 /usr
-/srv/pci/server
-/srv/pci/detect
+
+#/srv/filesystem/grub/server
+#/srv/filesystem/linn/server /dev/ata0 0x400000 /usr
+#/srv/pci/server
+#/srv/pci/detect
+
 /srv/time/server
 /bin/sh

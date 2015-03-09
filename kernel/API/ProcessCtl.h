@@ -19,7 +19,7 @@
 #define __API_PROCESSCTL_H
 
 #include <FreeNOS/API.h>
-#include <FreeNOS/Scheduler.h>
+#include <FreeNOS/Process.h>
 #include <Error.h>
 #include <Types.h>
 
@@ -27,9 +27,6 @@
  * @defgroup kernelapi kernel (API) 
  * @{  
  */
-
-/** SystemCall number for ProcessCtl(). */
-#define PROCESSCTL 4
 
 /**
  * Available operation to perform using PrivExec().
@@ -58,7 +55,7 @@ typedef struct ProcessInfo
     ProcessID id;
     
     /** Defines the current state of the Process. */
-    ProcessState state;
+    Process::State state;
     
     /** Virtual address of the stack. */
     Address stack;
@@ -67,6 +64,9 @@ typedef struct ProcessInfo
     Address pageDirectory;
 }
 ProcessInfo;
+
+/** Operator to print a ProcessOperation to a Log */
+Log & operator << (Log &log, ProcessOperation op);
 
 /**
  * Prototype for user applications. Process management related operations.
@@ -78,8 +78,13 @@ ProcessInfo;
  */
 inline Error ProcessCtl(ProcessID proc, ProcessOperation op, Address addr = 0)
 {
-    return trapKernel3(PROCESSCTL, proc, op, addr);
+    return trapKernel3(ProcessCtlNumber, proc, op, addr);
 }
+
+/**
+ * Kernel handler prototype.
+ */
+extern Error ProcessCtlHandler(ProcessID proc, ProcessOperation op, Address addr);
 
 /**
  * @}

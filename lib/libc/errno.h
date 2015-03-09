@@ -21,22 +21,10 @@
 #include <Macros.h>
 #include <Types.h>
 
-#ifndef __HOST__
-
 /**
  * @defgroup libc libc (ISO C99)
  * @{
  */
-
-/**
- * The lvalue errno is used by many functions to return error values.
- */
-extern C int errno;
-
-/**
- * Contains a array of character strings, representing errno values.
- */
-extern C char *error_map[];
 
 /** Reports a success operation. */
 #define ESUCCESS        0
@@ -288,8 +276,17 @@ extern C char *error_map[];
 #define ELAST		EXDEV
 
 /**
+ * The lvalue errno is used by many functions to return error values.
+ */
+extern C int errno;
+
+/**
+ * Contains a array of character strings, representing errno values.
+ */
+extern C char *error_map[];
+
+/**
  * @}
  */
 
-#endif /* __HOST__ */
 #endif /* __LIBC_ERRNO_H */

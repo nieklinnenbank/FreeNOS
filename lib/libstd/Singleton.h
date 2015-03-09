@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,28 +23,22 @@
  */
 template <class T> class Singleton
 {
-    public:
+  public:
 
-        /**
-         * Create an instance of T.
-         * @return Pointer to T.
-         */
-        static T * instance()
-        {
-	    if (!Singleton<T>::obj)
-	    {
-		Singleton<T>::obj = new T();
-	    }
-	    return Singleton<T>::obj;
-	}
-	
-    private:
+    /**
+     * Constructor
+     * @param instance New instance of T.
+     */
+    Singleton<T>(T *obj)
+    {
+        instance = obj;
+    }    
 
-	/** One and only instance. */    
-	static T *obj;
+    /** One and only instance. */    
+    static T *instance;
 };
 
 /* Initialize the static member obj. */
-template <class T> T* Singleton<T>::obj = 0;
+template <class T> T* Singleton<T>::instance = 0;
 
 #endif /* __SINGLETON_H */

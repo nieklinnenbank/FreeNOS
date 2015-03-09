@@ -27,9 +27,6 @@
  * @{  
  */
 
-/** SystemCall number for PrivExec(). */
-#define PRIVEXEC 3
-
 /**
  * Available operations to perform using PrivExec().
  * @see PrivExec
@@ -39,6 +36,7 @@ typedef enum PrivOperation
     Idle     = 0,
     Reboot   = 1,
     Shutdown = 2,
+    WriteConsole = 3,
 }
 PrivOperation;
 
@@ -47,10 +45,15 @@ PrivOperation;
  * @param op The operation to perform.
  * @return Zero on success and error code on failure.
  */
-inline Error PrivExec(PrivOperation op)
+inline Error PrivExec(PrivOperation op, Address param = 0)
 {
-    return trapKernel1(PRIVEXEC, op);
+    return trapKernel2(PrivExecNumber, op, param);
 }
+
+/**
+ * Prototype for kernel handler.
+ */
+extern Error PrivExecHandler(PrivOperation op, Address param);
 
 /**
  * @}

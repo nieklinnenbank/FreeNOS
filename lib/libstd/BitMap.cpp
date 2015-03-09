@@ -18,23 +18,47 @@
 #include "BitMap.h"
 #include "MemoryBlock.h"
 
-BitMap::BitMap(u8 *newMap, Size cnt) : count(cnt), free(cnt)
+BitMap::BitMap(u8 *map, Size size)
 {
-    map = newMap;
+    m_map  = map ? map : new u8[size];
+    m_size = size;
+    m_free = size;
 }
 
 void BitMap::mark(Size bit)
 {
-    assert(bit < count);
-    assertRead(map);
-    assertWrite(map);
+    assert(bit < m_size);
+    assertRead(m_map);
+    assertWrite(m_map);
 
     /* Only mark if the bit is free. */
     if (!isMarked(bit))
     {
-        map[bit / 8] |= 1 << (bit % 8);
-        free--;
+        m_map[bit / 8] |= 1 << (bit % 8);
+        m_free--;
     }
+}
+
+void BitMap::unmark(Size bit)
+{
+    assert(bit < m_size);
+    assertRead(m_map);
+    assertWrite(m_map);
+
+    /* Only unmark if the bit is marked now. */
+    if (isMarked(bit))
+    {
+        m_map[bit / 8] &= ~(1 << (bit % 8));
+        m_free++;
+    }
+}
+
+bool BitMap::isMarked(Size bit) const
+{
+    assert(bit < m_size);
+    assertRead(m_map);
+
+    return m_map[bit / 8] & (1 << (bit % 8));
 }
 
 void BitMap::markRange(Size from, Size to)
@@ -45,101 +69,78 @@ void BitMap::markRange(Size from, Size to)
     }
 }
 
-Error BitMap::markNext()
+Error BitMap::markNext(Size count, Size start)
 {
-    u32 *ptr;
-    Size num = count / sizeof(u32);
+    Size from = 0, found = 0;
 
-    /* At least one, and include partially used bytes. */
-    if (!num || count % sizeof(u32))
+    /* Loop bitmap for free bits. */
+    for (Size i = start; i < m_size; i++)
     {
-        num++;
-    }
-    /* Scan bitmap as fast as possible. */
-    for (Size i = 0; i < num; i++)
-    {
-        /* Point to the correct offset. */
-        ptr = ((u32 *) (map)) + i;
-
-        /* Any blocks free? */
-        if (*ptr != (u32) ~ZERO)
+        if (!isMarked(i))
         {
-            /* Find the first free bit. */
-            for (Size bit = 0; bit < sizeof(u32) * 8; bit++)
+            /* Remember this bit. */
+            if (!found)
             {
-                if (!(*ptr & (1 << bit)))
-                {
-                    *ptr |= (1 << bit);
-                    free--;
-                    return bit + (sizeof(u32) * 8 * i);
-                }
+                from  = i;
+                found = 1;
             }
+            else
+                found++;
+
+            /* Are there enough contigious bits? */
+            if (found >= count)
+            {
+                markRange(from, i);
+                return from;
+            }
+        }
+        else
+        {
+            from = found = 0;
         }
     }
     /* No free bits left! */
     return -1;
 }
 
-void BitMap::unmark(Size bit)
-{
-    assert(bit < count);
-    assertRead(map);
-    assertWrite(map);
-
-    /* Only unmark if the bit is marked now. */
-    if (isMarked(bit))
-    {
-        map[bit / 8] &= ~(1 << (bit % 8));
-        free++;
-    }
-}
-
-bool BitMap::isMarked(Size bit) const
-{
-    assert(bit < count);
-    assertRead(map);
-
-    return map[bit / 8] & (1 << (bit % 8));
-}
-
 u8 * BitMap::getMap() const
 {
-    return map;
+    return m_map;
 }
 
-void BitMap::setMap(u8 *newMap, Size newCount)
+void BitMap::setMap(u8 *map, Size size)
 {
     /* Set bits count. */
-    if (newCount)
+    if (size)
     {
-        count = newCount;
+        m_size = size;
     }
     /* Reassign to the new map. */
-    map = newMap;
+    m_map = map;
 }
 
 void BitMap::clear()
 {
-    Size bytes = (count / 8);
+    Size bytes = (m_size / 8);
 
     /* Partial byte. */
-    if (count % 8)
+    if (m_size % 8)
     {
         bytes++;
     }
     /* Zero it. */
-    MemoryBlock::set(map, 0, bytes);
+    MemoryBlock::set(m_map, 0, bytes);
 
     /* Reset free count. */
-    free = count;
+    m_free = m_size;
 }
 
 Size BitMap::getUsed() const
 {
-    return (count - free);
+    return (m_size - m_free);
 }
 
 Size BitMap::getFree() const
 {
-    return free;
+    return m_free;
 }

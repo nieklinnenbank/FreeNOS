@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#warning Do not depend on Intel specific functions in a generic API
+
 #include "VMCtl.h"
 #include <FreeNOS/Kernel.h>
 #include <Error.h>
@@ -22,19 +24,24 @@
 
 Error VMCtlHandler(ProcessID procID, MemoryOperation op, MemoryRange *range)
 {
+    ProcessManager *procs = Kernel::instance->getProcessManager();
+    IntelMemory *memory = (IntelMemory *) Kernel::instance->getMemory();
     Process *proc = ZERO;
     Address  page     = ZERO;
     Address *remotePG = (Address *) PAGETABADDR_FROM(PAGETABFROM,
                                                      PAGEUSERFROM);
     
     /* Find the given process. */
-    if (!(proc = Process::byID(procID)))
+    if (procID == SELF)
+        proc = procs->current();
+    else if (!(proc = procs->get(procID)))
     {
         return ESRCH;
     }
+
     /* Validate the given MemoryRange pointer, if needed. */
     if (op != MapTables && op != UnMapTables &&
-        !memory->access(scheduler->current(),
+        !memory->access(procs->current(),
                        (Address) range, sizeof(MemoryRange)))
     {
         return EFAULT;
@@ -43,17 +50,17 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, MemoryRange *range)
     switch (op)
     {
         case LookupVirtual:
-            range->physicalAddress = memory->lookupVirtual(proc,
-                                                           range->virtualAddress);
+            range->physicalAddress = memory->lookup(proc, range->virtualAddress);
             break;
 
         case LookupPhysical:
-            return memory->isMarked(range->physicalAddress);
+            return EINVAL;
+            //return memory->isMarked(range->physicalAddress);
 
         case Map:
 
             /* Map the memory page. */
-            if (range->protection & PAGE_PRESENT)
+            if (range->access & Memory::Present)
             {
                 /* Acquire physical page(s) first. */
                 if (!range->physicalAddress)
@@ -63,10 +70,10 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, MemoryRange *range)
                 /* Insert virtual page(s). */
                 for (Size i = 0; i < range->bytes; i += PAGESIZE)
                 {
-                    memory->mapVirtual(proc,
-                                       range->physicalAddress + i,
-                                       range->virtualAddress  + i,
-                                       range->protection & ~PAGEMASK);
+                    memory->map(proc,
+                                range->physicalAddress + i,
+                                range->virtualAddress  + i,
+                                range->access);
                 }
             }
             /* Release memory page(s). */
@@ -76,11 +83,11 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, MemoryRange *range)
                 {
                     /* Don't release pinned pages. */
                     if (memory->access(proc, range->virtualAddress + i,
-                                       PAGE_PINNED))
+                                       Memory::Pinned))
                         continue;
                 
-                    if ((page = memory->lookupVirtual(proc,
-                                                 range->virtualAddress + i)))
+                    if ((page = memory->lookup(proc,
+                                               range->virtualAddress + i)))
                     {
                         memory->releasePhysical(page & PAGEMASK);
                     }
@@ -90,14 +97,14 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, MemoryRange *range)
 
         case Access:
             return memory->access(proc, range->virtualAddress,
-                                        range->bytes, range->protection);
+                                        range->bytes, range->access);
             
         case MapTables:
 
             /* Map remote page tables. */
-            memory->mapRemote((X86Process *)proc, 0,
+            memory->mapRemote((IntelProcess *)proc, 0,
                              (Address) PAGETABADDR_FROM(PAGETABFROM, PAGEUSERFROM),
-                              PAGE_USER);
+                              Memory::Present | Memory::User | Memory::Writable); // PAGE_USER);
             
             /* Temporarily allow userlevel access to the page tables. */
             for (Size i = 0; i < PAGEDIR_MAX; i++)
@@ -133,5 +140,3 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, MemoryRange *range)
     /* Success. */
     return 0;
 }
-
-INITAPI(VMCTL, VMCtlHandler)

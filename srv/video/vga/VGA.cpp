@@ -34,7 +34,7 @@ Error VGA::initialize()
     mem.bytes     = PAGESIZE;
     mem.virtualAddress  = ZERO;
     mem.physicalAddress = VGA_PADDR;
-    mem.protection      = PAGE_RW | PAGE_PINNED;
+    mem.access    = Memory::Present | Memory::User | Memory::Readable | Memory::Writable | Memory::Pinned;
     mem.ipc(MEMSRV_PID, SendReceive, sizeof(mem));
 
     /* Point to the VGA mapping. */
@@ -51,8 +51,8 @@ Error VGA::initialize()
     ProcessCtl(SELF, AllowIO, VGA_IODATA);
     
     /* Disable hardware cursor. */
-    outb(VGA_IOADDR, 0x0a);
-    outb(VGA_IODATA, 1 << 5);
+    WriteByte(VGA_IOADDR, 0x0a);
+    WriteByte(VGA_IODATA, 1 << 5);
     
     /* Successfull. */
     return ESUCCESS;

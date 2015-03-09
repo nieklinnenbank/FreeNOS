@@ -66,7 +66,7 @@ typedef struct UserProcess
     GroupID groupID;
     
     /** Process state. */
-    ProcessState state;
+    Process::State state;
     
     /** Waits for exit of this Process. */
     ProcessID waitProcessID;

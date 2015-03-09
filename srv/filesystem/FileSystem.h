@@ -390,7 +390,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
         	    }
         	    dir = (Directory *) c->file;
             
-        	    /* Fetch next file, if possible. */
+        	    /* Fetch the file, if possible. */
 		    if (!(file = dir->lookup(**i.current())))
 		    {
         	        return ZERO;
@@ -588,6 +588,9 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	    /* Maximum number of FileDescriptors reached. */
 	    return -1;
 	}
+
+        /** Log object */
+        Log *m_log;
 };
 
 #endif /* __FILESYSTEM_FILESYSTEM_H */

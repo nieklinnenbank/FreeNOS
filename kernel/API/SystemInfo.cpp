@@ -15,13 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/SystemInfo.h>
+#include <FreeNOS/API.h>
+#include <FreeNOS/Kernel.h>
+#include <System/Multiboot.h>
 #include <String.h>
 
-int SystemInfoHandler(SystemInformation *info)
+Error SystemInfoHandler(SystemInformation *info)
 {
+    Memory *memory = Kernel::instance->getMemory();
+    ProcessManager *procs = Kernel::instance->getProcessManager();
+
     /* Verify memory access. */
-    if (!memory->access(scheduler->current(), (Address) info,
+    if (!memory->access(procs->current(), (Address) info,
 	                sizeof(SystemInformation)))
     {
         return EFAULT;
@@ -45,5 +50,3 @@ int SystemInfoHandler(SystemInformation *info)
     }
     return 0;
 }
-
-INITAPI(SYSTEMINFO, SystemInfoHandler)

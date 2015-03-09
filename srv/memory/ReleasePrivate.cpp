@@ -20,7 +20,7 @@
 
 void MemoryServer::releasePrivate(MemoryMessage *msg)
 {
-    msg->protection |= PAGE_PRESENT | PAGE_USER;
+    msg->access |= Memory::Present | Memory::User;
     
     /* Only allow unmapping of user pages. */
     if (!VMCtl(msg->from, Access, msg))
@@ -28,7 +28,7 @@ void MemoryServer::releasePrivate(MemoryMessage *msg)
         msg->result = EFAULT;
         return;
     }
-    msg->protection = ZERO;
+    msg->access = Memory::None;
 	
     /* Unmap now. */
     VMCtl(msg->from, Map, msg);

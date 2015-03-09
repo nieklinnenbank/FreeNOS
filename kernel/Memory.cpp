@@ -15,155 +15,92 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Arch/Memory.h>
-#include "Multiboot.h"
-#include "Kernel.h"
-#include <Init.h>
-#include <Allocator.h>
+#include <Log.h>
 #include <BubbleAllocator.h>
 #include <PoolAllocator.h>
-#include <Types.h>
+#include <System/Constant.h>
+#include "Memory.h"
 
-Size Memory::memorySize, Memory::memoryAvail;
-u8  *Memory::memoryMap, *Memory::memoryMapEnd;
-
-Memory::Memory()
+Memory::Memory(Size memorySize)
+    : m_physicalMemory((u8*) NULL, memorySize / PAGESIZE)
 {
-    /* Marks kernel memory used. */
-    allocatePhysical(0x00400000, 0);
-    
-    /* Marks boot module memory. */
-    for (Size i = 0; i < multibootInfo.modsCount; i++)
-    {
-        MultibootModule *mod  = &((MultibootModule *) multibootInfo.modsAddress)[i];
-        Size modSize = mod->modEnd - mod->modStart;
+    m_physicalMemory.clear();
+}
 
-        /* Mark memory used. */
-        allocatePhysical(modSize, mod->modStart);
-    }
+Error Memory::initialize(Address heap)
+{
+    Size meta = sizeof(BubbleAllocator) + sizeof(PoolAllocator);
+    Allocator *bubble, *pool;
+
+    /* Setup the dynamic memory heap. */
+    bubble = new (heap) BubbleAllocator();
+    pool   = new (heap + sizeof(BubbleAllocator)) PoolAllocator();
+    pool->setParent(bubble);
+
+    /* Setup the heap region (1MB). */
+    bubble->region(heap + meta, (1024 * 1024) - meta);
+
+    /* Set default allocator. */
+    Allocator::setDefault(pool);
+    return 0;
 }
 
 Size Memory::getTotalMemory()
 {
-    return memorySize;
+    return m_physicalMemory.getUsed() * PAGESIZE;
 }
-        
+
 Size Memory::getAvailableMemory()
 {
-    return memoryAvail;
+    return m_physicalMemory.getFree() * PAGESIZE;
 }
 
-void Memory::initialize()
+Address Memory::allocatePhysical(Size size)
 {
-    Address page = 0x00300000;
-    Size meta = sizeof(BubbleAllocator) + sizeof(PoolAllocator);
-    Allocator *bubble, *pool;
+    Size num = size / PAGESIZE;
 
-    /* Save memory size. */
-    memorySize  = (multibootInfo.memLower + multibootInfo.memUpper) * 1024;
-    memoryAvail = memorySize;
-    
-    /* Allocate memoryMap */
-    memoryMap    = (u8 *)(&kernelEnd);
-    memoryMapEnd = memoryMap + (memorySize / PAGESIZE / 8);
+    if ((size % PAGESIZE))
+        num++;
 
-    /* Clear memory map. */
-    for (u8 *p = memoryMap; p < memoryMapEnd; p++)
+    return m_physicalMemory.markNext(num) * PAGESIZE;
+}
+
+Address Memory::allocatePhysicalAddress(Address addr)
+{
+    if (isAllocated(addr))
     {
-        *p = 0;
+        FATAL("physical address already allocated: " << addr);
+        for (;;);
     }
-    /* Setup the dynamic memory heap. */
-    bubble = new (page) BubbleAllocator();
-    pool   = new (page + sizeof(BubbleAllocator)) PoolAllocator();
-    pool->setParent(bubble);
-    
-    /* Setup the heap region (1MB). */
-    bubble->region(page + meta, (1024 * 1024) - meta);
-
-    /* Set default allocator. */
-    Allocator::setDefault(pool);
+    m_physicalMemory.mark(addr / PAGESIZE);
+    return addr;
 }
 
-Address Memory::allocatePhysical(Size sz, Address paddr)
+bool Memory::isAllocated(Address page)
 {
-    Address start = paddr & PAGEMASK, end = memorySize;
-    Address from  = 0, count = 0;
-
-    /* Loop the memoryMap for a free block. */
-    for (Address i = start; i < end; i += PAGESIZE)
-    {
-        if (!isMarked(i))
-        {
-            /* Remember this page. */
-            if (!count)
-            {
-                from  = i;
-                count = 1;
-            }
-            else
-                count++;
-
-            /* Are there enough contigious pages? */
-            if (count * PAGESIZE >= sz)
-            {
-                for (Address j = from; j < from + (count * PAGESIZE); j += PAGESIZE)
-                {
-                    setMark(j, true);
-                }
-                memoryAvail -= count * PAGESIZE;
-                return from;
-            }
-        }
-        else
-        {
-            from = count = 0;
-        }
-    }
-    /* Out of memory! */
-    return (Address) ZERO;
+    return m_physicalMemory.isMarked(page / PAGESIZE);
 }
 
-void Memory::releasePhysical(Address addr)
+Error Memory::releasePhysical(Address page)
 {
-    setMark(addr & PAGEMASK, false);
-    memoryAvail += PAGESIZE;
+    m_physicalMemory.unmark(page / PAGESIZE);
+    return 0;
 }
 
-Address Memory::allocateVirtual(Address vaddr, ulong prot)
+Address Memory::allocate(Address vaddr, MemoryAccess flags)
 {
     /* Allocate a new physical page. */
     Address newPage = allocatePhysical(PAGESIZE);
     
     /* Map it to the requested virtual address. */
-    return mapVirtual(newPage, vaddr, prot);
+    return map(newPage, vaddr, flags);
 }
 
-Address Memory::allocateVirtual(Process *p, Address vaddr, ulong prot)
+Address Memory::allocate(Process *p, Address vaddr, MemoryAccess flags)
 {
     /* Allocate new physical page. */
     Address newPage = allocatePhysical(PAGESIZE);
     
     /* Map it into the target process. */
-    return mapVirtual(p, newPage, vaddr, prot);
+    return map(p, newPage, vaddr, flags);
 }
-
-bool Memory::isMarked(Address addr)
-{
-    Size index = (addr >> PAGESHIFT) / 8;
-    Size bit   = (addr >> PAGESHIFT) % 8;
-    
-    return memoryMap[index] & (1 << bit);
-}
-
-void Memory::setMark(Address addr, bool marked)
-{
-    Size index = (addr >> PAGESHIFT) / 8;
-    Size bit   = (addr >> PAGESHIFT) % 8;
-
-    if (marked)
-        memoryMap[index] |=  (1 << bit);
-    else
-        memoryMap[index] &= ~(1 << bit);
-}
-
-INITCLASS(Memory, initialize, PMEMORY)

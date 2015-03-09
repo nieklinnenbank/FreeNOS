@@ -39,6 +39,12 @@
 extern C char * basename(char *path);
 
 /**
+ * @brief Return the directory portion of a pathname.
+ * @return String pointer to the directory of pathname.
+ */
+extern C char * dirname(char *path);
+
+/**
  * @}
  */
 

@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <PrivExecLog.h>
 #include <API/VMCopy.h>
 #include "LinnFile.h"
 #include <string.h>
@@ -22,6 +23,8 @@
 LinnFile::LinnFile(LinnFileSystem *f, LinnInode *i)
     : fs(f), inode(i)
 {
+    DEBUG("");
+
     size   = inode->size;
     access = inode->mode;
 }

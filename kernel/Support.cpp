@@ -18,9 +18,9 @@
 #include <Macros.h>
 #include <Assert.h>
 #include "Support.h"
-#include "Scheduler.h"
-#include <Arch/Memory.h>
 #include "Kernel.h"
+
+#warning FIX asserts plz
 
 extern C void constructors()
 {
@@ -38,6 +38,8 @@ extern C void destructors()
     }
 }
 
+#ifdef __ASSERT__
+
 extern C void __assertFailure(const char *fmt, ...)
 {
     for (;;) ;
@@ -45,6 +47,7 @@ extern C void __assertFailure(const char *fmt, ...)
 
 extern C int __assertRead(Address addr)
 {
+
     if (memory && scheduler && scheduler->current())
     {
         return memory->access(scheduler->current(), addr,
@@ -63,6 +66,8 @@ extern C int __assertWrite(Address addr)
     return true;
 }
 
+#endif /* __ASSERT__ */
+
 extern C void __cxa_pure_virtual()
 {
 }
@@ -79,5 +84,3 @@ extern C int __cxa_atexit(void (*func) (void *), void * arg, void * dso_handle)
 {
     return (0);
 }
-
-INITFUNC(constructors, CTOR)

@@ -66,7 +66,8 @@ MemoryServer::MemoryServer()
         {
 	    range.virtualAddress  = findFreeRange(SELF, PAGESIZE * 2);
 	    range.physicalAddress = info.modules[i].modStart;
-	    range.protection      = PAGE_PRESENT | PAGE_USER;
+	    range.access          = Memory::Present | Memory::User | Memory::Readable;
+#warning Dangerous value for bytes here?
 	    range.bytes           = PAGESIZE * 2;
 	    VMCtl(SELF, Map, &range);
 	    
@@ -153,7 +154,7 @@ Error MemoryServer::insertMapping(ProcessID procID, MemoryRange *range)
     Error result;
     
     tmp.virtualAddress = range->virtualAddress;
-    tmp.protection     = PAGE_PRESENT;
+    tmp.access         = Memory::Present;
     tmp.bytes          = range->bytes;
 
     /* The given range must be free. */
@@ -178,7 +179,7 @@ SharedMemory * MemoryServer::insertShared(ProcessID procID,
 
     range->virtualAddress  = findFreeRange(procID, size);
     range->bytes      = size;
-    range->protection = PAGE_PRESENT | PAGE_USER | PAGE_RW | PAGE_PINNED;
+    range->access     = Memory::Present | Memory::User | Memory::Readable | Memory::Writable | Memory::Pinned;
 
     /* Only create a new mapping, if non-existent. */
     if (!(obj = findShared(key)))

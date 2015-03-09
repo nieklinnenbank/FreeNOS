@@ -18,7 +18,7 @@
 #ifndef __PCI_PCISERVER_H
 #define __PCI_PCISERVER_H
 
-#include <Arch/CPU.h>
+#include <FreeNOS/System/Constant.h>
 #include <FileSystem.h>
 #include <Directory.h>
 #include <Types.h>
@@ -106,8 +106,8 @@
  */
 #define PCI_READ_BYTE(bus, dev, func, reg) \
     ({ \
-	outl(PCI_CONFADDR, PCI_ADDRESS(bus, dev, func, reg)); \
-	inb(PCI_CONFDATA + ((reg) & 3)); \
+	WriteLong(PCI_CONFADDR, PCI_ADDRESS(bus, dev, func, reg)); \
+	ReadByte(PCI_CONFDATA + ((reg) & 3)); \
     })
 
 /**
@@ -128,8 +128,8 @@
  */
 #define PCI_WRITE_BYTE(bus, dev, func, reg, val) \
     ({ \
-	outl(PCI_CONFADDR, PCI_ADDRESS(bus, dev, func, reg)); \
-	outb(PCI_CONFDATA + ((reg) & 3), val); \
+	WriteLong(PCI_CONFADDR, PCI_ADDRESS(bus, dev, func, reg)); \
+	WriteByte(PCI_CONFDATA + ((reg) & 3), val); \
     })
 
 /**

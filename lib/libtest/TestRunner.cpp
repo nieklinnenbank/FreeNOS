@@ -1,0 +1,58 @@
+/*
+ * Copyright (C) 2015 Niek Linnenbank
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <ListIterator.h>
+#include <TerminalCodes.h>
+#include "TestCase.h"
+#include "TestSuite.h"
+#include "TestRunner.h"
+
+TestRunner::TestRunner(int argc, char **argv)
+{
+    m_argc = argc;
+    m_argv = argv;
+}
+
+int TestRunner::run(void)
+{
+    int ok = 0, fail = 0, skip = 0;
+
+    for (ListIterator<TestInstance> i(TestSuite::instance->getTests()); i.hasNext(); i++)
+    {
+        TestInstance *test = i.current();
+
+        printf("%s", WHITE);
+        printf("%s .. ", test->m_name);
+        TestResult result = test->run();
+
+        switch (result)
+        {
+            case OK:   printf("%sOK\r\n", GREEN);   ok++;   break;
+            case FAIL: printf("%sFAIL\r\n", RED); fail++; break;
+            case SKIP: printf("%sSKIP\r\n", YELLOW); skip++; break;
+        }
+    }
+#warning COLORING FOR TESTS!
+
+    printf("%s\r\n", WHITE);
+    printf("%d passed  %d failed  %d skipped  (%d total)\r\n",
+            ok, fail, skip, (ok+fail+skip));
+
+    return (!fail && !skip) ? EXIT_SUCCESS : EXIT_FAILURE;
+}

@@ -15,68 +15,78 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/ProcessCtl.h>
-#include <API/IPCMessage.h>
-#include <Arch/Kernel.h>
-#include <Arch/Memory.h>
-#include <Error.h>
+#include <Log.h>
+#include <FreeNOS/API.h>
+#include <FreeNOS/Kernel.h>
+#warning Do not depend on IntelProcess for ProcessCtl()
+#include <intel/IntelProcess.h>
+#include "ProcessCtl.h"
 
 void interruptNotify(CPUState *st, Process *p)
 {
+    ProcessManager *procs = Kernel::instance->getProcessManager();
+
     p->getMessages()->insertHead(new UserMessage(new InterruptMessage(IRQ_REG(st)),
 						 sizeof(InterruptMessage)));
-    p->wakeup();
+    p->setState(Process::Ready);
 }
 
-int ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
+Error ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
 {
-    X86Process *proc = ZERO;
+    IntelProcess *proc = ZERO;
+    Memory *memory = Kernel::instance->getMemory();
     ProcessInfo *info = (ProcessInfo *) addr;
+    ProcessManager *procs = Kernel::instance->getProcessManager();
+
+    DEBUG("#" << procs->current()->getID() << " " << action << " -> " << procID << " (" << addr << ")");
 
     /* Verify memory address. */
     if (action == InfoPID)
     {
-	if (!memory->access(scheduler->current(), addr, sizeof(ProcessInfo)))
+	if (!memory->access(procs->current(), addr, sizeof(ProcessInfo)))
 	{
 	    return EFAULT;
 	}
     }
     /* Does the target process exist? */
-    if(action != GetPID && action != Spawn && !(proc = (X86Process *) Process::byID(procID)))
+    if(action != GetPID && action != Spawn)
     {
-	return ESRCH;
+        if (procID == SELF)
+            proc = (IntelProcess *) procs->current();
+        else if (!(proc = (IntelProcess *)procs->get(procID)))
+	    return ESRCH;
     }
     /* Handle request. */
     switch (action)
     {
 	case Spawn:
-	    proc = (X86Process *) kernel->createProcess(addr);
+	    proc = (IntelProcess *) procs->create(addr);
 	    return proc->getID();
 	
 	case KillPID:
-	    delete proc;
+            procs->remove(proc);
 	    break;
 
 	case GetPID:
-	    return scheduler->current()->getID();
+	    return procs->current()->getID();
 
 	case Schedule:
-	    scheduler->executeNext();
+            procs->schedule();
 	    break;
 
 	case Resume:
-	    proc->setState(Ready);
-	    scheduler->enqueue(proc);
+	    proc->setState(Process::Ready);
 	    break;
 	
 	case AllowIO:
-	    proc->IOPort(addr, true);
-	    break;
+            return EINVAL;
+	    //proc->IOPort(addr, true);
+	    //break;
 	
 	case WatchIRQ:
-	    kernel->hookInterrupt(IRQ(addr),
+	    Kernel::instance->hookInterrupt(IRQ(addr),
 		(InterruptHandler *)interruptNotify, (ulong)proc);
-	    kernel->enableIRQ(addr, true);
+	    Kernel::instance->enableIRQ(addr, true);
 	    break;
 	
 	case InfoPID:
@@ -93,4 +103,19 @@ int ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
     return 0;
 }
 
-INITAPI(PROCESSCTL, ProcessCtlHandler)
+Log & operator << (Log &log, ProcessOperation op)
+{
+    switch (op)
+    {
+        case Spawn:     log.write("Spawn"); break;
+        case KillPID:   log.write("KillPID"); break;
+        case GetPID:    log.write("GetPID"); break;
+        case Schedule:  log.write("Schedule"); break;
+        case Resume:    log.write("Resume"); break;
+        case AllowIO:   log.write("AllowIO"); break;
+        case WatchIRQ:  log.write("WatchIRQ"); break;
+        case InfoPID:   log.write("InfoPID"); break;
+        case SetStack:  log.write("SetStack"); break;
+    }
+    return log;
+}

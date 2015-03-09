@@ -18,7 +18,6 @@
 #ifndef __API_VMCOPY_H
 #define __API_VMCOPY_H
 
-#include <FreeNOS/Scheduler.h>
 #include <FreeNOS/API.h>
 #include <Error.h>
 
@@ -26,9 +25,6 @@
  * @defgroup kernelapi kernel (API) 
  * @{  
  */
-
-/** SystemCall number for VMCopy(). */
-#define VMCOPY 2
 
 /**
  * Prototype for user applications. Copies virtual memory between two processes.
@@ -42,8 +38,10 @@
 inline Error VMCopy(ProcessID proc, Operation how, Address ours,
                                     Address theirs, Size sz)
 {
-    return trapKernel5(VMCOPY, proc, how, ours, theirs, sz);
+    return trapKernel5(VMCopyNumber, proc, how, ours, theirs, sz);
 }
+
+extern Error VMCopyHandler(ProcessID proc, Operation how, Address ours, Address theirs, Size sz);
 
 /**
  * @}

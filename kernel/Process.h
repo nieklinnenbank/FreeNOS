@@ -20,6 +20,13 @@
 #ifndef __ASSEMBLER__
 
 #include <Types.h>
+#include <Macros.h>
+
+/** Process Identifier */
+typedef u16 ProcessID;
+
+#ifdef CPP
+
 #include <Array.h>
 #include <List.h>
 
@@ -28,130 +35,88 @@
  * @{ 
  */
 
-/** Maximum number of processes. */
-#define MAX_PROCS 1024
-
 /** @see IPCMessage.h. */
 class UserMessage;
-
-/**
- * Enumeration of possible state in which a Process can be.
- */
-typedef enum ProcessState
-{
-    Running   = 0,
-    Ready     = 1,
-    Stopped   = 2,
-    Sleeping  = 3,
-}
-ProcessState;
+class ProcessScheduler;
 
 /**
  * Represents a process which may run on the host.
  */
 class Process
 {
-    public:
+  public:
+
+    enum State
+    {
+        Running,
+        Ready,
+        Stopped,
+        Sleeping
+    };    
     
-        /**
-         * Constructor function.
-         * @param entry Initial program counter value.
-         */
-        Process(Address entry);
+    /**
+     * Constructor function.
+     * @param entry Initial program counter value.
+     */
+    Process(ProcessID id, Address entry);
     
-        /**
-         * Destructor function.
-         */
-        virtual ~Process();
+    /**
+     * Destructor function.
+     */
+    virtual ~Process();
 
-        /**
-         * Retrieve our ID number.
-         * @return Process Identification number.
-         */
-        ProcessID getID();
+    /**
+     * Retrieve our ID number.
+     * @return Process Identification number.
+     */
+    ProcessID getID() const;
         
-        /**
-         * Retrieves the current state.
-         * @return Current status of the Process.
-         */
-        ProcessState getState();
+    /**
+     * Retrieves the current state.
+     * @return Current status of the Process.
+     */
+    State getState() const;
 
-        /**
-         * Puts the Process in a new state.
-         * @param st New state of the Process.
-         */
-        void setState(ProcessState st);
+    /**
+     * Puts the Process in a new state.
+     * @param st New state of the Process.
+     */
+    void setState(State st);
 
-        /**
-         * Request this Process to be awoken by the Scheduler.
-         */
-        void wakeup();
+    /**
+     * Retrieve the list of Messages for this Process.
+     * @return Pointer to the message queue.
+     */
+    List<UserMessage> * getMessages();
 
-        /**
-         * Fetch the list of processes waiting to be woken up.
-         * @return Pointer to the List of Proccess to be awoken.
-         */
-        static List<Process> * getWakeups();
+    /**
+     * Compare two processes.
+     * @param p Process to compare with.
+     * @return True if equal, false otherwise.
+     */
+    bool operator == (Process *proc);
 
-        /**
-         * Retrieve the list of Messages for this Process.
-         * @return Pointer to the message queue.
-         */
-        List<UserMessage> * getMessages();
+    /**
+     * Allow the Process to run on the CPU.
+     */
+    virtual void execute() = 0;
 
-        /**
-         * Retrieve the process table.
-         * @return Pointer to the process table.
-         */
-        Array<Process> * getProcessTable();
+private:
 
-        /**
-         * Compare two processes.
-         * @param p Process to compare with.
-         * @return True if equal, false otherwise.
-         */
-        bool operator == (Process *p);
-
-        /**
-         * Retrieve a Process by it's ID.
-         * @param id ProcessID number.
-         * @return Pointer to the appropriate process or ZERO if not found.
-         */
-        static Process * byID(ProcessID id);        
-
-        /**
-         * (Dis)allow access to an I/O port.
-         * @param port I/O port to (dis)allow.
-         * @param enabled Allow or disallow.
-         */
-        virtual void IOPort(u16 port, bool enabled) = 0;
-
-        /**
-         * Allow the Process to run on the CPU.
-         */
-        virtual void execute() = 0;
-
-    private:
+    /** Process Identifier */
+    const ProcessID m_id;
     
-        /** Current process status. */
-        ProcessState status;
+    /** Current process status. */
+    State m_state;
         
-        /** Unique ID number. */
-        ProcessID pid;
-        
-        /** Incoming messages. */
-        List<UserMessage> messages;
-
-        /** Processes waiting to be woken up. */
-        static List<Process> wakeups;
-        
-        /** All known Processes. */
-        static Array<Process> procs;
+    /** Incoming messages. */
+    List<UserMessage> m_messages;
 };
 
 /**
  * @}
  */
 
+#endif /* CPP */
 #endif /* __ASSEMBLER__ */
 #endif /* __KERNEL_PROCESS_H */

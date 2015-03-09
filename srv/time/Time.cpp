@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/ProcessCtl.h>
-#include <Arch/CPU.h>
+#include <FreeNOS/API.h>
+#include <FreeNOS/System/Constant.h>
 #include <Macros.h>
 #include <Types.h>
 #include <ProcessID.h>
@@ -95,8 +95,8 @@ Error Time::read(s8 *buffer, Size size, Size offset)
 
 unsigned char Time::readCMOS(unsigned char addr)
 {
-    outb(RTC_PORT(0), addr);
-    return inb(RTC_PORT(1));
+    WriteByte(RTC_PORT(0), addr);
+    return ReadByte(RTC_PORT(1));
 }
 
 void Time::cpuRelax()

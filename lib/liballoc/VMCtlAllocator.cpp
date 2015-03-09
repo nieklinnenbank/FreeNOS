@@ -15,9 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/VMCtl.h>
-#include <API/ProcessCtl.h>
-#include <Arch/Memory.h>
+#include <FreeNOS/API.h>
+#include <System/Constant.h>
 #include <Macros.h>
 #include <ProcessID.h>
 #include "VMCtlAllocator.h"

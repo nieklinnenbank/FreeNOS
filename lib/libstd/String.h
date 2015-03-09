@@ -22,6 +22,7 @@
 #include "Types.h"
 #include "Macros.h"
 #include "Assert.h"
+#include "StandardArguments.h"
 
 /**
  * Test for a wildcard character.
@@ -316,6 +317,10 @@ class String : public Comparable<String>
         static int strncmp( const char *dest, const char *src, unsigned count );
 
         static unsigned strlcpy(char *dst, const char *src, unsigned siz);
+
+        static int vformat(char *buffer, unsigned int size, const char *fmt, va_list args);
+
+        static int format(char *buffer, unsigned int size, const char *fmt, ...);
 
     private:
 

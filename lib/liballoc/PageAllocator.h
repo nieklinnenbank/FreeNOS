@@ -18,7 +18,7 @@
 #ifndef __LIBALLOC_PAGEALLOCATOR_H
 #define __LIBALLOC_PAGEALLOCATOR_H
 
-#include <Arch/Memory.h>
+#include <System/Constant.h>
 #include <Types.h>
 #include "Allocator.h"
 

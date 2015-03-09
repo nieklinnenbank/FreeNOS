@@ -15,28 +15,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#warning Do not depend on Intel specific flags for generic APIs
+
 #include "VMCopy.h"
 #include <FreeNOS/Process.h>
 #include <FreeNOS/API.h>
 #include <FreeNOS/Kernel.h>
-#include <Arch/Memory.h>
+#include <FreeNOS/System/Constant.h>
 #include <Error.h>
 #include <MemoryBlock.h>
 
-int VMCopyHandler(ProcessID procID, Operation how, Address ours,
+Error VMCopyHandler(ProcessID procID, Operation how, Address ours,
                                     Address theirs, Size sz)
 {
+    ProcessManager *procs = Kernel::instance->getProcessManager();
+    Memory *memory = Kernel::instance->getMemory();
     Process *proc;
     Address paddr, tmpAddr;
     Size bytes = 0, pageOff, total = 0;
     
     /* Find the corresponding Process. */
-    if (!(proc = Process::byID(procID)))
+    if (!(proc = procs->get(procID)))
     {
         return ESRCH;
     }
     /* Verify memory addresses. */
-    if (!memory->access(scheduler->current(), ours, sz) ||
+    if (!memory->access(procs->current(), ours, sz) ||
         !memory->access(proc, theirs, sz))
     {
         return EFAULT;
@@ -45,7 +49,7 @@ int VMCopyHandler(ProcessID procID, Operation how, Address ours,
     while (total < sz)
     {
         /* Update variables. */
-        paddr   = memory->lookupVirtual(proc, theirs) & PAGEMASK;
+        paddr   = memory->lookup(proc, theirs) & PAGEMASK;
         pageOff = theirs & ~PAGEMASK;
         bytes   = (PAGESIZE - pageOff) < (sz - total) ?
                   (PAGESIZE - pageOff) : (sz - total);
@@ -54,7 +58,7 @@ int VMCopyHandler(ProcessID procID, Operation how, Address ours,
         if (!paddr) break;
                 
         /* Map the physical page. */
-        tmpAddr = memory->mapVirtual(paddr);
+        tmpAddr = memory->map(paddr);
 
         /* Process the action appropriately. */
         switch (how)
@@ -71,7 +75,7 @@ int VMCopyHandler(ProcessID procID, Operation how, Address ours,
                 ;
         }       
         /* Remove mapping. */
-        memory->mapVirtual((Address) 0, (Address) tmpAddr, 0);
+        memory->map((Address) 0, (Address) tmpAddr, Memory::None);
         ours   += bytes;
         theirs += bytes;
         total  += bytes;
@@ -79,5 +83,3 @@ int VMCopyHandler(ProcessID procID, Operation how, Address ours,
     /* Success. */
     return total;
 }
-
-INITAPI(VMCOPY, VMCopyHandler)

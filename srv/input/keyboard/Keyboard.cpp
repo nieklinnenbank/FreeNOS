@@ -69,7 +69,7 @@ Error Keyboard::read(s8 *buffer, Size size, Size offset)
 	/*
          * Read byte from the keyboard.
          */
-        u8 keycode = inb(PS2_PORT);
+        u8 keycode = ReadByte(PS2_PORT);
 
         /* Update shift state. */
         if (keycode == 0x2a || keycode == 0xaa)

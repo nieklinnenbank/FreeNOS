@@ -15,20 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/PrivExec.h>
-#include <Arch/Interrupt.h>
-#include <FreeNOS/Scheduler.h>
-#include <Arch/CPU.h>
+#include <Log.h>
 #include <FreeNOS/Kernel.h>
-#include <Error.h>
+#include <System/Function.h>
+#include "PrivExec.h"
 
-int PrivExecHandler(PrivOperation op)
+Error PrivExecHandler(PrivOperation op, Address addr)
 {
+    ProcessManager *procs = Kernel::instance->getProcessManager();
+
     switch (op)
     {
 	case Idle:
 	    
-	    scheduler->setIdle(scheduler->current());
+	    procs->setIdle(procs->current());
 	    irq_enable();
 	    
 	    while (true)
@@ -42,10 +42,12 @@ int PrivExecHandler(PrivOperation op)
 	    shutdown();
 	    return ESUCCESS;
 
+        case WriteConsole:            
+            (*Log::instance) << (char *)addr;
+            return ESUCCESS;
+
 	default:
 	    ;
     }
     return EINVAL;
 }
-
-INITAPI(PRIVEXEC, PrivExecHandler)

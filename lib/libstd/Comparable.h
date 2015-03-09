@@ -21,7 +21,7 @@
 #include "Types.h"
 
 /**
- * Objects which can be compared to eachother.
+ * Objects which can be compared to each other.
  */
 template <class T> class Comparable
 {

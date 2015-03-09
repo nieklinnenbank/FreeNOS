@@ -42,8 +42,8 @@ void MemoryServer::createPrivate(MemoryMessage *msg)
     }
     /* Set mapping flags. */
     // TODO: only allow pinned pages for uid == 0!
-    msg->protection &= PAGE_PINNED  | PAGE_RESERVED | PAGE_RW;
-    msg->protection |= PAGE_PRESENT | PAGE_USER;
+    msg->access &= Memory::Pinned | Memory::Reserved | Memory::Readable | Memory::Writable;
+    msg->access |= Memory::Present | Memory::User;
     
     /* Try to map the range. */
     msg->result = insertMapping(msg->from, msg);

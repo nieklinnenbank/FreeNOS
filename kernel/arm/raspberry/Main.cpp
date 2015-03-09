@@ -19,10 +19,6 @@
 #include <Macros.h>
 #include "UART.h"
 
-extern C void __cxa_pure_virtual()
-{
-}
- 
 extern C int kmain(void)
 {
     UART console;

@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/ProcessCtl.h>
-#include <Arch/Memory.h>
+#include <FreeNOS/API.h>
+#include <FreeNOS/System/Constant.h>
 #include <Types.h>
 #include <Macros.h>
 #include <PageAllocator.h>

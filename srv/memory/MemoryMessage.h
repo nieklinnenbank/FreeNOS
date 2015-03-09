@@ -23,8 +23,7 @@
  * @{   
  */
 
-#include <API/IPCMessage.h>
-#include <API/VMCtl.h>
+#include <FreeNOS/API.h>
 #include <Types.h>
 #include <Macros.h>
 #include <Error.h>

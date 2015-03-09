@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <PrivExecLog.h>
 #include <DeviceServer.h>
 #include "i8250.h"
 #include <stdlib.h>
@@ -41,8 +42,17 @@ int main(int argc, char **argv)
     u8 lcr1, lcr2;
 
     /* Open the logging facilities. */
-    openlog("i8250", LOG_PID, LOG_USER);
+    Log *log = new PrivExecLog();
 
+    /* Assume first UART is available */
+    dev = new i8250(uarts[0].port, uarts[0].irq);
+    server.add(dev);
+    server.interrupt(dev, uarts[0].irq);
+
+    /* Perform log. */
+    INFO("detected at PORT=" << uarts[0].port << " IRQ=" << uarts[0].irq);
+
+#if 0
     /* Attempt to detect available UART's. */
     for (Size i = 0; i < 4; i++)
     {
@@ -50,12 +60,12 @@ int main(int argc, char **argv)
         ProcessCtl(SELF, AllowIO, uarts[i].port + LINECONTROL);
     
 	/* Read line control port. */
-	lcr1 = inb (uarts[i].port + LINECONTROL);
-	       outb(uarts[i].port + LINECONTROL, lcr1 ^ 0xff);
+	lcr1 = ReadByte (uarts[i].port + LINECONTROL);
+	       WriteByte(uarts[i].port + LINECONTROL, lcr1 ^ 0xff);
 	       
 	/* And again. */
-	lcr2 = inb (uarts[i].port + LINECONTROL) ^ 0xff;
-	       outb(uarts[i].port + LINECONTROL, lcr1);
+	lcr2 = ReadByte (uarts[i].port + LINECONTROL) ^ 0xff;
+	       WriteByte(uarts[i].port + LINECONTROL, lcr1);
 	
 	/* Verify we actually wrote it (means there is an UART). */
 	if (lcr1 == lcr2)
@@ -72,6 +82,8 @@ int main(int argc, char **argv)
 	        	      uarts[i].port, uarts[i].irq);
 	}
     }
+#endif
+
     /*
      * Start serving requests.
      */

@@ -34,7 +34,7 @@ GRUBModule::GRUBModule(const char *name)
         {
             /* Ask memory server to map GRUB module. */
             mem.action     = CreatePrivate;
-            mem.protection = PAGE_PINNED;
+            mem.access     = Memory::Present | Memory::User | Memory::Readable | Memory::Pinned;
             mem.bytes      = info.modules[i].modEnd -
                              info.modules[i].modStart;
             mem.virtualAddress  = ZERO;

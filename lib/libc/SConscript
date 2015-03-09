@@ -21,9 +21,9 @@ env = build_env.Clone()
 env.UseLibraries([ 'libposix', 'libstd' ])
 env.UseServers([ 'process' ])
 env.Append(CPPPATH = [ '.' ])
-env.TargetLibrary('libc', [ Glob('stdio/*.c'),
-			    Glob('stdlib/*.c'),
-		    	    Glob('stdlib/*.cpp'),
-		    	    Glob('string/*.c'),
-		    	    Glob('*.c') ])
+env.TargetLibrary('libc', [ Glob('stdio/*.cpp'),
+			    Glob('stdlib/*.cpp'),
+		    	    Glob('string/*.cpp'),
+		    	    Glob('*.cpp'),
+                            Glob('*.c') ])
 

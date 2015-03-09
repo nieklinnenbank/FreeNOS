@@ -59,7 +59,7 @@ class BootModule : public Storage
 		{
 		    /* Ask memory server to map GRUB module. */
 		    mem.action     = CreatePrivate;
-		    mem.protection = PAGE_PINNED;
+		    mem.access     = Memory::Pinned | Memory::Readable | Memory::User;
 		    mem.bytes      = info.modules[i].modEnd -
 				     info.modules[i].modStart;
 		    mem.virtualAddress  = ZERO;

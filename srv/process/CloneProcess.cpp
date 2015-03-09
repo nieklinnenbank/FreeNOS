@@ -37,11 +37,11 @@ void copyReservedFlags(Address *parentDir, ProcessID child)
     ProcessCtl(child, InfoPID, (Address) &info);
     
     /* Map page directory of the child. */
-    mem.action     = CreatePrivate;
+    mem.action          = CreatePrivate;
     mem.physicalAddress = info.pageDirectory;
     mem.virtualAddress  = ZERO;
-    mem.bytes      = PAGESIZE;
-    mem.protection = PAGE_RW;
+    mem.bytes           = PAGESIZE;
+    mem.access          = Memory::Present | Memory::User | Memory::Readable | Memory::Writable;
     mem.ipc(MEMSRV_PID, SendReceive, sizeof(mem));
     
     /* Point to the new mapping. */
@@ -106,7 +106,7 @@ void ProcessServer::cloneProcessHandler(ProcessMessage *msg)
 		    /* Calculate virtual address. */
 		    range.virtualAddress  = (i * PAGETAB_MAX * PAGESIZE) +
 					    (j * PAGESIZE);
-		    range.protection = pageTable[j] & ~PAGEMASK;
+		    range.access = getMemoryAccess(pageTable[j] & ~PAGEMASK);
 		    
 		    /* Perform the mapping. */
 		    VMCtl(id, Map, &range);

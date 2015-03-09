@@ -16,76 +16,39 @@
  */
 
 #include "Process.h"
-#include <Array.h>
 #include <Types.h>
-#include <ProcessID.h>
-#include <ListIterator.h>
-#include <Arch/Interrupt.h>
-#include <Types.h>
-#include <Array.h>
-#include <List.h>
-#include "Scheduler.h"
 
-Array<Process> Process::procs(MAX_PROCS);
-List<Process> Process::wakeups;
-
-Process::Process(Address addr) : status(Stopped)
+Process::Process(ProcessID id, Address addr)
+    : m_id(id)
 {
-    pid = procs.insert(this);
+    m_state = Stopped;
 }
     
 Process::~Process()
 {
-    wakeups.remove(this);
-    procs.remove(pid);
 }
 
-ProcessID Process::getID()
+ProcessID Process::getID() const
 {
-    return pid;
-}
-        
-ProcessState Process::getState()
-{
-    return status;
+    return m_id;
 }
 
-void Process::setState(ProcessState st)
+Process::State Process::getState() const
 {
-    status = st;
+    return m_state;
 }
 
-void Process::wakeup()
+void Process::setState(Process::State st)
 {
-    ulong t = irq_disable();
-    wakeups.insertTail(this);
-    irq_restore(t);
-}
-
-List<Process> * Process::getWakeups()
-{
-    return &wakeups;
+    m_state = st;
 }
 
 List<UserMessage> * Process::getMessages()
 {
-    return &messages;
+    return &m_messages;
 }
 
-Array<Process> * Process::getProcessTable()
+bool Process::operator==(Process *proc)
 {
-    return &procs;
-}
-
-Process * Process::byID(ProcessID id)
-{
-    if (id == SELF && scheduler->current())
-        return scheduler->current();
-    else
-        return procs[id];
-}
-
-bool Process::operator == (Process *p)
-{
-    return this->pid == p->pid;
+    return proc->getID() == m_id;
 }

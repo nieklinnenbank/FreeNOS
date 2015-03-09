@@ -18,7 +18,7 @@
 #ifndef __BYTEORDER_H
 #define __BYTEORDER_H
 
-#include <Arch/CPU.h>
+#include <FreeNOS/System/Constant.h>
 #include <Macros.h>
 
 #ifdef CPU_BIG_ENDIAN

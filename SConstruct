@@ -28,6 +28,7 @@ Export('build_env')
 VariantDir(target['BUILDROOT'] + '/lib', '#lib', duplicate = 0)
 VariantDir(target['BUILDROOT'] + '/bin', '#bin', duplicate = 0)
 VariantDir(target['BUILDROOT'] + '/srv', '#srv', duplicate = 0)
+VariantDir(target['BUILDROOT'] + '/test', '#test', duplicate = 0)
 VariantDir(target['BUILDROOT'] + '/kernel', '#kernel', duplicate = 0)
 
 # Install files to the target RootFS
@@ -38,8 +39,8 @@ target.TargetInstall('build.host.conf', target['etc'])
 SConscript(target['BUILDROOT'] + '/lib/SConscript')
 SConscript(target['BUILDROOT'] + '/bin/SConscript')
 SConscript(target['BUILDROOT'] + '/srv/SConscript')
+SConscript(target['BUILDROOT'] + '/test/SConscript')
 SConscript(target['BUILDROOT'] + '/kernel/' + target['ARCH'] + '/' + target['SYSTEM'] + '/SConscript')
-
 
 #
 # Host build
@@ -51,6 +52,8 @@ Export('build_env')
 VariantDir(host['BUILDROOT'] + '/lib', '#lib', duplicate = 0)
 VariantDir(host['BUILDROOT'] + '/bin', '#bin', duplicate = 0)
 VariantDir(host['BUILDROOT'] + '/srv', '#srv', duplicate = 0)
+VariantDir(host['BUILDROOT'] + '/test', '#test', duplicate = 0)
 SConscript(host['BUILDROOT'] + '/lib/SConscript')
 SConscript(host['BUILDROOT'] + '/bin/SConscript')
 SConscript(host['BUILDROOT'] + '/srv/SConscript')
+SConscript(host['BUILDROOT'] + '/test/SConscript')

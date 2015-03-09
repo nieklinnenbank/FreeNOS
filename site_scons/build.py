@@ -134,11 +134,11 @@ if not GetOption('clean'):
 
 # Make a symbolic link to the system-specific headers.
 try:
-    os.unlink('kernel/Arch')
+    os.unlink('kernel/System')
 except:
     pass
 
 try:
-    os.symlink(target['ARCH'] + os.sep + target['SYSTEM'], 'kernel/Arch')
+    os.symlink(target['ARCH'] + os.sep + target['SYSTEM'], 'kernel/System')
 except:
     pass

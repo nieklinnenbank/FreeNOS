@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Arch/Memory.h>
+#include <FreeNOS/System/Constant.h>
 #include <API/VMCtl.h>
 #include <Assert.h>
 #include <Macros.h>
@@ -45,7 +45,7 @@ int __assertRead(Address addr)
     range.virtualAddress  = addr;
     range.physicalAddress = ZERO;
     range.bytes           = sizeof(Address);
-    range.protection      = PAGE_PRESENT | PAGE_USER;
+    range.access          = Memory::Present | Memory::User | Memory::Readable;
 
     return VMCtl(SELF, Access, &range);
 }
@@ -57,7 +57,7 @@ int __assertWrite(Address addr)
     range.virtualAddress  = addr;
     range.physicalAddress = ZERO;
     range.bytes           = sizeof(Address);
-    range.protection      = PAGE_PRESENT | PAGE_USER | PAGE_RW;
+    range.access          = Memory::Present | Memory::User | Memory::Readable;
 
     return VMCtl(SELF, Access, &range);
 }

@@ -26,9 +26,12 @@ env.Append(LINKFLAGS = env['LINKKERN'])
 env.Append(CPPFLAGS = '-D__KERNEL__')
 
 env.UseLibraries(['liballoc', 'libstd'])
+env.UseServers(['process'])
 env.TargetProgram('kernel', [ Glob('*.S'),
-			      Glob('*.cpp') ]
-		          , env['boot'])
+			      Glob('*.cpp'),
+                              Glob('#' + env['BUILDROOT'] + '/kernel/*.cpp'),
+                              Glob('#' + env['BUILDROOT'] + '/kernel/arm/*.cpp') ],
+                   env['boot'])
 
 #
 # Qemu targets

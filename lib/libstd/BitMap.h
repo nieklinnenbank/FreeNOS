@@ -20,6 +20,7 @@
 
 #include "Macros.h"
 #include "Assert.h"
+#include "Types.h"
 
 /**
  * Class capable of (un)marking bits inside a binary bitmap.
@@ -49,10 +50,12 @@ class BitMap
         void markRange(Size from, Size to);
 
         /**
-         * Marks the next free bit used.
-         * @return Bit number on success and -1 otherwise.
+         * Marks the next free bit(s) used.
+         * @param count Number of consequetive bits required.
+         * @param offset Start bit number to start searching at inside the bitmap.
+         * @return Start bit number on success and -1 otherwise.
          */
-        Error markNext();
+        Error markNext(Size count = 1, Size offset = 0);
 
         /**
          * Unmarks the given bit.
@@ -100,13 +103,13 @@ class BitMap
     private:
 
         /** Total number of bits in the map. */
-        Size count;
+        Size m_size;
 
         /** Unmarked bits remaining. */
-        Size free;
+        Size m_free;
 
         /** Bitmap which represents free and used blocks. */
-        u8 *map;
+        u8 *m_map;
 };
 
 #endif /* __BITMAP_H */

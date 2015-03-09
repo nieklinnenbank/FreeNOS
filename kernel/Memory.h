@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,19 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __KERNEL_MEMORY_H
-#define __KERNEL_MEMORY_H
-#ifndef __ASSEMBLER__
+#ifndef __MEMORY_H
+#define __MEMORY_H
 
+#include <BitMap.h>
+// TODO: make sure the bit operations are only for MemoryAccess, and not in general. Use templating.
+#include <BitOperations.h>
 #include <Types.h>
+#include "Process.h"
 
 /** 
  * @defgroup kernel kernel (generic)
  * @{ 
  */
-
-/** Forward declaration. */
-class Process;
 
 /**
  * Represents system memory.
@@ -36,55 +36,72 @@ class Memory
 {
     public:
 
-        /**
-         * Constructor function.
-         */
-        Memory();
+        /** Memory access flags */
+        enum MemoryAccess
+        {
+            None       = (1 << 0),
+            Present    = (1 << 1),
+            Readable   = (1 << 2),
+            Writable   = (1 << 3),
+            Executable = (1 << 4),
+            User       = (1 << 5),
+            Pinned     = (1 << 6),
+            Reserved   = (1 << 7),
+            Marked     = (1 << 8)
+        };
 
         /**
-         * Get the total amount of physical memory.
-         * @return Amount of physical memory, in bytes.
+         * Constructor function.
+         * @param memorySize Total amount of memory pages.
+         */
+        // TODO: this should be a memory map instead? We cannot assue there is
+        // always a contigeous block of memory available.
+        Memory(Size memorySize);
+
+        /**
+         * Initialize heap at the given address.
+         */
+        static Error initialize(Address heap);
+
+        /**
+         * Retrieve total system memory.
          */
         Size getTotalMemory();
-        
+
         /**
-         * Retrieve available physical memory, in bytes.
-         * @return Amount of memory available (not used) in bytes.
+         * Retrieve unused system memory.
          */
         Size getAvailableMemory();
 
         /**
-         * Setup the memoryMap and kernel heap.
+         * Allocate a new physical page.
+         * @return The allocated physical page.
          */
-        static void initialize();
+        Address allocatePhysical(Size size);
 
         /**
-         * Allocates and marks physical memory used in the memoryMap.
-         * @param sz Amount of memory to allocate.
-         * @param addr Physical address to start searching at.
-         * @return Physical address of the allocated memory.
+         * Mark specific physical address used.
          */
-        Address allocatePhysical(Size sz, Address addr = 4194304);
+        Address allocatePhysicalAddress(Address addr);        
 
         /**
-         * Unmarks physical memory used in the memoryMap.
-         * @param paddr Physical address of the memory to unmark.
+         * Check if a physical page is allocated.
          */
-        void releasePhysical(Address paddr);
+        bool isAllocated(Address page);
 
         /**
-         * Check if a physical memory page is marked.
-         * @param addr Physical address to check.
+         * Release a physical page.
+         * @param page Address to release.
          */
-        bool isMarked(Address paddr);
-
+        Error releasePhysical(Address page);
+    
         /**
          * Allocate a new virtual memory page.
          * @param vaddr Virtual address.
          * @param prot Page protection flags.
-         * @return Allocated physical address.
+         * @return Allocated address.
          */
-        Address allocateVirtual(Address vaddr, ulong prot);
+        Address allocate(Address vaddr, MemoryAccess flags);
 
         /**
          * Allocate a new virtual memory page.
@@ -93,7 +110,7 @@ class Memory
          * @param prot Page protection flags.
          * @return Allocated physical address.
          */
-        Address allocateVirtual(Process *p, Address vaddr, ulong prot);
+        Address allocate(Process *p, Address vaddr, MemoryAccess flags);
 
         /**
          * Map a physical page into the virtual address space of a Process.
@@ -102,7 +119,9 @@ class Memory
          * @param prot Protection flags.
          * @return The mapped virtual address.
          */
-        virtual Address mapVirtual(Address paddr, Address vaddr, ulong prot) = 0;
+        virtual Address map(Address paddr,
+                            Address vaddr = ZERO,
+                            MemoryAccess flags = Present | Readable | Writable) = 0;
 
         /**
          * Map a physical page into the virtual address space of a Process.
@@ -112,8 +131,10 @@ class Memory
          * @param prot Protection flags.
          * @return The mapped virtual address.
          */
-        virtual Address mapVirtual(Process *p, Address paddr,
-                                   Address vaddr, ulong prot) = 0;
+        virtual Address map(Process *p, Address paddr,
+                            Address vaddr, MemoryAccess prot) = 0;
+
+        // TODO: Why is there nothing to unmap a virtual memory page?
 
         /**
          * Lookup a pagetable entry for the given (remote) virtual address.
@@ -121,7 +142,7 @@ class Memory
          * @param vaddr Virtual address to lookup.
          * @return Page table entry if vaddr is mapped, or ZERO if not.
          */
-        virtual Address lookupVirtual(Process *p, Address vaddr) = 0;
+        virtual Address lookup(Process *p, Address vaddr) = 0;
 
         /** 
          * Verify protection access flags.
@@ -130,36 +151,24 @@ class Memory
          * @param sz Size of the byte range to check. 
          * @return True if the current process has access, false otherwise. 
          */
-        virtual bool access(Process *p, Address vaddr, Size sz,
-                            ulong prot = PAGE_PRESENT|PAGE_RW|PAGE_USER) = 0;
+        virtual bool access(Process *p, Address vaddr,
+                            Size sz,
+                            MemoryAccess flags = (Present|Readable|Writable|User)) = 0;
 
         /**
          * Marks all physical pages used by a process as free (if not pinned).
          * @param p Target process.
          */
-        virtual void releaseAll(Process *p) = 0;
-
-    protected:
-
-        /** Total and available amount of memory. */
-        static Size memorySize, memoryAvail;
-        
-        /** Maps all available memory. */
-        static u8 *memoryMap, *memoryMapEnd;
+        virtual void release(Process *p) = 0;
 
     private:
 
-        /**
-         * (Un)mark a physical page.
-         * @param addr Physical address to be (un)marked.
-         * @param marked Either marks or unmarks the page.
-         */
-        void setMark(Address addr, bool marked);
+        /** Physical memory bitmap. */
+        BitMap m_physicalMemory;
 };
 
 /**
  * @}
  */
 
-#endif /* __ASSEMBLY__ */
 #endif /* __MEMORY_H */

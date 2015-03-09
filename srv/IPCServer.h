@@ -18,7 +18,7 @@
 #ifndef __IPCSERVER_H
 #define __IPCSERVER_H
 
-#include <API/IPCMessage.h>
+#include <FreeNOS/API.h>
 #include <Error.h>
 #include <ProcessID.h>
 
