@@ -26,12 +26,6 @@
  * @{ 
  */
 
-/** Minimum value of an object of type long int. */
-#define LONG_MIN -2147483647
-
-/** Maximum value of an object of type long int. */
-#define LONG_MAX  2147483647
-
 /** Number of bits in a type char. */
 #define CHAR_BIT  8
 

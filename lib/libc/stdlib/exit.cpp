@@ -20,7 +20,7 @@
 #include <ProcessID.h>
 #include "stdlib.h"
 
-void exit(int status)
+extern C void exit(int status)
 {
     ProcessMessage msg;
 

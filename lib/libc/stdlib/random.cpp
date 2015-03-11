@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,11 +15,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <sys/types.h>
-#include "stdlib.h"
-#include "errno.h"
+#include <stdlib.h>
 
-extern C void free(void *ptr)
+static unsigned int seed = 1;
+
+extern C void srandom(unsigned int new_seed)
 {
-    delete (char *) ptr;
+    seed = new_seed;
+}
+
+extern C long int random(void)
+{
+    /*
+     * Linear congruential generator.
+     *
+     * http://en.wikipedia.org/wiki/Linear_congruential_generator
+     */
+    const unsigned int m = 1 << 31;
+    const unsigned int a = 1103515245;
+    const unsigned int c = 12345;
+
+    seed = (a * seed + c) % m;
+    return seed;
 }

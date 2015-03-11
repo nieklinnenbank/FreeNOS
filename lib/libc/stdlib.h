@@ -125,6 +125,22 @@ extern C void * malloc(size_t size);
 extern C void free(void *ptr);
 
 /**
+ * @brief Random number generator 
+ *
+ * The srandom() function sets its argument as the seed for a new sequence of
+ * pseudo-random integers to be returned by random(). These sequences are
+ * repeatable by calling srandom() with the same seed value. If no seed value
+ * is provided, the random() function is automatically seeded with a value of 1.
+ */
+extern C void srandom(unsigned int seed);
+
+/**
+ * @brief Random number generator
+ * @return Successive pseudo-random numbers in the range from 0 to RAND_MAX.
+ */
+extern C long int random(void);
+
+/**
  * @}
  */
 

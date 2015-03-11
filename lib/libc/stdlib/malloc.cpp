@@ -19,7 +19,7 @@
 #include "stdlib.h"
 #include "errno.h"
 
-void * malloc(size_t size)
+extern C void * malloc(size_t size)
 {
     errno = 0;
     return (void *) new char[size];
