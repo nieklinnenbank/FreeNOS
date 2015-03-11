@@ -95,6 +95,7 @@ template <class T> class Vector
 	    if (pos < _size)
 	    {
 		vec[pos] = t;
+		_count++;
 	    }
 	}
     
@@ -161,13 +162,14 @@ template <class T> class Vector
 	 */
 	Vector<T> clone()
 	{
-	    Vector<T> clone;
+	    Vector<T> c;
 	    
 	    for(Size index = 0; index < _size; index++)
 	    {
-		clone.insert(index, vec[index]);
+		if (vec[index])
+		    c.insert(index, vec[index]);
 	    }
-	    return clone;
+	    return c;
 	}
     
         /**

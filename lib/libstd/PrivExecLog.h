@@ -8,6 +8,7 @@
 #ifndef _PRIV_EXEC_LOG_H
 #define _PRIV_EXEC_LOG_H
 
+#ifndef __HOST__
 #include "Log.h"
 
 /**
@@ -28,4 +29,5 @@ class PrivExecLog : public Log
     virtual void write(const char *str);
 };
 
+#endif /* __HOST__ */
 #endif /* _PRIV_EXEC_LOG_H */

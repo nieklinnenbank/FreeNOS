@@ -42,6 +42,26 @@
 #define IQUOTE(x) \
     QUOTE(x)
 
+// TODO: #warning Integer range depends on the architecture. Move to libarch.
+
+/** Minimum value of an object of type long int. */
+#define LONG_MIN -2147483647L
+
+/** Maximum value of an object of type long int. */
+#define LONG_MAX  2147483647L
+
+#define ULONG_MIN 0LU
+
+#define ULONG_MAX 4294967295LU
+
+#define INT_MIN -2147483647
+
+#define INT_MAX  2147483647
+
+#define UINT_MIN 0U
+
+#define UINT_MAX 4294967295U
+
 /**
  * Calculate a division, and round to up any remaining.
  * @param number Input number.

@@ -31,7 +31,6 @@
 #include <Error.h>
 #include "Macros.h"
 #include "ctype.h"
-#include "limits.h"
 
 extern C long strtol(const char *nptr, char **endptr, int base)
 {

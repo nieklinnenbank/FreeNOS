@@ -163,7 +163,7 @@ template <class K = Comparable<class K>,
 		
 	    if( index != -1 )
 	    {
-		return *(_values[(Size)index]);
+		return (_values[(Size)index]);
 	    }
 	    return (V*) NULL;
 	}
@@ -222,9 +222,9 @@ template <class K = Comparable<class K>,
 	/**
 	 * Returns the number of key-value mappings in this Map.
 	 */
-	Size size()
+	Size count()
 	{
-	    return _keys.size();
+	    return _keys.count();
 	}
 	
 	/**
