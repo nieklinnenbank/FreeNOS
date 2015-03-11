@@ -17,6 +17,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <libgen.h>
 #include <ListIterator.h>
 #include <TerminalCodes.h>
 #include "TestCase.h"
@@ -38,7 +39,7 @@ int TestRunner::run(void)
         TestInstance *test = i.current();
 
         printf("%s", WHITE);
-        printf("%s .. ", test->m_name);
+        printf("%s: %s .. ", basename(m_argv[0]), test->m_name);
         TestResult result = test->run();
 
         switch (result)
@@ -48,11 +49,15 @@ int TestRunner::run(void)
             case SKIP: printf("%sSKIP\r\n", YELLOW); skip++; break;
         }
     }
-#warning COLORING FOR TESTS!
-
-    printf("%s\r\n", WHITE);
-    printf("%d passed  %d failed  %d skipped  (%d total)\r\n",
+    printf("%s", WHITE);
+    
+    if (fail)
+	printf("%s: %sFAIL%s   ", basename(m_argv[0]), RED, WHITE);
+    else
+	printf("%s: %sOK%s   ", basename(m_argv[0]), GREEN, WHITE);
+    
+    printf("(%d passed %d failed %d skipped %d total)\r\n",
             ok, fail, skip, (ok+fail+skip));
 
-    return (!fail && !skip) ? EXIT_SUCCESS : EXIT_FAILURE;
+    return fail;
 }

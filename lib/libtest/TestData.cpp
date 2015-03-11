@@ -1,0 +1,59 @@
+/*
+ * Copyright (C) 2015 Niek Linnenbank
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include <stdlib.h>
+#include <unistd.h>
+#ifdef __HOST__
+#include <sys/time.h>
+#else
+#include <FreeNOS/System/Function.h>
+#endif /* __HOST__ */
+#include "TestData.h"
+
+TestData::TestData()
+{
+    // Collect seed from process id.
+    pid_t pid = getpid();
+    unsigned int seed = pid;
+
+    // Collect seed from the current time
+#ifdef __HOST__
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    seed += tv.tv_sec + tv.tv_usec;
+#else
+    seed += timestamp();
+#endif
+
+    // Seed the random generator
+    srandom(seed);
+}
+
+int TestData::sint(int max, int min)
+{
+    return (random() % max) + min;
+}
+
+unsigned TestData::uint(unsigned max, unsigned min)
+{
+    return (((unsigned)random() + (unsigned)random()) % max) + min;
+}
+
+Address TestData::address(Address max, Address min)
+{
+    return uint(max, min);
+}
