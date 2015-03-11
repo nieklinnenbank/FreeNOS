@@ -22,9 +22,6 @@
 #include <Types.h>
 #include <Macros.h>
 
-/** Process Identifier */
-typedef u16 ProcessID;
-
 #ifdef CPP
 
 #include <Array.h>
