@@ -15,18 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/System/Constant.h>
 #include <TestCase.h>
 #include <TestRunner.h>
+#include <TestData.h>
 #include <BubbleAllocator.h>
 
 TestCase(BubbleConstruct)
 {
-#warning Use random test data. Use a TestData class for this.
+    TestData data;
+    Address addr = data.address();
+    Size size = data.uint(16, 1) * PAGESIZE;
 
-    BubbleAllocator *ba = new BubbleAllocator(0x10000, 4096);
+    BubbleAllocator *ba = new BubbleAllocator(addr, size);
 
-    testAssert(ba->start == (u8 *) 0x10000);
-    testAssert(ba->size == 4096);
+    testAssert(ba->start == (u8 *) addr);
+    testAssert(ba->size == size);
 
     delete ba;
     return OK;
@@ -34,11 +38,15 @@ TestCase(BubbleConstruct)
 
 TestCase(BubbleAlloc)
 {
-    BubbleAllocator *ba = new BubbleAllocator(0x10000, 4096);
-    Size sz = 1024, big = 8192;
+    TestData data;
+    Address addr = data.address();
+    Size size = data.uint(16, 1) * PAGESIZE;
+    
+    BubbleAllocator *ba = new BubbleAllocator(addr, size);
+    Size sz = 1024, big = size * 2;
 
-    testAssert(ba->allocate(&sz) == 0x10000);
-    testAssert(ba->current == (u8 *) 0x10000 + sz);
+    testAssert(ba->allocate(&sz) == addr);
+    testAssert(ba->current == (u8 *) addr + sz);
     testAssert(ba->allocate(&big) == 0);
 
     delete ba;

@@ -94,7 +94,8 @@ def SubDirectories():
 Export('SubDirectories')
 
 # Create target, host and kernel environments.
-host = Environment()
+host = Environment(tools    = ["default", "phony"],
+		   toolpath = ["site_scons"])
 host.AddMethod(HostProgram, "HostProgram")
 host.AddMethod(TargetProgram, "TargetProgram")
 host.AddMethod(TargetLibrary, "TargetLibrary")

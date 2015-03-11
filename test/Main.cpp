@@ -25,6 +25,8 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <String.h>
+#include <Map.h>
+#include <Integer.h>
 #include <TerminalCodes.h>
 
 int run_test(char *path)
@@ -36,7 +38,9 @@ int run_test(char *path)
     argv[1] = 0;
 
 #ifdef __HOST__
-    system(path);
+    status = system(path);
+    if (status >= 0)
+	status = WEXITSTATUS(status);
 #else
     pid_t pid = forkexec(path, (const char **) argv);
     waitpid(pid, &status, 0);
@@ -45,12 +49,13 @@ int run_test(char *path)
     return status;
 }
 
-int run_tests(char **argv, char *path)
+int run_tests(char **argv, char *path, Map<String, Integer<int> > *results, int *failures)
 {
     DIR *d;
     struct dirent *dent;
     struct stat st;
     char tmp[255];
+    int r;
 
     /* Attempt to open the target directory. */
     if (!(d = opendir(path)))
@@ -71,7 +76,7 @@ int run_tests(char **argv, char *path)
 	    case DT_DIR:
                 if (dent->d_name[0] != '.')
                 {
-                    run_tests(argv, tmp);
+                    run_tests(argv, tmp, results, failures);
                 }
                 break;
 	
@@ -79,8 +84,12 @@ int run_tests(char **argv, char *path)
                 /* Check if it is a test, if yes execute and wait */
                 if (str.endsWith((const char *)"Test"))
                 {
-                    run_test(tmp);
-
+                    r = run_test(tmp);
+            	    results->put(new String(tmp),
+            			 new Integer<int>(r));
+            	    if (r != 0)
+            		(*failures)++;
+            	    printf("\r\n");
                 }
                 break;
 
@@ -96,9 +105,11 @@ int run_tests(char **argv, char *path)
 
 int main(int argc, char **argv)
 {
-    char path[255];
+    char path[255], tmp[255];
+    Map<String, Integer<int> > results;
+    int failed = 0;
 
-    /* Grab command-line arguments, if any */
+    // Grab command-line arguments, if any
     if (argc > 1)
     {
 	strncpy(path, argv[1], sizeof(path));
@@ -106,11 +117,33 @@ int main(int argc, char **argv)
     }
     else
     {
-        strncpy(path, dirname(argv[0]), sizeof(path));
+	strncpy(tmp, argv[0], sizeof(tmp));
+        strncpy(path, dirname(tmp), sizeof(path));
         path[254] = 0;
     }
-    /* Run all tests in the given directory, recursively */
-    int ret = run_tests(argv, path);
+    // Run all tests in the given directory, recursively
+    int ret = run_tests(argv, path, &results, &failed);
+    printf("%s: ", argv[0]);
     
-    return ret;
+    if (failed != 0)
+	printf("%sFAIL%s", RED, WHITE);
+    else
+	printf("%sOK%s", GREEN, WHITE);
+
+    printf("   (%d passed %d failed %d total)\r\n",
+	results.count() - failed, failed, results.count());
+
+    // Print the failed tests
+    Vector<String> tests = results.keys();
+    for (int i = 0; i < tests.count(); i++)
+    {
+	String *s = tests[i];
+	Integer<int> *f = results.get(s);
+	int v = **f;
+	char *k = **s;
+
+	if (v)
+	    printf("  %s: %d failures\r\n", k, v);
+    }
+    return failed;
 }

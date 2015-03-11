@@ -20,7 +20,7 @@
 
 #include <Macros.h>
 
-#warning CPUs should be a class too. IntelCPU. ARMCPU. put it in libarch eventually.
+// TODO: #warning CPUs should be a class too. IntelCPU. ARMCPU. put it in libarch eventually.
 
 /**   
  * @defgroup x86kernel kernel (x86)

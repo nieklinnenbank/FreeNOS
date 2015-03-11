@@ -26,3 +26,7 @@ env.UseServers([ 'terminal', 'filesystem' ])
 
 env.TargetProgram('run', ['Main.cpp'])
 env.HostProgram('run', ['Main.cpp'])
+
+if env['ARCH'] == 'host':
+    env.Targets(test = env['BUILDROOT'] + '/test/run')
+    env.Depends('test', 'run')

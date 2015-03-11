@@ -41,6 +41,10 @@ TestCase(BitmapMark)
     return OK;
 }
 
+TestCase (BitmapSkip)
+{
+    return SKIP;
+}
 
 int main(int argc, char **argv)
 {
