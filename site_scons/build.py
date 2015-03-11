@@ -45,11 +45,11 @@ def UseServers(env, servers = []):
     """
     Prepares a given environment by adding server dependencies
     """
-    if '#srv' not in env['CPPPATH']:
-        env.Append(CPPPATH = [ '#srv' ])
+    if '#server' not in env['CPPPATH']:
+        env.Append(CPPPATH = [ '#server' ])
 
     for serv in servers:
-        env.Append(CPPPATH = [ '#srv/' + serv ])
+        env.Append(CPPPATH = [ '#server/' + serv ])
 
 def HostProgram(env, target, source):
     if env['ARCH'] == 'host':
@@ -104,10 +104,10 @@ host.AddMethod(UseServers, "UseServers")
 host.AddMethod(TargetInstall, "TargetInstall")
 host.Append(ROOTFS = '#${BUILDROOT}/rootfs')
 host.Append(ROOTFS_FILES = [])
-host.Append(bin  = '${ROOTFS}/bin',
-	    etc  = '${ROOTFS}/etc',
-	    srv  = '${ROOTFS}/srv',
-            boot = '${ROOTFS}/boot')
+host.Append(bin     = '${ROOTFS}/bin',
+	    etc     = '${ROOTFS}/etc',
+	    server  = '${ROOTFS}/server',
+            boot    = '${ROOTFS}/boot')
 
 target = host.Clone(tools    = ["default", "bootimage", "iso", "binary", "linn", "phony"],
 		    toolpath = ["site_scons"])
