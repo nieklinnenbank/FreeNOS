@@ -75,7 +75,7 @@ void ProcessManager::schedule(Process *proc)
     /* If needed, let the scheduler select a new process */
     if (!proc)
     {
-        proc = m_scheduler->select(&m_procs);
+        proc = m_scheduler->select(&m_procs, m_idle);
         
         /* If no process ready, let us idle. */
         if (!proc)

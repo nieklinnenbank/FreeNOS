@@ -23,7 +23,7 @@ ProcessScheduler::ProcessScheduler()
     m_index = 0;
 }
 
-Process * ProcessScheduler::select(Array<Process> *procs)
+Process * ProcessScheduler::select(Array<Process> *procs, Process *idle)
 {
     Size size = procs->size();
 
@@ -32,7 +32,7 @@ Process * ProcessScheduler::select(Array<Process> *procs)
         m_index = (m_index + 1) % size;
 
         Process *p = procs->get(m_index);
-        if (p && p->getState() == Process::Ready)
+        if (p && p != idle && p->getState() == Process::Ready)
         {
             return p;
         }
