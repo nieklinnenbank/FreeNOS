@@ -40,7 +40,7 @@ int run_test(char *path)
 #ifdef __HOST__
     status = system(path);
     if (status >= 0)
-	status = WEXITSTATUS(status);
+    status = WEXITSTATUS(status);
 #else
     pid_t pid = forkexec(path, (const char **) argv);
     waitpid(pid, &status, 0);
@@ -49,7 +49,7 @@ int run_test(char *path)
     return status;
 }
 
-int run_tests(char **argv, char *path, Map<String, Integer<int> > *results, int *failures)
+int run_tests(char **argv, char *path, Map<String *, int> *results, int *failures)
 {
     DIR *d;
     struct dirent *dent;
@@ -57,47 +57,46 @@ int run_tests(char **argv, char *path, Map<String, Integer<int> > *results, int 
     char tmp[255];
     int r;
 
-    /* Attempt to open the target directory. */
+    // Attempt to open the target directory.
     if (!(d = opendir(path)))
     {
-	printf("%s: failed to open '%s': %s\r\n",
-		argv[0], path, strerror(errno));
-	return EXIT_FAILURE;
+    printf("%s: failed to open '%s': %s\r\n",
+        argv[0], path, strerror(errno));
+    return EXIT_FAILURE;
     }
-    /* Read directory. */
+    // Read directory.
     while ((dent = readdir(d)))
     {
         String str(dent->d_name);
         snprintf(tmp, sizeof(tmp), "%s/%s", path, dent->d_name);
 
-	/* Coloring. */
-	switch (dent->d_type)
-	{
-	    case DT_DIR:
+        // Coloring.
+        switch (dent->d_type)
+        {
+            case DT_DIR:
                 if (dent->d_name[0] != '.')
                 {
                     run_tests(argv, tmp, results, failures);
                 }
                 break;
-	
-	    case DT_REG:
-                /* Check if it is a test, if yes execute and wait */
+    
+            case DT_REG:
+                // Check if it is a test, if yes execute and wait
                 if (str.endsWith((const char *)"Test"))
                 {
                     r = run_test(tmp);
-            	    results->put(new String(tmp),
-            			 new Integer<int>(r));
-            	    if (r != 0)
-            		(*failures)++;
-            	    printf("\r\n");
+                    results->put(new String(strdup(tmp)), r);
+                    if (r != 0)
+                        (*failures)++;
+                    printf("\r\n");
                 }
                 break;
 
-	    default:
+            default:
                 break;
-	}
+        }
     }
-    /* Close it. */
+    // Close it.
     closedir(d);
 
     return EXIT_SUCCESS;
@@ -106,18 +105,18 @@ int run_tests(char **argv, char *path, Map<String, Integer<int> > *results, int 
 int main(int argc, char **argv)
 {
     char path[255], tmp[255];
-    Map<String, Integer<int> > results;
+    Map<String *, int> results;
     int failed = 0;
 
     // Grab command-line arguments, if any
     if (argc > 1)
     {
-	strncpy(path, argv[1], sizeof(path));
+        strncpy(path, argv[1], sizeof(path));
         path[254] = 0;
     }
     else
     {
-	strncpy(tmp, argv[0], sizeof(tmp));
+        strncpy(tmp, argv[0], sizeof(tmp));
         strncpy(path, dirname(tmp), sizeof(path));
         path[254] = 0;
     }
@@ -126,24 +125,24 @@ int main(int argc, char **argv)
     printf("%s: ", argv[0]);
     
     if (failed != 0)
-	printf("%sFAIL%s", RED, WHITE);
+        printf("%sFAIL%s", RED, WHITE);
     else
-	printf("%sOK%s", GREEN, WHITE);
+        printf("%sOK%s", GREEN, WHITE);
 
     printf("   (%d passed %d failed %d total)\r\n",
-	results.count() - failed, failed, results.count());
+    results.count() - failed, failed, results.count());
 
     // Print the failed tests
-    Vector<String> tests = results.keys();
-    for (int i = 0; i < tests.count(); i++)
+    Array<String *> tests = results.keys();
+    for (Size i = 0; i < tests.count(); i++)
     {
-	String *s = tests[i];
-	Integer<int> *f = results.get(s);
-	int v = **f;
-	char *k = **s;
+        String *testname = tests[i];
+        int fails = results.get(testname);
 
-	if (v)
-	    printf("  %s: %d failures\r\n", k, v);
+        // TODO: Sometimes I get the wrong testname. I think the key->value mapping is incorrect in Map.
+
+        if (fails)
+            printf("  %s: %d failures\r\n", **testname , fails);
     }
     return failed;
 }

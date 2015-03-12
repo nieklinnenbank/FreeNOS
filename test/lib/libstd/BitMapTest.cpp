@@ -17,6 +17,7 @@
 
 #include <TestCase.h>
 #include <TestRunner.h>
+#include <TestMain.h>
 #include <BitMap.h>
 
 TestCase(BitmapConstruct)
@@ -27,6 +28,7 @@ TestCase(BitmapConstruct)
     testAssert(bm->m_size == bm->getFree());
     testAssert(bm->getUsed() == 0);
 
+    delete bm;
     return OK;
 }
 
@@ -38,16 +40,11 @@ TestCase(BitmapMark)
     testAssert(bm->isMarked(1));
     testAssert(!bm->isMarked(0));
 
+    delete bm;
     return OK;
 }
 
 TestCase (BitmapSkip)
 {
     return SKIP;
-}
-
-int main(int argc, char **argv)
-{
-    TestRunner tests(argc, argv);
-    return tests.run();
 }

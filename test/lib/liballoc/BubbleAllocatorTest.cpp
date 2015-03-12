@@ -19,13 +19,14 @@
 #include <TestCase.h>
 #include <TestRunner.h>
 #include <TestData.h>
+#include <TestMain.h>
 #include <BubbleAllocator.h>
 
 TestCase(BubbleConstruct)
 {
-    TestData data;
-    Address addr = data.address();
-    Size size = data.uint(16, 1) * PAGESIZE;
+    TestData<uint> data;
+    Address addr = data.uvalue();
+    Size size = data.uvalue(16, 1) * PAGESIZE;
 
     BubbleAllocator *ba = new BubbleAllocator(addr, size);
 
@@ -38,10 +39,10 @@ TestCase(BubbleConstruct)
 
 TestCase(BubbleAlloc)
 {
-    TestData data;
-    Address addr = data.address();
-    Size size = data.uint(16, 1) * PAGESIZE;
-    
+    TestData<uint> data;
+    Address addr = data.uvalue();
+    Size size = data.uvalue(16, 1) * PAGESIZE;
+
     BubbleAllocator *ba = new BubbleAllocator(addr, size);
     Size sz = 1024, big = size * 2;
 
@@ -51,10 +52,4 @@ TestCase(BubbleAlloc)
 
     delete ba;
     return OK;
-}
-
-int main(int argc, char **argv)
-{
-    TestRunner tests(argc, argv);
-    return tests.run();
 }
