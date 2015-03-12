@@ -18,10 +18,6 @@
 #ifndef __LIBTEST_TESTCASE_H
 #define __LIBTEST_TESTCASE_H
 
-#include <stdio.h>
-#include <List.h>
-#include <Macros.h>
-
 /*
  * Testcases sometimes need to access private members
  * of a class. This define makes sure that a TestCase
@@ -30,6 +26,15 @@
 #ifndef private
 #define private public
 #endif
+
+/* Same for protected */
+#ifndef protected
+#define protected public
+#endif
+
+#include <stdio.h>
+#include <List.h>
+#include <Macros.h>
 
 enum TestResult
 {
@@ -70,7 +75,7 @@ class TestInstance
 #define testAssert(expression) \
     if(!(expression)) \
     { \
-	printf("%s:%s testAssert failed: `%s' .. ", __FILE__, __FUNCTION__, QUOTE(expression)); \
+	printf("%s:%d:%s testAssert failed: `%s' .. ", __FILE__, __LINE__,  __FUNCTION__, QUOTE(expression)); \
 	return FAIL; \
     }
 
