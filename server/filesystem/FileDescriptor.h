@@ -62,7 +62,7 @@ FileDescriptor;
  * @param procID Process Identity number.  
  * @return Pointer to the (shared) FileDescriptor table.  
  */
-inline Shared<FileDescriptor> * getFileDescriptors(Array<Shared<FileDescriptor> > *files,
+inline Shared<FileDescriptor> * getFileDescriptors(Array<Shared<FileDescriptor> *> *files,
 					    ProcessID procID)
 {
     Shared<FileDescriptor> *fds;
@@ -91,7 +91,7 @@ inline Shared<FileDescriptor> * getFileDescriptors(Array<Shared<FileDescriptor> 
  * @param procID Process Identity.  
  * @param index Index number of the FileDescriptor in the table.  
  */
-inline FileDescriptor * getFileDescriptor(Array<Shared<FileDescriptor> > *files,
+inline FileDescriptor * getFileDescriptor(Array<Shared<FileDescriptor> *> *files,
 				   ProcessID procID, int index)
 {
     return getFileDescriptors(files, procID)->get(index);

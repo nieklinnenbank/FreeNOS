@@ -44,7 +44,7 @@ class ProcessScheduler
         /**
          * Select the next process to run.
          */
-        virtual Process * select(Array<Process> *procs, Process *idle);
+        virtual Process * select(Array<Process *> *procs, Process *idle);
 
   private:
 

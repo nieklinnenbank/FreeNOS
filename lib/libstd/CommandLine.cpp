@@ -17,21 +17,21 @@
 
 #include "CommandLine.h"
 
-CommandLine::CommandLine(String* line, Vector<Delimeter>* delimeters 
-    = (Vector<Delimeter>*)NULL )
+CommandLine::CommandLine(String* line, Vector<Delimeter *>* delimeters 
+    = (Vector<Delimeter *>*)NULL )
     : line( *(*line) ), delimeters( delimeters )
 {
 	this->parse();
 }
 
-CommandLine::CommandLine(char* line, Vector<Delimeter>* delimeters 
-    = (Vector<Delimeter>*)NULL )
+CommandLine::CommandLine(char* line, Vector<Delimeter *>* delimeters 
+    = (Vector<Delimeter *>*)NULL )
     : line(line), delimeters( delimeters )
 {
 	this->parse();
 }
 
-Vector< CommandLineOption<String, String> > CommandLine::getOptions()
+Vector< CommandLineOption<String, String> *> CommandLine::getOptions()
 {
 	return options;
 }

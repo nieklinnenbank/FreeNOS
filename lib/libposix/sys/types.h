@@ -18,7 +18,6 @@
 #ifndef __LIBPOSIX_TYPES_H
 #define __LIBPOSIX_TYPES_H
 
-#include <FreeNOS/Process.h>
 #include <Types.h>
 
 /**

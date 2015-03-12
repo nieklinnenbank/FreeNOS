@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,27 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Log.h>
-#include "ProcessScheduler.h"
+#include "Assert.h"
+#include "HashFunction.h"
 
-ProcessScheduler::ProcessScheduler()
+Size FNVHash(ByteSequence *key, Size mod)
 {
-    m_index = 0;
-}
-
-Process * ProcessScheduler::select(Array<Process *> *procs, Process *idle)
-{
-    Size size = procs->size();
+    Size ret  = FNV_INIT;
+    Size size = key->size();
+    
+    assertRead(key);
+    assert(mod > 0);
 
     for (Size i = 0; i < size; i++)
     {
-        m_index = (m_index + 1) % size;
-
-        Process *p = procs->get(m_index);
-        if (p && p != idle && p->getState() == Process::Ready)
-        {
-            return p;
-        }
+        ret *= FNV_PRIME;
+        ret ^= key->valueAt(i);
     }
-    return (Process *) NULL;
+    return (ret % mod);
 }

@@ -48,8 +48,8 @@ template <class K = Comparable<class K>,
 	{
 	    for(Size size = 0; size < _keys.count(); size++ )
 	    {
-		_keys[size] = (K*) NULL;
-		_values[size] = (V*) NULL;
+		_keys[size] = ZERO;
+		_values[size] = ZERO;
 	    }
 	}
 	
@@ -73,7 +73,7 @@ template <class K = Comparable<class K>,
 	 * Returns true if this Map contains a mapping for the given key.
 	 * @return bool Whether this Map contains a mapping the given key.
 	 */
-	bool containsKey(K* key, bool strict = false)
+	bool containsKey(K key, bool strict = false)
 	{
 	    for( Size index = 0; index < _keys.count(); index++ )
 	    {
@@ -97,7 +97,7 @@ template <class K = Comparable<class K>,
 	 * Returns true if this Map maps one ore more keys to the given value.
 	 * @return bool Whether this Map maps >= 1 key(s) to the given value.
 	 */
-	bool containsValue(V* value, bool strict = false)
+	bool containsValue(V value, bool strict = false)
 	{
 	    for( Size index = 0; index < _values.count(); index++ )
 	    {
@@ -120,7 +120,7 @@ template <class K = Comparable<class K>,
 	/**
 	 * Get a shallow clone of the Vector containing the keys in this Map.
 	 */
-	Vector<K> keys()
+	Array<K> keys()
 	{
     	    return _keys.clone();
 	}
@@ -157,7 +157,7 @@ template <class K = Comparable<class K>,
 	 * @param key Pointer to the key to lookup.
 	 * @return The value for the given key, or NULL if not found.
 	 */
-	V* get(K* key)
+	V get(K key)
 	{
     	    int index = _getKeyIndex(key);
 		
@@ -165,7 +165,7 @@ template <class K = Comparable<class K>,
 	    {
 		return (_values[(Size)index]);
 	    }
-	    return (V*) NULL;
+	    return ZERO;
 	}
 	
 	/**
@@ -188,7 +188,7 @@ template <class K = Comparable<class K>,
 	/**
 	 * Associates the specified value with the specified key in this map.
 	 */
-	V* put(K* key, V* value)
+	bool put(K key, V value)
 	{
 	    int index = _getKeyIndex(key);
 		
@@ -199,24 +199,21 @@ template <class K = Comparable<class K>,
 	    } else {
 		_values.insert( (Size)index, value);
 	    }
-	    return value;
+	    return true;
 	}
 	
 	/**
 	 * Removes the mapping for a key from this Map if it is present.
 	 */
-	V* remove(K* key)
+	void remove(K key)
 	{
 	    int index = _getKeyIndex(key);
-		
+
 	    if( index != -1 )
 	    {
 		_keys.remove( (Size)index );
-		V* value = _values[index];
 		_values.remove( (Size)index );
-		return value;
 	    }
-	    return (V*) NULL;
 	}
 	
 	/**
@@ -243,7 +240,7 @@ template <class K = Comparable<class K>,
 	/** Values in the Map. */
 	Vector<V> _values;
 	
-	int _getKeyIndex(K* key)
+	int _getKeyIndex(K key)
 	{
 	    for( Size index = 0; index < _keys.count(); index++ )
 	    {

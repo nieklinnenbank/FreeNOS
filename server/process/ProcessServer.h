@@ -86,7 +86,7 @@ class ProcessServer : public IPCServer<ProcessServer, ProcessMessage>
 	Shared<UserProcess> procs;
 	
 	/** Per-process FileDescriptor table. */
-	Array<Shared<FileDescriptor> > *files;
+	Array<Shared<FileDescriptor> *> *files;
 };
 
 /**

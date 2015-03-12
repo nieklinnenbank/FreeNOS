@@ -20,11 +20,12 @@
 
 #include "Types.h"
 #include "Comparable.h"
+#include "ByteSequence.h"
 
 /**
  * Abstracts simple numbers.
  */
-template <class Int> class Integer : public Comparable<Integer<Int> >
+template <class Int> class Integer : public Comparable<Integer<Int> >, public ByteSequence
 {
     public:
 
@@ -73,7 +74,7 @@ template <class Int> class Integer : public Comparable<Integer<Int> >
          * @param b Constant Integer instance.
          * @return True if equal, false otherwise.
          */
-	bool equals (const Integer<Int> &i)
+	bool equals (const Integer<Int> &i) const
 	{
 	    return value == i.value;
         }
@@ -84,7 +85,7 @@ template <class Int> class Integer : public Comparable<Integer<Int> >
          * @return an int < 0, 0 or > 0 if this Integer is
          * less than, equal to or greater than i.
          */
-        int compareTo(const Integer<Int> &i)
+        int compareTo(const Integer<Int> &i) const
         {
             if( value == i.value )
             {

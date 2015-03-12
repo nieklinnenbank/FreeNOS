@@ -27,7 +27,7 @@
 #include "IntelMemory.h"
 
 /** Interrupt handlers. */
-Array<List<InterruptHook> > interrupts(256);
+Array<List<InterruptHook> *> interrupts(256);
 
 void executeInterrupt(CPUState state)
 {

@@ -138,7 +138,7 @@ class LinnFileSystem : public FileSystem
 	LinnSuperBlock super;
 	
 	/** Group descriptors. */
-	Array<LinnGroup> *groups;
+	Array<LinnGroup *> *groups;
 
 	/** Inode cache. */
 	HashTable<Integer<u32>,LinnInode> inodes;

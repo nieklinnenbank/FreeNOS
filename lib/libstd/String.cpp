@@ -316,13 +316,13 @@ bool String::equals(String *s)
     return strcmp(value, s->value) == 0;
 }
 
-bool String::equals(const String & s)
+bool String::equals(const String & s) const
 {
     assertRead(s.value);
     return strcmp(value, s.value) == 0;
 }
 
-int String::compareTo(const String & s)
+int String::compareTo(const String & s) const
 {
     return strcmp(value, s.value);
 }

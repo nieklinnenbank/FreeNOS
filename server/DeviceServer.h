@@ -66,7 +66,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	    this->prefix = prefix;
 	    this->type   = type;
 	    this->mode   = mode;
-	    this->files  = new Array<Shared<FileDescriptor> >(MAX_PROCS);
+	    this->files  = new Array<Shared<FileDescriptor> *>(MAX_PROCS);
 	
 	    /* Register IPC Handlers. */
 	    addIPCHandler(ReadFile,  &DeviceServer::ioHandler, false);
@@ -411,7 +411,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	}
 	
 	/** Contains all Devices served by this DeviceServer. */
-	Array<Device> devices;
+	Array<Device *> devices;
 	
 	/**
 	 * @brief Registers Devices using interrupts.
@@ -423,7 +423,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	 * @see List
 	 * @see Device
 	 */
-	Array<List<Device> > interrupts;
+	Array<List<Device> *> interrupts;
 
 	/**
 	 * @brief A List of pending I/O operations.
@@ -431,7 +431,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	List<FileSystemMessage> requests;
 	
 	/** Per-process File descriptors. */
-        Array<Shared<FileDescriptor> > *files;
+        Array<Shared<FileDescriptor> *> *files;
 	
 	/**
 	 * @brief Prefix string used to create device files in /tmp.

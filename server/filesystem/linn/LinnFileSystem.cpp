@@ -92,7 +92,7 @@ LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
 	exit(EXIT_FAILURE);
     }
     /* Create groups vector. */
-    groups = new Array<LinnGroup>(LINN_GROUP_COUNT(&super));
+    groups = new Array<LinnGroup *>(LINN_GROUP_COUNT(&super));
 
     /* Read out group descriptors. */
     for (Size i = 0; i < LINN_GROUP_COUNT(&super); i++)

@@ -77,7 +77,7 @@ template <class Key, class Value> class HashTable
 	 * @param hash Hash function to use.
 	 * @param sz Initial size of the internal table.
 	 */
-	HashTable(Size (*hash)(Comparable<Key> *, Size) = FNVHash, Size sz = DEFAULT_SIZE)
+	HashTable(Size (*hash)(ByteSequence *, Size) = FNVHash, Size sz = DEFAULT_SIZE)
 	{
 	    assert(hash != ZERO);
 	    assert(sz > 0);
@@ -198,7 +198,7 @@ template <class Key, class Value> class HashTable
 	Size _count;
 	
 	/** Hash function. */
-	Size (*_hash)(Comparable<Key> *, Size);
+	Size (*_hash)(ByteSequence *, Size);
 };
 
 #endif /* __HASHTABLE_H */

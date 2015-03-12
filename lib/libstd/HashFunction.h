@@ -19,8 +19,7 @@
 #define __HASH_FUNCTION_H
 
 #include "Types.h"
-#include "Comparable.h"
-#include "Assert.h"
+#include "ByteSequence.h"
 
 /** Prime number used by FNV hashing. */
 #define FNV_PRIME 16777619
@@ -30,23 +29,10 @@
 
 /**
  * Compute a hash using the FNV algorithm.
- * @param key Comparable object.
+ * @param key Key to hash.
  * @param mod Modulo value.
  * @return Computed hash.
  */
-template <class T> Size FNVHash(Comparable<T> *key, Size mod)
-{
-    Size ret = FNV_INIT;
-    
-    assertRead(key);
-    assert(mod > 0);
-
-    for (Size i = 0; i < key->size(); i++)
-    {
-	ret *= FNV_PRIME;
-	ret ^= key->valueAt(i);
-    }
-    return (ret % mod);
-}
+Size FNVHash(ByteSequence *key, Size mod);
 
 #endif /* __HASH_FUNCTION_H */

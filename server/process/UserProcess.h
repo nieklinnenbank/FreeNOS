@@ -29,7 +29,6 @@
 #include <FreeNOS/Memory.h>
 #include <FileSystemPath.h>
 #include <FileDescriptor.h>
-#include <Array.h>
 #include <Types.h>
 
 #endif /* __KERNEL__ */

@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __COMPARABLE_H
-#define __COMPARABLE_H
+#ifndef __LIBSTD_COMPARABLE_H
+#define __LIBSTD_COMPARABLE_H
 
 #include "Types.h"
 
@@ -25,42 +25,33 @@
  */
 template <class T> class Comparable
 {
-    public:
+  public:
 
-	/**
-	 * Class destructor.
-	 */
-	virtual ~Comparable() {}
+    /**
+     * Class destructor.
+     */
+    virtual ~Comparable() {}
 
-	/**
-	 * Test if an object is equal to an other object.
-	 * @param t Object instance.
-	 * @return True if equal, false otherwise.
-	 */
-	virtual bool equals(const T &t) = 0;
-	
-	/**
-	 * Compares this Comparable to the given
-	 * Comparable and returns whether this Comparable
-	 * is equal to, less, or greater then the given Comparable.
-	 * @param c The Comparable to compare us to.
-	 * @return an int < 0, 0, > 0 if we are respectively less then,
-	 * equal to or greater then the given Comparable.
-	 */
-	virtual int compareTo(const T &t) = 0;
-	
-	/**
-	 * Get the size of the object.
-	 * @return Size in bytes.
-	 */
-	virtual Size size() const = 0;
-	
-	/**
-	 * Read an object byte-wise (e.g. for hashing).
-	 * @param index Offset to read.
-	 * @return Unsigned byte.
-	 */
-	virtual u8 valueAt(Size index) const = 0;
+    /**
+     * Test if an object is equal to an other object.
+     *
+     * @param t Object instance.
+     * @return True if equal, false otherwise.
+     */
+    virtual bool equals(const T &t) const
+    {
+        return compareTo(t) == 0;
+    }
+    
+    /**
+     * Compares this Comparable to the given Comparable.
+     * This function checks whether this Comparable is equal to, less, or greater then the given Comparable.
+     *
+     * @param c The Comparable to compare us to.
+     * @return an int < 0, 0, > 0 if we are respectively less then,
+     *         equal to or greater then the given Comparable.
+     */
+    virtual int compareTo(const T &t) const = 0;
 };
 
-#endif /* __COMPARABLE_H */
+#endif /* __LIBSTD_COMPARABLE_H */

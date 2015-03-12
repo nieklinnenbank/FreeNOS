@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,27 +15,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Log.h>
-#include "ProcessScheduler.h"
+#ifndef __LIBSTD_BYTESEQUENCE_H
+#define __LIBSTD_BYTESEQUENCE_H
 
-ProcessScheduler::ProcessScheduler()
+#include "Types.h"
+
+/**
+ * Object which can be read byte-wise.
+ */
+class ByteSequence
 {
-    m_index = 0;
-}
+  public:
 
-Process * ProcessScheduler::select(Array<Process *> *procs, Process *idle)
-{
-    Size size = procs->size();
+    /**
+     * Class destructor.
+     */
+    virtual ~ByteSequence() {}
+    
+    /**
+     * Get the size of the object.
+     *
+     * @return Size in bytes.
+     */
+    virtual Size size() const = 0;
+    
+    /**
+     * Read an object byte-wise (e.g. for hashing).
+     *
+     * @param index Offset to read.
+     * @return Unsigned byte.
+     */
+    virtual u8 valueAt(Size index) const = 0;
+};
 
-    for (Size i = 0; i < size; i++)
-    {
-        m_index = (m_index + 1) % size;
-
-        Process *p = procs->get(m_index);
-        if (p && p != idle && p->getState() == Process::Ready)
-        {
-            return p;
-        }
-    }
-    return (Process *) NULL;
-}
+#endif /* __LIBSTD_BYTESEQUENCE_H */

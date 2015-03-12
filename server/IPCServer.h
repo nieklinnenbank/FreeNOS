@@ -21,6 +21,7 @@
 #include <FreeNOS/API.h>
 #include <Error.h>
 #include <ProcessID.h>
+#include <Array.h>
 
 /**
  * Message handler function (dummy) container.
@@ -63,8 +64,8 @@ template <class Base, class MsgType> class IPCServer
         IPCServer(Base *inst, Size num = 32)
 	    : sendReply(true), instance(inst)
         {
-	    ipcHandlers = new Array<MessageHandler<IPCHandlerFunction> >(num);
-	    irqHandlers = new Array<MessageHandler<IRQHandlerFunction> >(num);
+	    ipcHandlers = new Array<MessageHandler<IPCHandlerFunction> *>(num);
+	    irqHandlers = new Array<MessageHandler<IRQHandlerFunction> *>(num);
 	}
 
 	/**
@@ -157,10 +158,10 @@ template <class Base, class MsgType> class IPCServer
     private:
     
 	/** IPC handler functions. */
-	Array<MessageHandler<IPCHandlerFunction> > *ipcHandlers;
+	Array<MessageHandler<IPCHandlerFunction> *> *ipcHandlers;
 	
 	/** IRQ handler functions. */
-	Array<MessageHandler<IRQHandlerFunction> > *irqHandlers;
+	Array<MessageHandler<IRQHandlerFunction> *> *irqHandlers;
 	
 	/** Server object instance. */
 	Base *instance;

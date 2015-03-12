@@ -402,7 +402,7 @@ class Ext2FileSystem : public FileSystem
 	Ext2SuperBlock superBlock;
 	
 	/** Group descriptors. */
-	Array<Ext2Group> *groups;
+	Array<Ext2Group *> *groups;
 
 	/** Inode cache. */
 	HashTable<Integer<u32>,Ext2Inode> inodes;

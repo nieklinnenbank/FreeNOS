@@ -111,7 +111,7 @@ void ProcessManager::setIdle(Process *proc)
     m_idle = proc;
 }
 
-Array<Process> * ProcessManager::getProcessTable()
+Array<Process *> * ProcessManager::getProcessTable()
 {
     return &m_procs;
 }

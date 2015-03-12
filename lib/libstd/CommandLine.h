@@ -36,12 +36,12 @@ class CommandLine
 	 * @param line The original commandline
 	 * @param delimeters
 	 */
-	CommandLine(String* line, Vector<Delimeter>* delimeters);
+	CommandLine(String* line, Vector<Delimeter *>* delimeters);
 	
 	/**
 	 * Constructor
 	 */
-	CommandLine(char* line, Vector<Delimeter>* delimeters);
+	CommandLine(char* line, Vector<Delimeter *>* delimeters);
 	
 	/**
 	 * Destructor
@@ -51,7 +51,7 @@ class CommandLine
 	/**
 	 * Returns the entered options
 	 */
-	Vector< CommandLineOption<String, String> > getOptions();
+	Vector< CommandLineOption<String, String> *> getOptions();
 	
 	/**
 	 * Returns the CommandLineOption that has the given name
@@ -66,8 +66,8 @@ class CommandLine
     private:
 
 	char* line;
-	Vector< Delimeter >* delimeters;
-	Vector< CommandLineOption<String, String> > options;
+	Vector<Delimeter *> *delimeters;
+	Vector<CommandLineOption<String, String> *> options;
 	
 	void parse();
 };

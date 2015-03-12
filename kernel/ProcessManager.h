@@ -87,12 +87,12 @@ class ProcessManager
          * Retrieve the process table.
          * @return Pointer to the process table.
          */
-        Array<Process> * getProcessTable();
+        Array<Process *> * getProcessTable();
 
     private:
     
         /** All known Processes. */
-        Array<Process> m_procs;
+        Array<Process *> m_procs;
 
         /** Object which creates processes for us. */
         ProcessFactory *m_factory;

@@ -19,6 +19,7 @@
 #define __STRING_H
 
 #include "Comparable.h"
+#include "ByteSequence.h"
 #include "Types.h"
 #include "Macros.h"
 #include "Assert.h"
@@ -53,7 +54,7 @@
 /**
  * Abstraction of strings.
  */
-class String : public Comparable<String>
+class String : public Comparable<String>, public ByteSequence
 {
     public:
 
@@ -231,7 +232,7 @@ class String : public Comparable<String>
 	 * @param ch Character array.
 	 * @return True if equal, false otherwise.
 	 */	
-	bool equals(const String & s);
+	virtual bool equals(const String & s) const;
 	
 	/**
 	 * Compares this String to the given String. 
@@ -239,7 +240,7 @@ class String : public Comparable<String>
 	 * @return int < 0, 0, > 0 if we are greater than, equal to
 	 * or less then the given String.
 	 */
-	int compareTo(const String & s);
+	virtual int compareTo(const String & s) const;
 	
 	/**
 	 * Compares this String to the given String, ignoring

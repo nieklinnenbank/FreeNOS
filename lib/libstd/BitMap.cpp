@@ -23,6 +23,7 @@ BitMap::BitMap(u8 *map, Size size)
     m_map  = map ? map : new u8[size];
     m_size = size;
     m_free = size;
+    clear();
 }
 
 void BitMap::mark(Size bit)
@@ -41,7 +42,7 @@ void BitMap::mark(Size bit)
 
 void BitMap::unmark(Size bit)
 {
-    assert(bit < m_size);
+    assert(bit < (m_size / 8));
     assertRead(m_map);
     assertWrite(m_map);
 
@@ -55,7 +56,7 @@ void BitMap::unmark(Size bit)
 
 bool BitMap::isMarked(Size bit) const
 {
-    assert(bit < m_size);
+    assert(bit < (m_size / 8));
     assertRead(m_map);
 
     return m_map[bit / 8] & (1 << (bit % 8));

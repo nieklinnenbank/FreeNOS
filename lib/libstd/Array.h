@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2015 Niek Linnenbank
  * Copyright (C) 2009 Coen Bijlsma
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -15,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __ARRAY_H
-#define __ARRAY_H
+#ifndef __LIBSTD_ARRAY_H
+#define __LIBSTD_ARRAY_H
 
 #include "Assert.h"
 #include "Comparable.h"
@@ -24,237 +25,236 @@
 #include "Macros.h"
 
 /** Default size of an Array */
-#define ARRAY_DEFAULT_SIZE	64
+#define ARRAY_DEFAULT_SIZE  64
 
 /**
  * This is a wrapper class for an array and contains some extra
  * functionality, somewhat like the Arrays class in Java.
  */
-template <class T> class Array
+template <class T> class Array : public Comparable<Array<T> >
 {
-    public:
+  public:
 
-	/**
-	 * Constructor.
-	 * Initializes the array with the given Size.
-	 * @param size The maximum size of the array
-	 */
-	Array(Size size = ARRAY_DEFAULT_SIZE) : _size(size)
-	{
-	    assert(size > 0);
-	    _array = new T*[_size];
-		
-	    for( Size i = 0; i < _size; i++)
-	    {
-		_array[i] = 0;
-	    }
-	}
-	
-	/**
-	 * Copy constructor.
-	 * @param a Array pointer to copy from.
-	 */
-	Array(Array<T> *a) : _size(a->_size)
-	{
-	    assert(_size > 0);
-	    _array = new T*[_size];
-	    
-	    for (Size i = 0; i < _size; i++)
-	    {
-		_array[i] = a->_array[i];
-	    }
-	}
-	
-	/**
-	 * Adds the given item to the Array, if possible.
-	 * @param item The item to add to the Array.
-	 * @return bool Whether adding the item to the Array succeeded.
-	 */
-	int insert(T* item)
-	{
-	    for(Size i = 0; i < _size; i++)
-	    {
-		if( _array[i] == ZERO )
-		{
-		    _array[i] = item;
-		    return i;
-		}
-	    }
-	    return -1;
-	}
-	
-	/**
-	 * Inserts the given item at the given position. If an item exists
-	 * at the given position, it will be replaced by the given item.
-	 * @param position The position to insert the item.
-	 * @param item The item to insert
-	 * @return bool Whether inserting the item at the given position
-	 * succeeded.
-	 */
-	bool insert(Size position, T* item)
-	{
-	    if( position >= _size )
-	    {
-		return false;
-	    }
-	    _array[position] = item;
-	    return true;
-	}
-	
-	/**
-	 * Removes the item at the given position.
-	 * @param position The position of the item to remove.
-	 * @return bool Whether removing the item succeeded.
-	 */
-	bool remove(Size position)
-	{
-	    if( position >= _size || position == 0 )
-	    {
-		return false;
-	    }
-	    _array[position] = (T*) NULL;
-	    return true;
-	}
-	
-	/**
-	 * Returns the item at the given position.
-	 * @param position The position of the item to get.
-	 * @return The item at the given position.
-	 */
-	T* get(Size position)
-	{
-	    if( position >= _size )
-	    {
-		return ZERO;
-	    }
-	    return _array[position];
-	}
-	
-	/**
-	 * Returns the maximum size of this Array.
-	 * @return size The maximum size of this Array.
-	 */
-	Size size() const
-	{
-	    return _size;
-	}
-	
-	/**
-	 * Returns a shallow copy of this Array.
-	 * @return A clone of this Array.
-	 */
-	Array<T> clone()
-	{
-	    Array<T> array(_size);
-		
-	    for( Size s = 0; s < _size; s++)
-	    {
-		array.insert(s, _array[s]);
-	    }
-	    return array;
-	}
-	
-	/**
-	 * Compares this Array to the given one.
-	 * @param t The Array to compare this one to.
-	 * @return Whether this Array and the given one are equal.
-	 */
-	bool equals(const Array<T> &t)
-	{
-	    if( *t == this )
-	    {
-		return true;
-	    }
-	    if( t.size() != this->size() )
-	    {
-		return false;
-	    }
-	
-	    for( Size s = 0; s < _size; s++ )
-	    {
-		if( this->get(s) != t.get(s) )
-		{
-		    return false;
-		}
-	    }
-	    return true;
-	}
-	
-	/**
-	 * Read the array byte-wise.
-	 * @param index Index of the item inside the Array to read.
-	 * @return The item at the given index.
-	 */
-	u8 valueAt(Size index) const
-	{
-	    assert(index < _size);
-	    return (u8) _array[index];
-	}
-	
-        /**
-         * Find the first empty index inside the Array.
-         * @return Index of empty position or -1 if full.
-         */
-        int findEmpty() const
+    /**
+     * Constructor.
+     * Initializes the array with the given Size.
+     *
+     * @param size The maximum size of the array
+     */
+    Array(Size size = ARRAY_DEFAULT_SIZE)
+    {
+        assert(size > 0);
+
+        m_size  = size;
+        m_count = 0;
+        m_array = new T[m_size];
+
+        clear();
+        
+    }
+    
+    /**
+     * Copy constructor.
+     *
+     * @param a Array pointer to copy from.
+     */
+    Array(Array<T> *a)
+    {
+        assert(a->m_size > 0);
+
+        m_size  = a->m_size;
+        m_count = a->m_count;
+        m_array = new T[m_size];
+        
+        for (Size i = 0; i < m_size; i++)
         {
-            for (Size i = 0; i < _size; i++)
-            {
-                if (_array[i] == ZERO)
-                    return i;
-            }
-            return -1;
+            m_array[i] = a->m_array[i];
         }
+    }
 
-	/**
-	 * Returns the item at the given position in the Array.
-	 * @param i The index of the item to return.
-	 * @return the Item at position i, or NULL of it doesn't exist.
-	 */
-	T* operator [] (int i) const
-	{
-	    return( i >= 0 && i < (int) _size) ? _array[i] : (T *) NULL;
-	}
-	
-	/**
-	 * Appends the given Array to this one.
-	 * @param value The Array to append to this one.
-	 * @return This Array.
-	 */
-	Array& operator+=  (Array<T>& value)
-	{
-	    T** array = new T*( _size + value.size() );
-		
-	    for( Size s = 0; s < _size; s++ )
-	    {
-		array[s] = this->get(s);
-	    }
-	    for( Size s = 0; s < value.size(); s++ )
-	    {
-		array[(s + _size - 1)] = value.get(s);
-	    }
-	    delete _array;
-	    _array = array;
-	    _size += value.size();
-	    return *this;
-	}
-	
-	/**
-	 * Appends the contents of the given Array to this one.
-	 * @param value The array to append to this one.
-	 * @return The result.
-	 */
-	Array& operator+ (Array<T>& value)
-	{
-	    return Array(*this) += value;
-	}
+    /**
+     * Destructor.
+     */
+    ~Array()
+    {
+        delete[] m_array;
+    }    
 
-    private:
+    /**
+     * Adds the given item to the Array, if possible.
+     *
+     * @param item The item to add to the Array.
+     * @return Position of the item in the Array or -1 on failure.
+     */
+    int insert(T item)
+    {
+        for (Size i = 0; i < m_size; i++)
+        {
+            if (!m_array[i])
+            {
+                m_array[i] = item;
+                m_count++;
+                return i;
+            }
+        }
+        return -1;
+    }
+    
+    /**
+     * Inserts the given item at the given position.
+     * If an item exists at the given position, it will be replaced by the given item.
+     *
+     * @param position The position to insert the item.
+     * @param item The item to insert
+     * @return bool Whether inserting the item at the given position succeeded.
+     */
+    bool insert(Size position, T item)
+    {
+        if (position >= m_size)
+        {
+            return false;
+        }
+        m_array[position] = item;
+        m_count++;
+        return true;
+    }
+    
+    /**
+     * Removes the item at the given position.
+     *
+     * @param position The position of the item to remove.
+     * @return bool Whether removing the item succeeded.
+     */
+    bool remove(Size position)
+    {
+        if (position >= m_size || position == 0)
+        {
+            return false;
+        }
+        m_array[position] = ZERO;
+        m_count--;
+        return true;
+    }
 
-	/** The actual array where the data is stored. */
-	T** _array;
-	
-	/** The maximum size of the array. */
-	Size _size;
+    /**
+     * Removes all items from the array.
+     */
+    void clear()
+    {
+        for (Size i = 0; i < m_size; i++)
+        {
+            m_array[i] = ZERO;
+        }
+    }
+    
+    /**
+     * Returns the item at the given position.
+     *
+     * @param position The position of the item to get.
+     * @return The item at the given position.
+     */
+    T get(Size position) const
+    {
+        if (position >= m_size)
+        {
+            return ZERO;
+        }
+        return m_array[position];
+    }
+    
+    /**
+     * Returns the maximum size of this Array.
+     *
+     * @return size The maximum size of this Array.
+     */
+    Size size() const
+    {
+        return m_size;
+    }
+
+    /**
+     * Returns the number of items inside the Array.
+     * @return Number of items inside the Array.
+     */
+    Size count() const
+    {
+        return m_count;
+    }
+    
+    /**
+     * Returns a shallow copy of this Array.
+     * Shallow means that the copy will point to the same values as the original.
+     * @return A clone of this Array.
+     */
+    Array<T> clone() const
+    {
+        Array<T> array(m_size);
+        
+        for (Size i = 0; i < m_size; i++)
+        {
+            if (m_array[i])
+                array.insert(i, m_array[i]);
+        }
+        return array;
+    }
+
+    /**
+     * Compare this Array to another Array.
+     */
+    virtual int compareTo(const Array<T> &t) const
+    {
+        // Size must be equal
+        if (t.m_size != this->m_size)
+        {
+            return this->m_size - t.m_size;
+        }
+    
+        // All elements must be equal
+        for (Size s = 0; s < m_size; s++)
+        {
+            if (this->get(s) != t.get(s))
+            {
+                return s + 1;
+            }
+        }
+        return 0;
+
+    }
+    
+    /**
+     * Find the first empty index inside the Array.
+     * @return Index of empty position or -1 if full.
+     */
+    int findEmpty() const
+    {
+        for (Size i = 0; i < m_size; i++)
+        {
+            if (!m_array[i])
+                return i;
+        }
+        return -1;
+    }
+
+    /**
+     * Returns the item at the given position in the Array.
+     * @param i The index of the item to return.
+     * @return the Item at position i, or NULL of it doesn't exist.
+     */
+    T operator [] (int i) const
+    {
+        return (i >= 0 && i < (int) m_size) ? m_array[i] : ZERO;
+    }
+    
+  protected:
+
+    /** The actual array where the data is stored. */
+    T *m_array;
+    
+    /** The maximum size of the array. */
+    Size m_size;
+
+    /** Number of used items in the array. */
+    Size m_count;
 };
 
-#endif /* __ARRAY_H */
+#endif /* __LIBSTD_ARRAY_H */

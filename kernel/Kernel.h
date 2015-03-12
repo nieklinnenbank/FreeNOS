@@ -106,7 +106,7 @@ protected:
     ProcessManager *m_procs;
 
     /** API handlers */
-    Array<APIHandler> m_apis;
+    Array<APIHandler *> m_apis;
 };
 
 /** Start of kernel text and data. */

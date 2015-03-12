@@ -126,7 +126,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	    /* Load shared tables. */
 	    procs.load(USER_PROCESS_KEY, MAX_PROCS);
 	    mounts.load(FILE_SYSTEM_MOUNT_KEY, MAX_MOUNTS);
-	    files = new Array<Shared<FileDescriptor> >(MAX_PROCS);
+	    files = new Array<Shared<FileDescriptor> *>(MAX_PROCS);
 	    
 	    /*
 	     * Fork in the background first, if requested.
@@ -557,7 +557,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
         Shared<UserProcess> procs;
 
         /** Per-process File descriptors. */
-        Array<Shared<FileDescriptor> > *files;
+        Array<Shared<FileDescriptor> *> *files;
 
     private:
     	
