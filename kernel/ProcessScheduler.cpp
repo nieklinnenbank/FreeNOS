@@ -25,7 +25,7 @@ ProcessScheduler::ProcessScheduler()
 
 Process * ProcessScheduler::select(Vector<Process *> *procs, Process *idle)
 {
-    Size size = procs->count();
+    Size size = procs->size();
 
     for (Size i = 0; i < size; i++)
     {

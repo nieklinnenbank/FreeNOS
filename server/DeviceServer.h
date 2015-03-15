@@ -66,6 +66,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	    this->prefix = prefix;
 	    this->type   = type;
 	    this->mode   = mode;
+            this->interrupts.fill(ZERO);
 	    this->files  = new Vector<Shared<FileDescriptor> *>(MAX_PROCS);
 	    this->files->fill(ZERO);
 	
@@ -119,17 +120,8 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	    dev_t id;
 
 	    /* If we don't have any Devices, bail out. */
-	    for (Size i = 0; i <= devices.size(); i++)
-	    {
-		if (devices[i])
-		{
-		    break;
-		}
-		if (i == devices.size())
-		{
-		    return EXIT_FAILURE;
-		}
-	    }
+            if (devices.count() == 0)
+                return EXIT_FAILURE;
 	    
 	    /*
 	     * Copy ourselves using a fork().
@@ -149,12 +141,9 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 		    }		
 		}
 		/* Initialize all our Devices. */
-		for (Size i = 0; i < devices.size(); i++)
+		for (Size i = 0; i < devices.count(); i++)
 		{
-		    if (devices[i])
-		    {
-			devices[i]->initialize();
-		    }
+		    devices[i]->initialize();
 		}
 		/* Start processing requests. */
 		return IPCServer<DeviceServer, FileSystemMessage>::run();
@@ -162,13 +151,8 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	    /*
 	     * Loop all registered Devices.
 	     */
-	    for (Size i = 0; i < devices.size(); i++)
+	    for (Size i = 0; i < devices.count(); i++)
 	    {
-		/* Skip empty. */
-		if (!devices[i])
-		{
-		    continue;
-		}
 		/* Attempt to create the device file. */
 		for (Size i = 0; i < 1000; i++)
 		{

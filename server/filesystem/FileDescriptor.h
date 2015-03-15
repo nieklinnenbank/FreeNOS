@@ -69,7 +69,7 @@ inline Shared<FileDescriptor> * getFileDescriptors(Vector<Shared<FileDescriptor>
     char key[128];
 
     /* Do we have it loaded already? */
-    if ((fds = (Shared<FileDescriptor> *) files->get(procID)))
+    if ((fds = files->at(procID)))
     {
         return fds;
     }
