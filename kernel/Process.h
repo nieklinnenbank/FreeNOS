@@ -23,8 +23,6 @@
 #include <Macros.h>
 
 #ifdef CPP
-
-#include <Array.h>
 #include <List.h>
 
 /** 

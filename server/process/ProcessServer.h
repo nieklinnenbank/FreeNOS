@@ -25,7 +25,7 @@
 
 #include <IPCServer.h>
 #include <Shared.h>
-#include <Array.h>
+#include <Vector.h>
 #include <Types.h>
 #include <Error.h>
 #include "ProcessMessage.h"
@@ -86,7 +86,7 @@ class ProcessServer : public IPCServer<ProcessServer, ProcessMessage>
 	Shared<UserProcess> procs;
 	
 	/** Per-process FileDescriptor table. */
-	Array<Shared<FileDescriptor> *> *files;
+	Vector<Shared<FileDescriptor> *> *files;
 };
 
 /**

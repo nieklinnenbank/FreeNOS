@@ -36,13 +36,14 @@ Kernel::Kernel(Memory *memory, ProcessManager *procs)
     m_procs  = procs;
 
     /* Register generic API handlers */
-    m_apis.insert(IPCMessageNumber, (APIHandler *) IPCMessageHandler);
-    m_apis.insert(PrivExecNumber,   (APIHandler *) PrivExecHandler);
-    m_apis.insert(ProcessCtlNumber, (APIHandler *) ProcessCtlHandler);
-    m_apis.insert(SystemInfoNumber, (APIHandler *) SystemInfoHandler);
-    m_apis.insert(VMCopyNumber,     (APIHandler *) VMCopyHandler);
-    m_apis.insert(VMCtlNumber,      (APIHandler *) VMCtlHandler);
-    m_apis.insert(IOCtlNumber,      (APIHandler *) IOCtlHandler);
+    m_apis.fill(ZERO);
+    m_apis.put(IPCMessageNumber, (APIHandler *) IPCMessageHandler);
+    m_apis.put(PrivExecNumber,   (APIHandler *) PrivExecHandler);
+    m_apis.put(ProcessCtlNumber, (APIHandler *) ProcessCtlHandler);
+    m_apis.put(SystemInfoNumber, (APIHandler *) SystemInfoHandler);
+    m_apis.put(VMCopyNumber,     (APIHandler *) VMCopyHandler);
+    m_apis.put(VMCtlNumber,      (APIHandler *) VMCtlHandler);
+    m_apis.put(IOCtlNumber,      (APIHandler *) IOCtlHandler);
 
     /* Load boot image programs */
     loadBootImage();
@@ -67,10 +68,10 @@ void Kernel::run()
 Error Kernel::invokeAPI(APINumber number,
                         ulong arg1, ulong arg2, ulong arg3, ulong arg4, ulong arg5)
 {
-    APIHandler *handler = m_apis.get(number);
+    APIHandler **handler = (APIHandler **) m_apis.get(number);
 
     if (handler)
-        return handler(arg1, arg2, arg3, arg4, arg5);
+        return (*handler)(arg1, arg2, arg3, arg4, arg5);
     else
         return EINVAL;
 }

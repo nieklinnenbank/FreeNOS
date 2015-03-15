@@ -20,23 +20,24 @@
 #include <Macros.h>
 #include <List.h>
 #include <ListIterator.h>
-#include <Array.h>
+#include <Vector.h>
 #include "IntelKernel.h"
 #include "IntelCPU.h"
 #include "IntelInterrupt.h"
 #include "IntelMemory.h"
 
 /** Interrupt handlers. */
-Array<List<InterruptHook> *> interrupts(256);
+Vector<List<InterruptHook> *> interrupts(256);
 
 void executeInterrupt(CPUState state)
 {
     /* Fetch the list of interrupt hooks (for this vector). */
     List<InterruptHook> *lst = interrupts[state.vector];
-        
+
     /* Does at least one handler exist? */
-    if (!lst) return;
-    
+    if (!lst)
+        return;
+
     /* Execute them all. */
     for (ListIterator<InterruptHook> i(lst); i.hasNext(); i.next())
     {
@@ -75,6 +76,9 @@ IntelKernel::IntelKernel(IntelMemory *memory, ProcessManager *proc)
     /* Make sure to enable PIC2 and the i8253. */
     enableIRQ(2, true);
     enableIRQ(0, true);
+
+    // Clear interrupts table
+    interrupts.fill(ZERO);
 
     /* Setup exception handlers. */
     for (int i = 0; i < 17; i++)
@@ -120,7 +124,7 @@ void IntelKernel::hookInterrupt(int vec, InterruptHandler h, ulong p)
     /* Insert into interrupts; create List if neccessary. */
     if (!interrupts[vec])
     {
-        interrupts.insert(vec, new List<InterruptHook>());
+        interrupts.put(vec, new List<InterruptHook>());
     }
     /* Just append it. */
     if (!interrupts[vec]->contains(&hook))

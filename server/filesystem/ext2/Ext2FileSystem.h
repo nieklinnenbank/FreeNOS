@@ -40,7 +40,7 @@
 #include <Storage.h>
 #include <Types.h>
 #include <Error.h>
-#include <Array.h>
+#include <Vector.h>
 #include <HashTable.h>
 #include <Integer.h>
 #include "Ext2SuperBlock.h"
@@ -402,7 +402,7 @@ class Ext2FileSystem : public FileSystem
 	Ext2SuperBlock superBlock;
 	
 	/** Group descriptors. */
-	Array<Ext2Group *> *groups;
+	Vector<Ext2Group *> *groups;
 
 	/** Inode cache. */
 	HashTable<Integer<u32>,Ext2Inode> inodes;

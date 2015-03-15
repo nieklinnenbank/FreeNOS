@@ -25,7 +25,8 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <String.h>
-#include <Map.h>
+#include <HashTable.h>
+#include <HashIterator.h>
 #include <Integer.h>
 #include <TerminalCodes.h>
 
@@ -49,7 +50,7 @@ int run_test(char *path)
     return status;
 }
 
-int run_tests(char **argv, char *path, Map<String *, int> *results, int *failures)
+int run_tests(char **argv, char *path, HashTable<String, Integer<int> > *results, int *failures)
 {
     DIR *d;
     struct dirent *dent;
@@ -85,10 +86,9 @@ int run_tests(char **argv, char *path, Map<String *, int> *results, int *failure
                 if (str.endsWith((const char *)"Test"))
                 {
                     r = run_test(tmp);
-                    results->put(new String(strdup(tmp)), r);
+                    results->insert(new String(strdup(tmp)), new Integer<int>(r));
                     if (r != 0)
                         (*failures)++;
-                    printf("\r\n");
                 }
                 break;
 
@@ -105,8 +105,7 @@ int run_tests(char **argv, char *path, Map<String *, int> *results, int *failure
 int main(int argc, char **argv)
 {
     char path[255], tmp[255];
-    Map<String *, int> results;
-    int failed = 0;
+    int iterations = 1;
 
     // Grab command-line arguments, if any
     if (argc > 1)
@@ -120,29 +119,40 @@ int main(int argc, char **argv)
         strncpy(path, dirname(tmp), sizeof(path));
         path[254] = 0;
     }
-    // Run all tests in the given directory, recursively
-    int ret = run_tests(argv, path, &results, &failed);
-    printf("%s: ", argv[0]);
-    
-    if (failed != 0)
-        printf("%sFAIL%s", RED, WHITE);
-    else
-        printf("%sOK%s", GREEN, WHITE);
+    if (argc > 2)
+        iterations = atoi(argv[2]);
 
-    printf("   (%d passed %d failed %d total)\r\n",
-    results.count() - failed, failed, results.count());
-
-    // Print the failed tests
-    Array<String *> tests = results.keys();
-    for (Size i = 0; i < tests.count(); i++)
+    for (int i = 0; i < iterations; i++)
     {
-        String *testname = tests[i];
-        int fails = results.get(testname);
+        // Run all tests in the given directory, recursively
+        HashTable<String, Integer<int> > results;
+        int failed = 0;
+        int ret = run_tests(argv, path, &results, &failed);
+        printf("%s: ", argv[0]);
 
-        // TODO: Sometimes I get the wrong testname. I think the key->value mapping is incorrect in Map.
+        if (iterations > 1)
+            printf("iteration %d: ", i+1);
 
-        if (fails)
-            printf("  %s: %d failures\r\n", **testname , fails);
+        if (failed != 0)
+            printf("%sFAIL%s", RED, WHITE);
+        else
+            printf("%sOK%s", GREEN, WHITE);
+
+
+        printf("   (%d passed %d failed %d total)\r\n",
+        results.count() - failed, failed, results.count());
+
+        // Print the failed tests
+        for (HashIterator<String, Integer<int> > i(&results); i.hasNext(); i++)
+        {
+            String *testname = i.key();
+            int fails = **i.current();
+
+            if (fails)
+                printf("  %s: %d failures\r\n", **testname , fails);
+        }
+        if (failed)
+            return failed;
     }
-    return failed;
+    return EXIT_SUCCESS;
 }

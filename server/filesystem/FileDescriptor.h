@@ -19,7 +19,7 @@
 #define __FILESYSTEM_FILE_DESCRIPTOR_H
 
 #include "FileSystemMount.h"
-#include <Array.h>
+#include <Vector.h>
 #include <Shared.h>
 #include <Types.h>
 #include <Macros.h>
@@ -62,14 +62,14 @@ FileDescriptor;
  * @param procID Process Identity number.  
  * @return Pointer to the (shared) FileDescriptor table.  
  */
-inline Shared<FileDescriptor> * getFileDescriptors(Array<Shared<FileDescriptor> *> *files,
+inline Shared<FileDescriptor> * getFileDescriptors(Vector<Shared<FileDescriptor> *> *files,
 					    ProcessID procID)
 {
     Shared<FileDescriptor> *fds;
     char key[128];
 
     /* Do we have it loaded already? */
-    if ((fds = files->get(procID)))
+    if ((fds = (Shared<FileDescriptor> *) files->get(procID)))
     {
         return fds;
     }
@@ -79,8 +79,8 @@ inline Shared<FileDescriptor> * getFileDescriptors(Array<Shared<FileDescriptor> 
     /* Load the object. */
     fds = new Shared<FileDescriptor>(key, FILE_DESCRIPTOR_MAX);
 
-    /* Store in our Array. */
-    files->insert(procID, fds);
+    /* Store in our Vector. */
+    files->put(procID, fds);
 
     /* Done. */
     return fds;
@@ -91,7 +91,7 @@ inline Shared<FileDescriptor> * getFileDescriptors(Array<Shared<FileDescriptor> 
  * @param procID Process Identity.  
  * @param index Index number of the FileDescriptor in the table.  
  */
-inline FileDescriptor * getFileDescriptor(Array<Shared<FileDescriptor> *> *files,
+inline FileDescriptor * getFileDescriptor(Vector<Shared<FileDescriptor> *> *files,
 				   ProcessID procID, int index)
 {
     return getFileDescriptors(files, procID)->get(index);

@@ -27,3 +27,6 @@ env.HostProgram('BitMapTest', 'BitMapTest.cpp')
 
 env.TargetProgram('ArrayTest', 'ArrayTest.cpp')
 env.HostProgram('ArrayTest', 'ArrayTest.cpp')
+
+env.TargetProgram('VectorTest', 'VectorTest.cpp')
+env.HostProgram('VectorTest', 'VectorTest.cpp')

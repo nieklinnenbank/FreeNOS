@@ -23,7 +23,7 @@
 #include <FileSystemMessage.h>
 #include <Storage.h>
 #include <Types.h>
-#include <Array.h>
+#include <Vector.h>
 #include <HashTable.h>
 #include <Integer.h>
 #include "LinnSuperBlock.h"
@@ -138,7 +138,7 @@ class LinnFileSystem : public FileSystem
 	LinnSuperBlock super;
 	
 	/** Group descriptors. */
-	Array<LinnGroup *> *groups;
+	Vector<LinnGroup *> *groups;
 
 	/** Inode cache. */
 	HashTable<Integer<u32>,LinnInode> inodes;

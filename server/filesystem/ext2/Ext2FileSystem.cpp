@@ -97,7 +97,8 @@ Ext2FileSystem::Ext2FileSystem(const char *p, Storage *s)
 	exit(EXIT_FAILURE);
     }
     /* Create groups vector. */
-    groups  = new Array<Ext2Group *>(EXT2_GROUPS_COUNT(&superBlock));
+    groups  = new Vector<Ext2Group *>(EXT2_GROUPS_COUNT(&superBlock));
+    groups->fill(ZERO);
 
     /* Read out group descriptors. */
     for (Size i = 0; i < EXT2_GROUPS_COUNT(&superBlock); i++)
@@ -117,7 +118,7 @@ Ext2FileSystem::Ext2FileSystem(const char *p, Storage *s)
 	    exit(EXIT_FAILURE);
 	}
 	/* Insert in the groups vector. */
-	groups->insert(i, group);
+	groups->put(i, group);
     }
     syslog(LOG_INFO, "%d group descriptors",
 	 EXT2_GROUPS_COUNT(&superBlock));

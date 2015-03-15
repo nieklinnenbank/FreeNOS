@@ -19,7 +19,7 @@
 #define __KERNEL_SCHEDULER_H
 #ifndef __ASSEMBLER__
 
-#include <Array.h>
+#include <Vector.h>
 #include <Macros.h>
 #include "Process.h"
 
@@ -44,7 +44,7 @@ class ProcessScheduler
         /**
          * Select the next process to run.
          */
-        virtual Process * select(Array<Process *> *procs, Process *idle);
+        virtual Process * select(Vector<Process *> *procs, Process *idle);
 
   private:
 

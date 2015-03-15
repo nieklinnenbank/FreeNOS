@@ -18,7 +18,7 @@
 #include <FreeNOS/BootImage.h>
 #include <FreeNOS/System/Constant.h>
 #include <FreeNOS/Config.h>
-#include <Array.h>
+#include <Vector.h>
 #include <ExecutableFormat.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,7 +28,7 @@
 #include "Main.h"
 
 Size readBootEntries(char *prog, char *file,
-                    Array<BootEntry *> *entries)
+                     Vector<BootEntry *> *entries)
 {
     char line[128];
     int num = 0;
@@ -70,7 +70,7 @@ Size readBootEntries(char *prog, char *file,
             entry->numRegions = num;
 
         /* Insert into Array. */
-        entries->insert(entry);
+        entries->put(entry);
         totalEntries++;
         
         /* Debug out memory sections. */
@@ -89,7 +89,7 @@ Size readBootEntries(char *prog, char *file,
 
 int main(int argc, char **argv)
 {
-    Array<BootEntry *> entries(128);
+    Vector<BootEntry *> entries(128);
     BootImage image;
     BootVariable variables[12];
     BootProgram *programs;

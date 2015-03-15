@@ -24,7 +24,7 @@
 #include <UserProcess.h>
 #include <ProcessID.h>
 #include <Shared.h>
-#include <Array.h>
+#include <Vector.h>
 #include <HashTable.h>
 #include <HashIterator.h>
 #include <Runtime.h>
@@ -126,7 +126,8 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	    /* Load shared tables. */
 	    procs.load(USER_PROCESS_KEY, MAX_PROCS);
 	    mounts.load(FILE_SYSTEM_MOUNT_KEY, MAX_MOUNTS);
-	    files = new Array<Shared<FileDescriptor> *>(MAX_PROCS);
+	    files = new Vector<Shared<FileDescriptor> *>(MAX_PROCS);
+	    files->fill(ZERO);
 	    
 	    /*
 	     * Fork in the background first, if requested.
@@ -557,7 +558,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
         Shared<UserProcess> procs;
 
         /** Per-process File descriptors. */
-        Array<Shared<FileDescriptor> *> *files;
+        Vector<Shared<FileDescriptor> *> *files;
 
     private:
     	

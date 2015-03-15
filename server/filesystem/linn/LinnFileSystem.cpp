@@ -92,7 +92,8 @@ LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
 	exit(EXIT_FAILURE);
     }
     /* Create groups vector. */
-    groups = new Array<LinnGroup *>(LINN_GROUP_COUNT(&super));
+    groups = new Vector<LinnGroup *>(LINN_GROUP_COUNT(&super));
+    groups->fill(ZERO);
 
     /* Read out group descriptors. */
     for (Size i = 0; i < LINN_GROUP_COUNT(&super); i++)
@@ -110,7 +111,7 @@ LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
 	    exit(EXIT_FAILURE);
 	}
 	/* Insert in the groups vector. */
-	groups->insert(i, group);
+	groups->put(i, group);
     }
     syslog(LOG_INFO, "%d group descriptors",
 	   LINN_GROUP_COUNT(&super));

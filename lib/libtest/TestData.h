@@ -62,11 +62,27 @@ template <class T> class TestData
      * Retrieve previously random generated test data by index.
      *
      * @param index Index of the value to retrieve.
-     * @return T value or ZERO if not found.
+     * @return T value reference.
      */
-    T get(int index)
+    T & get(Size index)
     {
         return m_values[index];
+    }
+
+    /**
+     * Retrieve previously random generated test data by index.
+     */
+    T & operator[](Size index)
+    {
+        return m_values[index];
+    }
+
+    /**
+     * Retrieve the last generated test data.
+     */
+    T & last()
+    {
+        return m_values.last();
     }
 
     /**
@@ -104,7 +120,7 @@ template<> int TestData<int>::value(long max, long min)
     if (value < min)
         value = min;
 
-    m_values.insert(value);
+    m_values.put(value);
     return value;
 }
 
@@ -120,7 +136,7 @@ template<> uint TestData<uint>::uvalue(ulong max, ulong min)
     if (value < min)
         value = min;
 
-    m_values.insert(value);
+    m_values.put(value);
     return value;
 }
 

@@ -37,9 +37,8 @@ ProcessManager::~ProcessManager()
 
 Process * ProcessManager::create(Address entry)
 {
-    Process *proc = m_factory->createProcess(m_procs.findEmpty(), entry);
-
-    ProcessID id  = m_procs.insert(proc);
+    Process *proc = m_factory->createProcess(m_procs.count() + 1, entry);
+    ProcessID id  = m_procs.put(proc);
     assert(id == proc()->getID());
 
     return proc;
@@ -64,7 +63,7 @@ void ProcessManager::remove(Process *proc)
         m_current = ZERO;
     }
     /* Remove process from administration */
-    m_procs.remove(proc->getID());
+    m_procs[proc->getID()] = ZERO;
 
     /* Free the process memory */
     delete proc;
@@ -111,7 +110,7 @@ void ProcessManager::setIdle(Process *proc)
     m_idle = proc;
 }
 
-Array<Process *> * ProcessManager::getProcessTable()
+Vector<Process *> * ProcessManager::getProcessTable()
 {
     return &m_procs;
 }

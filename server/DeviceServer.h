@@ -25,7 +25,7 @@
 #include <FileDescriptor.h>
 #include <FileType.h>
 #include <FileMode.h>
-#include <Array.h>
+#include <Vector.h>
 #include <Shared.h>
 #include "IPCServer.h"
 #include "Device.h"
@@ -66,7 +66,8 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	    this->prefix = prefix;
 	    this->type   = type;
 	    this->mode   = mode;
-	    this->files  = new Array<Shared<FileDescriptor> *>(MAX_PROCS);
+	    this->files  = new Vector<Shared<FileDescriptor> *>(MAX_PROCS);
+	    this->files->fill(ZERO);
 	
 	    /* Register IPC Handlers. */
 	    addIPCHandler(ReadFile,  &DeviceServer::ioHandler, false);
@@ -78,7 +79,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	/**
 	 * @brief Add a Device.
 	 *
-	 * Adds an Device to the internal Array of Devices, to
+	 * Adds an Device to the internal Vector of Devices, to
 	 * be able to process requests for the Device later on.
 	 *
 	 * @param dev New device to serve requests for.
@@ -89,7 +90,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	void add(Device *dev)
 	{
 	    /* Add to the list of Devices. */
-	    devices.insert(dev);
+	    devices.put(dev);
 	}
 
 	/**
@@ -209,7 +210,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	{
 	    if (!interrupts[vector])
 	    {
-		interrupts.insert(vector, new List<Device>);
+		interrupts.put(vector, new List<Device>);
 	    }
 	    interrupts[vector]->insertTail(dev);
 	}
@@ -235,7 +236,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	    /* Read out values from the FileDescriptor. */
 	    else
 	    {
-		dev = devices[fd->identifier];
+		dev = devices.at(fd->identifier);
 		msg->deviceID.minor = fd->identifier;
 		
 		if (msg->action != SeekFile)
@@ -297,7 +298,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	 */
 	void interruptHandler(InterruptMessage *msg)
 	{
-	    List<Device> *lst = interrupts[msg->vector];
+	    List<Device> *lst = interrupts.at(msg->vector);
 	
 	    /* Do we have any Devices with this interrupt vector? */
 	    if (lst)
@@ -411,19 +412,19 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	}
 	
 	/** Contains all Devices served by this DeviceServer. */
-	Array<Device *> devices;
+	Vector<Device *> devices;
 	
 	/**
 	 * @brief Registers Devices using interrupts.
 	 *
-	 * An Array with Lists of Devices using the
+	 * An Vector with Lists of Devices using the
 	 * interrupt vector as index.
 	 * 
-	 * @see Array
+	 * @see Vector
 	 * @see List
 	 * @see Device
 	 */
-	Array<List<Device> *> interrupts;
+	Vector<List<Device> *> interrupts;
 
 	/**
 	 * @brief A List of pending I/O operations.
@@ -431,7 +432,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	List<FileSystemMessage> requests;
 	
 	/** Per-process File descriptors. */
-        Array<Shared<FileDescriptor> *> *files;
+        Vector<Shared<FileDescriptor> *> *files;
 	
 	/**
 	 * @brief Prefix string used to create device files in /tmp.

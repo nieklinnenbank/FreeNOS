@@ -21,7 +21,7 @@
 #include <FreeNOS/API.h>
 #include <Error.h>
 #include <ProcessID.h>
-#include <Array.h>
+#include <Vector.h>
 
 /**
  * Message handler function (dummy) container.
@@ -64,8 +64,10 @@ template <class Base, class MsgType> class IPCServer
         IPCServer(Base *inst, Size num = 32)
 	    : sendReply(true), instance(inst)
         {
-	    ipcHandlers = new Array<MessageHandler<IPCHandlerFunction> *>(num);
-	    irqHandlers = new Array<MessageHandler<IRQHandlerFunction> *>(num);
+	    ipcHandlers = new Vector<MessageHandler<IPCHandlerFunction> *>(num);
+	    ipcHandlers->fill(ZERO);
+	    irqHandlers = new Vector<MessageHandler<IRQHandlerFunction> *>(num);
+	    irqHandlers->fill(ZERO);
 	}
 
 	/**
@@ -99,10 +101,11 @@ template <class Base, class MsgType> class IPCServer
 		switch (msg.type)
 		{			
 		    case IPCType:
-			if ((*ipcHandlers)[msg.action])
+			if (ipcHandlers->at(msg.action))
 			{
-			    sendReply =  (*ipcHandlers)[msg.action]->sendReply;
-			    (instance->*((*ipcHandlers)[msg.action])->exec) (&msg);
+			    sendReply =  ipcHandlers->at(msg.action)->sendReply;
+			    //(instance->*((*ipcHandlers)[msg.action])->exec) (&msg);
+			    (instance->*(ipcHandlers->at(msg.action))->exec) (&msg);
 			}
 			break;
 
@@ -110,10 +113,10 @@ template <class Base, class MsgType> class IPCServer
 			break;
 
 		    case IRQType:
-			if ((*irqHandlers)[imsg->vector])
+			if (irqHandlers->at(imsg->vector))
 			{
 			    sendReply = false;
-			    (instance->*((*irqHandlers)[imsg->vector])->exec) (imsg);
+			    (instance->*(irqHandlers->at(imsg->vector))->exec) (imsg);
 			}
 			
 		    default:
@@ -137,17 +140,17 @@ template <class Base, class MsgType> class IPCServer
 	 */
 	void addIPCHandler(Size slot, IPCHandlerFunction h, bool sendReply = true)
 	{
-	    ipcHandlers->insert(slot, new MessageHandler<IPCHandlerFunction>(h, sendReply));
+	    ipcHandlers->put(slot, new MessageHandler<IPCHandlerFunction>(h, sendReply));
 	}
 	
 	/**
 	 * Register a new IRQ message vector handler
-	 * @param slot Array value to trigger h.
+	 * @param slot Vector value to trigger h.
 	 * @param h Handler to execute.
 	 */
 	void addIRQHandler(Size slot, IRQHandlerFunction h)
 	{
-	    irqHandlers->insert(slot, new MessageHandler<IRQHandlerFunction>(h, false));
+	    irqHandlers->put(slot, new MessageHandler<IRQHandlerFunction>(h, false));
 	}
 
     protected:
@@ -158,10 +161,10 @@ template <class Base, class MsgType> class IPCServer
     private:
     
 	/** IPC handler functions. */
-	Array<MessageHandler<IPCHandlerFunction> *> *ipcHandlers;
+	Vector<MessageHandler<IPCHandlerFunction> *> *ipcHandlers;
 	
 	/** IRQ handler functions. */
-	Array<MessageHandler<IRQHandlerFunction> *> *irqHandlers;
+	Vector<MessageHandler<IRQHandlerFunction> *> *irqHandlers;
 	
 	/** Server object instance. */
 	Base *instance;

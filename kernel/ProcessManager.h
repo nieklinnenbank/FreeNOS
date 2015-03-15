@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
- * 
+ * Copyright (C) 2015 Niek Linnenbank
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -87,12 +87,12 @@ class ProcessManager
          * Retrieve the process table.
          * @return Pointer to the process table.
          */
-        Array<Process *> * getProcessTable();
+        Vector<Process *> * getProcessTable();
 
     private:
-    
+
         /** All known Processes. */
-        Array<Process *> m_procs;
+        Vector<Process *> m_procs;
 
         /** Object which creates processes for us. */
         ProcessFactory *m_factory;

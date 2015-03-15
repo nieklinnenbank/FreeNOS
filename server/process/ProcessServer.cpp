@@ -23,7 +23,7 @@
 #include <BootModule.h>
 #include <String.h>
 #include <Error.h>
-#include <Array.h>
+#include <Vector.h>
 #include <Macros.h>
 #include <ProcessID.h>
 #include "ProcessMessage.h"
@@ -45,5 +45,6 @@ ProcessServer::ProcessServer()
 
     /* Load shared objects. */
     procs.load(USER_PROCESS_KEY, MAX_PROCS);
-    files = new Array<Shared<FileDescriptor> *>(MAX_PROCS);
+    files = new Vector<Shared<FileDescriptor> *>(MAX_PROCS);
+    files->fill(ZERO);
 }
