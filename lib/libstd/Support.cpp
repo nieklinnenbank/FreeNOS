@@ -20,12 +20,12 @@
 u32 __aeabi_uidiv(u32 numerator, u32 denominator)
 {
     u32 count = 0;
-    
+
     while (numerator >= denominator)
     {
-	numerator -= denominator;
-	count++;
+        numerator -= denominator;
+        count++;
     }
-    
+
     return count;
 }

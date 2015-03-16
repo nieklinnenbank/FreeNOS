@@ -18,7 +18,7 @@
 #ifndef __FILESYSTEM_EXT2CREATE_H
 #define __FILESYSTEM_EXT2CREATE_H
 
-#include <BitMap.h>
+#include <BitArray.h>
 #include <List.h>
 #include <String.h>
 #include "Ext2SuperBlock.h"
@@ -178,8 +178,8 @@ class Ext2Create
 	/** Pointer to the group descriptor. */
 	Ext2Group *group;
 	
-	/** Block and Inode bitmaps. */
-	BitMap *blockMap, *inodeMap;
+	/** Block and Inode BitArrays. */
+	BitArray *blockMap, *inodeMap;
 
 	/** Array of blocks available in the filesystem. */
 	u8 *blocks;

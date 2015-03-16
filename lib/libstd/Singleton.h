@@ -32,9 +32,9 @@ template <class T> class Singleton
     Singleton<T>(T *obj)
     {
         instance = obj;
-    }    
+    }
 
-    /** One and only instance. */    
+    /** One and only instance. */
     static T *instance;
 };
 

@@ -15,25 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __FACTORY_H
-#define __FACTORY_H
+#ifndef __LIBSTD_FACTORY_H
+#define __LIBSTD_FACTORY_H
 
 /**
  * Abstract Factory design pattern.
  */
 template <class T> class Factory
 {
-    public:
+  public:
 
-        /**
-         * Create an instance of T.
-         * @return Pointer to T.
-         */
-        static T * instance()
-        {
-    	    return new T();
-	}
+    /**
+     * Create an instance of T.
+     * @return Pointer to T.
+     */
+    static T * create()
+    {
+        return new T();
+    }
 };
 
-
-#endif /* __FACTORY_H */
+#endif /* __LIBSTD_FACTORY_H */

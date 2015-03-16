@@ -22,9 +22,8 @@
 #include "Memory.h"
 
 Memory::Memory(Size memorySize)
-    : m_physicalMemory((u8*) NULL, memorySize / PAGESIZE)
+    : m_physicalMemory(memorySize / PAGESIZE)
 {
-    m_physicalMemory.clear();
 }
 
 Error Memory::initialize(Address heap)
@@ -47,12 +46,12 @@ Error Memory::initialize(Address heap)
 
 Size Memory::getTotalMemory()
 {
-    return m_physicalMemory.getUsed() * PAGESIZE;
+    return m_physicalMemory.count(true) * PAGESIZE;
 }
 
 Size Memory::getAvailableMemory()
 {
-    return m_physicalMemory.getFree() * PAGESIZE;
+    return m_physicalMemory.count(false) * PAGESIZE;
 }
 
 Address Memory::allocatePhysical(Size size)
@@ -62,7 +61,7 @@ Address Memory::allocatePhysical(Size size)
     if ((size % PAGESIZE))
         num++;
 
-    return m_physicalMemory.markNext(num) * PAGESIZE;
+    return m_physicalMemory.setNext(num) * PAGESIZE;
 }
 
 Address Memory::allocatePhysicalAddress(Address addr)
@@ -72,27 +71,27 @@ Address Memory::allocatePhysicalAddress(Address addr)
         FATAL("physical address already allocated: " << addr);
         for (;;);
     }
-    m_physicalMemory.mark(addr / PAGESIZE);
+    m_physicalMemory.set(addr / PAGESIZE);
     return addr;
 }
 
 bool Memory::isAllocated(Address page)
 {
-    return m_physicalMemory.isMarked(page / PAGESIZE);
+    return m_physicalMemory.isSet(page / PAGESIZE);
 }
 
 Error Memory::releasePhysical(Address page)
 {
-    m_physicalMemory.unmark(page / PAGESIZE);
+    m_physicalMemory.unset(page / PAGESIZE);
     return 0;
 }
 
 Address Memory::allocate(Address vaddr, MemoryAccess flags)
 {
-    /* Allocate a new physical page. */
+    // Allocate a new physical page
     Address newPage = allocatePhysical(PAGESIZE);
-    
-    /* Map it to the requested virtual address. */
+
+    // Map it to the requested virtual address
     return map(newPage, vaddr, flags);
 }
 
@@ -100,7 +99,7 @@ Address Memory::allocate(Process *p, Address vaddr, MemoryAccess flags)
 {
     /* Allocate new physical page. */
     Address newPage = allocatePhysical(PAGESIZE);
-    
+
     /* Map it into the target process. */
     return map(p, newPage, vaddr, flags);
 }

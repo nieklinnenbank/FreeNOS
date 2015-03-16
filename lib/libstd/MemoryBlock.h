@@ -20,7 +20,7 @@
 
 class MemoryBlock
 {
-    public:
+  public:
 
     /**
      * Fill memory with a constant byte.

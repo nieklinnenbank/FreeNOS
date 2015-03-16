@@ -18,7 +18,7 @@
 #ifndef __MEMORY_H
 #define __MEMORY_H
 
-#include <BitMap.h>
+#include <BitArray.h>
 // TODO: make sure the bit operations are only for MemoryAccess, and not in general. Use templating.
 #include <BitOperations.h>
 #include <Types.h>
@@ -163,8 +163,8 @@ class Memory
 
     private:
 
-        /** Physical memory bitmap. */
-        BitMap m_physicalMemory;
+        /** Physical memory BitArray. */
+        BitArray m_physicalMemory;
 };
 
 /**

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <BitMap.h>
+#include <BitArray.h>
 #include <List.h>
 #include <ListIterator.h>
 #include <String.h>
@@ -59,10 +59,10 @@ int Ext2Create::create()
     readInput(input, ZERO);
     
     /* Update superblock and group fields. */
-    super->blocksCount     = blockMap->markNext();
-    super->freeInodesCount = inodeMap->getFree();
+    super->blocksCount     = blockMap->setNext();
+    super->freeInodesCount = inodeMap->count(false);
     super->freeBlocksCount = 0;
-    group->freeInodesCount = inodeMap->getFree();
+    group->freeInodesCount = inodeMap->count(false);
     group->freeBlocksCount = 0;
     
     /* Write the final image. */
@@ -98,7 +98,7 @@ Ext2Inode * Ext2Create::createInode(char *inputFile, Size *number)
     }
     else
     {
-	*number = inodeMap->markNext();
+	*number = inodeMap->setNext();
 	inode   = BLOCKPTR(Ext2Inode, group->inodeTable);
 	inode  += *number - 1;
     }
@@ -132,7 +132,7 @@ Ext2Inode * Ext2Create::createInode(char *inputFile, Size *number)
     while (reading)
     {
 	/* Fetch next block. */
-	blockNr = blockMap->markNext();
+	blockNr = blockMap->setNext();
     
 	/* Read the block from file. */
 	if (fread(BLOCKPTR(char, blockNr), blockSize, 1, fp) != 1)
@@ -142,7 +142,7 @@ Ext2Inode * Ext2Create::createInode(char *inputFile, Size *number)
 		reading = false;
 	    else
 	    {
-		blockMap->unmark(blockNr);
+		blockMap->unset(blockNr);
 		break;
 	    }
 	}
@@ -156,7 +156,7 @@ Ext2Inode * Ext2Create::createInode(char *inputFile, Size *number)
 	{
 	    if (indirect == ZERO)
 	    {
-		inode->block[EXT2_IND_BLOCK] = blockMap->markNext();
+		inode->block[EXT2_IND_BLOCK] = blockMap->setNext();
 		inode->blocks += blockSize / 512;
 		indirect = BLOCKPTR(Size, inode->block[EXT2_IND_BLOCK]);
 	    }	
@@ -197,7 +197,7 @@ Size Ext2Create::readInput(char *directory, Size parent)
     /* Create an Inode first. */
     inode = createInode(directory, &inodeNumber);
     inode->blocks     = blockSize / 512;
-    inode->block[0]   = blockMap->markNext();
+    inode->block[0]   = blockMap->setNext();
     inode->size       = blockSize;
     inode->linksCount = 2;
     dent = BLOCKPTR(Ext2DirectoryEntry, inode->block[0]);
@@ -347,23 +347,20 @@ void Ext2Create::initGroup(Ext2Group *grp)
     group->freeInodesCount = super->inodesPerGroup;
     group->usedDirsCount   = ZERO;
 
-    /* Create BitMap instances. */
-    blockMap = new BitMap(BLOCKPTR(u8, 2),
-			  super->blocksPerGroup);
-    inodeMap = new BitMap(BLOCKPTR(u8, 3),
-			  super->inodesPerGroup);
+    /* Create BitArray instances. */
+    blockMap = new BitArray(super->blocksPerGroup, BLOCKPTR(u8, 2));
+    inodeMap = new BitArray(super->inodesPerGroup, BLOCKPTR(u8, 3));
 
     /* Clear them. */
     blockMap->clear();
     inodeMap->clear();
 
     /* Mark the appropriate blocks used. */
-    blockMap->markRange(0, 4);
-    blockMap->markRange(4,
-			super->inodesPerGroup / (blockSize / sizeof(Ext2Inode)));
+    blockMap->setRange(0, 4);
+    blockMap->setRange(4, super->inodesPerGroup / (blockSize / sizeof(Ext2Inode)));
 
     /* Mark special Inodes. */
-    inodeMap->markRange(0, EXT2_GOOD_OLD_FIRST_INO);
+    inodeMap->setRange(0, EXT2_GOOD_OLD_FIRST_INO);
 }
 
 int main(int argc, char **argv)

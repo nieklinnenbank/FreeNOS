@@ -18,7 +18,7 @@
 #ifndef __FILESYSTEM_LINN_CREATE_H
 #define __FILESYSTEM_LINN_CREATE_H
 
-#include <BitMap.h>
+#include <BitArray.h>
 #include <List.h>
 #include <String.h>
 #include "LinnSuperBlock.h"

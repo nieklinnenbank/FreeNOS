@@ -17,34 +17,39 @@
 
 #include <TestCase.h>
 #include <TestRunner.h>
+#include <TestData.h>
 #include <TestMain.h>
-#include <BitMap.h>
+#include <BitArray.h>
 
-TestCase(BitmapConstruct)
+TestCase(BitArrayConstruct)
 {
-    BitMap *bm = new BitMap();
+    TestData<Size> sizes;
+    BitArray ba(sizes.uvalue(128, 64));
 
-    testAssert(bm->m_map != NULL);
-    testAssert(bm->m_size == bm->getFree());
-    testAssert(bm->getUsed() == 0);
+    testAssert(ba.m_array != NULL);
+    testAssert(ba.m_size == sizes[0]);
+    testAssert(ba.m_set  == 0);
+    testAssert(ba.count(false) == sizes[0]);
 
-    delete bm;
+    for (Size i = 0; i < sizes[0]; i++)
+        testAssert(!ba[i]);
+
     return OK;
 }
 
-TestCase(BitmapMark)
+TestCase(BitArraySet)
 {
-    BitMap *bm = new BitMap();
+    TestData<Size> sizes;
+    BitArray ba(sizes.uvalue(128, 64));
 
-    bm->mark(1);
-    testAssert(bm->isMarked(1));
-    testAssert(!bm->isMarked(0));
+    ba.set(1, true);
+    testAssert(ba.isSet(1));
+    testAssert(!ba.isSet(0));
 
-    delete bm;
     return OK;
 }
 
-TestCase (BitmapSkip)
+TestCase (BitArraySkip)
 {
     return SKIP;
 }

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <BitMap.h>
+#include <BitArray.h>
 #include <List.h>
 #include <ListIterator.h>
 #include <String.h>
@@ -55,7 +55,7 @@ LinnInode * LinnCreate::createInode(le32 inodeNum, FileType type,
 {
     LinnGroup *group;
     LinnInode *inode;
-    BitMap inodeMap;
+    BitArray inodeMap(super->inodesPerGroup);
 
     /* Point to the correct group. */    
     group  = BLOCKPTR(LinnGroup, super->groupsTable);
@@ -77,10 +77,10 @@ LinnInode * LinnCreate::createInode(le32 inodeNum, FileType type,
     inode->changeTime = inode->createTime;
     inode->links = 1;
     
-    /* Update inode bitmap, if needed. */
-    inodeMap.setMap(BLOCKPTR(u8, group->inodeMap),
+    /* Update inode BitArray, if needed. */
+    inodeMap.setArray(BLOCKPTR(u8, group->inodeMap),
 		    super->inodesPerGroup);
-    inodeMap.mark(inodeNum % super->inodesPerGroup);
+    inodeMap.set(inodeNum % super->inodesPerGroup);
     
     /* Update superblock. */
     super->freeInodesCount--;
@@ -94,7 +94,7 @@ le32 LinnCreate::createInode(char *inputFile, struct stat *st)
 {
     LinnGroup *group;
     LinnInode *inode;
-    BitMap inodeMap;
+    BitArray inodeMap(super->inodesPerGroup);
     u32 gn, in;
 
     /* Loop all available LinnGroups. */
@@ -120,9 +120,9 @@ le32 LinnCreate::createInode(char *inputFile, struct stat *st)
 	exit(EXIT_FAILURE);
     }
     /* Find an empty inode number. */
-    inodeMap.setMap(BLOCKPTR(u8, group->inodeMap),
+    inodeMap.setArray(BLOCKPTR(u8, group->inodeMap),
 		    super->inodesPerGroup);
-    in = inodeMap.markNext();
+    in = inodeMap.setNext();
 
     /* Instantiate the inode. */
     inode = createInode(in, FILETYPE_FROM_ST(st),
@@ -415,7 +415,7 @@ void LinnCreate::insertDirectory(char *inputDir, le32 inodeNum, le32 parentNum)
 int LinnCreate::create(Size blockSize, Size blockNum, Size inodeNum)
 {
     LinnGroup *group;
-    BitMap map;
+    BitArray map(128);
 
     assert(image != ZERO);
     assert(prog  != ZERO);
@@ -484,9 +484,9 @@ int LinnCreate::create(Size blockSize, Size blockNum, Size inodeNum)
 	group->freeBlocksCount--;
 	
 	/* Mark the block used. */
-	map.setMap(BLOCKPTR(u8, group->blockMap),
+	map.setArray(BLOCKPTR(u8, group->blockMap),
 		   super->blocksPerGroup);
-	map.mark(block % super->blocksPerGroup);
+	map.set(block % super->blocksPerGroup);
     }
     /* Write the final image. */
     return writeImage();

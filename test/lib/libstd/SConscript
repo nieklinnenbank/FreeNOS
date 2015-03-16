@@ -22,8 +22,8 @@ env.UseLibraries([ 'libposix', 'libc', 'liballoc', 'libstd', 'libtest' ])
 env.UseLibraries([ 'libstd', 'libtest' ], 'host')
 env.UseServers(['memory'])
 
-env.TargetProgram('BitMapTest', 'BitMapTest.cpp')
-env.HostProgram('BitMapTest', 'BitMapTest.cpp')
+env.TargetProgram('BitArrayTest', 'BitArrayTest.cpp')
+env.HostProgram('BitArrayTest', 'BitArrayTest.cpp')
 
 env.TargetProgram('ArrayTest', 'ArrayTest.cpp')
 env.HostProgram('ArrayTest', 'ArrayTest.cpp')
