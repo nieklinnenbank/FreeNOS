@@ -142,9 +142,10 @@ TestCase(BitArraySetRange)
     Size size = sizes.random();
     TestData<Size> indexes(127-size, 0);
     BitArray ba(128);
+    Size idx = indexes.random();
 
     // Set a random range of bits at random offset to 1.
-    ba.setRange(indexes.random(), indexes[0] + sizes[0]);
+    ba.setRange(idx, idx + sizes[0]);
 
     // Check that only the bits inside the range are 1.
     for (Size i = 0; i < 128; i++)
