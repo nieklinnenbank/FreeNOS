@@ -38,7 +38,7 @@ ProcessManager::~ProcessManager()
 Process * ProcessManager::create(Address entry)
 {
     Process *proc = m_factory->createProcess(m_procs.count(), entry);
-    ProcessID id  = m_procs.put(proc);
+    ProcessID id  = m_procs.insert(proc);
     assert(id == proc()->getID());
 
     return proc;

@@ -24,6 +24,8 @@
 #include "HashTable.h"
 #include "Assert.h"
 
+#warning Do we really need this? Is a ListIterator(HashTable::keys()) enough? (but less performance)
+
 /**
  * Iterate through a HashTable.
  */

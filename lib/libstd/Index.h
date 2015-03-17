@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * Copyright (C) 2009 Coen Bijlsma
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,32 +15,34 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBSTD_VECTOR_H
-#define __LIBSTD_VECTOR_H
+#ifndef __LIBSTD_INDEX_H
+#define __LIBSTD_INDEX_H
 
 #include "Assert.h"
-#include "Sequence.h"
+#include "Container.h"
 #include "Types.h"
 #include "Macros.h"
 #include "MemoryBlock.h"
 
-/** Default size of an Vector */
-#define VECTOR_DEFAULT_SIZE  64
+/** Default size of an Index */
+#define INDEX_DEFAULT_SIZE  64
+
+#error FIX this class. Either inherit from Vector, or reimplement. Check.
 
 /**
- * Vectors are dynamically resizeable Arrays.
+ * Index is a resizable array of pointers to items.
  */
-template <class T> class Vector : public Sequence<T>
+template <class T> class Index : public Sequence<T>
 {
   public:
 
     /**
      * Constructor.
-     * Initializes the Vector with the given Size.
+     * Initializes the Index with the given Size.
      *
      * @param size The maximum size of the array
      */
-    Vector(Size size = VECTOR_DEFAULT_SIZE)
+    Index(Size size = INDEX_DEFAULT_SIZE)
     {
         assert(size > 0);
 
@@ -53,9 +54,9 @@ template <class T> class Vector : public Sequence<T>
     /**
      * Copy constructor.
      *
-     * @param a Vector reference to copy from.
+     * @param a Index reference to copy from.
      */
-    Vector(const Vector<T> & a)
+    Index(const Index<T> & a)
     {
         assert(a.m_size > 0);
 
@@ -70,21 +71,21 @@ template <class T> class Vector : public Sequence<T>
     /**
      * Destructor.
      */
-    ~Vector()
+    ~Index()
     {
         delete[] m_array;
     }
 
     /**
-     * Adds the given item to the Vector, if possible.
+     * Adds the given item to the Index, if possible.
      *
-     * @param item The item to add to the Vector.
-     * @return Position of the item in the Vector or -1 on failure.
+     * @param item The item to add to the Index.
+     * @return Position of the item in the Index or -1 on failure.
      */
-    virtual int insert(const T & item)
+    virtual int put(const T & item)
     {
         if (m_count == m_size)
-            if (!resize(m_size*2))
+            if (!resize(m_size))
                 return -1;
 
         m_array[m_count++] = item;
@@ -99,14 +100,14 @@ template <class T> class Vector : public Sequence<T>
      * @param item The item to insert
      * @return bool Whether inserting the item at the given position succeeded.
      */
-    virtual bool insert(Size position, const T & item)
+    virtual bool put(Size position, const T & item)
     {
-        // Resize the vector if needed
+        // Resize the Index if needed
         if (position >= m_size)
         {
             Size increase = position > (m_size * 2) ? position : m_size * 2;
 
-            if (!resize(m_size+increase))
+            if (!resize(increase))
                 return false;
         }
         // Update the item count if needed
@@ -144,7 +145,7 @@ template <class T> class Vector : public Sequence<T>
     }
 
     /**
-     * Remove all items from the vector.
+     * Remove all items from the Index.
      */
     virtual void clear()
     {
@@ -174,9 +175,9 @@ template <class T> class Vector : public Sequence<T>
     }
 
     /**
-     * Returns the maximum size of this Vector.
+     * Returns the maximum size of this Index.
      *
-     * @return size The maximum size of this Vector.
+     * @return size The maximum size of this Index.
      */
     virtual Size size() const
     {
@@ -184,8 +185,8 @@ template <class T> class Vector : public Sequence<T>
     }
 
     /**
-     * Returns the number of items inside the Vector.
-     * @return Number of items inside the Vector.
+     * Returns the number of items inside the Index.
+     * @return Number of items inside the Index.
      */
     virtual Size count() const
     {
@@ -193,15 +194,15 @@ template <class T> class Vector : public Sequence<T>
     }
 
     /**
-     * Resize the Vector.
+     * Resize the Index.
      *
-     * @param increase Size to add to the Vector.
+     * @param increase Size to add to the Index.
      */
-    virtual bool resize(Size size)
+    bool resize(Size increase)
     {
-        assert(size > 0);
+        assert(increase > 0);
 
-        T *arr = new T[size];
+        T *arr = new T[m_size + increase];
         if (!arr)
             return false;
 
@@ -211,9 +212,9 @@ template <class T> class Vector : public Sequence<T>
             arr[i] = m_array[i];
         }
         // Clean up the old array and set the new one
-        delete[] m_array;
+        delete m_array;
         m_array = arr;
-        m_size  = size;
+        m_size += increase;
         return true;
     }
 
@@ -229,4 +230,4 @@ template <class T> class Vector : public Sequence<T>
     Size m_count;
 };
 
-#endif /* __LIBSTD_VECTOR_H */
+#endif /* __LIBSTD_INDEX_H */

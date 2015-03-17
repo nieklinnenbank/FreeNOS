@@ -91,7 +91,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	void add(Device *dev)
 	{
 	    /* Add to the list of Devices. */
-	    devices.put(dev);
+	    devices.insert(dev);
 	}
 
 	/**
@@ -194,7 +194,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	{
 	    if (!interrupts[vector])
 	    {
-		interrupts.put(vector, new List<Device>);
+		interrupts.insert(vector, new List<Device>);
 	    }
 	    interrupts[vector]->insertTail(dev);
 	}

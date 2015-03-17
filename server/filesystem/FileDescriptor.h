@@ -80,7 +80,7 @@ inline Shared<FileDescriptor> * getFileDescriptors(Vector<Shared<FileDescriptor>
     fds = new Shared<FileDescriptor>(key, FILE_DESCRIPTOR_MAX);
 
     /* Store in our Vector. */
-    files->put(procID, fds);
+    files->insert(procID, fds);
 
     /* Done. */
     return fds;

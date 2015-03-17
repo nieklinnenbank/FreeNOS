@@ -140,7 +140,7 @@ template <class Base, class MsgType> class IPCServer
 	 */
 	void addIPCHandler(Size slot, IPCHandlerFunction h, bool sendReply = true)
 	{
-	    ipcHandlers->put(slot, new MessageHandler<IPCHandlerFunction>(h, sendReply));
+	    ipcHandlers->insert(slot, new MessageHandler<IPCHandlerFunction>(h, sendReply));
 	}
 	
 	/**
@@ -150,7 +150,7 @@ template <class Base, class MsgType> class IPCServer
 	 */
 	void addIRQHandler(Size slot, IRQHandlerFunction h)
 	{
-	    irqHandlers->put(slot, new MessageHandler<IRQHandlerFunction>(h, false));
+	    irqHandlers->insert(slot, new MessageHandler<IRQHandlerFunction>(h, false));
 	}
 
     protected:

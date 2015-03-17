@@ -111,7 +111,7 @@ LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
 	    exit(EXIT_FAILURE);
 	}
 	/* Insert in the groups vector. */
-	groups->put(i, group);
+	groups->insert(i, group);
     }
     syslog(LOG_INFO, "%d group descriptors",
 	   LINN_GROUP_COUNT(&super));

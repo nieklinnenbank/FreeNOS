@@ -124,7 +124,7 @@ void IntelKernel::hookInterrupt(int vec, InterruptHandler h, ulong p)
     /* Insert into interrupts; create List if neccessary. */
     if (!interrupts[vec])
     {
-        interrupts.put(vec, new List<InterruptHook>());
+        interrupts.insert(vec, new List<InterruptHook>());
     }
     /* Just append it. */
     if (!interrupts[vec]->contains(&hook))

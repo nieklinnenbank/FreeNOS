@@ -70,7 +70,7 @@ Size readBootEntries(char *prog, char *file,
             entry->numRegions = num;
 
         /* Insert into Array. */
-        entries->put(entry);
+        entries->insert(entry);
         totalEntries++;
         
         /* Debug out memory sections. */

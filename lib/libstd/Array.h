@@ -20,7 +20,7 @@
 #define __LIBSTD_ARRAY_H
 
 #include "Assert.h"
-#include "Container.h"
+#include "Sequence.h"
 #include "Types.h"
 #include "Macros.h"
 
@@ -28,7 +28,7 @@
  * This is a wrapper class for a fixed size array.
  * It contains some extra functionality, somewhat like the Arrays class in Java.
  */
-template <class T, Size N> class Array : public Container<T>
+template <class T, Size N> class Array : public Sequence<T>
 {
   public:
 
@@ -61,7 +61,7 @@ template <class T, Size N> class Array : public Container<T>
      * @param item The item to put
      * @return bool Whether putting the item at the given position succeeded.
      */
-    virtual bool put(Size position, const T & item)
+    virtual bool insert(Size position, const T & item)
     {
         if (position >= N)
         {
@@ -120,7 +120,17 @@ template <class T, Size N> class Array : public Container<T>
      *
      * @return size The maximum size of this Array.
      */
-    Size size() const
+    virtual Size size() const
+    {
+        return N;
+    }
+
+    /**
+     * Returns the number of items in the Array.
+     *
+     * @return The same as size().
+     */
+    virtual Size count() const
     {
         return N;
     }
