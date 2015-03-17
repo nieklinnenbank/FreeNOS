@@ -21,7 +21,7 @@
 #include "Macros.h"
 #include "Assert.h"
 
-#warning fixup the List class. Make sure it has a T instead of T *
+// TODO: #warning fixup the List class. Make sure it has a T instead of T *
 
 /**
  * Represents an item on the List.
