@@ -23,25 +23,23 @@
 
 TestCase(VectorConstruct)
 {
-    TestData<uint> data;
-    uint size = data.uvalue(64, 16);
-    Vector<int> a(size);
+    TestData<uint> sizes(64, 16);
+    Vector<int> a(sizes.random());
 
     // Check the vector is empty with the correct size
-    testAssert(a.size() == data[0]);
+    testAssert(a.size() == sizes[0]);
     testAssert(a.count() == 0);
     return OK;
 }
 
 TestCase(VectorFill)
 {
-    TestData<uint> data;
-    TestData<int> ints;
-    uint size = data.uvalue(64, 16);
-    Vector<int> a(size);
+    TestData<uint> sizes(64, 16);
+    TestData<int> ints(INT_MAX, INT_MIN);
+    Vector<int> a(sizes.random());
 
     // Fill the vector with a random value
-    a.fill(ints.value());
+    a.fill(ints.random());
 
     // Check the vector is completely filled with the value
     for (Size i = 0; i < a.count(); i++)
@@ -49,73 +47,70 @@ TestCase(VectorFill)
         testAssert(a[i] == ints[0]);
     }
     // Administration should be correct
-    testAssert(a.size() == size);
-    testAssert(a.count() == size);
+    testAssert(a.size() == sizes[0]);
+    testAssert(a.count() == sizes[0]);
     return OK;
 }
 
 TestCase(VectorResize)
 {
-    TestData<uint> udata;
-    TestData<int> idata;
-    uint size = udata.uvalue(64, 16);
-    Vector<int> a(size);
+    TestData<uint> sizes(64, 16);
+    TestData<int> ints(INT_MAX, INT_MIN);
+    Vector<int> a(sizes.random());
 
     // First completely fill the vector three times its original size.
-    for (Size i = 0; i < (size * 3); i++)
+    for (Size i = 0; i < (sizes[0] * 3); i++)
     {
-        testAssert(a.put(idata.value()) == i);
-        testAssert(a.at(i) == idata[i]);
+        testAssert(a.insert(ints.random()) == i);
+        testAssert(a.at(i) == ints[i]);
     }
     // Check administration counters
-    testAssert(a.count() == size * 3);
-    testAssert(a.size() >= size * 3);
+    testAssert(a.count() == sizes[0] * 3);
+    testAssert(a.size() >= sizes[0] * 3);
     return OK;
 }
 
 TestCase(VectorPutMultiple)
 {
-    TestData<uint> udata;
-    TestData<int> idata;
-    uint size  = udata.uvalue(256, 128);
-    Vector<int> a(size);
+    TestData<uint> sizes(256, 128);
+    TestData<int> ints(INT_MAX, INT_MIN);
+    Vector<int> a(sizes.random());
 
     // Insert one value.
-    a.put(0, idata.value());
-    testAssert(a[0] == idata[0]);
+    a.insert(0, ints.random());
+    testAssert(a[0] == ints[0]);
 
     // Insert another value on the same index.
     // It must overwrite but keep administration correct.
-    a.put(0, idata.value());
-    testAssert(a[0] == idata[1]);
+    a.insert(0, ints.random());
+    testAssert(a[0] == ints[1]);
     testAssert(a.count() == 1);
-    testAssert(a.size() == size);
+    testAssert(a.size() == sizes[0]);
     return OK;
 }
 
 TestCase(VectorPutSeq)
 {
-    TestData<uint> udata;
-    TestData<int> idata;
-    uint size  = udata.uvalue(256, 128);
-    Vector<int> a(size);
+    TestData<uint> sizes(256, 128);
+    TestData<int> ints(INT_MAX, INT_MIN);
+    Vector<int> a(sizes.random());
 
     // Clear the vector
     a.fill(0);
 
     // Fill the vector sequentially
-    for (Size i = 0; i < size; i++)
+    for (Size i = 0; i < sizes[0]; i++)
     {
         // Generate value and insert it at the current index
-        a.put(i, idata.value());
+        a.insert(i, ints.random());
 
         // Assert that all previously inserted values are still there
         // and all other places are ZERO.
-        for (Size j = 0; j < size; j++)
+        for (Size j = 0; j < sizes[0]; j++)
         {
             if (j <= i)
             {
-                testAssert(a[j] == idata[j]);
+                testAssert(a[j] == ints[j]);
             }
             else
             {
@@ -128,38 +123,27 @@ TestCase(VectorPutSeq)
 
 TestCase(VectorPutRandom)
 {
-    TestData<uint> sizes;
-    TestData<int> ints;
-    uint size  = sizes.uvalue(256, 128);
-    uint count = sizes.uvalue(size, 64);
-    Vector<int> a(size);
+    TestData<uint> sizes(255, 0);
+    TestData<uint> indexes(255, 0);
+    TestData<int> ints(INT_MAX, INT_MIN);
+    Vector<int> a(256);
+    uint count = sizes.random();
+
+    // Retrieve random indexes
+    indexes.unique(256);
 
     // Clear the vector
     a.fill(0);
-
-    // Allocate buffer to store random indexes
-    Size *indexes = new Size[count];
-    for (Size i = 0; i < count; i++)
-        indexes[i] = i;
-
-    // Randomize the indexes buffer by swapping
-    for (Size i = 0; i < count; i++)
-    {
-        Size tmp = indexes[i];
-        Size idx = sizes.uvalue(count - 1, 0);
-        indexes[i] = indexes[idx];
-        indexes[idx] = tmp;
-    }
 
     // Fill the vector randomly
     for (Size i = 0; i < count; i++)
     {
         // Generate value and insert it at a random index
-        a.put(indexes[i], ints.value());
+        a.insert(indexes[i], ints.random());
 
         // Assert that all previously inserted values are still there
         // and that empty places are ZERO.
-        for (Size j = 0; j < count; j++)
+        for (Size j = 0; j < 256; j++)
         {
             if (j <= i)
             {
@@ -171,38 +155,37 @@ TestCase(VectorPutRandom)
             }
         }
     }
-    delete[] indexes;
     return OK;
 }
 
 TestCase(VectorRemoveOne)
 {
-    TestData<uint> sizes;
-    TestData<int> ints;
-    uint size  = sizes.uvalue(256, 128);
-    Vector<int> a(size);
+    TestData<uint> sizes(256, 128);
+    TestData<int> ints(INT_MAX, INT_MIN);
+    Vector<int> a(sizes.random());
+    TestData<uint> indexes(sizes[0], 0);
 
     // Completely fill the vector sequentially
-    for (Size i = 0; i < size; i++)
+    for (Size i = 0; i < sizes[0]; i++)
         // Generate value and insert it at the current index
-        a.put(i, ints.value());
+        a.insert(i, ints.random());
 
     // Remove one item randomly from the vector
-    Size idx = sizes.uvalue(size, 0);
-    testAssert(a.remove(idx));
-    testAssert(a.count() == size - 1);
-    testAssert(a.size() == size);
+    testAssert(a.remove(indexes.random()));
+    testAssert(a.count() == sizes[0] - 1);
+    testAssert(a.size() == sizes[0]);
 
     // Removing non-existing item should fail.
-    testAssert(!a.remove(size));
+    testAssert(!a.remove(sizes[0]));
+    testAssert(!a.remove(sizes[0] + sizes.random()));
 
     // Check that all items before the item are still inside, except the item removed.
-    for (Size i = 0; i < idx; i++)
+    for (Size i = 0; i < indexes[0]; i++)
     {
         testAssert(a[i] == ints[i]);
     }
     // After the removed item.
-    for (Size i = idx; i < size - 1; i++)
+    for (Size i = indexes[0]; i < sizes[0] - 1; i++)
     {
         testAssert(a[i] == ints[i+1]);
     }
@@ -211,16 +194,15 @@ TestCase(VectorRemoveOne)
 
 TestCase(VectorClear)
 {
-    TestData<uint> udata;
-    TestData<int> idata;
-    uint size  = udata.uvalue(256, 128);
-    Vector<int> a(size);
+    TestData<uint> sizes(256, 128);
+    TestData<int> ints(INT_MAX, INT_MIN);
+    Vector<int> a(sizes.random());
 
     // Fill the vector completely
-    for (Size i = 0; i < size; i++)
+    for (Size i = 0; i < sizes[0]; i++)
     {
         // Generate value and insert it at the current index
-        a.put(i, idata.value());
+        a.insert(i, ints.random());
     }
 
     // Clear the vector
@@ -228,9 +210,9 @@ TestCase(VectorClear)
 
     // The vector must be empty now
     testAssert(a.count() == 0);
-    testAssert(a.size() == size);
+    testAssert(a.size() == sizes[0]);
 
-    for (Size i = 0; i < size; i++)
+    for (Size i = 0; i < sizes[0]; i++)
     {
         testAssert(a.get(i) == ZERO);
     }
@@ -239,17 +221,17 @@ TestCase(VectorClear)
 
 TestCase(VectorCompare)
 {
-    TestData<uint> udata;
-    TestData<int> idata;
-    uint size  = udata.uvalue(256, 128);
-    Vector<int> a1(size), a2(size);
+    TestData<uint> sizes(256, 128);
+    TestData<int> ints(INT_MAX, INT_MIN);
+    Vector<int> a1(sizes.random());
+    Vector<int> a2(sizes[0]);
 
     // Fill the vectors completely
-    for (Size i = 0; i < size; i++)
+    for (Size i = 0; i < sizes[0]; i++)
     {
         // Generate value and insert it at the current index
-        a1.put(i, idata.value());
-        a2.put(i, idata[i]);
+        a1.insert(i, ints.random());
+        a2.insert(i, ints[i]);
     }
 
     // Both vectors must be equal
@@ -259,14 +241,14 @@ TestCase(VectorCompare)
     testAssert(a1.count() == a2.count());
 
     // Change one item. Vectors cannot be equal
-    a1.put(0, ~(a1[0]));
+    a1.insert(0, ~(a1[0]));
     testAssert(a1.compareTo(a2) != 0);
     testAssert(!a1.equals(a2));
     testAssert(a1.size() == a2.size());
     testAssert(a1.count() == a2.count());
 
     // Remove one item. Vectors cannot be equal
-    a1.put(0, ~(a1[0]));
+    a1.insert(0, ~(a1[0]));
     a1.remove(0);
     testAssert(a1.compareTo(a2) != 0);
     testAssert(!a1.equals(a2));

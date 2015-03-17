@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2010 Niek Linnenbank
+# Copyright (C) 2015 Niek Linnenbank
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,11 +22,34 @@ env.UseLibraries([ 'libposix', 'libc', 'liballoc', 'libstd', 'libtest' ])
 env.UseLibraries([ 'libstd', 'libtest' ], 'host')
 env.UseServers(['memory'])
 
+# TODO: provide a macro for this? TestProgram() ? or Program override?
+
 env.TargetProgram('BitArrayTest', 'BitArrayTest.cpp')
 env.HostProgram('BitArrayTest', 'BitArrayTest.cpp')
 
 env.TargetProgram('ArrayTest', 'ArrayTest.cpp')
 env.HostProgram('ArrayTest', 'ArrayTest.cpp')
+
+env.TargetProgram('HashTableTest', 'HashTableTest.cpp')
+env.HostProgram('HashTableTest', 'HashTableTest.cpp')
+
+env.TargetProgram('HashIteratorTest', 'HashIteratorTest.cpp')
+env.HostProgram('HashIteratorTest', 'HashIteratorTest.cpp')
+
+env.TargetProgram('ListTest', 'ListTest.cpp')
+env.HostProgram('ListTest', 'ListTest.cpp')
+
+env.TargetProgram('ListIteratorTest', 'ListIteratorTest.cpp')
+env.HostProgram('ListIteratorTest', 'ListIteratorTest.cpp')
+
+env.TargetProgram('StringTest', 'StringTest.cpp')
+env.HostProgram('StringTest', 'StringTest.cpp')
+
+env.TargetProgram('SingletonTest', 'SingletonTest.cpp')
+env.HostProgram('SingletonTest', 'SingletonTest.cpp')
+
+env.TargetProgram('IndexTest', 'IndexTest.cpp')
+env.HostProgram('IndexTest', 'IndexTest.cpp')
 
 env.TargetProgram('VectorTest', 'VectorTest.cpp')
 env.HostProgram('VectorTest', 'VectorTest.cpp')

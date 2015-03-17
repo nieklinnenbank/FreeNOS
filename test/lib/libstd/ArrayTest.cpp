@@ -23,8 +23,6 @@
 
 TestCase(ArrayConstruct)
 {
-    TestData<uint> uints;
-    TestData<int> ints;
     Array<int, 64> a;
 
     // Check the array has the correct size
@@ -34,12 +32,11 @@ TestCase(ArrayConstruct)
 
 TestCase(ArrayFill)
 {
-    TestData<uint> uints;
-    TestData<int> ints;
+    TestData<int> ints(INT_MAX, INT_MIN);
     Array<int, 64> a;
 
     // Fill the array with a random value
-    a.fill(ints.value());
+    a.fill(ints.random());
 
     // Check the array is completely filled with the value
     for (Size i = 0; i < 64; i++)
@@ -51,30 +48,28 @@ TestCase(ArrayFill)
 
 TestCase(ArrayOverflow)
 {
-    TestData<uint> uints;
     Array<int, 64> a;
 
     // Try to overflow the array
-    testAssert(!a.put(64, 0));
-    testAssert(!a.put(65, 0));
+    testAssert(!a.insert(64, 0));
+    testAssert(!a.insert(65, 0));
 
     return OK;
 }
 
 TestCase(ArrayOverwrite)
 {
-    TestData<uint> uints;
-    TestData<int> ints;
+    TestData<int> ints(INT_MAX, INT_MIN);
     Array<int, 64> a;
 
     // Write first item
-    a.put(0, ints.value());
+    a.insert(0, ints.random());
     testAssert(a[0] == ints[0]);
 
     // Overwrite first item many times
     for (Size i = 0; i < 64; i++)
     {
-        a.put(0, ints.value());
+        a.insert(0, ints.random());
         testAssert(a[0] == ints[i+1]);
     }
     return OK;
@@ -82,9 +77,9 @@ TestCase(ArrayOverwrite)
 
 TestCase(ArrayPutSeq)
 {
-    TestData<uint> udata;
-    TestData<int> idata;
+    TestData<int> ints(INT_MAX, INT_MIN);
     Array<int, 256> a;
+
 
     // Clear the array
     a.fill(0);
@@ -93,7 +88,7 @@ TestCase(ArrayPutSeq)
     for (Size i = 0; i < 256; i++)
     {
         // Generate value and insert it at the current index
-        a[i] = idata.value();
+        a[i] = ints.random();
 
         // Assert that all previously inserted values are still there
         // and all other places are ZERO.
@@ -101,7 +96,7 @@ TestCase(ArrayPutSeq)
         {
             if (j <= i)
             {
-                testAssert(a[j] == idata[j]);
+                testAssert(a[j] == ints[j]);
             }
             else
             {
@@ -114,35 +109,23 @@ TestCase(ArrayPutSeq)
 
 TestCase(ArrayPutRandom)
 {
-    TestData<uint> sizes;
-    TestData<int> ints;
-    uint count = sizes.uvalue(256, 64);
+    TestData<int> ints(INT_MAX, INT_MIN);
+    TestData<uint> sizes(256, 64);
+    TestData<uint> indexes(255, 0);
     Array<int, 256> a;
+    uint count = sizes.random();
+
+    // Retrieve random indexes
+    indexes.unique(256);
 
     // Clear the array
     a.fill(0);
-
-    // TODO: put this in libtest? to generate a random array of ints?
-
-    // Allocate buffer to store random indexes
-    Size *indexes = new Size[count];
-    for (Size i = 0; i < count; i++)
-        indexes[i] = i;
-
-    // Randomize the indexes buffer by swapping
-    for (Size i = 0; i < count; i++)
-    {
-        Size tmp = indexes[i];
-        Size idx = sizes.uvalue(count - 1, 0);
-        indexes[i] = indexes[idx];
-        indexes[idx] = tmp;
-    }
 
     // Fill the array randomly
     for (Size i = 0; i < count; i++)
     {
         // Generate value and insert it at a random index
-        a.put(indexes[i], ints.value());
+        a.insert(indexes[i], ints.random());
 
         // Assert that all previously inserted values are still there
         // and that empty places are ZERO.
@@ -158,22 +141,20 @@ TestCase(ArrayPutRandom)
             }
         }
     }
-    delete[] indexes;
     return OK;
 }
 
 TestCase(ArrayCompare)
 {
-    TestData<uint> udata;
-    TestData<int> idata;
+    TestData<int> ints(INT_MAX, INT_MIN);
     Array<int, 64> a1, a2;
 
     // Fill the arrays completely
     for (Size i = 0; i < 64; i++)
     {
         // Generate value and insert it at the current index
-        a1.put(i, idata.value());
-        a2.put(i, idata[i]);
+        a1.insert(i, ints.random());
+        a2.insert(i, ints[i]);
     }
 
     // Both arrays must be equal
@@ -182,7 +163,7 @@ TestCase(ArrayCompare)
     testAssert(a1.size() == a2.size());
 
     // Change one item. Arrays cannot be equal
-    a1.put(0, ~(a1[0]));
+    a1.insert(0, ~(a1[0]));
     testAssert(a1.compareTo(a2) != 0);
     testAssert(!a1.equals(a2));
     testAssert(a1.size() == a2.size());

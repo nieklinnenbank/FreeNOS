@@ -17,6 +17,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <libgen.h>
 #include <ListIterator.h>
 #include <TerminalCodes.h>
@@ -28,6 +29,7 @@ TestRunner::TestRunner(int argc, char **argv)
 {
     m_argc = argc;
     m_argv = argv;
+    m_showStatistics = !(argc > 1 && strcmp(argv[1], "-n") == 0);
 }
 
 int TestRunner::run(void)
@@ -38,7 +40,6 @@ int TestRunner::run(void)
     {
         TestInstance *test = i.current();
 
-        printf("%s", WHITE);
         printf("%s: %s .. ", basename(m_argv[0]), test->m_name);
         TestResult result = test->run();
 
@@ -48,16 +49,18 @@ int TestRunner::run(void)
             case FAIL: printf("%sFAIL\r\n", RED); fail++; break;
             case SKIP: printf("%sSKIP\r\n", YELLOW); skip++; break;
         }
+        printf("%s", WHITE);
     }
-    printf("%s", WHITE);
-    
-    if (fail)
-	printf("%s: %sFAIL%s   ", basename(m_argv[0]), RED, WHITE);
-    else
-	printf("%s: %sOK%s   ", basename(m_argv[0]), GREEN, WHITE);
-    
-    printf("(%d passed %d failed %d skipped %d total)\r\n",
-            ok, fail, skip, (ok+fail+skip));
 
+    if (m_showStatistics)
+    {
+        if (fail)
+            printf("%s: %sFAIL%s   ", basename(m_argv[0]), RED, WHITE);
+        else
+            printf("%s: %sOK%s   ", basename(m_argv[0]), GREEN, WHITE);
+
+        printf("(%d passed %d failed %d skipped %d total)\r\n",
+                ok, fail, skip, (ok+fail+skip));
+    }
     return fail;
 }

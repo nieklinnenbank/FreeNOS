@@ -40,7 +40,18 @@ template <class T> class TestData
     /**
      * Constructor.
      */
-    TestData()
+    TestData(T max, T min)
+    {
+        m_max = max;
+        m_min = min;
+
+        seed();
+    }
+
+    /**
+     * Initialize the random number generator.
+     */
+    void seed()
     {
         // Collect seed from process id.
         pid_t pid = getpid();
@@ -56,6 +67,14 @@ template <class T> class TestData
 #endif
         // Seed the random generator
         srandom(seed);
+    }
+
+    /**
+     * The number of generated values.
+     */
+    Size count() const
+    {
+        return m_values.count();
     }
 
     /**
@@ -86,63 +105,115 @@ template <class T> class TestData
     }
 
     /**
-     * Get random test value by signed range.
-     * The generated test value will have index number of the
-     * previous test value + 1.
+     * Get random test value(s).
      *
-     * @param max Maximum signed range of the value.
-     * @param min Minimum signed range of the value.
-     * @return T value.
+     * @param count Number or values to generate.
+     * @return The last generated T value.
      */
-    virtual T value(long max = LONG_MAX, long min = 0);
+    virtual T random(Size count = 1);
 
     /**
-     * Get random test value by unsigned range.
-     * The generated test value will have index number of the
-     * previous test value + 1.
+     * Get unique random test value(s).
      *
-     * @param max Maximum signed range of the value.
-     * @param min Minimum signed range of the value.
-     * @return T value.
+     * @param count Number of unique values to generate.
+     * @return The last generated T value.
      */
-    virtual T uvalue(ulong max = ULONG_MAX, ulong min = 0);
+    virtual T unique(Size count = 1);
 
   private:
 
     /** Vector with generated values. */
     Vector<T> m_values;
+
+    /** Maximum value */
+    T m_max;
+
+    /** Minimum value */
+    T m_min;
 };
 
-template<> int TestData<int>::value(long max, long min)
+template<> int TestData<int>::random(Size count)
 {
-    int value = (random() % max);
+    int value = 0;
 
-    if (value < min)
-        value = min;
+    while (count--)
+    {
+        value = (::random() % m_max);
 
-    m_values.put(value);
+        if (value < m_min)
+            value = m_min;
+
+        m_values.insert(value);
+        break;
+    }
     return value;
 }
 
-template<> int TestData<int>::uvalue(ulong max, ulong min)
+template<> int TestData<int>::unique(Size count)
 {
-    return 0;
+    // Save current count
+    int offset = (int) m_values.count();
+
+    // First put values sequentially
+    for (int i = 0; i < (int)count; i++)
+        m_values.insert(i + m_min);
+
+    // Randomize values by swapping
+    for (int i = offset; i < ((int)count + offset); i++)
+    {
+        int tmp = m_values[i];
+
+        int idx = (::random() % (int)count - 1);
+        if (idx < offset)
+            idx = offset;
+
+        m_values[i]   = m_values[idx];
+        m_values[idx] = tmp;
+    }
+    // Success
+    return m_values[offset + (int)count - 1];
 }
 
-template<> uint TestData<uint>::uvalue(ulong max, ulong min)
+template<> uint TestData<uint>::random(Size count)
 {
-    uint value = (((unsigned)random() + (unsigned)random()) % max);
+    uint value = 0;
 
-    if (value < min)
-        value = min;
+    while (count--)
+    {
+        value = (((unsigned)::random() + (unsigned)::random()) % m_max);
 
-    m_values.put(value);
+        if (value < m_min)
+            value = m_min;
+
+        m_values.insert(value);
+        break;
+    }
     return value;
 }
 
-template<> uint TestData<uint>::value(long max, long min)
+template<> uint TestData<uint>::unique(Size count)
 {
-    return 0;
+    // Save current count
+    Size offset = m_values.count();
+
+    // First put values sequentially
+    for (Size i = 0; i < count; i++)
+        m_values.insert(i + m_min);
+
+    // Randomize values by swapping
+    for (Size i = offset; i < (count + offset); i++)
+    {
+        Size tmp = m_values[i];
+
+        Size idx = (::random() % (count - 1));
+        if (idx < offset)
+            idx = offset;
+
+        m_values[i]   = m_values[idx];
+        m_values[idx] = tmp;
+    }
+    // Success
+    return m_values[offset + count - 1];
 }
 
 #endif /* __LIBTEST_TESTDATA_H */

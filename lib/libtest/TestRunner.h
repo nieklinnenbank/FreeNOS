@@ -32,6 +32,7 @@ class TestRunner
 
     int m_argc;
     char **m_argv;
+    bool m_showStatistics;
 };
 
 #endif /* __LIBTEST_TESTRUNNER_H */

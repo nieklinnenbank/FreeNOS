@@ -24,32 +24,31 @@
 
 TestCase(BubbleConstruct)
 {
-    TestData<uint> data;
-    Address addr = data.uvalue();
-    Size size = data.uvalue(16, 1) * PAGESIZE;
+    TestData<uint> addresses(UINT_MAX, UINT_MIN);
+    TestData<uint> sizes(PAGESIZE * 16, PAGESIZE);
 
-    BubbleAllocator *ba = new BubbleAllocator(addr, size);
+    BubbleAllocator ba(addresses.random(),
+                       sizes.random());
 
-    testAssert(ba->start == (u8 *) addr);
-    testAssert(ba->size == size);
+    testAssert(ba.start == (u8 *) addresses[0]);
+    testAssert(ba.size == sizes[0]);
 
-    delete ba;
     return OK;
 }
 
 TestCase(BubbleAlloc)
 {
-    TestData<uint> data;
-    Address addr = data.uvalue();
-    Size size = data.uvalue(16, 1) * PAGESIZE;
+    TestData<uint> addresses(UINT_MAX, UINT_MIN);
+    TestData<uint> sizes(PAGESIZE * 16, PAGESIZE);
 
-    BubbleAllocator *ba = new BubbleAllocator(addr, size);
-    Size sz = 1024, big = size * 2;
+    BubbleAllocator ba(addresses.random(),
+                       sizes.random());
 
-    testAssert(ba->allocate(&sz) == addr);
-    testAssert(ba->current == (u8 *) addr + sz);
-    testAssert(ba->allocate(&big) == 0);
+    Size sz = 1024, big = sizes[0] * 2;
 
-    delete ba;
+    testAssert(ba.allocate(&sz) == addresses[0]);
+    testAssert(ba.current == (u8 *) addresses[0] + sz);
+    testAssert(ba.allocate(&big) == 0);
+
     return OK;
 }

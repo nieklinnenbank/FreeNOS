@@ -36,12 +36,17 @@ int run_test(char *path)
     char *argv[2];
 
     argv[0] = path;
-    argv[1] = 0;
+    argv[1] = "-n";
+    argv[2] = 0;
 
 #ifdef __HOST__
-    status = system(path);
+    char tmp[255];
+
+    snprintf(tmp, sizeof(tmp), "%s -n", path);
+    status = system(tmp);
+
     if (status >= 0)
-    status = WEXITSTATUS(status);
+        status = WEXITSTATUS(status);
 #else
     pid_t pid = forkexec(path, (const char **) argv);
     waitpid(pid, &status, 0);
