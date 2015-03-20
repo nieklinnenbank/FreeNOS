@@ -25,3 +25,8 @@ TestCase(HashTableConstruct)
 {
     return SKIP;
 }
+
+TestCase(HashTableOfStrings)
+{
+    return SKIP;
+}

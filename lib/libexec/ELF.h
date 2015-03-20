@@ -18,7 +18,6 @@
 #ifndef __LIBEXEC_ELF_H
 #define __LIBEXEC_ELF_H
 
-#include <List.h>
 #include <Types.h>
 #include <Factory.h>
 #include "ExecutableFormat.h"

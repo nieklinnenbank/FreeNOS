@@ -39,7 +39,7 @@ env.TargetProgram('kernel', [ Glob('*.cpp'),
 #
 # Boot Image
 #
-env.BootImage('#${BUILDROOT}/boot.img.gz', '#kernel/intel/pc/boot.imgdesc')
+env.BootImage('#${BUILDROOT}/boot.img.gz', '#kernel/intel/nuc/boot.imgdesc')
 
 #
 # RootFS
@@ -51,10 +51,10 @@ env.Depends('#${BUILDROOT}/boot.linn.gz', '#build/host')
 # Boot ISO (LiveCD)
 #
 cd = env.ISO('#${BUILDROOT}/boot.iso',
-           [ '#kernel/intel/pc/stage1',
-             '#kernel/intel/pc/stage2_eltorito',
-             '#kernel/intel/pc/menu.lst',
-             '#${BUILDROOT}/kernel/intel/pc/kernel',
+           [ '#kernel/intel/nuc/stage1',
+             '#kernel/intel/nuc/stage2_eltorito',
+             '#kernel/intel/nuc/menu.lst',
+             '#${BUILDROOT}/kernel/intel/nuc/kernel',
              '#${BUILDROOT}/boot.img.gz',
 	     '#${BUILDROOT}/boot.linn.gz' ])
 

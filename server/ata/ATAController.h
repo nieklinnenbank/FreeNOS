@@ -294,7 +294,7 @@ class ATAController : public Device
 	void pollReady(bool noData = false);
 	
 	/** @brief Drives detected on the ATA bus. */
-	List<ATADrive> drives;
+	List<ATADrive *> drives;
 };
 
 /**

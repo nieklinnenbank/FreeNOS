@@ -16,7 +16,6 @@
  */
 
 #include <Types.h>
-#include <ListIterator.h>
 #include <MemoryBlock.h>
 #include <FreeNOS/Kernel.h>
 #include <FreeNOS/ProcessScheduler.h>
@@ -115,7 +114,7 @@ void IntelProcess::execute()
     /* Refresh I/O bitmap. */
     memory->map(ioMapAddr, (Address) &kernelioBitMap);
 
-#warning FIX this. Context switching should not depend on a scheduler object.
+#warning FIX this. Context switching should not depend on a previous process. Split up into two functions: saveContext() restoreContext()
 
     /* Perform a context switch. */
     contextSwitch( old ? &old->stackAddr : ZERO,

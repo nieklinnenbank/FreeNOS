@@ -20,15 +20,15 @@
 
 TestSuite::TestSuite() : Singleton<TestSuite>(this)
 {
-    m_tests = new List<TestInstance>();
+    m_tests = new List<TestInstance *>();
 }
 
 void TestSuite::addTest(TestInstance *test)
 {
-    m_tests->insertTail(test);
+    m_tests->append(test);
 }
 
-List<TestInstance> * TestSuite::getTests()
+List<TestInstance *> * TestSuite::getTests()
 {
     return m_tests;
 }

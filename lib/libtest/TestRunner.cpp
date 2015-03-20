@@ -36,7 +36,7 @@ int TestRunner::run(void)
 {
     int ok = 0, fail = 0, skip = 0;
 
-    for (ListIterator<TestInstance> i(TestSuite::instance->getTests()); i.hasNext(); i++)
+    for (ListIterator<TestInstance *> i(TestSuite::instance->getTests()); i.hasCurrent(); i++)
     {
         TestInstance *test = i.current();
 
@@ -62,5 +62,8 @@ int TestRunner::run(void)
         printf("(%d passed %d failed %d skipped %d total)\r\n",
                 ok, fail, skip, (ok+fail+skip));
     }
+#ifdef __HOST__
+    fflush(stdout);
+#endif /* __HOST__ */
     return fail;
 }

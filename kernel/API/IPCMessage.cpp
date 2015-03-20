@@ -51,7 +51,7 @@ Error IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg, Size s
                 return ESRCH;
             }
             /* Put our message on their list, and try to let them execute! */
-            proc->getMessages()->insertHead(new UserMessage(msg, size));
+            proc->getMessages()->prepend(new UserMessage(msg, size));
             proc->setState(Process::Ready);
 
             if (action == SendReceive && proc != procs->current())
@@ -68,15 +68,15 @@ Error IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg, Size s
             while (true)
             {
                 /* Look for a message, with origin 'id'. */
-                for (ListIterator<UserMessage> i(procs->current()->getMessages());
-                     i.hasNext(); i++)
+                for (ListIterator<UserMessage *> i(procs->current()->getMessages());
+                     i.hasCurrent(); i++)
                 {
                     if (i.current()->from == id || id == ANY)
                     {
                         MemoryBlock::copy(msg, i.current()->data, size < i.current()->size ?
                                                        size : i.current()->size);
-                        procs->current()->getMessages()->remove(i.current());
                         delete i.current();
+                        i.remove();
                         return 0;
                     }
                 }

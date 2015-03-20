@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
- * 
+ * Copyright (C) 2015 Niek Linnenbank
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -15,52 +15,70 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __ITERATOR_H
-#define __ITERATOR_H
+#ifndef __LIBSTD_ITERATOR_H
+#define __LIBSTD_ITERATOR_H
+
+#include "Types.h"
 
 /**
- * Abstracts the iteration process.
+ * Abstracts an iteration process.
  */
-template <class T, class P> class Iterator
+template <class T> class Iterator
 {
-    public:
+  public:
 
-	/**
-	 * Destructor.
-	 */
-	virtual ~Iterator() {}
+    /**
+     * Destructor.
+     */
+    virtual ~Iterator() {}
 
-	/**
-	 * Restart iterating using the given instance.
-	 * @param P Begin iterating here.
-	 */
-	virtual void reset(P) = 0;
+    /**
+     * Restart iteration from the beginning.
+     */
+    virtual void reset() = 0;
 
-	/**
-	 * Check if there is more to iterate.
-	 * @return true if more items, false if not.
-	 */
-	virtual bool hasNext() const = 0;
-	
-	/**
-	 * Get the current item.
-	 * @return Pointer to the current item.
-	 */
-	virtual T* current() = 0;
-	
-	/**
-	 * Fetch the next item.
-	 * @return Pointer to the next item on the iterator.
-	 */
-	virtual T* next() = 0;
+    /**
+     * Check if there is more to iterate.
+     * @return true if more items, false if not.
+     */
+    virtual bool hasNext() const = 0;
 
-	/**
-	 * Simple wrapper around next().
-	 */
-	void operator ++(int num)
-	{
-	    next();
-	}
+    /**
+     * Check if there is a current item.
+     *
+     * @return True if the iterator has a current item, false otherwise.
+     */
+    virtual bool hasCurrent() const = 0;
+
+    /**
+     * Get the current item.
+     *
+     * @return Reference to the next item.
+     */
+    virtual T & current() = 0;
+
+    /**
+     * Fetch the next item.
+     * This function first fetches the next item
+     * and then updates the current item pointer to that item.
+     *
+     * @return Reference to the next item.
+     */
+    virtual T & next() = 0;
+
+    /**
+     * Remove the current item from the underlying Container.
+     *
+     * @return True if removed successfully, false otherwise.
+     */
+    virtual bool remove() = 0;
+
+    /**
+     * Increment operator.
+     * This function first increment the current item
+     * and then updates the next item pointer.
+     */
+    virtual void operator ++(int num) = 0;
 };
 
 #endif /* __ITERATOR_H */

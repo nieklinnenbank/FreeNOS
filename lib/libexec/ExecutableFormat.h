@@ -20,7 +20,6 @@
 #ifndef __ASSEMBLER__
 
 #include <FreeNOS/Memory.h>
-#include <List.h>
 #include <Types.h>
 
 /**  

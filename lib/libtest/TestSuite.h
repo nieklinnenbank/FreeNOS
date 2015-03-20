@@ -31,11 +31,11 @@ class TestSuite : public Singleton<TestSuite>
 
     void addTest(TestInstance *test);
 
-    List<TestInstance> * getTests();
+    List<TestInstance *> * getTests();
 
   private:
 
-    List<TestInstance> *m_tests;
+    List<TestInstance *> *m_tests;
 };
 
 #endif /* __LIBTEST_TESTSUITE_H */

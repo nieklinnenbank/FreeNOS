@@ -20,145 +20,150 @@
 
 #include "Macros.h"
 #include "Iterator.h"
+#include "Container.h"
 #include "ListIterator.h"
 #include "HashTable.h"
 #include "Assert.h"
 
-#warning Do we really need this? Is a ListIterator(HashTable::keys()) enough? (but less performance)
-
 /**
  * Iterate through a HashTable.
  */
-template <class Key, class Value> class HashIterator
-    : public Iterator<Value, HashTable<Key, Value> *>
+template <class K, class V> class HashIterator // : public Iterator<V>
 {
-    public:
+  public:
 
-	/**
-	 * Empty constructor.
-	 */
-	HashIterator()
-	    : hash(ZERO), listIter(ZERO), index(-1)
-	{
-	}
+    /**
+     * Class constructor.
+     */
+    HashIterator(HashTable<K, V> *hash)
+        : m_hash(*hash)
+    {
+        assertRead(hash);
 
-	/**
-	 * Class constructor.
-	 * @param h Points to the HashTable to iterate.
-	 */
-	HashIterator(HashTable<Key, Value> *h)
-	    : hash(h), listIter(ZERO), index(-1)
-	{
-	    assertRead(h);
-	    reset(h);
-	}
-	
-	/**
-	 * Class constructor.
-	 * @param h Reference to the List to iterate.
-	 */
-	HashIterator(HashTable<Key, Value> &h)
-	    : hash(&h), listIter(ZERO), index(-1)
-	{
-	    assertRead(&h);
-	    reset(&h);
-	}
-	
-	/**
-	 * Destructor.
-	 */
-	~HashIterator()
-	{
-	    if (listIter) delete listIter;
-	}
+        m_listIter = ZERO;
+        m_index    = 0;
+    }
 
-	/**
-	 * Reset the iterator.
-	 * @param h Points to the HashTable to iterate.
-	 */
-	void reset(HashTable<Key, Value> *h)
-	{
-	    assertRead(h);
-	    index    = -1;
-	    if (listIter) delete listIter;
-	    listIter = ZERO;
-	    next();
-	}
+    /**
+     * Class constructor.
+     *
+     * @param h Reference to the List to iterate.
+     */
+    HashIterator(HashTable<K, V> &hash)
+        : m_hash(hash)
+    {
+        assertRead(hash);
 
-	/**
-	 * Get current item.
-	 * @return Current item.
-	 */
-	Value * current()
-	{
-	    return listIter ? listIter->current()->value : ZERO;
-	}
-	
-	/**
-	 * Retrieve key of the current item.
-	 * @return Current key.
-	 */
-	Key * key()
-	{
-	    return listIter ? listIter->current()->key : ZERO;
-	}
-	
-	/**
-	 * Check if there is more on the HashTable to iterate.
-	 * @return true if more items, false if not.
-	 */
-	bool hasNext() const
-	{
-	    return listIter ? listIter->hasNext() : ZERO;
-	}
-	
-	/**
-	 * Fetch the next item.
-	 * @return Pointer to the next item.
-	 */
-	Value * next()
-	{
-	    HashBucket<Key, Value> *n = ZERO;
-	    List<HashBucket<Key, Value> > *lst = ZERO;
-	    
-	    /* Look for next item on the List, otherwise find next List. */
-	    if (!listIter || !(n = listIter->next()))
-	    {
-		while (++index < hash->size() - 1)
-		{
-		    if ((lst = &(hash->map()[index])) && lst->head())
-		    {
-			if (listIter)
-			    delete listIter;
-			
-			listIter = new ListIterator<HashBucket<Key, Value> >(lst);
-			n = listIter->current();
-			break;
-		    }
-		}
-	    }
-	    /* Next item, if any. */
-	    return n ? n->value : ZERO;
-	}
-	
-	/**
-	 * Post increment operator.
-	 */
-	void operator++(int n)
-	{
-	    next();
-	}
-	
-	private:
-	
-	    /** Points to the HashTable to iterate. */
-	    HashTable<Key, Value> *hash;
-	    
-	    /** Current list of HashBuckets. */
-	    ListIterator<HashBucket<Key, Value> > *listIter;
-	    
-	    /** Current index in the HashTable. */
-	    Size index;
+        m_listIter = ZERO;
+        m_index    = 0;
+    }
+
+    /**
+     * Destructor.
+     */
+    ~HashIterator()
+    {
+        if (m_listIter) delete m_listIter;
+    }
+
+    /**
+     * Reset the iterator.
+     */
+    virtual void reset()
+    {
+        m_index = 0;
+        if (m_listIter)
+            delete m_listIter;
+        m_listIter = ZERO;
+    }
+
+    /**
+     * Get current item.
+     * @return Current item.
+     */
+    //virtual V & current()
+    virtual V * current()
+    {
+        return m_listIter->current()->value;
+    }
+
+    /**
+     * Retrieve key of the current item.
+     * @return Current key.
+     */
+    //virtual K & key()
+    virtual K * key()
+    {
+        return m_listIter->current()->key;
+    }
+
+    /**
+     * Check if there is more on the HashTable to iterate.
+     * @return true if more items, false if not.
+     */
+    virtual bool hasCurrent() const
+    {
+        return m_listIter && m_listIter->hasNext();
+    }
+
+    /**
+     * Check if there is any next item.
+     */
+    virtual bool hasNext() const
+    {
+        // TODO: fix this
+        return false;
+    }
+
+    /**
+     * Fetch the next item.
+     * @return Pointer to the next item.
+     */
+    //virtual V & next()
+    virtual V * next()
+    {
+        HashBucket<K, V> *n = ZERO;
+        List<HashBucket<K, V> *> *lst = ZERO;
+
+        // Look for next item on the List, otherwise find next List
+        if (!m_listIter || !(n = m_listIter->next()))
+        {
+            while (++m_index < m_hash.size() - 1)
+            {
+                if ((lst = &(m_hash.map()[m_index])) && lst->head())
+                {
+                    if (m_listIter)
+                        delete m_listIter;
+
+                    m_listIter = new ListIterator<HashBucket<K, V> *>(lst);
+                    n = m_listIter->current();
+                    break;
+                }
+            }
+        }
+        // Next item
+        return n->value;
+    }
+
+    /**
+     * Increment operator
+     */
+    virtual void operator++(int num)
+    {
+        // TODO: this is wrong. must obey current vs. next. See ListIterator/Iterator
+        next();
+    }
+
+  private:
+
+    /** Points to the HashTable to iterate. */
+    HashTable<K, V> & m_hash;
+
+    /** Current list of HashBuckets. */
+    ListIterator<HashBucket<K, V> *> *m_listIter;
+
+    /** Current index in the HashTable. */
+    Size m_index;
 };
 
 #endif /* __HASHITERATOR_H */

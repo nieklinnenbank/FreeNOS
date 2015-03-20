@@ -26,7 +26,7 @@ void interruptNotify(CPUState *st, Process *p)
 {
     ProcessManager *procs = Kernel::instance->getProcessManager();
 
-    p->getMessages()->insertHead(new UserMessage(new InterruptMessage(IRQ_REG(st)),
+    p->getMessages()->prepend(new UserMessage(new InterruptMessage(IRQ_REG(st)),
 						 sizeof(InterruptMessage)));
     p->setState(Process::Ready);
 }

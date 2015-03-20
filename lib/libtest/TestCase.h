@@ -75,8 +75,8 @@ class TestInstance
 #define testAssert(expression) \
     if(!(expression)) \
     { \
-	printf("%s:%d:%s testAssert failed: `%s' .. ", __FILE__, __LINE__,  __FUNCTION__, QUOTE(expression)); \
-	return FAIL; \
+        printf("%s:%d:%s testAssert failed: `%s' .. ", __FILE__, __LINE__,  __FUNCTION__, QUOTE(expression)); \
+        return FAIL; \
     }
 
 #endif /* __LIBTEST_TESTCASE_H */

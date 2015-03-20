@@ -27,19 +27,19 @@
 #include "IntelMemory.h"
 
 /** Interrupt handlers. */
-Vector<List<InterruptHook> *> interrupts(256);
+Vector<List<InterruptHook *> *> interrupts(256);
 
 void executeInterrupt(CPUState state)
 {
     /* Fetch the list of interrupt hooks (for this vector). */
-    List<InterruptHook> *lst = interrupts[state.vector];
+    List<InterruptHook *> *lst = interrupts[state.vector];
 
     /* Does at least one handler exist? */
     if (!lst)
         return;
 
     /* Execute them all. */
-    for (ListIterator<InterruptHook> i(lst); i.hasNext(); i.next())
+    for (ListIterator<InterruptHook *> i(lst); i.hasCurrent(); i.next())
     {
         i.current()->handler(&state, i.current()->param);
     }
@@ -124,12 +124,12 @@ void IntelKernel::hookInterrupt(int vec, InterruptHandler h, ulong p)
     /* Insert into interrupts; create List if neccessary. */
     if (!interrupts[vec])
     {
-        interrupts.insert(vec, new List<InterruptHook>());
+        interrupts.insert(vec, new List<InterruptHook *>());
     }
     /* Just append it. */
     if (!interrupts[vec]->contains(&hook))
     {
-	interrupts[vec]->insertTail(new InterruptHook(h, p));
+	interrupts[vec]->append(new InterruptHook(h, p));
     }
 }
 

@@ -43,7 +43,7 @@ void Process::setState(Process::State st)
     m_state = st;
 }
 
-List<UserMessage> * Process::getMessages()
+List<UserMessage *> * Process::getMessages()
 {
     return &m_messages;
 }

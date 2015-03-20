@@ -35,11 +35,11 @@ ExecutableFormat::~ExecutableFormat()
 ExecutableFormat * ExecutableFormat::find(const char *path)
 {
     ExecutableFormat *fmt = ZERO;
-    List<FormatDetector> formats;
+    List<FormatDetector *> formats;
     struct stat st;
 
     /* Insert known formats. */
-    formats.insertTail(ELF::detect);
+    formats.append(ELF::detect);
 
     /* Must be an existing, regular, executable file. */
     if (stat(path, &st) != -1)
@@ -54,7 +54,7 @@ ExecutableFormat * ExecutableFormat::find(const char *path)
         return ZERO;
 
     /* Search for the corresponding executable format. */
-    for (ListIterator<FormatDetector> i(&formats); i.hasNext(); i++)
+    for (ListIterator<FormatDetector *> i(&formats); i.hasCurrent(); i++)
     {
 	if ((fmt = (i.current())(path)))
 	{

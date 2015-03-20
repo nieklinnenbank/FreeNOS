@@ -31,9 +31,9 @@ def iso_func(target, source, env):
     for s in source:
 	shutil.copy(str(s), temp)
 
-    # Temporary workaround for intel/pc. Place grub menu.lst in /boot/grub.
+    # Temporary workaround for intel/nuc. Place grub menu.lst in /boot/grub.
     os.makedirs(temp + '/boot/grub')
-    shutil.copy('kernel/intel/pc/menu.lst', temp + '/boot/grub')
+    shutil.copy('kernel/intel/nuc/menu.lst', temp + '/boot/grub')
 
     # Generate the ISO.
     os.system('mkisofs -quiet -R -b stage2_eltorito -no-emul-boot ' +

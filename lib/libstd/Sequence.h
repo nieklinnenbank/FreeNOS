@@ -126,6 +126,20 @@ template <class T> class Sequence : public Container, public Comparable<Sequence
     }
 
     /**
+     * Check if the given item is stored in this Sequence.
+     */
+    virtual bool contains(T value)
+    {
+        Size sz = this->size();
+
+        for (Size i = 0; i < sz; i++)
+            if (at(i) == value)
+                return true;
+
+        return false;
+    }
+
+    /**
      * Compare this Sequence to another Sequence.
      */
     virtual int compareTo(const Sequence<T> &s) const

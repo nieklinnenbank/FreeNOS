@@ -17,6 +17,14 @@
 
 #include "Container.h"
 
+Container::Container()
+{
+}
+
+Container::~Container()
+{
+}
+
 bool Container::isEmpty() const
 {
     return count() == 0;

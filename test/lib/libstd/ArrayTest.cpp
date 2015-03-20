@@ -20,6 +20,7 @@
 #include <TestData.h>
 #include <TestMain.h>
 #include <Array.h>
+#include <String.h>
 
 TestCase(ArrayConstruct)
 {
@@ -28,6 +29,27 @@ TestCase(ArrayConstruct)
     // Check the array has the correct size
     testAssert(a.size() == 64);
     return OK;
+}
+
+TestCase(ArrayOfStrings)
+{
+#if 0
+    Array<String, 64> a;
+
+    // Fill the array with a String value
+    a.fill(String("test"));
+
+    // The array should be filled with the test value
+    for (Size i = 0; i < 64; i++)
+    {
+        testAssert(a[i].equalsIgnoreCase((char *)"test"));
+    }
+
+    // Check administration
+    testAssert(a.size() == 64);
+    testAssert(a.count() == 64);
+#endif
+    return SKIP;
 }
 
 TestCase(ArrayFill)

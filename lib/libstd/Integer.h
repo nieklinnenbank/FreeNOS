@@ -127,6 +127,11 @@ template <class Int> class Integer : public Comparable<Integer<Int> >, public By
 	{
 	    return equals(i->value);
 	}
+	
+	bool operator == (Integer<Int> &i)
+	{
+	    return i.value == value;
+	}
 
 	/**
          * Gets the size of an Integer.

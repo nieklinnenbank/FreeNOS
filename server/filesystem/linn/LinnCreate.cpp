@@ -373,7 +373,7 @@ void LinnCreate::insertDirectory(char *inputDir, le32 inodeNum, le32 parentNum)
 	skip = ent->d_name[0] == '.';
 	
 	/* Excluded files. */
-	for (ListIterator<String> e(&excludes); e.hasNext(); e++)
+	for (ListIterator<String *> e(&excludes); e.hasCurrent(); e++)
 	{
 	    if (e.current()->match(ent->d_name, **e.current()))
 	    {
@@ -534,7 +534,7 @@ void LinnCreate::setInput(char *inputName)
 
 void LinnCreate::setExclude(char *pattern)
 {
-    this->excludes.insertTail(new String(pattern));
+    this->excludes.append(new String(pattern));
 }
 
 void LinnCreate::setVerbose(bool newVerbose)

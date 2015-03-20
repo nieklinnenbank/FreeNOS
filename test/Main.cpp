@@ -45,7 +45,7 @@ int run_test(char *path)
     snprintf(tmp, sizeof(tmp), "%s -n", path);
     status = system(tmp);
 
-    if (status >= 0)
+    if (WIFEXITED(status))
         status = WEXITSTATUS(status);
 #else
     pid_t pid = forkexec(path, (const char **) argv);
@@ -92,6 +92,7 @@ int run_tests(char **argv, char *path, HashTable<String, Integer<int> > *results
                 {
                     r = run_test(tmp);
                     results->insert(new String(strdup(tmp)), new Integer<int>(r));
+
                     if (r != 0)
                         (*failures)++;
                 }
@@ -132,7 +133,7 @@ int main(int argc, char **argv)
         // Run all tests in the given directory, recursively
         HashTable<String, Integer<int> > results;
         int failed = 0;
-        int ret = run_tests(argv, path, &results, &failed);
+        run_tests(argv, path, &results, &failed);
         printf("%s: ", argv[0]);
 
         if (iterations > 1)
@@ -148,7 +149,7 @@ int main(int argc, char **argv)
         results.count() - failed, failed, results.count());
 
         // Print the failed tests
-        for (HashIterator<String, Integer<int> > i(&results); i.hasNext(); i++)
+        for (HashIterator<String, Integer<int> > i(results); i.hasCurrent(); i++)
         {
             String *testname = i.key();
             int fails = **i.current();

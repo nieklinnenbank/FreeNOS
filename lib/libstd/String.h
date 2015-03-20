@@ -296,6 +296,10 @@ class String : public Comparable<String>, public ByteSequence
 	 * @return True if equal, false otherwise.
 	 */
 	bool operator == (char *ch);
+
+        bool operator == (const String s) const;
+        
+        bool operator != (const String s) const;
 	
 	/**
 	 * Dereference operator.

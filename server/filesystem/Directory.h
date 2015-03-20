@@ -77,7 +77,10 @@ class Directory : public File
 	 */
 	~Directory()
 	{
-	    entries.clear(true);
+	    for (ListIterator<Dirent *> i(entries); i.hasCurrent(); i++)
+	        delete i.current();
+
+	    entries.clear();
 	}
     
 	/**
@@ -103,7 +106,7 @@ class Directory : public File
 	    Size bytes = 0;
 	
 	    /* Loop our list of Dirents. */
-	    for (ListIterator<Dirent> i(&entries); i.hasNext(); i++)
+	    for (ListIterator<Dirent *> i(&entries); i.hasCurrent(); i++)
 	    {
 		/* Can we read another entry? */
 		if (bytes + sizeof(Dirent) <= size)
@@ -170,7 +173,7 @@ class Directory : public File
 		d = new Dirent;
 		strlcpy(d->name, path, DIRENT_LEN);
 	        d->type = type;
-	        entries.insertTail(d);
+	        entries.append(d);
 		size += sizeof(*d);
 	    }
 	}
@@ -189,12 +192,12 @@ class Directory : public File
 	 */	
 	void remove(const char *name)
 	{
-	    for (ListIterator<Dirent> i(&entries); i.hasNext(); i++)
+	    for (ListIterator<Dirent *> i(&entries); i.hasCurrent(); i++)
 	    {
 		if (strcmp(i.current()->name, name) == 0)
 		{
-		    entries.remove(i.current());
 		    delete i.current();
+		    i.remove();
 		    size -= sizeof(Dirent);
 		    return;
 		}
@@ -208,7 +211,10 @@ class Directory : public File
          */
         void clear()
         {
-            entries.clear(true);
+            for (ListIterator<Dirent *> i(entries); i.hasCurrent(); i++)
+	        delete i.current();
+
+	    entries.clear();
         }
 
     private:
@@ -220,7 +226,7 @@ class Directory : public File
          */
         Dirent * get(const char *name)
         {
-            for (ListIterator<Dirent> i(&entries); i.hasNext(); i++)
+            for (ListIterator<Dirent *> i(&entries); i.hasCurrent(); i++)
             {
                 if (strcmp(i.current()->name, name) == 0)
                 {
@@ -242,7 +248,7 @@ class Directory : public File
 	 * @see Directory::insert
 	 * @see Directory::remove
 	 */
-	List<Dirent> entries;
+	List<Dirent *> entries;
 };
 
 #endif /* __FILESYSTEM_DIRECTORY_H */

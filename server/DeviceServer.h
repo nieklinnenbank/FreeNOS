@@ -194,9 +194,9 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	{
 	    if (!interrupts[vector])
 	    {
-		interrupts.insert(vector, new List<Device>);
+		interrupts.insert(vector, new List<Device *>);
 	    }
-	    interrupts[vector]->insertTail(dev);
+	    interrupts[vector]->append(dev);
 	}
 
     private:
@@ -260,7 +260,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 		 */
 		if (!result)
 		{
-		    requests.insertTail(new FileSystemMessage(*msg));
+		    requests.append(new FileSystemMessage(*msg));
 		}
 	    }
 	    else
@@ -282,7 +282,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	 */
 	void interruptHandler(InterruptMessage *msg)
 	{
-	    List<Device> *lst = interrupts.at(msg->vector);
+	    List<Device *> *lst = interrupts.at(msg->vector);
 	
 	    /* Do we have any Devices with this interrupt vector? */
 	    if (lst)
@@ -290,7 +290,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 		/*
 		 * Loop all Devices of interest. Invoke callback.
 		 */
-		for (ListIterator<Device> i(lst); i.hasNext(); i++)
+		for (ListIterator<Device *> i(lst); i.hasCurrent(); i++)
 		{
 		    i.current()->interrupt(msg->vector);
 		}
@@ -299,7 +299,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	     * Retry any requests in the queue.
 	     * Remove them once processed.
 	     */
-	    for (ListIterator<FileSystemMessage> i(&requests); i.hasNext(); i++)
+	    for (ListIterator<FileSystemMessage *> i(&requests); i.hasCurrent(); i++)
 	    {
 		/* Only handle read/write operations. */
 		switch (i.current()->action)
@@ -308,7 +308,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 		    
 			if (performRead(i.current()))
 			{
-			    requests.remove(i.current());
+			    i.remove();
 			}
 			break;
 		    
@@ -316,7 +316,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 		    
 			if (performWrite(i.current()))
 			{
-			    requests.remove(i.current());
+			    i.remove();
 			}
 
 		    default:
@@ -408,12 +408,12 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	 * @see List
 	 * @see Device
 	 */
-	Vector<List<Device> *> interrupts;
+	Vector<List<Device *> *> interrupts;
 
 	/**
 	 * @brief A List of pending I/O operations.
 	 */
-	List<FileSystemMessage> requests;
+	List<FileSystemMessage *> requests;
 	
 	/** Per-process File descriptors. */
         Vector<Shared<FileDescriptor> *> *files;

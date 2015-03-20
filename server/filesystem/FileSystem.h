@@ -368,13 +368,13 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	 */
 	FileCache * lookupFile(FileSystemPath *path)
 	{
-	    List<String> *entries = path->split();
+	    List<String *> *entries = path->split();
 	    FileCache *c = ZERO;
 	    File *file = ZERO;
 	    Directory *dir;
 
 	    /* Loop the entire path. */
-	    for (ListIterator<String> i(entries); i.hasNext(); i++)
+	    for (ListIterator<String *> i(entries); i.hasCurrent(); i++)
 	    {
 		/* Start at root? */
 		if (!c)
@@ -470,7 +470,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	 */
 	FileCache * findFileCache(FileSystemPath *p)
 	{
-	    List<String> *entries = p->split();
+	    List<String *> *entries = p->split();
 	    FileCache *c = root;
 
 	    /* Root is treated special. */
@@ -479,7 +479,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 		return root;
 	    }
 	    /* Loop the entire path. */
-	    for (ListIterator<String> i(entries); i.hasNext(); i++)
+	    for (ListIterator<String *> i(entries); i.hasCurrent(); i++)
 	    {
 		if (!(c = c->entries[i.current()]))
 		{
@@ -521,7 +521,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	        cache->valid = false;
 
 	    /* Walk all our childs. */
-	    for (HashIterator<String, FileCache> i(&cache->entries); i.hasNext(); i++)
+	    for (HashIterator<String, FileCache> i(&cache->entries); i.hasCurrent(); i++)
 	    {
 		/* Traverse subtree if it isn't invalidated yet. */
 		if (i.current()->valid)

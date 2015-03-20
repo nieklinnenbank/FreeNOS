@@ -80,7 +80,7 @@ Error ATAController::initialize()
 
 	    /* Allocate a new drive. */
 	    drive = new ATADrive;
-	    drives.insertTail(drive);
+	    drives.append(drive);
 
 	    /* Read IDENTIFY data. */
 	    for (int i = 0; i < 256; i++)
@@ -114,8 +114,7 @@ Error ATAController::read(s8 *buffer, Size size, Size offset)
     Size result = 0;
 
     /* Verify LBA. */
-    if (!drives.head() ||
-         drives.head()->identity.sectors28 < lba)
+    if (drives.isEmpty() || drives.first()->identity.sectors28 < lba)
     {
 	return EIO;
     }

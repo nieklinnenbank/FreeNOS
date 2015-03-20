@@ -221,7 +221,7 @@ class LinnCreate
 	bool strip;
 
 	/** List of file patterns to ignore. */
-	List<String> excludes;
+	List<String *> excludes;
 	
 	/** Pointer to the superblock. */
 	LinnSuperBlock *super;

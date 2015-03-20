@@ -32,6 +32,11 @@ TestCase(VectorConstruct)
     return OK;
 }
 
+TestCase(VectorOfStrings)
+{
+    return SKIP;
+}
+
 TestCase(VectorFill)
 {
     TestData<uint> sizes(64, 16);

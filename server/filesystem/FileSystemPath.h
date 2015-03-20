@@ -79,7 +79,11 @@ class FileSystemPath
 	 */
 	~FileSystemPath()
 	{
-	    path.clear(true);
+	    for (ListIterator<String *> i(path); i.hasCurrent(); i++)
+	        delete i.current();
+
+	    path.clear();
+
 	    if (parentPath) delete parentPath;
 	    if (fullPath) delete fullPath;
 	}
@@ -121,20 +125,20 @@ class FileSystemPath
 		    else
 			size = (cur - saved);
 			
-		    path.insertTail(new String(saved, size));
+		    path.append(new String(saved, size));
 		    saved         = cur + 1;
 		}
 		cur++;
 	    }
 	    /* Create parent, if any. */
-	    if (path.firstNode() && path.firstNode()->next)
+	    if (path.head() && path.head()->next)
 	    {
 		/* Allocate buffer. */
 		parentStr  = new char[strlen(p)];
 		memset(parentStr, 0, strlen(p));
 
 		/* Construct parent path. */		
-		for (ListNode<String> *l = path.firstNode(); l && l->next; l = l->next)
+		for (List<String *>::Node *l = path.head(); l && l->next; l = l->next)
 		{
 		    strcat(parentStr, **l->data);
 		    if (l->next && l->next->next)
@@ -161,7 +165,7 @@ class FileSystemPath
 	 */
 	String * base()
 	{
-	    return path.tail();
+	    return path.last();
 	}
 
 	/**
@@ -177,7 +181,7 @@ class FileSystemPath
 	 * Returns a List of separate path elements.
 	 * @return Pointer to a List.
 	 */
-	List<String> * split()
+	List<String *> * split()
 	{
 	    return &path;
 	}
@@ -194,7 +198,7 @@ class FileSystemPath
     private:
 
 	/** The path split in pieces. */
-	List<String> path;
+	List<String *> path;
 
 	/** Full input path. */
 	String *fullPath;

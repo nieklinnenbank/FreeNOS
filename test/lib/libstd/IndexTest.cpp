@@ -25,3 +25,8 @@ TestCase(IndexConstruct)
 {
     return SKIP;
 }
+
+TestCase(IndexOfStrings)
+{
+    return SKIP;
+}

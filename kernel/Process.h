@@ -82,7 +82,7 @@ class Process
      * Retrieve the list of Messages for this Process.
      * @return Pointer to the message queue.
      */
-    List<UserMessage> * getMessages();
+    List<UserMessage *> * getMessages();
 
     /**
      * Compare two processes.
@@ -96,16 +96,16 @@ class Process
      */
     virtual void execute() = 0;
 
-private:
+  private:
 
     /** Process Identifier */
     const ProcessID m_id;
-    
+
     /** Current process status. */
     State m_state;
-        
+
     /** Incoming messages. */
-    List<UserMessage> m_messages;
+    List<UserMessage *> m_messages;
 };
 
 /**

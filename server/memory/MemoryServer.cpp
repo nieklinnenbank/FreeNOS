@@ -194,7 +194,7 @@ SharedMemory * MemoryServer::insertShared(ProcessID procID,
 	obj->address = range->physicalAddress;
 
 	/* Insert to the list. */
-	shared.insertTail(obj);
+	shared.append(obj);
 	
 	/* We created a new mapping, flag that. */
 	if (created) *created = true;
@@ -213,7 +213,7 @@ SharedMemory * MemoryServer::insertShared(ProcessID procID,
 
 SharedMemory * MemoryServer::findShared(char *key)
 {
-    for (ListIterator<SharedMemory> i(&shared); i.hasNext(); i++)
+    for (ListIterator<SharedMemory *> i(&shared); i.hasCurrent(); i++)
     {
 	if (strcmp(*i.current()->key, key) == 0)
 	{

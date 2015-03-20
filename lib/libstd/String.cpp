@@ -357,7 +357,7 @@ void String::operator = (String *s)
 void String::operator = (const char *s)
 {
     assertRead(s);
-    this->value = (char *) s;
+    this->value = (char *) strdup((char *)s);
 }
 
 bool String::operator == (String *s)
@@ -370,6 +370,18 @@ bool String::operator == (char *ch)
 {
     assertRead(ch);
     return strcmp(value, ch) == 0;
+}
+
+bool String::operator == (const String s) const
+{
+    assertRead(s);
+    return strcmp(value, s.value) == 0;
+}
+
+bool String::operator != (const String s) const
+{
+    assertRead(s);
+    return strcmp(value, s.value) != 0;
 }
 
 char * String::operator * ()

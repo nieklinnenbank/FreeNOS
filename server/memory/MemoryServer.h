@@ -149,7 +149,7 @@ class MemoryServer : public IPCServer<MemoryServer, MemoryMessage>
 	SharedMemory * findShared(char *key);
 	
 	/** Keeps track of all current shared memory regions. */
-	List<SharedMemory> shared;
+	List<SharedMemory *> shared;
 	
 	/** Pointer to the user process table. */
 	UserProcess *procs;

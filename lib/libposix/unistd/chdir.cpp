@@ -28,7 +28,7 @@ int chdir(const char *filepath)
     ProcessMessage msg;
     FileSystemPath path;
     String *last = ZERO;
-    List<String> lst;
+    List<String *> lst;
     char cwd[PATHLEN], buf[PATHLEN];
     struct stat st;
 
@@ -54,11 +54,11 @@ int chdir(const char *filepath)
 	memset(buf, 0, sizeof(buf));
 	
 	/* Process '..' */
-	for (ListIterator<String> i(path.split()); i.hasNext(); i++)
+	for (ListIterator<String *> i(path.split()); i.hasCurrent(); i++)
 	{
 	    if ((**i.current())[0] != '.')
 	    {
-		lst.insertTail(i.current());
+		lst.append(i.current());
 		last = i.current();
 	    }
 	    else if ((**i.current())[1] == '.' && last)
@@ -67,7 +67,7 @@ int chdir(const char *filepath)
 	    }
 	}
 	/* Construct final path. */
-	for (ListIterator<String> i(&lst); i.hasNext(); i++)
+	for (ListIterator<String *> i(&lst); i.hasCurrent(); i++)
 	{
 	    strcat(buf, "/");
 	    strcat(buf, **i.current());

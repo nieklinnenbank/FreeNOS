@@ -29,6 +29,16 @@ class Container
   public:
 
     /**
+     * Constructor.
+     */
+    Container();
+
+    /**
+     * Destructor.
+     */
+    virtual ~Container();
+
+    /**
      * Returns the maximum size of this Container.
      *
      * @return size The maximum size of this Container.
