@@ -45,7 +45,7 @@ def initialize(target, host, params):
     """
     if not os.path.exists('build.conf'):
 	shutil.copyfile('config/' + params.get('ARCH', 'intel') + '/'
-				  + params.get('SYSTEM', 'pc') + '/'
+				  + params.get('SYSTEM', 'nuc') + '/'
 			          + params.get('CONF', 'build') + '.conf', 'build.conf')
 
     if not os.path.exists('build.host.conf'):
