@@ -22,17 +22,19 @@
 #include "Comparable.h"
 #include "Types.h"
 #include "Macros.h"
+#include "List.h"
+#include "ListIterator.h"
 
 /**
  * Associations are containers that provide a mapping of keys to values.
  */
-template <class K, class V> class Association : public class Container
+template <class K, class V> class Association : public Container, public Comparable<Assocation<K,V> >
 {
   public:
 
     /**
-     * Inserts the given item at the given position.
-     * If an item exists at the given position, it will be replaced by the given item.
+     * Inserts the given item to the Assocation.
+     * If an item exists for the given key, its value will be replaced.
      *
      * @param position The position to insert the item.
      * @param item The item to insert
@@ -43,6 +45,9 @@ template <class K, class V> class Association : public class Container
         return false;
     }
 
+    /**
+     *
+     */
     virtual bool append(const K & key, const V & item)
     {
         return false;
@@ -64,12 +69,24 @@ template <class K, class V> class Association : public class Container
      */
     virtual void clear()
     {
-        //for (Size i = 0; i < s; i++)
-        //    remove(i);
+        for (ListIterator<K> i(keys()); i.hasNext(); i++)
+        {
+            remove(i.current());
+        }
     }
 
-    virtual const List<K> keys(const K & key) const = 0;
+    /**
+     * Retrieve all keys inside the Association.
+     *
+     * @return A List of keys.
+     */
+    virtual const List<K> keys() const = 0;
 
+    /**
+     * Retrieve all values inside the Association.
+     *
+     * @return A List of values.
+     */
     virtual const List<V> values(const K & key) const = 0;
 
     /**
