@@ -39,7 +39,7 @@ void executeInterrupt(CPUState state)
         return;
 
     /* Execute them all. */
-    for (ListIterator<InterruptHook *> i(lst); i.hasCurrent(); i.next())
+    for (ListIterator<InterruptHook *> i(lst); i.hasCurrent(); i++)
     {
         i.current()->handler(&state, i.current()->param);
     }
