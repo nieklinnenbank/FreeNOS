@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,11 +19,12 @@
 #include <TestRunner.h>
 #include <TestData.h>
 #include <TestMain.h>
-//#include <Index.h>
+#include <Index.h>
 
 TestCase(IndexConstruct)
 {
-    return SKIP;
+    Index<int> index;
+    return OK;
 }
 
 TestCase(IndexOfStrings)

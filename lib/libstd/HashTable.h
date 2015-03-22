@@ -189,7 +189,9 @@ template <class Key, class Value> class HashTable
     }
 
     /** Internal array. */
+#warning This needs to be replaced by an Index!
     List<HashBucket<Key,Value> *> *_map;
+    
     
     /** Size of the internal array. */
     Size _size;
