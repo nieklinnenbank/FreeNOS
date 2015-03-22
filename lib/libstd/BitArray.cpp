@@ -21,7 +21,7 @@
 BitArray::BitArray(Size size, u8 *array)
 {
     m_array = array ? array : new u8[BITS_TO_BYTES(size)];
-    m_arrayDelete = array != ZERO;
+    m_arrayDelete = array == ZERO;
     m_size  = size;
     m_set   = 0;
     clear();
@@ -137,8 +137,13 @@ void BitArray::setArray(u8 *map, Size size)
     if (size)
         m_size = size;
 
+    // Cleanup old array, if needed
+    if (m_array && m_arrayDelete)
+        delete[] m_array;
+
     // Reassign to the new map
     m_array = map;
+    m_arrayDelete = false;
 }
 
 void BitArray::clear()
