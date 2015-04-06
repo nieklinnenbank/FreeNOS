@@ -175,22 +175,25 @@ SharedMemory * MemoryServer::insertShared(ProcessID procID,
 					  char *key, Size size,
 					  MemoryRange *range, bool *created)
 {
-    SharedMemory *obj;
+    SharedMemory *obj = findShared(key);
+    bool needCreate = obj == ZERO;
+
+    if (needCreate)
+        obj = new SharedMemory;
 
     range->virtualAddress  = findFreeRange(procID, size);
     range->bytes      = size;
     range->access     = Memory::Present | Memory::User | Memory::Readable | Memory::Writable | Memory::Pinned;
 
     /* Only create a new mapping, if non-existent. */
-    if (!(obj = findShared(key)))
+    if (needCreate)
     {
 	range->physicalAddress = ZERO;	
 	VMCtl(procID, Map, range);
 	
 	/* Create new shared memory object. */
-	obj = new SharedMemory;
 	obj->size = size;
-	obj->key  = new String(key);
+	obj->key  = key;
 	obj->address = range->physicalAddress;
 
 	/* Insert to the list. */

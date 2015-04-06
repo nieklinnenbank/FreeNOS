@@ -17,13 +17,15 @@
 
 #include <TestCase.h>
 #include <TestRunner.h>
-#include <TestData.h>
+#include <TestInt.h>
+#include <TestChar.h>
 #include <TestMain.h>
+#include <String.h>
 #include <Vector.h>
 
 TestCase(VectorConstruct)
 {
-    TestData<uint> sizes(64, 16);
+    TestInt<uint> sizes(16, 64);
     Vector<int> a(sizes.random());
 
     // Check the vector is empty with the correct size
@@ -34,13 +36,29 @@ TestCase(VectorConstruct)
 
 TestCase(VectorOfStrings)
 {
-    return SKIP;
+    TestInt<Size> sizes(32, 64);
+    Size size = sizes.random();
+    Vector<String> a(size);
+    TestChar<char *> strings(16, 32);
+
+    // Fill the Vector with random Strings
+    for (Size i = 0; i < size; i++)
+        a.insert(strings.random());
+
+    // Check all Strings are inside
+    for (Size i = 0; i < size; i++)
+        testAssert(a[i].equals(strings.get(i)));
+
+    // Check administration
+    testAssert(a.count() == size);
+    testAssert(a.size() == size);
+    return OK;
 }
 
 TestCase(VectorFill)
 {
-    TestData<uint> sizes(64, 16);
-    TestData<int> ints(INT_MAX, INT_MIN);
+    TestInt<uint> sizes(16, 64);
+    TestInt<int> ints(INT_MIN, INT_MAX);
     Vector<int> a(sizes.random());
 
     // Fill the vector with a random value
@@ -51,6 +69,7 @@ TestCase(VectorFill)
     {
         testAssert(a[i] == ints[0]);
     }
+
     // Administration should be correct
     testAssert(a.size() == sizes[0]);
     testAssert(a.count() == sizes[0]);
@@ -59,14 +78,14 @@ TestCase(VectorFill)
 
 TestCase(VectorResize)
 {
-    TestData<uint> sizes(64, 16);
-    TestData<int> ints(INT_MAX, INT_MIN);
+    TestInt<uint> sizes(16, 64);
+    TestInt<int> ints(INT_MIN, INT_MAX);
     Vector<int> a(sizes.random());
 
     // First completely fill the vector three times its original size.
     for (Size i = 0; i < (sizes[0] * 3); i++)
     {
-        testAssert(a.insert(ints.random()) == i);
+        testAssert(a.insert(ints.random()) == (int) i);
         testAssert(a.at(i) == ints[i]);
     }
     // Check administration counters
@@ -77,8 +96,8 @@ TestCase(VectorResize)
 
 TestCase(VectorPutMultiple)
 {
-    TestData<uint> sizes(256, 128);
-    TestData<int> ints(INT_MAX, INT_MIN);
+    TestInt<uint> sizes(128, 256);
+    TestInt<int> ints(INT_MIN, INT_MAX);
     Vector<int> a(sizes.random());
 
     // Insert one value.
@@ -96,8 +115,8 @@ TestCase(VectorPutMultiple)
 
 TestCase(VectorPutSeq)
 {
-    TestData<uint> sizes(256, 128);
-    TestData<int> ints(INT_MAX, INT_MIN);
+    TestInt<uint> sizes(128, 256);
+    TestInt<int> ints(INT_MIN, INT_MAX);
     Vector<int> a(sizes.random());
 
     // Clear the vector
@@ -128,9 +147,9 @@ TestCase(VectorPutSeq)
 
 TestCase(VectorPutRandom)
 {
-    TestData<uint> sizes(255, 0);
-    TestData<uint> indexes(255, 0);
-    TestData<int> ints(INT_MAX, INT_MIN);
+    TestInt<uint> sizes(0, 255);
+    TestInt<uint> indexes(0, 255);
+    TestInt<int> ints(INT_MIN, INT_MAX);
     Vector<int> a(256);
     uint count = sizes.random();
 
@@ -165,10 +184,10 @@ TestCase(VectorPutRandom)
 
 TestCase(VectorRemoveOne)
 {
-    TestData<uint> sizes(256, 128);
-    TestData<int> ints(INT_MAX, INT_MIN);
+    TestInt<uint> sizes(128, 256);
+    TestInt<int> ints(INT_MIN, INT_MAX);
     Vector<int> a(sizes.random());
-    TestData<uint> indexes(sizes[0], 0);
+    TestInt<uint> indexes(0, sizes[0]);
 
     // Completely fill the vector sequentially
     for (Size i = 0; i < sizes[0]; i++)
@@ -176,13 +195,13 @@ TestCase(VectorRemoveOne)
         a.insert(i, ints.random());
 
     // Remove one item randomly from the vector
-    testAssert(a.remove(indexes.random()));
+    testAssert(a.removeAt(indexes.random()));
     testAssert(a.count() == sizes[0] - 1);
     testAssert(a.size() == sizes[0]);
 
     // Removing non-existing item should fail.
-    testAssert(!a.remove(sizes[0]));
-    testAssert(!a.remove(sizes[0] + sizes.random()));
+    testAssert(!a.removeAt(sizes[0]));
+    testAssert(!a.removeAt(sizes[0] + sizes.random()));
 
     // Check that all items before the item are still inside, except the item removed.
     for (Size i = 0; i < indexes[0]; i++)
@@ -199,8 +218,8 @@ TestCase(VectorRemoveOne)
 
 TestCase(VectorClear)
 {
-    TestData<uint> sizes(256, 128);
-    TestData<int> ints(INT_MAX, INT_MIN);
+    TestInt<uint> sizes(128, 256);
+    TestInt<int> ints(INT_MIN, INT_MAX);
     Vector<int> a(sizes.random());
 
     // Fill the vector completely
@@ -226,8 +245,8 @@ TestCase(VectorClear)
 
 TestCase(VectorCompare)
 {
-    TestData<uint> sizes(256, 128);
-    TestData<int> ints(INT_MAX, INT_MIN);
+    TestInt<uint> sizes(128, 256);
+    TestInt<int> ints(INT_MIN, INT_MAX);
     Vector<int> a1(sizes.random());
     Vector<int> a2(sizes[0]);
 
@@ -254,7 +273,7 @@ TestCase(VectorCompare)
 
     // Remove one item. Vectors cannot be equal
     a1.insert(0, ~(a1[0]));
-    a1.remove(0);
+    a1.removeAt(0);
     testAssert(a1.compareTo(a2) != 0);
     testAssert(!a1.equals(a2));
     testAssert(a1.size() == a2.size());

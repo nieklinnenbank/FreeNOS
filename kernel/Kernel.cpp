@@ -80,7 +80,6 @@ bool Kernel::loadBootImage()
 {
     MultibootModule *mod;
     BootImage *image;
-    String str;
     bool found = false;
 
 #warning Do not assume multiboot support for an architecture
@@ -89,6 +88,7 @@ bool Kernel::loadBootImage()
     for (Size n = 0; n < multibootInfo.modsCount; n++)
     {
         mod = &((MultibootModule *) multibootInfo.modsAddress)[n];
+        String str = (char *) mod->string;
 
         /* Mark its memory used */
         for (Address a = mod->modStart; a < mod->modEnd; a += PAGESIZE)
@@ -97,7 +97,7 @@ bool Kernel::loadBootImage()
         }
 
         /* Is this a BootImage? */
-        if (str.match((char *) mod->string, "*.img.gz"))
+        if (str.match("*.img.gz"))
         {
             /* Map the BootImage into our address space. */
             image = (BootImage *) m_memory->map(mod->modStart);
@@ -153,5 +153,5 @@ void Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Size index)
     /* Map and copy program arguments. */
     args = m_memory->allocatePhysical(PAGESIZE);
     m_memory->map(proc, args, ARGV_ADDR, Memory::Present | Memory::User | Memory::Writable);
-    String::strlcpy( (char *) m_memory->map(args), program->path, ARGV_SIZE);
+    MemoryBlock::copy( (char *) m_memory->map(args), program->path, ARGV_SIZE);
 }

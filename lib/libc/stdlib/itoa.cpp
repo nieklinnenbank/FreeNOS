@@ -15,14 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBSTD_SUPPORT_H
-#define __LIBSTD_SUPPORT_H
-#ifndef __ASSEMBLER__
+#include <String.h>
+#include "stdlib.h"
 
-#include "Types.h"
-#include "Macros.h"
+extern C void itoa(char *buffer, int divisor, int number)
+{
+    String s;
+    Number::Base base = Number::Dec;
 
-extern C u32 __aeabi_uidiv(u32 numerator, u32 denominator);
+    switch (divisor)
+    {
+        case 10: base = Number::Dec; break;
+        case 16: base = Number::Hex; break;
+    }
 
-#endif /* __ASSEMBLER__ */
-#endif /* __LIBSTD_SUPPORT_H */
+    s.set(number, base, buffer);
+}

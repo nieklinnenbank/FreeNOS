@@ -158,6 +158,23 @@ DeviceID;
  */
 typedef slong Error;
 
+#ifdef __cplusplus
+
+namespace Number
+{
+    /**
+     * Numeral system base type.
+     */
+    typedef enum Base
+    {
+        Dec, /** Decimal: 0-10 */
+        Hex, /** Hexadecimal: 0x0-0xf */
+    }
+    Base;
+};
+
+#endif /* __cplusplus */
+
 /**
  * @}
  */

@@ -17,7 +17,7 @@
 
 #include <TestCase.h>
 #include <TestRunner.h>
-#include <TestData.h>
+#include <TestInt.h>
 #include <TestMain.h>
 #include <ListIterator.h>
 
@@ -32,16 +32,11 @@ TestCase(ListIteratorConstruct)
     return OK;
 }
 
-TestCase(ListIteratorOfStrings)
-{
-    return SKIP;
-}
-
 TestCase(ListIteratorCurrent)
 {
     List<int> lst;
-    TestData<int> ints(INT_MAX, INT_MIN);
-    TestData<Size> sizes(64, 32);
+    TestInt<int> ints(INT_MIN, INT_MAX);
+    TestInt<Size> sizes(32, 64);
     Size size = sizes.random();
 
     // Generate a random list of items
@@ -62,8 +57,8 @@ TestCase(ListIteratorCurrent)
 TestCase(ListIteratorNext)
 {
     List<int> lst;
-    TestData<int> ints(INT_MAX, INT_MIN);
-    TestData<Size> sizes(64, 32);
+    TestInt<int> ints(INT_MIN, INT_MAX);
+    TestInt<Size> sizes(32, 64);
     Size size = sizes.random();
 
     // Generate a random list of items
@@ -85,8 +80,8 @@ TestCase(ListIteratorNext)
 TestCase(ListIteratorRemoveFirst)
 {
     List<int> lst;
-    TestData<int> ints(INT_MAX, INT_MIN);
-    TestData<Size> sizes(64, 32);
+    TestInt<int> ints(INT_MIN, INT_MAX);
+    TestInt<Size> sizes(32, 64);
     Size size = sizes.random();
 
     // Generate a random list of items
@@ -116,8 +111,8 @@ TestCase(ListIteratorRemoveFirst)
 TestCase(ListIteratorRemoveLast)
 {
     List<int> lst;
-    TestData<int> ints(INT_MAX, INT_MIN);
-    TestData<Size> sizes(64, 32);
+    TestInt<int> ints(INT_MIN, INT_MAX);
+    TestInt<Size> sizes(32, 64);
     Size size = sizes.random();
 
     // Generate a random list of items
@@ -156,8 +151,8 @@ TestCase(ListIteratorRemoveLast)
 TestCase(ListIteratorRemoveSingle)
 {
     List<int> lst;
-    TestData<int> ints(INT_MAX, INT_MIN);
-    TestData<Size> sizes(64, 32);
+    TestInt<int> ints(INT_MIN, INT_MAX);
+    TestInt<Size> sizes(32, 64);
     Size size = sizes.random();
     Size position = size/2;
 
@@ -208,10 +203,9 @@ TestCase(ListIteratorRemoveSingle)
 TestCase(ListIteratorRemoveAll)
 {
     List<int> lst;
-    TestData<int> ints(INT_MAX, INT_MIN);
-    TestData<Size> sizes(64, 32);
+    TestInt<int> ints(INT_MIN, INT_MAX);
+    TestInt<Size> sizes(32, 64);
     Size size = sizes.random();
-    Size position = size/2;
 
     // Generate a random list of items
     for (Size i = 0; i < size; i++)
@@ -238,8 +232,8 @@ TestCase(ListIteratorRemoveAll)
 TestCase(ListIteratorReset)
 {
     List<int> lst;
-    TestData<int> ints(INT_MAX, INT_MIN);
-    TestData<Size> sizes(64, 32);
+    TestInt<int> ints(INT_MIN, INT_MAX);
+    TestInt<Size> sizes(32, 64);
     Size size = sizes.random();
     Size rounds = sizes.random();
 

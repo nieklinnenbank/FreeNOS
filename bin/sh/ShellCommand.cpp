@@ -17,12 +17,12 @@
 
 #include "ShellCommand.h"
 
-HashTable<String, ShellCommand> ShellCommand::commands;
+HashTable<String, ShellCommand *> ShellCommand::commands;
 
 ShellCommand::ShellCommand(const char *n, Size p)
     : name(n), minParams(p)
 {
-    commands.insert(new String(n), this);
+    commands.insert(n, this);
 }
 
 ShellCommand::~ShellCommand()
@@ -31,6 +31,5 @@ ShellCommand::~ShellCommand()
 
 ShellCommand * ShellCommand::byName(char *name)
 {
-    String str = name;
-    return commands[&str];
+    return commands.get(name) ? *commands.get(name) : ZERO;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,11 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __HASH_FUNCTION_H
-#define __HASH_FUNCTION_H
+#ifndef __LIBSTD_HASH_FUNCTION_H
+#define __LIBSTD_HASH_FUNCTION_H
 
 #include "Types.h"
-#include "ByteSequence.h"
+#include "String.h"
 
 /** Prime number used by FNV hashing. */
 #define FNV_PRIME 16777619
@@ -29,10 +29,13 @@
 
 /**
  * Compute a hash using the FNV algorithm.
+ *
  * @param key Key to hash.
  * @param mod Modulo value.
  * @return Computed hash.
  */
-Size FNVHash(ByteSequence *key, Size mod);
+Size hash(const String & key, Size mod);
 
-#endif /* __HASH_FUNCTION_H */
+Size hash(int key, Size mod);
+
+#endif /* __LIBSTD_HASH_FUNCTION_H */

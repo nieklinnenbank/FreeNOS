@@ -17,7 +17,7 @@
 
 #include <TestCase.h>
 #include <TestRunner.h>
-#include <TestData.h>
+#include <TestInt.h>
 #include <TestMain.h>
 #include <Singleton.h>
 

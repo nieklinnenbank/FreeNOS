@@ -40,12 +40,16 @@ template <class T> class TestData
     /**
      * Constructor.
      */
-    TestData(T max, T min)
+    TestData()
     {
-        m_max = max;
-        m_min = min;
-
         seed();
+    }
+
+    /**
+     * Destructor.
+     */
+    virtual ~TestData()
+    {
     }
 
     /**
@@ -97,20 +101,12 @@ template <class T> class TestData
     }
 
     /**
-     * Retrieve the last generated test data.
-     */
-    T & last()
-    {
-        return m_values.last();
-    }
-
-    /**
      * Get random test value(s).
      *
      * @param count Number or values to generate.
      * @return The last generated T value.
      */
-    virtual T random(Size count = 1);
+    virtual T random(Size count = 1) = 0;
 
     /**
      * Get unique random test value(s).
@@ -118,102 +114,12 @@ template <class T> class TestData
      * @param count Number of unique values to generate.
      * @return The last generated T value.
      */
-    virtual T unique(Size count = 1);
+    virtual T unique(Size count = 1) = 0;
 
-  private:
+  protected:
 
     /** Vector with generated values. */
     Vector<T> m_values;
-
-    /** Maximum value */
-    T m_max;
-
-    /** Minimum value */
-    T m_min;
 };
-
-template<> int TestData<int>::random(Size count)
-{
-    int value = 0;
-
-    while (count--)
-    {
-        value = (::random() % m_max);
-
-        if (value < m_min)
-            value = m_min;
-
-        m_values.insert(value);
-        break;
-    }
-    return value;
-}
-
-template<> int TestData<int>::unique(Size count)
-{
-    // Save current count
-    int offset = (int) m_values.count();
-
-    // First put values sequentially
-    for (int i = 0; i < (int)count; i++)
-        m_values.insert(i + m_min);
-
-    // Randomize values by swapping
-    for (int i = offset; i < ((int)count + offset); i++)
-    {
-        int tmp = m_values[i];
-
-        int idx = (::random() % (int)count - 1);
-        if (idx < offset)
-            idx = offset;
-
-        m_values[i]   = m_values[idx];
-        m_values[idx] = tmp;
-    }
-    // Success
-    return m_values[offset + (int)count - 1];
-}
-
-template<> uint TestData<uint>::random(Size count)
-{
-    uint value = 0;
-
-    while (count--)
-    {
-        value = (((unsigned)::random() + (unsigned)::random()) % m_max);
-
-        if (value < m_min)
-            value = m_min;
-
-        m_values.insert(value);
-        break;
-    }
-    return value;
-}
-
-template<> uint TestData<uint>::unique(Size count)
-{
-    // Save current count
-    Size offset = m_values.count();
-
-    // First put values sequentially
-    for (Size i = 0; i < count; i++)
-        m_values.insert(i + m_min);
-
-    // Randomize values by swapping
-    for (Size i = offset; i < (count + offset); i++)
-    {
-        Size tmp = m_values[i];
-
-        Size idx = (::random() % (count - 1));
-        if (idx < offset)
-            idx = offset;
-
-        m_values[i]   = m_values[idx];
-        m_values[idx] = tmp;
-    }
-    // Success
-    return m_values[offset + count - 1];
-}
 
 #endif /* __LIBTEST_TESTDATA_H */

@@ -17,13 +17,13 @@
 
 #include <TestCase.h>
 #include <TestRunner.h>
-#include <TestData.h>
+#include <TestInt.h>
 #include <TestMain.h>
 #include <BitArray.h>
 
 TestCase(BitArrayConstruct)
 {
-    TestData<Size> sizes(128, 64);
+    TestInt<Size> sizes(64, 128);
     BitArray ba(sizes.random());
 
     // Check that the Array has the right size and counters
@@ -41,7 +41,7 @@ TestCase(BitArrayConstruct)
 
 TestCase(BitArraySetOne)
 {
-    TestData<Size> indexes(127, 0);
+    TestInt<Size> indexes(0, 127);
     BitArray ba(128);
 
     // Set one bit to 1. Keep all others zero.
@@ -68,7 +68,7 @@ TestCase(BitArraySetOne)
 
 TestCase(BitArraySetRandom)
 {
-    TestData<Size> indexes(127, 0);
+    TestInt<Size> indexes(0, 127);
     BitArray ba(128);
 
     // Generate a unique set of indexes
@@ -138,9 +138,9 @@ TestCase(BitArraySetMultiple)
 
 TestCase(BitArraySetRange)
 {
-    TestData<Size> sizes(64, 32);
+    TestInt<Size> sizes(32, 64);
     Size size = sizes.random();
-    TestData<Size> indexes(127-size, 0);
+    TestInt<Size> indexes(0, 127-size);
     BitArray ba(128);
     Size idx = indexes.random();
 
@@ -168,9 +168,9 @@ TestCase(BitArraySetRange)
 
 TestCase(BitArraySetNextRandom)
 {
-    TestData<Size> sizes(64, 32);
+    TestInt<Size> sizes(32, 64);
     Size size = sizes.random();
-    TestData<Size> indexes(127-size, 0);
+    TestInt<Size> indexes(0, 127-size);
     BitArray ba(128);
 
     // Set a random number of bits at a random offset
@@ -197,7 +197,7 @@ TestCase(BitArraySetNextRandom)
 
 TestCase(BitArraySetNextOverwrite)
 {
-    TestData<Size> indexes(63, 0);
+    TestInt<Size> indexes(0, 63);
     BitArray ba(128);
 
     // Set half of the array to 1.
@@ -230,7 +230,7 @@ TestCase(BitArraySetNextOverwrite)
 
 TestCase(BitArraySetNextExact)
 {
-    TestData<Size> indexes(128 - 32 - 1, 0);
+    TestInt<Size> indexes(0, 128 - 32 - 1);
     BitArray ba(128);
     Size idx = indexes.random();
 
@@ -264,7 +264,7 @@ TestCase(BitArraySetNextExact)
 
 TestCase(BitArrayClear)
 {
-    TestData<Size> indexes(127, 0);
+    TestInt<Size> indexes(0, 127);
     BitArray ba(128);
 
     // Generate a unique set of indexes
@@ -284,5 +284,28 @@ TestCase(BitArrayClear)
     }
     testAssert(ba.count(true) == 0);
     testAssert(ba.count(false) == 128);
+    return OK;
+}
+
+TestCase(BitArraySetArray)
+{
+    TestInt<Size> indexes(0, 127);
+    BitArray ba(128), ba2(128);
+
+    // Generate a unique set of indexes
+    indexes.unique(128);
+
+    // Set some random bits
+    for (Size i = 0; i < 64; i++)
+        ba.set(indexes[i], true);
+
+    // Assign the same array to ba2.
+    ba2.setArray(ba.m_array);
+
+    // Check administration
+    testAssert(ba2.m_array == ba.m_array);
+    testAssert(ba2.m_set   == ba.m_set);
+    testAssert(ba2.m_size  == ba.m_size);
+    testAssert(!ba2.m_allocated);
     return OK;
 }

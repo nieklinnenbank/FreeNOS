@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * Copyright (C) 2009 Coen Bijlsma
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -157,7 +156,7 @@ template <class T> class Vector : public Sequence<T>
      * @param position The position of the item to remove.
      * @return bool Whether removing the item succeeded.
      */
-    virtual bool remove(Size position)
+    virtual bool removeAt(Size position)
     {
         if (position >= m_count)
         {

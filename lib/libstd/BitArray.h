@@ -136,8 +136,8 @@ class BitArray
     /** Array containing the bits. */
     u8 *m_array;
 
-    /** True if m_array needs a delete on destruct */
-    bool m_arrayDelete;
+    /** True if m_array was allocated interally. */
+    bool m_allocated;
 };
 
 #endif /* __LIBSTD_BITARRAY_H */

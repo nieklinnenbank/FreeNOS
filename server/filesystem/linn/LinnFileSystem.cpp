@@ -135,7 +135,6 @@ LinnInode * LinnFileSystem::getInode(u32 inodeNum)
     LinnInode *inode;
     Size offset;
     Error e;
-    Integer<u32> inodeInt = inodeNum;
     
     /* Validate the inode number. */
     if (inodeNum >= super.inodesCount)
@@ -143,9 +142,9 @@ LinnInode * LinnFileSystem::getInode(u32 inodeNum)
 	return ZERO;
     }
     /* Do we have this Inode cached already? */
-    if ((inode = inodes[&inodeInt]))
+    if (inodes.contains(inodeNum))
     {
-	return inode;
+        return inodes.value(inodeNum);
     }
     /* Get the group descriptor. */
     if (!(group = getGroupByInode(inodeNum)))
@@ -165,7 +164,7 @@ LinnInode * LinnFileSystem::getInode(u32 inodeNum)
 	return ZERO;
     }
     /* Insert into the cache. */
-    inodes.insert(new Integer<u32>(inodeNum), inode);
+    inodes.insert(inodeNum, inode);
     return inode;
 }
 

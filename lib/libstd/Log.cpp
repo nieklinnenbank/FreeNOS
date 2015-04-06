@@ -37,6 +37,8 @@ void Log::setIdent(const char *ident)
     m_ident = ident;
 }
 
+// TODO: #warning use String to buffer the line(s) until (auto)flush() or linefeed
+
 Log & operator << (Log &log, const char *str)
 {
     log.write(str);
@@ -45,33 +47,30 @@ Log & operator << (Log &log, const char *str)
 
 Log & operator << (Log &log, int number)
 {
-    char buf[16];
-    String::format(buf, sizeof(buf), "%d", number);
-    log.write(buf);
+    String s = number;
+    log.write(*s);
     return log;
 }
 
 Log & operator << (Log &log, unsigned number)
 {
-    char buf[16];
-    String::format(buf, sizeof(buf), "%u", number);
-    log.write(buf);
+// TODO: #warning: string does not have unsigned conversions yet
+    String s = number;
+    log.write(*s);
     return log;
 }
 
 Log & operator << (Log &log, unsigned long number)
 {
-    char buf[16];
-    String::format(buf, sizeof(buf), "%lu", number);
-    log.write(buf);
+    String s = number;
+    log.write(*s);
     return log;
 }
 
 Log & operator << (Log &log, void *ptr)
 {
-    char buf[16];
-    String::format(buf, sizeof(buf), "%p", ptr);
-    log.write(buf);
+    String s;
+    s << Number::Hex << (long ) ptr;
+    log.write(*s);
     return log;
 }
-

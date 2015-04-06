@@ -35,13 +35,13 @@ int chdir(const char *filepath)
     /* First stat the file. */
     if (stat(filepath, &st) != 0)
     {
-	return -1;
+        return -1;
     }
     /* Must be a directory. */
     if (!S_ISDIR(st.st_mode))
     {
-	errno = ENOTDIR;
-	return -1;
+        errno = ENOTDIR;
+        return -1;
     }
     /* What's the current working dir? */
     getcwd(cwd, PATHLEN);
@@ -49,39 +49,39 @@ int chdir(const char *filepath)
     /* Relative or absolute? */
     if (filepath[0] != '/')
     {
-	snprintf(buf, sizeof(buf), "%s/%s", cwd, filepath);
-	path.parse(buf);
-	memset(buf, 0, sizeof(buf));
-	
-	/* Process '..' */
-	for (ListIterator<String *> i(path.split()); i.hasCurrent(); i++)
-	{
-	    if ((**i.current())[0] != '.')
-	    {
-		lst.append(i.current());
-		last = i.current();
-	    }
-	    else if ((**i.current())[1] == '.' && last)
-	    {
-		lst.remove(last);
-	    }
-	}
-	/* Construct final path. */
-	for (ListIterator<String *> i(&lst); i.hasCurrent(); i++)
-	{
-	    strcat(buf, "/");
-	    strcat(buf, **i.current());
-	}
-	msg.path = buf;
+        snprintf(buf, sizeof(buf), "%s/%s", cwd, filepath);
+        path.parse(buf);
+        memset(buf, 0, sizeof(buf));
+    
+        /* Process '..' */
+        for (ListIterator<String *> i(path.split()); i.hasCurrent(); i++)
+        {
+            if ((**i.current())[0] != '.')
+            {
+                lst.append(i.current());
+                last = i.current();
+            }
+            else if ((**i.current())[1] == '.' && last)
+            {
+                lst.remove(last);
+            }
+        }
+        /* Construct final path. */
+        for (ListIterator<String *> i(&lst); i.hasCurrent(); i++)
+        {
+            strcat(buf, "/");
+            strcat(buf, **i.current());
+        }
+        msg.path = buf;
     }
     else
-	msg.path = (char *) filepath;
+        msg.path = (char *) filepath;
     
     /* Fall back to slash? */
     if (!msg.path[0])
     {
-	strcpy(buf, "/");
-	msg.path = buf;
+        strcpy(buf, "/");
+        msg.path = buf;
     }
     /* Fill the message. */
     msg.action = SetCurrentDirectory;

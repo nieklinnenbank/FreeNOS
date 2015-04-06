@@ -15,20 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <ListIterator.h>
 #include "TestCase.h"
 #include "TestSuite.h"
 
 TestSuite::TestSuite() : Singleton<TestSuite>(this)
 {
-    m_tests = new List<TestInstance *>();
 }
 
 void TestSuite::addTest(TestInstance *test)
 {
-    m_tests->append(test);
+    m_tests.append(test);
 }
 
 List<TestInstance *> * TestSuite::getTests()
 {
-    return m_tests;
+    return & m_tests;
 }

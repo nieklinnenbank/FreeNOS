@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Coen Bijlsma
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,18 +15,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Delimeter.h>
+#include <String.h>
+#include <Types.h>
+#include <Character.h>
+#include "stdlib.h"
 
-Delimeter::Delimeter(char op, char cl) : open(op), close(cl)
+extern C long strtol(const char *nptr, char **endptr, int base)
 {
-}
+    String s = nptr;
+    Number::Base b = Number::Dec;
+    
+    switch (base)
+    {
+        case 10: b = Number::Dec; break;
+        case 16: b = Number::Hex; break;
+    }
 
-char Delimeter::getOpen() const
-{
-	return open;
-}
+    if (*nptr && *nptr == '-')
+        nptr++;
 
-char Delimeter::getClose() const
-{
-	return close;
+    if (*nptr && *nptr == '0' && *(nptr+1) && *(nptr+1) == 'x')
+        nptr += 2;
+
+    while (Character::isDigit(*nptr))
+        nptr++;
+
+    *endptr = (char *) nptr;
+
+    return s.toLong(b);
 }

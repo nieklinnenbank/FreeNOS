@@ -38,6 +38,8 @@
 #define EOL(s,x) \
     ((x) == (s) + length - 1)
 
+// TODO: rewrite this whole class using String.
+
 /**
  * Simple filesystem path parser.
  */
@@ -71,7 +73,7 @@ class FileSystemPath
 	FileSystemPath(String *s, char separator = DEFAULT_SEPARATOR)
 	    : fullPath(ZERO), fullLength(ZERO), parentPath(ZERO)
 	{
-	    parse(**s, separator);
+	    parse((char *) **s, separator);
 	}
 
 	/**
@@ -98,7 +100,6 @@ class FileSystemPath
 	    const char *saved = ZERO;
 	    const char *cur   = p;
 	    char *parentStr   = ZERO;
-	    Size size;
 
 	    /* Skip heading separators. */
 	    while (*cur && *cur == sep) cur++;
@@ -109,27 +110,13 @@ class FileSystemPath
 	    separator  = sep;
 	    fullLength = strlen((char *)cur);
 	    fullPath   = new String(cur);
+            String str(p);
 
-	    /* Loop the entire path. */
-	    while (*cur)
-	    {
-		if (*cur == separator || cur == p + fullLength - 1)
-		{
-		    /* Determinze size of the piece to copy. */
-		    if (cur == saved)
-			size = 1;
-			
-		    else if (cur == p + fullLength - 1)
-			size = (cur - saved) + 1;
+	    /* Split the path into parts. */
+            List<String> parts = str.split(sep);
+            for (ListIterator<String> i(parts); i.hasCurrent(); i++)
+                path.append(new String(i.current()));
 
-		    else
-			size = (cur - saved);
-			
-		    path.append(new String(saved, size));
-		    saved         = cur + 1;
-		}
-		cur++;
-	    }
 	    /* Create parent, if any. */
 	    if (path.head() && path.head()->next)
 	    {

@@ -18,6 +18,8 @@
 #ifndef __LIBTEST_TESTCASE_H
 #define __LIBTEST_TESTCASE_H
 
+#include <MemoryBlock.h>
+
 /*
  * Testcases sometimes need to access private members
  * of a class. This define makes sure that a TestCase
@@ -78,5 +80,11 @@ class TestInstance
         printf("%s:%d:%s testAssert failed: `%s' .. ", __FILE__, __LINE__,  __FUNCTION__, QUOTE(expression)); \
         return FAIL; \
     }
+
+/**
+ * Test if the given character strings are equal.
+ */
+#define testString(s1, s2) \
+    testAssert(MemoryBlock::compare((s1), (s2)))
 
 #endif /* __LIBTEST_TESTCASE_H */

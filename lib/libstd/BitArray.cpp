@@ -21,7 +21,7 @@
 BitArray::BitArray(Size size, u8 *array)
 {
     m_array = array ? array : new u8[BITS_TO_BYTES(size)];
-    m_arrayDelete = array == ZERO;
+    m_allocated = array == ZERO;
     m_size  = size;
     m_set   = 0;
     clear();
@@ -29,7 +29,7 @@ BitArray::BitArray(Size size, u8 *array)
 
 BitArray::~BitArray()
 {
-    if (m_arrayDelete)
+    if (m_allocated)
         delete[] m_array;
 }
 
@@ -131,19 +131,23 @@ u8 * BitArray::array() const
 
 void BitArray::setArray(u8 *map, Size size)
 {
-    // TODO: recalculate set bits
-
     // Set bits count
     if (size)
         m_size = size;
 
     // Cleanup old array, if needed
-    if (m_array && m_arrayDelete)
+    if (m_array && m_allocated)
         delete[] m_array;
 
     // Reassign to the new map
     m_array = map;
-    m_arrayDelete = false;
+    m_allocated = false;
+    m_set   = 0;
+
+    // Recalculate set bits
+    for (Size i = 0; i < m_size; i++)
+        if (isSet(i))
+            m_set++;
 }
 
 void BitArray::clear()

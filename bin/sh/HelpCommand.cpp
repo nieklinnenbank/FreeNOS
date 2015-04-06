@@ -24,7 +24,7 @@ int HelpCommand::execute(Size nparams, char **params)
 {
     printf("List of builtin Shell commands:\r\n\r\n");
 
-    for (HashIterator<String, ShellCommand> i(&commands); i.hasCurrent(); i++)
+    for (HashIterator<String, ShellCommand *> i(commands); i.hasCurrent(); i++)
     {
         printf("%s -- %s\r\n", i.current()->getName(), i.current()->help());
     }

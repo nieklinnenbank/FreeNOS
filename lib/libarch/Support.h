@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,11 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Macros.h"
+#ifndef __LIBSTD_SUPPORT_H
+#define __LIBSTD_SUPPORT_H
+#ifndef __ASSEMBLER__
 
-extern C long strtol(const char *nptr, char **endptr, int base);
+#include <Types.h>
+#include <Macros.h>
 
-extern C int atoi(const char *nptr)
-{
-    return (int) strtol(nptr, 0, 0);
-}
+extern C u32 __aeabi_uidiv(u32 numerator, u32 denominator);
+
+#endif /* __ASSEMBLER__ */
+#endif /* __LIBSTD_SUPPORT_H */

@@ -54,7 +54,7 @@ typedef struct FileCache
     {
 	if (p && p != this)
 	{
-	    p->entries.insert(new String(name), this);
+	    p->entries.insert(String(name), this);
 	}
     }
     
@@ -72,7 +72,7 @@ typedef struct FileCache
     File *file;
     
     /** Contains parent, ourselves, and childs. */
-    HashTable<String, FileCache> entries;
+    HashTable<String, FileCache *> entries;
     
     /** Is this entry still valid?. */
     bool valid;
@@ -382,7 +382,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 		    c = root;
 		}
     	        /* Do we have this entry cached already? */
-    	        if (!c->entries[i.current()])
+    	        if (!c->entries.contains(*i.current()))
     		{
     		    /* If this isn't a directory, we cannot perform a lookup. */
     		    if (c->file->getType() != DirectoryFile)
@@ -401,7 +401,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
     		}
     	        /* Move to the next entry. */
     		else
-        	    c = c->entries[i.current()];
+        	    c = (FileCache *) c->entries.value(*i.current());
 	    }
 	    /* All done. */
 	    return c;
@@ -481,10 +481,10 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	    /* Loop the entire path. */
 	    for (ListIterator<String *> i(entries); i.hasCurrent(); i++)
 	    {
-		if (!(c = c->entries[i.current()]))
-		{
-		    break;
-		}
+                if (!c->entries.contains(*i.current()))
+                    return ZERO;
+
+                c = (FileCache *) c->entries.value(*i.current());
 	    }
 	    /* Perform cachehit? */
 	    if (c)
@@ -521,7 +521,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	        cache->valid = false;
 
 	    /* Walk all our childs. */
-	    for (HashIterator<String, FileCache> i(&cache->entries); i.hasCurrent(); i++)
+	    for (HashIterator<String, FileCache *> i(cache->entries); i.hasCurrent(); i++)
 	    {
 		/* Traverse subtree if it isn't invalidated yet. */
 		if (i.current()->valid)
@@ -532,7 +532,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 		    if (i.current()->file->getOpenCount() == 0)
 		    
 		    {
-			cache->entries.remove(i.key(), true);
+                        i.remove();
 		    }
 		}
 	    }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,322 +15,347 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __STRING_H
-#define __STRING_H
+#ifndef __LIBSTD_STRING_H
+#define __LIBSTD_STRING_H
 
-#include "Comparable.h"
-#include "ByteSequence.h"
 #include "Types.h"
 #include "Macros.h"
 #include "Assert.h"
-#include "StandardArguments.h"
-
-/**
- * Test for a wildcard character.
- * @param ch Input character.
- * @return True if wildcard, false otherwise.
- */
-#define WILDCARD(c) ((c) == '*')
+#include "Sequence.h"
+#include "List.h"
 
 /** Default maximum length of a String's value. */
-#define STRING_DEFAULT_MAX 128
-
-/**
- * Converts the letter c to lowercase.
- * @param c The letter to convert.
- * @return The converted letter, or c if conversion was not possible.
- */
-#define tolower(c) \
-    (c >= 'A' && c <= 'Z') ? (c + 32) : (c)
-
-/**
- * Converts the letter c to uppercase.
- * @param c The letter to convert.
- * @return The converted letter, or c if conversion was not possible.
- */
-#define toupper(c) \
-    (c >= 'a' && c <= 'z') ? (c - 32) : (c)
+#define STRING_DEFAULT_SIZE 64
 
 /**
  * Abstraction of strings.
  */
-class String : public Comparable<String>, public ByteSequence
+class String : public Sequence<char>
 {
-    public:
+  public:
 
-	/**
-	 * Empty constructor.
-	 */
-	String();
+    /**
+     * Default constructor.
+     * Constructs an empty string with the default size.
+     */
+    String();
 
-	/**
-	 * Constructor.
-	 * @param s Initial value of the String.
-	 */
-	String(char *s);
+    /**
+     * Copy constructor.
+     *
+     * @param s String reference.
+     */
+    String(const String & str);
 
-	/**
-	 * Copy constructor.
-	 * @param s String instance pointer.
-	 */
-	String(String *s);
+    /**
+     * Constructor.
+     *
+     * @param s Initial value of the String.
+     * @param copy If true allocate and copy the input buffer.
+     */
+    String(char *s, bool copy = true);
     
-	/**
-	 * Constant constructor.
-	 * @param s Initial value of the String.
-	 */
-	String(const char *s);
+    /**
+     * Constant constructor.
+     *
+     * @param s Initial value of the String.
+     * @param copy If true allocate and copy the input buffer.
+     */
+    String(const char *s, bool copy = false);
+
+    /**
+     * Signed integer constructor.
+     * Creates a String with the textual representation
+     * of the given signed integer.
+     *
+     * @param number Integer number of the new String.
+     */
+    String(int number);
+
+    /** 
+     * Destructor. 
+     */
+    virtual ~String();
+
+    /**
+     * Calculates the length of the String.
+     * @return Length of the current String value.
+     */
+    virtual Size size() const;
     
-	/**
-	 * Constrant constructor including the maximum length.
-	 * @param s Initial value of the String.
-	 * @param max Maximum length of the String.
-	 */
-	String(const char *s, Size max);
+    /**
+     * Number of characters in the string.
+     */
+    virtual Size count() const;
 
-	/** 
-	 * Destructor. 
-	 */
-	~String();
+    /**
+     * Same as count().
+     */
+    Size length() const;
 
-	/**
-	 * Calculates the length of the String.
-	 * @return Length of the current String value.
-	 */
-	Size size() const;
-	
-	/**
-         * Returns a copy of this String, converted to lowercase.
-         * @return The lowercase variant of this String.
-         */
-        String toLowerCase();
+    /**
+     * Get the length of the given character string.
+     */
+    static Size length(char *str);
+
+    /**
+     * Get the length of a constant character string.
+     */
+    static Size length(const char *str);
+
+    /**
+     * Change the size of the String buffer.
+     *
+     * @param size New size of the String.
+     * @return True if resized successfully, false otherwise.
+     */
+    virtual bool resize(Size size);
+
+    /**
+     * Make sure at least given number of bytes available.
+     *
+     * @param count The number of free bytes to guarantee.
+     * @return True if success, false otherwise.
+     */
+    virtual bool reserve(Size count);
+
+    /**
+     * Returns the item at the given position.
+     *
+     * @param position The position of the item to get.
+     * @return Pointer to the item at the given position or ZERO if no item available.
+     */
+    virtual const char * get(Size position) const;
+
+    /**
+     * Returns a reference to the item at the given position.
+     * Note that this function does not perform bounds checking.
+     * Position must be a valid index.
+     *
+     * @param position Valid index inside this array.
+     * @return Reference to the item at the given position
+     */
+    virtual const char & at(Size position) const;
+
+    /**
+     * Return value at the given position.
+     * If position is not within bounds of this array,
+     * this function will return a default constructed T.
+     *
+     * @param position Index inside this array.
+     * @return T at the given position or default constructed T.
+     */
+    virtual const char value(Size position) const;
+
+    /**
+     * Check if the given character occurs in the String.
+     *
+     * @param character The character to search for.
+     * @return True if found, false otherwise.
+     */
+    virtual bool contains(char character) const;
+
+    /**
+     * Tests if this String starts with the specified prefix.
+     *
+     * @param prefix String prefix.
+     * @return True if matched, false otherwise.
+     */
+    bool startsWith(String & prefix) const;
+
+    /**
+     * Tests if this String starts with the specified prefix.
+     *
+     * @param prefix String prefix.
+     * @return True if matched, false otherwise.
+     */
+    bool startsWith(const char * prefix) const;
+
+    /**
+     * Tests if this String ends with the specified suffix.
+     *
+     * @param suffix The suffix String.
+     * @return True if matched, false otherwise.
+     */
+    bool endsWith(String & suffix) const;
+
+    /**
+     * Tests if this String ends with the specified suffix.
+     *
+     * @param suffix The suffix String.
+     * @return True if matched, false otherwise.
+     */
+    bool endsWith(const char * suffix) const;
+
+    /**
+     * Compares this String to the given String. 
+     *
+     * @param s The String to compare us to.
+     * @return int < 0, 0, > 0 if we are greater than, equal to
+     * or less then the given String.
+     */
+    virtual int compareTo(const String & str) const;
+
+    /**
+     * Compare with another String.
+     *
+     * @param s String instance to compare against.
+     * @param caseSensitive True if uppercase characters are considered
+     *                      not equal to lowercase, false otherwise.
+     * @return Zero if equal, negative if smaller or positive if greater.
+     */
+    virtual int compareTo(const String & str,
+                          bool caseSensitive = true) const;
+
+    /**
+     * Compare with a character string.
+     *
+     * @param str Character string to compare against.
+     * @param caseSensitive True if uppercase characters are considered
+     *                      not equal to lowercase, false otherwise.
+     * @param count Number of character to compare or ZERO for whole strings.
+     * @return Zero if equal, negative if smaller or positive if greater.
+     */
+    virtual int compareTo(const char *str,
+                          bool caseSensitive = true,
+                          Size count = 0) const;
+
+    /**
+     * Alias for compareTo().
+     */
+    virtual bool equals(const String &str) const;
+
+    /**
+     * Matches the String against a mask.
+     * @param mask Pattern to match against.
+     * @return True if match, false otherwise.
+     */ 
+    bool match(const char *mask) const;
         
-        /**
-         * Returns a copy of this String, converted to uppercase.
-         * @return The uppercase variant of this String.
-         */
-        String toUpperCase();
+    /**
+     * Returns a new String that contains a copy of this String,
+     * starting from index (inclusive), and copies at most
+     * size characters.
+     *
+     * @param index The begin index to create the substring of.
+     * @param size The maximum size of the substring.
+     * @return String* a pointer to the newly created substring.
+     */
+    String substring(Size index, Size size = 0);
 
-	/**
-	 * Read the string byte-wise.
-	 * @param index Index of the character inside the String to read.
-	 * @return Character value of the given index.
-	 */
-	u8 valueAt(Size index) const;
-	
-	/**
-	 * Returns true if and only if this String contains the specified String.
-	 * @param sequence The String searched for in this String.
-	 * @return bool Whether the specified String is contained in this String.
-	 */
-        bool contains(String& sequence);
+    /**
+     * Split the String into parts separated by a delimiter.
+     * 
+     * @param delimiter Character to use a delimiter.
+     * @return List of Strings representing the parts.
+     */
+    List<String> split(char delimiter);
+
+    /**
+     * Split the String into parts separated by a delimiter.
+     *
+     * @param delimiter String which acts as a delimiter.
+     * @return List of Strings representing the parts.
+     */
+    List<String> split(const String & delimiter);
+
+    /**
+     * Convert the String to a signed long integer.
+     *
+     * @param base NumberBase to use. Default is decimal.
+     */
+    long toLong(Number::Base base = Number::Dec);
         
-        /**
-         * Returns true if and only if this String contains the specified char*.
-         * @param sequence The char* searched for in this String.
-         * @return bool Whether the specified char* is contained in this String.
-         */
-        bool contains(char* sequence);
+    /**
+     * Remove leading and trailing whitespace from the String.
+     *
+     * @return Reference to the String.
+     */
+    String & trim();
+
+    /**
+     * Convert all Characters to lower case.
+     *
+     * @return Reference to the String.
+     */
+    String & lower();
         
-        /**
-         * Returns true if and only if this String contains the specified char.
-         * @param c The char to search for.
-         * @return bool Whether the specified char is contained in this String.
-         */
-        bool contains(char c);
+    /**
+     * Convert all Characters to upper case.
+     *
+     * @return Reference to the String.
+     */
+    String & upper();
 
-        /**
-         * Tests if this String starts with the specified prefix.
-         * @param prefix The prefix.
-         * @return true If the character sequence represented by the 
-         * argument is a prefix of the character sequence represented by
-         * this String; false otherwise.
-         */
-        bool startsWith(String& prefix);
-        
-        /**
-         * Tests if this String starts with the specified prefix.
-         * @param prefix The prefix.
-         * @return true If the character sequence represented by the 
-         * argument is a prefix of the character sequence represented by
-         * this String; false otherwise.
-         */
-        bool startsWith(char* prefix);
-        
-        /**
-         * Tests if this String ends with the specified suffix.
-         * @param suffix The String to compare with the end of this String.
-         * @return bool Whether this String ends with the given suffix.
-         */
-        bool endsWith(String& suffix);
-        
-        /**
-         * Tests if this String ends with the specified suffix.
-         * @param suffix The String to compare with the end of this String.
-         * @return bool Whether this String ends with the given suffix.
-         */
-        bool endsWith(char* suffix);
-        
-        /**
-         * Returns a new String that contains a copy of this String
-         * starting from the given index (inclusive).
-         *
-         * @param index The begin index to create the substring of.
-         * @return String* a pointer to the newly created substring.
-         */
-        String substring(unsigned int index);
-        
-        /**
-         * Returns a new String that contains a copy of this String,
-         * starting from index (inclusive), and copies at most
-         * size characters.
-         *
-         * @param index The begin index to create the substring of.
-         * @param size The maximum size of the substring.
-         * @return String* a pointer to the newly created substring.
-         */
-        String substring(unsigned int index, unsigned int size);
-        
-        /**
-         * Returns an exact copy of this String.
-         * The memory for the cloned String is allocated with the 'new'
-         * operator, and has to be cleaned up with 'delete'.
-         * @return The cloned String.
-         */
-        String* clone();
-        
-        /**
-         * Returns a copy of this String, with leading and trailing
-         * whitespace omitted
-         */
-        String* trim();
-        
-	/**
-	 * Matches the given string against a mask.
-	 * @param string Input string.
-	 * @param mask Pattern to match against.
-	 * @return True if match, false otherwise.
-	 */
-	bool match(char *string, char *mask);
+    /**
+     * Assign the text-representation of the given long to the String.
+     *
+     * @param string Destination character string buffer or ZERO to fill internal String buffer.
+     */
+    Size set(long number, Number::Base base = Number::Dec, char *string = ZERO);
+    
+    /**
+     * Assignment operator.
+     * @param s Constant string.
+     */
+    void operator = (const char *str);
 
-	/**
-	 * Matches the String against a mask.
-	 * @param mask Pattern to match against.
-	 * @return True if match, false otherwise.
-	 */	
-	bool match(char *mask);
+    /**
+     * Assignment operator.
+     */
+    void operator = (const String & str);
+    
+    /**
+     * Comparision operator.
+     */
+    bool operator == (const String & str) const;
 
-	/**
-	 * Compare a String with a character array.
-	 * @param ch Character array.
-	 * @return True if equal, false otherwise.
-	 */	
-	bool equals(String *s);
+    /**
+     * Inequal operator.
+     */
+    bool operator != (const String & str) const;
 
-	/**
-	 * Compare a String with a character array.
-	 * @param ch Character array.
-	 * @return True if equal, false otherwise.
-	 */	
-	virtual bool equals(const String & s) const;
-	
-	/**
-	 * Compares this String to the given String. 
-	 * @param s The String to compare us to.
-	 * @return int < 0, 0, > 0 if we are greater than, equal to
-	 * or less then the given String.
-	 */
-	virtual int compareTo(const String & s) const;
-	
-	/**
-	 * Compares this String to the given String, ignoring
-	 * case considerations.
-	 * @param s The String to compare to this String.
-	 * @return bool Whether the given String is equal to this String.
-	 */
-        bool equalsIgnoreCase(String& s);
-        
-        /**
-         * Compares this String to the given char*, ignoring
-         * case considerations.
-         * @param s The char* to compare to this String.
-         * @return Whether the given char* equals this String.
-         */
-        bool equalsIgnoreCase(char* s);
-	
-	/**
-	 * Index operator.
-	 * @param index Index of the character inside the String to read.
-	 * @return Character value at the given index.
-	 */
-	char operator [] (Size index) const;
+    /**
+     * Dereference operator (read-only).
+     */
+    const char * operator * () const;
 
-	/**
-	 * Assignment operator.
-	 * @param s String instance.
-	 */
-	void operator = (const String & s);
+    /**
+     * Dereference operator.
+     */
+    char * operator * ();
 
-	/**
-	 * Assignment operator.
-	 * @param s String instance.
-	 */
-	void operator = (String *s);
-	
-	/**
-	 * Assignment operator.
-	 * @param s Constant string.
-	 */
-	void operator = (const char *s);
+    /**
+     * Append character string to the String.
+     */
+    String & operator << (const char *str);
 
-	/**
-	 * Compare two Strings.
-	 * @param s String instance.
-	 * @return True if equal, false otherwise.
-	 */
-	bool operator == (String *s);
-	
-	/**
-	 * Compare a String with a character array.
-	 * @param ch Character array.
-	 * @return True if equal, false otherwise.
-	 */
-	bool operator == (char *ch);
+    /**
+     * Append the given number as text to the String.
+     */
+    String & operator << (long number);
 
-        bool operator == (const String s) const;
-        
-        bool operator != (const String s) const;
-	
-	/**
-	 * Dereference operator.
-	 * @return Pointer to the String value.
-	 */
-	char * operator * ();
-	
-	static bool isWhitespace(char c);
+    /**
+     * Change the default number format representation.
+     */
+    String & operator << (Number::Base format);
 
-        static unsigned strlen(const char *str);
+  private:
 
-        static int strcmp(const char * dest, const char *src);
+    /** Current value of the String. */    
+    char *m_string;
 
-        static char * strdup(char *str);
+    /** Size of the string buffer, including any NULL byte(s) at the end. */
+    Size m_size;
 
-        static int strcasecmp(const char *dest, const char *src );
+    /** Length of the string text, excluding NULL byte(s) at the end. */
+    Size m_count;
 
-        static char * strchr(const char *s, int c);
+    /** True if the string buffer is a deep copy, false otherwise. */
+    bool m_allocated;
 
-        static int strncmp( const char *dest, const char *src, unsigned count );
-
-        static unsigned strlcpy(char *dst, const char *src, unsigned siz);
-
-        static int vformat(char *buffer, unsigned int size, const char *fmt, va_list args);
-
-        static int format(char *buffer, unsigned int size, const char *fmt, ...);
-
-    private:
-
-	/** Current value of the String. */    
-	char *value;
+    /** Number format to use for convertions. */
+    Number::Base m_base;
 };
 
-#endif /* __STRING_H */
+#endif /* __LIBSTD_STRING_H */

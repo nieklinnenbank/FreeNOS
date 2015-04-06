@@ -33,7 +33,7 @@ template <class T> class ListIterator : public Iterator<T>
     /**
      * Class constructor.
      *
-     * @param list Pointer to the List to iterator.
+     * @param list Reference to the List to iterate.
      */
     ListIterator(List<T> *list)
         : m_list(*list)
@@ -49,8 +49,22 @@ template <class T> class ListIterator : public Iterator<T>
      *
      * @param list Reference to the List to iterate.
      */
-    ListIterator(List<T> &list)
+    ListIterator(List<T> & list)
         : m_list(list)
+    {
+        assertRead(list);
+
+        m_current = ZERO;
+        reset();
+    }
+
+    /**
+     * Constant class constructor.
+     *
+     * @param list Reference to the List to iterate.
+     */
+    ListIterator(const List<T> & list)
+        : m_list((List<T> &) list)
     {
         assertRead(list);
 
@@ -69,15 +83,6 @@ template <class T> class ListIterator : public Iterator<T>
     }
 
     /**
-     * Get current item in the List.
-     * @return Current item.
-     */
-    virtual T & current()
-    {
-        return m_current->data;
-    }
-
-    /**
      * Check if there is more on the List to iterate.
      * @return true if more items, false if not.
      */
@@ -93,6 +98,26 @@ template <class T> class ListIterator : public Iterator<T>
     virtual bool hasCurrent() const
     {
         return m_current != ZERO;
+    }
+
+    /**
+     * Get current item in the List.
+     *
+     * @return Current item.
+     */
+    virtual const T & current() const
+    {
+        return m_current->data;
+    }
+
+    /**
+     * Get current item in the List.
+     *
+     * @return Current item.
+     */
+    virtual T & current()
+    {
+        return m_current->data;
     }
 
     /**

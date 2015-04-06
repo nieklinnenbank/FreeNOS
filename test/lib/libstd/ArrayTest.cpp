@@ -17,7 +17,7 @@
 
 #include <TestCase.h>
 #include <TestRunner.h>
-#include <TestData.h>
+#include <TestInt.h>
 #include <TestMain.h>
 #include <Array.h>
 #include <String.h>
@@ -33,7 +33,6 @@ TestCase(ArrayConstruct)
 
 TestCase(ArrayOfStrings)
 {
-#if 0
     Array<String, 64> a;
 
     // Fill the array with a String value
@@ -42,19 +41,18 @@ TestCase(ArrayOfStrings)
     // The array should be filled with the test value
     for (Size i = 0; i < 64; i++)
     {
-        testAssert(a[i].equalsIgnoreCase((char *)"test"));
+        testAssert(a[i].equals("test"));
     }
 
     // Check administration
     testAssert(a.size() == 64);
     testAssert(a.count() == 64);
-#endif
-    return SKIP;
+    return OK;
 }
 
 TestCase(ArrayFill)
 {
-    TestData<int> ints(INT_MAX, INT_MIN);
+    TestInt<int> ints(INT_MIN, INT_MAX);
     Array<int, 64> a;
 
     // Fill the array with a random value
@@ -81,7 +79,7 @@ TestCase(ArrayOverflow)
 
 TestCase(ArrayOverwrite)
 {
-    TestData<int> ints(INT_MAX, INT_MIN);
+    TestInt<int> ints(INT_MIN, INT_MAX);
     Array<int, 64> a;
 
     // Write first item
@@ -99,7 +97,7 @@ TestCase(ArrayOverwrite)
 
 TestCase(ArrayPutSeq)
 {
-    TestData<int> ints(INT_MAX, INT_MIN);
+    TestInt<int> ints(INT_MIN, INT_MAX);
     Array<int, 256> a;
 
 
@@ -131,9 +129,9 @@ TestCase(ArrayPutSeq)
 
 TestCase(ArrayPutRandom)
 {
-    TestData<int> ints(INT_MAX, INT_MIN);
-    TestData<uint> sizes(256, 64);
-    TestData<uint> indexes(255, 0);
+    TestInt<int> ints(INT_MIN, INT_MAX);
+    TestInt<uint> sizes(64, 256);
+    TestInt<uint> indexes(0, 255);
     Array<int, 256> a;
     uint count = sizes.random();
 
@@ -168,7 +166,7 @@ TestCase(ArrayPutRandom)
 
 TestCase(ArrayCompare)
 {
-    TestData<int> ints(INT_MAX, INT_MIN);
+    TestInt<int> ints(INT_MIN, INT_MAX);
     Array<int, 64> a1, a2;
 
     // Fill the arrays completely

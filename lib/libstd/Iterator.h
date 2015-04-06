@@ -39,6 +39,7 @@ template <class T> class Iterator
 
     /**
      * Check if there is more to iterate.
+     *
      * @return true if more items, false if not.
      */
     virtual bool hasNext() const = 0;
@@ -51,14 +52,21 @@ template <class T> class Iterator
     virtual bool hasCurrent() const = 0;
 
     /**
-     * Get the current item.
+     * Get the current item read-only.
+     *
+     * @return Reference to the next item.
+     */
+    virtual const T & current() const = 0;
+
+    /**
+     * Get the current item modifiable.
      *
      * @return Reference to the next item.
      */
     virtual T & current() = 0;
 
     /**
-     * Fetch the next item.
+     * Fetch the next item modifiable.
      * This function first fetches the next item
      * and then updates the current item pointer to that item.
      *
@@ -81,4 +89,4 @@ template <class T> class Iterator
     virtual void operator ++(int num) = 0;
 };
 
-#endif /* __ITERATOR_H */
+#endif /* __LIBSTD_ITERATOR_H */

@@ -17,9 +17,12 @@
 
 #include <TestCase.h>
 #include <TestRunner.h>
-#include <TestData.h>
+#include <TestInt.h>
+#include <TestChar.h>
 #include <TestMain.h>
 #include <List.h>
+#include <ListIterator.h>
+#include <String.h>
 
 TestCase(ListConstruct)
 {
@@ -37,13 +40,30 @@ TestCase(ListConstruct)
 
 TestCase(ListOfStrings)
 {
-    return SKIP;
+    List<String> lst;
+    TestInt<Size> sizes(32, 64);
+    TestChar<char *> strings(16, 32);
+    Size size = sizes.random(), n = 0;
+
+    // Fill the list with random Strings
+    for (Size i = 0; i < size; i++)
+        lst << strings.random();
+
+    // Check all Strings are inside
+    for (ListIterator<String> i(lst); i.hasCurrent(); i++)
+        testAssert(i.current().equals(strings.get(n++)));
+
+    // Check administration
+    testAssert(lst.count() == size);
+    testAssert(lst.size() == size);
+    testAssert(!lst.isEmpty());
+    return OK;
 }
 
 TestCase(ListPrependEmpty)
 {
     List<int> lst;
-    TestData<int> ints(INT_MAX, INT_MIN);
+    TestInt<int> ints(INT_MIN, INT_MAX);
 
     // Prepend an item to an empty list.
     lst.prepend(ints.random());
@@ -74,8 +94,8 @@ TestCase(ListPrependEmpty)
 TestCase(ListPrepend)
 {
     List<int> lst;
-    TestData<int> ints(INT_MAX, INT_MIN);
-    TestData<Size> sizes(64, 32);
+    TestInt<int> ints(INT_MIN, INT_MAX);
+    TestInt<Size> sizes(32, 64);
     Size size = sizes.random();
 
     // Generate a random list of items
@@ -124,7 +144,7 @@ TestCase(ListPrepend)
 TestCase(ListAppendEmpty)
 {
     List<int> lst;
-    TestData<int> ints(INT_MAX, INT_MIN);
+    TestInt<int> ints(INT_MIN, INT_MAX);
 
     // Append an item to an empty list.
     lst.append(ints.random());
@@ -155,8 +175,8 @@ TestCase(ListAppendEmpty)
 TestCase(ListAppend)
 {
     List<int> lst;
-    TestData<int> ints(INT_MAX, INT_MIN);
-    TestData<Size> sizes(64, 32);
+    TestInt<int> ints(INT_MIN, INT_MAX);
+    TestInt<Size> sizes(32, 64);
     Size size = sizes.random();
 
     // Generate a random list of items
@@ -205,7 +225,7 @@ TestCase(ListAppend)
 TestCase(ListRemoveFirst)
 {
     List<int> lst;
-    TestData<int> ints(INT_MAX, INT_MIN);
+    TestInt<int> ints(INT_MIN, INT_MAX);
     Size size = 64;
 
     // Generate unique values
@@ -256,7 +276,7 @@ TestCase(ListRemoveFirst)
 TestCase(ListRemoveLast)
 {
     List<int> lst;
-    TestData<int> ints(INT_MAX, INT_MIN);
+    TestInt<int> ints(INT_MIN, INT_MAX);
     Size size = 64;
 
     // Generate unique values
@@ -307,7 +327,7 @@ TestCase(ListRemoveLast)
 TestCase(ListRemoveSingle)
 {
     List<int> lst;
-    TestData<int> ints(INT_MAX, INT_MIN);
+    TestInt<int> ints(INT_MIN, INT_MAX);
     Size size = 64;
 
     // Generate unique values
@@ -361,8 +381,8 @@ TestCase(ListRemoveSingle)
 TestCase(ListRemoveMultiple)
 {
     List<int> lst;
-    TestData<int> ints(INT_MAX, INT_MIN);
-    TestData<uint> sizes(32, 16);
+    TestInt<int> ints(INT_MIN, INT_MAX);
+    TestInt<uint> sizes(16, 32);
     Size size = 64;
     Size extra = sizes.random();
 
@@ -419,8 +439,8 @@ TestCase(ListRemoveMultiple)
 TestCase(ListContains)
 {
     List<int> lst;
-    TestData<int> ints(INT_MAX, INT_MIN);
-    TestData<Size> sizes(64, 32);
+    TestInt<int> ints(INT_MAX, INT_MIN);
+    TestInt<Size> sizes(64, 32);
     Size size = sizes.random();
 
     // Generate unique values
@@ -442,8 +462,8 @@ TestCase(ListContains)
 TestCase(ListGet)
 {
     List<int> lst;
-    TestData<int> ints(INT_MAX, INT_MIN);
-    TestData<Size> sizes(64, 32);
+    TestInt<int> ints(INT_MIN, INT_MAX);
+    TestInt<Size> sizes(32, 64);
     Size size = sizes.random();
 
     // Generate a random list of items
@@ -478,8 +498,8 @@ TestCase(ListGet)
 TestCase(ListClear)
 {
     List<int> lst;
-    TestData<int> ints(INT_MAX, INT_MIN);
-    TestData<Size> sizes(64, 32);
+    TestInt<int> ints(INT_MIN, INT_MAX);
+    TestInt<Size> sizes(32, 64);
     Size size = sizes.random();
 
     // Add random list of items to the list.

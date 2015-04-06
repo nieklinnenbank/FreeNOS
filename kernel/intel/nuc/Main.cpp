@@ -41,7 +41,7 @@ extern C void kernel_main()
 #define BANNER \
     "FreeNOS " RELEASE " [" ARCH "/" SYSTEM "] (" BUILDUSER "@" BUILDHOST ") (" COMPILER_VERSION ") " DATETIME "\r\n"
 
-    serial->setMinimumLogLevel(Log::Notice);
+    serial->setMinimumLogLevel(Log::Debug);
     serial->write(BANNER);
     serial->write(COPYRIGHT "\r\n");
     NOTICE("Initializing subsystems");

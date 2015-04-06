@@ -17,8 +17,8 @@
 
 #include <FreeNOS/API.h>
 #include <FreeNOS/Kernel.h>
-#include <System/Multiboot.h>
-#include <String.h>
+#include <FreeNOS/System/Multiboot.h>
+#include <MemoryBlock.h>
 
 Error SystemInfoHandler(SystemInformation *info)
 {
@@ -27,7 +27,7 @@ Error SystemInfoHandler(SystemInformation *info)
 
     /* Verify memory access. */
     if (!memory->access(procs->current(), (Address) info,
-	                sizeof(SystemInformation)))
+                        sizeof(SystemInformation)))
     {
         return EFAULT;
     }
@@ -36,17 +36,17 @@ Error SystemInfoHandler(SystemInformation *info)
     info->memorySize  = memory->getTotalMemory();
     info->memoryAvail = memory->getAvailableMemory();
     info->moduleCount = multibootInfo.modsCount;
-    String::strlcpy(info->cmdline, (char *)multibootInfo.cmdline, 64);
+    MemoryBlock::copy(info->cmdline, (char *)multibootInfo.cmdline, 64);
     
     /* Include multiboot modules information. */
     for (Size i = 0; i < info->moduleCount; i++)
     {
-	MultibootModule *m = (MultibootModule *)(multibootInfo.modsAddress +
-						 sizeof(MultibootModule) * i);
-	info->modules[i].modStart   = m->modStart;
-	info->modules[i].modEnd     = m->modEnd;
-	info->modules[i].string[31] = ZERO;
-	String::strlcpy(info->modules[i].string, (char *)m->string, 32);
+        MultibootModule *m = (MultibootModule *)(multibootInfo.modsAddress +
+                                                 sizeof(MultibootModule) * i);
+        info->modules[i].modStart   = m->modStart;
+        info->modules[i].modEnd     = m->modEnd;
+        info->modules[i].string[31] = ZERO;
+        MemoryBlock::copy(info->modules[i].string, (char *)m->string, 32);
     }
     return 0;
 }

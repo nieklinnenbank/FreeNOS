@@ -39,9 +39,8 @@ template <class T> class List : public Sequence<T>
         /**
          * Constructor.
          */
-        Node(T item)
+        Node(T t) : data(t)
         {
-            data = item;
             prev = ZERO;
             next = ZERO;
         }
@@ -64,6 +63,19 @@ template <class T> class List : public Sequence<T>
         m_head  = ZERO;
         m_tail  = ZERO;
         m_count = 0;
+    }
+
+    /**
+     * Copy constructor.
+     */
+    List(const List<T> & lst)
+    {
+        m_head  = ZERO;
+        m_tail  = ZERO;
+        m_count = 0;
+
+        for (Node *node = lst.m_head; node; node = node->next)
+            append(node->data);
     }
 
     /**
@@ -142,7 +154,7 @@ template <class T> class List : public Sequence<T>
      *
      * @param t Item to remove.
      * @param single True to remove only one item, false to remove all matching items.
-     * @return Number of item removed from the list.
+     * @return Number of items removed from the list.
      */
     virtual int remove(T t)
     {
@@ -171,7 +183,7 @@ template <class T> class List : public Sequence<T>
      *
      * @param node The Node to remove.
      */
-    virtual void remove(Node *node)
+    virtual int remove(Node *node)
     {
         if (node->prev)
             node->prev->next = node->next;
@@ -187,6 +199,7 @@ template <class T> class List : public Sequence<T>
 
         m_count--;
         delete node;
+        return true;
     }
 
     /**
@@ -195,7 +208,7 @@ template <class T> class List : public Sequence<T>
      * @param t The element to find.
      * @return true if the element is on the List, false otherwise.
      */
-    virtual bool contains(T t)
+    virtual bool contains(const T t) const
     {
         assertRead(t);
 
@@ -237,11 +250,27 @@ template <class T> class List : public Sequence<T>
     }
 
     /**
+     * Get the first Node on the List (read-only).
+     */
+    const Node * head() const
+    {
+        return m_head;
+    }
+
+    /**
      * Get the last Node on the list.
      *
      * @return Last Node on the list.
      */
     Node * tail()
+    {
+        return m_tail;
+    }
+
+    /**
+     * Get the last Node on the List (read-only).
+     */
+    const Node * tail() const
     {
         return m_tail;
     }
@@ -258,12 +287,34 @@ template <class T> class List : public Sequence<T>
     }
 
     /**
+     * Get the first value as constant.
+     * Assumes that the list is not empty.
+     *
+     * @return First value on the list.
+     */
+    const T first() const
+    {
+        return m_head->data;
+    }
+
+    /**
      * Get the last value on the list.
      * Assumes that the list is not empty.
      *
      * @return Last value on the list.
      */
     T last()
+    {
+        return m_tail->data;
+    }
+
+    /**
+     * Get the last value on the list as constant.
+     * Assumes that the list is not empty.
+     *
+     * @return Last value on the list.
+     */
+    const T last() const
     {
         return m_tail->data;
     }
@@ -335,6 +386,45 @@ template <class T> class List : public Sequence<T>
     Size count() const
     {
         return m_count;
+    }
+
+    /**
+     * Append operator.
+     */
+    List & operator << (T t)
+    {
+        append(t);
+        return (*this);
+    }
+
+    /**
+     * Comparison operator.
+     */
+    bool operator == (const List<T> & lst) const
+    {
+        if (lst.count() != m_count)
+            return false;
+
+        for (Node *n = m_head; n; n = n->next)
+            if (!lst.contains(n->data))
+                return false;
+
+        return true;
+    }
+
+    /**
+     * Inequality operator.
+     */
+    bool operator != (const List<T> & lst) const
+    {
+        if (lst.count() != m_count)
+            return true;
+
+        for (Node *n = m_head; n; n = n->next)
+            if (!lst.contains(n->data))
+                return true;
+
+        return false;
     }
 
   private:

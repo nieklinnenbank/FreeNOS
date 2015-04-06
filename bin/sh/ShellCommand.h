@@ -90,7 +90,7 @@ class ShellCommand
 	Size minParams;
     
 	/** All known ShellCommands. */
-	static HashTable<String, ShellCommand> commands;
+	static HashTable<String, ShellCommand *> commands;
 };
 
 #endif /* __SH_SHELLCOMMAND */

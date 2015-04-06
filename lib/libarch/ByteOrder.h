@@ -18,6 +18,8 @@
 #ifndef __BYTEORDER_H
 #define __BYTEORDER_H
 
+#warning Move this to libarch. Byte ordering etc is specific to architectures. And FreeNOS/ should not be here.
+
 #include <FreeNOS/System/Constant.h>
 #include <Macros.h>
 

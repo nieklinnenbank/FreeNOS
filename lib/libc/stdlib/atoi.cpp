@@ -15,37 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBSTD_BYTESEQUENCE_H
-#define __LIBSTD_BYTESEQUENCE_H
+#include <String.h>
+#include "stdlib.h"
 
-#include "Types.h"
-
-/**
- * Object which can be read byte-wise.
- */
-class ByteSequence
+extern C int atoi(const char *nptr)
 {
-  public:
-
-    /**
-     * Class destructor.
-     */
-    virtual ~ByteSequence() {}
-    
-    /**
-     * Get the size of the object.
-     *
-     * @return Size in bytes.
-     */
-    virtual Size size() const = 0;
-    
-    /**
-     * Read an object byte-wise (e.g. for hashing).
-     *
-     * @param index Offset to read.
-     * @return Unsigned byte.
-     */
-    virtual u8 valueAt(Size index) const = 0;
-};
-
-#endif /* __LIBSTD_BYTESEQUENCE_H */
+    String s = nptr;
+    return s.toLong();
+}

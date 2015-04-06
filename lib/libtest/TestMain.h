@@ -19,6 +19,7 @@
 #define __LIBTEST_TESTMAIN_H
 
 #include "TestRunner.h"
+#include "TestSuite.h"
 
 int main(int argc, char **argv)
 {

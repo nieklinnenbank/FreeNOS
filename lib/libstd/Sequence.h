@@ -68,12 +68,23 @@ template <class T> class Sequence : public Container, public Comparable<Sequence
     }
 
     /**
+     * Remove all items with the given value.
+     *
+     * @param value Value to remove.
+     * @return Number of items removed.
+     */
+    virtual int remove(T value)
+    {
+        return 0;
+    }
+
+    /**
      * Removes the item at the given position.
      *
      * @param position The position of the item to remove.
      * @return bool Whether removing the item succeeded.
      */
-    virtual bool remove(Size position)
+    virtual bool removeAt(Size position)
     {
         return false;
     }
@@ -86,7 +97,7 @@ template <class T> class Sequence : public Container, public Comparable<Sequence
         Size s = this->size();
 
         for (Size i = 0; i < s; i++)
-            remove(i);
+            removeAt(i);
     }
 
     /**
@@ -128,7 +139,7 @@ template <class T> class Sequence : public Container, public Comparable<Sequence
     /**
      * Check if the given item is stored in this Sequence.
      */
-    virtual bool contains(T value)
+    virtual bool contains(const T value) const
     {
         Size sz = this->size();
 

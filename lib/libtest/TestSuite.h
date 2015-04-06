@@ -35,7 +35,7 @@ class TestSuite : public Singleton<TestSuite>
 
   private:
 
-    List<TestInstance *> *m_tests;
+    List<TestInstance *> m_tests;
 };
 
 #endif /* __LIBTEST_TESTSUITE_H */

@@ -18,17 +18,19 @@
 #ifndef __SHARED_H
 #define __SHARED_H
 
+// TODO: replace this with channels for IPC.
+
 #include <FreeNOS/Memory.h>
 #include <MemoryMessage.h>
-#include "Assert.h"
-#include "Comparable.h"
-#include "Types.h"
-#include "String.h"
-#include "ProcessID.h"
-#include "MemoryBlock.h"
+#include <Assert.h>
+#include <Types.h>
+#include <ProcessID.h>
+#include <MemoryBlock.h>
+#include <String.h>
 
 /**
  * Enables sharing objects between processes.
+ *
  * @note While possible, sharing memory pointers is likely to
  *       effect refering invalid memory regions. Try to use simple
  *       datastructures with this class.
@@ -74,7 +76,7 @@ template <class T> class Shared
 	    mem.action = CreateShared;
 	    mem.bytes  = sizeof(T) * count;
 	    mem.key    = (char *) key;
-	    mem.keyLength  = String::strlen(key);
+	    mem.keyLength  = String::length(key);
 	    mem.access = Memory::Present | Memory::User | Memory::Readable | Memory::Writable;
 	    mem.virtualAddress  = ZERO;
 	    mem.physicalAddress = ZERO;

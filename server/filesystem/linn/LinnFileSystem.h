@@ -25,7 +25,6 @@
 #include <Types.h>
 #include <Vector.h>
 #include <HashTable.h>
-#include <Integer.h>
 #include "LinnSuperBlock.h"
 #include "LinnInode.h"
 #include "LinnGroup.h"
@@ -141,7 +140,7 @@ class LinnFileSystem : public FileSystem
 	Vector<LinnGroup *> *groups;
 
 	/** Inode cache. */
-	HashTable<Integer<u32>,LinnInode> inodes;
+	HashTable<u32, LinnInode *> inodes;
 };
 
 #endif /* __HOST__ */

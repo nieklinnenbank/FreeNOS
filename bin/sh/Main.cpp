@@ -17,7 +17,6 @@
 
 #include <API/ProcessCtl.h>
 #include <ProcessID.h>
-#include <StringTokenizer.h>
 #include "Shell.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -65,12 +64,12 @@ int main(int argc, char **argv)
 		continue;
 	    }
 	    /* Parse it into lines. */
-	    StringTokenizer tok(contents, '\n');
+	    List<String> lines = String(contents).split('\n');
 	    
 	    /* Execute each command. */
-	    while (tok.hasNext())
+	    for (ListIterator<String> i(lines); i.hasCurrent(); i++)
 	    {
-		sh.execute(tok.next());
+		sh.execute((char *) *i.current());
 	    }
 	    /* Cleanup. */
 	    delete contents;

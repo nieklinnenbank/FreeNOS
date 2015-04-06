@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,582 +15,632 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "String.h"
+#include "Character.h"
 #include "MemoryBlock.h"
+#include "String.h"
 
 String::String()
 {
-    value = ZERO;
+    m_string    = new char[STRING_DEFAULT_SIZE];
+    m_string[0] = ZERO;
+    m_allocated = true;
+    m_size      = STRING_DEFAULT_SIZE;
+    m_count     = 0;
+    m_base      = Number::Dec;
 }
 
-String::String(char *s)
+String::String(const String & str)
 {
-    value = strdup(s);
+    m_size      = str.m_size;
+    m_count     = str.m_count;
+    m_base      = str.m_base;
+    m_string    = new char[m_size];
+    m_allocated = true;
+    MemoryBlock::copy(m_string, str.m_string, m_count + 1);
 }
 
-String::String(String *s)
+String::String(char *str, bool copy)
 {
-    value = strdup(s->value);
+    m_count     = length(str);
+    m_size      = m_count ? m_count + 1 : STRING_DEFAULT_SIZE;
+    m_allocated = copy;
+    m_base      = Number::Dec;
+
+    if (copy)
+    {
+        m_string = new char[m_size];
+        MemoryBlock::copy(m_string, str, m_count + 1);
+    }
+    else
+        m_string = str;
 }
 
-String::String(const char *s)
+String::String(const char *str, bool copy)
 {
-    value = strdup((char *)s);
+    m_count     = length(str);
+    m_size      = m_count ? m_count + 1 : STRING_DEFAULT_SIZE;
+    m_allocated = copy;
+    m_base      = Number::Dec;
+
+    if (copy)
+    {
+        m_string = new char[m_size];
+        MemoryBlock::copy(m_string, str, m_count + 1);
+    }
+    else
+        m_string = (char *) str;
 }
 
-String::String(const char *s, Size max)
+String::String(int number)
 {
-    unsigned len = strlen(s);
-    if (len > max)
-        len = max;
+    m_string    = new char[STRING_DEFAULT_SIZE];
+    m_string[0] = ZERO;
+    m_allocated = true;
+    m_size      = STRING_DEFAULT_SIZE;
+    m_count     = 0;
+    m_base      = Number::Dec;
 
-    value = new char [len + 1];
-    MemoryBlock::copy(value, s, len + 1);
-    value[len] = ZERO;
+    set(number);
 }
 
 String::~String()
 {
-    if (value)
+    if (m_allocated)
     {
-        delete value;
-        value = 0;
+        delete[] m_string;
+        m_allocated = false;
     }
 }
 
 Size String::size() const
 {
-    return strlen(value);
+    return m_size;
 }
 
-String String::toLowerCase()
+Size String::count() const
 {
-    Size length = this->size();
-    char* nv = new char[length + 1];
-    MemoryBlock::set(nv, 0, length + 1);
-
-    for( Size index = 0; index < length; index++ )
-    {
-        nv[index] = tolower(value[index]);
-    }
-    return String(nv);
+    return m_count;
 }
 
-String String::toUpperCase()
+Size String::length() const
 {
-    Size length = this->size();
-    char* nv = new char[length + 1];
-    MemoryBlock::set(nv, 0, length + 1);
-
-    for( Size index = 0; index < length; index++ )
-    {
-        nv[index] = toupper(value[index]);
-    }
-
-    return String(nv);
+    return count();
 }
 
-u8 String::valueAt(Size index) const
+Size String::length(char *str)
 {
-    assert(index < size());
-    return value[index];
+    return length((const char *) str);
 }
 
-bool String::contains(String& sequence)
+Size String::length(const char *str)
 {
-    return contains(*sequence);
+    Size len = 0;
+
+    while (*str++)
+        len++;
+
+    return len;
 }
 
-bool String::contains(char* sequence)
+bool String::resize(Size size)
 {
-    if(sequence == (char*) NULL ||
-       strlen(sequence) > strlen(value))
-    {
+    char *buffer;
+
+    // Refuse zero-sized Strings.
+    if (size == 0)
         return false;
-    }
 
-    /* See if the first character of sequence occurs in value. */
-    char* pt = strchr(value, sequence[0]);
-    if( pt == (char*) NULL )
-    {
+    // Chop-off String if the current buffer is larger.
+    if (m_count >= size)
+        m_count = size - 1;
+
+    // Allocate buffer
+    buffer = new char[size];
+    if (!buffer)
         return false;
-    }
 
-    while(*pt)
-    {
-        if(strncmp( sequence, pt, strlen( sequence ) == 0))
-        {
-            return true;
-        }
-        pt++;
-    }
-    return false;
-}
+    // Copy the contents of the old buffer, if any.
+    MemoryBlock::copy(buffer, m_string, m_count + 1);
+    buffer[m_count] = ZERO;
 
-bool String::contains(char c)
-{
-    return (strchr(value, c) != NULL);
-}
+    // Only cleanup the old buffer if it was previously allocated
+    if (m_allocated)
+        delete[] m_string;
 
-bool String::startsWith(String& prefix)
-{
-    return startsWith(*prefix);
-}
-
-bool String::startsWith(char* prefix)
-{
-    if( ! prefix )
-    {
-        return false;
-    }
-
-    Size pLength = strlen(prefix);
-    Size vLength = strlen(value);
-
-    if( pLength > vLength )
-    {
-        return false;
-    }
-
-    for( Size pos = 0; pos < pLength; pos++ )
-    {
-        if( value[pos] != prefix[pos] )
-        {
-            return false;
-        }
-    }
+    // Update administration
+    m_string = buffer;
+    m_allocated = true;
+    m_size = size;
     return true;
 }
 
-bool String::endsWith(String& suffix)
+bool String::reserve(Size count)
 {
-    return endsWith(*suffix);
+    if (!m_allocated || count > m_size - 1)
+        return resize(count + 1);
+    else
+        return true;
 }
 
-bool String::endsWith(char* suffix)
+const char * String::get(Size position) const
 {
-    Size sLength = strlen(suffix);
-    Size vLength = strlen(value);
+    return position < m_count ? m_string + position : ZERO;
+}
 
-    if( sLength > vLength )
-    {
+const char & String::at(Size position) const
+{
+    return m_string[position];
+}
+
+const char String::value(Size position) const
+{
+    return m_string[position];
+}
+
+bool String::contains(char character) const
+{
+    for (Size i = 0; i < m_count - 1; i++)
+        if (m_string[i] == character)
+            return true;
+
+    return false;
+}
+
+bool String::startsWith(String & prefix) const
+{
+    return startsWith(prefix.m_string);
+}
+
+bool String::startsWith(const char *prefix) const
+{
+    Size len = length(prefix);
+
+    // If the prefix is larger than the String itself, it cannot match.
+    if (!len || len > m_count)
         return false;
-    }
 
-    char* pt = (value + (vLength - sLength) );
-    return( strcmp(pt, suffix) == 0);
+    // Compare against the prefix
+    for (Size i = 0; i < len; i++)
+        if (m_string[i] != prefix[i])
+            return false;
+
+    return true;
+}
+        
+bool String::endsWith(String & suffix) const
+{
+    return endsWith(suffix.m_string);
 }
 
-String String::substring(unsigned int index)
+bool String::endsWith(const char *suffix) const
 {
-    return substring(index, strlen(value) - index);
+    Size len = length(suffix);
+
+    // If the suffix is larger than the String itself, it cannot match
+    if (!len || len > m_count)
+        return false;
+
+    // Compare against the suffix.
+    for (Size i = m_count - len, j = 0; i < m_count; i++, j++)
+        if (m_string[i] != suffix[j])
+            return false;
+
+    return true;
 }
 
-String String::substring(unsigned int index, unsigned int size)
+int String::compareTo(const String & str) const
 {
-    unsigned length = strlen(value);
-    if( index >= length )
+    return compareTo(str, true);
+}
+
+int String::compareTo(const String & str, bool caseSensitive) const
+{
+    return compareTo(str.m_string, caseSensitive, 0);
+}
+
+int String::compareTo(const char *str, bool caseSensitive, Size count) const
+{
+    const char *dest = m_string, *src = str;
+    Size n = count;
+
+    while (*dest && *src)
     {
-        index = length - 1;
-    }
-
-    char *copy;
-    copy = new char[size];
-    MemoryBlock::copy(copy, value+index, size);
-
-    String s(copy);
-    delete copy;
-    return s;
-}
-
-String* String::clone()
-{
-    // The constructor of String creates a copy
-    // of the specified char*
-    String* clone = new String(value);
-    return clone;
-}
-
-String* String::trim()
-{
-    Size from = 0;
-    Size to = 0;
-    Size length = strlen(value);
-
-    for( Size pos = 0; pos < length; pos++ )
-    {
-        if( ! isWhitespace(value[pos]) )
-        {
-            from = pos;
+        if (count && n-1 == 0)
             break;
-        }
+
+        if (( caseSensitive && *dest != *src) ||
+            (!caseSensitive && Character::lower(*dest) != Character::lower(*src)))
+                break;
+
+        dest++, src++, n--;
     }
-
-    for( Size pos = length - 1; true ; pos-- )
-    {
-        if( pos <= from || ! isWhitespace(value[pos]) )
-        {
-            to = pos;
-            break;
-        }
-    }
-
-    if( from == to )
-    {
-        return (String*)0;
-    }
-
-    char* trimmed;
-    trimmed = new char[to - from + 1];
-    MemoryBlock::set(trimmed, 0, (to - from + 1));
-    MemoryBlock::copy(trimmed, value + from, to - from + 1);
-
-    String* t = new String(trimmed);
-    delete trimmed;
-    return t;
+    return *dest - *src;
 }
 
-bool String::match(char *string, char *mask)
+bool String::equals(const String & str) const
 {
-    /* Loop until the end of the mask, */
-    while (*mask)
+    return compareTo(str.m_string, true, 0) == 0;
+}
+
+bool String::match(const char *mask) const
+{
+    const char *string = m_string;
+    const char *end = ZERO;
+
+    while (*string && *mask)
     {
-        /* See if the current character is a wildcard or not. */
-        if (!WILDCARD(*mask))
+        if (Character::isWildcard(*mask))
         {
-            /*
-             * If it's not a wildcard, the string and mask
-             * must match exactly to be a match.
-             */
-            if (!*string || *mask != *string)
-            {
-                return false;
-            }
-            mask++, string++;
-        }
-        else
-        {
-            /* If we have a wildcard, look for the next character. */
-            while (WILDCARD(*mask))
-            {
+            // Skip extra wildcards
+            while (Character::isWildcard(*mask))
                 mask++;
-            }
-            /*
-             * There is more coming after the wildcard, to which the
-             * string must match.
-             */
-            if (*mask)
+
+            // Find end of the string after the mask, if any.
+            for (end = mask; *end && !Character::isWildcard(*end); end++)
+                ;
+
+            // If the wildcard was last, its a match.
+            if (mask == end)
+                return true;
+
+            // Move the string forward until a match
+            for (; *string; string++)
             {
-                /*
-                 * Loop until the char in string matches the char
-                 * after the wildcard.
-                 */
-                while (true)
+                const char *s = string, *m = mask;
+
+                while (*s && *m && *s == *m)
+                    s++, m++;
+
+                if (m == end)
                 {
-                    if (!*string)
-                        return false;
-
-                    if (*mask == *string)
-                        break;
-
-                    string++;
+                    break;
                 }
             }
-            /* Mask ends with a wildcard, which means the string matches. */
-            else
-                return true;
+        }
+        else if (*string != *mask)
+            break;
+
+        if (*string) string++;
+        if (*mask) mask++;
+    }
+    while (Character::isWildcard(*mask))
+        mask++;
+
+    return (*string == *mask);
+}
+
+String String::substring(Size index, Size size)
+{
+    // Make sure index is within bounds.
+    if (index >= m_count)
+        index = m_count;
+
+    // Copy the string from the index.
+    String str(m_string + index);
+
+    // Set a ZERO byte at the right place, if needed.
+    if (size && size < m_count-index)
+    {
+        str.m_string[size] = ZERO;
+        str.m_count = size;
+    }
+    return str;
+}
+
+String & String::trim()
+{
+    Size from = 0, to = m_count - 1;
+
+    if (!m_count)
+        return (*this);
+
+    // Make sure the string is allocated
+    reserve(m_count);
+
+    // Skip before
+    for (Size i = 0; i < m_count - 1; i++, from++)
+        if (!Character::isWhitespace(m_string[i]))
+            break;
+
+    // Skip after
+    for (Size i = m_count - 1; i > 0; i--, to--)
+        if (!Character::isWhitespace(m_string[i]))
+            break;
+
+    // Copy actual string content
+    if (from < to)
+    {
+        MemoryBlock::copy(m_string, m_string + from, to-from+2);
+        m_count = to - from + 1;
+    }
+    return (*this);
+}
+
+String & String::lower()
+{
+    // Make sure the string is allocated
+    reserve(m_count);
+
+    for (Size i = 0; i < m_count; i++)
+        m_string[i] = Character::lower(m_string[i]);
+
+    return (*this);
+}
+        
+String & String::upper()
+{
+    // Make sure the string is allocated
+    reserve(m_count);
+
+    for (Size i = 0; i < m_count; i++)
+        m_string[i] = Character::upper(m_string[i]);
+
+    return (*this);
+}
+
+List<String> String::split(char delimiter)
+{
+    char str[2];
+    str[0] = delimiter;
+    str[1] = ZERO;
+
+    String s(str);
+
+    return split(s);
+}
+
+List<String> String::split(const String & delimiter)
+{
+    List<String> lst;
+    String copy(m_string);
+    Size from = 0, i = 0;
+
+    // Save copy string pointer
+    char *saved = copy.m_string;
+
+    // Loop the String.
+    while (i < m_count)
+    {
+        // Find delimiter
+        if (copy.compareTo(delimiter.m_string, true, delimiter.m_count) == 0)
+        {
+            copy.m_string += delimiter.m_count;
+
+            if (i > from)
+            {
+                String sub = substring(from, i - from);
+                lst.append(sub);
+            }
+            from = i + delimiter.m_count;
+            i += delimiter.m_count;
+        }
+        else
+            copy.m_string++, i++;
+    }
+    // Append last part, if no more delimiters found
+    if (from < m_count)
+    {
+        String sub = substring(from);
+        lst.append(sub);
+    }
+
+    // Restore saved
+    copy.m_string = saved;
+    return lst;
+}
+
+long String::toLong(Number::Base base)
+{
+    const char *s = m_string;
+    long acc = 0, cutoff;
+    bool negative = false;
+    int cutlim, basenum = 10;
+
+    // Set the number base
+    switch (base)
+    {
+        case Number::Dec: basenum = 10; break;
+        case Number::Hex: basenum = 16; break;
+    }
+
+    // Skip whitespace
+    while (Character::isWhitespace(*s))
+        s++;
+
+    // Negative number?
+    if (s[0] == '-')
+    {
+        negative = true; s++;
+    }
+
+    // Skip '0x' prefix
+    if (basenum == 16 && s[0] == '0' && s[1] == 'x')
+        s += 2;
+
+    // Compute output range limits
+    cutoff = negative ? LONG_MIN : LONG_MAX;
+    cutlim = cutoff % basenum;
+    cutoff /= basenum;
+
+    if (negative) {
+        if (cutlim > 0) {
+            cutlim -= base;
+            cutoff += 1;
+        }
+        cutlim = -cutlim;
+    }
+
+    while (1)
+    {
+        unsigned char c = (unsigned char) *s++;
+
+        if (Character::isDigit(c))
+            c -= '0';
+        else if (Character::isAlpha(c))
+            c -= Character::isUpper(c) ? 'A' - 10 : 'a' - 10;
+        else
+            break;
+
+        if (c >= basenum)
+            break;
+
+        if (negative)
+        {
+            if (acc < cutoff || (acc == cutoff && c > cutlim))
+            {
+                acc = LONG_MIN;
+            } else {
+                acc *= basenum;
+                acc -= c;
+            }
+        } else {
+            if (acc > cutoff || (acc == cutoff && c > cutlim))
+            {
+                acc = LONG_MAX;
+            } else {
+                acc *= basenum;
+                acc += c;
+            }
         }
     }
-    /* If there remains more data in the string, it's not a match. */
-    return *string ? false : true;
+    return acc;
 }
 
-bool String::match(char *mask)
+Size String::set(long number, Number::Base base, char *string)
 {
-    return value ? match(value, mask) : false;
-}
+    char *p, *p1, *p2, *saved, tmp;
+    unsigned long ud = number;
+    int remainder, divisor = 10;
+    Size written = 0;
 
-bool String::equals(String *s)
-{
-    assertRead(s->value);
-    return strcmp(value, s->value) == 0;
-}
+    // If needed, make sure enough allocated space is available.
+    if (!string)
+        reserve(STRING_DEFAULT_SIZE - 1);
+    
+    // Set target buffer
+    p = string ? string : m_string;
 
-bool String::equals(const String & s) const
-{
-    assertRead(s.value);
-    return strcmp(value, s.value) == 0;
-}
+    // Set divider according to the number system base.
+    switch (base)
+    {
+        case Number::Dec: divisor = 10; break;
+        case Number::Hex: divisor = 16; break;
+    };
 
-int String::compareTo(const String & s) const
-{
-    return strcmp(value, s.value);
-}
+    // Negative decimal.
+    if (divisor == 10 && number < 0)
+    {
+        *p++ = '-';
+        ud = -number;
+    }
+    // Hexadecimal.
+    else if (divisor == 16)
+    {
+        *p++ = '0';
+        *p++ = 'x';
+        written += 2;
+    }
+    saved = p;
 
-bool String::equalsIgnoreCase(String& s)
-{
-    return equalsIgnoreCase(*s);
-}
+    // Divide ud by the divisor, until ud == 0
+    do
+    {
+        remainder = ud % divisor;
+        *p++ = (remainder < 10) ? remainder + '0' : remainder + 'a' - 10;
+    }
+    while (ud /= divisor);
+    
+    // Terminate buffer
+    *p = 0;
+    
+    // Initialize pointers
+    p1 = saved;
+    p2 = p - 1;
+    written += p2-p1+1;
+    
+    // Reverse buf
+    while (p1 < p2)
+    {
+        tmp = *p1;
+        *p1 = *p2;
+        *p2 = tmp;
+        p1++;
+        p2--;
+    }
+    // Update String administration, if needed.
+    if (!string)
+        m_count = written;
 
-bool String::equalsIgnoreCase(char* s)
-{
-    return strcasecmp(value, s);
-}
-
-char String::operator [] (Size index) const
-{
-    return (char) valueAt(index);
-}
-
-void String::operator = (const String & s)
-{
-    this->value = s.value;
-}
-
-void String::operator = (String *s)
-{
-    assertRead(s);
-    assertRead(s->value);
-    this->value = s->value;
+    return written;
 }
 
 void String::operator = (const char *s)
 {
-    assertRead(s);
-    this->value = (char *) strdup((char *)s);
+    Size len = length(s);
+
+    if (reserve(len))
+    {
+        MemoryBlock::copy(m_string, s, len + 1);
+        m_count = len;
+        m_string[m_count] = ZERO;
+    }
 }
 
-bool String::operator == (String *s)
+void String::operator = (const String & str)
 {
-    assertRead(s);
-    return strcmp(value, s->value) == 0;
+    Size len = length(str.m_string);
+
+    if (reserve(len))
+    {
+        MemoryBlock::copy(m_string, str.m_string, len + 1);
+        m_count = len;
+        m_string[m_count] = ZERO;
+    }
 }
 
-bool String::operator == (char *ch)
+bool String::operator == (const String & str) const
 {
-    assertRead(ch);
-    return strcmp(value, ch) == 0;
+    return compareTo(str, true) == 0;
 }
 
-bool String::operator == (const String s) const
+bool String::operator != (const String & str) const
 {
-    assertRead(s);
-    return strcmp(value, s.value) == 0;
+    return compareTo(str, true) != 0;
 }
 
-bool String::operator != (const String s) const
+const char * String::operator * () const
 {
-    assertRead(s);
-    return strcmp(value, s.value) != 0;
+    return m_string;
 }
 
 char * String::operator * ()
 {
-    return value;
+    return m_string;
 }
 
-bool String::isWhitespace(char c)
+String & String::operator << (const char *str)
 {
-    return (c == ' ' || c == '\t' || c == '\r' || c == '\n');
-}
+    Size len = length(str);
 
-unsigned String::strlen(const char *str)
-{
-    const char *s;
-
-    for (s = str; *s; ++s);
-    return (s - str);
-}
-
-int String::strcmp( const char *dest, const char *src )
-{
-    while ( *dest && *src && *dest == *src )
+    if (reserve(m_count + len))
     {
-        dest++;
-        src++;
+        MemoryBlock::copy(m_string + m_count, str, len + 1);
+        m_count += len;
+        m_string[m_count] = ZERO;
     }
-    return (*dest - *src);
+    return (*this);
 }
 
-char * String::strdup(char *str)
+String & String::operator << (long number)
 {
-    unsigned sz;
-    char *copy;
+    if (reserve(m_count + 16))
+        m_count += set(number, m_base, m_string + m_count);
 
-    sz = strlen(str) + 1;
-
-    if ((copy = new char[sz]) == NULL)
-        return (char *) (NULL);
-
-    MemoryBlock::copy(copy, str, sz);
-    return(copy);
+    return (*this);
 }
 
-int String::strcasecmp(const char *dest, const char *src )
+String & String::operator << (Number::Base base)
 {
-    
-    while ( *dest && *src && (tolower((int)*dest) == tolower((int)*src)) )
-    {
-	dest++;
-	src++;
-    }
-    return (tolower((int)*dest) - tolower((int)*src));
-}
-
-char * String::strchr(const char *s, int c)
-{
-    while (*s && *s != c)
-    {
-	s++;
-    }
-    return (char *) (*s ? s : NULL);
-}
-
-int String::strncmp( const char *dest, const char *src, unsigned count )
-{
-    while (*dest && *src && *dest == *src && count)
-    {
-	if (--count)
-	{
-	    dest++, src++;
-	}
-    }
-    return (*dest - *src);
-}
-
-unsigned String::strlcpy(char *dst, const char *src, unsigned siz)
-{
-	char *d = dst;
-	const char *s = src;
-	unsigned n = siz;
-
-	/* Copy as many bytes as will fit */
-	if (n != 0) {
-		while (--n != 0) {
-			if ((*d++ = *s++) == '\0')
-				break;
-		}
-	}
-
-	/* Not enough room in dst, add NUL and traverse rest of src */
-	if (n == 0) {
-		if (siz != 0)
-			*d = '\0';		/* NUL-terminate dst */
-		while (*s++)
-			;
-	}
-
-	return(s - src - 1);	/* count does not include NUL */
-}
-
-// TODO: temporary place string formatting from the original C library here.
-// This library should implement all functionality such as string formattting. Libc
-// should just be a thin wrapper around this library.
- 
-extern C void itoa(char *buffer, int divisor, int number);
-
-extern C int atoi(const char *nptr);
-
-extern C long strtol(const char *nptr, char **endptr, int base);
-
-int String::vformat(char *buffer, unsigned int size, const char *fmt, va_list args)
-{
-    char buf[20], *ptr;
-    int ch, length = -1, i;
-    unsigned int written = 0;
-    
-    /* Loop formatted message. */
-    while ((ch = *fmt++) && written < size)
-    {
-	if (ch != '%')
-	{
-	    *buffer++ = ch;
-	    written++;
-	}
-	else
-	{
-	switch_again:
-	
-	    switch (*fmt)
-	    {
-		/* Length modifier. */
-	        case '0' ... '9':
-	    
-		    for (i = 0; i < 19 && *fmt >= '0' && *fmt <= '9'; i++)
-		    {
-			buf[i]   = *fmt++;
-		        buf[i+1] = ZERO;
-		    }
-		    length = atoi(buf);
-		    goto switch_again;
-	
-		/* Integer. */    
-	        case 'd':
-	        case 'u':
-		    itoa(buf, 10, va_arg(args, int));
-		    ptr = buf;
-		    goto string;
-	
-		/* Long integer. */
-		case 'l':
-		    itoa(buf, 10, va_arg(args, long));
-		    ptr = buf;
-		    goto string;
-	
-		/* Hexadecimal. */
-	        case 'x':
-		    itoa(buf, 16, va_arg(args, int));
-		    ptr = buf;
-		    goto string;
-	
-		/* Character. */
-		case 'c':
-		    buf[0] = va_arg(args, int);
-		    buf[1] = ZERO;
-		    ptr    = buf;
-		    goto string;
-	
-		/* String. */
-		case 's':
-		    ptr = va_arg(args, char *);
-	
-		string:
-		    while( ((length == -1 && *ptr) ||
-			    (length > 0 && length--)) && written++ < size)
-		    {
-			if (*ptr)
-			{
-			    *buffer++ = *ptr++;
-			}
-			else
-			    *buffer++ = ' ';
-		    }
-		    break;
-	
-		/* Unsupported. */
-	        default:
-	    	    *buffer++ = ch;
-		    written++;
-		    break;
-	    }
-	    fmt++;
-	    length = -1;
-	}
-    }
-    /* Null terminate. */
-    if (written < size)
-	*buffer = 0;
-    return (written);
-}
-
-int String::format(char *buffer, unsigned int size, const char *fmt, ...)
-{
-    va_list args;
-    int ret;
-
-    va_start(args, fmt);
-    ret = vformat(buffer, size, fmt, args);
-    va_end(args);
-    
-    return (ret);
+    m_base = base;
+    return (*this);
 }

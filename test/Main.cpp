@@ -27,7 +27,6 @@
 #include <String.h>
 #include <HashTable.h>
 #include <HashIterator.h>
-#include <Integer.h>
 #include <TerminalCodes.h>
 
 int run_test(char *path)
@@ -36,7 +35,7 @@ int run_test(char *path)
     char *argv[2];
 
     argv[0] = path;
-    argv[1] = "-n";
+    argv[1] = (char *) "-n";
     argv[2] = 0;
 
 #ifdef __HOST__
@@ -55,11 +54,10 @@ int run_test(char *path)
     return status;
 }
 
-int run_tests(char **argv, char *path, HashTable<String, Integer<int> > *results, int *failures)
+int run_tests(char **argv, char *path, HashTable<String, int> *results, int *failures)
 {
     DIR *d;
     struct dirent *dent;
-    struct stat st;
     char tmp[255];
     int r;
 
@@ -91,7 +89,7 @@ int run_tests(char **argv, char *path, HashTable<String, Integer<int> > *results
                 if (str.endsWith((const char *)"Test"))
                 {
                     r = run_test(tmp);
-                    results->insert(new String(strdup(tmp)), new Integer<int>(r));
+                    results->insert(tmp, r);
 
                     if (r != 0)
                         (*failures)++;
@@ -131,7 +129,7 @@ int main(int argc, char **argv)
     for (int i = 0; i < iterations; i++)
     {
         // Run all tests in the given directory, recursively
-        HashTable<String, Integer<int> > results;
+        HashTable<String, int> results;
         int failed = 0;
         run_tests(argv, path, &results, &failed);
         printf("%s: ", argv[0]);
@@ -149,13 +147,13 @@ int main(int argc, char **argv)
         results.count() - failed, failed, results.count());
 
         // Print the failed tests
-        for (HashIterator<String, Integer<int> > i(results); i.hasCurrent(); i++)
+        for (HashIterator<String, int> i(results); i.hasCurrent(); i++)
         {
-            String *testname = i.key();
-            int fails = **i.current();
+            const String & testname = i.key();
+            int fails = i.current();
 
             if (fails)
-                printf("  %s: %d failures\r\n", **testname , fails);
+                printf("  %s: %d failures\r\n", *testname , fails);
         }
         if (failed)
             return failed;

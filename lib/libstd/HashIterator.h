@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,12 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __HASHITERATOR_H
-#define __HASHITERATOR_H
+#ifndef __LIBSTD_HASHITERATOR_H
+#define __LIBSTD_HASHITERATOR_H
 
 #include "Macros.h"
+#include "Types.h"
 #include "Iterator.h"
-#include "Container.h"
 #include "ListIterator.h"
 #include "HashTable.h"
 #include "Assert.h"
@@ -28,42 +28,26 @@
 /**
  * Iterate through a HashTable.
  */
-template <class K, class V> class HashIterator // : public Iterator<V>
+template <class K, class V> class HashIterator : public Iterator<V>
 {
   public:
 
     /**
      * Class constructor.
-     */
-    HashIterator(HashTable<K, V> *hash)
-        : m_hash(*hash)
-    {
-        assertRead(hash);
-
-        m_listIter = ZERO;
-        m_index    = 0;
-    }
-
-    /**
-     * Class constructor.
      *
-     * @param h Reference to the List to iterate.
+     * @param hash Reference to the HashTable to iterate.
      */
-    HashIterator(HashTable<K, V> &hash)
-        : m_hash(hash)
+    HashIterator(HashTable<K, V> & hash)
+        : m_hash(hash), m_keys(hash.keys()), m_iter(m_keys)
     {
         assertRead(hash);
-
-        m_listIter = ZERO;
-        m_index    = 0;
     }
 
     /**
      * Destructor.
      */
-    ~HashIterator()
+    virtual ~HashIterator()
     {
-        if (m_listIter) delete m_listIter;
     }
 
     /**
@@ -71,87 +55,90 @@ template <class K, class V> class HashIterator // : public Iterator<V>
      */
     virtual void reset()
     {
-        m_index = 0;
-        if (m_listIter)
-            delete m_listIter;
-        m_listIter = ZERO;
+        m_iter.reset();
     }
 
     /**
-     * Get current item.
-     * @return Current item.
-     */
-    //virtual V & current()
-    virtual V * current()
-    {
-        return m_listIter->current()->value;
-    }
-
-    /**
-     * Retrieve key of the current item.
-     * @return Current key.
-     */
-    //virtual K & key()
-    virtual K * key()
-    {
-        return m_listIter->current()->key;
-    }
-
-    /**
-     * Check if there is more on the HashTable to iterate.
+     * Check if there is more to iterate.
      * @return true if more items, false if not.
-     */
-    virtual bool hasCurrent() const
-    {
-        return m_listIter && m_listIter->hasNext();
-    }
-
-    /**
-     * Check if there is any next item.
      */
     virtual bool hasNext() const
     {
-        // TODO: fix this
-        return false;
+        return m_iter.hasNext();
+    }
+
+    /**
+     * Check if there is a current item.
+     *
+     * @return True if the iterator has a current item, false otherwise.
+     */
+    virtual bool hasCurrent() const
+    {
+        return m_iter.hasCurrent();
+    }
+
+    /**
+     * Get the current value (read-only).
+     *
+     * @return Reference to the current read-only value.
+     */
+    virtual const V & current() const
+    {
+        return m_hash[m_iter.current()];
+    }
+
+    /**
+     * Get the current value.
+     *
+     * @return Reference to the current value.
+     */
+    virtual V & current()
+    {
+        return m_hash[m_iter.current()];
+    }
+
+    /**
+     * Get the current key.
+     *
+     * @return Reference to the current key.
+     */
+    virtual const K & key()
+    {
+        return m_iter.current();
     }
 
     /**
      * Fetch the next item.
-     * @return Pointer to the next item.
+     * This function first fetches the next item
+     * and then updates the current item pointer to that item.
+     *
+     * @return Reference to the next item.
      */
-    //virtual V & next()
-    virtual V * next()
+    virtual V & next()
     {
-        HashBucket<K, V> *n = ZERO;
-        List<HashBucket<K, V> *> *lst = ZERO;
-
-        // Look for next item on the List, otherwise find next List
-        if (!m_listIter || !(n = m_listIter->next()))
-        {
-            while (++m_index < m_hash.size() - 1)
-            {
-                if ((lst = &(m_hash.map()[m_index])) && lst->head())
-                {
-                    if (m_listIter)
-                        delete m_listIter;
-
-                    m_listIter = new ListIterator<HashBucket<K, V> *>(lst);
-                    n = m_listIter->current();
-                    break;
-                }
-            }
-        }
-        // Next item
-        return n->value;
+        return m_hash[m_iter.next()];
     }
 
     /**
-     * Increment operator
+     * Remove the current item from the underlying Container.
+     *
+     * @return True if removed successfully, false otherwise.
      */
-    virtual void operator++(int num)
+    virtual bool remove()
     {
-        // TODO: this is wrong. must obey current vs. next. See ListIterator/Iterator
-        next();
+        K key = m_iter.current();
+        m_iter.remove();
+        return m_hash.remove(key);
+    }
+
+    /**
+     * Increment operator.
+     * This function first increment the current item
+     * and then updates the next item pointer.
+     */
+    virtual void operator ++(int num)
+    {
+        m_iter++;
     }
 
   private:
@@ -159,11 +146,11 @@ template <class K, class V> class HashIterator // : public Iterator<V>
     /** Points to the HashTable to iterate. */
     HashTable<K, V> & m_hash;
 
-    /** Current list of HashBuckets. */
-    ListIterator<HashBucket<K, V> *> *m_listIter;
+    /** List of keys to iterate. */
+    List<K> m_keys;
 
-    /** Current index in the HashTable. */
-    Size m_index;
+    /** Iterator of keys. */
+    ListIterator<K> m_iter;
 };
 
-#endif /* __HASHITERATOR_H */
+#endif /* __LIBSTD_HASHITERATOR_H */

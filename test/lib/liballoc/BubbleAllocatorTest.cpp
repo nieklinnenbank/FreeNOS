@@ -18,14 +18,14 @@
 #include <FreeNOS/System/Constant.h>
 #include <TestCase.h>
 #include <TestRunner.h>
-#include <TestData.h>
+#include <TestInt.h>
 #include <TestMain.h>
 #include <BubbleAllocator.h>
 
 TestCase(BubbleConstruct)
 {
-    TestData<uint> addresses(UINT_MAX, UINT_MIN);
-    TestData<uint> sizes(PAGESIZE * 16, PAGESIZE);
+    TestInt<uint> addresses(UINT_MIN, UINT_MAX);
+    TestInt<uint> sizes(PAGESIZE, PAGESIZE * 16);
 
     BubbleAllocator ba(addresses.random(),
                        sizes.random());
@@ -38,8 +38,8 @@ TestCase(BubbleConstruct)
 
 TestCase(BubbleAlloc)
 {
-    TestData<uint> addresses(UINT_MAX, UINT_MIN);
-    TestData<uint> sizes(PAGESIZE * 16, PAGESIZE);
+    TestInt<uint> addresses(UINT_MIN, UINT_MAX);
+    TestInt<uint> sizes(PAGESIZE, PAGESIZE * 16);
 
     BubbleAllocator ba(addresses.random(),
                        sizes.random());
