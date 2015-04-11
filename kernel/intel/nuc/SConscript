@@ -51,12 +51,9 @@ env.Depends('#${BUILDROOT}/boot.linn.gz', '#build/host')
 # Boot ISO (LiveCD)
 #
 cd = env.ISO('#${BUILDROOT}/boot.iso',
-           [ '#kernel/intel/nuc/stage1',
-             '#kernel/intel/nuc/stage2_eltorito',
-             '#kernel/intel/nuc/menu.lst',
-             '#${BUILDROOT}/kernel/intel/nuc/kernel',
+           [ '#${BUILDROOT}/kernel/intel/nuc/kernel',
              '#${BUILDROOT}/boot.img.gz',
-	     '#${BUILDROOT}/boot.linn.gz' ])
+             '#${BUILDROOT}/boot.linn.gz' ])
 
 # Shortcut to build the ISO.
 Alias('iso', cd)

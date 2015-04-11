@@ -27,18 +27,17 @@ def iso_func(target, source, env):
     # Create a temporary directory.
     temp = tempfile.mkdtemp()
 
+    # Temporary workaround for intel/nuc. Place grub.cfg in /boot/grub.
+    os.makedirs(temp + '/boot/grub')
+
     # Copy required files to temp directory.
     for s in source:
-	shutil.copy(str(s), temp)
+        shutil.copy(str(s), temp + '/boot')
 
-    # Temporary workaround for intel/nuc. Place grub menu.lst in /boot/grub.
-    os.makedirs(temp + '/boot/grub')
-    shutil.copy('kernel/intel/nuc/menu.lst', temp + '/boot/grub')
+    shutil.copy('kernel/intel/nuc/grub.cfg', temp + '/boot/grub')
 
     # Generate the ISO.
-    os.system('mkisofs -quiet -R -b stage2_eltorito -no-emul-boot ' +
-              '-boot-load-size 4 -boot-info-table -o ' + str(target[0]) +
-              ' -V "FreeNOS ' + env['VERSION'] + '" ' + temp);
+    os.system('grub-mkrescue -d /usr/lib/grub/i386-pc -o ' + str(target[0]) + ' --modules="multiboot iso9660 biosdisk gzio" ' + temp)
 
     # Clean up temporary directory.
     shutil.rmtree(temp);
@@ -62,4 +61,4 @@ def generate(env):
 # We always exist.
 #
 def exists(env):
-    return Env.Detect('mkisofs')
+    return Env.Detect('grub-mkrescue')
