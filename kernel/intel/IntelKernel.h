@@ -120,9 +120,6 @@ class IntelKernel : public Kernel, public Singleton<IntelKernel>
          * @param param Not used.
          */
         static void clocktick(CPUState *state, ulong param);
-        
-        /** Amount of i8253 ticks (interrupts) counted so far. */
-        Size ticks;
 };
 
 /**

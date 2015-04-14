@@ -46,7 +46,7 @@ void executeInterrupt(CPUState state)
 }
 
 IntelKernel::IntelKernel(IntelMemory *memory, ProcessManager *proc)
-    : Kernel(memory, proc), Singleton<IntelKernel>(this), ticks(0)
+    : Kernel(memory, proc), Singleton<IntelKernel>(this)
 {
     /* ICW1: Initialize PIC's (Edge triggered, Cascade) */
     outb(PIC1_CMD, 0x11);
@@ -186,14 +186,7 @@ void IntelKernel::trap(CPUState *state, ulong param)
 void IntelKernel::clocktick(CPUState *state, ulong param)
 {
     IntelKernel *kernel = Singleton<IntelKernel>::instance;
-#warning this is ugly. just change the clock timing
-    /* Quantum reached? */
-    if ((++kernel->ticks % 2) == 0)
-    {
-	/* Reset. */
-        kernel->ticks = 0;
 
-        /* Reschedule. */
-	kernel->getProcessManager()->schedule();
-    }
+    /* Reschedule. */
+    kernel->getProcessManager()->schedule();
 }
