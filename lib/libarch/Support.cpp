@@ -17,15 +17,65 @@
 
 #include "Support.h"
 
-u32 __aeabi_uidiv(u32 numerator, u32 denominator)
+int __aeabi_idiv(int numerator, int denominator)
 {
-    u32 count = 0;
+    idiv_return r = __aeabi_idivmod(numerator, denominator);
+    return r.quotient;
+}
+
+uint __aeabi_uidiv(uint numerator, uint denominator)
+{
+    uidiv_return r = __aeabi_uidivmod(numerator, denominator);
+    return r.quotient;
+}
+
+idiv_return __aeabi_idivmod(int numerator, int denominator)
+{
+    idiv_return r;
+    int neg = 0;
+
+    r.quotient  = 0;
+    r.remainder = 0;
+
+    if (numerator < 0)
+    {
+        neg = 1;
+        numerator = -numerator;
+    }
+
+    if (denominator < 0)
+    {
+        neg ^= 1;
+        denominator = -denominator;
+    }
 
     while (numerator >= denominator)
     {
         numerator -= denominator;
-        count++;
+        r.quotient++;
     }
+    r.remainder = numerator;
 
-    return count;
+    if (neg)
+    {
+        r.quotient  = -r.quotient;
+        r.remainder = -r.remainder;
+    }
+    return r;
+}
+
+uidiv_return __aeabi_uidivmod(uint numerator, uint denominator)
+{
+    uidiv_return r;
+    
+    r.quotient  = 0;
+    r.remainder = 0;
+
+    while (numerator >= denominator)
+    {
+        numerator -= denominator;
+        r.quotient++;
+    }
+    r.remainder = numerator;
+    return r;
 }

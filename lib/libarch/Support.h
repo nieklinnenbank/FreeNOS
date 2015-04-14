@@ -22,7 +22,27 @@
 #include <Types.h>
 #include <Macros.h>
 
-extern C u32 __aeabi_uidiv(u32 numerator, u32 denominator);
+typedef struct
+{
+    int quotient;
+    int remainder;
+}
+idiv_return;
+
+typedef struct
+{
+    uint quotient;
+    uint remainder;
+}
+uidiv_return;
+
+extern C int __aeabi_idiv(int numerator, int denominator);
+
+extern C uint __aeabi_uidiv(uint numerator, uint denominator);
+
+extern C idiv_return __aeabi_idivmod(int numerator, int denominator);
+
+extern C uidiv_return __aeabi_uidivmod(uint numerator, uint denominator);
 
 #endif /* __ASSEMBLER__ */
 #endif /* __LIBSTD_SUPPORT_H */
