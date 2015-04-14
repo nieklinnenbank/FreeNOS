@@ -35,6 +35,14 @@ inline ulong trapKernel1(ulong num, ulong arg1)
     return 0;
 }
 
+/**
+ * Perform a kernel trap with 2 arguments.
+ */
+inline ulong trapKernel2(ulong num, ulong arg1, ulong arg2)
+{
+    return 0;
+}
+
 /** 
  * Perform a kernel trap with 3 arguments. 
  * @param num Unique number of the handler to execute. 
