@@ -34,10 +34,20 @@ def iso_func(target, source, env):
     for s in source:
         shutil.copy(str(s), temp + '/boot')
 
-    shutil.copy('kernel/intel/nuc/grub.cfg', temp + '/boot/grub')
-
     # Generate the ISO.
-    os.system('grub-mkrescue -d /usr/lib/grub/i386-pc -o ' + str(target[0]) + ' --modules="multiboot iso9660 biosdisk gzio" ' + temp)
+    if env.Detect('grub-mkrescue'):
+        shutil.copy('kernel/intel/nuc/grub.cfg', temp + '/boot/grub')
+        os.system('grub-mkrescue -d /usr/lib/grub/i386-pc -o ' + str(target[0]) + ' --modules="multiboot iso9660 biosdisk gzio" ' + temp)
+
+    # Fallback without grub2.
+    elif env.Detect('mkisofs'):
+        shutil.copy('kernel/intel/nuc/menu.lst', temp + '/boot/grub')
+        shutil.copy('kernel/intel/nuc/stage2_eltorito', temp)
+        os.system('mkisofs -quiet -R -b stage2_eltorito -no-emul-boot ' +
+                  '-boot-load-size 4 -boot-info-table -o ' + str(target[0]) +
+                  ' -V "FreeNOS ' + env['VERSION'] + '" ' + temp);
+    else:
+        raise Exception("no ISO generation program found. Install grub-mkrescue or mkisofs")
 
     # Clean up temporary directory.
     shutil.rmtree(temp);
