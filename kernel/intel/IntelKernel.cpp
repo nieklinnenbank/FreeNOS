@@ -17,10 +17,13 @@
 
 #include <FreeNOS/API.h>
 #include <FreeNOS/ProcessManager.h>
+#include <FreeNOS/BootImage.h>
 #include <Macros.h>
 #include <List.h>
 #include <ListIterator.h>
 #include <Vector.h>
+#include <String.h>
+#include <UserProcess.h>
 #include "IntelKernel.h"
 #include "IntelCPU.h"
 #include "IntelInterrupt.h"
@@ -189,4 +192,82 @@ void IntelKernel::clocktick(CPUState *state, ulong param)
 
     /* Reschedule. */
     kernel->getProcessManager()->schedule();
+}
+
+bool IntelKernel::loadBootImage()
+{
+    MultibootModule *mod;
+    BootImage *image;
+    bool found = false;
+
+    /* Startup boot modules. */
+    for (Size n = 0; n < multibootInfo.modsCount; n++)
+    {
+        mod = &((MultibootModule *) multibootInfo.modsAddress)[n];
+        String str = (char *) mod->string;
+
+        /* Mark its memory used */
+        for (Address a = mod->modStart; a < mod->modEnd; a += PAGESIZE)
+        {
+            m_memory->allocatePhysicalAddress(a);
+        }
+
+        /* Is this a BootImage? */
+        if (str.match("*.img.gz"))
+        {
+            /* Map the BootImage into our address space. */
+            image = (BootImage *) m_memory->map(mod->modStart);
+                                  m_memory->map(mod->modStart + PAGESIZE);
+
+            found = true;        
+
+            /* Verify this is a correct BootImage. */
+            if (image->magic[0] == BOOTIMAGE_MAGIC0 &&
+                image->magic[1] == BOOTIMAGE_MAGIC1 &&
+                image->layoutRevision == BOOTIMAGE_REVISION)
+            {       
+                /* Loop BootPrograms. */
+                for (Size i = 0; i < image->programsTableCount; i++)
+                {
+                    loadBootProcess(image, mod->modStart, i);
+                }
+            }
+        }
+    }
+    /* Done */
+    return found;
+}
+
+void IntelKernel::loadBootProcess(BootImage *image, Address imagePAddr, Size index)
+{
+    Address imageVAddr = (Address) image, args;
+    BootProgram *program;
+    BootSegment *segment;
+    Process *proc;
+    
+    /* Point to the program and segments table. */
+    program = &((BootProgram *) (imageVAddr + image->programsTableOffset))[index];
+    segment = &((BootSegment *) (imageVAddr + image->segmentsTableOffset))[program->segmentsOffset];
+
+    /* Create process. */
+    proc = m_procs->create(program->entry);
+    proc->setState(Process::Ready);
+                    
+    /* Loop program segments. */
+    for (Size i = 0; i < program->segmentsCount; i++)
+    {
+        /* Map program segment into it's virtual memory. */
+        for (Size j = 0; j < segment[i].size; j += PAGESIZE)
+        {
+
+            m_memory->map(proc,
+                          imagePAddr + segment[i].offset + j,
+                          segment[i].virtualAddress + j,
+                          Memory::Present | Memory::User | Memory::Readable | Memory::Writable);
+        }
+    }
+    /* Map and copy program arguments. */
+    args = m_memory->allocatePhysical(PAGESIZE);
+    m_memory->map(proc, args, ARGV_ADDR, Memory::Present | Memory::User | Memory::Writable);
+    MemoryBlock::copy( (char *) m_memory->map(args), program->path, ARGV_SIZE);
 }

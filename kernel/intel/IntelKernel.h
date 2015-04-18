@@ -69,57 +69,70 @@
  */
 class IntelKernel : public Kernel, public Singleton<IntelKernel>
 {
- public:
+  public:
 
-        /**
-         * Constructor function.
-         */
-        IntelKernel(IntelMemory *memory, ProcessManager *procs);
+    /**
+     * Constructor function.
+     */
+    IntelKernel(IntelMemory *memory, ProcessManager *procs);
 
-        /**
-         * Hooks a function to an hardware interrupt.
-         * @param vec Interrupt vector to hook on.
-         * @param h Handler function.
-         * @param p Parameter to pass to the handler function.
-         */
-        void hookInterrupt(int vec, InterruptHandler h, ulong p);
+    /**
+     * Hooks a function to an hardware interrupt.
+     * @param vec Interrupt vector to hook on.
+     * @param h Handler function.
+     * @param p Parameter to pass to the handler function.
+     */
+    virtual void hookInterrupt(int vec, InterruptHandler h, ulong p);
 
-        /** 
-         * Uses the PIC to (un)mask an IRQ. 
-         * @param vector Interrupt vector. 
-         * @param enabled Either to mask (true) or unmask (false). 
-         */
-        void enableIRQ(uint vector, bool enabled);
+    /** 
+     * Uses the PIC to (un)mask an IRQ. 
+     * @param vector Interrupt vector. 
+     * @param enabled Either to mask (true) or unmask (false). 
+     */
+    virtual void enableIRQ(uint vector, bool enabled);
 
-    private:
+    /**
+     * Loads the boot image.
+     */
+    virtual bool loadBootImage();
+
+  private:
+
+    /**
+     * Creates a new Process from a BootProcess.
+     * @param image BootImage pointer loaded by the bootloader in kernel virtual memory.
+     * @param imagePAddr Physical memory address of the boot image.
+     * @param index Index in the BootProcess table.
+     */
+    void loadBootProcess(BootImage *image, Address imagePAddr, Size index);
     
-        /** 
-         * Called when the CPU detects a fault. 
-         * @param state Contains CPU registers, interrupt vector and error code. 
-         * @param param Not used. 
-         */
-        static void exception(CPUState *state, ulong param);
+    /** 
+     * Called when the CPU detects a fault. 
+     * @param state Contains CPU registers, interrupt vector and error code. 
+     * @param param Not used. 
+     */
+    static void exception(CPUState *state, ulong param);
         
-        /** 
-         * Default interrupt handler. 
-         * @param state Contains CPU registers, interrupt vector and error code. 
-         * @param param Not used. 
-         */
-        static void interrupt(CPUState *state, ulong param);
+    /** 
+     * Default interrupt handler. 
+     * @param state Contains CPU registers, interrupt vector and error code. 
+     * @param param Not used. 
+     */
+    static void interrupt(CPUState *state, ulong param);
 
-        /**
-         * Kernel trap handler (system calls).
-         * @param state Contains the arguments for the APIHandler, in CPU registers.
-         * @param param Not used.
-         */
-        static void trap(CPUState *state, ulong param);
+    /**
+     * Kernel trap handler (system calls).
+     * @param state Contains the arguments for the APIHandler, in CPU registers.
+     * @param param Not used.
+     */
+    static void trap(CPUState *state, ulong param);
         
-        /** 
-         * i8253 system clock interrupt handler. 
-         * @param state CPU registers on time of interrupt. 
-         * @param param Not used.
-         */
-        static void clocktick(CPUState *state, ulong param);
+    /** 
+     * i8253 system clock interrupt handler. 
+     * @param state CPU registers on time of interrupt. 
+     * @param param Not used.
+     */
+    static void clocktick(CPUState *state, ulong param);
 };
 
 /**

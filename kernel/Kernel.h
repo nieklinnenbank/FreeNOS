@@ -84,20 +84,12 @@ class Kernel : public Singleton<Kernel>
      */
     virtual void enableIRQ(uint vector, bool enabled) = 0;
 
-protected:
-
     /**
      * Loads the boot image.
      */
-    bool loadBootImage();
-    
-    /**
-     * Creates a new Process from a BootProcess.
-     * @param image BootImage pointer loaded by the bootloader in kernel virtual memory.
-     * @param imagePAddr Physical memory address of the boot image.
-     * @param index Index in the BootProcess table.
-     */
-    void loadBootProcess(BootImage *image, Address imagePAddr, Size index);
+    virtual bool loadBootImage() = 0;
+
+  protected:
 
     /** Memory object */
     Memory *m_memory;
