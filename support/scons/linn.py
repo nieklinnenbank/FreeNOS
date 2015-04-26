@@ -23,11 +23,9 @@ def linnfs_generate(target, source, env):
     """
     Generate an LinnFS filesystem image.
     """
-    rootfs_out, ext  = os.path.splitext(str(target[0]))
     rootfs_path = env.Dir(env['ROOTFS']).srcnode().path
 
-    os.system("build/host/server/filesystem/linn/create " + rootfs_out + " -s -n 16384 -d " + rootfs_path)
-    os.system("gzip " + rootfs_out)
+    os.system("build/host/server/filesystem/linn/create " + str(target[0]) + " -s -n 16384 -d " + rootfs_path)
 
 #
 # Prints out a user friendly command-line string.
