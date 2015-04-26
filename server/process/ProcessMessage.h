@@ -23,10 +23,9 @@
  * @{    
  */
 
-#include <API/IPCMessage.h>
+#include <FreeNOS/API.h>
 #include <Types.h>
 #include <Macros.h>
-#include <ProcessID.h>
 
 /** @see ProcessServer.h */
 class UserProcess;

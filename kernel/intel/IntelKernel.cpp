@@ -17,17 +17,18 @@
 
 #include <FreeNOS/API.h>
 #include <FreeNOS/ProcessManager.h>
-#include <FreeNOS/BootImage.h>
 #include <Macros.h>
 #include <List.h>
 #include <ListIterator.h>
 #include <Vector.h>
 #include <String.h>
+#include <BootImage.h>
 #include <UserProcess.h>
 #include "IntelKernel.h"
 #include "IntelCPU.h"
 #include "IntelInterrupt.h"
 #include "IntelMemory.h"
+#include "Multiboot.h"
 
 /** Interrupt handlers. */
 Vector<List<InterruptHook *> *> interrupts(256);
@@ -198,7 +199,6 @@ bool IntelKernel::loadBootImage()
 {
     MultibootModule *mod;
     BootImage *image;
-    bool found = false;
 
     /* Startup boot modules. */
     for (Size n = 0; n < multibootInfo.modsCount; n++)
@@ -212,51 +212,54 @@ bool IntelKernel::loadBootImage()
             m_memory->allocatePhysicalAddress(a);
         }
 
-        /* Is this a BootImage? */
+        /* Is this the BootImage? */
         if (str.match("*.img.gz"))
         {
             /* Map the BootImage into our address space. */
             image = (BootImage *) m_memory->map(mod->modStart);
                                   m_memory->map(mod->modStart + PAGESIZE);
 
-            found = true;        
-
             /* Verify this is a correct BootImage. */
             if (image->magic[0] == BOOTIMAGE_MAGIC0 &&
                 image->magic[1] == BOOTIMAGE_MAGIC1 &&
                 image->layoutRevision == BOOTIMAGE_REVISION)
-            {       
+            {
+                m_bootImageAddress = mod->modStart;
+                m_bootImageSize    = mod->modEnd - mod->modStart;
+
                 /* Loop BootPrograms. */
-                for (Size i = 0; i < image->programsTableCount; i++)
-                {
+                for (Size i = 0; i < image->symbolTableCount; i++)
                     loadBootProcess(image, mod->modStart, i);
-                }
             }
+            return true;
         }
     }
-    /* Done */
-    return found;
+    return false;
 }
 
 void IntelKernel::loadBootProcess(BootImage *image, Address imagePAddr, Size index)
 {
     Address imageVAddr = (Address) image, args;
-    BootProgram *program;
+    BootSymbol *program;
     BootSegment *segment;
     Process *proc;
     
-    /* Point to the program and segments table. */
-    program = &((BootProgram *) (imageVAddr + image->programsTableOffset))[index];
+    // Point to the program and segments table
+    program = &((BootSymbol *) (imageVAddr + image->symbolTableOffset))[index];
     segment = &((BootSegment *) (imageVAddr + image->segmentsTableOffset))[program->segmentsOffset];
 
-    /* Create process. */
+    // Ignore non-BootProgram entries
+    if (program->type != BootProgram)
+        return;
+
+    // Create process
     proc = m_procs->create(program->entry);
     proc->setState(Process::Ready);
                     
-    /* Loop program segments. */
+    // Loop program segments
     for (Size i = 0; i < program->segmentsCount; i++)
     {
-        /* Map program segment into it's virtual memory. */
+        // Map program segment into it's virtual memory
         for (Size j = 0; j < segment[i].size; j += PAGESIZE)
         {
 
@@ -266,8 +269,10 @@ void IntelKernel::loadBootProcess(BootImage *image, Address imagePAddr, Size ind
                           Memory::Present | Memory::User | Memory::Readable | Memory::Writable);
         }
     }
-    /* Map and copy program arguments. */
+    // Map and copy program arguments
     args = m_memory->allocatePhysical(PAGESIZE);
     m_memory->map(proc, args, ARGV_ADDR, Memory::Present | Memory::User | Memory::Writable);
-    MemoryBlock::copy( (char *) m_memory->map(args), program->path, ARGV_SIZE);
+    MemoryBlock::copy( (char *) m_memory->map(args), program->name, ARGV_SIZE);
+
+    NOTICE("loaded: " << program->name);
 }

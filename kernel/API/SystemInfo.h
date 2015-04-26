@@ -19,7 +19,6 @@
 #define __API_SYSTEMINFO_H
 
 #include <FreeNOS/API.h>
-#include <System/Multiboot.h>
 #include <FreeNOS/Config.h>
 #include <FreeNOS/Kernel.h>
 #include <Error.h>
@@ -60,7 +59,7 @@ typedef struct SystemInformation
      */
     SystemInformation()
     {
-	SystemInfo(this);
+        SystemInfo(this);
     }
 
     /** System version. */
@@ -72,21 +71,11 @@ typedef struct SystemInformation
     /** Total and available memory in bytes. */
     Size memorySize, memoryAvail;
 
-    /**
-     * Multiboot modules.
-     */
-    struct
-    {
-	/** Physical addresses. */
-	Address modStart, modEnd;
-	
-	/** Configured boot string. */
-	char string[32];
-    }
-    modules[32];
-    
-    /** Number of modules. */
-    Size moduleCount;
+    /** BootImage physical address */
+    Address bootImageAddress;
+
+    /** BootImage size */
+    Size bootImageSize;
 }
 SystemInformation;
 

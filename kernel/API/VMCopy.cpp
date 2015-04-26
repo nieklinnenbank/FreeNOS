@@ -15,15 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#warning Do not depend on Intel specific flags for generic APIs
 
 #include "VMCopy.h"
+#include <FreeNOS/Config.h>
 #include <FreeNOS/Process.h>
 #include <FreeNOS/API.h>
 #include <FreeNOS/Kernel.h>
 #include <FreeNOS/System/Constant.h>
 #include <Error.h>
 #include <MemoryBlock.h>
+
+#warning Do not depend on Intel specific flags for generic APIs
 
 Error VMCopyHandler(ProcessID procID, Operation how, Address ours,
                                     Address theirs, Size sz)
@@ -34,6 +36,8 @@ Error VMCopyHandler(ProcessID procID, Operation how, Address ours,
     Address paddr, tmpAddr;
     Size bytes = 0, pageOff, total = 0;
     
+#ifdef __i386__
+
     /* Find the corresponding Process. */
     if (!(proc = procs->get(procID)))
     {
@@ -80,6 +84,8 @@ Error VMCopyHandler(ProcessID procID, Operation how, Address ours,
         theirs += bytes;
         total  += bytes;
     }
+#endif
     /* Success. */
     return total;
+
 }

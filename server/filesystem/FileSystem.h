@@ -18,11 +18,9 @@
 #ifndef __FILESYSTEM_FILESYSTEM_H
 #define __FILESYSTEM_FILESYSTEM_H
 
-#include <API/IPCMessage.h>
-#include <API/VMCopy.h>
+#include <FreeNOS/API.h>
 #include <IPCServer.h>
 #include <UserProcess.h>
-#include <ProcessID.h>
 #include <Shared.h>
 #include <Vector.h>
 #include <HashTable.h>

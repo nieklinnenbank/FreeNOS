@@ -80,6 +80,7 @@ Log & operator << (Log &log, Operation op);
 #include "API/VMCopy.h"
 #include "API/VMCtl.h"
 #include "API/IOCtl.h"
+#include "API/ProcessID.h"
 
 /**
  * @}

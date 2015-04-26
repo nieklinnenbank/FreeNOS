@@ -15,11 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <Log.h>
 #include "ARMKernel.h"
 
 ARMKernel::ARMKernel(Memory *memory, ProcessManager *procs)
     : Kernel(memory, procs)
 {
+    NOTICE("");
 }
 
 void ARMKernel::hookInterrupt(int vec, InterruptHandler h, ulong p)

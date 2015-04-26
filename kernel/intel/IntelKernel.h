@@ -22,6 +22,7 @@
 
 #include <FreeNOS/Kernel.h>
 #include <Types.h>
+#include <BootImage.h>
 #include "IntelInterrupt.h"
 #include "IntelCPU.h"
 #include "IntelMemory.h"

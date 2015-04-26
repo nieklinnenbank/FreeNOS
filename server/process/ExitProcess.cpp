@@ -15,11 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/IPCMessage.h>                                                       
-#include <API/ProcessCtl.h> 
+#include <FreeNOS/API.h>
 #include <FreeNOS/Process.h>
 #include <Types.h>
-#include <ProcessID.h>
 #include <Error.h>
 #include "ProcessMessage.h"
 #include "ProcessServer.h"

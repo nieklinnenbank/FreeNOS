@@ -23,8 +23,6 @@
 LinnFile::LinnFile(LinnFileSystem *f, LinnInode *i)
     : fs(f), inode(i)
 {
-    DEBUG("");
-
     size   = inode->size;
     access = inode->mode;
 }

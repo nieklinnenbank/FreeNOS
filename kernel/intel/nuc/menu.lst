@@ -4,4 +4,3 @@ title FreeNOS
 root (cd)
 kernel /boot/kernel
 module /boot/boot.img.gz
-module /boot/boot.linn.gz

@@ -22,7 +22,6 @@
 #include <Macros.h>
 #include <Types.h>
 #include <Singleton.h>
-#include "BootImage.h"
 #include "Process.h"
 #include "Memory.h"
 #include "ProcessFactory.h"
@@ -57,6 +56,16 @@ class Kernel : public Singleton<Kernel>
      * Get process manager.
      */
     ProcessManager * getProcessManager();
+
+    /**
+     * BootImage physical address.
+     */
+    Address getBootImageAddress();
+
+    /**
+     * BootImage size
+     */
+    Size getBootImageSize();
 
     /**
      * Execute the kernel.
@@ -96,6 +105,12 @@ class Kernel : public Singleton<Kernel>
 
     /** Process Manager */
     ProcessManager *m_procs;
+
+    /** Physical address of the BootImage */
+    Address m_bootImageAddress;
+
+    /** Size of the boot image in bytes */
+    Size m_bootImageSize;
 
     /** API handlers */
     Vector<APIHandler *> m_apis;

@@ -15,15 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#warning Do not depend on Intel specific functions in a generic API
-
-#include "VMCtl.h"
 #include <FreeNOS/Kernel.h>
+#include <FreeNOS/Config.h>
 #include <Error.h>
-#include <ProcessID.h>
+#include "VMCtl.h"
+#include "ProcessID.h"
+
+#warning Do not depend on Intel specific functions in a generic API
 
 Error VMCtlHandler(ProcessID procID, MemoryOperation op, MemoryRange *range)
 {
+#ifdef __i386__
     ProcessManager *procs = Kernel::instance->getProcessManager();
     IntelMemory *memory = (IntelMemory *) Kernel::instance->getMemory();
     Process *proc = ZERO;
@@ -137,6 +139,7 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, MemoryRange *range)
             return EINVAL;
         
     }
+#endif
     /* Success. */
     return 0;
 }

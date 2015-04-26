@@ -16,8 +16,9 @@
  */
 
 #include <Types.h>
+#include <PrivExecLog.h>
 #include <FileStorage.h>
-#include <BootModule.h>
+#include <BootImageStorage.h>
 #include "LinnFileSystem.h"
 #include "LinnInode.h"
 #include "LinnFile.h"
@@ -27,40 +28,39 @@
 
 int main(int argc, char **argv)
 {
+    PrivExecLog log;
     Storage *storage = ZERO;
     bool background  = false;
     const char *path = "/";
 
-    /*
-     * Mount the given file, or use the default GRUB boot module.
-     */
+    // Mount the given file, or try to use the BootImage embedded rootfs
     if (argc > 3)
     {
-	storage    = new FileStorage(argv[1], atoi(argv[2]));
-	background = true;
-	path       = argv[3];
+        storage    = new FileStorage(argv[1], atoi(argv[2]));
+        background = true;
+        path       = argv[3];
     }
     else
     {
-	BootModule *bm = new BootModule("/boot/boot.linn.gz");
-	
-	if (bm->load())
-	{
-	    storage = bm;
-	}
+        BootImageStorage *bm = new BootImageStorage(LINNFS_ROOTFS_FILE);
+        if (bm->load())
+        {
+            NOTICE("loaded: " << LINNFS_ROOTFS_FILE);
+            storage = bm;
+        } else
+            FATAL("unable to load: " << LINNFS_ROOTFS_FILE);
     }
 
-    /*
-     * Mount, then start serving requests.
-     */
+    // Mount, then start serving requests.
     if (storage)
     {
-	LinnFileSystem server(path, storage);
-	
-	if (server.mount(background))
-	{
-    	    return server.run();
-	}
+        LinnFileSystem server(path, storage);
+
+        if (server.mount(background))
+        {
+            NOTICE("mounted at: " << path);
+            return server.run();
+        }
     }
     return EXIT_FAILURE;
 }

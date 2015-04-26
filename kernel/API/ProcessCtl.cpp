@@ -18,21 +18,29 @@
 #include <Log.h>
 #include <FreeNOS/API.h>
 #include <FreeNOS/Kernel.h>
+#include <FreeNOS/Config.h>
+
+#ifdef __i386__
 #warning Do not depend on IntelProcess for ProcessCtl()
 #include <intel/IntelProcess.h>
+#endif
+
 #include "ProcessCtl.h"
 
 void interruptNotify(CPUState *st, Process *p)
 {
+#ifdef __i386__
     ProcessManager *procs = Kernel::instance->getProcessManager();
 
     p->getMessages()->prepend(new UserMessage(new InterruptMessage(IRQ_REG(st)),
 						 sizeof(InterruptMessage)));
     p->setState(Process::Ready);
+#endif
 }
 
 Error ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
 {
+#ifdef __i386__
     IntelProcess *proc = ZERO;
     Memory *memory = Kernel::instance->getMemory();
     ProcessInfo *info = (ProcessInfo *) addr;
@@ -100,6 +108,7 @@ Error ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
 	    proc->setStack(addr);
 	    break;
     }
+#endif
     return 0;
 }
 

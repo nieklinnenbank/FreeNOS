@@ -21,10 +21,10 @@
 // TODO: replace this with channels for IPC.
 
 #include <FreeNOS/Memory.h>
+#include <FreeNOS/API.h>
 #include <MemoryMessage.h>
 #include <Assert.h>
 #include <Types.h>
-#include <ProcessID.h>
 #include <MemoryBlock.h>
 #include <String.h>
 

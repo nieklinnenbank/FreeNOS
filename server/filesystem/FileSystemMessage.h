@@ -18,7 +18,7 @@
 #ifndef __FILESYSTEM_FILE_SYSTEM_MESSAGE_H
 #define __FILESYSTEM_FILE_SYSTEM_MESSAGE_H
 
-#include <API/IPCMessage.h>
+#include <FreeNOS/API.h>
 #include <IPCServer.h>
 #include <Types.h>
 #include <Error.h>

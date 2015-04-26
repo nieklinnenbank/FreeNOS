@@ -16,6 +16,7 @@
  */
 
 #include <FreeNOS/Config.h>
+#include <FreeNOS/arm/ARMKernel.h>
 #include <Macros.h>
 #include "UART.h"
 
@@ -24,6 +25,8 @@ extern C int kmain(void)
     UART console;
 
     console.put("FreeNOS " RELEASE "\r\n");
+
+    //ARMKernel kernel;
 
     while (true)
 	console.put(console.get());

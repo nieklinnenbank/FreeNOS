@@ -15,10 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/IPCMessage.h>
+#include <FreeNOS/API.h>
 #include <ProcessServer.h>
 #include <FileDescriptor.h>
-#include <ProcessID.h>
 #include "Runtime.h"
 #include <errno.h>
 #include "unistd.h"

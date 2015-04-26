@@ -16,11 +16,10 @@
  */
 
 #include <FreeNOS/System/Constant.h>
-#include <API/VMCtl.h>
+#include <FreeNOS/API.h>
 #include <Assert.h>
 #include <Macros.h>
 #include <Types.h>
-#include <ProcessID.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>

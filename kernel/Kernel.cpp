@@ -25,11 +25,12 @@
 Kernel::Kernel(Memory *memory, ProcessManager *procs)
     : Singleton<Kernel>(this)
 {
-    DEBUG("");
+    NOTICE("");
 
     // Initialize members
     m_memory = memory;
     m_procs  = procs;
+    m_bootImageAddress = 0;
 
     // Register generic API handlers
     m_apis.fill(ZERO);
@@ -52,14 +53,24 @@ ProcessManager * Kernel::getProcessManager()
     return m_procs;
 }
 
+Address Kernel::getBootImageAddress()
+{
+    return m_bootImageAddress;
+}
+
+Size Kernel::getBootImageSize()
+{
+    return m_bootImageSize;
+}
+
 void Kernel::run()
 {
-    DEBUG("");
+    NOTICE("");
 
     // Load boot image programs
     loadBootImage();
 
-    // Star the scheduler
+    // Start the scheduler
     m_procs->schedule();
 }
 

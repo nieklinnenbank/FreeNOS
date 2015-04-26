@@ -20,7 +20,6 @@
 
 #include <FreeNOS/API.h>
 #include <Error.h>
-#include <ProcessID.h>
 #include <Vector.h>
 
 /**

@@ -15,9 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Multiboot.h"
 #include <intel/IntelCPU.h>
 #include <intel/IntelMemory.h>
+#include <intel/Multiboot.h>
 
 /* The size of our stack (16KB).  */
 #define STACK_SIZE 0x4000

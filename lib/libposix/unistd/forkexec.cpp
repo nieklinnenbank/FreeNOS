@@ -15,11 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/IPCMessage.h>
+#include <FreeNOS/API.h>
 #include <FreeNOS/System/Constant.h>
 #include <ProcessServer.h>
 #include <ProcessMessage.h>
-#include <ProcessID.h>
 #include <Types.h>
 #include <string.h>
 #include <errno.h>

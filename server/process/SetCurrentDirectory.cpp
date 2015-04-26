@@ -15,10 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/VMCopy.h>
+#include <FreeNOS/API.h>
 #include <FreeNOS/Process.h> 
 #include <Error.h>
-#include <ProcessID.h>
 #include "FileSystemPath.h"
 #include "ProcessServer.h"
 #include "ProcessMessage.h"

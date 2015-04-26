@@ -15,10 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/ProcessCtl.h>
+#include <FreeNOS/API.h>
 #include <Macros.h>
 #include <Error.h>
-#include <ProcessID.h>
 #include "Keyboard.h"
 
 /**

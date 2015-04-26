@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __KERNEL_BOOTIMAGE_H
-#define __KERNEL_BOOTIMAGE_H
+#ifndef __LIBARCH_BOOTIMAGE_H
+#define __LIBARCH_BOOTIMAGE_H
 
 /** First magic byte. */
 #define BOOTIMAGE_MAGIC0        ('F') + ('r' << 8) + ('e' << 16) + ('e' << 24)
@@ -25,16 +25,10 @@
 #define BOOTIMAGE_MAGIC1        ('N') + ('O' << 8) + ('S' << 16) + (0x1 << 24)
 
 /** Version of the boot image layout. */
-#define BOOTIMAGE_REVISION      1
+#define BOOTIMAGE_REVISION      2
 
-/** Maximum length of BootVariable keys. */
-#define BOOTIMAGE_KEY           32
-
-/** Maximum length of BootVariable values. */
-#define BOOTIMAGE_VALUE         64
-
-/** Maximum length of the filesystem path in a BootProgram. */
-#define BOOTIMAGE_PATH          128
+/** Maximum length of BootSymbol names. */
+#define BOOTIMAGE_NAMELEN       32
 
 /**
  * BootImage contains executable programs to be loaded at system bootup.
@@ -50,17 +44,11 @@ typedef struct BootImage
     /** Checksum used to verify integrity. */
     // TODO
     
-    /** Offset of the variables table. */
-    u32 variablesTableOffset;
+    /** Offset of the symbol table. */
+    u32 symbolTableOffset;
     
-    /** Number of entries in the variables table. */
-    u16 variablesTableCount;
-    
-    /** Offset of the programs table. */
-    u32 programsTableOffset;
-    
-    /** Number of entries in the programs table. */
-    u16 programsTableCount;
+    /** Number of entries in the symbols table. */
+    u16 symbolTableCount;
     
     /** Offset of the segments table. */
     u32 segmentsTableOffset;
@@ -71,40 +59,43 @@ typedef struct BootImage
 BootImage;
 
 /**
- * Simple key/value entry for inside the BootImage.
- * @see BootImage
+ * Boot symbol types.
  */
-typedef struct BootVariable
+typedef enum BootSymbolType
 {
-    /** Key is an uninterpreted ASCII string. */
-    char key[BOOTIMAGE_KEY];
-    
-    /** Value is an uninterpreted ASCII string. */
-    char value[BOOTIMAGE_VALUE];
+    BootProgram    = 0,    /**< Executable program */
+    BootFilesystem = 1,    /**< Embedded filesystem */
+    BootData       = 2     /**< Binary data */
 }
-BootVariable;
+BootSymbolType;
 
 /**
  * Program embedded in the BootImage.
  */
-typedef struct BootProgram
+typedef struct BootSymbol
 {
-    /** Path to the program. */
-    char path[BOOTIMAGE_PATH];
+    /** Name of the boot symbol. */
+    char name[BOOTIMAGE_NAMELEN];
 
-    /** Program entry point. */
+    /** Type of boot symbol. */
+    BootSymbolType type;
+
+    /** Program entry point (only valid for BootProgram symbols). */
     u32 entry;
     
-    /** Offset of the program segments in the segments table. */
+    /** Offset in the segments table. */
     u32 segmentsOffset;
     
     /** Number of contiguous entries in the segment table. */
     u16 segmentsCount;
+
+    /** Total size of the BootSymbol segments */
+    u32 segmentsTotalSize;
 }
-BootProgram;
+BootSymbol;
 
 /**
- * Program memory segment.
+ * Memory segment.
  */
 typedef struct BootSegment
 {
@@ -119,4 +110,4 @@ typedef struct BootSegment
 }
 BootSegment;
 
-#endif /* __KERNEL_BOOTIMAGE_H */
+#endif /* __LIBARCH_BOOTIMAGE_H */

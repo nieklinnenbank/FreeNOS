@@ -18,7 +18,6 @@
 #include <FreeNOS/API.h>
 #include <System/Constant.h>
 #include <Macros.h>
-#include <ProcessID.h>
 #include "VMCtlAllocator.h"
 
 VMCtlAllocator::VMCtlAllocator(Size size)

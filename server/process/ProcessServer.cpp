@@ -15,17 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/SystemInfo.h>                                                       
-#include <FreeNOS/BootImage.h>
+#include <FreeNOS/API.h>
 #include <FreeNOS/Process.h>
 #include <FileSystemMessage.h>
 #include <FileSystem.h>
-#include <BootModule.h>
 #include <String.h>
 #include <Error.h>
 #include <Vector.h>
 #include <Macros.h>
-#include <ProcessID.h>
 #include "ProcessMessage.h"
 #include "ProcessServer.h"
 #include <stdio.h>

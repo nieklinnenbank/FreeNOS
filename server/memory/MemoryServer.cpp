@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/BootImage.h>
+#include <BootImage.h>
 #include "MemoryServer.h"
 #include "MemoryMessage.h"
 #include <string.h>
@@ -26,7 +26,7 @@ MemoryServer::MemoryServer()
     SystemInformation info;
     MemoryRange range;
     BootImage *image;
-    BootProgram *program;
+    BootSymbol *symbol;
 
     /* Register message handlers. */
     addIPCHandler(CreatePrivate,  &MemoryServer::createPrivate);
@@ -59,35 +59,33 @@ MemoryServer::MemoryServer()
     mounts[1].procID  = ROOTSRV_PID;
     mounts[1].options = ZERO;
 
-    /* Attempt to load the boot image. */
-    for (Size i = 0; i < info.moduleCount; i++)
-    {
-        if (strcmp(info.modules[i].string, "/boot/boot.img.gz") == 0)
-        {
-	    range.virtualAddress  = findFreeRange(SELF, PAGESIZE * 2);
-	    range.physicalAddress = info.modules[i].modStart;
-	    range.access          = Memory::Present | Memory::User | Memory::Readable;
+    // Attempt to load the boot image
+    range.virtualAddress  = findFreeRange(SELF, PAGESIZE * 2);
+    range.physicalAddress = info.bootImageAddress;
+    range.access          = Memory::Present | Memory::User | Memory::Readable;
+
 #warning Dangerous value for bytes here?
-	    range.bytes           = PAGESIZE * 2;
-	    VMCtl(SELF, Map, &range);
-	    
-	    image = (BootImage *) range.virtualAddress;
-	    break;
-	}
-    }
+    range.bytes           = PAGESIZE * 2;
+    VMCtl(SELF, Map, &range);
+    
+    image = (BootImage *) range.virtualAddress;
+
     /* Loop all embedded programs. */
-    for (Size j = 0; j < image->programsTableCount; j++)
+    for (Size j = 0; j < image->symbolTableCount; j++)
     {
         /* Read out the next program. */
-        program = (BootProgram *)(((Address)image) + image->programsTableOffset);
-	program += j;
+        symbol = (BootSymbol *)(((Address)image) + image->symbolTableOffset);
+        symbol += j;
+
+        if (symbol->type != BootProgram)
+            continue;
 
         /* Write commandline. */
         snprintf(procs[j].command, COMMANDLEN,
-                "[%s]", program->path);
+                "[%s]", symbol->name);
 
-	/* Set current directory. */
-	snprintf(procs[j].currentDirectory, PATHLEN, "/");
+        /* Set current directory. */
+        snprintf(procs[j].currentDirectory, PATHLEN, "/");
 
         /* Set user and group identities. */
         procs[j].userID  = 0;

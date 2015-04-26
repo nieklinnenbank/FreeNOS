@@ -29,7 +29,8 @@ env.UseLibraries(['liballoc', 'libstd', 'libarch'])
 env.UseServers(['process'])
 env.TargetProgram('kernel', [ Glob('*.S'),
 			      Glob('*.cpp'),
-                              Glob('#' + env['BUILDROOT'] + '/kernel/Support.cpp')
+                              Glob('#' + env['BUILDROOT'] + '/kernel/*.cpp'),
+                              Glob('#' + env['BUILDROOT'] + '/kernel/API/*.cpp')
                               #Glob('#' + env['BUILDROOT'] + '/kernel/arm/*.cpp')
                               ],
                    env['boot'])

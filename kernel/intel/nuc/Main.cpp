@@ -23,6 +23,7 @@
 #include <intel/IntelMemory.h>
 #include <intel/IntelFactory.h>
 #include <intel/IntelSerial.h>
+#include <intel/Multiboot.h>
 
 extern C void kernel_main()
 {
