@@ -47,12 +47,14 @@ typedef struct FileCache
      * @param name Entry name of the File in the parent, if any.
      * @param p Our parent. ZERO if we have no parent.
      */
-    FileCache(File *f, const char *name, FileCache *p)
-	: file(f), valid(true)
+    FileCache(File *f, const char *n, FileCache *p)
+	: file(f), valid(true), parent(p)
     {
+        name = n;
+
 	if (p && p != this)
 	{
-	    p->entries.insert(String(name), this);
+	    p->entries.insert(name, this);
 	}
     }
     
@@ -68,12 +70,18 @@ typedef struct FileCache
 
     /** File pointer. */
     File *file;
+
+    /** Our name */
+    String name;
     
-    /** Contains parent, ourselves, and childs. */
+    /** Contains childs. */
     HashTable<String, FileCache *> entries;
-    
+
     /** Is this entry still valid?. */
     bool valid;
+    
+    /** Parent */
+    FileCache *parent;
 }
 FileCache;
 
@@ -95,7 +103,8 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	    /* Register message handlers. */
 	    addIPCHandler(CreateFile, &FileSystem::pathHandler);
 	    addIPCHandler(OpenFile,   &FileSystem::pathHandler);
-	    addIPCHandler(StatFile,   &FileSystem::pathHandler);	    
+	    addIPCHandler(StatFile,   &FileSystem::pathHandler);
+	    addIPCHandler(DeleteFile, &FileSystem::pathHandler);
 	    addIPCHandler(ReadFile,   &FileSystem::fileDescriptorHandler);
 	    addIPCHandler(WriteFile,  &FileSystem::fileDescriptorHandler);
 	    addIPCHandler(CloseFile,  &FileSystem::fileDescriptorHandler);
@@ -257,6 +266,17 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 		    {
         		msg->fd = insertFileDescriptor(msg->from, pid, ident);
 		    }
+		    break;
+
+		case DeleteFile:
+		    if (cache->entries.count() == 0 &&
+			cache->file->getOpenCount() == 0)
+		    {
+			clearFileCache(cache);
+			msg->result = ESUCCESS;
+		    }
+		    else
+			msg->result = ENOTEMPTY;
 		    break;
 
 		case StatFile:
@@ -534,10 +554,17 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 		    }
 		}
 	    }
+
 	    /* Remove the entry itself, if empty. */
 	    if (!cache->valid && cache->entries.count() == 0 &&
 	         cache->file->getOpenCount() == 0)
 	    {
+                /* Remove entry from parent */
+                if (cache->parent)
+                {
+                    ((Directory *) cache->parent->file)->remove(*cache->name);
+                    cache->parent->entries.remove(cache->name);
+                }
 		delete cache->file;
 		delete cache;
 	    }

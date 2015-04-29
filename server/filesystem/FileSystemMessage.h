@@ -39,6 +39,7 @@ typedef enum FileSystemAction
     StatFile      = 5,
     ChangeFile    = 6,
     CloseFile     = 7,
+    DeleteFile    = 8,
 }
 FileSystemAction;
 

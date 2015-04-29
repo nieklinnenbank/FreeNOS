@@ -280,6 +280,13 @@ extern C char *getcwd(char *buf, size_t size);
 extern C int chdir(const char *path);
 
 /**
+ * @brief Remove a file from the filesystem.
+ * @param path Parh to the file to remove.
+ * @return Zero on success or -1 on failure with errno set.
+ */
+extern C int unlink(const char *path);
+
+/**
  * @}
  */
 
