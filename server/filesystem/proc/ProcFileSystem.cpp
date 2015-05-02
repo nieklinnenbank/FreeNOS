@@ -20,7 +20,6 @@
 #include <ProcessMessage.h>
 #include <ProcessServer.h>
 #include <FileSystemPath.h>
-#include <Error.h>
 #include <PseudoFile.h>
 #include "ProcRootDirectory.h"
 #include "ProcFileSystem.h"
@@ -48,9 +47,10 @@ void ProcFileSystem::refresh()
     String slash("/");
     Directory *procDir;
 
-    /* Clear the current cache. */
-    clearFileCache();
-    
+    // TODO: memory leak! Cleanup the whole cache first... (currently broken)
+    // clearFileCache();
+    rootDir->clear();
+
     /* Update root. */
     rootDir->insert(DirectoryFile, ".");
     rootDir->insert(DirectoryFile, "..");
@@ -60,6 +60,7 @@ void ProcFileSystem::refresh()
     insertFileCache(rootDir, "..");
 
     /* Read processes from process server. */
+    // TODO: very inefficient. Use ONE message to read the whole table.
     while (true)
     {
 	/* Fill message. */
