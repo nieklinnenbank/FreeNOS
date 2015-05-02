@@ -97,7 +97,6 @@ class FileSystemPath
 	 */
 	void parse(char *p, char sep = DEFAULT_SEPARATOR)
 	{
-	    const char *saved = ZERO;
 	    const char *cur   = p;
 	    char *parentStr   = ZERO;
 
@@ -106,7 +105,6 @@ class FileSystemPath
 
 	    /* Save parameters. */
 	    p          = (char *) cur;
-	    saved      = cur;
 	    separator  = sep;
 	    fullLength = strlen((char *)cur);
 	    fullPath   = new String(cur);
