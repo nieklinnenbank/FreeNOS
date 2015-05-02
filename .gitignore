@@ -2,8 +2,6 @@
 *.a
 *.pyc
 build/
-/include/Config.h
-/include/HostConfig.h
 config.log
 .sconf_temp
 .sconsign.dblite
