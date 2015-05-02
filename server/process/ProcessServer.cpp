@@ -20,7 +20,6 @@
 #include <FileSystemMessage.h>
 #include <FileSystem.h>
 #include <String.h>
-#include <Error.h>
 #include <Vector.h>
 #include <Macros.h>
 #include "ProcessMessage.h"

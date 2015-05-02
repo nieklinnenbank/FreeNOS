@@ -30,7 +30,7 @@ PageAllocator::PageAllocator(Size size)
     mem.action = ReservePrivate;
     mem.bytes  = 1024 * 1024 * 128;
     mem.virtualAddress = 1024 * 1024 * 16;
-    mem.ipc(MEMSRV_PID, SendReceive, sizeof(mem));
+    mem.ipc(MEMSRV_PID, API::SendReceive, sizeof(mem));
 
     /* Set heap pointer. */
     start = mem.virtualAddress;
@@ -59,7 +59,7 @@ Address PageAllocator::allocate(Size *size)
     msg.access = Memory::Present | Memory::User | Memory::Readable | Memory::Writable | Memory::Reserved;
     msg.virtualAddress  = (1024 * 1024 * 16) + allocated;
     msg.physicalAddress = ZERO;
-    msg.ipc(MEMSRV_PID, SendReceive, sizeof(msg));
+    msg.ipc(MEMSRV_PID, API::SendReceive, sizeof(msg));
 
     /* Update count. */
     allocated += msg.bytes;

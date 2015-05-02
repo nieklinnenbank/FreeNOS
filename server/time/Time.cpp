@@ -19,6 +19,7 @@
 #include <FreeNOS/System/Constant.h>
 #include <Macros.h>
 #include <Types.h>
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>

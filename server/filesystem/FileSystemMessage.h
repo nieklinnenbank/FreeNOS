@@ -21,7 +21,6 @@
 #include <FreeNOS/API.h>
 #include <IPCServer.h>
 #include <Types.h>
-#include <Error.h>
 #include "FileType.h"
 #include "FileMode.h"
 #include "FileStat.h"

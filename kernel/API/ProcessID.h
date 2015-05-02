@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CONFIG_H
-#define __CONFIG_H
+#ifndef __API_PROCESSID_H
+#define __API_PROCESSID_H
 
 /**
  * @brief Static PIDS.
@@ -36,4 +36,4 @@
  * @}
  */
 
-#endif /* __CONFIG_H */
+#endif /* __API_PROCESSID_H */

@@ -22,7 +22,6 @@
 #include <FreeNOS/Process.h>
 #include <Macros.h>
 #include <Types.h>
-#include <Error.h>
 #include <MemoryBlock.h>
 #include "ProcessID.h"
 
@@ -44,15 +43,15 @@ class Message;
  * @param sz Size of message.
  * @return Zero on success and error code on failure.
  */
-inline Error IPCMessage(ProcessID proc, Operation action, Message *msg, Size sz)
+inline Error IPCMessage(ProcessID proc, API::Operation action, Message *msg, Size sz)
 {
-    return trapKernel4(IPCMessageNumber, proc, action, (ulong) msg, sz);
+    return trapKernel4(API::IPCMessageNumber, proc, action, (ulong) msg, sz);
 }
 
 /**
  * Prototype for the kernel handler implementation.
  */
-extern Error IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg, Size size);
+extern Error IPCMessageHandler(ProcessID id, API::Operation action, UserMessage *msg, Size size);
 
 /**
  * Determines the type a Message can be.
@@ -102,7 +101,7 @@ class Message
 	 * @param action Determines the action to perform.
 	 * @param sz Size of message.
 	 */
-	Error ipc(ProcessID pid, Operation action, Size sz)
+	Error ipc(ProcessID pid, API::Operation action, Size sz)
 	{
 	    return IPCMessage(pid, action, this, sz);
 	}

@@ -28,46 +28,65 @@
  */
 
 /**
- * Enumeration of supported generic kernel API functions.
- *
- * Architectures or System implementations can optionally
- * introduce additional specific APIs.
+ * Generic Kernel API definitions.
  */
-typedef enum APINumber
+namespace API
 {
-    IPCMessageNumber = 1,
-    PrivExecNumber   = 2,
-    ProcessCtlNumber = 3,
-    SystemInfoNumber = 4,        
-    VMCopyNumber     = 5,
-    VMCtlNumber      = 6,
-    IOCtlNumber      = 7
-}
-APINumber;
+    /**
+     * Enumeration of supported generic kernel API functions.
+     *
+     * Architectures or System implementations can optionally
+     * introduce additional specific APIs.
+     */
+    typedef enum Number
+    {
+        IPCMessageNumber = 1,
+        PrivExecNumber   = 2,
+        ProcessCtlNumber = 3,
+        SystemInfoNumber = 4,        
+        VMCopyNumber     = 5,
+        VMCtlNumber      = 6,
+        IOCtlNumber      = 7
+    }
+    Number;
 
-/**
- * Function which handles an kernel API (system call) request.
- * @return Status code of the APIHandler execution.
- */
-typedef Error APIHandler(ulong, ulong, ulong, ulong, ulong);
+    /**
+     * Enumeration of generic kernel API error codes.
+     */
+    typedef enum Error
+    {
+        Success         =  0,
+        AccessViolation = -1,
+        RangeError      = -2,
+        NotFound        = -3,
+        InvalidArgument = -4,
+    }
+    Error;
 
-/**
- * Various actions which may be performed inside an APIHandler.
- */
-typedef enum Operation
-{
-    Create      = 0,
-    Delete      = 1,
-    Send        = 2,
-    Receive     = 3,
-    SendReceive = 4,
-    Read        = 5,
-    Write       = 6,
-}
-Operation;
+    /**
+     * Function which handles an kernel API (system call) request.
+     * @return Status code of the APIHandler execution.
+     */
+    typedef ::Error Handler(ulong, ulong, ulong, ulong, ulong);
+
+    /**
+     * Various actions which may be performed inside an APIHandler.
+     */
+    typedef enum Operation
+    {
+        Create      = 0,
+        Delete      = 1,
+        Send        = 2,
+        Receive     = 3,
+        SendReceive = 4,
+        Read        = 5,
+        Write       = 6,
+    }
+    Operation;
+};
 
 /** Operator to print a Operation to a Log */
-Log & operator << (Log &log, Operation op);
+Log & operator << (Log &log, API::Operation op);
 
 /*
  * Include generic kernel API functions.

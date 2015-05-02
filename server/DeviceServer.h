@@ -32,6 +32,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <errno.h>
 
 /** Maximum number of devices handled simultaneously by a DeviceServer. */
 #define DEVICE_MAX 32
@@ -214,7 +215,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
             if (!fd)
 	    {
 		msg->result = EBADF;
-		msg->ipc(msg->from, Send, sizeof(*msg));
+		msg->ipc(msg->from, API::Send, sizeof(*msg));
 		return;
 	    }
 	    /* Read out values from the FileDescriptor. */
@@ -243,13 +244,13 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 		    case SeekFile:
 			fd->position = msg->offset;
 			msg->result  = ESUCCESS;
-			msg->ipc(msg->from, Send, sizeof(*msg));
+			msg->ipc(msg->from, API::Send, sizeof(*msg));
 			return;
 		
 		    case CloseFile:
 	                memset(fd, 0, sizeof(*fd));
 			msg->result = ESUCCESS;
-			msg->ipc(msg->from, Send, sizeof(*msg));
+			msg->ipc(msg->from, API::Send, sizeof(*msg));
 			return;
 		
 		    default:
@@ -266,7 +267,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	    else
 	    {
 		msg->result = ENODEV;
-		msg->ipc(msg->from, Send, sizeof(*msg));
+		msg->ipc(msg->from, API::Send, sizeof(*msg));
 	    }
 	}
 	
@@ -345,7 +346,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	    if ((msg->result = dev->read(buffer, msg->size, msg->offset)) >= 0)
 	    {
 		/* Write the result into the process' buffer. */
-	        msg->result = VMCopy(msg->from, Write, (Address) buffer,
+	        msg->result = VMCopy(msg->from, API::Write, (Address) buffer,
 				    (Address) msg->buffer, msg->result);
 	    }
 	    /* Update FileDescriptor and send a reply if processed. */
@@ -353,7 +354,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	    {
 		if (msg->result > 0)
 		    getFileDescriptor(files, msg->from, msg->fd)->position += msg->result;
-		msg->ipc(msg->from, Send, sizeof(*msg));
+		msg->ipc(msg->from, API::Send, sizeof(*msg));
 	    }
 	    /* Release memory. And return. */
 	    delete buffer;
@@ -374,7 +375,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	    s8 *buffer = new s8[msg->size];
 
 	    /* Obtain input bytes from the process' buffer. */
-	    if ((msg->result = VMCopy(msg->from, Read, (Address) buffer,
+	    if ((msg->result = VMCopy(msg->from, API::Read, (Address) buffer,
 				     (Address) msg->buffer, msg->size)) >= 0)
 	    {
 		/*
@@ -388,7 +389,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	    {
 		if (msg->result > 0)
 		    getFileDescriptor(files, msg->from, msg->fd)->position += msg->result;
-		msg->ipc(msg->from, Send, sizeof(*msg));
+		msg->ipc(msg->from, API::Send, sizeof(*msg));
 	    }
 	    /* Release memory. And return. */
 	    delete buffer;

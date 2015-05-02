@@ -10,32 +10,48 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <Log.h>
-#include "ARMKernel.h"
+#include "ARMMemory.h"
 
-ARMKernel::ARMKernel(Memory *memory, ProcessManager *procs)
-    : Kernel(memory, procs)
+ARMMemory::ARMMemory(Size memorySize)
+    : Memory(memorySize)
 {
-    NOTICE("");
+    NOTICE("memorySize:" << memorySize);
 }
 
-void ARMKernel::hookInterrupt(int vec, InterruptHandler h, ulong p)
+Address ARMMemory::map(Address paddr, Address vaddr, MemoryAccess flags)
 {
-    DEBUG("vector =" << vec);
+    DEBUG("");
+    return 0;
 }
 
-void ARMKernel::enableIRQ(uint vector, bool enabled)
+Address ARMMemory::map(Process *p, Address paddr, Address vaddr, MemoryAccess flags)
 {
-    DEBUG("vector =" << vector << "enabled =" << enabled);
+    DEBUG("");
+    return 0;
 }
 
-bool ARMKernel::loadBootImage()
+Address ARMMemory::lookup(Process *p, Address vaddr)
+{
+    DEBUG("");
+    return 0;
+}
+
+bool ARMMemory::access(Process *p,
+                       Address vaddr,
+                       Size sz,
+                       MemoryAccess flags)
 {
     DEBUG("");
     return true;
+}
+
+void ARMMemory::release(Process *p)
+{
+    DEBUG("");
 }

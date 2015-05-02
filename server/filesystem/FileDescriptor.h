@@ -23,6 +23,7 @@
 #include <Shared.h>
 #include <Types.h>
 #include <Macros.h>
+#include <stdio.h>
 
 /** File descriptor table key prefix. */
 #define FILE_DESCRIPTOR_KEY "FileDescriptor/"

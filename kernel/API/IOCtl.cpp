@@ -42,7 +42,7 @@ Error IOCtlHandler(IOOperation op, Address addr, ulong value)
             outl(addr, value);
             break;
     }
-    return ESUCCESS;
+    return API::Success;
 }
 
 Log & operator << (Log &log, IOOperation op)

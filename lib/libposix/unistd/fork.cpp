@@ -31,7 +31,7 @@ pid_t fork(void)
     msg.action = CloneProcess;
     
     /* Ask the process server. */
-    IPCMessage(PROCSRV_PID, SendReceive, &msg, sizeof(msg));
+    IPCMessage(PROCSRV_PID, API::SendReceive, &msg, sizeof(msg));
     
     /*
      * Child must reload file descriptor table.

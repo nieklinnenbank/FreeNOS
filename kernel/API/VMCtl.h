@@ -21,7 +21,6 @@
 #include <FreeNOS/API.h>
 #include <System/Constant.h>
 #include <System/Function.h>
-#include <Error.h>
 #include <Types.h>
 
 /**  
@@ -87,9 +86,9 @@ MemoryRange;
  * @return Zero on success or error code on failure.
  */
 inline Error VMCtl(ProcessID procID, MemoryOperation op,
-                   MemoryRange *range = ZERO)
+                        MemoryRange *range = ZERO)
 {
-    return trapKernel3(VMCtlNumber, procID, op, (Address) range);
+    return trapKernel3(API::VMCtlNumber, procID, op, (Address) range);
 }
 
 extern Error VMCtlHandler(ProcessID procID, MemoryOperation op, MemoryRange *range);

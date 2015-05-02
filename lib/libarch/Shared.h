@@ -27,6 +27,7 @@
 #include <Types.h>
 #include <MemoryBlock.h>
 #include <String.h>
+#include <errno.h>
 
 /**
  * Enables sharing objects between processes.
@@ -80,7 +81,7 @@ template <class T> class Shared
 	    mem.access = Memory::Present | Memory::User | Memory::Readable | Memory::Writable;
 	    mem.virtualAddress  = ZERO;
 	    mem.physicalAddress = ZERO;
-	    mem.ipc(MEMSRV_PID, SendReceive, sizeof(mem));
+	    mem.ipc(MEMSRV_PID, API::SendReceive, sizeof(mem));
 	    
 	    /* Set object pointer. */
 	    object = (T *) mem.virtualAddress;

@@ -25,7 +25,6 @@
 #include <ExecutableFormat.h>
 #include <String.h>
 #include <Types.h>
-#include <Error.h>
 #include "ProcessMessage.h"
 #include "ProcessServer.h"
 #include <stdio.h>
@@ -44,7 +43,7 @@ void ProcessServer::spawnProcessHandler(ProcessMessage *msg)
     Shared<FileDescriptor> *parentFd, *childFd;
 
     /* Read out the path to the executable. */
-    if ((msg->result = VMCopy(msg->from, Read, (Address) path,
+    if ((msg->result = VMCopy(msg->from, API::Read, (Address) path,
                              (Address) msg->path, PATHLEN) < 0))
     {
         return;
@@ -81,7 +80,7 @@ void ProcessServer::spawnProcessHandler(ProcessMessage *msg)
 		return;
 	    }
 	    /* Copy bytes. */
-	    VMCopy(pid, Write, (Address) (regions[i].data) + j,
+	    VMCopy(pid, API::Write, (Address) (regions[i].data) + j,
 		   regions[i].virtualAddress + j, PAGESIZE);
 	}
     }
@@ -100,14 +99,14 @@ void ProcessServer::spawnProcessHandler(ProcessMessage *msg)
 	   msg->number * ARGV_SIZE : PAGESIZE;
 
     /* Copy arguments into the temporary variable. */    
-    if ((msg->result = VMCopy(msg->from, Read, (Address) tmp,
+    if ((msg->result = VMCopy(msg->from, API::Read, (Address) tmp,
 			     (Address) msg->arguments, size)) < 0)
     {
 	delete tmp;
 	return;
     }
     /* Copy argc/argv into the new process. */
-    if ((msg->result = VMCopy(pid, Write, (Address) tmp,
+    if ((msg->result = VMCopy(pid, API::Write, (Address) tmp,
 		    	     (Address) ARGV_ADDR, PAGESIZE)) < 0)
     {
 	delete tmp;

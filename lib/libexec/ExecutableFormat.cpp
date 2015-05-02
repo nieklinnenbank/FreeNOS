@@ -16,13 +16,14 @@
  */
 
 #include <Macros.h>
-#include <Error.h>
 #include <List.h>
 #include <ListIterator.h>
 #include <sys/stat.h>
 #include <errno.h>
 #include "ExecutableFormat.h"
 #include "ELF.h"
+
+// TODO: should not depend on libc for error code values?
 
 ExecutableFormat::ExecutableFormat(const char *p) : path(p)
 {

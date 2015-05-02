@@ -34,7 +34,7 @@ ssize_t read(int fildes, void *buf, size_t nbyte)
         msg.buffer = (char *) buf;
         msg.size   = nbyte;
         msg.offset = ZERO;
-        IPCMessage(mnt, SendReceive, &msg, sizeof(msg));
+        IPCMessage(mnt, API::SendReceive, &msg, sizeof(msg));
 
         /* Set error number. */
 	errno = msg.result;

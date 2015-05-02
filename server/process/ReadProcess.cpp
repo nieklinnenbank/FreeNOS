@@ -18,9 +18,9 @@
 #include <API/VMCopy.h>
 #include <API/ProcessCtl.h> 
 #include <FreeNOS/Process.h> 
-#include <Error.h>
 #include "ProcessMessage.h"
 #include "ProcessServer.h"
+#include <errno.h>
 
 void ProcessServer::readProcessHandler(ProcessMessage *msg)
 {
@@ -38,8 +38,8 @@ void ProcessServer::readProcessHandler(ProcessMessage *msg)
 	    procs[i]->state = info.state;
 	
 	    /* Copy buffer. */
-	    VMCopy(msg->from, Write, (Address) (procs[i]),
-				     (Address) (msg->buffer), sizeof(UserProcess));
+	    VMCopy(msg->from, API::Write, (Address) (procs[i]),
+				          (Address) (msg->buffer), sizeof(UserProcess));
 	    msg->result = ESUCCESS;
 	    msg->number = i;
 	    return;

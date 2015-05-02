@@ -21,8 +21,6 @@
 #include <FreeNOS/API.h>
 #include <FreeNOS/Config.h>
 #include <FreeNOS/Kernel.h>
-#include <Error.h>
-#include <Types.h>
 
 /**  
  * @defgroup kernelapi kernel (API) 
@@ -41,7 +39,7 @@ class SystemInformation;
  */
 inline Error SystemInfo(SystemInformation *info)
 {
-    return trapKernel1(SystemInfoNumber, (Address) info);
+    return trapKernel1(API::SystemInfoNumber, (Address) info);
 }
 
 /**

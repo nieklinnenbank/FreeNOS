@@ -31,7 +31,7 @@ int unlink(const char *path)
     {
 	msg.action = DeleteFile;
 	msg.buffer = (char *) path;
-	IPCMessage(mnt, SendReceive, &msg, sizeof(msg));
+	IPCMessage(mnt, API::SendReceive, &msg, sizeof(msg));
 	
 	/* Set error number. */
         errno = msg.result;

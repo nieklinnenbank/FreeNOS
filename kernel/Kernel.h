@@ -75,7 +75,7 @@ class Kernel : public Singleton<Kernel>
     /**
      * Execute a generic API function.
      */
-    virtual Error invokeAPI(APINumber number,
+    virtual Error invokeAPI(API::Number number,
                             ulong arg1, ulong arg2, ulong arg3, ulong arg4, ulong arg5);
 
     /**
@@ -113,7 +113,7 @@ class Kernel : public Singleton<Kernel>
     Size m_bootImageSize;
 
     /** API handlers */
-    Vector<APIHandler *> m_apis;
+    Vector<API::Handler *> m_apis;
 };
 
 /** Start of kernel text and data. */

@@ -15,19 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __ARM_UART_H
-#define __ARM_UART_H
+#ifndef __ARM_RASPISERIAL_H
+#define __ARM_RASPISERIAL_H
 
+#include <Log.h>
 #include <Types.h>
 
-class UART
+class RaspiSerial : public Log
 {
-public:
+  public:
 
     /**
      * Constructor.
      */
-    UART();
+    RaspiSerial();
 
     /*
      * Initialize UART0.
@@ -52,9 +53,9 @@ public:
      * print a string to the UART one character at a time
      * const char *str: 0-terminated string
      */
-    void put(const char *str);
+    virtual void write(const char *str);
 
-private:
+  private:
 
     enum {
 	// The GPIO registers base address.
@@ -102,4 +103,4 @@ private:
     static void delay(s32 count);
 };
 
-#endif /* __ARM_UART_H */
+#endif /* __ARM_RASPISERIAL_H */

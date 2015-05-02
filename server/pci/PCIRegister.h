@@ -19,7 +19,6 @@
 #define __PCI_PCIREGISTER_H
 
 #include <Types.h>
-#include <Error.h>
 #include "File.h"
 #include "FileMode.h"
 #include "Directory.h"

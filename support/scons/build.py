@@ -38,7 +38,6 @@ def UseLibraries(env, libs = [], arch = None):
         # Add them to the include and linker path.
         env.Append(CPPPATH = [ '#lib/' + lib ])
         env.Append(LIBPATH = [ '#' + env['BUILDROOT'] + '/lib/' + lib ])
-        env.Append(CPPFLAGS = [ '-include', 'lib/' + lib + '/Default.h' ])
         env.Append(LIBS    = [ lib ])
 
 def UseServers(env, servers = []):
@@ -114,8 +113,8 @@ target = host.Clone(tools    = ["default", "bootimage", "iso", "binary", "linn",
 
 # Apply configuration
 config.initialize(target, host, ARGUMENTS)
-config.write_header(target, 'include/Config.h')
-config.write_header(host, 'include/HostConfig.h')
+config.write_header(target)
+config.write_header(host)
 
 # Enables verbose compilation command output.
 if not target['VERBOSE']:

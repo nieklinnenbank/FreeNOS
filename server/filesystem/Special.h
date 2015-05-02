@@ -20,9 +20,9 @@
 
 #include <API/VMCopy.h>
 #include <Types.h>
-#include <Error.h>
 #include "File.h"
 #include "FileSystemMessage.h"
+#include <errno.h>
 
 /**
  * Abstract special device which is represented as a File.
@@ -77,7 +77,7 @@ class Special : public File
 	    st.deviceID = deviceID;
 	    
 	    /* Write to remote process' buffer. */
-	    if ((e = VMCopy(msg->from, Write, (Address) &st,
+	    if ((e = VMCopy(msg->from, API::Write, (Address) &st,
 			   (Address) msg->stat, sizeof(st))) > 0)
 	    {
 		return ESUCCESS;

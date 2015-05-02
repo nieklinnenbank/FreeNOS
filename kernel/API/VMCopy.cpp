@@ -22,13 +22,12 @@
 #include <FreeNOS/API.h>
 #include <FreeNOS/Kernel.h>
 #include <FreeNOS/System/Constant.h>
-#include <Error.h>
 #include <MemoryBlock.h>
 
 #warning Do not depend on Intel specific flags for generic APIs
 
-Error VMCopyHandler(ProcessID procID, Operation how, Address ours,
-                                    Address theirs, Size sz)
+Error VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
+                    Address theirs, Size sz)
 {
     ProcessManager *procs = Kernel::instance->getProcessManager();
     Memory *memory = Kernel::instance->getMemory();
@@ -41,13 +40,13 @@ Error VMCopyHandler(ProcessID procID, Operation how, Address ours,
     /* Find the corresponding Process. */
     if (!(proc = procs->get(procID)))
     {
-        return ESRCH;
+        return API::NotFound;
     }
     /* Verify memory addresses. */
     if (!memory->access(procs->current(), ours, sz) ||
         !memory->access(proc, theirs, sz))
     {
-        return EFAULT;
+        return API::AccessViolation;
     }
     /* Keep on going until all memory is processed. */
     while (total < sz)
@@ -67,11 +66,11 @@ Error VMCopyHandler(ProcessID procID, Operation how, Address ours,
         /* Process the action appropriately. */
         switch (how)
         {
-            case Read:
+            case API::Read:
                 MemoryBlock::copy((void *)ours, (void *)(tmpAddr + pageOff), bytes);
                 break;
                         
-            case Write:
+            case API::Write:
                 MemoryBlock::copy((void *)(tmpAddr + pageOff), (void *)ours, bytes);
                 break;
             
@@ -87,5 +86,4 @@ Error VMCopyHandler(ProcessID procID, Operation how, Address ours,
 #endif
     /* Success. */
     return total;
-
 }

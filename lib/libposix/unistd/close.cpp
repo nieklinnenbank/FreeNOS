@@ -33,7 +33,7 @@ int close(int fildes)
     /* Ask the FileSystem. */
     if (mnt)
     {
-	IPCMessage(mnt, SendReceive, &msg, sizeof(msg));
+	IPCMessage(mnt, API::SendReceive, &msg, sizeof(msg));
     
 	/* Set error number. */
 	errno = msg.result;

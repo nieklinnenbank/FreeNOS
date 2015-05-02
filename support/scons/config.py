@@ -76,7 +76,16 @@ def initialize(target, host, params):
 def escape(obj):
     return str(obj).replace('"', '\\"')
 
-def write_header(env, filename):
+def write_header(env, filename = None):
+
+    if not filename:
+        try:
+            os.makedirs(env['BUILDROOT'] + '/include')
+            os.symlink('.', env['BUILDROOT'] + '/include/FreeNOS')
+        except:
+            pass
+        filename = env['BUILDROOT'] + '/include/Config.h'
+
     out = open(filename, "w")
     name, ext = os.path.splitext(filename)
     name = name.replace('/', '_')

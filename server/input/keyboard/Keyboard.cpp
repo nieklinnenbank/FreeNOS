@@ -17,7 +17,7 @@
 
 #include <FreeNOS/API.h>
 #include <Macros.h>
-#include <Error.h>
+#include <errno.h>
 #include "Keyboard.h"
 
 /**

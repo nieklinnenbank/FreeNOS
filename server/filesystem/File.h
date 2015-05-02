@@ -21,11 +21,11 @@
 #include <API/VMCopy.h>
 #include <FreeNOS/Process.h>
 #include <Types.h>
-#include <Error.h>
 #include "FileSystemMessage.h"
 #include "FileType.h"
 #include "FileMode.h"
 #include "IOBuffer.h"
+#include <errno.h>
 
 /**
  * @brief Abstracts a file present on a FileSystem.
@@ -138,7 +138,7 @@ class File
 	    st.groupID  = gid;
 	    
 	    /* Copy to the remote process. */
-	    if ((e = VMCopy(msg->from, Write, (Address) &st,
+	    if ((e = VMCopy(msg->from, API::Write, (Address) &st,
 			   (Address) msg->stat, sizeof(st)) > 0))
 	    {
 		return ESUCCESS;

@@ -50,6 +50,6 @@ _start:
 	cmp r4, r9
 	blo 1b
  
-	/* Call kmain */
-	ldr r3, =kmain
+	/* Call kernel_main */
+	ldr r3, =kernel_main
 	blx r3

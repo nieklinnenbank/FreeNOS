@@ -28,7 +28,7 @@ Error SystemInfoHandler(SystemInformation *info)
     if (!memory->access(procs->current(), (Address) info,
                         sizeof(SystemInformation)))
     {
-        return EFAULT;
+        return API::AccessViolation;
     }
     // Fill in our current information
     info->version          = VERSIONCODE;
@@ -40,5 +40,5 @@ Error SystemInfoHandler(SystemInformation *info)
 
     // TODO: we dont have the commandline info of kernel yet.
     MemoryBlock::copy(info->cmdline, "", 64);
-    return 0;
+    return API::Success;
 }

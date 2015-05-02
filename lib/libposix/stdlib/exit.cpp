@@ -15,30 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBC_ERRNO_H
-#define __LIBC_ERRNO_H
+#include <FreeNOS/API.h>
+#include <ProcessMessage.h>
+#include "stdlib.h"
 
-#include <Macros.h>
-#include <Types.h>
-#include <Error.h>
+extern C void exit(int status)
+{
+    ProcessMessage msg;
 
-/**
- * @defgroup libc libc (ISO C99)
- * @{
- */
-
-/**
- * The lvalue errno is used by many functions to return error values.
- */
-extern C int errno;
-
-/**
- * Contains a array of character strings, representing errno values.
- */
-extern C char *error_map[];
-
-/**
- * @}
- */
-
-#endif /* __LIBC_ERRNO_H */
+    /* Request immediate termination. */
+    msg.action = ExitProcess;
+    msg.number = status;
+    msg.ipc(PROCSRV_PID, API::SendReceive, sizeof(msg));
+}    

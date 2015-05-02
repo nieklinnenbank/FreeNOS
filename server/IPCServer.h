@@ -19,7 +19,6 @@
 #define __IPCSERVER_H
 
 #include <FreeNOS/API.h>
-#include <Error.h>
 #include <Vector.h>
 
 /**
@@ -94,7 +93,7 @@ template <class Base, class MsgType> class IPCServer
 		sendReply = true;
 	    
 		/* Now wait for a message. */
-		IPCMessage(ANY, Receive, &msg, sizeof(MsgType));
+		IPCMessage(ANY, API::Receive, &msg, sizeof(MsgType));
 
 		/* Handle the message. */
 		switch (msg.type)
@@ -124,7 +123,7 @@ template <class Base, class MsgType> class IPCServer
 		/* Send Reply. */
 		if (sendReply)
 		{
-		    IPCMessage(msg.from, Send, &msg, sizeof(MsgType));
+		    IPCMessage(msg.from, API::Send, &msg, sizeof(MsgType));
 		}
 	    }
     	    /* Satify compiler. */

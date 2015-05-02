@@ -16,7 +16,6 @@
 #
 
 Import('build_env')
-Import('rootfs_files')
 
 env = build_env.Clone()
 
@@ -35,17 +34,6 @@ env.TargetProgram('kernel', [ Glob('*.cpp'),
                               Glob('#' + env['BUILDROOT'] + '/kernel/intel/*.S'),
 			      Glob('#' + env['BUILDROOT'] + '/kernel/API/*.cpp') ]
 		          , env['boot'])
-
-#
-# Boot Image
-#
-env.BootImage('#${BUILDROOT}/boot.img.gz', '#kernel/intel/nuc/boot.imgdesc')
-
-#
-# RootFS
-#
-env.LinnImage('#${BUILDROOT}/rootfs.linn', rootfs_files)
-env.Depends('#${BUILDROOT}/rootfs.linn', '#build/host')
 
 #
 # Boot ISO (LiveCD)

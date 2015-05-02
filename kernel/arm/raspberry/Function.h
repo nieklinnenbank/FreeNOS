@@ -21,6 +21,6 @@
 #include "MMIO.h"
 #include "API.h"
 #include "Interrupt.h"
-#include <arm/ARMCore.h>
+#include <FreeNOS/arm/ARMCore.h>
 
 #endif /* __ARM_RASPBERRY_FUNCTION_H */

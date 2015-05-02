@@ -17,10 +17,10 @@
 
 #include <DeviceServer.h>
 #include "ATAController.h"
-#include <Error.h>
 #include <Types.h>
 #include <stdlib.h>
 #include <syslog.h>
+#include <errno.h>
 
 int main(int argc, char **argv)
 {

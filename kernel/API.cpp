@@ -18,17 +18,17 @@
 #include "API.h"
 
 /** Operator to print a Operation to a Log */
-Log & operator << (Log &log, Operation op)
+Log & operator << (Log &log, API::Operation op)
 {
     switch (op)
     {
-        case Create: log.write("Create");   break;
-        case Delete: log.write("Delete");   break;
-        case Send:   log.write("Send");     break;
-        case Receive: log.write("Receive"); break;
-        case SendReceive: log.write("SendReceive"); break;
-        case Read: log.write("Read");       break;
-        case Write: log.write("Write");     break;
+        case API::Create:      log.write("Create");      break;
+        case API::Delete:      log.write("Delete");      break;
+        case API::Send:        log.write("Send");        break;
+        case API::Receive:     log.write("Receive");     break;
+        case API::SendReceive: log.write("SendReceive"); break;
+        case API::Read:        log.write("Read");        break;
+        case API::Write:       log.write("Write");       break;
     }    
     return log;
 }

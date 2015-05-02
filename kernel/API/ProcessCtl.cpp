@@ -53,7 +53,7 @@ Error ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
     {
 	if (!memory->access(procs->current(), addr, sizeof(ProcessInfo)))
 	{
-	    return EFAULT;
+	    return API::AccessViolation;
 	}
     }
     /* Does the target process exist? */
@@ -62,7 +62,7 @@ Error ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
         if (procID == SELF)
             proc = (IntelProcess *) procs->current();
         else if (!(proc = (IntelProcess *)procs->get(procID)))
-	    return ESRCH;
+	    return API::NotFound;
     }
     /* Handle request. */
     switch (action)
@@ -87,7 +87,7 @@ Error ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
 	    break;
 	
 	case AllowIO:
-            return EINVAL;
+            return API::InvalidArgument;
 	    //proc->IOPort(addr, true);
 	    //break;
 	
@@ -109,7 +109,7 @@ Error ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
 	    break;
     }
 #endif
-    return 0;
+    return API::Success;
 }
 
 Log & operator << (Log &log, ProcessOperation op)

@@ -37,7 +37,7 @@ int creat(const char *path, mode_t mode)
     /* Ask FileSystem to create the file for us. */
     if (mnt)
     {
-	IPCMessage(mnt, SendReceive, &msg, sizeof(msg));
+	IPCMessage(mnt, API::SendReceive, &msg, sizeof(msg));
 
 	/* Set errno. */
 	errno = msg.result;

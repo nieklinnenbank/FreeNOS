@@ -19,9 +19,6 @@
 #define __API_IOCTL_H
 
 #include <FreeNOS/API.h>
-#include <FreeNOS/Process.h>
-#include <Error.h>
-#include <Types.h>
 
 /**  
  * @defgroup kernelapi kernel (API) 
@@ -47,27 +44,27 @@ Log & operator << (Log &log, IOOperation op);
 
 inline u8 ReadByte(Address addr)
 {
-    return (u8) trapKernel3(IOCtlNumber, IOByteRead, addr, 0);
+    return (u8) trapKernel3(API::IOCtlNumber, IOByteRead, addr, 0);
 }
 
 inline Error WriteByte(Address addr, u8 value)
 {
-    return trapKernel3(IOCtlNumber, IOByteRead, addr, value);
+    return trapKernel3(API::IOCtlNumber, IOByteRead, addr, value);
 }
 
 inline u16 ReadWord(Address addr)
 {
-    return (u16) trapKernel3(IOCtlNumber, IOWordRead, addr, 0);
+    return (u16) trapKernel3(API::IOCtlNumber, IOWordRead, addr, 0);
 }
 
 inline Error WriteWord(Address addr, u16 value)
 {
-    return trapKernel3(IOCtlNumber, IOWordWrite, addr, value);
+    return trapKernel3(API::IOCtlNumber, IOWordWrite, addr, value);
 }
 
 inline Error WriteLong(Address addr, ulong value)
 {
-    return trapKernel3(IOCtlNumber, IOLongWrite, addr, value);
+    return trapKernel3(API::IOCtlNumber, IOLongWrite, addr, value);
 }
 
 /**

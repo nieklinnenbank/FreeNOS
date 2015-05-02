@@ -27,7 +27,6 @@
 #include <Shared.h>
 #include <Vector.h>
 #include <Types.h>
-#include <Error.h>
 #include "ProcessMessage.h"
 #include "FileDescriptor.h"
 #include "UserProcess.h"

@@ -87,7 +87,7 @@ int chdir(const char *filepath)
     msg.action = SetCurrentDirectory;
     
     /* Ask the process server. */
-    IPCMessage(PROCSRV_PID, SendReceive, &msg, sizeof(msg));
+    IPCMessage(PROCSRV_PID, API::SendReceive, &msg, sizeof(msg));
 
     /* Done. */
     errno = ZERO;

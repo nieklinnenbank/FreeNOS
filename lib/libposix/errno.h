@@ -15,8 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __ERROR_H
-#define __ERROR_H
+#ifndef __LIBC_ERRNO_H
+#define __LIBC_ERRNO_H
+
+#include <Macros.h>
+#include <Types.h>
+
+/**
+ * @defgroup libc libc (ISO C99)
+ * @{
+ */
 
 /** Reports a success operation. */
 #define ESUCCESS        0
@@ -267,4 +275,19 @@
 /** Last defined error value (do not use). */
 #define ELAST		EXDEV
 
-#endif /* __ERROR_H */
+
+/**
+ * The lvalue errno is used by many functions to return error values.
+ */
+extern C int errno;
+
+/**
+ * Contains a array of character strings, representing errno values.
+ */
+extern C char *error_map[];
+
+/**
+ * @}
+ */
+
+#endif /* __LIBC_ERRNO_H */

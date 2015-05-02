@@ -36,7 +36,6 @@
 #include <String.h>
 #include <Types.h>
 #include <Macros.h>
-#include <Error.h>
 #include "MemoryMessage.h"
 
 /**

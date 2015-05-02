@@ -34,13 +34,13 @@ Kernel::Kernel(Memory *memory, ProcessManager *procs)
 
     // Register generic API handlers
     m_apis.fill(ZERO);
-    m_apis.insert(IPCMessageNumber, (APIHandler *) IPCMessageHandler);
-    m_apis.insert(PrivExecNumber,   (APIHandler *) PrivExecHandler);
-    m_apis.insert(ProcessCtlNumber, (APIHandler *) ProcessCtlHandler);
-    m_apis.insert(SystemInfoNumber, (APIHandler *) SystemInfoHandler);
-    m_apis.insert(VMCopyNumber,     (APIHandler *) VMCopyHandler);
-    m_apis.insert(VMCtlNumber,      (APIHandler *) VMCtlHandler);
-    m_apis.insert(IOCtlNumber,      (APIHandler *) IOCtlHandler);
+    m_apis.insert(API::IPCMessageNumber, (API::Handler *) IPCMessageHandler);
+    m_apis.insert(API::PrivExecNumber,   (API::Handler *) PrivExecHandler);
+    m_apis.insert(API::ProcessCtlNumber, (API::Handler *) ProcessCtlHandler);
+    m_apis.insert(API::SystemInfoNumber, (API::Handler *) SystemInfoHandler);
+    m_apis.insert(API::VMCopyNumber,     (API::Handler *) VMCopyHandler);
+    m_apis.insert(API::VMCtlNumber,      (API::Handler *) VMCtlHandler);
+    m_apis.insert(API::IOCtlNumber,      (API::Handler *) IOCtlHandler);
 }
 
 Memory * Kernel::getMemory()
@@ -74,13 +74,13 @@ void Kernel::run()
     m_procs->schedule();
 }
 
-Error Kernel::invokeAPI(APINumber number,
+Error Kernel::invokeAPI(API::Number number,
                         ulong arg1, ulong arg2, ulong arg3, ulong arg4, ulong arg5)
 {
-    APIHandler **handler = (APIHandler **) m_apis.get(number);
+    API::Handler **handler = (API::Handler **) m_apis.get(number);
 
     if (handler)
         return (*handler)(arg1, arg2, arg3, arg4, arg5);
     else
-        return EINVAL;
+        return API::InvalidArgument;
 }

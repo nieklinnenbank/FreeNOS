@@ -20,7 +20,6 @@
 
 #include <FreeNOS/API.h>
 #include <FreeNOS/Process.h>
-#include <Error.h>
 #include <Types.h>
 
 /**  
@@ -78,7 +77,7 @@ Log & operator << (Log &log, ProcessOperation op);
  */
 inline Error ProcessCtl(ProcessID proc, ProcessOperation op, Address addr = 0)
 {
-    return trapKernel3(ProcessCtlNumber, proc, op, addr);
+    return trapKernel3(API::ProcessCtlNumber, proc, op, addr);
 }
 
 /**

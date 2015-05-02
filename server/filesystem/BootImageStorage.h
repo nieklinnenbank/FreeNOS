@@ -21,7 +21,6 @@
 #include <FreeNOS/API.h>
 #include <MemoryMessage.h>
 #include <Types.h>
-#include <Error.h>
 #include <BootImage.h>
 #include "Storage.h"
 #include <string.h>
@@ -64,7 +63,7 @@ class BootImageStorage : public Storage
         mem.bytes      = info.bootImageSize;
         mem.virtualAddress  = ZERO;
         mem.physicalAddress = info.bootImageAddress;
-        mem.ipc(MEMSRV_PID, SendReceive, sizeof(mem));
+        mem.ipc(MEMSRV_PID, API::SendReceive, sizeof(mem));
 
         // Update our state
         image = (BootImage *) mem.virtualAddress;

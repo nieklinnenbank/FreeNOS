@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,23 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
-#include <FreeNOS/Process.h> 
-#include "FileSystemPath.h"
-#include "ProcessServer.h"
-#include "ProcessMessage.h"
-#include <errno.h>
+#include "ARMFactory.h"
+#include "ARMProcess.h"
 
-void ProcessServer::setCurrentDirectory(ProcessMessage *msg)
+Process * ARMFactory::createProcess(ProcessID id, Address entry)
 {
-    /* Handle request. */
-    msg->result = VMCopy(msg->from, API::Read,
-                        (Address) procs[msg->from]->currentDirectory,
-                        (Address) msg->path, PATHLEN);
-
-    /* Mark with ESUCCESS? */
-    if (msg->result > 0)
-    {
-        msg->result = ESUCCESS;
-    }
+    return new ARMProcess(id, entry);
 }

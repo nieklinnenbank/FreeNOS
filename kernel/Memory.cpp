@@ -24,10 +24,13 @@
 Memory::Memory(Size memorySize)
     : m_physicalMemory(memorySize / PAGESIZE)
 {
+    NOTICE("memorySize =" << memorySize);
 }
 
 Error Memory::initialize(Address heap)
 {
+    NOTICE("heap =" << heap);
+
     Size meta = sizeof(BubbleAllocator) + sizeof(PoolAllocator);
     Allocator *bubble, *pool;
 
@@ -35,6 +38,8 @@ Error Memory::initialize(Address heap)
     bubble = new (heap) BubbleAllocator();
     pool   = new (heap + sizeof(BubbleAllocator)) PoolAllocator();
     pool->setParent(bubble);
+
+    // TODO: pass the heap size as argument instead of assuming 1MB.
 
     /* Setup the heap region (1MB). */
     bubble->region(heap + meta, (1024 * 1024) - meta);
@@ -46,7 +51,7 @@ Error Memory::initialize(Address heap)
 
 Size Memory::getTotalMemory()
 {
-    return m_physicalMemory.count(true) * PAGESIZE;
+    return m_physicalMemory.size() * PAGESIZE;           
 }
 
 Size Memory::getAvailableMemory()

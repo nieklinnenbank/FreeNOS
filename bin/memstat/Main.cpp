@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 
     /* Query memory usage stats. */
     mem.action = SystemMemory;
-    mem.ipc(MEMSRV_PID, SendReceive, sizeof(mem));
+    mem.ipc(MEMSRV_PID, API::SendReceive, sizeof(mem));
     
     /* Print it. */
     printf("Total:     %u KB\r\n"

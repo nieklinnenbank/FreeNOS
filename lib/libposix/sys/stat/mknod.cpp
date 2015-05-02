@@ -38,7 +38,7 @@ int mknod(const char *path, mode_t mode, dev_t dev)
     /* Ask FileSystem to create the file for us. */
     if (mnt)
     {
-	IPCMessage(mnt, SendReceive, &msg, sizeof(msg));
+	IPCMessage(mnt, API::SendReceive, &msg, sizeof(msg));
     
 	/* Set errno. */
 	errno = msg.result;

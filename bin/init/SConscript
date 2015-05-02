@@ -18,6 +18,5 @@
 Import('build_env')
 
 env = build_env.Clone()
-env.UseLibraries([ 'libposix', 'libc', 'liballoc', 'libstd' ])
+env.UseLibraries([ 'libposix', 'liballoc', 'libstd' ])
 env.TargetProgram('init', 'Main.cpp', env['bin'])
-env.TargetInstall('rc', env['etc'])

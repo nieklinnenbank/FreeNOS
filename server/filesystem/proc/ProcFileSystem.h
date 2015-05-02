@@ -22,7 +22,6 @@
 #include <FileSystem.h>
 #include <FileSystemMessage.h>
 #include <Types.h>
-#include <Error.h>
 #include "ProcRootDirectory.h"
 
 /** @see ProcRootDir. */

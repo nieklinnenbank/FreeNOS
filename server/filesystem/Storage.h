@@ -19,7 +19,7 @@
 #define __FILESYSTEM_STORAGE_H
 
 #include <Types.h>
-#include <Error.h>
+#include <errno.h>
 
 /**
  * Provides a storage device to build filesystems on top.

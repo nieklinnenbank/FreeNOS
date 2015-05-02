@@ -19,7 +19,7 @@
 #define __DEVICE_H
 
 #include <Types.h>
-#include <Error.h>
+#include <errno.h>
 
 /**
  * Represents a device attached to the system.

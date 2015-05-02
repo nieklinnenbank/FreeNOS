@@ -26,7 +26,7 @@ void MemoryServer::createShared(MemoryMessage *msg)
 	        msg->keyLength : sizeof(key);
     
     /* Obtain key. */
-    if ((msg->result = VMCopy(msg->from, Read, (Address) key,
+    if ((msg->result = VMCopy(msg->from, API::Read, (Address) key,
 			     (Address) msg->key, num)) != num)
     {
 	return;

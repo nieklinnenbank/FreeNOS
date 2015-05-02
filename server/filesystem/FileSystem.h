@@ -192,7 +192,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 	    /*
 	     * Attempt to copy the input path first.
 	     */
-	    if ((msg->result = VMCopy(msg->from, Read, (Address) buf,
+	    if ((msg->result = VMCopy(msg->from, API::Read, (Address) buf,
 			    	     (Address) msg->buffer, PATHLEN)) <= 0)
 	    {
 		return;

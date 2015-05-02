@@ -19,8 +19,6 @@
 #define __API_PRIVEXEC_H
 
 #include <FreeNOS/API.h>
-#include <Error.h>
-#include <Types.h>
 
 /**  
  * @defgroup kernelapi kernel (API) 
@@ -47,7 +45,7 @@ PrivOperation;
  */
 inline Error PrivExec(PrivOperation op, Address param = 0)
 {
-    return trapKernel2(PrivExecNumber, op, param);
+    return trapKernel2(API::PrivExecNumber, op, param);
 }
 
 /**

@@ -43,7 +43,7 @@ int forkexec(const char *path, const char *argv[])
     msg.number    = count;
     
     /* Ask process server. */
-    IPCMessage(PROCSRV_PID, SendReceive, &msg, sizeof(msg));
+    IPCMessage(PROCSRV_PID, API::SendReceive, &msg, sizeof(msg));
 
     /* Set errno. */
     errno = msg.result;

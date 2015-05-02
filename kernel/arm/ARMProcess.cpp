@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,16 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
-#include <ProcessMessage.h>
-#include "stdlib.h"
+#include <Log.h>
+#include "ARMProcess.h"
 
-extern C void exit(int status)
+ARMProcess::ARMProcess(ProcessID id, Address entry)
+    : Process(id, entry)
 {
-    ProcessMessage msg;
+    NOTICE("id =" << id << "entry =" << entry);
+}
 
-    /* Request immediate termination. */
-    msg.action = ExitProcess;
-    msg.number = status;
-    msg.ipc(PROCSRV_PID, SendReceive, sizeof(msg));
-}    
+ARMProcess::~ARMProcess()
+{
+    NOTICE("");
+}
+
+void ARMProcess::execute()
+{
+    DEBUG("");
+}

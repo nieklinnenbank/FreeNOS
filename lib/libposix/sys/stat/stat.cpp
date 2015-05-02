@@ -35,7 +35,7 @@ int stat(const char *path, struct stat *buf)
     /* Ask the FileSystem for the information. */
     if (mnt)
     {
-	IPCMessage(mnt, SendReceive, &msg, sizeof(msg));
+	IPCMessage(mnt, API::SendReceive, &msg, sizeof(msg));
 
         /* Copy information into buf. */
 	if (msg.result == ESUCCESS)

@@ -19,7 +19,6 @@
 #define __API_VMCOPY_H
 
 #include <FreeNOS/API.h>
-#include <Error.h>
 
 /**  
  * @defgroup kernelapi kernel (API) 
@@ -35,13 +34,13 @@
  * @param sz Amount of memory to copy.
  * @return Total number of bytes copied on success and error code on failure.
  */
-inline Error VMCopy(ProcessID proc, Operation how, Address ours,
-                                    Address theirs, Size sz)
+inline Error VMCopy(ProcessID proc, API::Operation how, Address ours,
+                         Address theirs, Size sz)
 {
-    return trapKernel5(VMCopyNumber, proc, how, ours, theirs, sz);
+    return trapKernel5(API::VMCopyNumber, proc, how, ours, theirs, sz);
 }
 
-extern Error VMCopyHandler(ProcessID proc, Operation how, Address ours, Address theirs, Size sz);
+extern Error VMCopyHandler(ProcessID proc, API::Operation how, Address ours, Address theirs, Size sz);
 
 /**
  * @}

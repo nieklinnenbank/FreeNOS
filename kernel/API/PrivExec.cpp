@@ -40,14 +40,14 @@ Error PrivExecHandler(PrivOperation op, Address addr)
 	    
 	case Shutdown:
 	    shutdown();
-	    return ESUCCESS;
+	    return API::Success;
 
         case WriteConsole:            
             (*Log::instance) << (char *)addr;
-            return ESUCCESS;
+            return API::Success;
 
 	default:
 	    ;
     }
-    return EINVAL;
+    return API::InvalidArgument;
 }

@@ -22,6 +22,7 @@
 #include <List.h>
 #include "File.h"
 #include "FileSystemPath.h"
+#include <stdio.h>
 
 /** @brief Maximum length of a filename. */
 #define DIRENT_LEN	64
@@ -204,8 +205,6 @@ class Directory : public File
 	    }
 	}
 
-    protected:
-    
 	/** 
          * @brief Clears the internal list of entries. 
          */

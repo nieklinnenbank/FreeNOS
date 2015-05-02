@@ -47,7 +47,7 @@ def TryCompileC(context):
 #
 def CheckCCFlags(env):
 
-    cflags = env['CCFLAGS'][:]
+    cflags = env['_CCFLAGS'][:]
 
     # Loop all CFLAGS.
     for flag in cflags:
@@ -62,9 +62,9 @@ def CheckCCFlags(env):
 	# Try to link a dummy program.
 	result = conf.TryCompileC()
 
-	# If it failed, mark to remove the CFLAG.
-        if not result:
-	    env['CCFLAGS'].remove(flag)
+	# If success, append to CFLAGS
+        if result:
+	    env['CCFLAGS'].append(flag)
 
 	# Done. Try next.
         conf.Finish()
@@ -98,7 +98,7 @@ def TryCompileCXX(context):
 #
 def CheckCXXFlags(env):
 
-    cppflags = env['CXXFLAGS'][:]
+    cppflags = env['_CXXFLAGS'][:]
 
     # Loop all CPPFLAGS.
     for flag in cppflags:
@@ -113,9 +113,9 @@ def CheckCXXFlags(env):
 	# Try to link a dummy program.
 	result = conf.TryCompileCXX()
 
-	# If it failed, mark to remove the CXXFLAGS.
-        if not result:
-	    env['CXXFLAGS'].remove(flag)
+	# If success, append it to CXXFLAGS
+        if result:
+	    env['CXXFLAGS'].append(flag)
 
 	# Done. Try next.
         conf.Finish()

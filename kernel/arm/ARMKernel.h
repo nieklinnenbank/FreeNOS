@@ -27,34 +27,32 @@
  */
 class ARMKernel : public Kernel
 {
-    public:
+  public:
     
-        /**
-         * Constructor function.
-         */
-        ARMKernel(Memory *memory, ProcessManager *procs);
+    /**
+     * Constructor function.
+     */
+    ARMKernel(Memory *memory, ProcessManager *procs);
 
-        /**
-         * Hooks a function to an hardware interrupt.
-         * @param vec Interrupt vector to hook on.
-         * @param h Handler function.
-         * @param p Parameter to pass to the handler function.
-         */
-        virtual void hookInterrupt(int vec, InterruptHandler h, ulong p);
+    /**
+     * Hooks a function to an hardware interrupt.
+     * @param vec Interrupt vector to hook on.
+     * @param h Handler function.
+     * @param p Parameter to pass to the handler function.
+     */
+    virtual void hookInterrupt(int vec, InterruptHandler h, ulong p);
 
-        /** 
-         * Enable or disable an hardware interrupt (IRQ). 
-         * @param vector IRQ number. 
-         * @param enabled True to enable, and false to disable. 
-         */
-        virtual void enableIRQ(uint vector, bool enabled);
+    /** 
+     * Enable or disable an hardware interrupt (IRQ). 
+     * @param vector IRQ number. 
+     * @param enabled True to enable, and false to disable. 
+     */
+    virtual void enableIRQ(uint vector, bool enabled);
 
-        /**
-         * Create a new process.
-         * @param entry Entry address of the new process.
-         * @return Process pointer on success or ZERO on failure.
-         */
-        virtual Process * createProcess(Address entry);
+    /**
+     * Loads the boot image.
+     */
+    virtual bool loadBootImage();
 };
 
 #endif /* __ARM_KERNEL_H */

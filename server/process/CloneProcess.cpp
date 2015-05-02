@@ -26,6 +26,7 @@
 #include <MemoryMessage.h>
 #include "ProcessMessage.h"
 #include "ProcessServer.h"
+#include <errno.h>
 
 void copyReservedFlags(Address *parentDir, ProcessID child)
 {
@@ -42,7 +43,7 @@ void copyReservedFlags(Address *parentDir, ProcessID child)
     mem.virtualAddress  = ZERO;
     mem.bytes           = PAGESIZE;
     mem.access          = Memory::Present | Memory::User | Memory::Readable | Memory::Writable;
-    mem.ipc(MEMSRV_PID, SendReceive, sizeof(mem));
+    mem.ipc(MEMSRV_PID, API::SendReceive, sizeof(mem));
     
     /* Point to the new mapping. */
     childDir = (Address *) mem.virtualAddress;
@@ -57,7 +58,7 @@ void copyReservedFlags(Address *parentDir, ProcessID child)
     }
     /* Done. */
     mem.action = ReleasePrivate;
-    mem.ipc(MEMSRV_PID, SendReceive, sizeof(mem));
+    mem.ipc(MEMSRV_PID, API::SendReceive, sizeof(mem));
 }
 
 void ProcessServer::cloneProcessHandler(ProcessMessage *msg)
@@ -115,11 +116,11 @@ void ProcessServer::cloneProcessHandler(ProcessMessage *msg)
 		    if (!(pageTable[j] & PAGE_PINNED))
 		    {
 			/* Copy the page contents of the parent. */
-		        VMCopy(msg->from, Read, (Address) page,
+		        VMCopy(msg->from, API::Read, (Address) page,
 			       range.virtualAddress, PAGESIZE);
 		
 			/* Copy it to the new Process. */
-		        VMCopy(id, Write, (Address) page,
+		        VMCopy(id, API::Write, (Address) page,
 			       range.virtualAddress, PAGESIZE);
 		    }
 		}
@@ -157,9 +158,9 @@ void ProcessServer::cloneProcessHandler(ProcessMessage *msg)
     /* Send a reply to the parent. */
     msg->result = ESUCCESS;
     msg->number = id;
-    msg->ipc(msg->from, Send, sizeof(ProcessMessage));
+    msg->ipc(msg->from, API::Send, sizeof(ProcessMessage));
     
     /* And to the child aswell. */
     msg->number = ZERO;
-    msg->ipc(id, Send, sizeof(ProcessMessage));
+    msg->ipc(id, API::Send, sizeof(ProcessMessage));
 }

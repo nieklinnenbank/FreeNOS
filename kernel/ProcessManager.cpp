@@ -16,7 +16,6 @@
  */
 
 #include <Log.h>
-#include <Error.h>
 #include "ProcessManager.h"
 #include <System/Function.h>
 

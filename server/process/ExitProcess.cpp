@@ -18,10 +18,10 @@
 #include <FreeNOS/API.h>
 #include <FreeNOS/Process.h>
 #include <Types.h>
-#include <Error.h>
 #include "ProcessMessage.h"
 #include "ProcessServer.h"
 #include <string.h>
+#include <errno.h>
 
 void ProcessServer::exitProcessHandler(ProcessMessage *msg)
 {
@@ -48,7 +48,7 @@ void ProcessServer::exitProcessHandler(ProcessMessage *msg)
 	    reply.action = WaitProcess;
 	    reply.number = msg->number;
 	    reply.result = ESUCCESS;
-	    IPCMessage(i, Send, &reply, sizeof(reply));
+	    IPCMessage(i, API::Send, &reply, sizeof(reply));
 	}
     }
 }

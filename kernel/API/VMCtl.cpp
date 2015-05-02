@@ -17,7 +17,6 @@
 
 #include <FreeNOS/Kernel.h>
 #include <FreeNOS/Config.h>
-#include <Error.h>
 #include "VMCtl.h"
 #include "ProcessID.h"
 
@@ -38,7 +37,7 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, MemoryRange *range)
         proc = procs->current();
     else if (!(proc = procs->get(procID)))
     {
-        return ESRCH;
+        return API::NotFound;
     }
 
     /* Validate the given MemoryRange pointer, if needed. */
@@ -46,7 +45,7 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, MemoryRange *range)
         !memory->access(procs->current(),
                        (Address) range, sizeof(MemoryRange)))
     {
-        return EFAULT;
+        return API::AccessViolation;
     }
     /* Perform operation. */
     switch (op)
@@ -56,7 +55,7 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, MemoryRange *range)
             break;
 
         case LookupPhysical:
-            return EINVAL;
+            return API::InvalidArgument;
             //return memory->isMarked(range->physicalAddress);
 
         case Map:
@@ -98,8 +97,9 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, MemoryRange *range)
             break;
 
         case Access:
-            return memory->access(proc, range->virtualAddress,
-                                        range->bytes, range->access);
+            // TODO: return a API::Success instead of casting
+            return (API::Error) memory->access(proc, range->virtualAddress,
+                                               range->bytes, range->access);
             
         case MapTables:
 
@@ -136,10 +136,10 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, MemoryRange *range)
             break;
             
         default:
-            return EINVAL;
+            return API::InvalidArgument;
         
     }
 #endif
     /* Success. */
-    return 0;
+    return API::Success;
 }

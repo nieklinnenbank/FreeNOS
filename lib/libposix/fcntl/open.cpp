@@ -33,7 +33,7 @@ int open(const char *path, int oflag, ...)
     /* Ask the FileSystem. */
     if (mnt)
     {
-	IPCMessage(mnt, SendReceive, &msg, sizeof(msg));
+	IPCMessage(mnt, API::SendReceive, &msg, sizeof(msg));
     
 	/* Set errno. */
 	errno = msg.result;

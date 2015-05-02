@@ -15,15 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "UART.h"
+#include "RaspiSerial.h"
 #include "MMIO.h"
 
-UART::UART()
+RaspiSerial::RaspiSerial()
 {
     init();
 }
 
-void UART::init(void)
+void RaspiSerial::init(void)
 {
     // Disable UART0.
     MMIO::write(UART0_CR, 0x00000000);
@@ -65,7 +65,7 @@ void UART::init(void)
     MMIO::write(UART0_CR, (1 << 0) | (1 << 8) | (1 << 9));
 }
 
-void UART::put(u8 byte)
+void RaspiSerial::put(u8 byte)
 {
     // wait for UART to become ready to transmit
     while(true)
@@ -78,7 +78,7 @@ void UART::put(u8 byte)
     MMIO::write(UART0_DR, byte);
 }
 
-u8 UART::get(void)
+u8 RaspiSerial::get(void)
 {
     // wait for UART to have recieved something
     while(true)
@@ -91,15 +91,15 @@ u8 UART::get(void)
     return MMIO::read(UART0_DR);
 }
 
-void UART::put(const char *str)
+void RaspiSerial::write(const char *str)
 {
     while(*str)
     {
-        UART::put(*str++);
+        RaspiSerial::put(*str++);
     }
 }
 
-void UART::delay(s32 count)
+void RaspiSerial::delay(s32 count)
 {
     asm volatile("1: subs %[count], %[count], #1; bne 1b"
 		 : : [count]"r"(count));

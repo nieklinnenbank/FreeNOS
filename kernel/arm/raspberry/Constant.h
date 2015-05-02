@@ -18,6 +18,6 @@
 #ifndef __ARM_RASPBERRY_CONSTANTS_H
 #define __ARM_RASPBERRY_CONSTANTS_H
 
-#include "Memory.h"
+#include <FreeNOS/arm/ARMMemory.h>
 
 #endif /* __ARM_RASPBERRY_CONSTANTS_H */

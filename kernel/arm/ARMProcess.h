@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,23 +15,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
-#include <FreeNOS/Process.h> 
-#include "FileSystemPath.h"
-#include "ProcessServer.h"
-#include "ProcessMessage.h"
-#include <errno.h>
+#ifndef __ARM_ARMPROCESS_H
+#define __ARM_ARMPROCESS_H
 
-void ProcessServer::setCurrentDirectory(ProcessMessage *msg)
+#include <FreeNOS/Process.h>
+
+/**
+ * ARM specific process implementation.
+ */
+class ARMProcess : public Process
 {
-    /* Handle request. */
-    msg->result = VMCopy(msg->from, API::Read,
-                        (Address) procs[msg->from]->currentDirectory,
-                        (Address) msg->path, PATHLEN);
+  public:
+    
+    /**
+     * Constructor function.
+     *
+     * @param entry Initial program counter value.
+     */
+    ARMProcess(ProcessID id, Address entry);
+    
+    /**
+     * Destructor function.
+     */
+    virtual ~ARMProcess();
 
-    /* Mark with ESUCCESS? */
-    if (msg->result > 0)
-    {
-        msg->result = ESUCCESS;
-    }
-}
+    /**
+     * Allow the Process to run on the CPU.
+     */
+    virtual void execute();
+
+  private:
+
+};
+
+#endif /* __ARM_ARMPROCESS_H */

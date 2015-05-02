@@ -19,6 +19,7 @@
 #include <ProcessMessage.h>
 #include "sys/wait.h"
 #include "sys/types.h"
+#include <errno.h>
 
 pid_t waitpid(pid_t pid, int *stat_loc, int options)
 {
@@ -29,7 +30,7 @@ pid_t waitpid(pid_t pid, int *stat_loc, int options)
     msg.number = pid;
     
     /* Ask ProcessServer. */
-    IPCMessage(PROCSRV_PID, SendReceive, &msg, sizeof(msg));
+    IPCMessage(PROCSRV_PID, API::SendReceive, &msg, sizeof(msg));
 
     /* Did we succeed? */
     if (msg.result == ESUCCESS)

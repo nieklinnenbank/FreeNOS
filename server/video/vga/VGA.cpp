@@ -16,9 +16,9 @@
  */
 
 #include <API/ProcessCtl.h>
-#include <Error.h>
 #include <Types.h>
 #include <MemoryMessage.h>
+#include <errno.h>
 #include "VGA.h"
 
 VGA::VGA(Size w, Size h) : width(w), height(h)
@@ -35,7 +35,7 @@ Error VGA::initialize()
     mem.virtualAddress  = ZERO;
     mem.physicalAddress = VGA_PADDR;
     mem.access    = Memory::Present | Memory::User | Memory::Readable | Memory::Writable | Memory::Pinned;
-    mem.ipc(MEMSRV_PID, SendReceive, sizeof(mem));
+    mem.ipc(MEMSRV_PID, API::SendReceive, sizeof(mem));
 
     /* Point to the VGA mapping. */
     vga = (u16 *) mem.virtualAddress;

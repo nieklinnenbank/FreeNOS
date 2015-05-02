@@ -33,7 +33,7 @@ off_t lseek(int fildes, off_t offset, int whence)
 	msg.action = SeekFile;
 	msg.fd     = fildes;
 	msg.offset = offset;
-	IPCMessage(mnt, SendReceive, &msg, sizeof(msg));
+	IPCMessage(mnt, API::SendReceive, &msg, sizeof(msg));
 	
 	/* Set error number. */
         errno = msg.result;

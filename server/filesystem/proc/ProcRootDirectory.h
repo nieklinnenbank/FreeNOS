@@ -20,7 +20,6 @@
 
 #include <Directory.h>
 #include <Types.h>
-#include <Error.h>
 #include "ProcFileSystem.h"
 #include "IOBuffer.h"
 

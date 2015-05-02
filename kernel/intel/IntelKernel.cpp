@@ -178,12 +178,12 @@ void IntelKernel::interrupt(CPUState *state, ulong param)
 void IntelKernel::trap(CPUState *state, ulong param)
 {
     state->eax = Kernel::instance->invokeAPI(
-        (APINumber) state->eax,
-                    state->ecx,
-                    state->ebx,
-                    state->edx,
-                    state->esi,
-                    state->edi
+        (API::Number) state->eax,
+                      state->ecx,
+                      state->ebx,
+                      state->edx,
+                      state->esi,
+                      state->edi
     );
 }
 

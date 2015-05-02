@@ -20,7 +20,7 @@
 
 int main(int argc, char **argv)
 {
-    const char *av[] = { "/bin/sh", "/etc/rc", ZERO };
+    const char *av[] = { "/bin/sh", "/etc/init.sh", ZERO };
 
     /*
      * TODO: give up all privileges.

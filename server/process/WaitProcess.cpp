@@ -17,9 +17,9 @@
 
 #include <FreeNOS/API.h>
 #include <FreeNOS/Process.h> 
-#include <Error.h>
 #include "ProcessServer.h"
 #include "ProcessMessage.h"
+#include <errno.h>
 
 void ProcessServer::waitProcessHandler(ProcessMessage *msg)
 {
@@ -31,6 +31,6 @@ void ProcessServer::waitProcessHandler(ProcessMessage *msg)
     else
     {
 	msg->result = EINVAL;
-	IPCMessage(msg->from, Send, msg, sizeof(*msg));
+	IPCMessage(msg->from, API::Send, msg, sizeof(*msg));
     }
 }

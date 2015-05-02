@@ -22,7 +22,6 @@
 #include <FileSystemMessage.h>
 #include <Directory.h>
 #include <Types.h>
-#include <Error.h>
 #include "LinnDirectoryEntry.h"
 #include "LinnFileSystem.h"
 #include "LinnInode.h"

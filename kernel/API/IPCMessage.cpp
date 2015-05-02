@@ -21,7 +21,7 @@
 #include <FreeNOS/Kernel.h>
 #include "IPCMessage.h"
 
-Error IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg, Size size)
+Error IPCMessageHandler(ProcessID id, API::Operation action, UserMessage *msg, Size size)
 {
     Process *proc;
     ProcessManager *procs = Kernel::instance->getProcessManager();
@@ -31,7 +31,7 @@ Error IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg, Size s
     if (size > MAX_MESSAGE_SIZE || !memory->access(procs->current(),
                                                   (Address) msg, sizeof(UserMessage)))
     {
-        return EFAULT;
+        return API::AccessViolation;
     }
     /* Enforce correct fields. */
     msg->from = procs->current()->getID();
@@ -42,27 +42,27 @@ Error IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg, Size s
     /* Handle IPC request appropriately. */
     switch (action)
     {
-        case Send:
-        case SendReceive:
+        case API::Send:
+        case API::SendReceive:
   
             /* Find the remote process to send to. */
             if (!(proc = procs->get(id)))
             {
-                return ESRCH;
+                return API::NotFound;
             }
             /* Put our message on their list, and try to let them execute! */
             proc->getMessages()->prepend(new UserMessage(msg, size));
             proc->setState(Process::Ready);
 
-            if (action == SendReceive && proc != procs->current())
+            if (action == API::SendReceive && proc != procs->current())
             {
                 procs->current()->setState(Process::Sleeping);
                 procs->schedule(proc);
             }
-            if (action == Send)
+            if (action == API::Send)
                 break;
             
-        case Receive:
+        case API::Receive:
 
             /* Block until we have a message. */
             while (true)
@@ -77,7 +77,7 @@ Error IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg, Size s
                                                        size : i.current()->size);
                         delete i.current();
                         i.remove();
-                        return 0;
+                        return API::Success;
                     }
                 }
                 /* Let some other process run while we wait. */
@@ -86,8 +86,8 @@ Error IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg, Size s
             }
 
         default:
-            return EINVAL;
+            return API::InvalidArgument;
     }
     /* Success. */
-    return 0;
+    return API::Success;
 }

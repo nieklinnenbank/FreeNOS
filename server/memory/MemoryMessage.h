@@ -26,7 +26,6 @@
 #include <FreeNOS/API.h>
 #include <Types.h>
 #include <Macros.h>
-#include <Error.h>
 
 /**
  * Actions which can be specified in an MemoryMessage.
