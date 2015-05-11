@@ -19,24 +19,32 @@
 #include <FreeNOS/System/Constant.h>
 #include <Types.h>
 #include <Macros.h>
+#include <Array.h>
 #include <PageAllocator.h>
 #include <PoolAllocator.h>
 #include <VMCtlAllocator.h>
-#include <ProcessServer.h>
-#include <stdlib.h>
+#include <FileSystemMount.h>
+#include <CoreServer.h>
+#include "FileDescriptor.h"
+#include "stdlib.h"
+#include "string.h"
 #include "Runtime.h"
-#include <string.h>
 #include "unistd.h"
-
-Shared<FileSystemMount> mounts;
-Shared<FileDescriptor> files;
-Shared<UserProcess> procs;
 
 /** List of constructors. */
 extern void (*CTOR_LIST)();
 
 /** List of destructors. */
 extern void (*DTOR_LIST)();
+
+/** FileSystem mounts table */
+FileSystemMount mounts[FILESYSTEM_MAXMOUNTS];
+
+/** Array of FileDescriptors. */
+Array<FileDescriptor, FILE_DESCRIPTOR_MAX> *files = ZERO;
+
+/** Current Directory String */
+String *currentDirectory = ZERO;
 
 extern C int __cxa_atexit(void (*func) (void *),
                           void * arg, void * dso_handle)
@@ -79,8 +87,8 @@ void setupHeap()
     Address heapAddr, heapOff;
     Size parentSize;
 
-    /* Only the memory server allocates directly. */
-    if (ProcessCtl(SELF, GetPID) == MEMSRV_PID)
+    /* Only the core server allocates directly. */
+    if (ProcessCtl(SELF, GetPID) == CORESRV_PID)
     {
         VMCtlAllocator alloc(PAGESIZE * 4);
 
@@ -115,20 +123,39 @@ void setupHeap()
 
 void setupMappings()
 {
-    char key[256];
+    // The CoreServer does not need to setup mappings
+    if (getpid() == CORESRV_PID)
+        return;
 
-    if (getpid() != MEMSRV_PID)
-    {
-        /* Load the mounts and process table. */
-        mounts.load(FILE_SYSTEM_MOUNT_KEY, MAX_MOUNTS);
-        procs.load(USER_PROCESS_KEY, MAX_PROCS);
-    
-        /* Format FileDescriptor key. */
-        snprintf(key, sizeof(key), "%s%u", FILE_DESCRIPTOR_KEY, getpid());
-    
-        /* Then load the FileDescriptor table. */
-        files.load(key, FILE_DESCRIPTOR_MAX);
-    }
+    // TODO: Ask CoreServer for FileSystemMounts table
+    memset(&mounts, 0, sizeof(mounts));
+    strcpy(mounts[0].path, "/");
+    strcpy(mounts[1].path, "/dev");
+    strcpy(mounts[2].path, "/proc");
+    mounts[0].procID = ROOTSRV_PID;
+    mounts[1].procID = DEVSRV_PID;
+    mounts[2].procID = 13;
+
+    // Set currentDirectory
+    currentDirectory = new String("/");
+
+    // Load FileDescriptors
+    files = new Array<FileDescriptor, FILE_DESCRIPTOR_MAX>();
+
+    // Mark all FileDescriptors closed
+    for (uint i = 0; i < files->size(); i++)
+        (*files)[i].open = false;
+
+    // TODO: we need to check if we have a parent, and if so, inherit some things, like
+    // the filedescriptors and currentDirectory..
+
+    // TODO: temporary hardcode standard I/O file descriptors to /dev/tty0 (procID 11)
+    (*files)[0].open = true;
+    (*files)[0].path = new String("/dev/tty0");
+    (*files)[0].mount = 11;
+    (*files)[1].open = true;
+    (*files)[1].path = new String("/dev/tty0");
+    (*files)[1].mount = 11;
 }
 
 ProcessID findMount(const char *path)
@@ -147,20 +174,20 @@ ProcessID findMount(const char *path)
         strlcpy(tmp, path, PATHLEN);
         
     /* Find the longest match. */
-    for (Size i = 0; i < MAX_MOUNTS; i++)
+    for (Size i = 0; i < FILESYSTEM_MAXMOUNTS; i++)
     {
-        if (mounts[i]->path[0])
+        if (mounts[i].path[0])
         {
-            len = strlen(mounts[i]->path);
+            len = strlen(mounts[i].path);
     
             /*
              * Only choose this mount, if it matches,
              * and is longer than the last match.
              */
-            if (strncmp(tmp, mounts[i]->path, len) == 0 && len > length)
+            if (strncmp(tmp, mounts[i].path, len) == 0 && len > length)
             {
                 length = len;
-                m = mounts[i];
+                m = &mounts[i];
             }
         }
     }
@@ -170,22 +197,22 @@ ProcessID findMount(const char *path)
 
 ProcessID findMount(int fildes)
 {
-    return files[fildes] ? files[fildes]->mount : ZERO;
+    return files->get(fildes) ? files->get(fildes)->mount : ZERO;
 }
 
-Shared<FileSystemMount> * getMounts()
+FileSystemMount * getMounts()
 {
-    return &mounts;
+    return mounts;
 }
 
-Shared<UserProcess> * getProcesses()
+Array<FileDescriptor, FILE_DESCRIPTOR_MAX> * getFiles()
 {
-    return &procs;
+    return files;
 }
 
-Shared<FileDescriptor> * getFiles()
+String * getCurrentDirectory()
 {
-    return &files;
+    return currentDirectory;
 }
 
 extern C void SECTION(".entry") _entry() 

@@ -17,7 +17,6 @@
 
 #include <FreeNOS/System/Constant.h>
 #include <FreeNOS/API.h>
-#include <MemoryMessage.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>

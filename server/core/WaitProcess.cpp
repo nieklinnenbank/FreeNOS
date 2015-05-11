@@ -15,10 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ProcessServer.h"
+#include <FreeNOS/API.h>
+#include <FreeNOS/Process.h> 
+#include "CoreServer.h"
+#include "CoreMessage.h"
+#include <errno.h>
 
-int main(int argc, char **argv)
+void CoreServer::waitProcessHandler(CoreMessage *msg)
 {
-    ProcessServer server;
-    return server.run();
+    DEBUG("wait: " << procs[msg->from].command << "[" << msg->from << "] => " << msg->number);
+
+    if (msg->number < MAX_PROCS && msg->number != ANY &&
+	procs[msg->number].command[0])
+    {
+	procs[msg->from].waitProcessID = msg->number;
+    }
+    else
+    {
+	msg->result = EINVAL;
+	IPCMessage(msg->from, API::Send, msg, sizeof(*msg));
+    }
 }

@@ -19,7 +19,7 @@ Import('build_env')
 
 env = build_env.Clone()
 env.UseLibraries([ 'libstd' ])
-env.UseServers([ 'memory' ])
+env.UseServers([ 'core' ])
 env.Append(CPPPATH = [ '.' ])
 
 env.TargetLibrary('liballoc', [ Glob('*.cpp') ])

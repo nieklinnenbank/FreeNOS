@@ -17,12 +17,15 @@
 
 #include <API/IPCMessage.h>
 #include <FreeNOS/Process.h>
-#include <ProcessMessage.h>
-#include <ProcessServer.h>
+#include <CoreMessage.h>
+#include <CoreServer.h>
 #include <FileSystemPath.h>
 #include <PseudoFile.h>
 #include "ProcRootDirectory.h"
 #include "ProcFileSystem.h"
+
+// Local copy of the UserProcess table
+UserProcess procs[MAX_PROCS];
 
 char * ProcFileSystem::states[] =
 {
@@ -41,9 +44,8 @@ ProcFileSystem::ProcFileSystem(const char *path)
 
 void ProcFileSystem::refresh()
 {
-    ProcessMessage msg;
-    ProcessID pid = 0;
-    UserProcess uproc;    
+    CoreMessage msg;
+    ProcessInfo info;
     String slash("/");
     Directory *procDir;
 
@@ -59,42 +61,40 @@ void ProcFileSystem::refresh()
     insertFileCache(rootDir, ".");
     insertFileCache(rootDir, "..");
 
-    /* Read processes from process server. */
-    // TODO: very inefficient. Use ONE message to read the whole table.
-    while (true)
-    {
-	/* Fill message. */
-        msg.action = ReadProcess;
-        msg.buffer = &uproc;
-	msg.number = pid;
+    // Refresh UserProcess table
+    msg.action = ReadProcess;
+    msg.buffer = procs;
+    IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
 
-	/* Read next process. */
-	if (IPCMessage(PROCSRV_PID, API::SendReceive, &msg, sizeof(msg)) || msg.result)
-	{
-	    break;
-	}
-	/* Per-process directory. */
-	procDir = new Directory;
+    // Insert processes pseudo files
+    for (int i = 0; i < MAX_PROCS; i++)
+    {
+        // Skip unused PIDs
+        if (!procs[i].command[0])
+            continue;
+
+        // Per-process directory
+        procDir = new Directory;
         procDir->insert(DirectoryFile, ".");
         procDir->insert(DirectoryFile, "..");
         procDir->insert(RegularFile, "cmdline");
         procDir->insert(RegularFile, "status");
-        rootDir->insert(DirectoryFile, "%u", msg.number);
+        rootDir->insert(DirectoryFile, "%u", i);
 
-	/* Reinsert into the cache. */
-	insertFileCache(procDir, "%u",    msg.number);
-	insertFileCache(procDir, "%u/.",  msg.number);
-	insertFileCache(rootDir, "%u/..", msg.number);
+        // Insert into the cache
+        insertFileCache(procDir, "%u",    i);
+        insertFileCache(procDir, "%u/.",  i);
+        insertFileCache(rootDir, "%u/..", i);
 
-	/* Command line string. */
-	insertFileCache(new PseudoFile("%s", uproc.command),
-			"%u/cmdline", msg.number);
-	
-	/* Process status. */
-	insertFileCache(new PseudoFile("%s", states[uproc.state]),
-		        "%u/status",  msg.number);
-	
-	/* Move to next PID. */
-	pid = msg.number + 1;
+        // Set commandline
+        insertFileCache(new PseudoFile("%s", procs[i].command),
+                        "%u/cmdline", i);
+
+        // Request kernel's process information
+        ProcessCtl(i, InfoPID, (Address) &info);
+
+        // Process status
+        insertFileCache(new PseudoFile("%s", states[info.state]),
+                        "%u/status",  i);
     }    
 }

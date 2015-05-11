@@ -25,22 +25,44 @@ int open(const char *path, int oflag, ...)
 {
     FileSystemMessage msg;
     ProcessID mnt = findMount(path);
+
+    // TODO: perhaps we need the 'Index' class now, in libstd.
+    Array<FileDescriptor, FILE_DESCRIPTOR_MAX> *fds = getFiles();
+    FileStat st;
     
-    /* Fill message. */
-    msg.action = OpenFile;
-    msg.buffer = (char *) path;
-    
-    /* Ask the FileSystem. */
+    // Fill message
+    msg.action = StatFile;
+    msg.path   = (char *) path;
+    msg.stat   = &st;
+
+    // Ask the FileSystem for the file.
     if (mnt)
     {
-	IPCMessage(mnt, API::SendReceive, &msg, sizeof(msg));
+        IPCMessage(mnt, API::SendReceive, &msg, sizeof(msg));
     
-	/* Set errno. */
-	errno = msg.result;
+        // Set errno
+        errno = msg.result;
+
+        if (msg.result == ESUCCESS)
+        {
+            // Insert into file descriptor table
+            for (Size i = 0; i < fds->size(); i++)
+            {
+                if (!(*fds)[i].open)
+                {
+                    (*fds)[i].open  = true;
+                    (*fds)[i].path  = new String(path);
+                    (*fds)[i].mount = mnt;
+                    (*fds)[i].position = 0;
+                    return i;
+                }
+            }
+            // Too many open files
+            errno = ENFILE;
+        }
     }
     else
-	errno = ENOENT;
-    
-    /* Success. */
-    return msg.result == ESUCCESS ? msg.fd : -1;
+        errno = ENOENT;
+
+    return -1;
 }

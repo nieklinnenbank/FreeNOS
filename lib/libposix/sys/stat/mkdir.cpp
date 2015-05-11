@@ -28,7 +28,7 @@ int mkdir(const char *path, mode_t mode)
 
     /* Fill message. */
     msg.action = CreateFile;
-    msg.buffer = (char *) path;
+    msg.path   = (char *) path;
     msg.mode   = mode;
     msg.filetype = DirectoryFile;
     

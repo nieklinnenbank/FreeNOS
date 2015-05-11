@@ -15,11 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PROCESS_USER_PROCESS_H
-#define __PROCESS_USER_PROCESS_H
+#ifndef __SERVER_CORE_USERPROCESS_H
+#define __SERVER_CORE_USERPROCESS_H
         
 /**  
- * @defgroup process ProcessServer (Trusted Process Server)  
+ * @defgroup core CoreServer
  * @{    
  */
 
@@ -28,7 +28,6 @@
 #include <FreeNOS/Process.h>
 #include <FreeNOS/Memory.h>
 #include <FileSystemPath.h>
-#include <FileDescriptor.h>
 #include <Types.h>
 
 #endif /* __KERNEL__ */
@@ -44,9 +43,6 @@
 
 /** Number of arguments at maximum. */
 #define ARGV_COUNT (PAGESIZE / ARGV_SIZE)
-
-/** Key for the UserProcess shared mapping. */
-#define USER_PROCESS_KEY "UserProcess"
 
 #ifndef __KERNEL__
 
@@ -69,9 +65,6 @@ typedef struct UserProcess
     
     /** Waits for exit of this Process. */
     ProcessID waitProcessID;
-    
-    /** Current working directory. */
-    char currentDirectory[PATHLEN];
 }
 UserProcess;
 
@@ -81,4 +74,4 @@ UserProcess;
  * @}
  */
 
-#endif /* __PROCESS_USER_PROCESS_H */
+#endif /* __SERVER_CORE_USERPROCESS_H */

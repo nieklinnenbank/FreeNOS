@@ -26,7 +26,7 @@ env.Append(LINKFLAGS = env['LINKKERN'])
 env.Append(CPPFLAGS = '-D__KERNEL__')
 
 env.UseLibraries(['liballoc', 'libstd', 'libarch'])
-env.UseServers(['process', 'filesystem', 'memory'])
+env.UseServers(['core', 'filesystem'])
 env.TargetProgram('kernel', [ Glob('*.cpp'),
 			      Glob('*.S'),
 			      Glob('#' + env['BUILDROOT'] + '/kernel/*.cpp'),

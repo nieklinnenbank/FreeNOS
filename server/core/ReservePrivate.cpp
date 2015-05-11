@@ -15,10 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "MemoryServer.h"
-#include "MemoryMessage.h"
+#include "CoreServer.h"
+#include "CoreMessage.h"
 
-void MemoryServer::reservePrivate(MemoryMessage *msg)
+void CoreServer::reservePrivate(CoreMessage *msg)
 {
     Address *pageDir;
     

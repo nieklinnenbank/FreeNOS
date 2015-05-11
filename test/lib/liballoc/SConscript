@@ -18,7 +18,7 @@
 Import('build_env')
 
 env = build_env.Clone()
-env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libtest' ])
+env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libtest', 'libexec' ])
 env.UseLibraries([ 'libstd', 'libtest' ], 'host')
 env.Append(CPPPATH = [ '#lib/liballoc' ])
 

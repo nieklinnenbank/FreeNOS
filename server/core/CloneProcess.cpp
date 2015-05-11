@@ -20,17 +20,14 @@
 #include <API/VMCtl.h>
 #include <API/ProcessCtl.h> 
 #include <FreeNOS/Memory.h> 
-#include <FileSystemMessage.h>
-#include <FileDescriptor.h>
-#include <FileSystem.h>
-#include <MemoryMessage.h>
-#include "ProcessMessage.h"
-#include "ProcessServer.h"
+#include <Log.h>
+#include "CoreMessage.h"
+#include "CoreServer.h"
 #include <errno.h>
 
-void copyReservedFlags(Address *parentDir, ProcessID child)
+void CoreServer::copyReservedFlags(ProcessID parent, ProcessID child)
 {
-    MemoryMessage mem;
+    CoreMessage mem;
     ProcessInfo info;
     Address *childDir;
 
@@ -38,44 +35,49 @@ void copyReservedFlags(Address *parentDir, ProcessID child)
     ProcessCtl(child, InfoPID, (Address) &info);
     
     /* Map page directory of the child. */
+    mem.from            = SELF;
     mem.action          = CreatePrivate;
     mem.physicalAddress = info.pageDirectory;
     mem.virtualAddress  = ZERO;
     mem.bytes           = PAGESIZE;
     mem.access          = Memory::Present | Memory::User | Memory::Readable | Memory::Writable;
-    mem.ipc(MEMSRV_PID, API::SendReceive, sizeof(mem));
-    
+    createPrivate(&mem);
+
     /* Point to the new mapping. */
     childDir = (Address *) mem.virtualAddress;
+    Address *parentDir = (Address *) PAGETABADDR_FROM(PAGETABFROM, PAGEUSERFROM);
+
+    /* (Re)map the page tables of the parent process. */
+    VMCtl(parent, MapTables);
     
     /* Copy reserved page entries. */
     for (Size i = 4; i < PAGEDIR_MAX; i++)
     {
-	if (parentDir[i] & PAGE_RESERVED)
-	{
-	    childDir[i] |= PAGE_RESERVED;
-	}
+        if (parentDir[i] & PAGE_RESERVED)
+        {
+            childDir[i] |= PAGE_RESERVED;
+        }
     }
+    VMCtl(parent, UnMapTables);
+
     /* Done. */
     mem.action = ReleasePrivate;
-    mem.ipc(MEMSRV_PID, API::SendReceive, sizeof(mem));
+    releasePrivate(&mem);
 }
 
-void ProcessServer::cloneProcessHandler(ProcessMessage *msg)
+void CoreServer::cloneProcessHandler(CoreMessage *msg)
 {
     Address *pageDirectory = (Address *) PAGETABADDR_FROM(PAGETABFROM,
 						          PAGEUSERFROM);
-    Shared<FileDescriptor> *parentFd, *childFd;
     Address *pageTable;
-    FileSystemMessage fs;
     MemoryRange range;
     ProcessID id;
     ProcessInfo info;
-    u8 *page;
+    u8 page[PAGESIZE];
 
     /* Create a new Process. */
     id   = ProcessCtl(ANY, Spawn, ZERO);
-    page = new u8[PAGESIZE];
+    DEBUG("clone: " << procs[msg->from].command << "[" << msg->from << "] => " << id);
     
     /* Map the page tables of the parent process. */
     VMCtl(msg->from, MapTables);
@@ -116,37 +118,29 @@ void ProcessServer::cloneProcessHandler(ProcessMessage *msg)
 		    if (!(pageTable[j] & PAGE_PINNED))
 		    {
 			/* Copy the page contents of the parent. */
-		        VMCopy(msg->from, API::Read, (Address) page,
+		        VMCopy(msg->from, API::Read, (Address) &page,
 			       range.virtualAddress, PAGESIZE);
 		
 			/* Copy it to the new Process. */
-		        VMCopy(id, API::Write, (Address) page,
+		        VMCopy(id, API::Write, (Address) &page,
 			       range.virtualAddress, PAGESIZE);
 		    }
 		}
 	    }
 	}
     }
+    /* Unmap page tables. */
+    VMCtl(msg->from, UnMapTables);
+
     /* Copy reserved page flags. */
-    copyReservedFlags(pageDirectory, id);
+    copyReservedFlags(msg->from, id);
     
     /* Inherit strings from parent. */
-    strlcpy(procs[id]->command, procs[msg->from]->command, COMMANDLEN);
-    strlcpy(procs[id]->currentDirectory,
-            procs[msg->from]->currentDirectory, PATHLEN);
+    strlcpy(procs[id].command, procs[msg->from].command, COMMANDLEN);
 
     /* Inherit identities. */
-    procs[id]->userID  = procs[msg->from]->userID;
-    procs[id]->groupID = procs[msg->from]->groupID;
-    
-    /* Copy the FileDescriptor table. */
-    parentFd = getFileDescriptors(files, msg->from);
-    childFd  = getFileDescriptors(files, id);
-    memcpy(**childFd, **parentFd, childFd->size());
-                
-    /* Unmap page tables. */
-    delete page;
-    VMCtl(msg->from, UnMapTables);
+    procs[id].userID  = procs[msg->from].userID;
+    procs[id].groupID = procs[msg->from].groupID;
 
     /* Repoint stack of the child. */
     ProcessCtl(msg->from, InfoPID, (Address) &info);
@@ -158,9 +152,10 @@ void ProcessServer::cloneProcessHandler(ProcessMessage *msg)
     /* Send a reply to the parent. */
     msg->result = ESUCCESS;
     msg->number = id;
-    msg->ipc(msg->from, API::Send, sizeof(ProcessMessage));
+    msg->ipc(msg->from, API::Send, sizeof(CoreMessage));
     
     /* And to the child aswell. */
-    msg->number = ZERO;
-    msg->ipc(id, API::Send, sizeof(ProcessMessage));
+    msg->number = msg->from;
+    msg->result = ECHILD;
+    msg->ipc(id, API::Send, sizeof(CoreMessage));
 }

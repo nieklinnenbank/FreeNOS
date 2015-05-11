@@ -15,19 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "MemoryServer.h"
-#include "MemoryMessage.h"
+#include "CoreServer.h"
+#include "CoreMessage.h"
 
-void MemoryServer::createPrivate(MemoryMessage *msg)
+void CoreServer::createPrivate(CoreMessage *msg)
 {
     MemoryRange range;
-
-    //
-    // TODO: verify uid == 0, when physStart != ZERO
-    //       i.e. only superuser may specify physical memory explicitely.
-    //       we can do this if we have shared mappings, and mapped the
-    //       user process table into our address space.
-    //
 
     /* Try the given virtual addresses, if any. */
     if (msg->virtualAddress >= (1024*1024*16))

@@ -20,9 +20,10 @@
 
 #include <Macros.h>
 #include <Types.h>
-#include <UserProcess.h>
-#include <FileDescriptor.h>
+#include <Array.h>
+#include <String.h>
 #include <FileSystemMount.h>
+#include "FileDescriptor.h"
 
 /**
  * @defgroup libposix libposix (POSIX.1-2008) 
@@ -52,22 +53,19 @@ ProcessID findMount(const char *path);
 ProcessID findMount(int fildes);
 
 /**
- * Returns list of all mounts.
+ * Get FileDescriptors table.
  */
-Shared<FileSystemMount> * getMounts();
+Array<FileDescriptor, FILE_DESCRIPTOR_MAX> * getFiles();
 
 /**
- * Return the UserProcess pointer for the given PID.
- * @param pid ProcessID number.
- * @return UserProcess pointer on success and ZERO otherwise..
+ * Get mounts table.
  */
-Shared<UserProcess> * getProcesses();
+FileSystemMount * getMounts();
 
 /**
- * Retrieve file descriptors for the current process.
- * @return Filedescriptors
+ * Get current directory String.
  */
-Shared<FileDescriptor> * getFiles();
+String * getCurrentDirectory();
 
 /**
  * @}

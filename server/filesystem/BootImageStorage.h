@@ -19,11 +19,13 @@
 #define __FILESYSTEM_BOOTIMAGESTORAGE_H
 
 #include <FreeNOS/API.h>
-#include <MemoryMessage.h>
+#include <CoreMessage.h>
 #include <Types.h>
 #include <BootImage.h>
 #include "Storage.h"
 #include <string.h>
+
+#define BOOTIMAGE_VADDR         0x4000000
 
 /**
  * Uses a BootImage symbol entry as filesystem storage provider (aka RamFS).
@@ -51,22 +53,27 @@ class BootImageStorage : public Storage
     bool load()
     {
         SystemInformation info;
-        MemoryMessage mem;
         BootImage *image;
         BootSymbol *symbol;
         BootSegment *segment;
+        Error result;
         u8 *base;
         
-        // Ask memory server to map the BootImage
-        mem.action     = CreatePrivate;
-        mem.access     = Memory::Pinned | Memory::Readable | Memory::User;
-        mem.bytes      = info.bootImageSize;
-        mem.virtualAddress  = ZERO;
-        mem.physicalAddress = info.bootImageAddress;
-        mem.ipc(MEMSRV_PID, API::SendReceive, sizeof(mem));
+        // TODO: filesystems should not be allowed to do this. Replace with an asynchronous call to coreserver.
+        MemoryRange range;
+        // TODO: ofcourse, the virtual address should never be fixed. Fix this.
+        range.virtualAddress  = BOOTIMAGE_VADDR;
+        range.physicalAddress = info.bootImageAddress;
+        range.bytes           = info.bootImageSize;
+
+        if ((result = VMCtl(SELF, Map, &range)) != API::Success)
+        {
+            ERROR("failed to map BootImage: " << m_name << " APIError: " << (int)result);
+            return false;
+        }
 
         // Update our state
-        image = (BootImage *) mem.virtualAddress;
+        image = (BootImage *) range.virtualAddress;
         base  = (u8 *) image;
 
         // Search for the given BootSymbol

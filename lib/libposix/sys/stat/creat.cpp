@@ -30,7 +30,7 @@ int creat(const char *path, mode_t mode)
 
     /* Fill in the message. */
     msg.action   = CreateFile;
-    msg.buffer   = (char *) path;
+    msg.path     = (char *) path;
     msg.filetype = RegularFile;
     msg.mode     = (FileModes) (mode & FILEMODE_MASK);
 

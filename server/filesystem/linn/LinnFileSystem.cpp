@@ -33,6 +33,8 @@ int main(int argc, char **argv)
     bool background  = false;
     const char *path = "/";
 
+    log.setMinimumLogLevel(Log::Debug);
+
     // Mount the given file, or try to use the BootImage embedded rootfs
     if (argc > 3)
     {
@@ -57,11 +59,9 @@ int main(int argc, char **argv)
         LinnFileSystem server(path, storage);
 
         if (server.mount(background))
-        {
-            NOTICE("mounted at: " << path);
             return server.run();
-        }
     }
+    ERROR("no usable storage found");
     return EXIT_FAILURE;
 }
 
@@ -73,23 +73,18 @@ LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
     Size offset;
     Error e;
 
-    /* Open the system log. */
-    openlog("LinnFS", LOG_PID, LOG_USER);
-
     /* Read out the superblock. */
     if ((e = s->read(LINN_SUPER_OFFSET, &super,
 		     sizeof(super))) <= 0)
     {
-	syslog(LOG_ERR, "reading superblock failed: %s",
+	FATAL("reading superblock failed: " <<
 	       strerror(e));
-	exit(EXIT_FAILURE);
     }
     /* Verify magic. */
     if (super.magic0 != LINN_SUPER_MAGIC0 ||
         super.magic1 != LINN_SUPER_MAGIC1)
     {
-	syslog(LOG_ERR, "magic mismatch");
-	exit(EXIT_FAILURE);
+	FATAL("magic mismatch");
     }
     /* Create groups vector. */
     groups = new Vector<LinnGroup *>(LINN_GROUP_COUNT(&super));
@@ -106,27 +101,24 @@ LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
 	/* Read from storage. */
 	if ((e = s->read(offset, group, sizeof(LinnGroup))) <= 0)
 	{
-	    syslog(LOG_ERR, "reading group descriptor failed: %s",
+	    FATAL("reading group descriptor failed: " <<
 		   strerror(e));
-	    exit(EXIT_FAILURE);
 	}
 	/* Insert in the groups vector. */
 	groups->insert(i, group);
     }
-    syslog(LOG_INFO, "%d group descriptors",
-	   LINN_GROUP_COUNT(&super));
-    
     /* Print out superblock information. */
-    syslog(LOG_INFO, "%d inodes, %d blocks",
-	   super.inodesCount - super.freeInodesCount,
-	   super.blocksCount - super.freeBlocksCount);
+
+    INFO(LINN_GROUP_COUNT(&super) << " group descriptors");
+    INFO(super.inodesCount - super.freeInodesCount << " inodes, " <<
+         super.blocksCount - super.freeBlocksCount << " blocks");
 
     /* Read out the root directory. */
     rootInode = getInode(LINN_INODE_ROOT);
     setRoot(new LinnDirectory(this, rootInode));
     
     /* Done. */
-    syslog(LOG_INFO, "mounted as '%s'", p);
+    NOTICE("mounted at " << p);
 }
 
 LinnInode * LinnFileSystem::getInode(u32 inodeNum)
@@ -159,7 +151,7 @@ LinnInode * LinnFileSystem::getInode(u32 inodeNum)
     /* Read inode from storage. */
     if ((e = storage->read(offset, inode, sizeof(LinnInode))) <= 0)
     {
-        syslog(LOG_ERR, "reading inode failed: %s",
+        ERROR("reading inode failed: " <<
 	       strerror(e));
 	return ZERO;
     }
@@ -240,5 +232,5 @@ u64 LinnFileSystem::getOffset(LinnInode *inode, u32 blk)
     
     /* All done. */
     delete block;
-    return offset;	
+    return offset;
 }

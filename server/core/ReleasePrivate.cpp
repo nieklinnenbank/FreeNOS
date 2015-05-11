@@ -15,25 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/VMCopy.h>
-#include "MemoryServer.h"
-#include "MemoryMessage.h"
+#include "CoreServer.h"
+#include "CoreMessage.h"
 
-void MemoryServer::createShared(MemoryMessage *msg)
+void CoreServer::releasePrivate(CoreMessage *msg)
 {
-    char key[256];
-    Error num = msg->keyLength < sizeof(key) ?
-	        msg->keyLength : sizeof(key);
+    msg->access |= Memory::Present | Memory::User;
     
-    /* Obtain key. */
-    if ((msg->result = VMCopy(msg->from, API::Read, (Address) key,
-			     (Address) msg->key, num)) != num)
+    /* Only allow unmapping of user pages. */
+    if (!VMCtl(msg->from, Access, msg))
     {
-	return;
+        msg->result = EFAULT;
+        return;
     }
-    /* Null-terminate. */
-    key[num] = ZERO;
-    
-    /* Insert shared mapping. */
-    insertShared(msg->from, key, msg->bytes, msg, &msg->created);
+    msg->access = Memory::None;
+	
+    /* Unmap now. */
+    VMCtl(msg->from, Map, msg);
+
+    /* Done. */
+    msg->result = ESUCCESS;
 }

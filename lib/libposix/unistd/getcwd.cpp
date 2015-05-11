@@ -23,7 +23,7 @@
 char *getcwd(char *buf, size_t size)
 {
     /* Copy our current working directory. */
-    memcpy(buf, (*getProcesses())[getpid()]->currentDirectory, size);
+    memcpy(buf, **getCurrentDirectory(), size);
 
     /* Set errno. */
     errno = ESUCCESS;

@@ -18,17 +18,20 @@
 #include <FreeNOS/API.h>
 #include <FreeNOS/Process.h>
 #include <Types.h>
-#include "ProcessMessage.h"
-#include "ProcessServer.h"
+#include <Log.h>
+#include "CoreMessage.h"
+#include "CoreServer.h"
 #include <string.h>
 #include <errno.h>
 
-void ProcessServer::exitProcessHandler(ProcessMessage *msg)
+void CoreServer::exitProcessHandler(CoreMessage *msg)
 {
-    ProcessMessage reply;
+    CoreMessage reply;
+
+    DEBUG("exit: " << procs[msg->from].command << "[" << msg->from << "]");
 
     /* Clear process entry. */
-    memset(procs[msg->from], 0, sizeof(UserProcess));
+    memset(&procs[msg->from], 0, sizeof(UserProcess));
 
     // TODO: close files here!!!
 
@@ -38,11 +41,11 @@ void ProcessServer::exitProcessHandler(ProcessMessage *msg)
     /* Awake any processes waiting for this process' death. */
     for (Size i = 0; i < MAX_PROCS; i++)
     {
-	if (procs[i]->command[0] &&
-	    procs[i]->waitProcessID == msg->from)
+	if (procs[i].command[0] &&
+	    procs[i].waitProcessID == msg->from)
 	{
 	    /* Clear wait status. */
-	    procs[i]->waitProcessID = ANY;
+	    procs[i].waitProcessID = ANY;
 	    
 	    /* Send exit status. */
 	    reply.action = WaitProcess;

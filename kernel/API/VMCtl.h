@@ -45,6 +45,7 @@ MemoryOperation;
 /**
  * Describes a range of memory pages.
  */
+// TODO: move to libarch.
 typedef struct MemoryRange
 {
     /**

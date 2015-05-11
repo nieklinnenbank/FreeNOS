@@ -15,58 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Runtime.h"
-#include <stdio.h>
-#include <stdarg.h>
-#include <string.h>
 #include "syslog.h"
-#include "unistd.h"
 
 void syslog(int priority, const char *message, ...)
 {
-    char line[256], input[256];
-    char *priorityStr;
-    va_list args;
-    
-    switch (priority)
-    {
-	case LOG_EMERG:
-	    priorityStr = "EMERGENCY";
-	    break;
-	
-	case LOG_CRIT:
-	    priorityStr = "CRITICAL";
-	    break;
-	
-	case LOG_ERR:
-	    priorityStr = "ERROR";
-	    break;
-	
-	case LOG_WARNING:
-	    priorityStr = "WARNING";
-	    break;
-	
-	case LOG_NOTICE:
-	    priorityStr = "NOTICE";
-	    break;
-	
-	case LOG_INFO:
-	    priorityStr = "INFO";
-	    break;
-	
-	case LOG_DEBUG:
-	    priorityStr = "DEBUG";
-	    break;
-    }    
-    /* Format the message. */
-    va_start(args, message);
-    vsnprintf(input, sizeof(input), message, args);
-    va_end(args);
-    
-    /* Create final message. */
-    snprintf(line, sizeof(line), "%s %s[%u]: %s\r\n",
-	     priorityStr, (*getProcesses())[getpid()]->command, getpid(), input);
-	     
-    /* Write it to the log device. */
-    write(logFile, line, strlen(line));
+    // TODO: replaced by Log.h in libstd.
 }

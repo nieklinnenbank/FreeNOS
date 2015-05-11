@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,27 +15,44 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/API.h>
+#include <CoreMessage.h>
+#include <FileSystemMount.h>
+#include <UserProcess.h>
 #include <Runtime.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+
+UserProcess procs[MAX_PROCS];
 
 int main(int argc, char **argv)
 {
-    Shared<FileSystemMount> *mounts = getMounts();
-    Shared<UserProcess> *procs = getProcesses();
+    CoreMessage msg;
+    FileSystemMount *mounts = getMounts();
 
-    /* Print header. */
+    // Obtain the user process table
+    msg.action = ReadProcess;
+    msg.buffer = procs;
+
+    IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
+    if (msg.result != ESUCCESS)
+    {
+        printf("%s: failed to receive process table: %s\n",
+                argv[0], strerror(msg.result));
+        return EXIT_FAILURE;
+    }
+
+    // Print header
     printf("PATH       FILESYSTEM\r\n");
 
-    /* Print out. */
-    for (Size i = 0; i < MAX_MOUNTS; i++)
+    // Print out
+    for (Size i = 0; i < FILESYSTEM_MAXMOUNTS; i++)
     {
-        if ((*mounts)[i]->path[0])
-        {
-            printf("%10s %s\r\n",
-            (*mounts)[i]->path, (*procs)[(*mounts)[i]->procID]->command);
-        }
+        if (mounts[i].path[0])
+            printf("%10s %s\r\n", mounts[i].path, procs[mounts[i].procID].command);
     }
-    /* Success. */
+    // Done
     return EXIT_SUCCESS;
 }

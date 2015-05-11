@@ -1,5 +1,4 @@
-./server/process/server
-./server/memory/server
+./server/core/server
 ./server/filesystem/tmp/server
 ./server/filesystem/linn/server
 ./server/idle/server

@@ -19,8 +19,8 @@ Import('build_env')
 
 env = build_env.Clone()
 env.Append(CPPPATH = [ '.' ])
-env.UseLibraries(['liballoc', 'libstd', 'libarch'])
-env.UseServers([ 'filesystem', 'process', 'memory', '' ])
+env.UseLibraries(['liballoc', 'libstd', 'libarch', 'libexec'])
+env.UseServers([ 'filesystem', 'core', '' ])
 env.TargetLibrary('libposix', [ Glob('dirent/*.cpp'),
 				Glob('fcntl/*.cpp'),
 				Glob('libgen/*.cpp'),

@@ -29,11 +29,11 @@ int unlink(const char *path)
     /* Ask for the unlink. */
     if (mnt)
     {
-	msg.action = DeleteFile;
-	msg.buffer = (char *) path;
-	IPCMessage(mnt, API::SendReceive, &msg, sizeof(msg));
-	
-	/* Set error number. */
+        msg.action = DeleteFile;
+        msg.path = (char *) path;
+        IPCMessage(mnt, API::SendReceive, &msg, sizeof(msg));
+
+        /* Set error number. */
         errno = msg.result;
     }
     else

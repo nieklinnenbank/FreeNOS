@@ -16,21 +16,21 @@
  */
 
 #include <FreeNOS/API.h>
-#include <ProcessMessage.h>
+#include <CoreMessage.h>
 #include "sys/wait.h"
 #include "sys/types.h"
 #include <errno.h>
 
 pid_t waitpid(pid_t pid, int *stat_loc, int options)
 {
-    ProcessMessage msg;
+    CoreMessage msg;
     
     /* Fill in the message. */
     msg.action = WaitProcess;
     msg.number = pid;
     
-    /* Ask ProcessServer. */
-    IPCMessage(PROCSRV_PID, API::SendReceive, &msg, sizeof(msg));
+    /* Ask CoreServer. */
+    IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
 
     /* Did we succeed? */
     if (msg.result == ESUCCESS)

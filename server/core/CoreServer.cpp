@@ -16,12 +16,14 @@
  */
 
 #include <BootImage.h>
-#include "MemoryServer.h"
-#include "MemoryMessage.h"
+#include <Runtime.h>
+#include "CoreServer.h"
+#include "CoreMessage.h"
+#include <stdio.h>
 #include <string.h>
 
-MemoryServer::MemoryServer()
-    : IPCServer<MemoryServer, MemoryMessage>(this)
+CoreServer::CoreServer()
+    : IPCServer<CoreServer, CoreMessage>(this)
 {
     SystemInformation info;
     MemoryRange range;
@@ -29,42 +31,43 @@ MemoryServer::MemoryServer()
     BootSymbol *symbol;
 
     /* Register message handlers. */
-    addIPCHandler(CreatePrivate,  &MemoryServer::createPrivate);
-    addIPCHandler(ReservePrivate, &MemoryServer::reservePrivate);
-    addIPCHandler(ReleasePrivate, &MemoryServer::releasePrivate);
-    addIPCHandler(CreateShared,   &MemoryServer::createShared);
-    addIPCHandler(SystemMemory,   &MemoryServer::systemMemory);
-    
-    /* Allocate a user process table. */
-    insertShared(SELF, USER_PROCESS_KEY,
-		 sizeof(UserProcess) * MAX_PROCS, &range);
+    addIPCHandler(CreatePrivate,  &CoreServer::createPrivate);
+    addIPCHandler(ReservePrivate, &CoreServer::reservePrivate);
+    addIPCHandler(ReleasePrivate, &CoreServer::releasePrivate);
+    addIPCHandler(SystemMemory,   &CoreServer::systemMemory);
+    addIPCHandler(ReadProcess,    &CoreServer::readProcessHandler);
+    addIPCHandler(GetMounts,      &CoreServer::getMountsHandler);
+    addIPCHandler(SetMount,       &CoreServer::setMountHandler);
+    addIPCHandler(ExitProcess,    &CoreServer::exitProcessHandler,  false);
+    addIPCHandler(SpawnProcess,   &CoreServer::spawnProcessHandler);
+    addIPCHandler(CloneProcess,   &CoreServer::cloneProcessHandler, false);
+    addIPCHandler(WaitProcess,    &CoreServer::waitProcessHandler,  false);
 
-    /* Clear it. */
-    procs = (UserProcess *) range.virtualAddress;
+    /* Allocate a user process table. */
+    procs = new UserProcess[MAX_PROCS];
     memset(procs, 0, sizeof(UserProcess) * MAX_PROCS);
 
-    /* Allocate FileSystemMounts table. */		 
-    insertShared(SELF, FILE_SYSTEM_MOUNT_KEY,
-		 sizeof(FileSystemMount) * MAX_MOUNTS, &range);
-		 
-    /* Also Clear it. */
-    mounts = (FileSystemMount *) range.virtualAddress;
-    memset(mounts, 0, sizeof(FileSystemMount) * MAX_MOUNTS);
+    /* Allocate FileSystemMounts table. */
+    mounts = new FileSystemMount[FILESYSTEM_MAXMOUNTS];
+    memset(mounts, 0, sizeof(FileSystemMount) * FILESYSTEM_MAXMOUNTS);
 
-    /* We only guarantee that / and /dev are mounted. */
+    /* We only guarantee that / and /dev, /proc are mounted. */
     strlcpy(mounts[0].path, "/dev", PATHLEN);
     strlcpy(mounts[1].path, "/", PATHLEN);
+    strlcpy(mounts[2].path, "/proc", PATHLEN);
     mounts[0].procID  = DEVSRV_PID;
     mounts[0].options = ZERO;
     mounts[1].procID  = ROOTSRV_PID;
     mounts[1].options = ZERO;
+    mounts[2].procID  = 13;
+    mounts[2].options = ZERO;
 
     // Attempt to load the boot image
     range.virtualAddress  = findFreeRange(SELF, PAGESIZE * 2);
     range.physicalAddress = info.bootImageAddress;
     range.access          = Memory::Present | Memory::User | Memory::Readable;
 
-#warning Dangerous value for bytes here?
+#warning Dangerous value for bytes here? Use info.bootImageSize instead?
     range.bytes           = PAGESIZE * 2;
     VMCtl(SELF, Map, &range);
     
@@ -84,16 +87,13 @@ MemoryServer::MemoryServer()
         snprintf(procs[j].command, COMMANDLEN,
                 "[%s]", symbol->name);
 
-        /* Set current directory. */
-        snprintf(procs[j].currentDirectory, PATHLEN, "/");
-
         /* Set user and group identities. */
         procs[j].userID  = 0;
         procs[j].groupID = 0;
     }
 }
 
-Address MemoryServer::findFreeRange(ProcessID procID, Size size)
+Address CoreServer::findFreeRange(ProcessID procID, Size size)
 {
     Address *pageDir, *pageTab, vaddr, vbegin;
 
@@ -146,7 +146,7 @@ Address MemoryServer::findFreeRange(ProcessID procID, Size size)
     return vbegin;
 }
 
-Error MemoryServer::insertMapping(ProcessID procID, MemoryRange *range)
+Error CoreServer::insertMapping(ProcessID procID, MemoryRange *range)
 {
     MemoryRange tmp;
     Error result;
@@ -167,59 +167,4 @@ Error MemoryServer::insertMapping(ProcessID procID, MemoryRange *range)
     }
     /* Done! */
     return ESUCCESS;
-}
-
-SharedMemory * MemoryServer::insertShared(ProcessID procID,
-					  char *key, Size size,
-					  MemoryRange *range, bool *created)
-{
-    SharedMemory *obj = findShared(key);
-    bool needCreate = obj == ZERO;
-
-    if (needCreate)
-        obj = new SharedMemory;
-
-    range->virtualAddress  = findFreeRange(procID, size);
-    range->bytes      = size;
-    range->access     = Memory::Present | Memory::User | Memory::Readable | Memory::Writable | Memory::Pinned;
-
-    /* Only create a new mapping, if non-existent. */
-    if (needCreate)
-    {
-	range->physicalAddress = ZERO;	
-	VMCtl(procID, Map, range);
-	
-	/* Create new shared memory object. */
-	obj->size = size;
-	obj->key  = key;
-	obj->address = range->physicalAddress;
-
-	/* Insert to the list. */
-	shared.append(obj);
-	
-	/* We created a new mapping, flag that. */
-	if (created) *created = true;
-    }
-    else
-    {
-	range->physicalAddress = obj->address;
-	VMCtl(procID, Map, range);
-	
-	/* We didn't create a new mapping, flag that. */
-	if (created) *created = false;
-    }
-    /* Done. */
-    return obj;
-}
-
-SharedMemory * MemoryServer::findShared(char *key)
-{
-    for (ListIterator<SharedMemory *> i(&shared); i.hasCurrent(); i++)
-    {
-	if (strcmp(*i.current()->key, key) == 0)
-	{
-	    return i.current();
-	}
-    }
-    return ZERO;
 }

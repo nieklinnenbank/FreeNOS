@@ -17,40 +17,99 @@
 
 #include <FreeNOS/API.h>
 #include <FreeNOS/System/Constant.h>
-#include <ProcessServer.h>
-#include <ProcessMessage.h>
+#include <CoreServer.h>
+#include <CoreMessage.h>
+#include <ExecutableFormat.h>
 #include <Types.h>
+#include <Runtime.h>
 #include <string.h>
 #include <errno.h>
 #include "unistd.h"
 
 int forkexec(const char *path, const char *argv[])
 {
-    ProcessMessage msg;
-    char *arguments = new char[PAGESIZE];
+    CoreMessage msg;
+    ExecutableFormat *fmt;
+    MemoryRegion regions[16];
+    MemoryRange range;
     uint count = 0;
+    pid_t pid = 0;
+    int numRegions = 0;
 
-    /* Fill in arguments. */
-    while (argv[count] && count < PAGESIZE / ARGV_SIZE)
-    {
-	strlcpy(arguments + (ARGV_SIZE * count), argv[count], ARGV_SIZE);
-	count++;
-    }    
-    /* We want to spawn a new process. */
+    // Attempt to read executable format
+    if (!(fmt = ExecutableFormat::find(path)))
+        return -1;
+
+    // Retrieve memory regions
+    if ((numRegions = fmt->regions(regions, 16)) < 0)
+        return -1;
+
+    // We want to spawn a new process
     msg.action    = SpawnProcess;
     msg.path      = (char *) path;
-    msg.arguments = arguments;
-    msg.number    = count;
+    msg.number    = fmt->entry();
     
-    /* Ask process server. */
-    IPCMessage(PROCSRV_PID, API::SendReceive, &msg, sizeof(msg));
+    // Ask CoreServer to create a new process
+    IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
 
-    /* Set errno. */
+    // Obtain results
     errno = msg.result;
+    pid   = msg.number;
+
+    if (msg.result != ESUCCESS)
+        return msg.result;
     
+    /* Map program regions into virtual memory of the new process. */
+    for (int i = 0; i < numRegions; i++)
+    {
+        /* Copy executable memory from this region. */
+        for (Size j = 0; j < regions[i].size; j += PAGESIZE)
+        {
+            range.virtualAddress  = regions[i].virtualAddress + j;
+            range.physicalAddress = ZERO;
+            range.bytes = PAGESIZE;
+        
+            /* Create mapping first. */
+            if (VMCtl(pid, Map, &range) != 0)
+            {
+                // TODO: convert from API::Error to errno.
+                errno = EFAULT;
+                return -1;
+            }
+            /* Copy bytes. */
+            VMCopy(pid, API::Write, (Address) (regions[i].data) + j,
+                   regions[i].virtualAddress + j, PAGESIZE);
+        }
+    }
+    /* Create mapping for command-line arguments. */
+    range.virtualAddress  = ARGV_ADDR;
+    range.physicalAddress = ZERO;
+    range.bytes = PAGESIZE;
+    VMCtl(pid, Map, &range);
+
+    // Fill in arguments
+    char *arguments = new char[PAGESIZE];
+    while (argv[count] && count < PAGESIZE / ARGV_SIZE)
+    {
+        strlcpy(arguments + (ARGV_SIZE * count), argv[count], ARGV_SIZE);
+        count++;
+    }
+
+    // Copy argc/argv into the new process
+    if ((VMCopy(pid, API::Write, (Address) arguments,
+               (Address) ARGV_ADDR, PAGESIZE)) < 0)
+    {
+        delete arguments;
+        errno = EFAULT;
+        return -1;
+    }
+
+    // Begin execution
+    ProcessCtl(pid, Resume);
+
     /* Cleanup. */
     delete arguments;
     
     /* All done. */
-    return errno == ESUCCESS ? (int) msg.number : -1;
+    return pid;
 }

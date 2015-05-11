@@ -15,18 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <MemoryMessage.h>
+#include <CoreMessage.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
 
 int main(int argc, char **argv)
 {
-    MemoryMessage mem;
+    CoreMessage mem;
 
     /* Query memory usage stats. */
     mem.action = SystemMemory;
-    mem.ipc(MEMSRV_PID, API::SendReceive, sizeof(mem));
+    mem.ipc(CORESRV_PID, API::SendReceive, sizeof(mem));
     
     /* Print it. */
     printf("Total:     %u KB\r\n"

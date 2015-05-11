@@ -16,36 +16,34 @@
  */
 
 #include <FreeNOS/API.h>
-#include <ProcessServer.h>
-#include <FileDescriptor.h>
+#include <CoreMessage.h>
+#include <CoreServer.h>
 #include "Runtime.h"
 #include <errno.h>
 #include "unistd.h"
 
 pid_t fork(void)
 {
-    ProcessMessage msg;
-    char key[64];
+    CoreMessage msg;
     
     /* Fill in the message. */
     msg.action = CloneProcess;
     
-    /* Ask the process server. */
-    IPCMessage(PROCSRV_PID, API::SendReceive, &msg, sizeof(msg));
+    /* Ask the CoreServer */
+    IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
     
-    /*
-     * Child must reload file descriptor table.
-     */
-
-    /* Format FileDescriptor key. */
-    snprintf(key, sizeof(key), "%s%u", FILE_DESCRIPTOR_KEY, getpid());
-
-    /* Then reload the FileDescriptor table. */
-    getFiles()->load(key, FILE_DESCRIPTOR_MAX);
-    
-    /* Set errno. */
-    errno = msg.result;
-    
-    /* All done. */
-    return msg.result == ESUCCESS ? (pid_t) msg.number : (pid_t) -1;
+    // Child process
+    if (msg.result == ECHILD)
+    {
+        return 0;
+    }
+    // Error
+    else if (msg.result != ESUCCESS)
+    {
+        errno = msg.result;
+        return -1;
+    }
+    // Parent
+    else
+        return msg.number;
 }

@@ -26,7 +26,6 @@
 #include <FileType.h>
 #include <FileMode.h>
 #include <Vector.h>
-#include <Shared.h>
 #include "IPCServer.h"
 #include "Device.h"
 #include <unistd.h>
@@ -68,14 +67,10 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	    this->type   = type;
 	    this->mode   = mode;
             this->interrupts.fill(ZERO);
-	    this->files  = new Vector<Shared<FileDescriptor> *>(MAX_PROCS);
-	    this->files->fill(ZERO);
 	
 	    /* Register IPC Handlers. */
 	    addIPCHandler(ReadFile,  &DeviceServer::ioHandler, false);
 	    addIPCHandler(WriteFile, &DeviceServer::ioHandler, false);
-	    addIPCHandler(SeekFile,  &DeviceServer::ioHandler, false);
-	    addIPCHandler(CloseFile, &DeviceServer::ioHandler, false);
 	}
 
 	/**
@@ -207,27 +202,13 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	 */    
 	void ioHandler(FileSystemMessage *msg)
 	{
-	    FileDescriptor *fd = getFileDescriptor(files, msg->from, msg->fd);
 	    Device *dev;
 	    bool result = false;
 
-            /* Do they have this FileDescriptor? */                                
-            if (!fd)
-	    {
-		msg->result = EBADF;
-		msg->ipc(msg->from, API::Send, sizeof(*msg));
-		return;
-	    }
-	    /* Read out values from the FileDescriptor. */
-	    else
-	    {
-		dev = devices.at(fd->identifier);
-		msg->deviceID.minor = fd->identifier;
-		
-		if (msg->action != SeekFile)
-		    msg->offset = fd->position;
-	    }
-	    
+            // TODO: we only support ONE device right now.
+            dev = devices.at(0);
+            msg->deviceID.minor = 0;
+
 	    /* Do we serve this Device? */
 	    if (dev)
 	    {
@@ -240,18 +221,6 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 		    case WriteFile:
 			result = performWrite(msg);
 			break;
-			
-		    case SeekFile:
-			fd->position = msg->offset;
-			msg->result  = ESUCCESS;
-			msg->ipc(msg->from, API::Send, sizeof(*msg));
-			return;
-		
-		    case CloseFile:
-	                memset(fd, 0, sizeof(*fd));
-			msg->result = ESUCCESS;
-			msg->ipc(msg->from, API::Send, sizeof(*msg));
-			return;
 		
 		    default:
 			;
@@ -352,9 +321,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	    /* Update FileDescriptor and send a reply if processed. */
 	    if (msg->result != EAGAIN)
 	    {
-		if (msg->result > 0)
-		    getFileDescriptor(files, msg->from, msg->fd)->position += msg->result;
-		msg->ipc(msg->from, API::Send, sizeof(*msg));
+	        msg->ipc(msg->from, API::Send, sizeof(*msg));
 	    }
 	    /* Release memory. And return. */
 	    delete buffer;
@@ -387,8 +354,6 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	    /* Send a reply if processed. */
 	    if (msg->result != EAGAIN)
 	    {
-		if (msg->result > 0)
-		    getFileDescriptor(files, msg->from, msg->fd)->position += msg->result;
 		msg->ipc(msg->from, API::Send, sizeof(*msg));
 	    }
 	    /* Release memory. And return. */
@@ -415,9 +380,6 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
 	 * @brief A List of pending I/O operations.
 	 */
 	List<FileSystemMessage *> requests;
-	
-	/** Per-process File descriptors. */
-        Vector<Shared<FileDescriptor> *> *files;
 	
 	/**
 	 * @brief Prefix string used to create device files in /tmp.

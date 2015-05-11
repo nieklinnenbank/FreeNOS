@@ -15,16 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-#include <unistd.h>
 #include "syslog.h"
 
 void closelog(void)
 {
-    if (logIdentity)
-    {
-        free(logIdentity);
-        logIdentity = (char *) NULL;
-    }
-    // Dont actually close standard output.
 }

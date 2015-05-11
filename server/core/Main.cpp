@@ -15,10 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "MemoryServer.h"
+#include <PrivExecLog.h>
+#include "CoreServer.h"
 
 int main(int argc, char **argv)
 {
-    MemoryServer server;
+    PrivExecLog log;
+
+    log.setMinimumLogLevel(Log::Debug);
+    NOTICE("initializing core#0");
+
+    CoreServer server;
     return server.run();
 }

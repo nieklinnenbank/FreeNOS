@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,24 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "MemoryServer.h"
-#include "MemoryMessage.h"
+#include "CoreMessage.h"
+#include "CoreServer.h"
+#include <errno.h>
 
-void MemoryServer::releasePrivate(MemoryMessage *msg)
+void CoreServer::setMountHandler(CoreMessage *msg)
 {
-    msg->access |= Memory::Present | Memory::User;
-    
-    /* Only allow unmapping of user pages. */
-    if (!VMCtl(msg->from, Access, msg))
-    {
-        msg->result = EFAULT;
-        return;
-    }
-    msg->access = Memory::None;
-	
-    /* Unmap now. */
-    VMCtl(msg->from, Map, msg);
-
-    /* Done. */
-    msg->result = ESUCCESS;
+    // TODO: unimplemented. We use a static mounts table now.
+    msg->result = ENOSYS;
 }

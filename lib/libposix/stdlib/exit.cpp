@@ -16,15 +16,15 @@
  */
 
 #include <FreeNOS/API.h>
-#include <ProcessMessage.h>
+#include <CoreMessage.h>
 #include "stdlib.h"
 
 extern C void exit(int status)
 {
-    ProcessMessage msg;
+    CoreMessage msg;
 
     /* Request immediate termination. */
     msg.action = ExitProcess;
     msg.number = status;
-    msg.ipc(PROCSRV_PID, API::SendReceive, sizeof(msg));
+    msg.ipc(CORESRV_PID, API::SendReceive, sizeof(msg));
 }    

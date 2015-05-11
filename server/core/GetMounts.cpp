@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,22 +16,17 @@
  */
 
 #include <FreeNOS/API.h>
-#include <FreeNOS/Process.h> 
-#include "FileSystemPath.h"
-#include "ProcessServer.h"
-#include "ProcessMessage.h"
+#include "CoreMessage.h"
+#include "CoreServer.h"
 #include <errno.h>
 
-void ProcessServer::setCurrentDirectory(ProcessMessage *msg)
+void CoreServer::getMountsHandler(CoreMessage *msg)
 {
-    /* Handle request. */
-    msg->result = VMCopy(msg->from, API::Read,
-                        (Address) procs[msg->from]->currentDirectory,
-                        (Address) msg->path, PATHLEN);
+    // TODO: memory access checks
 
-    /* Mark with ESUCCESS? */
-    if (msg->result > 0)
-    {
-        msg->result = ESUCCESS;
-    }
+    /* Copy FileSystemMount table buffer. */
+    VMCopy(msg->from, API::Write, (Address) mounts,
+          (Address) (msg->buffer), sizeof(FileSystemMount) * FILESYSTEM_MAXMOUNTS);
+
+    msg->result = ESUCCESS;
 }

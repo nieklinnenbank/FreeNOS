@@ -15,35 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/VMCopy.h>
-#include <API/ProcessCtl.h> 
+#include <FreeNOS/API.h>
 #include <FreeNOS/Process.h> 
-#include "ProcessMessage.h"
-#include "ProcessServer.h"
+#include "CoreMessage.h"
+#include "CoreServer.h"
 #include <errno.h>
 
-void ProcessServer::readProcessHandler(ProcessMessage *msg)
+void CoreServer::readProcessHandler(CoreMessage *msg)
 {
-    ProcessInfo info;
-
-    /* Find the next process, starting at the given PID. */
-    for (Size i = msg->number; i < MAX_PROCS; i++)
-    {
-	if (procs[i]->command[0])
-	{
-	    /* Request kernel's process information. */
-	    ProcessCtl(i, InfoPID, (Address) &info);
-	    
-	    /* Update entry. */
-	    procs[i]->state = info.state;
-	
-	    /* Copy buffer. */
-	    VMCopy(msg->from, API::Write, (Address) (procs[i]),
-				          (Address) (msg->buffer), sizeof(UserProcess));
-	    msg->result = ESUCCESS;
-	    msg->number = i;
-	    return;
-	}
-    }
-    msg->result = ENOENT;
+    // Copy the whole process table
+    VMCopy(msg->from, API::Write, (Address) procs,
+          (Address) (msg->buffer), sizeof(UserProcess) * MAX_PROCS);
+    msg->result = ESUCCESS;
 }

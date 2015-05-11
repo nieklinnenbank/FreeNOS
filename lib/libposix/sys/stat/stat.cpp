@@ -29,7 +29,7 @@ int stat(const char *path, struct stat *buf)
 
     /* Fill message. */
     msg.action = StatFile;
-    msg.buffer = (char *) path;
+    msg.path   = (char *) path;
     msg.stat   = &st;
     
     /* Ask the FileSystem for the information. */

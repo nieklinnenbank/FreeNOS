@@ -15,19 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string.h>
-#include "fcntl.h"
 #include "syslog.h"
-
-int logFile = 1;
-char * logIdentity = (char *) NULL;
 
 void openlog(const char *ident, int logopt, int facility)
 {
-    // Close any existing logs
-    closelog();
-
-    // Log to standard output by default.
-    logIdentity = strdup(ident);
-    logFile = 1;
 }

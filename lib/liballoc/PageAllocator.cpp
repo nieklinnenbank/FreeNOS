@@ -18,19 +18,19 @@
 #include <API/IPCMessage.h>
 #include <API/ProcessCtl.h>
 #include <API/ProcessID.h>
-#include <MemoryMessage.h>
+#include <CoreMessage.h>
 #include "PageAllocator.h"
 
 PageAllocator::PageAllocator(Size size)
     : start(ZERO), allocated(ZERO)
 {
-    MemoryMessage mem;
+    CoreMessage mem;
 
     /* First reserve ~128MB virtual memory. */
     mem.action = ReservePrivate;
     mem.bytes  = 1024 * 1024 * 128;
     mem.virtualAddress = 1024 * 1024 * 16;
-    mem.ipc(MEMSRV_PID, API::SendReceive, sizeof(mem));
+    mem.ipc(CORESRV_PID, API::SendReceive, sizeof(mem));
 
     /* Set heap pointer. */
     start = mem.virtualAddress;
@@ -46,7 +46,7 @@ PageAllocator::PageAllocator(PageAllocator *p)
 
 Address PageAllocator::allocate(Size *size)
 {
-    MemoryMessage msg;
+    CoreMessage msg;
     Address ret = start + allocated;
 
 #warning TODO: perhaps align to page size???
@@ -59,7 +59,7 @@ Address PageAllocator::allocate(Size *size)
     msg.access = Memory::Present | Memory::User | Memory::Readable | Memory::Writable | Memory::Reserved;
     msg.virtualAddress  = (1024 * 1024 * 16) + allocated;
     msg.physicalAddress = ZERO;
-    msg.ipc(MEMSRV_PID, API::SendReceive, sizeof(msg));
+    msg.ipc(CORESRV_PID, API::SendReceive, sizeof(msg));
 
     /* Update count. */
     allocated += msg.bytes;

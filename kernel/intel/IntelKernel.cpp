@@ -159,6 +159,8 @@ void IntelKernel::exception(CPUState *state, ulong param)
 {
     ProcessManager *procs = Kernel::instance->getProcessManager();
 
+    WARNING("Exception in Process: " << procs->current()->getID());
+
     assert(procs->current() != ZERO);
     procs->remove(procs->current());
     procs->schedule();
