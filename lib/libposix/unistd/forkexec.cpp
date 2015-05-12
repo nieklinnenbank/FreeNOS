@@ -87,8 +87,11 @@ int forkexec(const char *path, const char *argv[])
     range.bytes = PAGESIZE;
     VMCtl(pid, Map, &range);
 
-    // Fill in arguments
+    // Allocate arguments
     char *arguments = new char[PAGESIZE];
+    memset(arguments, 0, PAGESIZE);
+
+    // Fill in arguments
     while (argv[count] && count < PAGESIZE / ARGV_SIZE)
     {
         strlcpy(arguments + (ARGV_SIZE * count), argv[count], ARGV_SIZE);
