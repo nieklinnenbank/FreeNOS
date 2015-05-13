@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,94 +15,65 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <errno.h>
-#include <dirent.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include <FreeNOS/API.h>
+#include <CoreMessage.h>
+#include <UserProcess.h>
 #include <Types.h>
 #include <Macros.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 
-void readfile(char *buf, Size size, char *fmt, ...)
+UserProcess procs[MAX_PROCS];
+
+char * states[] =
 {
-    char path[128];
-    int fd;
-    Error e;
-    va_list av;
-    
-    /* Format the path. */
-    va_start(av, fmt);
-    vsnprintf(path, sizeof(path), fmt, av);
-    va_end(av);
-
-    /* Attempt to open the file first. */
-    if ((fd = open(path, ZERO)) < 0)
-    {
-        printf("Failed to open '%s': %s\r\n",
-                path, strerror(errno));
-	exit(EXIT_FAILURE);
-    }
-    /* Read contents. */
-    switch ((e = read(fd, buf, size)))
-    {
-        /* Error occurred. */
-	case -1:
-	    printf("Failed to read '%s': %s\r\n",
-	            path, strerror(errno));
-	    close(fd);
-	    exit(EXIT_FAILURE);
-    
-	/* End of file. */
-	case 0:
-	    close(fd);
-	    return;
-	
-	/* Success. */
-	default:
-	    buf[e] = ZERO;
-	    return;
-    }
-}
+    "Running",
+    "Ready",
+    "Stopped",
+    "Sleeping",
+};
 
 int main(int argc, char **argv)
 {
-    DIR *d;
-    struct dirent *dent;
-    char status[11];
-    char cmdline[64];
+    CoreMessage msg;
+    ProcessInfo info;
 
-    /* Print header. */
-    printf("PID   STATUS     CMD\r\n");
-    
-    /* Attempt to open the directory. */
-    if (!(d = opendir("/proc")))
-    {
-	printf("Failed to open '/proc': %s\r\n",
-		strerror(errno));
-	return errno;
-    }
-    /* Read directory. */
-    while ((dent = readdir(d)))
-    {
-	if (dent->d_name[0] != '.' && dent->d_name[0] >= '0' && dent->d_name[0] <= '9')
-	{
-	    /* Read the process' status. */
-	    readfile(status,  sizeof(status),
-		    "/proc/%s/status",  dent->d_name);
-	    readfile(cmdline, sizeof(cmdline),
-		    "/proc/%s/cmdline", dent->d_name);
+    // Receive UserProcess table from the CoreServer
+    msg.action = ReadProcess;
+    msg.buffer = procs;
+    IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
 
-	    /* Output a line. */	
-	    printf("%5s %10s %32s\r\n",
-		    dent->d_name, status, cmdline);
-	}
+    // Check the result
+    if (msg.result != 0)
+    {
+        printf("%s: failed to receive process table: %s\n",
+                argv[0], strerror(msg.result));
+        return EXIT_FAILURE;
     }
-    /* Close it. */
-    closedir(d);
-    
-    /* Done. */
+
+    // Print header
+    printf("ID  PARENT  USER GROUP STATUS     CMD\r\n");
+
+    // Loop processes
+    for (int i = 0; i < MAX_PROCS; i++)
+    {
+        // Skip unused PIDs
+        if (!procs[i].command[0])
+            continue;
+
+        // Request kernel's process information
+        ProcessCtl(i, InfoPID, (Address) &info);
+
+        // Output a line
+        printf("%3d %7d %4d %5d %10s %32s\r\n",
+                i,
+                procs[i].parent,
+                procs[i].userID,
+                procs[i].groupID,
+                states[info.state],
+                procs[i].command);
+    }
     return EXIT_SUCCESS;
 }
