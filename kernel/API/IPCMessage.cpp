@@ -73,6 +73,8 @@ Error IPCMessageHandler(ProcessID id, API::Operation action, UserMessage *msg, S
                 {
                     if (i.current()->from == id || id == ANY)
                     {
+                        // TODO: danger, the size of the message is chosen here, instead of the
+                        //       size that was requested by the receiving process. Buffer overflow possible.
                         MemoryBlock::copy(msg, i.current()->data, size < i.current()->size ?
                                                        size : i.current()->size);
                         delete i.current();

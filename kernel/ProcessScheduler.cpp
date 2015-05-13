@@ -32,7 +32,7 @@ Process * ProcessScheduler::select(Vector<Process *> *procs, Process *idle)
         m_index = (m_index + 1) % size;
 
         Process *p = procs->at(m_index);
-        if (p && p != idle && p->getState() == Process::Ready)
+        if (p && p != idle && (p->getState() == Process::Ready || p->getState() == Process::Running))
         {
             return p;
         }
