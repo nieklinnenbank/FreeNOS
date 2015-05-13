@@ -62,6 +62,9 @@ typedef struct UserProcess
     
     /** Process state. */
     Process::State state;
+
+    /** Parent Process ID. */
+    ProcessID parent;
     
     /** Waits for exit of this Process. */
     ProcessID waitProcessID;

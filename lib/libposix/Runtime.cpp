@@ -19,7 +19,7 @@
 #include <FreeNOS/System/Constant.h>
 #include <Types.h>
 #include <Macros.h>
-#include <Array.h>
+#include <Vector.h>
 #include <PageAllocator.h>
 #include <PoolAllocator.h>
 #include <VMCtlAllocator.h>
@@ -40,11 +40,14 @@ extern void (*DTOR_LIST)();
 /** FileSystem mounts table */
 FileSystemMount mounts[FILESYSTEM_MAXMOUNTS];
 
-/** Array of FileDescriptors. */
-Array<FileDescriptor, FILE_DESCRIPTOR_MAX> *files = ZERO;
+/** Vector of FileDescriptors. */
+// TODO: inefficient for memory usage. Replace this with an Index (array of data pointers).
+Vector<FileDescriptor> files;
 
 /** Current Directory String */
-String *currentDirectory = ZERO;
+String currentDirectory;
+
+void * __dso_handle = 0;
 
 extern C int __cxa_atexit(void (*func) (void *),
                           void * arg, void * dso_handle)
@@ -53,10 +56,6 @@ extern C int __cxa_atexit(void (*func) (void *),
 }
 
 extern C void __cxa_pure_virtual()
-{
-}
-
-extern C void __dso_handle()
 {
 }
 
@@ -127,35 +126,34 @@ void setupMappings()
     if (getpid() == CORESRV_PID)
         return;
 
-    // TODO: Ask CoreServer for FileSystemMounts table
-    memset(&mounts, 0, sizeof(mounts));
-    strcpy(mounts[0].path, "/");
-    strcpy(mounts[1].path, "/dev");
-    strcpy(mounts[2].path, "/proc");
-    mounts[0].procID = ROOTSRV_PID;
-    mounts[1].procID = DEVSRV_PID;
-    mounts[2].procID = 13;
+    // Ask CoreServer for FileSystemMounts table
+    CoreMessage msg;
+    msg.action = GetMounts;
+    msg.mounts = mounts;
+    msg.ipc(CORESRV_PID, API::SendReceive, sizeof(msg));
 
     // Set currentDirectory
-    currentDirectory = new String("/");
+    currentDirectory = "/";
 
-    // Load FileDescriptors
-    files = new Array<FileDescriptor, FILE_DESCRIPTOR_MAX>();
+    // Load FileDescriptors.
+    for (Size i = 0; i < FILE_DESCRIPTOR_MAX; i++)
+    {
+        FileDescriptor fd;
+        fd.open = false;
 
-    // Mark all FileDescriptors closed
-    for (uint i = 0; i < files->size(); i++)
-        (*files)[i].open = false;
+        files.insert(fd);
+    }
 
     // TODO: we need to check if we have a parent, and if so, inherit some things, like
     // the filedescriptors and currentDirectory..
 
     // TODO: temporary hardcode standard I/O file descriptors to /dev/tty0 (procID 11)
-    (*files)[0].open = true;
-    (*files)[0].path = new String("/dev/tty0");
-    (*files)[0].mount = 11;
-    (*files)[1].open = true;
-    (*files)[1].path = new String("/dev/tty0");
-    (*files)[1].mount = 11;
+    files[0].open  = true;
+    files[0].mount = 11;
+    strlcpy(files[0].path, "/dev/tty0", PATHLEN);
+    files[1].open  = true;
+    files[1].mount = 11;
+    strlcpy(files[1].path, "/dev/tty0", PATHLEN);
 }
 
 ProcessID findMount(const char *path)
@@ -197,7 +195,7 @@ ProcessID findMount(const char *path)
 
 ProcessID findMount(int fildes)
 {
-    return files->get(fildes) ? files->get(fildes)->mount : ZERO;
+    return files.get(fildes) ? files.get(fildes)->mount : ZERO;
 }
 
 FileSystemMount * getMounts()
@@ -205,14 +203,14 @@ FileSystemMount * getMounts()
     return mounts;
 }
 
-Array<FileDescriptor, FILE_DESCRIPTOR_MAX> * getFiles()
+Vector<FileDescriptor> * getFiles()
 {
-    return files;
+    return &files;
 }
 
 String * getCurrentDirectory()
 {
-    return currentDirectory;
+    return &currentDirectory;
 }
 
 extern C void SECTION(".entry") _entry() 

@@ -23,7 +23,7 @@
 
 int close(int fildes)
 {
-    Array<FileDescriptor, FILE_DESCRIPTOR_MAX> *fds = getFiles();
+    Vector<FileDescriptor> *fds = getFiles();
     FileDescriptor *fd = ZERO;
 
     if ((fd = (FileDescriptor *) fds->get(fildes)) == ZERO || !fd->open)
@@ -32,7 +32,5 @@ int close(int fildes)
         return -1;
     }
     fd->open = false;
-    delete fd->path;
-    
     return 0;
 }

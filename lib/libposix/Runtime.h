@@ -20,7 +20,7 @@
 
 #include <Macros.h>
 #include <Types.h>
-#include <Array.h>
+#include <Vector.h>
 #include <String.h>
 #include <FileSystemMount.h>
 #include "FileDescriptor.h"
@@ -55,7 +55,7 @@ ProcessID findMount(int fildes);
 /**
  * Get FileDescriptors table.
  */
-Array<FileDescriptor, FILE_DESCRIPTOR_MAX> * getFiles();
+Vector<FileDescriptor> * getFiles();
 
 /**
  * Get mounts table.

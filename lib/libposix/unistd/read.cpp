@@ -30,7 +30,7 @@ ssize_t read(int fildes, void *buf, size_t nbyte)
     if (fd)
     {
         msg.action = ReadFile;
-        msg.path   = **fd->path;
+        msg.path   = fd->path;
         msg.buffer = (char *) buf;
         msg.size   = nbyte;
         msg.offset = fd->position;

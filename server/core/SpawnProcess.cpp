@@ -42,12 +42,12 @@ void CoreServer::spawnProcessHandler(CoreMessage *msg)
     DEBUG("spawn: " << procs[msg->from].command << "[" << msg->from << "] => " << path << "[" << pid << "]");
 
     // Set process name
-    snprintf(procs[pid].command, COMMANDLEN,
-             "%s", path);
+    snprintf(procs[pid].command, COMMANDLEN, "%s", path);
 
-    // Inherit user and group identities
+    // Fill UserProcess structure
     procs[pid].userID  = procs[msg->from].userID;
     procs[pid].groupID = procs[msg->from].groupID;
+    procs[pid].parent  = msg->from;
 
     // Success
     msg->number = pid;

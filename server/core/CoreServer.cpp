@@ -63,12 +63,10 @@ CoreServer::CoreServer()
     mounts[2].options = ZERO;
 
     // Attempt to load the boot image
-    range.virtualAddress  = findFreeRange(SELF, PAGESIZE * 2);
+    range.virtualAddress  = findFreeRange(SELF, info.bootImageSize);
     range.physicalAddress = info.bootImageAddress;
     range.access          = Memory::Present | Memory::User | Memory::Readable;
-
-#warning Dangerous value for bytes here? Use info.bootImageSize instead?
-    range.bytes           = PAGESIZE * 2;
+    range.bytes           = info.bootImageSize;
     VMCtl(SELF, Map, &range);
     
     image = (BootImage *) range.virtualAddress;

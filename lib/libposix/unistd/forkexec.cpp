@@ -35,6 +35,7 @@ int forkexec(const char *path, const char *argv[])
     uint count = 0;
     pid_t pid = 0;
     int numRegions = 0;
+    Vector<FileDescriptor> *fds = getFiles();
 
     // Attempt to read executable format
     if (!(fmt = ExecutableFormat::find(path)))
@@ -107,12 +108,18 @@ int forkexec(const char *path, const char *argv[])
         return -1;
     }
 
-    // Begin execution
+    // Let the Child begin execution
     ProcessCtl(pid, Resume);
 
-    /* Cleanup. */
+#if 0
+    // Send our list of file descriptors to the child
+    IPCMessage(pid, API::Send, (Message *) fds->vector(), fds->count() * sizeof(FileDescriptor));
+
+    // Dummy receive to wait for response of the child.
+    IPCMessage(pid, API::Receive, &msg, 0);
+#endif
+
+    // Done. Cleanup.
     delete arguments;
-    
-    /* All done. */
     return pid;
 }

@@ -26,7 +26,7 @@ void CoreServer::getMountsHandler(CoreMessage *msg)
 
     /* Copy FileSystemMount table buffer. */
     VMCopy(msg->from, API::Write, (Address) mounts,
-          (Address) (msg->buffer), sizeof(FileSystemMount) * FILESYSTEM_MAXMOUNTS);
+          (Address) (msg->mounts), sizeof(FileSystemMount) * FILESYSTEM_MAXMOUNTS);
 
     msg->result = ESUCCESS;
 }

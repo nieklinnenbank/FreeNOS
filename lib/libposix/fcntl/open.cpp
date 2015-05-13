@@ -27,7 +27,7 @@ int open(const char *path, int oflag, ...)
     ProcessID mnt = findMount(path);
 
     // TODO: perhaps we need the 'Index' class now, in libstd.
-    Array<FileDescriptor, FILE_DESCRIPTOR_MAX> *fds = getFiles();
+    Vector<FileDescriptor> *fds = getFiles();
     FileStat st;
     
     // Fill message
@@ -51,7 +51,7 @@ int open(const char *path, int oflag, ...)
                 if (!(*fds)[i].open)
                 {
                     (*fds)[i].open  = true;
-                    (*fds)[i].path  = new String(path);
+                    strlcpy((*fds)[i].path, path, PATHLEN);
                     (*fds)[i].mount = mnt;
                     (*fds)[i].position = 0;
                     return i;

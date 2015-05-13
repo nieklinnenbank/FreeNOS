@@ -75,12 +75,12 @@ Error Terminal::initialize()
     }
 
     // TODO: Hack the file descriptors table...
-    Array<FileDescriptor, FILE_DESCRIPTOR_MAX> *files = getFiles();
+    Vector<FileDescriptor> *files = getFiles();
     (*files)[0].open = true;
-    (*files)[0].path = new String(inputFile);  /* keyboard0 */
+    strlcpy((*files)[0].path, inputFile, PATHLEN); /* keyboard0 */
     (*files)[0].mount = 7;
     (*files)[1].open = true;
-    (*files)[1].path = new String(outputFile); /* vga0 */
+    strlcpy((*files)[1].path, outputFile, PATHLEN); /* vga0 */
     (*files)[1].mount = 9;
 
     /* Fill in function pointers. */

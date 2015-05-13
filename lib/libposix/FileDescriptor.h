@@ -22,7 +22,6 @@
 #include <Macros.h>
 #include <String.h>
 
-/** Maximum number of open file descriptors. */
 #define FILE_DESCRIPTOR_MAX 1024
 
 /**
@@ -34,18 +33,18 @@ class FileDescriptor
 
     FileDescriptor()
     {
-        mount = 0;
-        path  = ZERO;
+        mount    = 0;
+        path[0]  = ZERO;
         position = 0;
-        open  = false;
+        open     = false;
     }
 
     FileDescriptor(const FileDescriptor & fd)
     {
-        mount = fd.mount;
-        path  = new String(*fd.path);
+        mount    = fd.mount;
         position = fd.position;
-        open = fd.open;
+        open     = fd.open;
+        strlcpy(path, fd.path, PATHLEN);
     }
 
     // TODO: please modify libstd's Array/Sequence, such that I do not
@@ -53,14 +52,12 @@ class FileDescriptor
 
     bool operator == (const FileDescriptor & fd) const
     {
-        return fd.mount == mount &&
-              (!fd.path || fd.path->compareTo(*path, true) == 0);
+        return fd.mount == mount && strcmp(path, fd.path) == 0;
     }
 
     bool operator != (const FileDescriptor & fd) const
     {
-        return !(fd.mount != mount &&
-                (!fd.path || fd.path->compareTo(*path, true) == 0));
+        return !(fd.mount == mount && strcmp(path, fd.path) == 0);
     }
 
     /** Filesystem server on which this file was opened. */
@@ -70,7 +67,7 @@ class FileDescriptor
     // Address identifier;
 
     /** Path to the file. */
-    String *path;
+    char path[PATHLEN];
 
     /** Current position indicator. */
     Size position;

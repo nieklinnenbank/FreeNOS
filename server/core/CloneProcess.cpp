@@ -138,9 +138,10 @@ void CoreServer::cloneProcessHandler(CoreMessage *msg)
     /* Inherit strings from parent. */
     strlcpy(procs[id].command, procs[msg->from].command, COMMANDLEN);
 
-    /* Inherit identities. */
+    // Fill UserProcess structure
     procs[id].userID  = procs[msg->from].userID;
     procs[id].groupID = procs[msg->from].groupID;
+    procs[id].parent  = msg->from;
 
     /* Repoint stack of the child. */
     ProcessCtl(msg->from, InfoPID, (Address) &info);

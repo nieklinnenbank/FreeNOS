@@ -30,7 +30,7 @@ ssize_t write(int fildes, const void *buf, size_t nbyte)
     if (fd)
     {
         msg.action = WriteFile;
-        msg.path   = **fd->path;
+        msg.path   = fd->path;
         msg.buffer = (char *) buf;
         msg.size   = nbyte;
         msg.offset = ZERO;
