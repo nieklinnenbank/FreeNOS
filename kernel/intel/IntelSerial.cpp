@@ -47,6 +47,6 @@ void IntelSerial::write(const char *str)
     /* Write as much bytes as possible. */
     while (inb(m_base + LINESTATUS) & TXREADY && *str)
     {
-    	outb(m_base, *str++);
+        outb(m_base, *str++);
     }
 }

@@ -49,7 +49,7 @@ inline u8 ReadByte(Address addr)
 
 inline Error WriteByte(Address addr, u8 value)
 {
-    return trapKernel3(API::IOCtlNumber, IOByteRead, addr, value);
+    return trapKernel3(API::IOCtlNumber, IOByteWrite, addr, value);
 }
 
 inline u16 ReadWord(Address addr)

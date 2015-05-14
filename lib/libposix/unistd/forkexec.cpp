@@ -111,13 +111,10 @@ int forkexec(const char *path, const char *argv[])
     // Let the Child begin execution
     ProcessCtl(pid, Resume);
 
-#if 0
-    // Send our list of file descriptors to the child
-    IPCMessage(pid, API::Send, (Message *) fds->vector(), fds->count() * sizeof(FileDescriptor));
-
-    // Dummy receive to wait for response of the child.
-    IPCMessage(pid, API::Receive, &msg, 0);
-#endif
+    // Send a pointer to our list of file descriptors to the child
+    // TODO: ofcourse, insecure. To be fixed later.
+    msg.path = (char *) fds->vector();
+    msg.ipc(pid, API::SendReceive, sizeof(msg));
 
     // Done. Cleanup.
     delete arguments;

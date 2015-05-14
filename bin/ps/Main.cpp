@@ -43,6 +43,7 @@ int main(int argc, char **argv)
     // Receive UserProcess table from the CoreServer
     msg.action = ReadProcess;
     msg.buffer = procs;
+    msg.number = ZERO;
     IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
 
     // Check the result

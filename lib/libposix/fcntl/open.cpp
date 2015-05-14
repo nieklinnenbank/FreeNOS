@@ -18,8 +18,9 @@
 #include <FreeNOS/API.h>
 #include <FileSystemMessage.h>
 #include "Runtime.h"
-#include <errno.h>
+#include "errno.h"
 #include "fcntl.h"
+#include "sys/stat.h"
 
 int open(const char *path, int oflag, ...)
 {
@@ -52,7 +53,13 @@ int open(const char *path, int oflag, ...)
                 {
                     (*fds)[i].open  = true;
                     strlcpy((*fds)[i].path, path, PATHLEN);
-                    (*fds)[i].mount = mnt;
+
+                    // Devices should be contacted directly, instead of the filesystem
+                    // where we found the device file.
+                    if (st.type == BlockDeviceFile || st.type == CharacterDeviceFile)
+                        (*fds)[i].mount = st.deviceID.major;
+                    else
+                        (*fds)[i].mount = mnt;
                     (*fds)[i].position = 0;
                     return i;
                 }

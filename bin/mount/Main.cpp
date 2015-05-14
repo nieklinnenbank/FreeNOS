@@ -34,6 +34,7 @@ int main(int argc, char **argv)
 
     // Obtain the user process table
     msg.action = ReadProcess;
+    msg.number = ZERO;
     msg.buffer = procs;
 
     IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));

@@ -50,6 +50,13 @@
 extern C pid_t getpid();
 
 /**
+ * Get parent process ID.
+ *
+ * @return The parent process ID.
+ */
+extern C pid_t getppid();
+
+/**
  * Read from a file
  * @param fildes The read() function shall attempt to read nbyte bytes from the file
  *               associated with the open file descriptor, fildes, into the buffer

@@ -23,8 +23,14 @@
 
 void CoreServer::readProcessHandler(CoreMessage *msg)
 {
+    // Copy a specific process only
+    if (msg->number)
+        VMCopy(msg->from, API::Write, (Address) (procs + msg->number),
+              (Address) (msg->buffer), sizeof(UserProcess));
+
     // Copy the whole process table
-    VMCopy(msg->from, API::Write, (Address) procs,
-          (Address) (msg->buffer), sizeof(UserProcess) * MAX_PROCS);
+    else
+        VMCopy(msg->from, API::Write, (Address) procs,
+              (Address) (msg->buffer), sizeof(UserProcess) * MAX_PROCS);
     msg->result = ESUCCESS;
 }

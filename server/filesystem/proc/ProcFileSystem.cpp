@@ -64,6 +64,7 @@ void ProcFileSystem::refresh()
     // Refresh UserProcess table
     msg.action = ReadProcess;
     msg.buffer = procs;
+    msg.number = ZERO;
     IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
 
     // Insert processes pseudo files

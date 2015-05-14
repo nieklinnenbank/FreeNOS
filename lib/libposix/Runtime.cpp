@@ -144,16 +144,27 @@ void setupMappings()
         files.insert(fd);
     }
 
-    // TODO: we need to check if we have a parent, and if so, inherit some things, like
-    // the filedescriptors and currentDirectory..
+    // TODO: perhaps we can "bundle" the GetMounts() and ReadProcess() calls, so that
+    // we do not need to send IPC message twice in this part (for mounts and getppid())
 
-    // TODO: temporary hardcode standard I/O file descriptors to /dev/tty0 (procID 11)
-    files[0].open  = true;
-    files[0].mount = 11;
-    strlcpy(files[0].path, "/dev/tty0", PATHLEN);
-    files[1].open  = true;
-    files[1].mount = 11;
-    strlcpy(files[1].path, "/dev/tty0", PATHLEN);
+    // TODO: this is inefficient. It should take only one IPC request to retrieve these things from our parent. Or better, avoid it.
+
+    // Get our parent ID
+    ProcessID ppid = getppid();
+
+    // Skip processes with no parent (e.g. from the BootImage)
+    if (!ppid)
+        return;
+
+    // Inherit file descriptors, current directory, and more.
+    // NOTE: we "abuse" the CoreMessage for ipc with our parent...
+    msg.ipc(ppid, API::Receive, sizeof(msg));
+
+    // Copy the file descriptors
+    VMCopy(ppid, API::Read, (Address) files.vector(), (Address) msg.path, files.size() * sizeof(FileDescriptor));
+
+    // Dummy reply, to tell our parent we received the fds.... very inefficient.
+    msg.ipc(ppid, API::Send, sizeof(msg));
 }
 
 ProcessID findMount(const char *path)

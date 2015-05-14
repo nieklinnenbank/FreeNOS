@@ -65,11 +65,11 @@ Error i8250::read(s8 *buffer, Size size, Size offset)
     /* Read as much bytes as possible. */
     while (ReadByte(base + LINESTATUS) & RXREADY && bytes < size)
     {
-	buffer[bytes++] = ReadByte(base);
+        buffer[bytes++] = ReadByte(base);
     }
     return bytes ? (Error) bytes : EAGAIN;
 }
-								     
+
 Error i8250::write(s8 *buffer, Size size, Size offset)
 {
     Size bytes = 0;
@@ -77,7 +77,7 @@ Error i8250::write(s8 *buffer, Size size, Size offset)
     /* Write as much bytes as possible. */
     while (ReadByte(base + LINESTATUS) & TXREADY && bytes < size)
     {
-    	WriteByte(base, buffer[bytes++]);
+        WriteByte(base, buffer[bytes++]);
     }
     return bytes ? (Error) bytes : EAGAIN;
 }
