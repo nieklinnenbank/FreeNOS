@@ -44,13 +44,6 @@ FileSystemAction;
 typedef struct FileSystemMessage : public Message
 {
     /** 
-     * Default constructor. 
-     */
-    FileSystemMessage() : action(ReadFile)
-    {
-    }
-
-    /** 
      * Assignment operator. 
      * @param m FileSystemMessage pointer to copy from. 
      */
@@ -71,7 +64,7 @@ typedef struct FileSystemMessage : public Message
         path        = m->path;
         filetype    = m->filetype;
     }
-    
+
     /**
      * @brief Comparison operator.
      * @param m Other FileSystemMessage to compare with.

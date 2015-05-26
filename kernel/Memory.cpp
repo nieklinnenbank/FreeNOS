@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,16 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/System.h>
 #include <Log.h>
 #include <BubbleAllocator.h>
 #include <PoolAllocator.h>
-#include <System/Constant.h>
 #include "Memory.h"
 
-Memory::Memory(Size memorySize)
+Memory::Memory(Size memorySize,
+               Address kernelAddress,
+               Size kernelSize)
     : m_physicalMemory(memorySize / PAGESIZE)
 {
-    NOTICE("memorySize =" << memorySize);
+    NOTICE("memorySize = " << memorySize);
+
+    // Mark kernel memory used
+    for (Size i = 0; i < kernelSize; i += PAGESIZE)
+        allocatePhysicalAddress(kernelAddress + i);
 }
 
 Error Memory::initialize(Address heap)
@@ -59,6 +65,11 @@ Size Memory::getAvailableMemory()
     return m_physicalMemory.count(false) * PAGESIZE;
 }
 
+BitArray * Memory::getMemoryBitArray()
+{
+    return &m_physicalMemory;
+}
+
 Address Memory::allocatePhysical(Size size)
 {
     Size num = size / PAGESIZE;
@@ -89,22 +100,4 @@ Error Memory::releasePhysical(Address page)
 {
     m_physicalMemory.unset(page / PAGESIZE);
     return 0;
-}
-
-Address Memory::allocate(Address vaddr, MemoryAccess flags)
-{
-    // Allocate a new physical page
-    Address newPage = allocatePhysical(PAGESIZE);
-
-    // Map it to the requested virtual address
-    return map(newPage, vaddr, flags);
-}
-
-Address Memory::allocate(Process *p, Address vaddr, MemoryAccess flags)
-{
-    /* Allocate new physical page. */
-    Address newPage = allocatePhysical(PAGESIZE);
-
-    /* Map it into the target process. */
-    return map(p, newPage, vaddr, flags);
 }

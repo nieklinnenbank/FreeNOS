@@ -35,6 +35,7 @@ int open(const char *path, int oflag, ...)
     msg.action = StatFile;
     msg.path   = (char *) path;
     msg.stat   = &st;
+    msg.type   = IPCType;
 
     // Ask the FileSystem for the file.
     if (mnt)

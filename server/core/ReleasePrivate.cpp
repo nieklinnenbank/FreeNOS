@@ -20,19 +20,14 @@
 
 void CoreServer::releasePrivate(CoreMessage *msg)
 {
-    msg->access |= Memory::Present | Memory::User;
-    
-    /* Only allow unmapping of user pages. */
-    if (!VMCtl(msg->from, Access, msg))
-    {
-        msg->result = EFAULT;
-        return;
-    }
-    msg->access = Memory::None;
-	
-    /* Unmap now. */
-    VMCtl(msg->from, Map, msg);
+    VirtualMemory::Range range;
 
-    /* Done. */
+    range.virt = msg->virt;
+    range.size = msg->size;
+
+    // Unmap now
+    VMCtl(msg->from, UnMap, &range);
+
+    // Done
     msg->result = ESUCCESS;
 }

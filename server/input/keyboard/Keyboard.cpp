@@ -49,7 +49,7 @@ Keyboard::Keyboard() : shiftState(ZERO)
 
 Error Keyboard::initialize()
 {
-    return ProcessCtl(SELF, AllowIO,  PS2_PORT);
+    return ESUCCESS;
 }
 
 Error Keyboard::interrupt(Size vector)

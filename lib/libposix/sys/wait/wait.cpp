@@ -28,6 +28,7 @@ pid_t waitpid(pid_t pid, int *stat_loc, int options)
     /* Fill in the message. */
     msg.action = WaitProcess;
     msg.number = pid;
+    msg.type   = IPCType;
     
     /* Ask CoreServer. */
     IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));

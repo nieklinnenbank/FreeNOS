@@ -34,6 +34,8 @@ ssize_t read(int fildes, void *buf, size_t nbyte)
         msg.buffer = (char *) buf;
         msg.size   = nbyte;
         msg.offset = fd->position;
+        msg.type   = IPCType;
+        msg.from   = SELF;
         IPCMessage(fd->mount, API::SendReceive, &msg, sizeof(msg));
 
         // Did we read something?

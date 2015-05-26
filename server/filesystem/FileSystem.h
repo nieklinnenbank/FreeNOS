@@ -125,25 +125,8 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
      */
     bool mount(bool background = true)
     {
-        // Fork in the background first, if requested.
-        if (background && fork())
-        {
-            exit(EXIT_SUCCESS);
-        }
-        // Mount ourselves
-#if 0
-#error Send a IPC to the CoreServer for this.
-        for (Size i = 0; i < MAX_MOUNTS; i++)
-        {
-            if (!mounts[i]->path[0] || !strcmp(mounts[i]->path, mountPath))
-            {
-                strlcpy(mounts[i]->path, mountPath, PATHLEN);
-                mounts[i]->procID  = getpid();
-                mounts[i]->options = ZERO;
-                break;
-            }
-        }
-#endif
+        // TODO: forkexec() ourselves in the background first, if requested.
+        // TODO: Mount ourselves. Send a message to the coreserver for it.
         return true;
     }
 
@@ -168,7 +151,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
      * @param msg Incoming request message.
      * @see FileSystemMessage
      * @see FileSystemAction
-         */    
+     */
     void pathHandler(FileSystemMessage *msg)
     {
         FileSystemPath path;

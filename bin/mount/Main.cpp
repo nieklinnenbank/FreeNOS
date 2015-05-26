@@ -36,6 +36,8 @@ int main(int argc, char **argv)
     msg.action = ReadProcess;
     msg.number = ZERO;
     msg.buffer = procs;
+    msg.type   = IPCType;
+    msg.from   = SELF;
 
     IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
     if (msg.result != ESUCCESS)

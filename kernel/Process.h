@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,12 +17,9 @@
 
 #ifndef __KERNEL_PROCESS_H
 #define __KERNEL_PROCESS_H
-#ifndef __ASSEMBLER__
 
 #include <Types.h>
 #include <Macros.h>
-
-#ifdef CPP
 #include <List.h>
 
 /** 
@@ -31,8 +28,7 @@
  */
 
 /** @see IPCMessage.h. */
-class UserMessage;
-class ProcessScheduler;
+struct Message;
 
 /**
  * Represents a process which may run on the host.
@@ -72,6 +68,26 @@ class Process
      */
     State getState() const;
 
+    /*
+     * Get the address of our page directory.
+     * @return Page directory address.
+     */
+    Address getPageDirectory() const;
+
+    /**
+     * Get the address of the user stack.
+     *
+     * @return User stack address.
+     */
+    Address getUserStack() const;
+
+    /**
+     * Get the address of the kernel stack.
+     *
+     * @return Kernel stack address.
+     */
+    Address getKernelStack() const;
+
     /**
      * Puts the Process in a new state.
      * @param st New state of the Process.
@@ -79,10 +95,31 @@ class Process
     void setState(State st);
 
     /**
+     * Set page directory address.
+     *
+     * @param addr New page directory address.
+     */
+    void setPageDirectory(Address addr);
+
+    /**
+     * Sets the address of the user stack.
+     *
+     * @param addr New stack address.
+     */
+    void setUserStack(Address addr);
+
+    /**
+     * Set the kernel stack address.
+     *
+     * @param addr New kernel stack address.
+     */
+    void setKernelStack(Address addr);
+
+    /**
      * Retrieve the list of Messages for this Process.
      * @return Pointer to the message queue.
      */
-    List<UserMessage *> * getMessages();
+    List<Message *> * getMessages();
 
     /**
      * Compare two processes.
@@ -93,10 +130,12 @@ class Process
 
     /**
      * Allow the Process to run on the CPU.
+     *
+     * @param previous The previous Process which ran on the CPU. ZERO if none.
      */
-    virtual void execute() = 0;
+    virtual void execute(Process *previous) = 0;
 
-  private:
+  protected:
 
     /** Process Identifier */
     const ProcessID m_id;
@@ -105,13 +144,20 @@ class Process
     State m_state;
 
     /** Incoming messages. */
-    List<UserMessage *> m_messages;
+    List<Message *> m_messages;
+
+    /** Page directory. */
+    Address m_pageDirectory;
+
+    /** User stack address. */
+    Address m_userStack;
+
+    /** Kernel stack address. */
+    Address m_kernelStack;
 };
 
 /**
  * @}
  */
 
-#endif /* CPP */
-#endif /* __ASSEMBLER__ */
 #endif /* __KERNEL_PROCESS_H */

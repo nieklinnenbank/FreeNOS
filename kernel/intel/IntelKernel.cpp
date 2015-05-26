@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,36 +21,22 @@
 #include <List.h>
 #include <ListIterator.h>
 #include <Vector.h>
+#include <MemoryBlock.h>
 #include <String.h>
 #include <BootImage.h>
 #include <UserProcess.h>
 #include "IntelKernel.h"
-#include "IntelCPU.h"
-#include "IntelInterrupt.h"
-#include "IntelMemory.h"
-#include "Multiboot.h"
+#include "IntelBoot.h"
 
-/** Interrupt handlers. */
-Vector<List<InterruptHook *> *> interrupts(256);
-
-void executeInterrupt(CPUState state)
+extern C void executeInterrupt(CPUState state)
 {
-    /* Fetch the list of interrupt hooks (for this vector). */
-    List<InterruptHook *> *lst = interrupts[state.vector];
-
-    /* Does at least one handler exist? */
-    if (!lst)
-        return;
-
-    /* Execute them all. */
-    for (ListIterator<InterruptHook *> i(lst); i.hasCurrent(); i++)
-    {
-        i.current()->handler(&state, i.current()->param);
-    }
+    Kernel::instance->executeInterrupt(state.vector, &state);
 }
 
-IntelKernel::IntelKernel(IntelMemory *memory, ProcessManager *proc)
-    : Kernel(memory, proc), Singleton<IntelKernel>(this)
+IntelKernel::IntelKernel(Size memorySize,
+                         Address kernelAddress,
+                         Size kernelSize)
+    : Kernel(memorySize, kernelAddress, kernelSize)
 {
     /* ICW1: Initialize PIC's (Edge triggered, Cascade) */
     outb(PIC1_CMD, 0x11);
@@ -81,8 +67,8 @@ IntelKernel::IntelKernel(IntelMemory *memory, ProcessManager *proc)
     enableIRQ(2, true);
     enableIRQ(0, true);
 
-    // Clear interrupts table
-    interrupts.fill(ZERO);
+    // Install interruptRun() callback
+    interruptRun = ::executeInterrupt;
 
     /* Setup exception handlers. */
     for (int i = 0; i < 17; i++)
@@ -103,63 +89,52 @@ IntelKernel::IntelKernel(IntelMemory *memory, ProcessManager *proc)
     /* Install PIT (i8253) IRQ handler. */
     hookInterrupt(IRQ(0), clocktick, 0);
 
-    /* Initialize TSS Segment. */
-    gdt[USER_TSS].limitLow    = sizeof(TSS) + (0xfff / 8);
-    gdt[USER_TSS].baseLow     = ((Address) &kernelTss) & 0xffff;
-    gdt[USER_TSS].baseMid     = (((Address) &kernelTss) >> 16) & 0xff;
-    gdt[USER_TSS].type        = 9;
-    gdt[USER_TSS].privilege  = 0;
-    gdt[USER_TSS].present     = 1;
-    gdt[USER_TSS].limitHigh   = 0;
-    gdt[USER_TSS].granularity = 8;
-    gdt[USER_TSS].baseHigh    = (((Address) &kernelTss) >> 24) & 0xff;
+    // Initialize TSS Segment
+    gdt[KERNEL_TSS].limitLow    = sizeof(TSS) + (0xfff / 8);
+    gdt[KERNEL_TSS].baseLow     = ((Address) &kernelTss) & 0xffff;
+    gdt[KERNEL_TSS].baseMid     = (((Address) &kernelTss) >> 16) & 0xff;
+    gdt[KERNEL_TSS].type        = 9;
+    gdt[KERNEL_TSS].privilege   = 0;
+    gdt[KERNEL_TSS].present     = 1;
+    gdt[KERNEL_TSS].limitHigh   = 0;
+    gdt[KERNEL_TSS].granularity = 8;
+    gdt[KERNEL_TSS].baseHigh    = (((Address) &kernelTss) >> 24) & 0xff;
 
-    /* Let TSS point to I/O bitmap page. */
-    kernelTss.bitmap = PAGESIZE << 16;
+    // Fill the Task State Segment (TSS).
+    MemoryBlock::set(&kernelTss, 0, sizeof(TSS));
+    kernelTss.esp0   = KERNEL_STACK + (PAGESIZE * 4);
+    kernelTss.ss0    = KERNEL_DS_SEL;
+    kernelTss.bitmap = sizeof(TSS);
 
-    /* Load Task State Register. */
-    ltr(USER_TSS_SEL);
-}
-
-void IntelKernel::hookInterrupt(int vec, InterruptHandler h, ulong p)
-{
-    InterruptHook hook(h, p);
-
-    /* Insert into interrupts; create List if neccessary. */
-    if (!interrupts[vec])
-    {
-        interrupts.insert(vec, new List<InterruptHook *>());
-    }
-    /* Just append it. */
-    if (!interrupts[vec]->contains(&hook))
-    {
-	interrupts[vec]->append(new InterruptHook(h, p));
-    }
+    // Load Task State Register
+    ltr(KERNEL_TSS_SEL);
 }
 
 void IntelKernel::enableIRQ(uint irq, bool enabled)
 {
     if (enabled)
     {
-    	if (irq < 8)
-    	    outb(PIC1_DATA, inb(PIC1_DATA) & ~(1 << irq));
-    	else
-    	    outb(PIC2_DATA, inb(PIC2_DATA) & ~(1 << (irq - 8)));
+        if (irq < 8)
+            outb(PIC1_DATA, inb(PIC1_DATA) & ~(1 << irq));
+        else
+            outb(PIC2_DATA, inb(PIC2_DATA) & ~(1 << (irq - 8)));
     }
     else
     {
-    	if (irq < 8)
-    	    outb(PIC1_DATA, inb(PIC1_DATA) | (1 << irq));
-    	else
-    	    outb(PIC2_DATA, inb(PIC2_DATA) | (1 << (irq - 8)));
+        if (irq < 8)
+            outb(PIC1_DATA, inb(PIC1_DATA) | (1 << irq));
+        else
+            outb(PIC2_DATA, inb(PIC2_DATA) | (1 << (irq - 8)));
     }
 }
 
 void IntelKernel::exception(CPUState *state, ulong param)
 {
+    IntelCore core;
     ProcessManager *procs = Kernel::instance->getProcessManager();
 
-    WARNING("Exception in Process: " << procs->current()->getID());
+    ERROR("Exception in Process: " << procs->current()->getID());
+    core.logException(state);
 
     assert(procs->current() != ZERO);
     procs->remove(procs->current());
@@ -179,49 +154,53 @@ void IntelKernel::interrupt(CPUState *state, ulong param)
 
 void IntelKernel::trap(CPUState *state, ulong param)
 {
-    state->eax = Kernel::instance->invokeAPI(
-        (API::Number) state->eax,
-                      state->ecx,
-                      state->ebx,
-                      state->edx,
-                      state->esi,
-                      state->edi
+    state->regs.eax = Kernel::instance->getAPI()->invoke(
+        (API::Number) state->regs.eax,
+                      state->regs.ecx,
+                      state->regs.ebx,
+                      state->regs.edx,
+                      state->regs.esi,
+                      state->regs.edi
     );
 }
 
 void IntelKernel::clocktick(CPUState *state, ulong param)
 {
-    IntelKernel *kernel = Singleton<IntelKernel>::instance;
-
-    /* Reschedule. */
-    kernel->getProcessManager()->schedule();
+    Kernel::instance->getProcessManager()->schedule();
 }
 
 bool IntelKernel::loadBootImage()
 {
     MultibootModule *mod;
     BootImage *image;
+    Arch::Memory virt(0, m_memory->getMemoryBitArray());
 
-    /* Startup boot modules. */
+    // Startup boot modules
     for (Size n = 0; n < multibootInfo.modsCount; n++)
     {
         mod = &((MultibootModule *) multibootInfo.modsAddress)[n];
         String str = (char *) mod->string;
 
-        /* Mark its memory used */
+        // Mark its memory used
         for (Address a = mod->modStart; a < mod->modEnd; a += PAGESIZE)
         {
             m_memory->allocatePhysicalAddress(a);
         }
 
-        /* Is this the BootImage? */
+        // Is this a BootImage?
         if (str.match("*.img.gz"))
         {
-            /* Map the BootImage into our address space. */
-            image = (BootImage *) m_memory->map(mod->modStart);
-                                  m_memory->map(mod->modStart + PAGESIZE);
+            Arch::Memory::Range range;
 
-            /* Verify this is a correct BootImage. */
+            // Map the BootImage into our address space
+            range.phys   = mod->modStart;
+            range.virt   = 0;
+            range.size   = mod->modEnd - mod->modStart;
+            range.access = Arch::Memory::Present |
+                           Arch::Memory::Readable;
+            image = (BootImage *) virt.mapRange(&range);
+
+            // Verify this is a correct BootImage
             if (image->magic[0] == BOOTIMAGE_MAGIC0 &&
                 image->magic[1] == BOOTIMAGE_MAGIC1 &&
                 image->layoutRevision == BOOTIMAGE_REVISION)
@@ -229,7 +208,7 @@ bool IntelKernel::loadBootImage()
                 m_bootImageAddress = mod->modStart;
                 m_bootImageSize    = mod->modEnd - mod->modStart;
 
-                /* Loop BootPrograms. */
+                // Loop BootPrograms
                 for (Size i = 0; i < image->symbolTableCount; i++)
                     loadBootProcess(image, mod->modStart, i);
             }
@@ -245,6 +224,7 @@ void IntelKernel::loadBootProcess(BootImage *image, Address imagePAddr, Size ind
     BootSymbol *program;
     BootSegment *segment;
     Process *proc;
+    Arch::Memory local(0, Kernel::instance->getMemory()->getMemoryBitArray());
     
     // Point to the program and segments table
     program = &((BootSymbol *) (imageVAddr + image->symbolTableOffset))[index];
@@ -257,24 +237,30 @@ void IntelKernel::loadBootProcess(BootImage *image, Address imagePAddr, Size ind
     // Create process
     proc = m_procs->create(program->entry);
     proc->setState(Process::Ready);
-                    
-    // Loop program segments
+
+    // Obtain process memory
+    Arch::Memory mem(proc->getPageDirectory(),
+                     getMemory()->getMemoryBitArray());
+    
+    // Map program segment into it's virtual memory
     for (Size i = 0; i < program->segmentsCount; i++)
     {
-        // Map program segment into it's virtual memory
         for (Size j = 0; j < segment[i].size; j += PAGESIZE)
         {
-
-            m_memory->map(proc,
-                          imagePAddr + segment[i].offset + j,
-                          segment[i].virtualAddress + j,
-                          Memory::Present | Memory::User | Memory::Readable | Memory::Writable);
+            mem.map(imagePAddr + segment[i].offset + j,
+                    segment[i].virtualAddress + j,
+                    Arch::Memory::Present  |
+                    Arch::Memory::User     |
+                    Arch::Memory::Readable |
+                    Arch::Memory::Writable);
         }
     }
+
     // Map and copy program arguments
     args = m_memory->allocatePhysical(PAGESIZE);
-    m_memory->map(proc, args, ARGV_ADDR, Memory::Present | Memory::User | Memory::Writable);
-    MemoryBlock::copy( (char *) m_memory->map(args), program->name, ARGV_SIZE);
+    mem.map(args, ARGV_ADDR, Arch::Memory::Present | Arch::Memory::User | Arch::Memory::Writable);
+    MemoryBlock::copy( (char *) local.map(args), program->name, ARGV_SIZE);
 
+    // Done
     NOTICE("loaded: " << program->name);
 }

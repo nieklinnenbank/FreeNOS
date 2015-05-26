@@ -34,6 +34,7 @@ int mknod(const char *path, mode_t mode, dev_t dev)
     msg.deviceID = dev;
     msg.filetype = (FileType) ((mode >> FILEMODE_BITS) & FILETYPE_MASK);
     msg.mode     = (FileModes) (mode & FILEMODE_MASK);
+    msg.type     = IPCType;
     
     /* Ask FileSystem to create the file for us. */
     if (mnt)

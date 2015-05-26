@@ -5,8 +5,8 @@
  * @date 5 march 2015
  */
 
-#ifndef _PRIV_EXEC_LOG_H
-#define _PRIV_EXEC_LOG_H
+#ifndef __LIBARCH_KERNELLOG_H
+#define __LIBARCH_KERNELLOG_H
 
 #ifndef __HOST__
 #include "Log.h"
@@ -14,14 +14,14 @@
 /**
  * Log using PrivExec().
  */
-class PrivExecLog : public Log
+class KernelLog : public Log
 {
   public:
 
     /**
      * Constructor
      */
-    PrivExecLog();
+    KernelLog();
 
     /**
      * Write using PrivExec()
@@ -30,4 +30,4 @@ class PrivExecLog : public Log
 };
 
 #endif /* __HOST__ */
-#endif /* _PRIV_EXEC_LOG_H */
+#endif /* __LIBARCH_KERNELLOG_H */

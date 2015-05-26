@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PrivExecLog.h>
-#include <API/VMCopy.h>
+#include <FreeNOS/API.h>
 #include "LinnFile.h"
 #include <string.h>
 
@@ -47,7 +46,7 @@ Error LinnFile::read(IOBuffer *buffer, Size size, Size offset)
     /* Skip ahead blocks. */
     while ((sb->blockSize * (blockNr + 1)) <= copyOffset)
     {
-	blockNr++;
+        blockNr++;
     }
     /* Adjust the copy offset within this block. */
     copyOffset -= sb->blockSize * blockNr;

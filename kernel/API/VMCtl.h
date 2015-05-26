@@ -19,9 +19,7 @@
 #define __API_VMCTL_H
 
 #include <FreeNOS/API.h>
-#include <System/Constant.h>
-#include <System/Function.h>
-#include <Types.h>
+#include <FreeNOS/System.h>
 
 /**  
  * @defgroup kernelapi kernel (API) 
@@ -33,51 +31,15 @@
  */
 typedef enum MemoryOperation
 {
-    Map            = 0,
-    LookupVirtual  = 1,
-    LookupPhysical = 2,
-    Access         = 3,
-    MapTables      = 4,
-    UnMapTables    = 5,
+    Map = 0,
+    UnMap,
+    LookupVirtual,
+    LookupPhysical,
+    Access,
+    MapTables,
+    UnMapTables
 }
 MemoryOperation;
-
-/**
- * Describes a range of memory pages.
- */
-// TODO: move to libarch.
-typedef struct MemoryRange
-{
-    /**
-     * Constructor initializes the MemoryRange.
-     */
-    MemoryRange()
-    {
-        virtualAddress  = ZERO;
-        physicalAddress = ZERO;
-        bytes      = PAGESIZE;
-        access     = Memory::Present | Memory::User | Memory::Readable | Memory::Writable;
-    }
-    /** Virtual address start. */
-    Address virtualAddress;
-    
-    /** Physical address start. */
-    Address physicalAddress;
-    
-    /** Number of pages requested, in bytes. */
-    Size bytes;
-    
-    /**
-     * Used to signify a number of free bytes.
-     * @note Not used by the kernel, but the MemoryServer.
-     * @see MemoryServer
-     */
-    Size free;
-    
-    /** Page access flags. */
-    Memory::MemoryAccess access;
-}
-MemoryRange;
 
 /**
  * Prototype for user applications. Examines and modifies virtual memory pages.
@@ -87,12 +49,12 @@ MemoryRange;
  * @return Zero on success or error code on failure.
  */
 inline Error VMCtl(ProcessID procID, MemoryOperation op,
-                        MemoryRange *range = ZERO)
+                   VirtualMemory::Range *range = ZERO)
 {
     return trapKernel3(API::VMCtlNumber, procID, op, (Address) range);
 }
 
-extern Error VMCtlHandler(ProcessID procID, MemoryOperation op, MemoryRange *range);
+extern Error VMCtlHandler(ProcessID procID, MemoryOperation op, VirtualMemory::Range *range);
 
 /**
  * @}

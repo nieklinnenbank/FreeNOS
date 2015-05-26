@@ -18,7 +18,7 @@
 #ifndef __FILESYSTEM_IOBUFFER_H
 #define __FILESYSTEM_IOBUFFER_H
 
-#include <API/VMCopy.h>
+#include <FreeNOS/API.h>
 #include <Types.h>
 #include "FileSystemMessage.h"
 

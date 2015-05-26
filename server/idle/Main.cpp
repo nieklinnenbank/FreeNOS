@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/PrivExec.h>
+#include <FreeNOS/API.h>
 
 int main(int argc, char **argv)
 {

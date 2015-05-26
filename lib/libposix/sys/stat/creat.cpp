@@ -33,6 +33,7 @@ int creat(const char *path, mode_t mode)
     msg.path     = (char *) path;
     msg.filetype = RegularFile;
     msg.mode     = (FileModes) (mode & FILEMODE_MASK);
+    msg.type     = IPCType;
 
     /* Ask FileSystem to create the file for us. */
     if (mnt)

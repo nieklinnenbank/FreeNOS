@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __KERNEL_MULTIBOOT_H
-#define __KERNEL_MULTIBOOT_H
+#ifndef __INTEL_MULTIBOOT_H
+#define __INTEL_MULTIBOOT_H
 
 /**
  * @defgroup kernel kernel (generic)
@@ -122,4 +122,4 @@ extern MultibootInfo multibootInfo;
  */
 
 #endif /* !__ASSEMBLER__ */
-#endif /* __KERNEL_MULTIBOOT_H */
+#endif /* __INTEL_MULTIBOOT_H */

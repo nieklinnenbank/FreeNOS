@@ -71,6 +71,8 @@ SECTIONS
 	initStart = .;
 	KEEP (*(SORT(.init*)))
 	initEnd   = .;
+        isKernel = .;
+        LONG(1);
 	. = ALIGN(4096);
     }
 

@@ -26,62 +26,56 @@
  * @{ 
  */
 
-/** Start address of pages allocated with VMCtlAllocator.h */
-#define VMCTL_ALLOC_START	(1024 * 1024 * 16)
-
 /**
  * Allocates virtual memory pages directly using VMCtl().
  */
 class VMCtlAllocator : public Allocator
 {
-    public:
+  public:
 
-	/**
-	 * Class constructor.
-	 * @param size Initial size in bytes.
-	 */
-	VMCtlAllocator(Size size);
+    /**
+     * Class constructor.
+     * @param size Initial size in bytes.
+     */
+    VMCtlAllocator(Size size);
 
-	/**
-	 * Copy constructor.
-	 * @param p VMCtlAllocator instance pointer.
-	 */
-	VMCtlAllocator(VMCtlAllocator *p);
+    /**
+     * Copy constructor.
+     * @param p VMCtlAllocator instance pointer.
+     */
+    VMCtlAllocator(VMCtlAllocator *p);
 
-        /**
-         * Allocates a new memory page, if neccessary.
-	 * @param size Amount of memory in bytes to allocate on input. 
-	 *             On output, the amount of memory in bytes actually allocated.
-         * @return New memory block on success and ZERO on failure.
-         */
-        Address allocate(Size *size);
+    /**
+     * Allocates a new memory page, if neccessary.
+     * @param size Amount of memory in bytes to allocate on input. 
+     *             On output, the amount of memory in bytes actually allocated.
+     * @return New memory block on success and ZERO on failure.
+     */
+    Address allocate(Size *size);
 
-        /**
-         * Unmaps memory pages, if possible.
-         * @param address Points to memory previously returned by allocate().
-         * @see allocate
-         */
-        void release(Address addr);
+    /**
+     * Unmaps memory pages, if possible.
+     * @param address Points to memory previously returned by allocate().
+     * @see allocate
+     */
+    void release(Address addr);
 
-	/**
-	 * Get start address of the heap.
-	 * @return Start heap address.
-	 */
-	Address getHeapStart()
-	{
-	    return heapStart;
-	}
+    /**
+     * Get start address of the heap.
+     * @return Start heap address.
+     */
+    Address getHeapStart()
+    {
+        return heapStart;
+    }
 
-    private:
+  private:
 
-	/** Start of the current heap. */
-	Address heapStart;
-	
-	/** End of the heap. */
-	Address heapEnd;
-	
-	/** Total number of bytes allocated. */
-	Size allocated;
+    /** Start of the current heap. */
+    Address heapStart;
+    
+    /** Total number of bytes allocated. */
+    Size allocated;
 };
 
 /**

@@ -16,7 +16,7 @@
  */
 
 #include <FreeNOS/API.h>
-#include <FreeNOS/System/Constant.h>
+#include <FreeNOS/System.h>
 #include <Macros.h>
 #include <Types.h>
 #include <stdio.h>
@@ -31,10 +31,6 @@ Time::Time()
 
 Error Time::initialize()
 {
-    ProcessCtl(SELF, AllowIO, RTC_PORT(0));
-    ProcessCtl(SELF, AllowIO, RTC_PORT(1));
-
-    /* Done! */
     return ESUCCESS;
 }
 

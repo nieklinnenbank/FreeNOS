@@ -58,6 +58,8 @@ SECTIONS
 	KEEP (*(SORT(.init*)))
 	KEEP (*(.init*))
 	initEnd   = .;
+        isKernel = .;
+        LONG(0);
 	*(.bss)
     }
 }

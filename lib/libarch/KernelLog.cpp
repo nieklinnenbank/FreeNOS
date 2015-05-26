@@ -7,13 +7,13 @@
 
 #ifndef __HOST__
 #include <FreeNOS/API.h>
-#include "PrivExecLog.h"
+#include "KernelLog.h"
 
-PrivExecLog::PrivExecLog() : Log()
+KernelLog::KernelLog() : Log()
 {
 }
 
-void PrivExecLog::write(const char *str)
+void KernelLog::write(const char *str)
 {
     PrivExec(WriteConsole, (Address) str);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  */
 
 #include <FreeNOS/API.h>
-#include <FreeNOS/System/Constant.h>
+#include <FreeNOS/System.h>
 #include <CoreServer.h>
 #include <CoreMessage.h>
 #include <ExecutableFormat.h>
@@ -31,7 +31,7 @@ int forkexec(const char *path, const char *argv[])
     CoreMessage msg;
     ExecutableFormat *fmt;
     MemoryRegion regions[16];
-    MemoryRange range;
+    VirtualMemory::Range range;
     uint count = 0;
     pid_t pid = 0;
     int numRegions = 0;
@@ -49,6 +49,8 @@ int forkexec(const char *path, const char *argv[])
     msg.action    = SpawnProcess;
     msg.path      = (char *) path;
     msg.number    = fmt->entry();
+    msg.type      = IPCType;
+    msg.from      = SELF;
     
     // Ask CoreServer to create a new process
     IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
@@ -59,16 +61,22 @@ int forkexec(const char *path, const char *argv[])
 
     if (msg.result != ESUCCESS)
         return msg.result;
-    
-    /* Map program regions into virtual memory of the new process. */
+
+    // TODO: make this much more efficient. Map & copy in one shot.
+
+    // Map program regions into virtual memory of the new process
     for (int i = 0; i < numRegions; i++)
     {
-        /* Copy executable memory from this region. */
+        // Copy executable memory from this region
         for (Size j = 0; j < regions[i].size; j += PAGESIZE)
         {
-            range.virtualAddress  = regions[i].virtualAddress + j;
-            range.physicalAddress = ZERO;
-            range.bytes = PAGESIZE;
+            range.virt  = regions[i].virtualAddress + j;
+            range.phys  = ZERO;
+            range.size  = PAGESIZE;
+            range.access = VirtualMemory::Present |
+                           VirtualMemory::User |
+                           VirtualMemory::Readable |
+                           VirtualMemory::Writable;
         
             /* Create mapping first. */
             if (VMCtl(pid, Map, &range) != 0)
@@ -83,9 +91,9 @@ int forkexec(const char *path, const char *argv[])
         }
     }
     /* Create mapping for command-line arguments. */
-    range.virtualAddress  = ARGV_ADDR;
-    range.physicalAddress = ZERO;
-    range.bytes = PAGESIZE;
+    range.virt  = ARGV_ADDR;
+    range.phys  = ZERO;
+    range.size  = PAGESIZE;
     VMCtl(pid, Map, &range);
 
     // Allocate arguments
@@ -114,7 +122,7 @@ int forkexec(const char *path, const char *argv[])
     // Send a pointer to our list of file descriptors to the child
     // TODO: ofcourse, insecure. To be fixed later.
     msg.path = (char *) fds->vector();
-    msg.ipc(pid, API::SendReceive, sizeof(msg));
+    IPCMessage(pid, API::SendReceive, &msg, sizeof(msg));
 
     // Done. Cleanup.
     delete arguments;

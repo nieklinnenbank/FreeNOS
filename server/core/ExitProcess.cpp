@@ -51,6 +51,7 @@ void CoreServer::exitProcessHandler(CoreMessage *msg)
 	    reply.action = WaitProcess;
 	    reply.number = msg->number;
 	    reply.result = ESUCCESS;
+            reply.type   = IPCType;
 	    IPCMessage(i, API::Send, &reply, sizeof(reply));
 	}
     }

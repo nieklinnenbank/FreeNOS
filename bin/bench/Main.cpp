@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System/Constant.h>
+#include <FreeNOS/System.h>
 #include <FreeNOS/API.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     u64 t1 = 0, t2 = 0;
     ProcessID pid = 0;
     ProcessInfo info;
-    MemoryRange range;
+    VirtualMemory::Range range;
     char *foo[128];
 
     t1 = timestamp();
@@ -48,8 +48,8 @@ int main(int argc, char **argv)
 
     printf("SystemCall (Schedule) Ticks: %u\r\n", t2 - t1);
 	
-    range.virtualAddress = 0x80000000;
-    range.bytes = PAGESIZE;
+    range.virt = 0x80000000;
+    range.size = PAGESIZE;
     
     t1 = timestamp();
     VMCtl(SELF, LookupVirtual, &range);

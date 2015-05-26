@@ -16,8 +16,6 @@
  */
 
 #include <Log.h>
-#include <FreeNOS/Kernel.h>
-#include <System/Function.h>
 #include "PrivExec.h"
 
 Error PrivExecHandler(PrivOperation op, Address addr)
@@ -26,28 +24,28 @@ Error PrivExecHandler(PrivOperation op, Address addr)
 
     switch (op)
     {
-	case Idle:
-	    
-	    procs->setIdle(procs->current());
-	    irq_enable();
-	    
-	    while (true)
-		idle();
-	
-	case Reboot:
-	    reboot();
-	    while (true) ;
-	    
-	case Shutdown:
-	    shutdown();
-	    return API::Success;
+    case Idle:
+        
+        procs->setIdle(procs->current());
+        irq_enable();
+        
+        while (true)
+        idle();
+    
+    case Reboot:
+        reboot();
+        while (true) ;
+        
+    case Shutdown:
+        shutdown();
+        return API::Success;
 
         case WriteConsole:            
             (*Log::instance) << (char *)addr;
             return API::Success;
 
-	default:
-	    ;
+    default:
+        ;
     }
     return API::InvalidArgument;
 }

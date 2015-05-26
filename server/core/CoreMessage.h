@@ -26,6 +26,7 @@
 #include <FreeNOS/API.h>
 #include <Types.h>
 #include <Macros.h>
+#include <VirtualMemory.h>
 
 /** @see UserProcess.h */
 class UserProcess;
@@ -43,7 +44,6 @@ typedef enum CoreAction
     ReadProcess,
     ExitProcess,
     SpawnProcess,
-    CloneProcess,
     WaitProcess,
     
     /* FileSystem mounts. */
@@ -52,12 +52,10 @@ typedef enum CoreAction
 
     /* Private mappings. */
     CreatePrivate,
-    ReservePrivate,
     ReleasePrivate,
     ListPrivate,
     
     /* Diagnostics. */
-    SystemMemory,
     ProcessMemory
 }
 CoreAction;
@@ -65,7 +63,8 @@ CoreAction;
 /**
  * Core operation message.
  */
-typedef struct CoreMessage : public Message, public MemoryRange
+// TODO: remove the UGLY ::Range inheritance...
+typedef struct CoreMessage : public Message, public VirtualMemory::Range
 {
     union
     {

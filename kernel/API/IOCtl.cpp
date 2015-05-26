@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System/Function.h>
 #include "IOCtl.h"
 
 Error IOCtlHandler(IOOperation op, Address addr, ulong value)

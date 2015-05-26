@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/IPCMessage.h>
 #include <String.h>
 #include <List.h>
 #include <FileSystemPath.h>

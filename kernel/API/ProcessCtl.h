@@ -28,20 +28,19 @@
  */
 
 /**
- * Available operation to perform using PrivExec().
- * @see PrivExec
+ * Available operation to perform using ProcessCtl.
+ * @see ProcessCtl
  */
 typedef enum ProcessOperation
 {
-    Spawn    = 0,
-    KillPID  = 1,
-    GetPID   = 2,
-    AllowIO  = 3,
-    WatchIRQ = 4,
-    InfoPID  = 5,
-    Schedule = 6,
-    Resume   = 7,
-    SetStack = 8,
+    Spawn = 0,
+    KillPID,
+    GetPID,
+    WatchIRQ,
+    InfoPID,
+    Schedule,
+    Resume,
+    SetStack
 }
 ProcessOperation;
 
@@ -56,8 +55,11 @@ typedef struct ProcessInfo
     /** Defines the current state of the Process. */
     Process::State state;
     
-    /** Virtual address of the stack. */
-    Address stack;
+    /** Virtual address of the user stack. */
+    Address userStack;
+
+    /** Virtual address of the kernel stack. */
+    Address kernelStack;
     
     /** Physical address of the page directory. */
     Address pageDirectory;
@@ -69,6 +71,7 @@ Log & operator << (Log &log, ProcessOperation op);
 
 /**
  * Prototype for user applications. Process management related operations.
+ *
  * @param proc Target Process' ID.
  * @param op The operation to perform.
  * @param addr Argument address, used for program entry point for Spawn,

@@ -18,7 +18,7 @@
 #ifndef __PCI_PCISERVER_H
 #define __PCI_PCISERVER_H
 
-#include <FreeNOS/System/Constant.h>
+#include <FreeNOS/System.h>
 #include <FileSystem.h>
 #include <Directory.h>
 #include <Types.h>
@@ -34,10 +34,10 @@
  */
 
 /** @brief Intel's PCI Host controller: address port. */
-#define PCI_CONFADDR	0xcf8
+#define PCI_CONFADDR    0xcf8
 
 /** @brief Intel's PCI Host controller: data port. */
-#define PCI_CONFDATA	0xcfc
+#define PCI_CONFDATA    0xcfc
 
 /**
  * @}
@@ -49,16 +49,16 @@
  */
 
 /** @brief Vendor Identity. */
-#define PCI_VID	 0x0
+#define PCI_VID  0x0
 
 /** @brief Device Identity. */
 #define PCI_DID  0x2
 
 /** @brief Command. */
-#define PCI_CMD	 0x4
+#define PCI_CMD  0x4
 
 /** @brief Revision Identity. */
-#define PCI_RID	 0x8
+#define PCI_RID  0x8
 
 /** @brief Base Address Register 0. */
 #define PCI_BAR0 0x10
@@ -79,7 +79,7 @@
 #define PCI_BAR5 0x24
 
 /** @brief Interrupt Request Vector. */
-#define PCI_IRQ	 0x3c
+#define PCI_IRQ  0x3c
 
 /**
  * @}
@@ -105,8 +105,8 @@
  */
 #define PCI_READ_BYTE(bus, dev, func, reg) \
     ({ \
-	WriteLong(PCI_CONFADDR, PCI_ADDRESS(bus, dev, func, reg)); \
-	ReadByte(PCI_CONFDATA + ((reg) & 3)); \
+    WriteLong(PCI_CONFADDR, PCI_ADDRESS(bus, dev, func, reg)); \
+    ReadByte(PCI_CONFDATA + ((reg) & 3)); \
     })
 
 /**
@@ -127,8 +127,8 @@
  */
 #define PCI_WRITE_BYTE(bus, dev, func, reg, val) \
     ({ \
-	WriteLong(PCI_CONFADDR, PCI_ADDRESS(bus, dev, func, reg)); \
-	WriteByte(PCI_CONFDATA + ((reg) & 3), val); \
+    WriteLong(PCI_CONFADDR, PCI_ADDRESS(bus, dev, func, reg)); \
+    WriteByte(PCI_CONFDATA + ((reg) & 3), val); \
     })
 
 /**
@@ -162,34 +162,34 @@ class PCIServer : public FileSystem
 {
     public:
     
-	/** 
+    /** 
          * Class constructor function. 
          * @param path Path to which we are mounted. 
          */
         PCIServer(const char *path);
-	
-	/**
-	 * @brief (Re)scans the PCI bus.
-	 */
-	void scan();
-	
+    
+    /**
+     * @brief (Re)scans the PCI bus.
+     */
+    void scan();
+    
     private:
 
-	/**
-	 * @brief Create a PCI slot directory.
-	 *
-	 * The created directory will contain a (pseudo)file
-	 * for PCI configuration registers available via the PCI
-	 * configuration space.
-	 *
-	 * @param bus PCI Bus number.
-	 * @param slot Slot number in the PCI bus.
-	 * @param func Device function number in the slot.
-	 */
-	void detect(u16 bus, u16 slot, u16 func);
+    /**
+     * @brief Create a PCI slot directory.
+     *
+     * The created directory will contain a (pseudo)file
+     * for PCI configuration registers available via the PCI
+     * configuration space.
+     *
+     * @param bus PCI Bus number.
+     * @param slot Slot number in the PCI bus.
+     * @param func Device function number in the slot.
+     */
+    void detect(u16 bus, u16 slot, u16 func);
 
-	/** @brief Root directory pointer. */
-	Directory *rootDir;
+    /** @brief Root directory pointer. */
+    Directory *rootDir;
 };
 
 /**

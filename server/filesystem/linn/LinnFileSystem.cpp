@@ -16,7 +16,7 @@
  */
 
 #include <Types.h>
-#include <PrivExecLog.h>
+#include <KernelLog.h>
 #include <FileStorage.h>
 #include <BootImageStorage.h>
 #include "LinnFileSystem.h"
@@ -28,7 +28,7 @@
 
 int main(int argc, char **argv)
 {
-    PrivExecLog log;
+    KernelLog log;
     Storage *storage = ZERO;
     bool background  = false;
     const char *path = "/";

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,14 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.global contextSwitch
+#include "IntelConstant.h"
+
+.global switchCoreState, loadCoreState, interruptRun, interruptHandler
 .section ".text"
 
-/*
- * contextSwitch(oldStackPtr, pageDirAddr, stackAddr,
- *               kernelTssAddr, kernelStackAddr)
- */
-contextSwitch:
+interruptRun:
+    .long 0
+
+switchCoreState:
 
     /* Setup correct stackframe. */
     push %ebp
@@ -32,15 +33,35 @@ contextSwitch:
     mov 8(%ebp), %eax
     cmpl $0, %eax
     je restoreState
-	
-    /* Setup stack for IRETD later on. */
+
+    /* Save core state on current stack. */
     pushf
     push %cs
     push $resume
+    pusha
 
-    /* Save registers on the current stack (CPUState). */
-    pushl $0
-    pushl $0
+    /* Save stack pointer with saved state. */
+    movl %esp, (%eax)
+
+restoreState:
+
+    /* Reload page directory, stack. */
+    movl 16(%ebp), %esp
+    movl 12(%ebp), %eax
+    movl %eax, %cr3
+
+    /* Restore kernel state. */
+    popa
+    iret
+
+resume:
+    pop %ebp
+    ret
+
+
+interruptHandler:
+
+    /* Make a CPUState. */
     pusha
     pushl %ss
     pushl %ds
@@ -48,40 +69,27 @@ contextSwitch:
     pushl %fs
     pushl %gs
 
-    /* Save stack pointer of current process in oldStackPtr. */
-    pushl %esp
-    popl %ebx
-    movl %ebx, (%eax)
+    /* Switch to kernel data segment. */
+    mov $KERNEL_DS_SEL, %ax
+    mov %ax, %ds
+    mov %ax, %es
+    mov %ax, %fs
+    mov %ax, %gs
 
-    /*
-     * Switch context to new process.
-     */
-restoreState:
+    /* Process the interrupt. */
+    movl $interruptRun, %eax
+    call *(%eax)
 
-    /* Retrieve arguments. */
-    movl 12(%ebp), %eax
-    movl 16(%ebp), %ebx
-    movl 20(%ebp), %ecx
-    movl 24(%ebp), %edx
+loadCoreState:
 
-    /* Reload page directory, stack and TSS. */    
-    movl %eax,     %cr3
-    movl %edx,   4(%ecx)
-    movl $0x10,  8(%ecx)
-    movl %ebx,     %esp
-
-    /* Restore CPU registers. */
+    /* Restore data segments. */
     popl %gs
     popl %fs
     popl %es
     popl %ds
-    popl %ss
+    add $4, %esp
+
+    /* Continue program. */
     popa
-    addl $8, %esp
-
-    /* Resume execution. */
+    add $8, %esp
     iret
-
-resume:
-    pop %ebp
-    ret

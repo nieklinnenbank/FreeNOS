@@ -60,23 +60,11 @@ class CoreServer : public IPCServer<CoreServer, CoreMessage>
     void createPrivate(CoreMessage *msg);
 
     /**
-     * Reserve virtual memory space for a mapping.
-     * @param Request message.
-     */
-    void reservePrivate(CoreMessage *msg);
-    
-    /**
      * Release an private memory mapping.
      * @param msg Request message.
      */
     void releasePrivate(CoreMessage *msg);
     
-    /**
-     * Retrieve the system memory usage.
-     * @param msg Request message.
-     */
-    void systemMemory(CoreMessage *msg);
-
     /**
      * Read the user process table.
      * @param msg Incoming message.
@@ -96,12 +84,6 @@ class CoreServer : public IPCServer<CoreServer, CoreMessage>
     void spawnProcessHandler(CoreMessage *msg);
 
     /**
-     * Create a copy of a process.
-     * @param msg Incoming message.
-     */
-    void cloneProcessHandler(CoreMessage *msg);
-
-    /**
      * Waits until a process has died.
      * @param msg Incoming message.
      */
@@ -116,27 +98,6 @@ class CoreServer : public IPCServer<CoreServer, CoreMessage>
      * (Un)set FileSystem mount.
      */
     void setMountHandler(CoreMessage *msg);
-
-    /**
-     * Find a free virtual memory range.
-     * @param procID Process identity number.
-     * @param size Number of bytes needed.
-     * @return Virtual start address if found, ZERO otherwise.
-     */
-    Address findFreeRange(ProcessID procID, Size size);
-    
-    /**
-     * Attempt to map a virtual address range.
-     * @param procID Process identity.
-     * @param range Describes the memory range to map.
-     * @return ESUCCESS on success, or an error code on failure.
-     */
-    Error insertMapping(ProcessID procID, MemoryRange *range);
-    
-    /**
-     * Copy reserved memory flags.
-     */
-    void copyReservedFlags(ProcessID parent, ProcessID child);
 
     /** User Process table. */
     UserProcess *procs;

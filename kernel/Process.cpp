@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,12 +16,14 @@
  */
 
 #include "Process.h"
-#include <Types.h>
 
 Process::Process(ProcessID id, Address addr)
     : m_id(id)
 {
-    m_state = Stopped;
+    m_state         = Stopped;
+    m_kernelStack   = 0;
+    m_userStack     = 0;
+    m_pageDirectory = 0;
 }
     
 Process::~Process()
@@ -38,12 +40,42 @@ Process::State Process::getState() const
     return m_state;
 }
 
+Address Process::getPageDirectory() const
+{
+    return m_pageDirectory;
+}
+
+Address Process::getUserStack() const
+{
+    return m_userStack;
+}
+
+Address Process::getKernelStack() const
+{
+    return m_kernelStack;
+}
+
 void Process::setState(Process::State st)
 {
     m_state = st;
 }
 
-List<UserMessage *> * Process::getMessages()
+void Process::setPageDirectory(Address addr)
+{
+    m_pageDirectory = addr;
+}
+
+void Process::setUserStack(Address addr)
+{
+    m_userStack = addr;
+}
+
+void Process::setKernelStack(Address addr)
+{
+    m_kernelStack = addr;
+}
+
+List<Message *> * Process::getMessages()
 {
     return &m_messages;
 }

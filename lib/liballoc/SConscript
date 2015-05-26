@@ -18,8 +18,13 @@
 Import('build_env')
 
 env = build_env.Clone()
-env.UseLibraries([ 'libstd' ])
+env.UseLibraries([ 'libstd', 'libarch' ])
+env.UseLibraries([ 'libstd', 'libarch' ], 'host')
 env.UseServers([ 'core' ])
-env.Append(CPPPATH = [ '.' ])
 
-env.TargetLibrary('liballoc', [ Glob('*.cpp') ])
+if env['ARCH'] == 'host':
+    src = [ 'BubbleAllocator.cpp', 'Allocator.cpp' ]
+else:
+    src = Glob('*.cpp')
+
+env.Library('liballoc', src)

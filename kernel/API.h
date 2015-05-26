@@ -19,8 +19,8 @@
 #define __KERNEL_API_H
 
 #include <Log.h>
-#include <System/Function.h>
 #include <Types.h>
+#include <Vector.h>
 
 /**
  * @defgroup kernel kernel (generic)
@@ -28,10 +28,12 @@
  */
 
 /**
- * Generic Kernel API definitions.
+ * Generic Kernel API implementation.
  */
-namespace API
+class API
 {
+  public:
+
     /**
      * Enumeration of supported generic kernel API functions.
      *
@@ -83,6 +85,26 @@ namespace API
         Write       = 6,
     }
     Operation;
+
+    /**
+     * Constructor
+     */
+    API();
+
+    /**
+     * Execute a generic API function.
+     */
+    ::Error invoke(Number number,
+                   ulong arg1,
+                   ulong arg2,
+                   ulong arg3,
+                   ulong arg4,
+                   ulong arg5);
+
+  private:
+
+    /** API handlers */
+    Vector<Handler *> m_apis;
 };
 
 /** Operator to print a Operation to a Log */

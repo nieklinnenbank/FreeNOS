@@ -33,49 +33,49 @@
  */
 class ELF : public ExecutableFormat
 {
-    public:
+  public:
 
-	/**
-	 * Class constructor.
-	 * @param path Path on filesystem to the ELF executable.
-	 * @param fd File descriptor of the ELF executable.
-	 * @param header ELF header read from the file.
-	 */
-	ELF(const char *path, int fd, ELFHeader *header);
+    /**
+     * Class constructor.
+     * @param path Path on filesystem to the ELF executable.
+     * @param fd File descriptor of the ELF executable.
+     * @param header ELF header read from the file.
+     */
+    ELF(const char *path, int fd, ELFHeader *header);
 
-	/**
-	 * Class destructor.
-	 */
-	~ELF();
+    /**
+     * Class destructor.
+     */
+    ~ELF();
     
-	/**
-	 * Reads out segments from the ELF program table.
-	 * @param regions Memory regions to fill.
-	 * @param max Maximum number of memory regions.
-	 * @return Number of memory regions or an error code on error.
-	 */
-	int regions(MemoryRegion *regions, Size max);
+    /**
+     * Reads out segments from the ELF program table.
+     * @param regions Memory regions to fill.
+     * @param max Maximum number of memory regions.
+     * @return Number of memory regions or an error code on error.
+     */
+    int regions(MemoryRegion *regions, Size max);
 
-	/**
-	 * Lookup the program entry point.
-	 * @return Program entry point.
-	 */
-	Address entry();
+    /**
+     * Lookup the program entry point.
+     * @return Program entry point.
+     */
+    Address entry();
 
-	/**
-	 * Confirms if we understand the given format.
-	 * @param path Path to the file to read.
-	 * @return true on success and false on failure.
-	 */
-	static ExecutableFormat * detect(const char *path);
+    /**
+     * Confirms if we understand the given format.
+     * @param path Path to the file to read.
+     * @return true on success and false on failure.
+     */
+    static ExecutableFormat * detect(const char *path);
 
-    private:
+  private:
 
-	/** File descriptor of the ELF executable. */
-	int fd;
-	
-	/** ELF header. */
-	ELFHeader header;
+    /** File descriptor of the ELF executable. */
+    int fd;
+    
+    /** ELF header. */
+    ELFHeader header;
 };
 
 /**

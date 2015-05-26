@@ -26,5 +26,6 @@ extern C void exit(int status)
     /* Request immediate termination. */
     msg.action = ExitProcess;
     msg.number = status;
-    msg.ipc(CORESRV_PID, API::SendReceive, sizeof(msg));
+    msg.type   = IPCType;
+    IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
 }    

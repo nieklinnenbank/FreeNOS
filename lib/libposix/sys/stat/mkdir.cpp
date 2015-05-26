@@ -31,6 +31,7 @@ int mkdir(const char *path, mode_t mode)
     msg.path   = (char *) path;
     msg.mode   = mode;
     msg.filetype = DirectoryFile;
+    msg.type   = IPCType;
     
     /* Ask the FileSystem to create it. */
     if (mnt)

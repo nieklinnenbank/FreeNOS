@@ -131,14 +131,3 @@ if not target['VERBOSE']:
 if not GetOption('clean'):
     CheckCCFlags(target)
     CheckCXXFlags(target)
-
-# Make a symbolic link to the system-specific headers.
-try:
-    os.unlink('kernel/System')
-except:
-    pass
-
-try:
-    os.symlink(target['ARCH'] + os.sep + target['SYSTEM'], 'kernel/System')
-except:
-    pass

@@ -16,31 +16,29 @@
  */
 
 #include <Log.h>
+#include <ListIterator.h>
 #include "Kernel.h"
 #include "Memory.h"
 #include "Process.h"
 #include "ProcessManager.h"
-#include <System/Constant.h>
+#include "ProcessScheduler.h"
+#include "API.h"
 
-Kernel::Kernel(Memory *memory, ProcessManager *procs)
-    : Singleton<Kernel>(this)
+Kernel::Kernel(Size memorySize, Address kernelAddress, Size kernelSize)
+    : Singleton<Kernel>(this), m_interrupts(256)
 {
-    NOTICE("");
+    // Output log banners
+    Log::instance->write(BANNER);
+    Log::instance->write(COPYRIGHT "\r\n");
 
     // Initialize members
-    m_memory = memory;
-    m_procs  = procs;
+    m_memory = new Memory(memorySize, kernelAddress, kernelSize);
+    m_procs  = new ProcessManager(new ProcessScheduler());
+    m_api    = new API();
     m_bootImageAddress = 0;
 
-    // Register generic API handlers
-    m_apis.fill(ZERO);
-    m_apis.insert(API::IPCMessageNumber, (API::Handler *) IPCMessageHandler);
-    m_apis.insert(API::PrivExecNumber,   (API::Handler *) PrivExecHandler);
-    m_apis.insert(API::ProcessCtlNumber, (API::Handler *) ProcessCtlHandler);
-    m_apis.insert(API::SystemInfoNumber, (API::Handler *) SystemInfoHandler);
-    m_apis.insert(API::VMCopyNumber,     (API::Handler *) VMCopyHandler);
-    m_apis.insert(API::VMCtlNumber,      (API::Handler *) VMCtlHandler);
-    m_apis.insert(API::IOCtlNumber,      (API::Handler *) IOCtlHandler);
+    // Clear interrupts table
+    m_interrupts.fill(ZERO);
 }
 
 Memory * Kernel::getMemory()
@@ -53,6 +51,11 @@ ProcessManager * Kernel::getProcessManager()
     return m_procs;
 }
 
+API * Kernel::getAPI()
+{
+    return m_api;
+}
+
 Address Kernel::getBootImageAddress()
 {
     return m_bootImageAddress;
@@ -61,6 +64,38 @@ Address Kernel::getBootImageAddress()
 Size Kernel::getBootImageSize()
 {
     return m_bootImageSize;
+}
+
+void Kernel::hookInterrupt(int vec, InterruptHandler h, ulong p)
+{
+    InterruptHook hook(h, p);
+
+    // Insert into interrupts; create List if neccesary
+    if (!m_interrupts[vec])
+    {
+        m_interrupts.insert(vec, new List<InterruptHook *>());
+    }
+    // Just append it. */
+    if (!m_interrupts[vec]->contains(&hook))
+    {
+        m_interrupts[vec]->append(new InterruptHook(h, p));
+    }
+}
+
+void Kernel::executeInterrupt(int vec, CPUState *state)
+{
+    /* Fetch the list of interrupt hooks (for this vector). */
+    List<InterruptHook *> *lst = m_interrupts[vec];
+
+    /* Does at least one handler exist? */
+    if (!lst)
+        return;
+
+    /* Execute them all. */
+    for (ListIterator<InterruptHook *> i(lst); i.hasCurrent(); i++)
+    {
+        i.current()->handler(state, i.current()->param);
+    }
 }
 
 void Kernel::run()
@@ -72,15 +107,4 @@ void Kernel::run()
 
     // Start the scheduler
     m_procs->schedule();
-}
-
-Error Kernel::invokeAPI(API::Number number,
-                        ulong arg1, ulong arg2, ulong arg3, ulong arg4, ulong arg5)
-{
-    API::Handler **handler = (API::Handler **) m_apis.get(number);
-
-    if (handler)
-        return (*handler)(arg1, arg2, arg3, arg4, arg5);
-    else
-        return API::InvalidArgument;
 }

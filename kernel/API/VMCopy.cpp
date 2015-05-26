@@ -15,44 +15,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#include "VMCopy.h"
-#include <FreeNOS/Config.h>
-#include <FreeNOS/Process.h>
-#include <FreeNOS/API.h>
-#include <FreeNOS/Kernel.h>
-#include <FreeNOS/System/Constant.h>
 #include <MemoryBlock.h>
-
-#warning Do not depend on Intel specific flags for generic APIs
+#include "VMCopy.h"
 
 Error VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
                     Address theirs, Size sz)
 {
     ProcessManager *procs = Kernel::instance->getProcessManager();
-    Memory *memory = Kernel::instance->getMemory();
     Process *proc;
-    Address paddr, tmpAddr;
+    Address paddr;
     Size bytes = 0, pageOff, total = 0;
-    
-#ifdef __i386__
 
-    /* Find the corresponding Process. */
+    // Find the corresponding Process
     if (!(proc = procs->get(procID)))
     {
         return API::NotFound;
     }
-    /* Verify memory addresses. */
-    if (!memory->access(procs->current(), ours, sz) ||
-        !memory->access(proc, theirs, sz))
-    {
-        return API::AccessViolation;
-    }
-    /* Keep on going until all memory is processed. */
+    // TODO: Verify memory addresses
+    BitArray *bits = Kernel::instance->getMemory()->getMemoryBitArray();
+    Arch::Memory local(0, bits);
+    Arch::Memory remote(proc->getPageDirectory(), bits);
+
+    // Keep on going until all memory is processed
     while (total < sz)
     {
         /* Update variables. */
-        paddr   = memory->lookup(proc, theirs) & PAGEMASK;
+        paddr   = remote.lookup(theirs);
         pageOff = theirs & ~PAGEMASK;
         bytes   = (PAGESIZE - pageOff) < (sz - total) ?
                   (PAGESIZE - pageOff) : (sz - total);
@@ -60,30 +48,33 @@ Error VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
         /* Valid address? */
         if (!paddr) break;
                 
-        /* Map the physical page. */
-        tmpAddr = memory->map(paddr);
+        // Map their address into our local address space
+        Address tmp = local.map(paddr, ZERO, Arch::Memory::Present  |
+                                             Arch::Memory::User     |
+                                             Arch::Memory::Readable |
+                                             Arch::Memory::Writable);
 
         /* Process the action appropriately. */
         switch (how)
         {
             case API::Read:
-                MemoryBlock::copy((void *)ours, (void *)(tmpAddr + pageOff), bytes);
+                MemoryBlock::copy((void *)ours, (void *)(tmp + pageOff), bytes);
                 break;
                         
             case API::Write:
-                MemoryBlock::copy((void *)(tmpAddr + pageOff), (void *)ours, bytes);
+                MemoryBlock::copy((void *)(tmp + pageOff), (void *)ours, bytes);
                 break;
             
             default:
                 ;
         }       
-        /* Remove mapping. */
-        memory->map((Address) 0, (Address) tmpAddr, Memory::None);
+        // Unmap
+        local.unmap(tmp);
+
+        // Update counters
         ours   += bytes;
         theirs += bytes;
         total  += bytes;
     }
-#endif
-    /* Success. */
     return total;
 }

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/IPCMessage.h>
+#include <FreeNOS/API.h>
 #include <FreeNOS/Process.h>
 #include <CoreMessage.h>
 #include <CoreServer.h>
@@ -65,6 +65,7 @@ void ProcFileSystem::refresh()
     msg.action = ReadProcess;
     msg.buffer = procs;
     msg.number = ZERO;
+    msg.type   = IPCType;
     IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
 
     // Insert processes pseudo files

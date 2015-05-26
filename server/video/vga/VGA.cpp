@@ -31,24 +31,25 @@ Error VGA::initialize()
 
     /* Request VGA memory. */
     mem.action    = CreatePrivate;
-    mem.bytes     = PAGESIZE;
-    mem.virtualAddress  = ZERO;
-    mem.physicalAddress = VGA_PADDR;
-    mem.access    = Memory::Present | Memory::User | Memory::Readable | Memory::Writable | Memory::Pinned;
-    mem.ipc(CORESRV_PID, API::SendReceive, sizeof(mem));
+    mem.size      = PAGESIZE;
+    mem.virt      = ZERO;
+    mem.phys      = VGA_PADDR;
+    mem.access    = VirtualMemory::Present |
+                    VirtualMemory::User |
+                    VirtualMemory::Readable |
+                    VirtualMemory::Writable |
+                    VirtualMemory::Pinned;
+    mem.type      = IPCType;
+    IPCMessage(CORESRV_PID, API::SendReceive, &mem, sizeof(mem));
 
     /* Point to the VGA mapping. */
-    vga = (u16 *) mem.virtualAddress;
+    vga = (u16 *) mem.virt;
 
     /* Clear screen. */
     for (uint i = 0; i < width * height; i++)
     {                                                  
         vga[i] = VGA_CHAR(' ', LIGHTGREY, BLACK);
     }
-
-    /* Request CRT I/O ports. */
-    ProcessCtl(SELF, AllowIO, VGA_IOADDR);
-    ProcessCtl(SELF, AllowIO, VGA_IODATA);
     
     /* Disable hardware cursor. */
     WriteByte(VGA_IOADDR, 0x0a);

@@ -22,18 +22,15 @@
 Error SystemInfoHandler(SystemInformation *info)
 {
     Memory *memory = Kernel::instance->getMemory();
-    ProcessManager *procs = Kernel::instance->getProcessManager();
 
-    // Verify memory access
-    if (!memory->access(procs->current(), (Address) info,
-                        sizeof(SystemInformation)))
-    {
-        return API::AccessViolation;
-    }
+    // TODO: Verify memory access
+
     // Fill in our current information
     info->version          = VERSIONCODE;
     info->memorySize       = memory->getTotalMemory();
     info->memoryAvail      = memory->getAvailableMemory();
+    info->memoryBitArray   = (Address) memory->getMemoryBitArray()->array();
+
     // TODO: this interface could be improved using libarch?
     info->bootImageAddress = Kernel::instance->getBootImageAddress();
     info->bootImageSize    = Kernel::instance->getBootImageSize();

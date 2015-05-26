@@ -15,9 +15,8 @@ stdio /dev/tty0 /dev/tty0
 #
 # System Servers and Drivers.
 #
-/server/filesystem/proc/server
 /server/time/server
-
+#/server/filesystem/proc/server
 #/server/ata/server
 #/server/filesystem/linn/server /dev/ata0 0x400000 /usr
 #/server/pci/server

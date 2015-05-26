@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System/Constant.h>
+#include <FreeNOS/System.h>
 #include <Macros.h>
 #include "Allocator.h"
 
@@ -34,7 +34,7 @@ Address Allocator::aligned(Address input)
     Address corrected = input;
 
     if (input % MEMALIGN)
-	corrected += MEMALIGN - (input % MEMALIGN);
+        corrected += MEMALIGN - (input % MEMALIGN);
     
     return corrected;
 }

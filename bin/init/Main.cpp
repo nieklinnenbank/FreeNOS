@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PrivExecLog.h>
+#include <KernelLog.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -26,7 +26,7 @@ int main(int argc, char **argv)
     const char *av[] = { "/bin/sh", "/etc/init.sh", ZERO };
 
     /* Open kernel logging facilities. */
-    Log *log = new PrivExecLog();
+    Log *log = new KernelLog();
 
     /*
      * TODO: give up all privileges.

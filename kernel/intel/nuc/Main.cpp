@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,48 +15,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Macros.h>
-#include <Log.h>
-#include <FreeNOS/ProcessScheduler.h>
+#include <FreeNOS/Config.h>
 #include <FreeNOS/Support.h>
 #include <intel/IntelKernel.h>
-#include <intel/IntelMemory.h>
-#include <intel/IntelFactory.h>
 #include <intel/IntelSerial.h>
-#include <intel/Multiboot.h>
+#include <intel/IntelBoot.h>
+#include <Macros.h>
+#include <Log.h>
 
 extern C void kernel_main()
 {
-    // Initialize heap
+    // Initialize physical memory.
     Memory::initialize(0x00300000);
 
     // Start kernel debug serial console
     IntelSerial *serial = new IntelSerial(0x3f8);
+    serial->setMinimumLogLevel(Log::Notice);
 
     // TODO: put this in the boot.S, or maybe hide it in the support library? maybe a _run_main() or something.
     constructors();
 
-    // TODO: this should be done from the support library too.
-    // Later, a user-process should monitor the kernel console buffer and write
-    // it to the selected console for the kernel.
-#define BANNER \
-    "FreeNOS " RELEASE " [" ARCH "/" SYSTEM "] (" BUILDUSER "@" BUILDHOST ") (" COMPILER_VERSION ") " DATETIME "\r\n"
-
-    serial->setMinimumLogLevel(Log::Notice);
-    serial->write(BANNER);
-    serial->write(COPYRIGHT "\r\n");
-    NOTICE("Initializing subsystems");
-
-    // Determine memory size
-    Size memorySize = ((multibootInfo.memLower + multibootInfo.memUpper) * 1024);
-
-    // Create subsystems
-    IntelFactory *factory   = new IntelFactory();
-    IntelMemory *memory     = new IntelMemory(memorySize);
-    ProcessScheduler *sched = new ProcessScheduler();
-    ProcessManager *proc    = new ProcessManager(factory, sched);
-    IntelKernel *kernel     = new IntelKernel(memory, proc);
-
-    // Begin execution
+    // Create and run the kernel
+    IntelKernel *kernel = new IntelKernel(
+        (multibootInfo.memLower + multibootInfo.memUpper) * 1024,
+         0, 1024 * 1024 * 4
+    );
     kernel->run();
 }

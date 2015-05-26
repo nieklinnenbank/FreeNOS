@@ -22,17 +22,11 @@
 
 int main(int argc, char **argv)
 {
-    CoreMessage mem;
-
-    /* Query memory usage stats. */
-    mem.action = SystemMemory;
-    mem.ipc(CORESRV_PID, API::SendReceive, sizeof(mem));
+    SystemInformation info;
     
-    /* Print it. */
     printf("Total:     %u KB\r\n"
            "Available: %u KB\r\n",
-            mem.bytes / 1024, mem.free / 1024);
+            info.memorySize / 1024, info.memoryAvail / 1024);
     
-    /* Done. */
     return EXIT_SUCCESS;
 }

@@ -53,119 +53,119 @@ template <class Base, class MsgType> class IPCServer
     /** Member function pointer inside Base, to handle IRQ messages. */
     typedef void (Base::*IRQHandlerFunction)(InterruptMessage *);
 
-    public:
+  public:
 
-        /**
-         * Constructor function.
-	 * @param num Number of message handlers to support.
-         */
-        IPCServer(Base *inst, Size num = 32)
-	    : sendReply(true), instance(inst)
+    /**
+     * Constructor function.
+     * @param num Number of message handlers to support.
+     */
+    IPCServer(Base *inst, Size num = 32)
+                : sendReply(true), instance(inst)
+    {
+        ipcHandlers = new Vector<MessageHandler<IPCHandlerFunction> *>(num);
+        ipcHandlers->fill(ZERO);
+        irqHandlers = new Vector<MessageHandler<IRQHandlerFunction> *>(num);
+        irqHandlers->fill(ZERO);
+    }
+
+    /**
+     * Destructor function.
+     */
+    ~IPCServer()
+    {
+        delete ipcHandlers;
+        delete irqHandlers;
+    }
+
+    /**
+     * Enters an infinite loop, serving incoming terminal requests.
+     * @return Never.
+     */
+    int run()
+    {
+        MsgType msg;
+        InterruptMessage *imsg = (InterruptMessage *) &msg;
+
+        /* Enter loop. */
+        while (true)
         {
-	    ipcHandlers = new Vector<MessageHandler<IPCHandlerFunction> *>(num);
-	    ipcHandlers->fill(ZERO);
-	    irqHandlers = new Vector<MessageHandler<IRQHandlerFunction> *>(num);
-	    irqHandlers->fill(ZERO);
-	}
+            /* Reset. */
+            sendReply = true;
+        
+            /* Now wait for a message. */
+            msg.type = IPCType;
+            IPCMessage(ANY, API::Receive, &msg, sizeof(MsgType));
 
-	/**
-	 * Destructor function.
-	 */
-	~IPCServer()
-	{
-	    delete ipcHandlers;
-	    delete irqHandlers;
-	}
+            /* Handle the message. */
+            switch (msg.type)
+            {           
+                case IPCType:
+                    if (ipcHandlers->at(msg.action))
+                    {
+                        sendReply =  ipcHandlers->at(msg.action)->sendReply;
+                        (instance->*(ipcHandlers->at(msg.action))->exec) (&msg);
+                    }
+                    break;
 
-        /**
-         * Enters an infinite loop, serving incoming terminal requests.
-         * @return Never.
-         */
-        int run()
-	{
-	    MsgType msg;
-	    InterruptMessage *imsg = (InterruptMessage *) &msg;
+                case FaultType:
+                    break;
 
-    	    /* Enter loop. */
-	    while (true)
-	    {
-		/* Reset. */
-		sendReply = true;
-	    
-		/* Now wait for a message. */
-		IPCMessage(ANY, API::Receive, &msg, sizeof(MsgType));
-
-		/* Handle the message. */
-		switch (msg.type)
-		{			
-		    case IPCType:
-			if (ipcHandlers->at(msg.action))
-			{
-			    sendReply =  ipcHandlers->at(msg.action)->sendReply;
-			    //(instance->*((*ipcHandlers)[msg.action])->exec) (&msg);
-			    (instance->*(ipcHandlers->at(msg.action))->exec) (&msg);
-			}
-			break;
-
-		    case FaultType:
-			break;
-
-		    case IRQType:
-			if (irqHandlers->at(imsg->vector))
-			{
-			    sendReply = false;
-			    (instance->*(irqHandlers->at(imsg->vector))->exec) (imsg);
-			}
-			
-		    default:
-			continue;
-		}
-		/* Send Reply. */
-		if (sendReply)
-		{
-		    IPCMessage(msg.from, API::Send, &msg, sizeof(MsgType));
-		}
-	    }
-    	    /* Satify compiler. */
-	    return 0;
-	}
+                case IRQType:
+                    if (irqHandlers->at(imsg->vector))
+                    {
+                        sendReply = false;
+                        (instance->*(irqHandlers->at(imsg->vector))->exec) (imsg);
+                    }
+            
+                default:
+                    continue;
+            }
+            /* Send Reply. */
+            if (sendReply)
+            {
+                IPCMessage(msg.from, API::Send, &msg, sizeof(MsgType));
+            }
+        }
+        /* Satify compiler. */
+        return 0;
+    }
     
-	/**
-	 * Register a new IPC message action handler.
-	 * @param slot Action value to trigger h.
-	 * @param h Handler to execute.
-	 * @param r Does the handler need to send a reply (per default) ?
-	 */
-	void addIPCHandler(Size slot, IPCHandlerFunction h, bool sendReply = true)
-	{
-	    ipcHandlers->insert(slot, new MessageHandler<IPCHandlerFunction>(h, sendReply));
-	}
-	
-	/**
-	 * Register a new IRQ message vector handler
-	 * @param slot Vector value to trigger h.
-	 * @param h Handler to execute.
-	 */
-	void addIRQHandler(Size slot, IRQHandlerFunction h)
-	{
-	    irqHandlers->insert(slot, new MessageHandler<IRQHandlerFunction>(h, false));
-	}
-
-    protected:
-
-	/** Should we send a reply message? */
-	bool sendReply;
-
-    private:
+    /**
+     * Register a new IPC message action handler.
+     * @param slot Action value to trigger h.
+     * @param h Handler to execute.
+     * @param r Does the handler need to send a reply (per default) ?
+     */
+    void addIPCHandler(Size slot, IPCHandlerFunction h, bool sendReply = true)
+    {
+        ipcHandlers->insert(slot, new MessageHandler<IPCHandlerFunction>(h, sendReply));
+    }
     
-	/** IPC handler functions. */
-	Vector<MessageHandler<IPCHandlerFunction> *> *ipcHandlers;
-	
-	/** IRQ handler functions. */
-	Vector<MessageHandler<IRQHandlerFunction> *> *irqHandlers;
-	
-	/** Server object instance. */
-	Base *instance;
+    /**
+     * Register a new IRQ message vector handler
+     * @param slot Vector value to trigger h.
+     * @param h Handler to execute.
+     */
+    void addIRQHandler(Size slot, IRQHandlerFunction h)
+    {
+        irqHandlers->insert(slot, new MessageHandler<IRQHandlerFunction>(h, false));
+    }
+
+  protected:
+
+    /** Should we send a reply message? */
+    bool sendReply;
+
+  private:
+    
+    /** IPC handler functions. */
+    Vector<MessageHandler<IPCHandlerFunction> *> *ipcHandlers;
+    
+    /** IRQ handler functions. */
+    Vector<MessageHandler<IRQHandlerFunction> *> *irqHandlers;
+    
+    /** Server object instance. */
+    Base *instance;
 };
 
 #endif /* __IPCSERVER_H */

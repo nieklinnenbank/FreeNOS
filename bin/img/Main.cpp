@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System/Constant.h>
+#include <FreeNOS/System.h>
 #include <FreeNOS/Config.h>
 #include <Vector.h>
 #include <ExecutableFormat.h>
@@ -72,10 +72,10 @@ Size readBootSymbols(char *prog, char *file,
         else
         {
             // Fill BootEntry
-            entry->symbol.type       = BootData;
-            entry->numRegions = 1;
+            entry->symbol.type = BootData;
+            entry->numRegions  = 1;
             entry->regions[0].virtualAddress = 0;
-            entry->regions[0].access = Memory::Present | Memory::User | Memory::Readable | Memory::Writable;
+            entry->regions[0].access = VirtualMemory::Present | VirtualMemory::User | VirtualMemory::Readable | VirtualMemory::Writable;
             entry->regions[0].size = 0;
             entry->regions[0].data = 0;
 

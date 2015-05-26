@@ -28,7 +28,9 @@ pid_t getppid()
     msg.action = ReadProcess;
     msg.buffer = &info;
     msg.number = getpid();
-    msg.ipc(CORESRV_PID, API::SendReceive, sizeof(msg));
+    msg.type   = IPCType;
+    msg.from   = SELF;
+    IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
 
     return info.parent;
 }

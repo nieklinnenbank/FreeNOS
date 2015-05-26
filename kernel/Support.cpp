@@ -20,7 +20,7 @@
 #include "Support.h"
 #include "Kernel.h"
 
-#warning FIX asserts plz
+// TODO: #warning FIX asserts plz
 
 extern C void constructors()
 {

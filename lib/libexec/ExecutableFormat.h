@@ -19,7 +19,7 @@
 #define __LIBEXEC_EXECUTABLEFORMAT_H
 #ifndef __ASSEMBLER__
 
-#include <FreeNOS/Memory.h>
+#include <FreeNOS/System.h>
 #include <Types.h>
 
 /**  
@@ -30,6 +30,9 @@
 /**
  * Abstracts a memory region read from a format.
  */
+
+// TODO: reuse this from libarch????
+
 typedef struct MemoryRegion
 {
     /**
@@ -44,8 +47,8 @@ typedef struct MemoryRegion
      */
     ~MemoryRegion()
     {
-	if (data)
-	    delete data;
+    if (data)
+        delete data;
     }
 
     /** Beginning of the region. */
@@ -55,7 +58,7 @@ typedef struct MemoryRegion
     Size size;
 
     /** Page protection flags. */
-    Memory::MemoryAccess access;
+    Arch::Memory::Access access;
     
     /** Memory contents. */
     u8 *data;
@@ -81,52 +84,52 @@ class ExecutableFormat
 {
     public:
 
-	/**
-	 * Class constructor.
-	 * @param path Filesystem path to the executable.
-	 */
-	ExecutableFormat(const char *path);
+    /**
+     * Class constructor.
+     * @param path Filesystem path to the executable.
+     */
+    ExecutableFormat(const char *path);
 
-	/**
-	 * Class destructor.
-	 */
-	virtual ~ExecutableFormat();
+    /**
+     * Class destructor.
+     */
+    virtual ~ExecutableFormat();
 
-	/**
-	 * Retrieve path to the executable.
-	 * @return Path on filesystem to the executable.
-	 */
-	const char * getPath()
-	{
-	    return path;
-	}
+    /**
+     * Retrieve path to the executable.
+     * @return Path on filesystem to the executable.
+     */
+    const char * getPath()
+    {
+        return path;
+    }
     
-	/**
-	 * Memory regions a program needs at runtime.
-	 * @param regions Memory regions to fill.
-	 * @param max Maximum number of memory regions.
-	 * @return Number of memory regions or an error code on error.
-	 */
-	virtual int regions(MemoryRegion *regions, Size max) = 0;
+    /**
+     * Memory regions a program needs at runtime.
+     * @param regions Memory regions to fill.
+     * @param max Maximum number of memory regions.
+     * @return Number of memory regions or an error code on error.
+     */
+    virtual int regions(MemoryRegion *regions, Size max) = 0;
 
-	/**
-	 * Lookup the program entry point.
-	 * @return Program entry point.
-	 */
-	virtual Address entry() = 0;
+    /**
+     * Lookup the program entry point.
+     * @return Program entry point.
+     */
+    virtual Address entry() = 0;
 
-	/**
-	 * Find a ExecFormat which can handle the given format.
-	 * @param path Path to the file to read.
-	 * @return A pointer to an ExecutableFormat on success
-	 *         and NULL if not found.
-	 */
-	static ExecutableFormat * find(const char *path);
+    /**
+     * Find a ExecFormat which can handle the given format.
+     * @param path Path to the file to read.
+     * @return A pointer to an ExecutableFormat on success
+     *         and NULL if not found.
+     */
+    static ExecutableFormat * find(const char *path);
 
-    private:
+  private:
     
-	/** Path to the executable. */
-	const char *path;
+    /** Path to the executable. */
+    const char *path;
 };
 
 /**

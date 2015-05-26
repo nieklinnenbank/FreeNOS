@@ -44,6 +44,8 @@ int main(int argc, char **argv)
     msg.action = ReadProcess;
     msg.buffer = procs;
     msg.number = ZERO;
+    msg.from   = SELF;
+    msg.type   = IPCType;
     IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
 
     // Check the result

@@ -18,7 +18,7 @@
 #ifndef __FILESYSTEM_DIRECTORY_H
 #define __FILESYSTEM_DIRECTORY_H
 
-#include <API/VMCopy.h>
+#include <FreeNOS/API.h>
 #include <List.h>
 #include "File.h"
 #include "FileSystemPath.h"

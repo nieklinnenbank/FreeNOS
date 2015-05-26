@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,13 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __BYTEORDER_H
-#define __BYTEORDER_H
+#ifndef __LIBARCH_CORE_H
+#define __LIBARCH_CORE_H
 
-#warning Move this to libarch. Byte ordering etc is specific to architectures. And FreeNOS/ should not be here.
-
-#include <FreeNOS/System/Constant.h>
 #include <Macros.h>
+#include <Types.h>
+
+extern C uint isKernel;
 
 #ifdef CPU_BIG_ENDIAN
 
@@ -119,4 +119,14 @@
  * @}
  */
 
-#endif /* BYTEORDER_H */
+/**
+ * Generic Core implementation.
+ */
+class Core
+{
+  public:
+
+    /* empty */
+};
+
+#endif /* __LIBARCH_CORE_H */

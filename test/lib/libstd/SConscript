@@ -18,8 +18,8 @@
 Import('build_env')
 
 env = build_env.Clone()
-env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libtest', 'libexec' ])
-env.UseLibraries([ 'libtest', 'libstd' ], 'host')
+env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libtest', 'libexec', 'libarch' ])
+env.UseLibraries([ 'libtest', 'libstd', 'libarch' ], 'host')
 env.UseServers(['memory'])
 
 # TODO: provide a macro for this? TestProgram() ? or Program override?

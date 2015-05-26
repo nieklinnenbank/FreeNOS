@@ -15,9 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PrivExecLog.h>
 #include <FreeNOS/API.h>
-#include <FreeNOS/System/Constant.h>
+#include <FreeNOS/System.h>
 #include <FreeNOS/Config.h>
 #include <Macros.h>
 #include <Types.h>

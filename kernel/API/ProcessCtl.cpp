@@ -15,100 +15,81 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Log.h>
 #include <FreeNOS/API.h>
 #include <FreeNOS/Kernel.h>
 #include <FreeNOS/Config.h>
-
-#ifdef __i386__
-#warning Do not depend on IntelProcess for ProcessCtl()
-#include <intel/IntelProcess.h>
-#endif
-
+#include <FreeNOS/Process.h>
+#include <Log.h>
 #include "ProcessCtl.h"
 
 void interruptNotify(CPUState *st, Process *p)
 {
-#ifdef __i386__
-    ProcessManager *procs = Kernel::instance->getProcessManager();
+    InterruptMessage *msg = new InterruptMessage;
+    msg->from   = KERNEL_PID;
+    msg->type   = IRQType;
+    msg->vector = IRQ_REG(st);
 
-    p->getMessages()->prepend(new UserMessage(new InterruptMessage(IRQ_REG(st)),
-						 sizeof(InterruptMessage)));
+    p->getMessages()->prepend(msg);
     p->setState(Process::Ready);
-#endif
 }
 
 Error ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
 {
-#ifdef __i386__
-    IntelProcess *proc = ZERO;
-    Memory *memory = Kernel::instance->getMemory();
+    Process *proc = ZERO;
     ProcessInfo *info = (ProcessInfo *) addr;
     ProcessManager *procs = Kernel::instance->getProcessManager();
 
     DEBUG("#" << procs->current()->getID() << " " << action << " -> " << procID << " (" << addr << ")");
 
-    /* Verify memory address. */
-    if (action == InfoPID)
-    {
-	if (!memory->access(procs->current(), addr, sizeof(ProcessInfo)))
-	{
-	    return API::AccessViolation;
-	}
-    }
-    /* Does the target process exist? */
+    // TODO: Verify memory address
+
+    // Does the target process exist?
     if(action != GetPID && action != Spawn)
     {
         if (procID == SELF)
-            proc = (IntelProcess *) procs->current();
-        else if (!(proc = (IntelProcess *)procs->get(procID)))
-	    return API::NotFound;
+            proc = procs->current();
+        else if (!(proc = procs->get(procID)))
+            return API::NotFound;
     }
-    /* Handle request. */
+    // Handle request
     switch (action)
     {
-	case Spawn:
-	    proc = (IntelProcess *) procs->create(addr);
-	    return proc->getID();
-	
-	case KillPID:
+    case Spawn:
+        proc = procs->create(addr);
+        return proc->getID();
+    
+    case KillPID:
             procs->remove(proc);
-	    break;
+        break;
 
-	case GetPID:
-	    return procs->current()->getID();
+    case GetPID:
+        return procs->current()->getID();
 
-	case Schedule:
-            procs->schedule();
-	    break;
+    case Schedule:
+        procs->schedule();
+        break;
 
-	case Resume:
-	    proc->setState(Process::Ready);
-	    break;
-	
-	case AllowIO:
-            return API::InvalidArgument;
-	    //proc->IOPort(addr, true);
-	    //break;
-	
-	case WatchIRQ:
-	    Kernel::instance->hookInterrupt(IRQ(addr),
-		(InterruptHandler *)interruptNotify, (ulong)proc);
-	    Kernel::instance->enableIRQ(addr, true);
-	    break;
-	
-	case InfoPID:
-	    info->id    = proc->getID();
-	    info->state = proc->getState();
-	    info->stack = proc->getStack();
-	    info->pageDirectory = proc->getPageDirectory();
-	    break;
-	    
-	case SetStack:
-	    proc->setStack(addr);
-	    break;
+    case Resume:
+        proc->setState(Process::Ready);
+        break;
+
+    case WatchIRQ:
+        Kernel::instance->hookInterrupt(IRQ(addr), (InterruptHandler *)interruptNotify, (ulong)proc);
+        Kernel::instance->enableIRQ(addr, true);
+        break;
+    
+    case InfoPID:
+        info->id    = proc->getID();
+        info->state = proc->getState();
+        info->userStack     = proc->getUserStack();
+        info->kernelStack   = proc->getKernelStack();
+        info->pageDirectory = proc->getPageDirectory();
+        break;
+        
+    case SetStack:
+        proc->setUserStack(addr);
+        break;
     }
-#endif
     return API::Success;
 }
 
@@ -121,7 +102,6 @@ Log & operator << (Log &log, ProcessOperation op)
         case GetPID:    log.write("GetPID"); break;
         case Schedule:  log.write("Schedule"); break;
         case Resume:    log.write("Resume"); break;
-        case AllowIO:   log.write("AllowIO"); break;
         case WatchIRQ:  log.write("WatchIRQ"); break;
         case InfoPID:   log.write("InfoPID"); break;
         case SetStack:  log.write("SetStack"); break;

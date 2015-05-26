@@ -27,7 +27,7 @@
 #ifdef __HOST__
 #include <sys/time.h>
 #else
-#include <FreeNOS/System/Function.h>
+#include <FreeNOS/System.h>
 #endif /* __HOST__ */
 
 /**

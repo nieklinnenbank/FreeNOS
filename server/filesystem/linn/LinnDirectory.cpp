@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PrivExecLog.h>
-#include <API/VMCopy.h>
+#include <FreeNOS/API.h>
 #include "LinnDirectory.h"
 #include "LinnFile.h"
 

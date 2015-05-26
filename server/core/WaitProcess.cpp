@@ -33,6 +33,7 @@ void CoreServer::waitProcessHandler(CoreMessage *msg)
     else
     {
 	msg->result = EINVAL;
+        msg->type   = IPCType;
 	IPCMessage(msg->from, API::Send, msg, sizeof(*msg));
     }
 }

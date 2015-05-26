@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,24 +20,19 @@
 
 void CoreServer::createPrivate(CoreMessage *msg)
 {
-    MemoryRange range;
+    VirtualMemory::Range range;
 
-    /* Try the given virtual addresses, if any. */
-    if (msg->virtualAddress >= (1024*1024*16))
-    {
-	msg->virtualAddress &= PAGEMASK;
-    }
-    /* Otherwise, search for a free range. */
-    else if (!(msg->virtualAddress = findFreeRange(msg->from, msg->bytes)))
-    {
-	msg->result = ENOMEM;
-	return;
-    }
-    /* Set mapping flags. */
+    // Set mapping flags
     // TODO: only allow pinned pages for uid == 0!
-    msg->access &= Memory::Pinned | Memory::Reserved | Memory::Readable | Memory::Writable;
-    msg->access |= Memory::Present | Memory::User;
-    
-    /* Try to map the range. */
-    msg->result = insertMapping(msg->from, msg);
+    range.virt   = msg->virt & PAGEMASK;
+    range.phys   = msg->phys;
+    range.size   = msg->size;    
+    range.access = msg->access;
+
+    // Try to map the range
+    VMCtl(msg->from, Map, &range);
+
+    msg->virt = range.virt;
+    msg->phys = range.phys;
+    msg->result = ESUCCESS;
 }

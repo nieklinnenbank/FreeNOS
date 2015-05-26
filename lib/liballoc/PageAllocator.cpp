@@ -15,9 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/IPCMessage.h>
-#include <API/ProcessCtl.h>
-#include <API/ProcessID.h>
+#include <FreeNOS/API.h>
 #include <CoreMessage.h>
 #include "PageAllocator.h"
 
@@ -26,14 +24,8 @@ PageAllocator::PageAllocator(Size size)
 {
     CoreMessage mem;
 
-    /* First reserve ~128MB virtual memory. */
-    mem.action = ReservePrivate;
-    mem.bytes  = 1024 * 1024 * 128;
-    mem.virtualAddress = 1024 * 1024 * 16;
-    mem.ipc(CORESRV_PID, API::SendReceive, sizeof(mem));
-
     /* Set heap pointer. */
-    start = mem.virtualAddress;
+    start = USER_HEAP;
 
     /* Allocate the given bytes. */
     allocate(&size);
@@ -49,23 +41,29 @@ Address PageAllocator::allocate(Size *size)
     CoreMessage msg;
     Address ret = start + allocated;
 
-#warning TODO: perhaps align to page size???
+    // TODO: #warning TODO: perhaps align to page size???
     Size bytes  = *size > PAGEALLOC_MINIMUM ?
-		  *size : PAGEALLOC_MINIMUM;
+                  *size : PAGEALLOC_MINIMUM;
 
-    /* Fill in the message. */
+    // Fill in the message. */
     msg.action = CreatePrivate;
-    msg.bytes  = bytes;
-    msg.access = Memory::Present | Memory::User | Memory::Readable | Memory::Writable | Memory::Reserved;
-    msg.virtualAddress  = (1024 * 1024 * 16) + allocated;
-    msg.physicalAddress = ZERO;
-    msg.ipc(CORESRV_PID, API::SendReceive, sizeof(msg));
+    msg.size   = bytes;
+    msg.access = VirtualMemory::Present  |
+                 VirtualMemory::User     |
+                 VirtualMemory::Readable |
+                 VirtualMemory::Writable |
+                 VirtualMemory::Reserved;
+    msg.virt   = USER_HEAP + allocated;
+    msg.phys   = ZERO;
+    msg.type   = IPCType;
+    msg.from   = SELF;
+    IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
 
-    /* Update count. */
-    allocated += msg.bytes;
+    // Update count
+    allocated += msg.size;
 
-    /* Success. */
-    *size = msg.bytes;
+    // Success
+    *size = msg.size;
     return ret;
 }
 

@@ -79,11 +79,24 @@ def escape(obj):
 def write_header(env, filename = None):
 
     if not filename:
-        try:
-            os.makedirs(env['BUILDROOT'] + '/include')
-            os.symlink('.', env['BUILDROOT'] + '/include/FreeNOS')
-        except:
-            pass
+        if env['ARCH'] != 'host':
+            path='config/'+env['ARCH']+'/'+env['SYSTEM']+'/System.h'
+
+            try:
+                os.makedirs(env['BUILDROOT'] + '/include')
+                os.symlink('.', env['BUILDROOT'] + '/include/FreeNOS')
+                shutil.copy(path, env['BUILDROOT'] + '/include/System.h')
+            except Exception as e:
+                pass
+
+            # TODO: violates the BUILDROOT
+            try:
+                os.makedirs('build/host/include')
+                os.symlink('.', 'build/host/include/FreeNOS')
+                shutil.copy(path, 'build/host/include/System.h')
+            except:
+                pass
+
         filename = env['BUILDROOT'] + '/include/Config.h'
 
     out = open(filename, "w")
@@ -97,6 +110,7 @@ def write_header(env, filename = None):
     out.write('#define COPYRIGHT "Copyright (C) ' + escape(datetime.datetime.today().year) + ' Niek Linnenbank\\r\\n" \\\n' + \
                                 '"This is free software; see the source for copying conditions.  There is NO\\r\\n" \\\n' + \
                                 '"warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE\\r\\n"\n')
+    out.write('#define BANNER "FreeNOS " RELEASE " [" ARCH "/" SYSTEM "] (" BUILDUSER "@" BUILDHOST ") (" COMPILER_VERSION ") " DATETIME "\\r\\n" \n');
 
     for item in env.items():
 	if type(item[1]) is str:

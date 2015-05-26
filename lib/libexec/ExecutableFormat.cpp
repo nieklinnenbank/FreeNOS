@@ -57,10 +57,10 @@ ExecutableFormat * ExecutableFormat::find(const char *path)
     /* Search for the corresponding executable format. */
     for (ListIterator<FormatDetector *> i(&formats); i.hasCurrent(); i++)
     {
-	if ((fmt = (i.current())(path)))
-	{
-	    return fmt;
-	}
+        if ((fmt = (i.current())(path)))
+        {
+            return fmt;
+        }
     }
     errno = ENOEXEC;
     return ZERO;

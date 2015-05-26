@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/Config.h>
-#include "IntelCPU.h"
+#include <FreeNOS/System.h>
 #include "IntelSerial.h"
 
 IntelSerial::IntelSerial(u16 base)

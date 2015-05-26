@@ -18,8 +18,7 @@
 #ifndef __FILESYSTEM_FILE_H
 #define __FILESYSTEM_FILE_H
 
-#include <API/VMCopy.h>
-#include <FreeNOS/Process.h>
+#include <FreeNOS/API.h>
 #include <Types.h>
 #include "FileSystemMessage.h"
 #include "FileType.h"

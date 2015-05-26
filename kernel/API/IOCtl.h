@@ -19,6 +19,7 @@
 #define __API_IOCTL_H
 
 #include <FreeNOS/API.h>
+#include <FreeNOS/System.h>
 
 /**  
  * @defgroup kernelapi kernel (API) 

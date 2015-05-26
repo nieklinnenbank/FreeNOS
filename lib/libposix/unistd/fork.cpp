@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,26 +24,5 @@
 
 pid_t fork(void)
 {
-    CoreMessage msg;
-    
-    /* Fill in the message. */
-    msg.action = CloneProcess;
-    
-    /* Ask the CoreServer */
-    IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
-    
-    // Child process
-    if (msg.result == ECHILD)
-    {
-        return 0;
-    }
-    // Error
-    else if (msg.result != ESUCCESS)
-    {
-        errno = msg.result;
-        return -1;
-    }
-    // Parent
-    else
-        return msg.number;
+    return -1;
 }

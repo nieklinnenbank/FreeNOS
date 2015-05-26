@@ -21,19 +21,26 @@
 #include <FreeNOS/Kernel.h>
 #include "IPCMessage.h"
 
-Error IPCMessageHandler(ProcessID id, API::Operation action, UserMessage *msg, Size size)
+Error IPCMessageHandler(ProcessID id, API::Operation action, Message *msg, Size size)
 {
     Process *proc;
     ProcessManager *procs = Kernel::instance->getProcessManager();
-    Memory *memory = Kernel::instance->getMemory();
-    
-    /* Verify memory read/write access. */
-    if (size > MAX_MESSAGE_SIZE || !memory->access(procs->current(),
-                                                  (Address) msg, sizeof(UserMessage)))
+
+    // Sanity check the incoming message.
+    if (!msg)
     {
-        return API::AccessViolation;
+        FATAL("Message == 0"); for(;;);
     }
-    /* Enforce correct fields. */
+    if (msg->type != IPCType)
+    {
+        FATAL("Message->type != IPCType"); for(;;);
+    }
+    if (size > MAX_MESSAGE_SIZE)
+    {
+        FATAL("size > MAX"); for(;;);
+    }
+
+    // Enforce correct fields
     msg->from = procs->current()->getID();
     msg->type = IPCType;
 
@@ -44,14 +51,20 @@ Error IPCMessageHandler(ProcessID id, API::Operation action, UserMessage *msg, S
     {
         case API::Send:
         case API::SendReceive:
-  
+        {
             /* Find the remote process to send to. */
             if (!(proc = procs->get(id)))
             {
                 return API::NotFound;
             }
-            /* Put our message on their list, and try to let them execute! */
-            proc->getMessages()->prepend(new UserMessage(msg, size));
+            // Copy the message
+            UserMessage *copy = new UserMessage;
+            copy->from = msg->from;
+            copy->type = msg->type;
+            MemoryBlock::copy(copy, msg, size);
+
+            // Put our message on their list, and try to let them execute!
+            proc->getMessages()->prepend(copy);
             proc->setState(Process::Ready);
 
             if (action == API::SendReceive && proc != procs->current())
@@ -61,24 +74,35 @@ Error IPCMessageHandler(ProcessID id, API::Operation action, UserMessage *msg, S
             }
             if (action == API::Send)
                 break;
+        }
             
         case API::Receive:
 
-            /* Block until we have a message. */
+            proc = procs->current();
+
+            // Block until we have a message
             while (true)
             {
                 /* Look for a message, with origin 'id'. */
-                for (ListIterator<UserMessage *> i(procs->current()->getMessages());
-                     i.hasCurrent(); i++)
+                for (ListIterator<Message *> i(proc->getMessages()); i.hasCurrent(); i++)
                 {
-                    if (i.current()->from == id || id == ANY)
+                    Message *m = i.current();
+
+                    if (!m)
                     {
-                        // TODO: danger, the size of the message is chosen here, instead of the
-                        //       size that was requested by the receiving process. Buffer overflow possible.
-                        MemoryBlock::copy(msg, i.current()->data, size < i.current()->size ?
-                                                       size : i.current()->size);
-                        delete i.current();
+                        FATAL("empty message from queue"); for(;;);
+                    }
+                    if (m->type > FaultType)
+                    {
+                        FATAL("invalid type from queue"); for(;;);
+                    }
+
+                    // TODO: #warning i.current() gets corrupted here!
+                    if (m->from == id || id == ANY)
+                    {
+                        MemoryBlock::copy(msg, m, size);
                         i.remove();
+                        delete m;
                         return API::Success;
                     }
                 }
@@ -88,6 +112,7 @@ Error IPCMessageHandler(ProcessID id, API::Operation action, UserMessage *msg, S
             }
 
         default:
+            FATAL("unknown action: " << (int) action); for(;;);
             return API::InvalidArgument;
     }
     /* Success. */

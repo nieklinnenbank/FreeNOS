@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,15 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/System.h>
 #include <Log.h>
 #include "ProcessManager.h"
-#include <System/Function.h>
 
-ProcessManager::ProcessManager(ProcessFactory *factory,
-                               ProcessScheduler *scheduler)
+ProcessManager::ProcessManager(ProcessScheduler *scheduler)
     : m_procs(MAX_PROCS)
 {
-    m_factory   = factory;
     m_scheduler = scheduler;
     m_current   = ZERO;
     m_previous  = ZERO;
@@ -36,10 +34,8 @@ ProcessManager::~ProcessManager()
 
 Process * ProcessManager::create(Address entry)
 {
-    Process *proc = m_factory->createProcess(m_procs.count(), entry);
-    ProcessID id  = m_procs.insert(proc);
-    assert(id == proc()->getID());
-
+    Process *proc = new Arch::Process(m_procs.count(), entry);
+    m_procs.insert(proc);
     return proc;
 }
 
@@ -95,7 +91,7 @@ void ProcessManager::schedule(Process *proc)
             m_previous->setState(Process::Ready);
 
         proc->setState(Process::Running);
-        proc->execute();
+        proc->execute(m_previous);
     }
 }
 

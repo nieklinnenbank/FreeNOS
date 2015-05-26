@@ -33,20 +33,20 @@ class Allocator
 {
     public:
 
-	/**
-	 * Class constructor.
-	 */
-	Allocator();
+    /**
+     * Class constructor.
+     */
+    Allocator();
 
-	/**
-	 * Class destructor.
-	 */
-	virtual ~Allocator();
+    /**
+     * Class destructor.
+     */
+    virtual ~Allocator();
 
         /**
          * Allocate a block of memory.
          * @param size Amount of memory in bytes to allocate on input.
-	 *             On output, the amount of memory in bytes actually allocated.
+         *             On output, the amount of memory in bytes actually allocated.
          * @return Pointer to the new memory block on success
          *         and ZERO on failure.
          */
@@ -59,63 +59,63 @@ class Allocator
          */
         virtual void release(Address addr) = 0;
 
-	/**
-	 * Use the given memory address and size for the allocator.
-	 * Allocators are free to use multiple memory regions for allocation.
-	 * @param address Memory address to use.
-	 * @param size Size of the memory address.
-	 */
-	virtual void region(Address addr, Size size)
-	{
-	}
+    /**
+     * Use the given memory address and size for the allocator.
+     * Allocators are free to use multiple memory regions for allocation.
+     * @param address Memory address to use.
+     * @param size Size of the memory address.
+     */
+    virtual void region(Address addr, Size size)
+    {
+    }
 
-	/**
-	 * Sets a new parent Allocator.
-	 * @param p New parent allocator.
-	 */
-	void setParent(Allocator *p)
-	{
-	    parent = p;
-	}
+    /**
+     * Sets a new parent Allocator.
+     * @param p New parent allocator.
+     */
+    void setParent(Allocator *p)
+    {
+        parent = p;
+    }
 
-	/**
-	 * Makes the given Allocator the default.
-	 * @param alloc Instance of an Allocator.
-	 */	
-	static void setDefault(Allocator *alloc)
-	{
-	    _default = alloc;
-	}
+    /**
+     * Makes the given Allocator the default.
+     * @param alloc Instance of an Allocator.
+     */ 
+    static void setDefault(Allocator *alloc)
+    {
+        _default = alloc;
+    }
 
-	/**
-	 * Retrieve the currently default Allocator.
-	 * @return Allocator pointer.
-	 */
-	static Allocator *getDefault()
-	{
-	    return _default;
-	}
+    /**
+     * Retrieve the currently default Allocator.
+     * @return Allocator pointer.
+     */
+    static Allocator *getDefault()
+    {
+        return _default;
+    }
 
     protected:
 
-	/**
-	 * Calculate correctly aligned memory address.
-	 *
-	 * Any alignment corrections on the input address will result
-	 * in an address which is higher than the input address.
-	 * 
-	 * @param input Input address which need to be aligned.
-	 * @return Aligned input address.
-	 */
-	Address aligned(Address input);
+    /**
+     * Calculate correctly aligned memory address.
+     *
+     * Any alignment corrections on the input address will result
+     * in an address which is higher than the input address.
+     * 
+     * @param input Input address which need to be aligned.
+     * @return Aligned input address.
+     */
+    Address aligned(Address input);
 
-	/** Our parent Allocator, if any. */
-	Allocator *parent;
-	
+    /** Our parent Allocator, if any. */
+    Allocator *parent;
+    
     private:
 
-	/** Points to the default Allocator. */
-	static Allocator *_default;	
+    /** Points to the default Allocator. */
+    static Allocator *_default; 
 };
 
 #ifndef __HOST__

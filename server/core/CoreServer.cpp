@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/API.h>
+#include <FreeNOS/System.h>
 #include <BootImage.h>
 #include <Runtime.h>
 #include "CoreServer.h"
@@ -26,21 +28,18 @@ CoreServer::CoreServer()
     : IPCServer<CoreServer, CoreMessage>(this)
 {
     SystemInformation info;
-    MemoryRange range;
+    VirtualMemory::Range range;
     BootImage *image;
     BootSymbol *symbol;
 
     /* Register message handlers. */
     addIPCHandler(CreatePrivate,  &CoreServer::createPrivate);
-    addIPCHandler(ReservePrivate, &CoreServer::reservePrivate);
     addIPCHandler(ReleasePrivate, &CoreServer::releasePrivate);
-    addIPCHandler(SystemMemory,   &CoreServer::systemMemory);
     addIPCHandler(ReadProcess,    &CoreServer::readProcessHandler);
     addIPCHandler(GetMounts,      &CoreServer::getMountsHandler);
     addIPCHandler(SetMount,       &CoreServer::setMountHandler);
     addIPCHandler(ExitProcess,    &CoreServer::exitProcessHandler,  false);
     addIPCHandler(SpawnProcess,   &CoreServer::spawnProcessHandler);
-    addIPCHandler(CloneProcess,   &CoreServer::cloneProcessHandler, false);
     addIPCHandler(WaitProcess,    &CoreServer::waitProcessHandler,  false);
 
     /* Allocate a user process table. */
@@ -63,13 +62,13 @@ CoreServer::CoreServer()
     mounts[2].options = ZERO;
 
     // Attempt to load the boot image
-    range.virtualAddress  = findFreeRange(SELF, info.bootImageSize);
-    range.physicalAddress = info.bootImageAddress;
-    range.access          = Memory::Present | Memory::User | Memory::Readable;
-    range.bytes           = info.bootImageSize;
+    range.virt    = ZERO;
+    range.phys    = info.bootImageAddress;
+    range.access  = Arch::Memory::Present | Arch::Memory::User | Arch::Memory::Readable;
+    range.size    = info.bootImageSize;
     VMCtl(SELF, Map, &range);
     
-    image = (BootImage *) range.virtualAddress;
+    image = (BootImage *) range.virt;
 
     /* Loop all embedded programs. */
     for (Size j = 0; j < image->symbolTableCount; j++)
@@ -89,80 +88,4 @@ CoreServer::CoreServer()
         procs[j].userID  = 0;
         procs[j].groupID = 0;
     }
-}
-
-Address CoreServer::findFreeRange(ProcessID procID, Size size)
-{
-    Address *pageDir, *pageTab, vaddr, vbegin;
-
-    /* Initialize variables. */
-    vbegin  = ZERO;
-    vaddr   = 1024 * 1024 * 16;
-    pageDir = PAGETABADDR_FROM(PAGETABFROM, PAGEUSERFROM);
-    pageTab = PAGETABADDR_FROM(vaddr, PAGEUSERFROM);
-
-    /* Map page tables. */
-    VMCtl(procID, MapTables);
-
-    /* Scan tables. */
-    for (Size inc = PAGESIZE; DIRENTRY(vaddr) < PAGEDIR_MAX ; vaddr += inc)
-    {
-	/* Is the hole big enough? */
-	if (vbegin && vaddr - vbegin >= size)
-	{
-	    break;
-	}
-	/* Increment per page table. */
-	inc = PAGETAB_MAX * PAGESIZE;
-	
-	/* Try the current address. */
-	if (pageDir[DIRENTRY(vaddr)] & PAGE_RESERVED)
-	{
-	    vbegin = ZERO; continue;
-	}
-	else if (pageDir[DIRENTRY(vaddr)] & PAGE_PRESENT)
-	{
-	    /* Look further into the page table. */
-	    inc     = PAGESIZE;
-	    pageTab = PAGETABADDR_FROM(vaddr, PAGEUSERFROM);
-	
-	    if (pageTab[TABENTRY(vaddr)] & PAGE_PRESENT)
-	    {
-		vbegin = ZERO; continue;
-	    }
-	}
-	/* Reset start address if needed. */
-	if (!vbegin)
-	{
-	    vbegin = vaddr;
-	}
-    }
-    /* Clean up. */
-    VMCtl(procID, UnMapTables);
-    
-    /* Done. */
-    return vbegin;
-}
-
-Error CoreServer::insertMapping(ProcessID procID, MemoryRange *range)
-{
-    MemoryRange tmp;
-    Error result;
-    
-    tmp.virtualAddress = range->virtualAddress;
-    tmp.access         = Memory::Present;
-    tmp.bytes          = range->bytes;
-
-    /* The given range must be free. */
-    if (VMCtl(procID, Access, &tmp))
-    {
-	return EFAULT;
-    }
-    /* Perform mapping. */
-    if ((result = VMCtl(procID, Map, range)) != 0)
-    {
-        return result;
-    }
-    /* Done! */
-    return ESUCCESS;
 }

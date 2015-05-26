@@ -69,6 +69,9 @@ typedef struct SystemInformation
     /** Total and available memory in bytes. */
     Size memorySize, memoryAvail;
 
+    /** Memory allocation array address */
+    Address memoryBitArray;
+
     /** BootImage physical address */
     Address bootImageAddress;
 

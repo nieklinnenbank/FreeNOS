@@ -31,6 +31,7 @@ int stat(const char *path, struct stat *buf)
     msg.action = StatFile;
     msg.path   = (char *) path;
     msg.stat   = &st;
+    msg.type   = IPCType;
     
     /* Ask the FileSystem for the information. */
     if (mnt)

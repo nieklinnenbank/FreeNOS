@@ -15,9 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBSTD_SUPPORT_H
-#define __LIBSTD_SUPPORT_H
-#ifndef __ASSEMBLER__
+#ifndef __LIBARCH_SUPPORT_H
+#define __LIBARCH_SUPPORT_H
 
 #include <Types.h>
 #include <Macros.h>
@@ -44,5 +43,4 @@ extern C idiv_return __aeabi_idivmod(int numerator, int denominator);
 
 extern C uidiv_return __aeabi_uidivmod(uint numerator, uint denominator);
 
-#endif /* __ASSEMBLER__ */
-#endif /* __LIBSTD_SUPPORT_H */
+#endif /* __LIBARCH_SUPPORT_H */

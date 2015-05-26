@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,24 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/Kernel.h>
-#include <FreeNOS/Config.h>
 #include "VMCtl.h"
 #include "ProcessID.h"
 
-#warning Do not depend on Intel specific functions in a generic API
-
-Error VMCtlHandler(ProcessID procID, MemoryOperation op, MemoryRange *range)
+Error VMCtlHandler(ProcessID procID, MemoryOperation op, VirtualMemory::Range *range)
 {
-#ifdef __i386__
     ProcessManager *procs = Kernel::instance->getProcessManager();
-    IntelMemory *memory = (IntelMemory *) Kernel::instance->getMemory();
     Process *proc = ZERO;
-    Address  page     = ZERO;
-    Address *remotePG = (Address *) PAGETABADDR_FROM(PAGETABFROM,
-                                                     PAGEUSERFROM);
+    Error ret = API::Success;
     
-    /* Find the given process. */
+    // Find the given process
     if (procID == SELF)
         proc = procs->current();
     else if (!(proc = procs->get(procID)))
@@ -40,106 +32,61 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, MemoryRange *range)
         return API::NotFound;
     }
 
-    /* Validate the given MemoryRange pointer, if needed. */
-    if (op != MapTables && op != UnMapTables &&
-        !memory->access(procs->current(),
-                       (Address) range, sizeof(MemoryRange)))
+    Address *localDirectory = ((Address *) PAGEDIR_LOCAL) + (PAGEDIR_LOCAL >> PAGESHIFT);
+    switch (op)
     {
-        return API::AccessViolation;
+        case MapTables:
+            // Insert the page directory into the selected virtual address
+            // TODO: ofcourse, this needs proper access checking.
+            // TODO: why not use a Arch::Memory instead???
+
+            // Modify the local page directory to insert the mapping
+            localDirectory[ DIRENTRY(range->virt) ] =
+                range->phys | PAGE_WRITE | PAGE_PRESENT | PAGE_RESERVE | PAGE_USER;
+            tlb_flush_all();
+            return API::Success;
+            
+        case UnMapTables:
+            localDirectory[ DIRENTRY( range->virt ) ] = 0;
+            tlb_flush_all();
+            return API::Success;
+
+        default:
+            break;
     }
-    /* Perform operation. */
+
+    Arch::Memory mem(proc->getPageDirectory(),
+                     Kernel::instance->getMemory()->getMemoryBitArray());
+
+    // Perform operation
     switch (op)
     {
         case LookupVirtual:
-            range->physicalAddress = memory->lookup(proc, range->virtualAddress);
+            range->phys = mem.lookup(range->virt);
             break;
 
         case LookupPhysical:
-            return API::InvalidArgument;
-            //return memory->isMarked(range->physicalAddress);
+            ret = API::InvalidArgument;
+            break;
 
         case Map:
+            mem.mapRange(range);
+            break;
 
-            /* Map the memory page. */
-            if (range->access & Memory::Present)
-            {
-                /* Acquire physical page(s) first. */
-                if (!range->physicalAddress)
-                {
-                    range->physicalAddress = memory->allocatePhysical(range->bytes);
-                }
-                /* Insert virtual page(s). */
-                for (Size i = 0; i < range->bytes; i += PAGESIZE)
-                {
-                    memory->map(proc,
-                                range->physicalAddress + i,
-                                range->virtualAddress  + i,
-                                range->access);
-                }
-            }
-            /* Release memory page(s). */
-            else
-            {
-                for (Size i = 0; i < range->bytes; i += PAGESIZE)
-                {
-                    /* Don't release pinned pages. */
-                    if (memory->access(proc, range->virtualAddress + i,
-                                       Memory::Pinned))
-                        continue;
-                
-                    if ((page = memory->lookup(proc,
-                                               range->virtualAddress + i)))
-                    {
-                        memory->releasePhysical(page & PAGEMASK);
-                    }
-                }
-            }
+        case UnMap:
+            mem.releaseRange(range);
             break;
 
         case Access:
-            // TODO: return a API::Success instead of casting
-            return (API::Error) memory->access(proc, range->virtualAddress,
-                                               range->bytes, range->access);
-            
-        case MapTables:
-
-            /* Map remote page tables. */
-            memory->mapRemote((IntelProcess *)proc, 0,
-                             (Address) PAGETABADDR_FROM(PAGETABFROM, PAGEUSERFROM),
-                              Memory::Present | Memory::User | Memory::Writable); // PAGE_USER);
-            
-            /* Temporarily allow userlevel access to the page tables. */
-            for (Size i = 0; i < PAGEDIR_MAX; i++)
-            {
-                if (!(remotePG[i] & PAGE_USER))
-                {
-                    remotePG[i] |= PAGE_MARKED;
-                }
-                remotePG[i] |= PAGE_USER;
-            }
-            /* Flush caches. */
-            tlb_flush_all();
-            break;
-            
-        case UnMapTables:
-
-            /* Remove userlevel access where needed. */
-            for (Size i = 0; i < PAGEDIR_MAX; i++)
-            {
-                if (remotePG[i] & PAGE_MARKED)
-                {
-                    remotePG[i] &= ~PAGE_USER;
-                }
-            }
-            /* Flush caches. */
-            tlb_flush_all();
+            ret = (API::Error) mem.access(range->virt,
+                                          range->size,
+                                          range->access);
             break;
             
         default:
-            return API::InvalidArgument;
-        
+            ret = API::InvalidArgument;
+            break;
     }
-#endif
-    /* Success. */
-    return API::Success;
+    // Done
+    return ret;
 }

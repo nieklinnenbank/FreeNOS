@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,14 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PrivExecLog.h>
+#include <KernelLog.h>
 #include "CoreServer.h"
 
 int main(int argc, char **argv)
 {
-    PrivExecLog log;
+    KernelLog log;
 
-    log.setMinimumLogLevel(Log::Debug);
+    log.setMinimumLogLevel(Log::Notice);
     NOTICE("initializing core#0");
 
     CoreServer server;

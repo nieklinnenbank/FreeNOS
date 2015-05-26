@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,24 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __INTEL_FACTORY_H
-#define __INTEL_FACTORY_H
+#ifndef __INTEL_NUC_SYSTEM_H
+#define __INTEL_NUC_SYSTEM_H
 
-#include "ProcessFactory.h"
+#include <intel/IntelConstant.h>
+#include <intel/IntelCore.h>
+#include <intel/IntelState.h>
+#include <intel/IntelMemory.h>
 
-/**
- * Implements an x86 compatible kernel.
- */
-class IntelFactory : public ProcessFactory
-{
-  public:
+#include <intel/IntelKernel.h>
+#include <intel/IntelProcess.h>
+#include <intel/IntelSerial.h>
 
-    /**
-     * Create a new process.
-     * @param entry Entry point of the program.
-     * @return X86Process on success or ZERO on failure.
-     */
-    Process * createProcess(ProcessID id, Address entry);
-};
-
-#endif /* __INTEL_FACTORY_H */
+#endif /* __INTEL_NUC_SYSTEM_H */

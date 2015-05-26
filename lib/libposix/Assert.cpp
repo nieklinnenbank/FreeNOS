@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System/Constant.h>
+#include <FreeNOS/System.h>
 #include <FreeNOS/API.h>
 #include <Assert.h>
 #include <Macros.h>
@@ -39,24 +39,24 @@ void __assertFailure(const char *fmt, ...)
 
 int __assertRead(Address addr)
 {
-    MemoryRange range;
+    VirtualMemory::Range range;
 
-    range.virtualAddress  = addr;
-    range.physicalAddress = ZERO;
-    range.bytes           = sizeof(Address);
-    range.access          = Memory::Present | Memory::User | Memory::Readable;
+    range.virt   = addr;
+    range.phys   = ZERO;
+    range.size   = sizeof(Address);
+    range.access = VirtualMemory::Present | VirtualMemory::User | VirtualMemory::Readable;
 
     return VMCtl(SELF, Access, &range);
 }
 
 int __assertWrite(Address addr)
 {
-    MemoryRange range;
+    VirtualMemory::Range range;
 
-    range.virtualAddress  = addr;
-    range.physicalAddress = ZERO;
-    range.bytes           = sizeof(Address);
-    range.access          = Memory::Present | Memory::User | Memory::Readable;
+    range.virt   = addr;
+    range.phys   = ZERO;
+    range.size   = sizeof(Address);
+    range.access = VirtualMemory::Present | VirtualMemory::User | VirtualMemory::Readable;
 
     return VMCtl(SELF, Access, &range);
 }

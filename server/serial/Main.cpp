@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PrivExecLog.h>
+#include <KernelLog.h>
 #include <DeviceServer.h>
 #include "i8250.h"
 #include <stdlib.h>
@@ -42,7 +42,7 @@ int main(int argc, char **argv)
     u8 lcr1, lcr2;
 
     /* Open the logging facilities. */
-    Log *log = new PrivExecLog();
+    Log *log = new KernelLog();
 
     /* Assume first UART is available */
     dev = new i8250(uarts[0].port, uarts[0].irq);
@@ -87,5 +87,5 @@ int main(int argc, char **argv)
     /*
      * Start serving requests.
      */
-    return server.run();
+    return server.run(argc, argv);
 }

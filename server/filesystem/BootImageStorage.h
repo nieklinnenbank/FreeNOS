@@ -25,8 +25,6 @@
 #include "Storage.h"
 #include <string.h>
 
-#define BOOTIMAGE_VADDR         0x4000000
-
 /**
  * Uses a BootImage symbol entry as filesystem storage provider (aka RamFS).
  */
@@ -60,11 +58,15 @@ class BootImageStorage : public Storage
         u8 *base;
         
         // TODO: filesystems should not be allowed to do this. Replace with an asynchronous call to coreserver.
-        MemoryRange range;
-        // TODO: ofcourse, the virtual address should never be fixed. Fix this.
-        range.virtualAddress  = BOOTIMAGE_VADDR;
-        range.physicalAddress = info.bootImageAddress;
-        range.bytes           = info.bootImageSize;
+        VirtualMemory::Range range;
+        range.virt  = 0;
+        range.phys  = info.bootImageAddress;
+        range.size  = info.bootImageSize;
+        range.access = VirtualMemory::Present |
+                       VirtualMemory::User |
+                       VirtualMemory::Readable |
+                       VirtualMemory::Writable |
+                       VirtualMemory::Pinned;
 
         if ((result = VMCtl(SELF, Map, &range)) != API::Success)
         {
@@ -73,7 +75,7 @@ class BootImageStorage : public Storage
         }
 
         // Update our state
-        image = (BootImage *) range.virtualAddress;
+        image = (BootImage *) range.virt;
         base  = (u8 *) image;
 
         // Search for the given BootSymbol

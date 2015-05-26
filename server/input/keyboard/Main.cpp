@@ -35,5 +35,5 @@ int main(int argc, char **argv)
     /*
      * Start processing requests.
      */
-    return server.run();
+    return server.run(argc, argv);
 }

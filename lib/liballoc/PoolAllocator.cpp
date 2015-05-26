@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <System/Constant.h>
+#include <FreeNOS/System.h>
 #include "PoolAllocator.h"
 #include <MemoryBlock.h>
 

@@ -18,15 +18,56 @@
 #ifndef __KERNEL_H
 #define __KERNEL_H
 
-#include <System/Function.h>
 #include <Macros.h>
 #include <Types.h>
 #include <Singleton.h>
 #include "Process.h"
 #include "Memory.h"
-#include "ProcessFactory.h"
 #include "ProcessManager.h"
-#include "API.h"
+
+/** Forward declaration. */
+class API;
+class CPUState;
+
+/**
+ * Function which is called when the CPU is interrupted. 
+ *
+ * @param state State of the CPU on the moment the interrupt occurred. 
+ * @param param Optional parameter for the handler. 
+ */
+typedef void InterruptHandler(struct CPUState *state, ulong param);
+    
+/**
+ * Interrupt hook class.
+ */
+typedef struct InterruptHook
+{
+    /**
+     * Constructor function.
+     * @param h Handler function for the hook.
+     * @param p Parameter to pass.
+     */
+    InterruptHook(InterruptHandler *h, ulong p) : handler(h), param(p)
+    {
+    }
+
+    /**
+     * Comparision operator.
+     * @param i InterruptHook pointer.
+     * @return True if equal, false otherwise.
+     */
+    bool operator == (InterruptHook *i)
+    {
+        return handler == i->handler && param == i->param;
+    }
+
+    /** Executed at time of interrupt. */
+    InterruptHandler *handler;
+
+    /** Passed to the handler. */
+    ulong param;
+}
+InterruptHook;
 
 /** 
  * @defgroup kernel kernel (generic)
@@ -34,7 +75,7 @@
  */
 
 /**
- * Represents the kernel core.
+ * FreeNOS kernel implementation.
  */
 class Kernel : public Singleton<Kernel>
 {
@@ -43,9 +84,11 @@ class Kernel : public Singleton<Kernel>
     /**
      * Constructor function.
      *
-     * @param memory Pointer to a Memory implementation
+     * @param memorySize Size of available physical memory in bytes.
      */
-    Kernel(Memory *memory, ProcessManager *proc);
+    Kernel(Size memorySize,
+           Address kernelAddress,
+           Size kernelSize);
 
     /**
      * Get memory.
@@ -54,8 +97,17 @@ class Kernel : public Singleton<Kernel>
 
     /**
      * Get process manager.
+     *
+     * @return Kernel ProcessManager object pointer.
      */
     ProcessManager * getProcessManager();
+
+    /**
+     * Get API.
+     *
+     * @return Kernel API object pointer.
+     */
+    API * getAPI();
 
     /**
      * BootImage physical address.
@@ -73,18 +125,21 @@ class Kernel : public Singleton<Kernel>
     void run();
 
     /**
-     * Execute a generic API function.
-     */
-    virtual Error invokeAPI(API::Number number,
-                            ulong arg1, ulong arg2, ulong arg3, ulong arg4, ulong arg5);
-
-    /**
      * Hooks a function to an hardware interrupt.
+     *
      * @param vec Interrupt vector to hook on.
      * @param h Handler function.
      * @param p Parameter to pass to the handler function.
      */
-    virtual void hookInterrupt(int vec, InterruptHandler h, ulong p) = 0;
+    virtual void hookInterrupt(int vec, InterruptHandler h, ulong p);
+
+    /**
+     * Execute an interrupt handler.
+     *
+     * @param vec Interrupt Vector.
+     * @param state CPU state.
+     */
+    virtual void executeInterrupt(int vec, CPUState *state);
 
     /** 
      * Enable or disable an hardware interrupt (IRQ). 
@@ -106,21 +161,18 @@ class Kernel : public Singleton<Kernel>
     /** Process Manager */
     ProcessManager *m_procs;
 
+    /** API handlers object */
+    API *m_api;
+
     /** Physical address of the BootImage */
     Address m_bootImageAddress;
 
     /** Size of the boot image in bytes */
     Size m_bootImageSize;
 
-    /** API handlers */
-    Vector<API::Handler *> m_apis;
+    /** Interrupt handlers. */
+    Vector<List<InterruptHook *> *> m_interrupts;
 };
-
-/** Start of kernel text and data. */
-extern Address kernelStart;
-
-/** End of kernel. */
-extern Address kernelEnd;
 
 /**
  * @}

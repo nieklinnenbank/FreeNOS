@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <Log.h>
 #include <Types.h>
 #include "BubbleAllocator.h"
 
@@ -32,13 +33,14 @@ Address BubbleAllocator::allocate(Size *sz)
 {
     Size needed = aligned(*sz);
 
-    /* Do we still have enough room? */
+    // Do we still have enough room?
     if (current + needed < start + size)
     {
-	current += needed;
-	return (Address) (current - needed);
+        current += needed;
+        return (Address) (current - needed);
     }
-    /* No more memory available. */
+    // No more memory available
+    FATAL("out of memory");
     return (Address) 0;
 }
 

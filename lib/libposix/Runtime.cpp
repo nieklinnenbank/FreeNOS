@@ -16,7 +16,7 @@
  */
 
 #include <FreeNOS/API.h>
-#include <FreeNOS/System/Constant.h>
+#include <FreeNOS/System.h>
 #include <Types.h>
 #include <Macros.h>
 #include <Vector.h>
@@ -130,7 +130,9 @@ void setupMappings()
     CoreMessage msg;
     msg.action = GetMounts;
     msg.mounts = mounts;
-    msg.ipc(CORESRV_PID, API::SendReceive, sizeof(msg));
+    msg.type   = IPCType;
+    msg.from   = SELF;
+    IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
 
     // Set currentDirectory
     currentDirectory = "/";
@@ -158,13 +160,13 @@ void setupMappings()
 
     // Inherit file descriptors, current directory, and more.
     // NOTE: we "abuse" the CoreMessage for ipc with our parent...
-    msg.ipc(ppid, API::Receive, sizeof(msg));
+    IPCMessage(ppid, API::Receive, &msg, sizeof(msg));
 
     // Copy the file descriptors
     VMCopy(ppid, API::Read, (Address) files.vector(), (Address) msg.path, files.size() * sizeof(FileDescriptor));
 
     // Dummy reply, to tell our parent we received the fds.... very inefficient.
-    msg.ipc(ppid, API::Send, sizeof(msg));
+    IPCMessage(ppid, API::Send, &msg, sizeof(msg));
 }
 
 ProcessID findMount(const char *path)
