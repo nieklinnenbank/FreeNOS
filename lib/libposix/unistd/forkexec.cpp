@@ -62,33 +62,31 @@ int forkexec(const char *path, const char *argv[])
     if (msg.result != ESUCCESS)
         return msg.result;
 
-    // TODO: make this much more efficient. Map & copy in one shot.
+    // TODO: make this much more efficient. perhaps let libexec write directly to the target buffer.
+    // at least Map & copy in one shot.
 
     // Map program regions into virtual memory of the new process
     for (int i = 0; i < numRegions; i++)
     {
         // Copy executable memory from this region
-        for (Size j = 0; j < regions[i].size; j += PAGESIZE)
-        {
-            range.virt  = regions[i].virtualAddress + j;
-            range.phys  = ZERO;
-            range.size  = PAGESIZE;
-            range.access = VirtualMemory::Present |
-                           VirtualMemory::User |
-                           VirtualMemory::Readable |
-                           VirtualMemory::Writable;
+        range.virt  = regions[i].virtualAddress;
+        range.phys  = ZERO;
+        range.size  = regions[i].size;
+        range.access = VirtualMemory::Present |
+                       VirtualMemory::User |
+                       VirtualMemory::Readable |
+                       VirtualMemory::Writable;
         
-            /* Create mapping first. */
-            if (VMCtl(pid, Map, &range) != 0)
-            {
-                // TODO: convert from API::Error to errno.
-                errno = EFAULT;
-                return -1;
-            }
-            /* Copy bytes. */
-            VMCopy(pid, API::Write, (Address) (regions[i].data) + j,
-                   regions[i].virtualAddress + j, PAGESIZE);
+        // Create mapping first
+        if (VMCtl(pid, Map, &range) != 0)
+        {
+            // TODO: convert from API::Error to errno.
+            errno = EFAULT;
+            return -1;
         }
+        // Copy bytes
+        VMCopy(pid, API::Write, (Address) regions[i].data,
+               regions[i].virtualAddress, regions[i].size);
     }
     /* Create mapping for command-line arguments. */
     range.virt  = ARGV_ADDR;
