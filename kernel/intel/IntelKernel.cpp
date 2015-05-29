@@ -39,29 +39,29 @@ IntelKernel::IntelKernel(Size memorySize,
     : Kernel(memorySize, kernelAddress, kernelSize)
 {
     /* ICW1: Initialize PIC's (Edge triggered, Cascade) */
-    outb(PIC1_CMD, 0x11);
-    outb(PIC2_CMD, 0x11);
+    IO::outb(PIC1_CMD, 0x11);
+    IO::outb(PIC2_CMD, 0x11);
     
     /* ICW2: Remap IRQ's to interrupts 32-47. */
-    outb(PIC1_DATA, PIC_IRQ_BASE);
-    outb(PIC2_DATA, PIC_IRQ_BASE + 8);
+    IO::outb(PIC1_DATA, PIC_IRQ_BASE);
+    IO::outb(PIC2_DATA, PIC_IRQ_BASE + 8);
 
     /* ICW3: PIC2 is connected to PIC1 via IRQ2. */
-    outb(PIC1_DATA, 0x04);
-    outb(PIC2_DATA, 0x02);
+    IO::outb(PIC1_DATA, 0x04);
+    IO::outb(PIC2_DATA, 0x02);
 
     /* ICW4: 8086 mode, fully nested, not buffered, no implicit EOI. */
-    outb(PIC1_DATA, 0x01);
-    outb(PIC2_DATA, 0x01);
+    IO::outb(PIC1_DATA, 0x01);
+    IO::outb(PIC2_DATA, 0x01);
 
     /* OCW1: Disable all IRQ's for now. */
-    outb(PIC1_DATA, 0xff);
-    outb(PIC2_DATA, 0xff);
+    IO::outb(PIC1_DATA, 0xff);
+    IO::outb(PIC2_DATA, 0xff);
 
     /* Let the i8253 timer run continuously (square wave). */
-    outb(PIT_CMD, 0x36);
-    outb(PIT_CHAN0, PIT_DIVISOR & 0xff);
-    outb(PIT_CHAN0, PIT_DIVISOR >> 8);
+    IO::outb(PIT_CMD, 0x36);
+    IO::outb(PIT_CHAN0, PIT_DIVISOR & 0xff);
+    IO::outb(PIT_CHAN0, PIT_DIVISOR >> 8);
     
     /* Make sure to enable PIC2 and the i8253. */
     enableIRQ(2, true);
@@ -115,16 +115,16 @@ void IntelKernel::enableIRQ(uint irq, bool enabled)
     if (enabled)
     {
         if (irq < 8)
-            outb(PIC1_DATA, inb(PIC1_DATA) & ~(1 << irq));
+            IO::outb(PIC1_DATA, IO::inb(PIC1_DATA) & ~(1 << irq));
         else
-            outb(PIC2_DATA, inb(PIC2_DATA) & ~(1 << (irq - 8)));
+            IO::outb(PIC2_DATA, IO::inb(PIC2_DATA) & ~(1 << (irq - 8)));
     }
     else
     {
         if (irq < 8)
-            outb(PIC1_DATA, inb(PIC1_DATA) | (1 << irq));
+            IO::outb(PIC1_DATA, IO::inb(PIC1_DATA) | (1 << irq));
         else
-            outb(PIC2_DATA, inb(PIC2_DATA) | (1 << (irq - 8)));
+            IO::outb(PIC2_DATA, IO::inb(PIC2_DATA) | (1 << (irq - 8)));
     }
 }
 
@@ -146,10 +146,10 @@ void IntelKernel::interrupt(CPUState *state, ulong param)
     /* End of Interrupt to slave. */
     if (IRQ(state->vector) >= 8)
     {
-        outb(PIC2_CMD, PIC_EOI);
+        IO::outb(PIC2_CMD, PIC_EOI);
     }
     /* End of Interrupt to master. */
-    outb(PIC1_CMD, PIC_EOI);
+    IO::outb(PIC1_CMD, PIC_EOI);
 }
 
 void IntelKernel::trap(CPUState *state, ulong param)

@@ -67,6 +67,8 @@ SECTIONS
         KEEP (*(.fini_array))
         LONG(0)
         DTOR_END = .;
+        isKernel = .;
+        LONG(1);
     }
     . = ALIGN(4096); /* align to page size */
     __data_end = .;

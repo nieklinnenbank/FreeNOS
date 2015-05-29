@@ -52,7 +52,11 @@ SECTIONS
         KEEP (*(.fini_array))
         LONG(0)
         DTOR_END = .;
+
+        isKernel = .;
+        LONG(0);
 	. += 4;
+
 	
 	initStart = .;
 	KEEP (*(SORT(.init*)))

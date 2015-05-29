@@ -22,6 +22,56 @@
 #include <FreeNOS/Process.h>
 #include <Types.h>
 
+/** 
+ * Perform a kernel trap with 1 argument.
+ * @param num Unique number of the handler to execute. 
+ * @return An integer. 
+ */
+inline ulong trapKernel1(ulong num, ulong arg1)
+{
+    return 0;
+}
+
+/**
+ * Perform a kernel trap with 2 arguments.
+ */
+inline ulong trapKernel2(ulong num, ulong arg1, ulong arg2)
+{
+    return 0;
+}
+
+/** 
+ * Perform a kernel trap with 3 arguments. 
+ * @param num Unique number of the handler to execute. 
+ * @return An integer. 
+ */
+inline ulong trapKernel3(ulong num, ulong arg1, ulong arg2, ulong arg3)
+{
+    return 0;
+}
+
+/** 
+ * Perform a kernel trap with 4 arguments. 
+ * @param num Unique number of the handler to execute. 
+ * @return An integer.
+ */
+inline ulong trapKernel4(ulong num, ulong arg1, ulong arg2, ulong arg3,
+                         ulong arg4)
+{
+    return 0;
+}
+
+/** 
+ * Perform a kernel trap with 5 arguments. 
+ * @param num Unique number of the handler to execute. 
+ * @return An integer. 
+ */
+inline ulong trapKernel5(ulong num, ulong arg1, ulong arg2, ulong arg3,
+                         ulong arg4, ulong arg5)
+{
+    return 0;
+}
+
 /**
  * Represents the ARM kernel implementation
  */
@@ -32,7 +82,9 @@ class ARMKernel : public Kernel
     /**
      * Constructor function.
      */
-    ARMKernel(Memory *memory, ProcessManager *procs);
+    ARMKernel(Size memorySize,
+              Address kernelAddress,
+              Size kernelSize);
 
     /**
      * Hooks a function to an hardware interrupt.

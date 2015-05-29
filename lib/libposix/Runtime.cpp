@@ -55,12 +55,21 @@ extern C int __cxa_atexit(void (*func) (void *),
     return (0);
 }
 
+extern C int __aeabi_atexit()
+{
+}
+
 extern C void __cxa_pure_virtual()
 {
 }
 
 extern C void __stack_chk_fail(void)
 {
+}
+
+extern C int raise(int sig)
+{
+    return 0;
 }
 
 void runConstructors()

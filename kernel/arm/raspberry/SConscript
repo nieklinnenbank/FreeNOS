@@ -28,7 +28,7 @@ env.Append(CPPFLAGS = '-D__KERNEL__')
 env.UseLibraries(['liballoc', 'libstd', 'libarch'])
 env.UseServers(['core'])
 env.TargetProgram('kernel', [ Glob('*.S'),
-			      Glob('*.cpp'),
+                              Glob('*.cpp'),
                               Glob('#' + env['BUILDROOT'] + '/kernel/*.cpp'),
                               Glob('#' + env['BUILDROOT'] + '/kernel/API/*.cpp'),
                               Glob('#' + env['BUILDROOT'] + '/kernel/arm/*.cpp')
@@ -39,4 +39,4 @@ env.TargetProgram('kernel', [ Glob('*.S'),
 # Qemu targets
 #
 env.Targets(qemu = 'qemu-system-arm -kernel ' + build_env['BUILDROOT'] +
-		   '/kernel/arm/raspberry/kernel -cpu arm1176 -M raspi -nographic')
+                   '/kernel/arm/raspberry/kernel -cpu arm1176 -M raspi -nographic')

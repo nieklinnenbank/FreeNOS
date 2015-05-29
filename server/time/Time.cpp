@@ -50,10 +50,7 @@ Error Time::read(s8 *buffer, Size size, Size offset)
      * is the reliable way to read RTC - registers. If UIP is set 
      * then the register access might be invalid. 
      */
-    while((readCMOS(RTC_STATUS_A) & RTC_UIP))
-    {
-        cpuRelax();
-    }
+    while((readCMOS(RTC_STATUS_A) & RTC_UIP));
     
     /* Read the date/time values from the CMOS. */
     sec   = readCMOS(RTC_SECONDS);
@@ -93,11 +90,6 @@ unsigned char Time::readCMOS(unsigned char addr)
 {
     WriteByte(RTC_PORT(0), addr);
     return ReadByte(RTC_PORT(1));
-}
-
-void Time::cpuRelax()
-{
-    asm volatile("rep; nop" ::: "memory");
 }
 
 unsigned Time::bcd2bin(unsigned char val)

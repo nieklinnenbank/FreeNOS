@@ -98,7 +98,7 @@ void Kernel::executeInterrupt(int vec, CPUState *state)
     }
 }
 
-void Kernel::run()
+int Kernel::run()
 {
     NOTICE("");
 
@@ -107,4 +107,7 @@ void Kernel::run()
 
     // Start the scheduler
     m_procs->schedule();
+
+    // Never actually returns.
+    return 0;
 }

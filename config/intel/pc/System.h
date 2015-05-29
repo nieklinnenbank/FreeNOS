@@ -20,6 +20,7 @@
 
 #include <intel/IntelConstant.h>
 #include <intel/IntelCore.h>
+#include <intel/IntelIO.h>
 #include <intel/IntelState.h>
 #include <intel/IntelMemory.h>
 

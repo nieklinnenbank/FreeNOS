@@ -122,7 +122,7 @@ class Kernel : public Singleton<Kernel>
     /**
      * Execute the kernel.
      */
-    void run();
+    int run();
 
     /**
      * Hooks a function to an hardware interrupt.

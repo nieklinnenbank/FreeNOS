@@ -24,21 +24,21 @@ Error IOCtlHandler(IOOperation op, Address addr, ulong value)
     switch (op)
     {
         case IOByteRead:
-            return inb(addr);
+            return IO::inb(addr);
 
         case IOByteWrite:
-            outb(addr, value);
+            IO::outb(addr, value);
             break;
 
         case IOWordRead:
-            return inw(addr);
+            return IO::inw(addr);
         
         case IOWordWrite:
-            outw(addr, value);
+            IO::outw(addr, value);
             break;
 
         case IOLongWrite:
-            outl(addr, value);
+            IO::outl(addr, value);
             break;
     }
     return API::Success;

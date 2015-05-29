@@ -15,9 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __ARM_RASPBERRY_CONSTANTS_H
-#define __ARM_RASPBERRY_CONSTANTS_H
+#ifndef __ARM_RASPBERRY_SYSTEM_H
+#define __ARM_RASPBERRY_SYSTEM_H
 
-#include <FreeNOS/arm/ARMMemory.h>
+#include <arm/ARMConstant.h>
+#include <arm/ARMCore.h>
+#include <arm/ARMIO.h>
+#include <arm/ARMState.h>
+#include <arm/ARMMemory.h>
 
-#endif /* __ARM_RASPBERRY_CONSTANTS_H */
+#include <arm/ARMKernel.h>
+#include <arm/ARMProcess.h>
+
+#endif /* __ARM_RASPBERRY_SYSTEM_H */

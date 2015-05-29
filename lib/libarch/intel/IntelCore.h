@@ -48,7 +48,7 @@ inline u64 timestamp()
  * Reboot the system (by sending the a reset signal on the keyboard I/O port)
  */
 #define reboot() \
-    outb(0x64, 0xfe)
+    IO::outb(0x64, 0xfe)
 
 /**
  * Shutdown the machine via ACPI.
@@ -56,7 +56,7 @@ inline u64 timestamp()
  * @see http://forum.osdev.org/viewtopic.php?t=16990
  */
 #define shutdown() \
-    outw(0xB004, 0x0 | 0x2000)
+    IO::outw(0xB004, 0x0 | 0x2000)
 
 /**  
  * Puts the CPU in a lower power consuming state. 
@@ -73,54 +73,6 @@ inline u64 timestamp()
     u16 tr = sel; \
     asm volatile ("ltr %0\n" :: "r"(tr)); \
 })
-
-/**  
- * Read a byte from a port.  
- * @param port The I/O port to read from.  
- * @return A byte read from the port.  
- */
-#define inb(port) \
-({ \
-    unsigned char b; \
-    asm volatile ("inb %%dx, %%al" : "=a" (b) : "d" (port)); \
-    b; \
-})
-
-/**
- * Read a word from a port.
- * @param port The I/O port to read from.
- * @return Word read from the port.
- */
-#define inw(port) \
-({ \
-    unsigned short w; \
-    asm volatile ("inw %%dx, %%ax" : "=a" (w) : "d" (port)); \
-    w; \
-})
-
-/**  
- * Output a byte to a port.  
- * @param port Port to write to.  
- * @param byte The byte to output.  
- */
-#define outb(port,byte) \
-    asm volatile ("outb %%al,%%dx"::"a" (byte),"d" (port))
-
-/**
- * Output a word to a port.
- * @param port Port to write to.
- * @param byte The word to output.
- */
-#define outw(port,word) \
-    asm volatile ("outw %%ax,%%dx"::"a" (word),"d" (port))
-
-/** 
- * Output a long to a I/O port. 
- * @param port Target I/O port. 
- * @param l The long 32-bit number to output.
- */
-#define outl(port,l) \
-    asm volatile ("outl %%eax,%%dx"::"a" (l),"d" (port))
 
 /**
  * Flushes the Translation Lookaside Buffers (TLB) for a single page.

@@ -18,10 +18,6 @@
 #include <FreeNOS/Config.h>
 #include <FreeNOS/Support.h>
 #include <FreeNOS/arm/ARMKernel.h>
-#include <FreeNOS/arm/ARMMemory.h>
-#include <FreeNOS/arm/ARMFactory.h>
-#include <FreeNOS/ProcessScheduler.h>
-#include <FreeNOS/ProcessManager.h>
 #include <Macros.h>
 #include "RaspiSerial.h"
 
@@ -31,29 +27,20 @@ extern C int kernel_main(void)
     Memory::initialize(0x00300000);
 
     RaspiSerial console;
+    console.setMinimumLogLevel(Log::Debug);
 
     // TODO: put this in the boot.S, or maybe hide it in the support library? maybe a _run_main() or something.
     constructors();
 
-    // TODO: this should be done from the support library too.
-    // Later, a user-process should monitor the kernel console buffer and write
-    // it to the selected console for the kernel.
-#define BANNER \
-    "FreeNOS " RELEASE " [" ARCH "/" SYSTEM "] (" BUILDUSER "@" BUILDHOST ") (" COMPILER_VERSION ") " DATETIME "\r\n"
+    // Create and run the kernel
+    ARMKernel kernel( 1024 * 1024 * 128 /* total mem */,
+                      0, /* kernel start */
+                      1024 * 1024 * 4 /* kernel size */ );
 
-    console.setMinimumLogLevel(Log::Debug);
-    console.write(BANNER);
-    console.write(COPYRIGHT "\r\n");
-    NOTICE("Initializing subsystems");
-
-    ARMMemory mem(128 * 1024 * 1024);
-    ARMFactory fac;
-    ProcessScheduler sched;
-    ProcessManager procs(&fac, &sched);
-    ARMKernel kernel(&mem, &procs);
+    kernel.run();
 
     while (true)
-	console.put(console.get());
+        console.put(console.get());
 
     return 0;
 }

@@ -42,10 +42,16 @@ class ARMProcess : public Process
     /**
      * Allow the Process to run on the CPU.
      */
-    virtual void execute();
+    virtual void execute(Process *previous);
 
   private:
 
+};
+
+
+namespace Arch
+{
+    typedef ARMProcess Process;
 };
 
 #endif /* __ARM_ARMPROCESS_H */

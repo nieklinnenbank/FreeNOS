@@ -23,29 +23,29 @@ IntelSerial::IntelSerial(u16 base)
     m_base = base;
 
     /* 8bit Words, no parity. */
-    outb(base + LINECONTROL, 3);
+    IO::outb(base + LINECONTROL, 3);
     
     /* Enable interrupts. */
-    outb(base + IRQCONTROL, 1);
+    IO::outb(base + IRQCONTROL, 1);
     
     /* No FIFO. */
-    outb(base + FIFOCONTROL, 0);
+    IO::outb(base + FIFOCONTROL, 0);
     
     /* Data Ready, Request to Send. */
-    outb(base + MODEMCONTROL, 3);
+    IO::outb(base + MODEMCONTROL, 3);
     
     /* Set baudrate. */
-    outb(base + LINECONTROL, inb(base + LINECONTROL) | DLAB);
-    outb(base + DIVISORLOW,  (11500 / BAUDRATE) & 0xff);
-    outb(base + DIVISORHIGH, (11500 / BAUDRATE) >> 8);
-    outb(base + LINECONTROL, inb(base + LINECONTROL) & ~DLAB);
+    IO::outb(base + LINECONTROL, IO::inb(base + LINECONTROL) | DLAB);
+    IO::outb(base + DIVISORLOW,  (11500 / BAUDRATE) & 0xff);
+    IO::outb(base + DIVISORHIGH, (11500 / BAUDRATE) >> 8);
+    IO::outb(base + LINECONTROL, IO::inb(base + LINECONTROL) & ~DLAB);
 }
 
 void IntelSerial::write(const char *str)
 {
     /* Write as much bytes as possible. */
-    while (inb(m_base + LINESTATUS) & TXREADY && *str)
+    while (IO::inb(m_base + LINESTATUS) & TXREADY && *str)
     {
-        outb(m_base, *str++);
+        IO::outb(m_base, *str++);
     }
 }

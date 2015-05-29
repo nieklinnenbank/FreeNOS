@@ -15,134 +15,152 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __ARM_ARMMEMORY_H
-#define __ARM_ARMMEMORY_H
+#ifndef __LIBARCH_ARM_MEMORY_H
+#define __LIBARCH_ARM_MEMORY_H
 
-#include <FreeNOS/Memory.h>
 #include <Types.h>
-#include <Macros.h>
-#include "ARMProcess.h"
-
-/** ARM uses 4K pages. */
-#define PAGESIZE        4096
-
-/** Memory address alignment. */
-#define MEMALIGN        4
-
-/** Marks a page entry present. */
-#define PAGE_PRESENT    1
-
-/** Marks a page entry read/write. */
-#define PAGE_RW         1
-
-/** Marks a page accessible by user programs. */
-#define PAGE_USER       1
-
-/** Pinned pages cannot be released. */
-#define PAGE_PINNED     1
-
-/** This page has been marked for temporary operations. */
-#define PAGE_MARKED     1
-
-/** Page has been reserved for future use. */
-#define PAGE_RESERVED   1
+#include "VirtualMemory.h"
 
 /**
- * Convert MemoryAccess to ARM specific page protection flags.
- * @return ARM page protection flags.
+ * Entry inside the page directory of a given virtual address.
+ * @param vaddr Virtual Address.
+ * @return Index of the corresponding page directory entry.
  */
-inline ulong getProtectionFlags(Memory::MemoryAccess flags)
-{
-    ulong prot = ZERO;
+#define DIRENTRY(vaddr) \
+    ((vaddr) >> DIRSHIFT)
 
-    if (flags & Memory::Present)  prot |= PAGE_PRESENT;
-    if (flags & Memory::Writable) prot |= PAGE_RW;
-    if (flags & Memory::User)     prot |= PAGE_USER;
-    if (flags & Memory::Pinned)   prot |= PAGE_PINNED;
-    if (flags & Memory::Marked)   prot |= PAGE_MARKED;
-    if (flags & Memory::Reserved) prot |= PAGE_RESERVED;
+/**
+ * Entry inside the page table of a given virtual address.
+ * @param vaddr Virtual Address.
+ * @return Index of the corresponding page table entry.
+ */
+#define TABENTRY(vaddr) \
+    (((vaddr) >> PAGESHIFT) & 0x3ff)
 
-    return prot;
-}
-
-inline Memory::MemoryAccess getMemoryAccess(ulong flags)
-{
-    Memory::MemoryAccess access;
-
-    if (flags & PAGE_PRESENT)     access |= Memory::Present;
-    if (flags & PAGE_RW)          access |= Memory::Writable;
-    if (flags & PAGE_USER)        access |= Memory::User;
-    if (flags & PAGE_PINNED)      access |= Memory::Pinned;
-    if (flags & PAGE_MARKED)      access |= Memory::Marked;
-    if (flags & PAGE_RESERVED)    access |= Memory::Reserved;
-
-    return access;
-}
-
-class ARMMemory : public Memory
+/**
+ * ARM virtual memory implementation.
+ */
+class ARMMemory : public VirtualMemory
 {
   public:
 
     /**
-     * Constructor function.
+     * Constructor.
+     *
+     * @param pageDirectory Physical memory address of the page directory
+     *                      or ZERO to map the page directory of the current
+     *                      active address space.
+     * @param memoryMap     BitArray pointer of the physical memory page allocations
+     *                      or ZERO to ask the kernel for the BitArray.
      */
-    ARMMemory(Size memorySize);
+    ARMMemory(Address pageDirectory = ZERO,
+                BitArray *memoryMap = ZERO);
+
+    /**
+     * Destructor.
+     */
+    virtual ~ARMMemory();
 
     /**
      * Map a physical page to a virtual address.
      *
      * @param paddr Physical address.
-     * @param vaddr Virtual address.
+     * @param vaddr Virtual address or ZERO to use the first unused page.
      * @param prot Page entry protection flags.
      * @return Mapped virtual address.
      */     
-    virtual Address map(Address paddr,
-                        Address vaddr = ZERO,
-                        MemoryAccess flags = Memory::Present | Memory::Readable | Memory::Writable);
+    virtual Address map(Address phys,
+                        Address virt = ZERO,
+                        Access flags = Present | User | Readable | Writable);
 
     /**
-     * Map a physical page to a virtual address for a specific Process.
+     * Unmap a virtual address.
      *
-     * @param p Process to map memory for.
-     * @param paddr Physical address.
-     * @param vaddr Virtual address.
-     * @param prot Page entry protection flags.
-     * @return Mapped virtual address.
-     */     
-    virtual Address map(Process *p, Address paddr,
-                        Address vaddr, MemoryAccess flags);
-
-    /**
-     * Lookup a pagetable entry for the given (remote) virtual address.
+     * This function removes a virtual to physical memory
+     * mapping without deallocating any physical memory.
      *
-     * @param p Target process.
-     * @param vaddr Virtual address to lookup.
-     * @return Page table entry if vaddr is mapped, or ZERO if not.
+     * @param virt Virtual address to unmap.
      */
-    virtual Address lookup(Process *p, Address vaddr);
+    virtual void unmap(Address virt);
 
     /**
-     * Verify protection access flags in the page directory and page table.
+     * Translate virtual address to physical address.
      *
-     * @param p Target process to verify protection bits for.
-     * @param vaddr Virtual address.
-     * @param sz Size of the byte range to check.
-     * @return True if the current process has access, false otherwise.
+     * @param virt Virtual address to lookup.
+     * @return Physical address of the virtual address given.
      */
-    virtual bool access(Process *p,
-                        Address vaddr,
-                        Size sz,
-                        MemoryAccess flags = Memory::Present|Memory::User|Memory::Readable);
+    virtual Address lookup(Address virt);
+
+    /**
+     * Verify protection access flags.
+     *
+     * @param virt Virtual address start to validate.
+     * @param size Number of bytes to check.
+     * @param flags Page protection flags which must be set.
+     * @return True if flags are set on the given range, false otherwise.
+     */
+    virtual bool access(Address virt,
+                        Size size,
+                        Access flags = Present | User | Readable);
+
+    /**
+     * Clone a virtual memory address space.
+     *
+     * Clones the given virtual memory address space
+     * into this VirtualMemory.
+     *
+     * @param pageDirectory Physical address of the page directory to clone.
+     * @return True if clone with success, false otherwise.
+     */
+    virtual bool clone(Address pageDirectory);
+
+    /**
+     * Release a memory page mapping.
+     *
+     * @param virt Virtual address of the page to release.
+     */
+    virtual void release(Address virt);
 
     /** 
-     * Marks all physical pages used by a process as free (if not pinned). 
-     *
-     * @param p Target process. 
+     * Deallocate all associated physical memory.
      */
-    virtual void release(Process *p);
+    virtual void releaseAll();
+
+    /**
+     * Find unused virtual page range.
+     *
+     * This function finds a contigeous block of a given size
+     * of virtual memory which is unused and then returns
+     * the virtual address of the first page in the block.
+     *
+     * @param size Number of bytes requested to be free.
+     * @return Virtual address of the first page.
+     */
+    virtual Address findFree(Size size);
 
   private:
 
+    /**
+     * Get page table virtual address.
+     *
+     * This function will retrieve a pointer to the page table
+     * which maps the given virtual address.
+     *
+     * @param virt The virtual address to get the page table for.
+     * @return Pointer to page table in virtual address.
+     */
+    Address * getPageTable(Address virt);
+
+    /** Pointer to page directory in virtual memory. */
+    Address *m_pageDirectory;
+
+    /** Page tables virtual base address */
+    Address m_pageTableBase;
 };
 
-#endif /* __ARM_ARMMEMORY_H */
+namespace Arch
+{
+    typedef ARMMemory Memory;
+};
+
+#endif /* __LIBARCH_ARM_MEMORY_H */

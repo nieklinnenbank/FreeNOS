@@ -18,15 +18,9 @@
 #ifndef __ARM_CORE_H
 #define __ARM_CORE_H
 
-#include <Macros.h>
-
-// TODO: #warning CPUs should be a class too. IntelCPU. ARMCPU. put it in libarch eventually.
-
-/** ARM is little endian */
-#define CPU_LITTLE_ENDIAN       1
-
 #include <Types.h>
 #include <Macros.h>
+#include <Core.h>
 
 /**
  * Retrieve the IRQ number from CPUState.
@@ -36,10 +30,16 @@
     ((state)->vector - 0x20)
 
 /**
+ * We remap IRQ's to interrupt vectors 32-47.
+ */
+#define IRQ(vector) \
+    (vector) + 32
+
+/**
  * Reads the CPU's timestamp counter.
  * @return 64-bit integer.
  */
-#define timestamp()
+#define timestamp() 0
 
 /**
  * Reboot the system (by sending the a reset signal on the keyboard I/O port)
@@ -58,54 +58,33 @@
  */
 #define idle()
 
-/**  
- * Read a byte from a port.  
- * @param port The I/O port to read from.  
- * @return A byte read from the port.  
+/**
+ * Explicitely enable interrupts.
  */
-#define inb(port) \
-({ \
-    unsigned char b = 0; \
-    b; \
-})
+#define irq_enable()
 
 /**
- * Read a word from a port.
- * @param port The I/O port to read from.
- * @return Word read from the port.
+ * Disable interrupts, and store current interrupt state.
+ * @warning This is dangerous: no guarantee of the current stack state.
  */
-#define inw(port) \
-({ \
-    unsigned short w = 0; \
-    w; \
-})
-
-/**  
- * Output a byte to a port.  
- * @param port Port to write to.  
- * @param byte The byte to output.  
- */
-#define outb(port,byte)
+#define irq_disable()
 
 /**
- * Output a word to a port.
- * @param port Port to write to.
- * @param byte The word to output.
+ * Restore the previous interrupt state.
+ * @warning This is dangerous: no guarantee of the current stack state.
  */
-#define outw(port,word)
+#define irq_restore(saved)
 
-/** 
- * Output a long to a I/O port. 
- * @param port Target I/O port. 
- * @param l The long 32-bit number to output.
- */
-#define outl(port,l)
+#define tlb_flush_all()
+
+#define tlb_flush(page)
 
 /** 
  * Contains all the CPU registers. 
  */
 typedef struct CPUState
 {
+    u32 vector;
 }
 CPUState;
 

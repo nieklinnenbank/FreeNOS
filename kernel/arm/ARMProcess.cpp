@@ -29,7 +29,7 @@ ARMProcess::~ARMProcess()
     NOTICE("");
 }
 
-void ARMProcess::execute()
+void ARMProcess::execute(Process *previous)
 {
     DEBUG("");
 }
