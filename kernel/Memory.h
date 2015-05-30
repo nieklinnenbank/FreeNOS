@@ -43,14 +43,16 @@ class Memory
      */
     // TODO: this should be a memory map instead? We cannot assue there is
     // always a contigeous block of memory available.
-    Memory(Size memorySize,
-           Address kernelAddress,
-           Size kernelSize);
+    Memory(Size size);
 
     /**
-     * Initialize heap at the given address.
+     * Initialize Heap.
+     *
+     * @param heap Virtual start address of the kernel heap.
+     * @param size Size of the heap in bytes.
+     * @return Error code.
      */
-    static Error initialize(Address heap);
+    static Error initialize(Address heap, Size size);
 
     /**
      * Retrieve total system memory.

@@ -21,36 +21,29 @@
 #include <PoolAllocator.h>
 #include "Memory.h"
 
-Memory::Memory(Size memorySize,
-               Address kernelAddress,
-               Size kernelSize)
+Memory::Memory(Size memorySize)
     : m_physicalMemory(memorySize / PAGESIZE)
 {
     NOTICE("memorySize = " << memorySize);
-
-    // Mark kernel memory used
-    for (Size i = 0; i < kernelSize; i += PAGESIZE)
-        allocatePhysicalAddress(kernelAddress + i);
 }
 
-Error Memory::initialize(Address heap)
+Error Memory::initialize(Address heap, Size size)
 {
-    NOTICE("heap =" << heap);
+    NOTICE("heap = " << heap << " size = " << size);
 
-    Size meta = sizeof(BubbleAllocator) + sizeof(PoolAllocator);
     Allocator *bubble, *pool;
+    Size meta = sizeof(BubbleAllocator) + sizeof(PoolAllocator);
 
-    /* Setup the dynamic memory heap. */
+    // Setup the dynamic memory heap
+    // TODO: replace with allocator that does not leak.
     bubble = new (heap) BubbleAllocator();
     pool   = new (heap + sizeof(BubbleAllocator)) PoolAllocator();
     pool->setParent(bubble);
 
-    // TODO: pass the heap size as argument instead of assuming 1MB.
+    // Setup the heap region
+    bubble->region(heap + meta, size - meta);
 
-    /* Setup the heap region (1MB). */
-    bubble->region(heap + meta, (1024 * 1024) - meta);
-
-    /* Set default allocator. */
+    // Set default allocator
     Allocator::setDefault(pool);
     return 0;
 }

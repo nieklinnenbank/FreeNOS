@@ -170,9 +170,7 @@ class IntelKernel : public Kernel
     /**
      * Constructor function.
      */
-    IntelKernel(Size memorySize,
-                Address kernelAddress,
-                Size kernelSize);
+    IntelKernel(Address kernel, Size size, Memory *memory);
 
     /** 
      * Uses the PIC to (un)mask an IRQ. 

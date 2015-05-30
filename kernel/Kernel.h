@@ -84,11 +84,11 @@ class Kernel : public Singleton<Kernel>
     /**
      * Constructor function.
      *
-     * @param memorySize Size of available physical memory in bytes.
+     * @param kernel Start of the kernel in virtual memory.
+     * @param size Size of the kernel in bytes.
+     * @param memory Physical memory allocator.
      */
-    Kernel(Size memorySize,
-           Address kernelAddress,
-           Size kernelSize);
+    Kernel(Address kernel, Size size, Memory *memory);
 
     /**
      * Get memory.

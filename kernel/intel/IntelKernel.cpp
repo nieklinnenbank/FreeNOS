@@ -33,10 +33,8 @@ extern C void executeInterrupt(CPUState state)
     Kernel::instance->executeInterrupt(state.vector, &state);
 }
 
-IntelKernel::IntelKernel(Size memorySize,
-                         Address kernelAddress,
-                         Size kernelSize)
-    : Kernel(memorySize, kernelAddress, kernelSize)
+IntelKernel::IntelKernel(Address kernel, Size size, Memory *memory)
+    : Kernel(kernel, size, memory)
 {
     /* ICW1: Initialize PIC's (Edge triggered, Cascade) */
     IO::outb(PIC1_CMD, 0x11);

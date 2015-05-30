@@ -52,17 +52,17 @@ SECTIONS
         *(.data)
 
         CTOR_LIST = .;
-	KEEP (*(SORT(.ctors.*)))
-	KEEP (*(.ctors))
+        KEEP (*(SORT(.ctors.*)))
+        KEEP (*(.ctors))
         KEEP (*(.preinit_array))
         KEEP (*(.init_array.*))
         KEEP (*(.init_array))
-	LONG(0)
+        LONG(0)
         CTOR_END = .;
 
         DTOR_LIST = .;
-	KEEP (*(SORT(.dtors.*)))
-	KEEP (*(.dtors))
+        KEEP (*(SORT(.dtors.*)))
+        KEEP (*(.dtors))
         KEEP (*(.fini_array.*))
         KEEP (*(.fini_array))
         LONG(0)

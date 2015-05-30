@@ -17,28 +17,30 @@
 
 #include <FreeNOS/Config.h>
 #include <FreeNOS/Support.h>
+#include <FreeNOS/System.h>
 #include <intel/IntelKernel.h>
 #include <intel/IntelSerial.h>
 #include <intel/IntelBoot.h>
 #include <Macros.h>
 #include <Log.h>
 
-extern C void kernel_main()
+extern C int kernel_main()
 {
     // Initialize physical memory.
-    Memory::initialize(0x00300000);
+    Memory::initialize(KERNEL_HEAP, KERNEL_HEAP_SIZE);
 
     // Start kernel debug serial console
+    // TODO: can I re-use the user-land driver here somehow????
     IntelSerial *serial = new IntelSerial(0x3f8);
     serial->setMinimumLogLevel(Log::Notice);
 
     // TODO: put this in the boot.S, or maybe hide it in the support library? maybe a _run_main() or something.
     constructors();
 
+    // System memory
+    Memory *memory = new Memory((multibootInfo.memLower + multibootInfo.memUpper) * 1024);
+
     // Create and run the kernel
-    IntelKernel *kernel = new IntelKernel(
-        (multibootInfo.memLower + multibootInfo.memUpper) * 1024,
-         0, 1024 * 1024 * 4
-    );
-    kernel->run();
+    IntelKernel *kernel = new IntelKernel(0, 1024*1024*4, memory);
+    return kernel->run();
 }
