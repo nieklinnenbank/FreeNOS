@@ -32,7 +32,7 @@
 int run_test(char *path)
 {
     int status;
-    char *argv[2];
+    char *argv[3];
 
     argv[0] = path;
     argv[1] = (char *) "-n";
