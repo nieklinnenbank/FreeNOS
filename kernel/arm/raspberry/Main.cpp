@@ -33,9 +33,9 @@ extern C int kernel_main(void)
     constructors();
 
     // Create and run the kernel
-    ARMKernel kernel( 1024 * 1024 * 128 /* total mem */,
-                      0, /* kernel start */
-                      1024 * 1024 * 4 /* kernel size */ );
+    ARMKernel kernel( 1024 * 1024 * 128 /* total mem    */,
+                      0,                /* kernel start */
+                      1024 * 1024 * 4   /* kernel size  */ );
 
     kernel.run();
 

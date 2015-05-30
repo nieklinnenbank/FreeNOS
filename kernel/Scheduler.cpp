@@ -16,14 +16,14 @@
  */
 
 #include <Log.h>
-#include "ProcessScheduler.h"
+#include "Scheduler.h"
 
-ProcessScheduler::ProcessScheduler()
+Scheduler::Scheduler()
 {
     m_index = 0;
 }
 
-Process * ProcessScheduler::select(Vector<Process *> *procs, Process *idle)
+Process * Scheduler::select(Vector<Process *> *procs, Process *idle)
 {
     Size size = procs->size();
 

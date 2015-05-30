@@ -19,7 +19,7 @@
 #include <Log.h>
 #include "ProcessManager.h"
 
-ProcessManager::ProcessManager(ProcessScheduler *scheduler)
+ProcessManager::ProcessManager(Scheduler *scheduler)
     : m_procs(MAX_PROCS)
 {
     m_scheduler = scheduler;

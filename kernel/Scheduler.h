@@ -31,7 +31,7 @@
 /**
  * Responsible for deciding which Process may execute on the CPU(s).
  */
-class ProcessScheduler
+class Scheduler
 {
 
   public:
@@ -39,7 +39,7 @@ class ProcessScheduler
         /**
          * Constructor function.
          */
-        ProcessScheduler();
+        Scheduler();
 
         /**
          * Select the next process to run.

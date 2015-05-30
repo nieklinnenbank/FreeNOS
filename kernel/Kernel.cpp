@@ -21,7 +21,7 @@
 #include "Memory.h"
 #include "Process.h"
 #include "ProcessManager.h"
-#include "ProcessScheduler.h"
+#include "Scheduler.h"
 #include "API.h"
 
 Kernel::Kernel(Size memorySize, Address kernelAddress, Size kernelSize)
@@ -33,7 +33,7 @@ Kernel::Kernel(Size memorySize, Address kernelAddress, Size kernelSize)
 
     // Initialize members
     m_memory = new Memory(memorySize, kernelAddress, kernelSize);
-    m_procs  = new ProcessManager(new ProcessScheduler());
+    m_procs  = new ProcessManager(new Scheduler());
     m_api    = new API();
     m_bootImageAddress = 0;
 

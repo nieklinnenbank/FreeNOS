@@ -20,7 +20,7 @@
 
 #include <Types.h>
 #include "Process.h"
-#include "ProcessScheduler.h"
+#include "Scheduler.h"
 
 /** Maximum number of processes. */
 #define MAX_PROCS 1024
@@ -35,7 +35,7 @@ class ProcessManager
     /**
      * Constructor function.
      */
-    ProcessManager(ProcessScheduler *scheduler);
+    ProcessManager(Scheduler *scheduler);
     
     /**
      * Destructor function.
@@ -91,7 +91,7 @@ class ProcessManager
     Vector<Process *> m_procs;
 
     /** Object which selects processes to run. */
-    ProcessScheduler *m_scheduler;
+    Scheduler *m_scheduler;
 
     /** Currently executing process */
     Process *m_current;
