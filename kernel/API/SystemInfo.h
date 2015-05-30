@@ -31,7 +31,7 @@
  * Forward declaration.
  * @see SystemInformation
  */
-class SystemInformation;
+struct SystemInformation;
 
 /**
  * Prototype for user applications. Retrieves system information.

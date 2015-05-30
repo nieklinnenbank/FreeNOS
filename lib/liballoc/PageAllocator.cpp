@@ -22,12 +22,10 @@
 PageAllocator::PageAllocator(Size size)
     : start(ZERO), allocated(ZERO)
 {
-    CoreMessage mem;
-
-    /* Set heap pointer. */
+    // Set heap pointer
     start = USER_HEAP;
 
-    /* Allocate the given bytes. */
+    // Allocate the given bytes
     allocate(&size);
 }
 

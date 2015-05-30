@@ -57,6 +57,7 @@ extern C int __cxa_atexit(void (*func) (void *),
 
 extern C int __aeabi_atexit()
 {
+    return 0;
 }
 
 extern C void __cxa_pure_virtual()

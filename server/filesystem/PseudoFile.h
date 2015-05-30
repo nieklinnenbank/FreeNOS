@@ -127,7 +127,7 @@ class PseudoFile : public File
             {
                 /* Allocate a new buffer and copy the old data */
                 char *new_buffer = new char[size+offset];
-                memset(new_buffer, 0, sizeof(new_buffer));
+                memset(new_buffer, 0, sizeof(size+offset));
 
                 /* Inherit from the old buffer, if needed. */
                 if (this->buffer)

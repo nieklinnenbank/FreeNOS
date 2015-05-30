@@ -296,7 +296,7 @@ void LinnCreate::insertFile(char *inputFile, LinnInode *inode,
 }
 
 void LinnCreate::insertEntry(le32 dirInode, le32 entryInode,
-			     char *name, FileType type)
+			     const char *name, FileType type)
 {
     LinnGroup *group;
     LinnInode *inode;

@@ -49,7 +49,7 @@ Error i8250::initialize()
     WriteByte(base + LINECONTROL, ReadByte(base + LINECONTROL) | DLAB);
     WriteByte(base + DIVISORLOW,  (11500 / BAUDRATE) & 0xff);
     WriteByte(base + DIVISORHIGH, (11500 / BAUDRATE) >> 8);
-    WriteByte(base + LINECONTROL, ReadByte(base + LINECONTROL) & ~DLAB);
+    WriteByte(base + LINECONTROL, ReadByte(base + LINECONTROL) & ~(DLAB));
 
     INFO("i8250 initialized");
 

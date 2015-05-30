@@ -18,8 +18,7 @@
 #ifndef __LIBC_CTYPE_H
 #define __LIBC_CTYPE_H
 
-#include <Macros.h>
-#include <sys/types.h>
+#include <Character.h>
 
 /** 
  * @defgroup libc libc (ISO C99)
@@ -30,67 +29,57 @@
  * Test for a decimal digit.
  * @param c Input character.
  */
-#define isdigit(c) \
-    ((c) >= '0' && (c) <= '9')
+#define isdigit(c) Character::isDigit(c)
 
 /**
  * Test for a lowercase letter.
  * @param c Input character.
  */
-#define islower(c) \
-    ((c) >= 'a' && (c) <= 'z')
+#define islower(c) Character::isLower(c)
 
 /**
  * Test for an uppercase letter.
  * @param c Input character.
  */
-#define isupper(c) \
-    ((c) >= 'A' && (c) <= 'Z')
+#define isupper(c) Character::isUpper(c)
 
 /**
  * Test for an alphabetic character.
  * @param c Input character.
  */
-#define isalpha(c) \
-    (isupper(c) || islower(c))
+#define isalpha(c) Character::isAlpha(c)
 
 /**
  * Test for an alphanumeric character.
  * @param c Input character.
  */
-#define isalnum(c) \
-    (isalpha(c) || isdigit(c))
+#define isalnum(c) Character::isAlnum(c)
 
 /**
  * Test for a blank character.
  * @param c Input character.
  */
-#define isblank(c) \
-    ((c) == ' ' || (c) == '\t')
+#define isblank(c) Character::isBlank(c)
 
 /**
  * Test for a white-space character.
  * @param c Input character.
  */
-#define isspace(c) \
-     ((c) == '\v' || (c) == '\f' || \
-      (c) == '\r' || (c) == '\n' || isblank(c))
+#define isspace(c) Character::isSpace(c)
 
 /**
  * Converts the letter c to lowercase.
  * @param c The letter to convert.
  * @return The converted letter, or c if conversion was not possible.
  */
-#define tolower(c) \
-    (c >= 'A' && c <= 'Z') ? (c + 32) : (c)
+#define tolower(c) Character::lower(c)
 
 /**
  * Converts the letter c to uppercase.
  * @param c The letter to convert.
  * @return The converted letter, or c if conversion was not possible.
  */
-#define toupper(c) \
-    (c >= 'a' && c <= 'z') ? (c - 32) : (c)
+#define toupper(c) Character::upper(c)
 
 /**
  * @}

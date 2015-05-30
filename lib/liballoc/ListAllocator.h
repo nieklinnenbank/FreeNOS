@@ -30,7 +30,7 @@
 #define LISTALLOC_MAGIC 0x1234abcd
 
 /** @see MemRegion. */
-class MemRegion;
+struct MemRegion;
 
 /**
  * Memory block on a Heap.

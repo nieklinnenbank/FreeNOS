@@ -26,6 +26,7 @@ int main(int argc, char **argv)
      */
     if (server.mount(false))
     {
-	return server.run();
+        return server.run();
     }
+    return EXIT_FAILURE;
 }

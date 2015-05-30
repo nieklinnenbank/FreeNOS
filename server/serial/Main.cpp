@@ -39,10 +39,10 @@ int main(int argc, char **argv)
 {
     DeviceServer server("serial", CharacterDeviceFile);
     i8250 *dev = ZERO;
-    u8 lcr1, lcr2;
 
     /* Open the logging facilities. */
     Log *log = new KernelLog();
+    log->setMinimumLogLevel(Log::Info);
 
     /* Assume first UART is available */
     dev = new i8250(uarts[0].port, uarts[0].irq);
@@ -53,34 +53,36 @@ int main(int argc, char **argv)
     INFO("detected at PORT=" << uarts[0].port << " IRQ=" << uarts[0].irq);
 
 #if 0
+    u8 lcr1, lcr2;
+
     /* Attempt to detect available UART's. */
     for (Size i = 0; i < 4; i++)
     {
-	/* Request I/O permissions. */
+    /* Request I/O permissions. */
         ProcessCtl(SELF, AllowIO, uarts[i].port + LINECONTROL);
     
-	/* Read line control port. */
-	lcr1 = ReadByte (uarts[i].port + LINECONTROL);
-	       WriteByte(uarts[i].port + LINECONTROL, lcr1 ^ 0xff);
-	       
-	/* And again. */
-	lcr2 = ReadByte (uarts[i].port + LINECONTROL) ^ 0xff;
-	       WriteByte(uarts[i].port + LINECONTROL, lcr1);
-	
-	/* Verify we actually wrote it (means there is an UART). */
-	if (lcr1 == lcr2)
-	{
-	    /* Create new instance. */
-	    dev = new i8250(uarts[i].port, uarts[i].irq);
+    /* Read line control port. */
+    lcr1 = ReadByte (uarts[i].port + LINECONTROL);
+           WriteByte(uarts[i].port + LINECONTROL, lcr1 ^ 0xff);
+           
+    /* And again. */
+    lcr2 = ReadByte (uarts[i].port + LINECONTROL) ^ 0xff;
+           WriteByte(uarts[i].port + LINECONTROL, lcr1);
+    
+    /* Verify we actually wrote it (means there is an UART). */
+    if (lcr1 == lcr2)
+    {
+        /* Create new instance. */
+        dev = new i8250(uarts[i].port, uarts[i].irq);
 
-	    /* Add it to the DeviceServer instance. */	  
-	    server.add(dev);
-	    server.interrupt(dev, uarts[i].irq);
-	    
-	    /* Perform log. */
-	    syslog(LOG_INFO, "detected at PORT=%x IRQ=%x",
-	        	      uarts[i].port, uarts[i].irq);
-	}
+        /* Add it to the DeviceServer instance. */    
+        server.add(dev);
+        server.interrupt(dev, uarts[i].irq);
+        
+        /* Perform log. */
+        syslog(LOG_INFO, "detected at PORT=%x IRQ=%x",
+                      uarts[i].port, uarts[i].irq);
+    }
     }
 #endif
 

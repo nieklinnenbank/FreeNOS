@@ -27,6 +27,7 @@ int main(int argc, char **argv)
 
     /* Open kernel logging facilities. */
     Log *log = new KernelLog();
+    log->setMinimumLogLevel(Log::Notice);
 
     /*
      * TODO: give up all privileges.

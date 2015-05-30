@@ -457,11 +457,6 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
     
     /** Mount point. */
     const char *mountPath;
-
-  private:
-
-    /** Log object */
-    Log *m_log;
 };
 
 #endif /* __FILESYSTEM_FILESYSTEM_H */

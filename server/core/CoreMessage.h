@@ -29,10 +29,10 @@
 #include <VirtualMemory.h>
 
 /** @see UserProcess.h */
-class UserProcess;
+struct UserProcess;
 
 /** @see FileSystemMount.h */
-class FileSystemMount;
+struct FileSystemMount;
 
 /**
  * Actions which can be specified in a CoreMessage

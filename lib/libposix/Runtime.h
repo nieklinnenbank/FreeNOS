@@ -36,7 +36,7 @@
  * @param argv Argument values.
  * @return Exit status.
  */
-extern C int main(int argc, char **argv);
+int main(int argc, char **argv);
 
 /**
  * Retrieve the ProcessID of the FileSystemMount for the given path.

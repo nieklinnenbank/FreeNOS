@@ -27,7 +27,7 @@
 
 /** Forward declaration. */
 class API;
-class CPUState;
+struct CPUState;
 
 /**
  * Function which is called when the CPU is interrupted. 
