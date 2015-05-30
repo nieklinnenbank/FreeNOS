@@ -82,9 +82,7 @@ class ARMKernel : public Kernel
     /**
      * Constructor function.
      */
-    ARMKernel(Size memorySize,
-              Address kernelAddress,
-              Size kernelSize);
+    ARMKernel(Address kernel, Size size, Size memorySize);
 
     /**
      * Hooks a function to an hardware interrupt.

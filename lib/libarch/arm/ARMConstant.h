@@ -62,6 +62,12 @@
 /** Kernel stack address. */
 #define KERNEL_STACK    0xd0000000
 
+/** Kernel heap address */
+#define KERNEL_HEAP     0x0030000
+
+/** Kernel heap size */
+#define KERNEL_HEAP_SIZE (1024 * 1024)
+
 /** User stack address. */
 #define USER_STACK      0xc0000000
 

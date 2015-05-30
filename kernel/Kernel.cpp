@@ -24,7 +24,7 @@
 #include "Scheduler.h"
 #include "API.h"
 
-Kernel::Kernel(Address kernel, Size size, Memory *memory)
+Kernel::Kernel(Address kernel, Size size, Size memorySize)
     : Singleton<Kernel>(this), m_interrupts(256)
 {
     // Output log banners
@@ -32,7 +32,7 @@ Kernel::Kernel(Address kernel, Size size, Memory *memory)
     Log::instance->write(COPYRIGHT "\r\n");
 
     // Initialize members
-    m_memory = memory;
+    m_memory = new Memory(memorySize);
     m_procs  = new ProcessManager(new Scheduler());
     m_api    = new API();
     m_bootImageAddress = 0;

@@ -17,6 +17,7 @@
 
 #include <FreeNOS/Config.h>
 #include <FreeNOS/Support.h>
+#include <FreeNOS/System.h>
 #include <FreeNOS/arm/ARMKernel.h>
 #include <Macros.h>
 #include "RaspiSerial.h"
@@ -24,7 +25,7 @@
 extern C int kernel_main(void)
 {
     // Initialize heap
-    Memory::initialize(0x00300000);
+    Memory::initialize(KERNEL_HEAP, KERNEL_HEAP_SIZE);
 
     RaspiSerial console;
     console.setMinimumLogLevel(Log::Debug);
@@ -33,9 +34,9 @@ extern C int kernel_main(void)
     constructors();
 
     // Create and run the kernel
-    ARMKernel kernel( 1024 * 1024 * 128 /* total mem    */,
-                      0,                /* kernel start */
-                      1024 * 1024 * 4   /* kernel size  */ );
+    ARMKernel kernel( 0,                /* kernel start */
+                      1024 * 1024 * 4,  /* kernel size  */
+                      1042 * 1024 * 512 /* system memory */ );
 
     kernel.run();
 

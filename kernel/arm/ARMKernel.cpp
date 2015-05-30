@@ -18,8 +18,8 @@
 #include <Log.h>
 #include "ARMKernel.h"
 
-ARMKernel::ARMKernel(Size memorySize, Address kernelAddress, Size kernelSize)
-    : Kernel(memorySize, kernelAddress, kernelSize)
+ARMKernel::ARMKernel(Address kernel, Size size, Size memorySize)
+    : Kernel(kernel, size, memorySize)
 {
     NOTICE("");
 }
