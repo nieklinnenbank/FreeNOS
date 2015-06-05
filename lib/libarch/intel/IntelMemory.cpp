@@ -22,7 +22,7 @@
 #include "IntelMemory.h"
 
 IntelMemory::IntelMemory(Address pageDirectory, BitArray *memoryMap)
-    : VirtualMemory(pageDirectory, memoryMap)
+    : Memory(pageDirectory, memoryMap)
 {
     // Default to the local page directory
     m_pageTableBase = PAGEDIR_LOCAL;
@@ -159,62 +159,6 @@ bool IntelMemory::access(Address virt, Size size, Access flags)
 
         if (!pageTable || !(pageTable[ TABENTRY(virt) ] & flags))
             return false;
-    }
-    return true;
-}
-
-// TODO: this function is broken. It needs to work for things like fork().
-bool IntelMemory::clone(Address pageDirectory)
-{
-    IntelMemory mem(pageDirectory, m_memoryMap), local(0, m_memoryMap);
-    Address phys, virt;
-    Access access;
-
-    // Loop the page directory
-    for (Size i = 0; i < PAGEDIR_MAX; i++)
-    {
-        // Copy reserved flags in the page directory.
-        if (mem.m_pageDirectory[i] & PAGE_RESERVE)
-            m_pageDirectory[i] |= PAGE_RESERVE;
-
-        // Skip entries which are not present.
-        if (!(mem.m_pageDirectory[i] & PAGE_PRESENT))
-            continue;
-
-        Address *pageTable = mem.getPageTable(i * PAGETAB_MAX * PAGESIZE);
-
-        // Walk the page table
-        for (Size j = 0; j < PAGETAB_MAX; j++)
-        {
-            if (!(pageTable[j] & PAGE_PRESENT))
-                continue;
-
-            // Only allocate a new physical page for non-pinned pages
-            if (pageTable[j] & PAGE_PIN)
-                phys = pageTable[j] & PAGEMASK;
-            else
-                phys = ZERO;
-            
-            // Perform the mapping to our page directory
-            virt  = (i * PAGETAB_MAX * PAGESIZE) + (j * PAGESIZE);
-            access = (Access) (pageTable[j] & ~PAGEMASK);
-            map(phys, virt, access);
-            
-            // Only hardcopy if needed
-            if (!(pageTable[j] & PAGE_PIN))
-            {
-                // Map the source page into our local address space
-                Address src = local.map(pageTable[j] & PAGEMASK,
-                                        ZERO, Present | User | Readable);
-
-                // Map the destination page into our local address space
-                Address dest = local.map((getPageTable(i * PAGETAB_MAX * PAGESIZE)[j]) & PAGEMASK,
-                                          ZERO, Present | User | Writable);
-
-                // Copy the page
-                MemoryBlock::copy((void *) dest, (void *) src, PAGESIZE);
-            }
-        }
     }
     return true;
 }

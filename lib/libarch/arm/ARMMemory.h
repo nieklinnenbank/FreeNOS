@@ -19,7 +19,7 @@
 #define __LIBARCH_ARM_MEMORY_H
 
 #include <Types.h>
-#include "VirtualMemory.h"
+#include "Memory.h"
 
 /**
  * Entry inside the page directory of a given virtual address.
@@ -40,7 +40,7 @@
 /**
  * ARM virtual memory implementation.
  */
-class ARMMemory : public VirtualMemory
+class ARMMemory : public Memory
 {
   public:
 
@@ -102,17 +102,6 @@ class ARMMemory : public VirtualMemory
     virtual bool access(Address virt,
                         Size size,
                         Access flags = Present | User | Readable);
-
-    /**
-     * Clone a virtual memory address space.
-     *
-     * Clones the given virtual memory address space
-     * into this VirtualMemory.
-     *
-     * @param pageDirectory Physical address of the page directory to clone.
-     * @return True if clone with success, false otherwise.
-     */
-    virtual bool clone(Address pageDirectory);
 
     /**
      * Release a memory page mapping.

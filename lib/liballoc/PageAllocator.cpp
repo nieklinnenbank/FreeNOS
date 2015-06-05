@@ -19,26 +19,43 @@
 #include <CoreMessage.h>
 #include "PageAllocator.h"
 
-PageAllocator::PageAllocator(Size size)
-    : start(ZERO), allocated(ZERO)
+PageAllocator::PageAllocator(Address base, Size size)
 {
-    // Set heap pointer
-    start = USER_HEAP;
-
-    // Allocate the given bytes
-    allocate(&size);
+    m_base      = base;
+    m_size      = size;
+    m_allocated = 0;
 }
 
 PageAllocator::PageAllocator(PageAllocator *p)
-    : start(p->start), allocated(p->allocated)
 {
+    m_base = p->m_base;
+    m_size = p->m_size;
+    m_allocated = p->m_allocated;
 }
 
-Address PageAllocator::allocate(Size *size)
+Address PageAllocator::base()
+{
+    return m_base;
+}
+
+Size PageAllocator::size()
+{
+    return m_size;
+}
+
+Size PageAllocator::available()
+{
+    return m_size - m_allocated;
+}
+
+Allocator::Result PageAllocator::allocate(Size *size, Address *addr)
 {
     CoreMessage msg;
-    Address ret = start + allocated;
+    
+    // Set return address
+    *addr = m_base + m_allocated;
 
+    // TODO: sanity checks
     // TODO: #warning TODO: perhaps align to page size???
     Size bytes  = *size > PAGEALLOC_MINIMUM ?
                   *size : PAGEALLOC_MINIMUM;
@@ -46,26 +63,27 @@ Address PageAllocator::allocate(Size *size)
     // Fill in the message. */
     msg.action = CreatePrivate;
     msg.size   = bytes;
-    msg.access = VirtualMemory::Present  |
-                 VirtualMemory::User     |
-                 VirtualMemory::Readable |
-                 VirtualMemory::Writable |
-                 VirtualMemory::Reserved;
-    msg.virt   = USER_HEAP + allocated;
+    msg.access = Memory::Present  |
+                 Memory::User     |
+                 Memory::Readable |
+                 Memory::Writable |
+                 Memory::Reserved;
+    msg.virt   = m_base + m_allocated;
     msg.phys   = ZERO;
     msg.type   = IPCType;
     msg.from   = SELF;
     IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
 
     // Update count
-    allocated += msg.size;
+    m_allocated += msg.size;
 
     // Success
     *size = msg.size;
-    return ret;
+    return Success;
 }
 
-void PageAllocator::release(Address addr)
+Allocator::Result PageAllocator::release(Address addr)
 {
-    // TODO
+    // TODO: let the heap shrink if possible
+    return InvalidAddress;
 }

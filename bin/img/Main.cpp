@@ -75,7 +75,7 @@ Size readBootSymbols(char *prog, char *file,
             entry->symbol.type = BootData;
             entry->numRegions  = 1;
             entry->regions[0].virtualAddress = 0;
-            entry->regions[0].access = VirtualMemory::Present | VirtualMemory::User | VirtualMemory::Readable | VirtualMemory::Writable;
+            entry->regions[0].access = Memory::Present | Memory::User | Memory::Readable | Memory::Writable;
             entry->regions[0].size = 0;
             entry->regions[0].data = 0;
 

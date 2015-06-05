@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,35 +60,35 @@ typedef struct MemoryPool
      */
     Address allocate()
     {
-	Address *ptr;
-	Size num = count / sizeof(Address);
-	
-	/* At least one. */
-	if (!num) num++;
+        Address *ptr;
+        Size num = count / sizeof(Address);
+    
+        /* At least one. */
+        if (!num) num++;
 
-	/* Scan bitmap as fast as possible. */
-	for (Size i = 0; i < num; i++)
-	{
-	    /* Point to the correct offset. */
-	    ptr = (Address *) (&blocks) + i;
-	
-	    /* Any blocks free? */
-	    if (*ptr != (Address) ~ZERO)
-	    {
-		/* Find the first free bit. */
-		for (Size bit = 0; bit < sizeof(Address) * 8; bit++)
-		{
-		    if (!(*ptr & 1 << bit))
-		    {
-			*ptr |= (1 << bit);
-			free--;
-			return addr + (((i * sizeof(Address) * 8) + bit) * size);
-		    }
-		}
-	    }
-	}
-	/* Out of memory. */
-	return ZERO;
+        /* Scan bitmap as fast as possible. */
+        for (Size i = 0; i < num; i++)
+        {
+            /* Point to the correct offset. */
+            ptr = (Address *) (&blocks) + i;
+    
+            /* Any blocks free? */
+            if (*ptr != (Address) ~ZERO)
+            {
+                /* Find the first free bit. */
+                for (Size bit = 0; bit < sizeof(Address) * 8; bit++)
+                {
+                    if (!(*ptr & 1 << bit))
+                    {
+                        *ptr |= (1 << bit);
+                        free--;
+                        return addr + (((i * sizeof(Address) * 8) + bit) * size);
+                    }
+                }
+            }
+        }
+        /* Out of memory. */
+        return ZERO;
     }
 
     /**
@@ -97,11 +97,11 @@ typedef struct MemoryPool
      */
     void release(Address a)
     {
-	Size index = (a - addr) / size / 8;
-	Size bit   = (a - addr) / size % 8;
-	
-	free++;
-	blocks[index] &= ~(1 << bit);
+        Size index = (a - addr) / size / 8;
+        Size bit   = (a - addr) / size % 8;
+    
+        free++;
+        blocks[index] &= ~(1 << bit);
     }
 
     /** Points to the next pool of this size (if any). */
@@ -131,40 +131,60 @@ MemoryPool;
  */
 class PoolAllocator : public Allocator
 {
-    public:
+  public:
 
-	/**
-	 * Empty constructor.
-	 */
-	PoolAllocator();
+    /**
+     * Constructor
+     */
+    PoolAllocator();
 
-        /** 
-	 * Allocate a block of memory. 
-	 * @param size Amount of memory in bytes to allocate on input. 
-	 *             On output, the amount of memory in bytes actually allocated. 
-	 * @return New memory block on success and ZERO on failure. 
-	 */
-	Address allocate(Size *size);
+    /**
+     * Get memory size.
+     *
+     * @return Size of memory owned by the Allocator.
+     */
+    virtual Size size();
 
-	/**
-         * Free a block of memory. 
-	 * @param addr Points to memory previously returned by allocate(). 
-	 * @see allocate 
-	 */
-	void release(Address addr);
+    /**
+     * Get memory available.
+     *
+     * @return Size of memory available by the Allocator.
+     */
+    virtual Size available();
 
-    private:
+    /**
+     * Allocate memory.
+     *
+     * @param size Amount of memory in bytes to allocate on input.
+     *             On output, the amount of memory in bytes actually allocated.
+     * @param addr Output parameter which contains the address
+     *             allocated on success.
+     * @return Result value.
+     */
+    virtual Result allocate(Size *size, Address *addr);
 
-	/**
-	 * Creates a new MemoryPool instance.
-	 * @param index Index in the pools array.
-	 * @param cnt Allocate for this many of blocks from our parent.
-	 * @return Pointer to a MemoryPool object on success, ZERO on failure.
-	 */
-        MemoryPool * newPool(Size index, Size cnt);
+    /**
+     * Release memory.
+     *
+     * @param addr Points to memory previously returned by allocate().
+     * @return Result value.
+     *
+     * @see allocate
+     */
+    virtual Result release(Address addr);
 
-	/** Array of memory pools. Index represents the power of two. */
-	MemoryPool *pools[POOL_MAX_POWER];
+  private:
+
+    /**
+     * Creates a new MemoryPool instance.
+     * @param index Index in the pools array.
+     * @param cnt Allocate for this many of blocks from our parent.
+     * @return Pointer to a MemoryPool object on success, ZERO on failure.
+     */
+    MemoryPool * newPool(Size index, Size cnt);
+
+    /** Array of memory pools. Index represents the power of two. */
+    MemoryPool *m_pools[POOL_MAX_POWER];
 };
 
 /**

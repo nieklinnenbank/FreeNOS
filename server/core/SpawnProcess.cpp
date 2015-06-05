@@ -16,7 +16,6 @@
  */
 
 #include <FreeNOS/API.h>
-#include <FreeNOS/Memory.h> 
 #include <String.h>
 #include <Types.h>
 #include <Log.h>

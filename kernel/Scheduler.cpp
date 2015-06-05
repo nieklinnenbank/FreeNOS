@@ -20,6 +20,7 @@
 
 Scheduler::Scheduler()
 {
+    DEBUG("");
     m_index = 0;
 }
 

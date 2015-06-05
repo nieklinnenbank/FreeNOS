@@ -27,7 +27,7 @@
 extern C int kernel_main()
 {
     // Initialize physical memory.
-    Memory::initialize(KERNEL_HEAP, KERNEL_HEAP_SIZE);
+    Kernel::heap(KERNEL_HEAP, KERNEL_HEAP_SIZE);
 
     // Start kernel debug serial console
     // TODO: can I re-use the user-land driver here somehow????

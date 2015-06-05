@@ -93,40 +93,43 @@ void setupHeap()
 {
     Allocator *parent;
     PoolAllocator *pool;
-    Address heapAddr, heapOff;
+    Address heapAddr;
     Size parentSize;
 
     /* Only the core server allocates directly. */
     if (ProcessCtl(SELF, GetPID) == CORESRV_PID)
     {
-        VMCtlAllocator alloc(PAGESIZE * 4);
+        VMCtlAllocator alloc(USER_HEAP, USER_HEAP_SIZE);
 
-        /* Allocate instance copy on vm pages itself. */
-        heapAddr   = alloc.getHeapStart();
+        // Pre-allocate 4 pages
+        Size sz = PAGESIZE * 4;
+        Address addr;
+        alloc.allocate(&sz, &addr);
+
+        // Allocate instance copy on vm pages itself
+        heapAddr   = alloc.base();
         parent     = new (heapAddr) VMCtlAllocator(&alloc);
         parentSize = sizeof(VMCtlAllocator);
     }
     else
     {
-        PageAllocator alloc(PAGESIZE * 4);
+        PageAllocator alloc(USER_HEAP, USER_HEAP_SIZE);
 
-        /* Allocate instance copy on vm pages itself. */
-        heapAddr   = alloc.getStart();
+        // Pre-allocate 4 pages
+        Size sz = PAGESIZE * 4;
+        Address addr;
+        alloc.allocate(&sz, &addr);
+
+        // Allocate instance copy on vm pages itself
+        heapAddr   = alloc.base();
         parent     = new (heapAddr) PageAllocator(&alloc);
         parentSize = sizeof(PageAllocator);
     }
-    /* Make a pool. */
+    // Make a pool
     pool = new (heapAddr + parentSize) PoolAllocator();
-    
-    /* Point to the next free space. */
-    heapOff   = parentSize + sizeof(PoolAllocator);
-    heapAddr += heapOff;
-
-    /* Setup the userspace heap allocator region. */
-    pool->region(heapAddr, (PAGESIZE * 4) - heapOff);
     pool->setParent(parent);
 
-    /* Set default allocator. */
+    // Set default allocator
     Allocator::setDefault(pool);
 }
 

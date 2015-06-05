@@ -26,7 +26,7 @@
 #include <FreeNOS/API.h>
 #include <Types.h>
 #include <Macros.h>
-#include <VirtualMemory.h>
+#include <Memory.h>
 
 /** @see UserProcess.h */
 struct UserProcess;
@@ -64,7 +64,7 @@ CoreAction;
  * Core operation message.
  */
 // TODO: remove the UGLY ::Range inheritance...
-typedef struct CoreMessage : public Message, public VirtualMemory::Range
+typedef struct CoreMessage : public Message, public Memory::Range
 {
     union
     {

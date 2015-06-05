@@ -35,51 +35,77 @@
  */
 class PageAllocator : public Allocator
 {
-    public:
+  public:
 
-	/**
-	 * Class constructor.
-	 * @param size Initial size in bytes.
-	 */
-	PageAllocator(Size size);
+    /**
+     * Class constructor.
+     *
+     * @param base Starting address to allocate.
+     * @param size Maximum size in bytes.
+     */
+    PageAllocator(Address start, Size size);
 
-	/**
-	 * Copy constructor.
-	 * @param p PageAllocator instance pointer.
-	 */
-	PageAllocator(PageAllocator *p);
+    /**
+     * Copy constructor.
+     *
+     * @param p PageAllocator instance pointer.
+     */
+    PageAllocator(PageAllocator *p);
 
-        /**
-         * Allocates a new memory page, if neccessary.
-	 * @param size Amount of memory in bytes to allocate on input. 
-	 *             On output, the amount of memory in bytes actually allocated.
-         * @return New memory block on success and ZERO on failure.
-         */
-        Address allocate(Size *size);
+    /**
+     * Get base address.
+     *
+     * Returns the first address of the allocated memory region.
+     *
+     * @return Start address.
+     */
+    Address base();
 
-        /**
-         * Unmaps memory pages, if possible.
-         * @param address Points to memory previously returned by allocate().
-         * @see allocate
-         */
-        void release(Address addr);
+    /**
+     * Get memory size.
+     *
+     * @return Size of memory owned by the Allocator.
+     */
+    virtual Size size();
 
-	/**
-	 * Get the first address of the allocated memory region.
-	 * @return Start address.
-	 */
-	Address getStart()
-	{
-	    return start;
-	}
+    /**
+     * Get memory available.
+     *
+     * @return Size of memory available by the Allocator.
+     */
+    virtual Size available();
 
-    private:
+    /**
+     * Allocate memory.
+     *
+     * @param size Amount of memory in bytes to allocate on input. 
+     *             On output, the amount of memory in bytes actually allocated.
+     * @param addr Output parameter which contains the address
+     *             allocated on success.
+     * @return New memory block on success and ZERO on failure.
+     */
+    virtual Result allocate(Size *size, Address *addr);
 
-	/** Start of the allocated memory region. */
-	Address start;
-	
-	/** Total number of bytes allocated. */
-	Size allocated;
+    /**
+     * Release memory.
+     *
+     * @param addr Points to memory previously returned by allocate().
+     * @return Result value.
+     *
+     * @see allocate
+     */
+    virtual Result release(Address addr);
+
+  private:
+
+    /** Start of the allocated memory region. */
+    Address m_base;
+    
+    /** Maximum size to allocate */
+    Size m_size;
+
+    /** Total number of bytes allocated. */
+    Size m_allocated;
 };
 
 /**

@@ -20,7 +20,7 @@
 
 void CoreServer::createPrivate(CoreMessage *msg)
 {
-    VirtualMemory::Range range;
+    Memory::Range range;
 
     // Set mapping flags
     // TODO: only allow pinned pages for uid == 0!

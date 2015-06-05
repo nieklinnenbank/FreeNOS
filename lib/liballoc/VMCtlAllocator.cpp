@@ -20,49 +20,67 @@
 #include <Macros.h>
 #include "VMCtlAllocator.h"
 
-VMCtlAllocator::VMCtlAllocator(Size size)
+VMCtlAllocator::VMCtlAllocator(Address base, Size size)
 {
-    /* Set heap pointers. */
-    heapStart = USER_HEAP;
-    allocated = ZERO;
-
-    /* Allocate the given bytes. */
-    allocate(&size);
+    // set members
+    m_base      = base;
+    m_allocated = 0;
+    m_size      = 0;
 }
 
 VMCtlAllocator::VMCtlAllocator(VMCtlAllocator *p)
-    : heapStart(p->heapStart), allocated(p->allocated)
 {
+    m_base      = p->m_base;
+    m_allocated = p->m_allocated;
+    m_size      = p->m_size;
 }
 
-Address VMCtlAllocator::allocate(Size *size)
+Size VMCtlAllocator::size()
 {
-    Address ret = heapStart + allocated;
-    VirtualMemory::Range range;
+    return m_size;
+}
+
+Size VMCtlAllocator::available()
+{
+    return m_size - m_allocated;
+}
+
+Address VMCtlAllocator::base()
+{
+    return m_base;
+}
+
+Allocator::Result VMCtlAllocator::allocate(Size *size, Address *addr)
+{
+    Memory::Range range;
     Size bytes;
+
+    // Set address
+    *addr = m_base + m_allocated;
 
     /* Start allocating. */
     for (bytes = 0; bytes < *size; bytes += PAGESIZE)
     {
-        range.virt  = ret + bytes;
+        range.virt  = *addr + bytes;
         range.phys  = ZERO;
         range.size  = PAGESIZE;
-        range.access = VirtualMemory::Present |
-                       VirtualMemory::User |
-                       VirtualMemory::Readable |
-                       VirtualMemory::Writable;
+        range.access = Memory::Present |
+                       Memory::User |
+                       Memory::Readable |
+                       Memory::Writable;
     
         VMCtl(SELF, Map, &range);
     }
-    /* Update count. */
-    allocated += bytes;
+    // Update count
+    m_allocated += bytes;
 
-    /* Success. */
+    // Success
     *size = bytes;
-    return ret;
+    return Success;
 }
 
-void VMCtlAllocator::release(Address addr)
+Allocator::Result VMCtlAllocator::release(Address addr)
 {
     // TODO
+    return InvalidAddress;
 }

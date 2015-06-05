@@ -15,10 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <Log.h>
 #include "API.h"
 
 API::API()
 {
+    DEBUG("");
+
     // Register generic API handlers
     m_apis.fill(ZERO);
     m_apis.insert(IPCMessageNumber, (Handler *) IPCMessageHandler);

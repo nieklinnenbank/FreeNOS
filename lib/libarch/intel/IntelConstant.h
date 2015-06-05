@@ -100,6 +100,9 @@
 /** User heap address. */
 #define USER_HEAP       0xb0000000
 
+/** User heap size (128MB). */
+#define USER_HEAP_SIZE  (1024 * 1024 * 128)
+
 #define PAGE_NONE       0
 
 /** Marks a page entry present. */

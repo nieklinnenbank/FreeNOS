@@ -19,22 +19,38 @@
 #include <Macros.h>
 #include "Allocator.h"
 
-Allocator * Allocator::_default = ZERO;
+Allocator * Allocator::m_default = ZERO;
 
-Allocator::Allocator() : parent(ZERO)
+Allocator::Allocator()
 {
+    m_parent = ZERO;
 }
 
 Allocator::~Allocator()
 {
 }
 
-Address Allocator::aligned(Address input)
+void Allocator::setParent(Allocator *parent)
 {
-    Address corrected = input;
+    m_parent = parent;
+}
 
-    if (input % MEMALIGN)
-        corrected += MEMALIGN - (input % MEMALIGN);
+Allocator * Allocator::getDefault()
+{
+    return m_default;
+}
+
+void Allocator::setDefault(Allocator *alloc)
+{
+    m_default = alloc;
+}
+
+Address Allocator::aligned(Address addr, Size boundary)
+{
+    Address corrected = addr;
+
+    if (addr % boundary)
+        corrected += boundary - (addr % boundary);
     
     return corrected;
 }

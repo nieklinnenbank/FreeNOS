@@ -27,6 +27,7 @@
 
 /** Forward declaration. */
 class API;
+class BitAllocator;
 struct CPUState;
 
 /**
@@ -91,9 +92,23 @@ class Kernel : public Singleton<Kernel>
     Kernel(Address kernel, Size size, Size memorySize);
 
     /**
-     * Get memory.
+     * Initialize heap.
+     *
+     * This function sets up the kernel heap for
+     * dynamic memory allocation with new() and delete()
+     * operators. It must be called before any object
+     * is created using new().
+     *
+     * @return Zero on success or error code on failure.
      */
-    Memory * getMemory();
+    static Error heap(Address base, Size size);
+
+    /**
+     * Get physical memory allocator.
+     *
+     * @return BitAllocator object pointer
+     */
+    BitAllocator * getMemory();
 
     /**
      * Get process manager.
@@ -155,8 +170,8 @@ class Kernel : public Singleton<Kernel>
 
   protected:
 
-    /** Memory object */
-    Memory *m_memory;
+    /** Physical memory allocator */
+    BitAllocator *m_memory;
 
     /** Process Manager */
     ProcessManager *m_procs;

@@ -28,7 +28,7 @@ CoreServer::CoreServer()
     : IPCServer<CoreServer, CoreMessage>(this)
 {
     SystemInformation info;
-    VirtualMemory::Range range;
+    Memory::Range range;
     BootImage *image;
     BootSymbol *symbol;
 

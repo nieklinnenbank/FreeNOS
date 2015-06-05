@@ -18,18 +18,19 @@
 #include <FreeNOS/API.h>
 #include <FreeNOS/Config.h>
 #include <FreeNOS/Kernel.h>
+#include <BitAllocator.h>
 
 Error SystemInfoHandler(SystemInformation *info)
 {
-    Memory *memory = Kernel::instance->getMemory();
+    BitAllocator *memory = Kernel::instance->getMemory();
 
     // TODO: Verify memory access
 
     // Fill in our current information
     info->version          = VERSIONCODE;
-    info->memorySize       = memory->getTotalMemory();
-    info->memoryAvail      = memory->getAvailableMemory();
-    info->memoryBitArray   = (Address) memory->getMemoryBitArray()->array();
+    info->memorySize       = memory->size();
+    info->memoryAvail      = memory->available();
+    info->memoryBitArray   = (Address) memory->getBitArray()->array();
 
     // TODO: this interface could be improved using libarch?
     info->bootImageAddress = Kernel::instance->getBootImageAddress();

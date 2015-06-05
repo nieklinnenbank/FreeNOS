@@ -88,4 +88,16 @@ typedef struct CPUState
 }
 CPUState;
 
+/**
+ *
+ */
+class ARMCore : public Core
+{
+  public:
+
+    ARMCore();
+
+    virtual ~ARMCore();
+};
+
 #endif /* __ARM_CORE_H */

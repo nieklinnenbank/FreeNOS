@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBARCH_VIRTUALMEMORY_H
-#define __LIBARCH_VIRTUALMEMORY_H
+#ifndef __LIBARCH_MEMORY_H
+#define __LIBARCH_MEMORY_H
 
 #include <FreeNOS/System.h>
 #include <Types.h>
@@ -27,7 +27,7 @@
 /**
  * Virtual memory abstract interface.
  */
-class VirtualMemory
+class Memory
 {
   public:
 
@@ -68,13 +68,12 @@ class VirtualMemory
      * @param pageDirectory Physical address of the page directory.
      * @param memoryMap BitArray of physical memory page allocations.
      */
-    VirtualMemory(Address pageDirectory,
-                  BitArray *memoryMap);
+    Memory(Address pageDirectory, BitArray *memoryMap);
 
     /**
      * Destructor
      */
-    virtual ~VirtualMemory();
+    virtual ~Memory();
 
     /**
      * Map a physical page to a virtual address.
@@ -134,17 +133,6 @@ class VirtualMemory
                         Access flags = Present | User | Readable) = 0;
 
     /**
-     * Clone a virtual memory address space.
-     *
-     * Clones the given virtual memory address space
-     * into this VirtualMemory.
-     *
-     * @param pageDirectory Physical address of the page directory to clone.
-     * @return True if clone with success, false otherwise.
-     */
-    virtual bool clone(Address pageDirectory) = 0;
-
-    /**
      * Release a memory page mapping.
      *
      * @param virt Virtual address of the page to release.
@@ -181,4 +169,4 @@ class VirtualMemory
     BitArray *m_memoryMap;
 };
 
-#endif /* __LIBARCH_VIRTUALMEMORY_H */
+#endif /* __LIBARCH_MEMORY_H */

@@ -20,7 +20,7 @@
 
 void CoreServer::releasePrivate(CoreMessage *msg)
 {
-    VirtualMemory::Range range;
+    Memory::Range range;
 
     range.virt = msg->virt;
     range.size = msg->size;

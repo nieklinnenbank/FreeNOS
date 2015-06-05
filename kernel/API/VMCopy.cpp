@@ -16,6 +16,7 @@
  */
 
 #include <MemoryBlock.h>
+#include <BitAllocator.h>
 #include "VMCopy.h"
 
 Error VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
@@ -32,7 +33,7 @@ Error VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
         return API::NotFound;
     }
     // TODO: Verify memory addresses
-    BitArray *bits = Kernel::instance->getMemory()->getMemoryBitArray();
+    BitArray *bits = Kernel::instance->getMemory()->getBitArray();
     Arch::Memory local(0, bits);
     Arch::Memory remote(proc->getPageDirectory(), bits);
 

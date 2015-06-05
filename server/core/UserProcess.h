@@ -26,7 +26,6 @@
 #ifndef __KERNEL__
 
 #include <FreeNOS/Process.h>
-#include <FreeNOS/Memory.h>
 #include <FileSystemPath.h>
 #include <Types.h>
 

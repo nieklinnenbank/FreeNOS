@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     u64 t1 = 0, t2 = 0;
     ProcessID pid = 0;
     ProcessInfo info;
-    VirtualMemory::Range range;
+    Memory::Range range;
     char *foo[128];
 
     t1 = timestamp();

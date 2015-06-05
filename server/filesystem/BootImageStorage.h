@@ -58,15 +58,15 @@ class BootImageStorage : public Storage
         u8 *base;
         
         // TODO: filesystems should not be allowed to do this. Replace with an asynchronous call to coreserver.
-        VirtualMemory::Range range;
+        Memory::Range range;
         range.virt  = 0;
         range.phys  = info.bootImageAddress;
         range.size  = info.bootImageSize;
-        range.access = VirtualMemory::Present |
-                       VirtualMemory::User |
-                       VirtualMemory::Readable |
-                       VirtualMemory::Writable |
-                       VirtualMemory::Pinned;
+        range.access = Memory::Present |
+                       Memory::User |
+                       Memory::Readable |
+                       Memory::Writable |
+                       Memory::Pinned;
 
         if ((result = VMCtl(SELF, Map, &range)) != API::Success)
         {

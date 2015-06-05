@@ -31,7 +31,7 @@ int forkexec(const char *path, const char *argv[])
     CoreMessage msg;
     ExecutableFormat *fmt;
     MemoryRegion regions[16];
-    VirtualMemory::Range range;
+    Memory::Range range;
     uint count = 0;
     pid_t pid = 0;
     int numRegions = 0;
@@ -72,10 +72,10 @@ int forkexec(const char *path, const char *argv[])
         range.virt  = regions[i].virtualAddress;
         range.phys  = ZERO;
         range.size  = regions[i].size;
-        range.access = VirtualMemory::Present |
-                       VirtualMemory::User |
-                       VirtualMemory::Readable |
-                       VirtualMemory::Writable;
+        range.access = Memory::Present |
+                       Memory::User |
+                       Memory::Readable |
+                       Memory::Writable;
         
         // Create mapping first
         if (VMCtl(pid, Map, &range) != 0)

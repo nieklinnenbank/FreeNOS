@@ -34,11 +34,11 @@ Error VGA::initialize()
     mem.size      = PAGESIZE;
     mem.virt      = ZERO;
     mem.phys      = VGA_PADDR;
-    mem.access    = VirtualMemory::Present |
-                    VirtualMemory::User |
-                    VirtualMemory::Readable |
-                    VirtualMemory::Writable |
-                    VirtualMemory::Pinned;
+    mem.access    = Memory::Present |
+                    Memory::User |
+                    Memory::Readable |
+                    Memory::Writable |
+                    Memory::Pinned;
     mem.type      = IPCType;
     IPCMessage(CORESRV_PID, API::SendReceive, &mem, sizeof(mem));
 

@@ -17,19 +17,21 @@
 
 #include <FreeNOS/System.h>
 #include <MemoryBlock.h>
+#include <BitAllocator.h>
 #include "IntelProcess.h"
 
 IntelProcess::IntelProcess(ProcessID id, Address entry)
     : Process(id, entry)
 {
     Address stack, stackBase, *pageDir;
-    Memory *memory = Kernel::instance->getMemory();
+    BitAllocator *memory = Kernel::instance->getMemory();
     CPUState *regs;
-    Arch::Memory local(0, memory->getMemoryBitArray());
+    Arch::Memory local(0, memory->getBitArray());
     Arch::Memory::Range range;
+    Size dirSize = PAGESIZE;
 
     // Allocate and map page directory
-    m_pageDirectory = memory->allocatePhysical(PAGESIZE);
+    memory->allocate(&dirSize, &m_pageDirectory);
     pageDir = (Address *) local.map(m_pageDirectory, 0,
                                     Arch::Memory::Present |
                                     Arch::Memory::Readable |
@@ -44,7 +46,7 @@ IntelProcess::IntelProcess(ProcessID id, Address entry)
     local.unmap((Address)pageDir);
 
     // Obtain memory mappings
-    Arch::Memory mem(m_pageDirectory, memory->getMemoryBitArray());
+    Arch::Memory mem(m_pageDirectory, memory->getBitArray());
 
     // User stack.
     range.phys   = 0;
@@ -106,8 +108,8 @@ IntelProcess::IntelProcess(ProcessID id, Address entry)
 
 IntelProcess::~IntelProcess()
 {
-    Memory *memory = Kernel::instance->getMemory();
-    Arch::Memory mem(getPageDirectory(), memory->getMemoryBitArray());
+    BitAllocator *memory = Kernel::instance->getMemory();
+    Arch::Memory mem(getPageDirectory(), memory->getBitArray());
 
     // Mark all our pages free
     mem.releaseAll();

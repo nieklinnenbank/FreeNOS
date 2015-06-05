@@ -38,17 +38,36 @@
 /** Page entry bit shift. */
 #define PAGESHIFT       12
 
-/** Page table bit shift. */
-#define DIRSHIFT        22
+/**
+ * Page table bit shift.
+ *
+ * In ARM, the first-level page directory entry is selected
+ * by bits [31:20] from the virtual address, plus two 0 bytes.
+ *
+ * @see ARM Architecture Reference Manual, page 724.
+ */
+#define DIRSHIFT        20
 
-/** Intel uses 4K pages. */
+/** ARM uses 4K pages. */
 #define PAGESIZE        4096
 
-/** Number of entries in the page directory. */
+/** Number of entries in the first-level page table.
+ *
+ * Variable??? Depends on TTBCR, which sets the size of TTBR0.
+ * TTBR0 is the first-level page table for the application.
+ * TTBR1 is always 16KB, the first-level page table of the kernel/OS.
+ */
 #define PAGEDIR_MAX     1024
 
-/** Number of entries in a page table. */
-#define PAGETAB_MAX     1024
+/**
+ * Number of entries in a second-level page table.
+ *
+ * Second-level page tables are 1KB in size and map 1MB of virtual memory.
+ * Second-level page tables must be aligned on 1KB boundaries.
+ *
+ * @see ARM Architecture Reference Manual, page 734.
+ */
+#define PAGETAB_MAX     256
 
 /** Mask to find the page. */
 #define PAGEMASK        0xfffff000 

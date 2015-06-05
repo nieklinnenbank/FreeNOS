@@ -22,6 +22,7 @@
 ProcessManager::ProcessManager(Scheduler *scheduler)
     : m_procs(MAX_PROCS)
 {
+    DEBUG("m_procs = " << MAX_PROCS);
     m_scheduler = scheduler;
     m_current   = ZERO;
     m_previous  = ZERO;

@@ -102,7 +102,7 @@ int ELF::regions(MemoryRegion *regions, Size max)
     }
     regions[i].virtualAddress = segments[i].virtualAddress;
     regions[i].size   = segments[i].memorySize;
-    regions[i].access = VirtualMemory::Present | VirtualMemory::User | VirtualMemory::Readable | VirtualMemory::Writable;
+    regions[i].access = Memory::Present | Memory::User | Memory::Readable | Memory::Writable;
     regions[i].data   = new u8[segments[i].memorySize];
     
     /* Read segment contents from file. */

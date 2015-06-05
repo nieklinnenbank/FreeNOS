@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,9 @@
 
 #include <Log.h>
 #include <ListIterator.h>
+#include <BitAllocator.h>
+#include <BubbleAllocator.h>
+#include <PoolAllocator.h>
 #include "Kernel.h"
 #include "Memory.h"
 #include "Process.h"
@@ -32,20 +35,37 @@ Kernel::Kernel(Address kernel, Size size, Size memorySize)
     Log::instance->write(COPYRIGHT "\r\n");
 
     // Initialize members
-    m_memory = new Memory(memorySize);
+    m_memory = new BitAllocator(0, memorySize, PAGESIZE);
     m_procs  = new ProcessManager(new Scheduler());
     m_api    = new API();
     m_bootImageAddress = 0;
 
     // Mark kernel memory used
     for (Size i = 0; i < size; i += PAGESIZE)
-        m_memory->allocatePhysicalAddress(kernel + i);
+        m_memory->allocate(kernel + i);
 
     // Clear interrupts table
     m_interrupts.fill(ZERO);
 }
 
-Memory * Kernel::getMemory()
+Error Kernel::heap(Address base, Size size)
+{
+    Allocator *bubble, *pool;
+    Size meta = sizeof(BubbleAllocator) + sizeof(PoolAllocator);
+
+    NOTICE("base = " << base << " size = " << size);
+
+    // Setup the dynamic memory heap
+    bubble = new (base) BubbleAllocator(base + meta, size - meta);
+    pool   = new (base + sizeof(BubbleAllocator)) PoolAllocator();
+    pool->setParent(bubble);
+
+    // Set default allocator
+    Allocator::setDefault(pool);
+    return 0;
+}
+
+BitAllocator * Kernel::getMemory()
 {
     return m_memory;
 }

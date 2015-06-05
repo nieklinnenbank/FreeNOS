@@ -31,53 +31,60 @@
  */
 class BubbleAllocator : public Allocator
 {
-    public:
+  public:
 
-	/**
-	 * Empty class constructor.
-	 */
-	BubbleAllocator();
+    /**
+     * Class constructor.
+     *
+     * @param start Memory address to start allocating from.
+     * @param size Maximum size of the memory region to allocate from.
+     */
+    BubbleAllocator(Address start, Size size);
 
-	/**
-	 * Class constructor.
-	 * @param start Memory address to start allocating from.
-	 * @param size Maximum size of the memory region to allocate from.
-	 */
-	BubbleAllocator(Address start, Size size);
+    /**
+     * Get memory size.
+     *
+     * @return Size of memory owned by the Allocator.
+     */
+    virtual Size size();
 
-        /**
-         * Allocate a block of memory.
-	 * @param size Amount of memory in bytes to allocate on input. 
-	 *             On output, the amount of memory in bytes actually allocated.
-         * @return New memory block on success and ZERO on failure.
-         */
-        Address allocate(Size *size);
+    /**
+     * Get memory available.
+     *
+     * @return Size of memory available by the Allocator.
+     */
+    virtual Size available();
 
-        /**
-         * Does nothing as we are a bubble.
-         * @param address Points to memory previously returned by allocate().
-         * @see allocate
-         */
-        void release(Address addr);
-	
-        /** 
-         * Use the given memory address and size for the allocator. 
-         * Allocators are free to use multiple memory regions for allocation. 
-         * @param address Memory address to use. 
-         * @param size Size of the memory address. 
-	 */
-	void region(Address addr, Size size);
+    /**
+     * Allocate memory
+     *
+     * @param size Amount of memory in bytes to allocate on input. 
+     *             On output, the amount of memory in bytes actually allocated.
+     * @return New memory block on success and ZERO on failure.
+     */
+    virtual Result allocate(Size *size, Address *addr);
 
-    private:
+    /**
+     * Release memory.
+     *
+     * Does nothing for BubbleAllocator.
+     *
+     * @param address Points to memory previously returned by allocate().
+     *
+     * @see allocate
+     */
+    virtual Result release(Address addr);
     
-	/** Memory region to allocate from. */
-	u8 *start;
-	
-	/** Current "top" of the growing bubble. */
-	u8 *current;
-	
-	/** Size of the memory region. */
-	Size size;
+  private:
+    
+    /** Memory region to allocate from. */
+    u8 *m_start;
+    
+    /** Current "top" of the growing bubble. */
+    u8 *m_current;
+    
+    /** Size of the memory region. */
+    Size m_size;
 };
 
 /** 

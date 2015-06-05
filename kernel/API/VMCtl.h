@@ -49,12 +49,12 @@ MemoryOperation;
  * @return Zero on success or error code on failure.
  */
 inline Error VMCtl(ProcessID procID, MemoryOperation op,
-                   VirtualMemory::Range *range = ZERO)
+                   Memory::Range *range = ZERO)
 {
     return trapKernel3(API::VMCtlNumber, procID, op, (Address) range);
 }
 
-extern Error VMCtlHandler(ProcessID procID, MemoryOperation op, VirtualMemory::Range *range);
+extern Error VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range);
 
 /**
  * @}

@@ -39,24 +39,24 @@ void __assertFailure(const char *fmt, ...)
 
 int __assertRead(Address addr)
 {
-    VirtualMemory::Range range;
+    Memory::Range range;
 
     range.virt   = addr;
     range.phys   = ZERO;
     range.size   = sizeof(Address);
-    range.access = VirtualMemory::Present | VirtualMemory::User | VirtualMemory::Readable;
+    range.access = Memory::Present | Memory::User | Memory::Readable;
 
     return VMCtl(SELF, Access, &range);
 }
 
 int __assertWrite(Address addr)
 {
-    VirtualMemory::Range range;
+    Memory::Range range;
 
     range.virt   = addr;
     range.phys   = ZERO;
     range.size   = sizeof(Address);
-    range.access = VirtualMemory::Present | VirtualMemory::User | VirtualMemory::Readable;
+    range.access = Memory::Present | Memory::User | Memory::Readable;
 
     return VMCtl(SELF, Access, &range);
 }

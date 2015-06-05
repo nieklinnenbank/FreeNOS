@@ -23,9 +23,8 @@
  * @{  
  */
 
+#include <FreeNOS/System.h>
 #include <FreeNOS/API.h>
-#include <FreeNOS/Process.h>
-#include <FreeNOS/Memory.h>
 #include <IPCServer.h>
 #include <UserProcess.h>
 #include <FileSystemMount.h>

@@ -18,8 +18,6 @@
 #ifndef __LIBTEST_TESTCASE_H
 #define __LIBTEST_TESTCASE_H
 
-#include <MemoryBlock.h>
-
 /*
  * Testcases sometimes need to access private members
  * of a class. This define makes sure that a TestCase
@@ -34,6 +32,7 @@
 #define protected public
 #endif
 
+#include <MemoryBlock.h>
 #include <stdio.h>
 #include <List.h>
 #include <Macros.h>

@@ -20,6 +20,7 @@
 #include <Macros.h>
 #include <List.h>
 #include <ListIterator.h>
+#include <BitAllocator.h>
 #include <Vector.h>
 #include <MemoryBlock.h>
 #include <String.h>
@@ -171,7 +172,7 @@ bool IntelKernel::loadBootImage()
 {
     MultibootModule *mod;
     BootImage *image;
-    Arch::Memory virt(0, m_memory->getMemoryBitArray());
+    Arch::Memory virt(0, m_memory->getBitArray());
 
     // Startup boot modules
     for (Size n = 0; n < multibootInfo.modsCount; n++)
@@ -181,9 +182,7 @@ bool IntelKernel::loadBootImage()
 
         // Mark its memory used
         for (Address a = mod->modStart; a < mod->modEnd; a += PAGESIZE)
-        {
-            m_memory->allocatePhysicalAddress(a);
-        }
+            m_memory->allocate(a);
 
         // Is this a BootImage?
         if (str.match("*.img.gz"))
@@ -219,10 +218,11 @@ bool IntelKernel::loadBootImage()
 void IntelKernel::loadBootProcess(BootImage *image, Address imagePAddr, Size index)
 {
     Address imageVAddr = (Address) image, args;
+    Size args_size = ARGV_SIZE;
     BootSymbol *program;
     BootSegment *segment;
     Process *proc;
-    Arch::Memory local(0, Kernel::instance->getMemory()->getMemoryBitArray());
+    Arch::Memory local(0, Kernel::instance->getMemory()->getBitArray());
     
     // Point to the program and segments table
     program = &((BootSymbol *) (imageVAddr + image->symbolTableOffset))[index];
@@ -238,7 +238,7 @@ void IntelKernel::loadBootProcess(BootImage *image, Address imagePAddr, Size ind
 
     // Obtain process memory
     Arch::Memory mem(proc->getPageDirectory(),
-                     getMemory()->getMemoryBitArray());
+                     getMemory()->getBitArray());
     
     // Map program segment into it's virtual memory
     for (Size i = 0; i < program->segmentsCount; i++)
@@ -255,7 +255,7 @@ void IntelKernel::loadBootProcess(BootImage *image, Address imagePAddr, Size ind
     }
 
     // Map and copy program arguments
-    args = m_memory->allocatePhysical(PAGESIZE);
+    m_memory->allocate(&args_size, &args);
     mem.map(args, ARGV_ADDR, Arch::Memory::Present | Arch::Memory::User | Arch::Memory::Writable);
     MemoryBlock::copy( (char *) local.map(args), program->name, ARGV_SIZE);
 

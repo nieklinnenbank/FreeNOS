@@ -37,7 +37,7 @@ class VMCtlAllocator : public Allocator
      * Class constructor.
      * @param size Initial size in bytes.
      */
-    VMCtlAllocator(Size size);
+    VMCtlAllocator(Address base, Size size);
 
     /**
      * Copy constructor.
@@ -46,36 +46,57 @@ class VMCtlAllocator : public Allocator
     VMCtlAllocator(VMCtlAllocator *p);
 
     /**
-     * Allocates a new memory page, if neccessary.
-     * @param size Amount of memory in bytes to allocate on input. 
-     *             On output, the amount of memory in bytes actually allocated.
-     * @return New memory block on success and ZERO on failure.
+     * Get memory size.
+     *
+     * @return Size of memory owned by the Allocator.
      */
-    Address allocate(Size *size);
+    virtual Size size();
 
     /**
-     * Unmaps memory pages, if possible.
-     * @param address Points to memory previously returned by allocate().
+     * Get memory available.
+     *
+     * @return Size of memory available by the Allocator.
+     */
+    virtual Size available();
+
+    /**
+     * Get base address.
+     *
+     * @return Base address
+     */
+    Address base();
+
+    /**
+     * Allocate memory.
+     *
+     * @param size Amount of memory in bytes to allocate on input.
+     *             On output, the amount of memory in bytes actually allocated.
+     * @param addr Output parameter which contains the address
+     *             allocated on success.
+     * @return Result value.
+     */
+    virtual Result allocate(Size *size, Address *addr);
+
+    /**
+     * Release memory.
+     *
+     * @param addr Points to memory previously returned by allocate().
+     * @return Result value.
+     *
      * @see allocate
      */
-    void release(Address addr);
-
-    /**
-     * Get start address of the heap.
-     * @return Start heap address.
-     */
-    Address getHeapStart()
-    {
-        return heapStart;
-    }
+    virtual Result release(Address addr);
 
   private:
 
     /** Start of the current heap. */
-    Address heapStart;
+    Address m_base;
     
     /** Total number of bytes allocated. */
-    Size allocated;
+    Size m_allocated;
+
+    /** Size of the heap space */
+    Size m_size;
 };
 
 /**

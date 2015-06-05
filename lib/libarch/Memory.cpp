@@ -17,21 +17,20 @@
 
 #include <FreeNOS/API.h>
 #include <FreeNOS/Kernel.h>
-#include "VirtualMemory.h"
+#include "Memory.h"
 
-VirtualMemory::VirtualMemory(Address pageDirectory,
-                             BitArray *memoryMap)
+Memory::Memory(Address pageDirectory, BitArray *memoryMap)
 {
     m_memoryMap = memoryMap;
 }
 
-VirtualMemory::~VirtualMemory()
+Memory::~Memory()
 {
     if (m_memoryMap)
         delete m_memoryMap;
 }
 
-Address VirtualMemory::mapRange(Range *range)
+Address Memory::mapRange(Range *range)
 {
     Address addr = 0;
 
@@ -62,13 +61,13 @@ Address VirtualMemory::mapRange(Range *range)
     return addr;
 }
 
-void VirtualMemory::unmapRange(Range *range)
+void Memory::unmapRange(Range *range)
 {
     for (Size i = 0; i < range->size; i += PAGESIZE)
         unmap(range->virt + i);
 }
 
-void VirtualMemory::releaseRange(Range *range)
+void Memory::releaseRange(Range *range)
 {
     for (Size i = 0; i < range->size; i += PAGESIZE)
     {

@@ -15,10 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <BitAllocator.h>
 #include "VMCtl.h"
 #include "ProcessID.h"
 
-Error VMCtlHandler(ProcessID procID, MemoryOperation op, VirtualMemory::Range *range)
+Error VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range)
 {
     ProcessManager *procs = Kernel::instance->getProcessManager();
     Process *proc = ZERO;
@@ -56,7 +57,7 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, VirtualMemory::Range *r
     }
 
     Arch::Memory mem(proc->getPageDirectory(),
-                     Kernel::instance->getMemory()->getMemoryBitArray());
+                     Kernel::instance->getMemory()->getBitArray());
 
     // Perform operation
     switch (op)
