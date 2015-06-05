@@ -36,6 +36,19 @@
     (vector) + 32
 
 /**
+ * Move CoProcessor to ARM (MRC).
+ *
+ * Read data from a CoProcessor connected to the ARM.
+ */
+#define mrc(coproc, opcode1, opcode2, reg, subReg) \
+({ \
+    ulong r; \
+    asm volatile("mrc " QUOTE(coproc) ", " QUOTE(opcode1) ", %0, " QUOTE(reg) ", " QUOTE(subReg) ", " QUOTE(opcode2) "\n" : "=r"(r) : ); \
+    r; \
+})
+
+
+/**
  * Reads the CPU's timestamp counter.
  * @return 64-bit integer.
  */

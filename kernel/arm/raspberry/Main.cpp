@@ -20,6 +20,7 @@
 #include <FreeNOS/System.h>
 #include <FreeNOS/arm/ARMKernel.h>
 #include <Macros.h>
+#include <arm/ARMControl.h>
 #include "RaspiSerial.h"
 
 extern C int kernel_main(void)
@@ -37,6 +38,10 @@ extern C int kernel_main(void)
     ARMKernel kernel( 0,                /* kernel start */
                       1024 * 1024 * 4,  /* kernel size  */
                       1042 * 1024 * 512 /* system memory */ );
+
+    // Print some info
+    ARMControl ctrl;
+    DEBUG("MainID = " << ctrl.read(ARMControl::MainID));
 
     kernel.run();
 
