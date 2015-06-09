@@ -43,6 +43,7 @@ class ARMControl
         TranslationTable0,
         TranslationTable1,
         TranslationTableCtrl,
+        UserProcID
     };
 
     /**

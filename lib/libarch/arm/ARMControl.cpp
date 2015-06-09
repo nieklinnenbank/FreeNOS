@@ -29,25 +29,19 @@ u32 ARMControl::read(Register reg)
 {
     switch (reg)
     {
-        case MainID: return mrc(p15, 0, 0, c0, c0);
+        case MainID:     return mrc(p15, 0, 0, c0,  c0);
+        case UserProcID: return mrc(p15, 0, 4, c13, c0);
+
         default:     break;
     }
     return 0;
-    /*
-    return ARMCoProcessor::read(registers[reg].opcode1,
-                                registers[reg].opcode2,
-                                registers[reg].reg,
-                                registers[reg].subReg);
-    */
 }
 
 void ARMControl::write(Register reg, u32 value)
 {
-    /*
-    ARMCoProcessor::write(registers[reg].opcode1,
-                          registers[reg].opcode2,
-                          registers[reg].reg,
-                          registers[reg].subReg,
-                          value);
-     */
+    switch (reg)
+    {
+        case UserProcID: mcr(p15, 0, 4, c13, c0, value);
+        default: break;
+    }
 }

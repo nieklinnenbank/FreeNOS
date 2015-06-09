@@ -36,7 +36,7 @@
     (vector) + 32
 
 /**
- * Move CoProcessor to ARM (MRC).
+ * Move to ARM from CoProcessor (MRC).
  *
  * Read data from a CoProcessor connected to the ARM.
  */
@@ -47,6 +47,16 @@
     r; \
 })
 
+/**
+ * Move to CoProcessor from ARM (MCR).
+ *
+ * Write data to CoProcessor connected to the ARM.
+ */
+#define mcr(coproc, opcode1, opcode2, reg, subReg, value) \
+({ \
+    u32 val = (value); \
+    asm volatile("mcr " QUOTE(coproc) ", " QUOTE(opcode1) ", %0, " QUOTE(reg) ", " QUOTE(subReg) ", " QUOTE(opcode2) "\n" : : "r"(val)); \
+})
 
 /**
  * Reads the CPU's timestamp counter.

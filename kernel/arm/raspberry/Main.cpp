@@ -42,6 +42,8 @@ extern C int kernel_main(void)
     // Print some info
     ARMControl ctrl;
     DEBUG("MainID = " << ctrl.read(ARMControl::MainID));
+    ctrl.write(ARMControl::UserProcID, 11223344);
+    DEBUG("UserProcID = " << ctrl.read(ARMControl::UserProcID));
 
     kernel.run();
 
