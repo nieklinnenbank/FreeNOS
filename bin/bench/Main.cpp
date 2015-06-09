@@ -25,13 +25,12 @@
 int main(int argc, char **argv)
 {
     u64 t1 = 0, t2 = 0;
-    ProcessID pid = 0;
     ProcessInfo info;
     Memory::Range range;
     char *foo[128];
 
     t1 = timestamp();
-    pid = ProcessCtl(SELF, GetPID);
+    ProcessCtl(SELF, GetPID);
     t2 = timestamp();
 	
     printf("SystemCall (GetPID) Ticks: %u\r\n", t2 - t1);

@@ -54,8 +54,7 @@ void usage(char *prog)
     printf("usage: %s FILE [OPTIONS...]\r\n"
 	   "Displays information of a Linnenbank Filesystem\r\n"
 	   "\r\n"
-	   "-h          Show this help message.\r\n"
-	   "-v          Output verbose messages.\r\n",
+	   "-h          Show this help message.\r\n",
 	    prog);
 }
 
@@ -63,7 +62,6 @@ int main(int argc, char **argv)
 {
     LinnSuperBlock super;
     LinnGroup group;
-    bool verbose = false;
     float percentFreeBlocks = 0, percentFreeInodes = 0, megabytes = 0;
     FILE *fp;
 
@@ -81,11 +79,6 @@ int main(int argc, char **argv)
 	{
 	    usage(argv[0]);
 	    return EXIT_SUCCESS;
-	}
-	/* Verbose output. */
-	else if (!strcmp(argv[i + 2], "-v"))
-	{
-	    verbose = true;
 	}
 	/* Unknown argument. */
 	else

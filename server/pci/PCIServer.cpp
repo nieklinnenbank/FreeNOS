@@ -70,7 +70,7 @@ PCIServer::PCIServer(const char *path)
 void PCIServer::scan()
 {
     Directory *busDir = ZERO, *slotDir = ZERO;
-    u16 vendorID, deviceID, revisionID;
+    u16 vendorID, deviceID;
     
     /*
      * Walk the PCI bus by performing a read
@@ -86,7 +86,6 @@ void PCIServer::scan()
             /* Read ID's. */
             vendorID   = PCI_READ_WORD(bus, slot, func, PCI_VID);
             deviceID   = PCI_READ_WORD(bus, slot, func, PCI_DID);
-        revisionID = PCI_READ_BYTE(bus, slot, func, PCI_RID);
 
             /* Is this a valid device? */
             if (vendorID == 0xffff || deviceID == 0xffff)
