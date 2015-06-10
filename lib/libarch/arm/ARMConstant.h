@@ -99,17 +99,16 @@
 #define PAGE_NONE       0
 
 /** Marks a page entry present. */
-#define PAGE_PRESENT    1
+#define PAGE_PRESENT    9
 
-#define PAGE_READ       0
-
-#define PAGE_EXEC       0
-
-/** Marks a page entry read/write. */
-#define PAGE_WRITE      2
-
-/** Marks a page accessible by user programs (ring 3). */
-#define PAGE_USER       4
+/**
+ * These bits are set in APX, S, AP.
+ * @see ARM Architecture Reference Manual, page 731.
+ */
+#define PAGE_READ       7
+#define PAGE_EXEC       9
+#define PAGE_WRITE      0
+#define PAGE_USER       8
 
 /** Pinned pages cannot be released by the physical memory allocator. */
 #define PAGE_PIN        (1 << 9)

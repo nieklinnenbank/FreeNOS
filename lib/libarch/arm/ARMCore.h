@@ -118,9 +118,16 @@ class ARMCore : public Core
 {
   public:
 
+    enum Result
+    {
+        Success = 0,
+    };
+
     ARMCore();
 
     virtual ~ARMCore();
+
+    Result enableMMU();
 };
 
 #endif /* __ARM_CORE_H */
