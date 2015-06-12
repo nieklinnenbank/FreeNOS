@@ -43,37 +43,21 @@ IntelMemory::IntelMemory(Address pageDirectory, BitArray *memoryMap)
         // TODO: this function is a hack. Later, the kernel should not do any (virtual)memory anymore.
         // the coreserver should have full access to the virtual memory, without kernel help. Perhaps
         // it will need to run in ring0 for that on intel, which is acceptable.
-        if (isKernel)
-        {
-            // Modify the local page directory to insert the mapping
-            Address *localDirectory = ((Address *) PAGEDIR_LOCAL) + (PAGEDIR_LOCAL >> PAGESHIFT);
-            localDirectory[ DIRENTRY(m_pageTableBase) ] =
-                (Address) pageDirectory | PAGE_WRITE | PAGE_PRESENT | PAGE_RESERVE;
-            tlb_flush_all();
-        }
+
+        // Modify the local page directory to insert the mapping
+        Address *localDirectory = ((Address *) PAGEDIR_LOCAL) + (PAGEDIR_LOCAL >> PAGESHIFT);
+        localDirectory[ DIRENTRY(m_pageTableBase) ] =
+            (Address) pageDirectory | PAGE_WRITE | PAGE_PRESENT | PAGE_RESERVE;
+        tlb_flush_all();
     }
     // ask the kernel to map the page directory.
     // TODO: coreserver should just run as ring0, and map it directly????
     if (!isKernel)
     {
-        Range range;
-        range.phys = pageDirectory;
-        range.virt = m_pageTableBase;
-        range.access = Present | Writable | User;
-        VMCtl(SELF, MapTables, &range);
-
         // Ask the kernel for the physical memory map. Remap it as writable.
         if (!m_memoryMap)
         {
             SystemInformation info;
-
-            // Remap m_memoryBitArray as writable.
-            range.phys = (Address) info.memoryBitArray & PAGEMASK;
-            range.virt = range.phys;
-            range.access = Present | Writable | User | Pinned | Reserved;
-            range.size   = BITS_TO_BYTES((info.memorySize / PAGESIZE)) + PAGESIZE;
-            VMCtl(SELF, Map, &range);
-
             m_memoryMap = new BitArray( info.memorySize / PAGESIZE, (u8 *)info.memoryBitArray );
         }
     }
@@ -83,19 +67,9 @@ IntelMemory::~IntelMemory()
 {
     if (m_pageTableBase != PAGEDIR_LOCAL)
     {
-        if (isKernel)
-        {
-            Address *localDirectory = ((Address *) PAGEDIR_LOCAL) + (PAGEDIR_LOCAL >> PAGESHIFT);
-            localDirectory[ DIRENTRY(m_pageTableBase) ] = 0;
-            tlb_flush_all();
-        }
-        else
-        {
-            Range range;
-            range.virt = m_pageTableBase;
-            range.phys = (Address) m_pageDirectory;
-            VMCtl(SELF, UnMapTables, &range);
-        }
+        Address *localDirectory = ((Address *) PAGEDIR_LOCAL) + (PAGEDIR_LOCAL >> PAGESHIFT);
+        localDirectory[ DIRENTRY(m_pageTableBase) ] = 0;
+        tlb_flush_all();
     }
 }
 

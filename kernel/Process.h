@@ -47,9 +47,12 @@ class Process
     
     /**
      * Constructor function.
+     *
+     * @param id Process Identifier
      * @param entry Initial program counter value.
+     * @param privileged If true, the process has unlimited access to hardware.
      */
-    Process(ProcessID id, Address entry);
+    Process(ProcessID id, Address entry, bool privileged);
     
     /**
      * Destructor function.
@@ -87,6 +90,13 @@ class Process
      * @return Kernel stack address.
      */
     Address getKernelStack() const;
+
+    /**
+     * Get privilege.
+     *
+     * @return Privilege of the Process.
+     */
+    bool isPrivileged() const;
 
     /**
      * Puts the Process in a new state.
@@ -142,6 +152,9 @@ class Process
 
     /** Current process status. */
     State m_state;
+
+    /** Privilege level */
+    bool m_privileged;
 
     /** Incoming messages. */
     List<Message *> m_messages;

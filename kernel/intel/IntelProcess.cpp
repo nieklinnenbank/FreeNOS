@@ -20,8 +20,8 @@
 #include <BitAllocator.h>
 #include "IntelProcess.h"
 
-IntelProcess::IntelProcess(ProcessID id, Address entry)
-    : Process(id, entry)
+IntelProcess::IntelProcess(ProcessID id, Address entry, bool privileged)
+    : Process(id, entry, privileged)
 {
     Address stack, stackBase, *pageDir;
     BitAllocator *memory = Kernel::instance->getMemory();
@@ -29,6 +29,8 @@ IntelProcess::IntelProcess(ProcessID id, Address entry)
     Arch::Memory local(0, memory->getBitArray());
     Arch::Memory::Range range;
     Size dirSize = PAGESIZE;
+    u16 dataSel = privileged ? KERNEL_DS_SEL : USER_DS_SEL;
+    u16 codeSel = privileged ? KERNEL_CS_SEL : USER_CS_SEL;
 
     // Allocate and map page directory
     memory->allocate(&dirSize, &m_pageDirectory);
@@ -78,18 +80,18 @@ IntelProcess::IntelProcess(ProcessID id, Address entry)
     regs = (CPUState *) stackBase - 1;
     MemoryBlock::set(regs, 0, sizeof(CPUState));
     regs->seg.ss0    = KERNEL_DS_SEL;
-    regs->seg.fs     = USER_DS_SEL;
-    regs->seg.gs     = USER_DS_SEL;
-    regs->seg.es     = USER_DS_SEL;
-    regs->seg.ds     = USER_DS_SEL;
+    regs->seg.fs     = dataSel;
+    regs->seg.gs     = dataSel;
+    regs->seg.es     = dataSel;
+    regs->seg.ds     = dataSel;
     regs->regs.ebp   = m_userStack;
     regs->regs.esp0  = m_kernelStack;
     regs->irq.eip    = entry;
-    regs->irq.cs     = USER_CS_SEL;
+    regs->irq.cs     = codeSel;
     regs->irq.eflags = INTEL_EFLAGS_DEFAULT |
                        INTEL_EFLAGS_IRQ;
     regs->irq.esp3   = m_userStack;
-    regs->irq.ss3    = USER_DS_SEL;
+    regs->irq.ss3    = dataSel;
 
     // restoreState: iret
     IRQRegs0 *irq = (IRQRegs0 *) regs - 1;

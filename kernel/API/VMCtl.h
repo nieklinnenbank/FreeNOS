@@ -35,9 +35,7 @@ typedef enum MemoryOperation
     UnMap,
     LookupVirtual,
     LookupPhysical,
-    Access,
-    MapTables,
-    UnMapTables
+    Access
 }
 MemoryOperation;
 
