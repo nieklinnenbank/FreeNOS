@@ -17,13 +17,14 @@
 
 #include "Process.h"
 
-Process::Process(ProcessID id, Address addr)
+Process::Process(ProcessID id, Address addr, bool privileged)
     : m_id(id)
 {
     m_state         = Stopped;
     m_kernelStack   = 0;
     m_userStack     = 0;
     m_pageDirectory = 0;
+    m_privileged    = privileged;
 }
     
 Process::~Process()
@@ -53,6 +54,11 @@ Address Process::getUserStack() const
 Address Process::getKernelStack() const
 {
     return m_kernelStack;
+}
+
+bool Process::isPrivileged() const
+{
+    return m_privileged;
 }
 
 void Process::setState(Process::State st)

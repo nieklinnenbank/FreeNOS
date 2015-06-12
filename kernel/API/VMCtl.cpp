@@ -33,29 +33,6 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range)
         return API::NotFound;
     }
 
-    Address *localDirectory = ((Address *) PAGEDIR_LOCAL) + (PAGEDIR_LOCAL >> PAGESHIFT);
-    switch (op)
-    {
-        case MapTables:
-            // Insert the page directory into the selected virtual address
-            // TODO: ofcourse, this needs proper access checking.
-            // TODO: why not use a Arch::Memory instead???
-
-            // Modify the local page directory to insert the mapping
-            localDirectory[ DIRENTRY(range->virt) ] =
-                range->phys | PAGE_WRITE | PAGE_PRESENT | PAGE_RESERVE | PAGE_USER;
-            tlb_flush_all();
-            return API::Success;
-            
-        case UnMapTables:
-            localDirectory[ DIRENTRY( range->virt ) ] = 0;
-            tlb_flush_all();
-            return API::Success;
-
-        default:
-            break;
-    }
-
     Arch::Memory mem(proc->getPageDirectory(),
                      Kernel::instance->getMemory()->getBitArray());
 

@@ -35,7 +35,8 @@ ProcessManager::~ProcessManager()
 
 Process * ProcessManager::create(Address entry)
 {
-    Process *proc = new Arch::Process(m_procs.count(), entry);
+    // first process is privileged (the coreserver)
+    Process *proc = new Arch::Process(m_procs.count(), entry, m_procs.count() == 0);
     m_procs.insert(proc);
     return proc;
 }

@@ -30,9 +30,12 @@ class IntelProcess : public Process
 
     /**
      * Constructor function.
+     *
+     * @param id Process Identifier.
      * @param entry Initial EIP register value.
+     * @param privileged If true, the Process has unlimited access to hardware.
      */
-    IntelProcess(ProcessID id, Address entry);
+    IntelProcess(ProcessID id, Address entry, bool privileged);
 
     /**
      * Destructor function.
