@@ -54,28 +54,24 @@ class BootImageStorage : public Storage
         BootImage *image;
         BootSymbol *symbol;
         BootSegment *segment;
-        Error result;
         u8 *base;
-        
-        // TODO: filesystems should not be allowed to do this. Replace with an asynchronous call to coreserver.
-        Memory::Range range;
-        range.virt  = 0;
-        range.phys  = info.bootImageAddress;
-        range.size  = info.bootImageSize;
-        range.access = Memory::Present |
-                       Memory::User |
-                       Memory::Readable |
-                       Memory::Writable |
-                       Memory::Pinned;
+        CoreMessage mem;
 
-        if ((result = VMCtl(SELF, Map, &range)) != API::Success)
-        {
-            ERROR("failed to map BootImage: " << m_name << " APIError: " << (int)result);
-            return false;
-        }
+        // Map BootImage
+        mem.action    = CreatePrivate;
+        mem.size      = info.bootImageSize;
+        mem.virt      = ZERO;
+        mem.phys      = info.bootImageAddress;
+        mem.access    = Memory::Present |
+                        Memory::User |
+                        Memory::Readable |
+                        Memory::Writable |
+                        Memory::Pinned;
+        mem.type      = IPCType;
+        IPCMessage(CORESRV_PID, API::SendReceive, &mem, sizeof(mem));
 
         // Update our state
-        image = (BootImage *) range.virt;
+        image = (BootImage *) mem.virt;
         base  = (u8 *) image;
 
         // Search for the given BootSymbol
