@@ -32,6 +32,7 @@
  * @see SystemInformation
  */
 struct SystemInformation;
+class BitAllocator;
 
 /**
  * Prototype for user applications. Retrieves system information.
@@ -69,8 +70,8 @@ typedef struct SystemInformation
     /** Total and available memory in bytes. */
     Size memorySize, memoryAvail;
 
-    /** Memory allocation array address */
-    Address memoryBitArray;
+    /** Memory allocator. */
+    BitAllocator *memoryAllocator;
 
     /** BootImage physical address */
     Address bootImageAddress;

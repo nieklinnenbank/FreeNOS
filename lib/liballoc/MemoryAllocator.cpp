@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,9 +18,9 @@
 #include <FreeNOS/API.h>
 #include <FreeNOS/System.h>
 #include <Macros.h>
-#include "VMCtlAllocator.h"
+#include "MemoryAllocator.h"
 
-VMCtlAllocator::VMCtlAllocator(Address base, Size size)
+MemoryAllocator::MemoryAllocator(Address base, Size size)
 {
     // set members
     m_base      = base;
@@ -28,58 +28,56 @@ VMCtlAllocator::VMCtlAllocator(Address base, Size size)
     m_size      = 0;
 }
 
-VMCtlAllocator::VMCtlAllocator(VMCtlAllocator *p)
+MemoryAllocator::MemoryAllocator(MemoryAllocator *p)
 {
     m_base      = p->m_base;
     m_allocated = p->m_allocated;
     m_size      = p->m_size;
 }
 
-Size VMCtlAllocator::size()
+Size MemoryAllocator::size()
 {
     return m_size;
 }
 
-Size VMCtlAllocator::available()
+Size MemoryAllocator::available()
 {
     return m_size - m_allocated;
 }
 
-Address VMCtlAllocator::base()
+Address MemoryAllocator::base()
 {
     return m_base;
 }
 
-Allocator::Result VMCtlAllocator::allocate(Size *size, Address *addr)
+Allocator::Result MemoryAllocator::allocate(Size *size, Address *addr)
 {
+    Arch::Memory memory;
     Memory::Range range;
-    Size bytes;
 
-    // Set address
+    // Update variables
     *addr = m_base + m_allocated;
+    *size = CEIL(*size, PAGESIZE);
+    *size *= PAGESIZE;
 
-    /* Start allocating. */
-    for (bytes = 0; bytes < *size; bytes += PAGESIZE)
-    {
-        range.virt  = *addr + bytes;
-        range.phys  = ZERO;
-        range.size  = PAGESIZE;
-        range.access = Memory::Present |
-                       Memory::User |
-                       Memory::Readable |
-                       Memory::Writable;
-    
-        VMCtl(SELF, Map, &range);
-    }
+    // Allocate memory range
+    range.virt  = *addr;
+    range.phys  = ZERO;
+    range.size  = *size;
+    range.access = Memory::Present |
+                   Memory::User |
+                   Memory::Readable |
+                   Memory::Writable;
+    memory.mapRange(&range);
+
     // Update count
-    m_allocated += bytes;
+    m_allocated += range.size;
 
     // Success
-    *size = bytes;
     return Success;
 }
 
-Allocator::Result VMCtlAllocator::release(Address addr)
+Allocator::Result MemoryAllocator::release(Address addr)
 {
     // TODO
     return InvalidAddress;

@@ -22,7 +22,7 @@
 #include <Vector.h>
 #include <PageAllocator.h>
 #include <PoolAllocator.h>
-#include <VMCtlAllocator.h>
+#include <MemoryAllocator.h>
 #include <FileSystemMount.h>
 #include <CoreServer.h>
 #include "FileDescriptor.h"
@@ -99,7 +99,7 @@ void setupHeap()
     /* Only the core server allocates directly. */
     if (ProcessCtl(SELF, GetPID) == CORESRV_PID)
     {
-        VMCtlAllocator alloc(USER_HEAP, USER_HEAP_SIZE);
+        MemoryAllocator alloc(USER_HEAP, USER_HEAP_SIZE);
 
         // Pre-allocate 4 pages
         Size sz = PAGESIZE * 4;
@@ -108,8 +108,8 @@ void setupHeap()
 
         // Allocate instance copy on vm pages itself
         heapAddr   = alloc.base();
-        parent     = new (heapAddr) VMCtlAllocator(&alloc);
-        parentSize = sizeof(VMCtlAllocator);
+        parent     = new (heapAddr) MemoryAllocator(&alloc);
+        parentSize = sizeof(MemoryAllocator);
     }
     else
     {

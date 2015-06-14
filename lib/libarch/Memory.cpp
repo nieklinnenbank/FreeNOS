@@ -26,8 +26,6 @@ Memory::Memory(Address pageDirectory, BitArray *memoryMap)
 
 Memory::~Memory()
 {
-    if (m_memoryMap)
-        delete m_memoryMap;
 }
 
 Address Memory::mapRange(Range *range)

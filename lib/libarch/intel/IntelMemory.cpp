@@ -18,6 +18,7 @@
 #include <FreeNOS/API.h>
 #include <MemoryBlock.h>
 #include <Types.h>
+#include <BitAllocator.h>
 #include "IntelCore.h"
 #include "IntelMemory.h"
 
@@ -58,7 +59,7 @@ IntelMemory::IntelMemory(Address pageDirectory, BitArray *memoryMap)
         if (!m_memoryMap)
         {
             SystemInformation info;
-            m_memoryMap = new BitArray( info.memorySize / PAGESIZE, (u8 *)info.memoryBitArray );
+            m_memoryMap = info.memoryAllocator->getBitArray();
         }
     }
 }
