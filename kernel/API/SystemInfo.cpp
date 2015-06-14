@@ -30,7 +30,7 @@ Error SystemInfoHandler(SystemInformation *info)
     info->version          = VERSIONCODE;
     info->memorySize       = memory->size();
     info->memoryAvail      = memory->available();
-    info->memoryBitArray   = (Address) memory->getBitArray()->array();
+    info->memoryAllocator  = memory;
 
     // TODO: this interface could be improved using libarch?
     info->bootImageAddress = Kernel::instance->getBootImageAddress();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBALLOC_VMCTL_ALLOCATOR_H
-#define __LIBALLOC_VMCTL_ALLOCATOR_H
+#ifndef __LIBALLOC_MEMORY_ALLOCATOR_H
+#define __LIBALLOC_MEMORY_ALLOCATOR_H
 
 #include <Types.h>
 #include "Allocator.h"
@@ -27,9 +27,11 @@
  */
 
 /**
- * Allocates virtual memory pages directly using VMCtl().
+ * Allocates virtual memory pages directly using Memory.
+ *
+ * @see Memory
  */
-class VMCtlAllocator : public Allocator
+class MemoryAllocator : public Allocator
 {
   public:
 
@@ -37,13 +39,13 @@ class VMCtlAllocator : public Allocator
      * Class constructor.
      * @param size Initial size in bytes.
      */
-    VMCtlAllocator(Address base, Size size);
+    MemoryAllocator(Address base, Size size);
 
     /**
      * Copy constructor.
-     * @param p VMCtlAllocator instance pointer.
+     * @param p MemoryAllocator instance pointer.
      */
-    VMCtlAllocator(VMCtlAllocator *p);
+    MemoryAllocator(MemoryAllocator *p);
 
     /**
      * Get memory size.
@@ -103,4 +105,4 @@ class VMCtlAllocator : public Allocator
  * @}
  */
 
-#endif /* __LIBALLOC_VMCTL_ALLOCATOR_H */
+#endif /* __LIBALLOC_MEMORY_ALLOCATOR_H */
