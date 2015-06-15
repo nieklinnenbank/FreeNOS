@@ -89,7 +89,7 @@ void ProcessManager::schedule(Process *proc)
         m_previous = m_current;
         m_current  = proc;
 
-        if (m_previous->getState() == Process::Running)
+        if (m_previous && m_previous->getState() == Process::Running)
             m_previous->setState(Process::Ready);
 
         proc->setState(Process::Running);
