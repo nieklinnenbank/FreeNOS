@@ -173,12 +173,21 @@ bool IntelKernel::loadBootImage()
     MultibootModule *mod;
     BootImage *image;
     Arch::Memory virt(0, m_memory->getBitArray());
+    Arch::Memory::Range range;
+    Address vaddr;
 
     // Startup boot modules
     for (Size n = 0; n < multibootInfo.modsCount; n++)
     {
-        mod = &((MultibootModule *) multibootInfo.modsAddress)[n];
-        String str = (char *) mod->string;
+        // Map MultibootModule struct
+        vaddr = virt.map(multibootInfo.modsAddress, 0,
+                         Arch::Memory::Present | Arch::Memory::Readable);
+        mod = (MultibootModule *)(vaddr + multibootInfo.modsAddress % PAGESIZE);
+        mod += n;
+
+        // mod = &((MultibootModule *) multibootInfo.modsAddress)[n];
+        vaddr = virt.map(mod->string, 0, Arch::Memory::Present | Arch::Memory::Readable);
+        String str = (char *) (vaddr + mod->string % PAGESIZE);
 
         // Mark its memory used
         for (Address a = mod->modStart; a < mod->modEnd; a += PAGESIZE)
@@ -187,8 +196,6 @@ bool IntelKernel::loadBootImage()
         // Is this a BootImage?
         if (str.match("*.img.gz"))
         {
-            Arch::Memory::Range range;
-
             // Map the BootImage into our address space
             range.phys   = mod->modStart;
             range.virt   = 0;

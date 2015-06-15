@@ -148,11 +148,22 @@ _start:
     orl  $(PAGE_PRESENT | PAGE_USER | PAGE_PIN | PAGE_RESERVE), %ebx
     movl %ebx, (%eax)
 
-    /* Identity map the first 4MB. */
+    /* Clear first 1MB */
     movl $kernelPageTab, %eax
     xorl %ebx, %ebx
+    movl $256, %ecx
+2:
+    movl %ebx, (%eax)
+    addl $4, %eax
+    decl %ecx
+    jnz 2b
+
+    /* Identity map from 1MB till 4MB. */
+    movl $kernelPageTab, %eax
+    addl $1024, %eax
+    movl $1048576, %ebx
     orl $(PAGE_PRESENT | PAGE_WRITE | PAGE_PIN), %ebx
-    movl $1024, %ecx
+    movl $768, %ecx
 1:
     movl %ebx, (%eax)
     addl $PAGESIZE, %ebx
