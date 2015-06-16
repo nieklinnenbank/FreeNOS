@@ -17,11 +17,19 @@
 
 #include <FreeNOS/API.h>
 #include <FreeNOS/Kernel.h>
+#include <BitAllocator.h>
 #include "Memory.h"
 
-Memory::Memory(Address pageDirectory, BitArray *memoryMap)
+Memory::Memory(Address pageDirectory, BitAllocator *phys)
 {
-    m_memoryMap = memoryMap;
+    m_phys = phys;
+
+    // Ask the kernel for the physical memory allocator, if needed
+    if (!isKernel && !m_phys)
+    {
+        SystemInformation info;
+        m_phys = info.memoryAllocator;
+    }
 }
 
 Memory::~Memory()
@@ -34,14 +42,8 @@ Address Memory::mapRange(Range *range)
 
     // Allocate physical pages, if needed.
     if (!range->phys)
-    {
-        Size num = range->size / PAGESIZE;
-    
-        if (range->size % PAGESIZE)
-            num++;
+        m_phys->allocate(&range->size, &range->phys);
 
-        range->phys = m_memoryMap->setNext(num) * PAGESIZE;
-    }
     // Find free virtual pages, if not set.
     if (!range->virt)
         range->virt = findFree(range->size);
@@ -73,6 +75,6 @@ void Memory::releaseRange(Range *range)
         if (access(range->virt + i, PAGESIZE, Pinned))
             continue;
 
-        m_memoryMap->unset(lookup(range->virt + i) / PAGESIZE);
+        m_phys->release(lookup(range->virt + i));
     }
 }

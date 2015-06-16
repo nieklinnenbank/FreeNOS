@@ -21,6 +21,7 @@
 #include <Macros.h>
 #include <Types.h>
 #include <Singleton.h>
+#include <Memory.h>
 #include "Process.h"
 #include "Memory.h"
 #include "ProcessManager.h"
@@ -85,11 +86,10 @@ class Kernel : public Singleton<Kernel>
     /**
      * Constructor function.
      *
-     * @param kernel Start of the kernel in virtual memory.
-     * @param size Size of the kernel in bytes.
-     * @param memorySize Size of physical memory.
+     * @param kernel Describes the start and end of the kernel program in memory.
+     * @param memory Describes the start and end of physical RAM in the system.
      */
-    Kernel(Address kernel, Size size, Size memorySize);
+    Kernel(Memory::Range kernel, Memory::Range memory);
 
     /**
      * Initialize heap.

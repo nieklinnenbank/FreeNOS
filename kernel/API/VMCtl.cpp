@@ -34,7 +34,7 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range)
     }
 
     Arch::Memory mem(proc->getPageDirectory(),
-                     Kernel::instance->getMemory()->getBitArray());
+                     Kernel::instance->getMemory());
 
     // Perform operation
     switch (op)

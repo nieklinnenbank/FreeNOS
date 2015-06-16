@@ -22,8 +22,8 @@
 #include "IntelCore.h"
 #include "IntelMemory.h"
 
-IntelMemory::IntelMemory(Address pageDirectory, BitArray *memoryMap)
-    : Memory(pageDirectory, memoryMap)
+IntelMemory::IntelMemory(Address pageDirectory, BitAllocator *phys)
+    : Memory(pageDirectory, phys)
 {
     // Default to the local page directory
     m_pageTableBase = PAGEDIR_LOCAL;
@@ -51,17 +51,6 @@ IntelMemory::IntelMemory(Address pageDirectory, BitArray *memoryMap)
             (Address) pageDirectory | PAGE_WRITE | PAGE_PRESENT | PAGE_RESERVE;
         tlb_flush_all();
     }
-    // ask the kernel to map the page directory.
-    // TODO: coreserver should just run as ring0, and map it directly????
-    if (!isKernel)
-    {
-        // Ask the kernel for the physical memory map. Remap it as writable.
-        if (!m_memoryMap)
-        {
-            SystemInformation info;
-            m_memoryMap = info.memoryAllocator->getBitArray();
-        }
-    }
 }
 
 IntelMemory::~IntelMemory()
@@ -84,9 +73,11 @@ Address * IntelMemory::getPageTable(Address virt)
 
 Address IntelMemory::map(Address phys, Address virt, Access flags)
 {
+    Size size = PAGESIZE;
+
     // find unused physical page if not specified
     if (!phys)
-        phys = m_memoryMap->setNext(1) * PAGESIZE;
+        m_phys->allocate(&size, &phys);
 
     // find unused virtual address if not specified.
     if (!virt)
@@ -98,7 +89,8 @@ Address IntelMemory::map(Address phys, Address virt, Access flags)
     if (!pageTable)
     {
         // Allocate a new page table
-        Address table = m_memoryMap->setNext(1) * PAGESIZE;
+        Address table;
+        m_phys->allocate(&size, &table);
 
         // Map a new page table
         m_pageDirectory[ DIRENTRY(virt) ] = table | PAGE_PRESENT | PAGE_WRITE | flags;
@@ -149,8 +141,12 @@ void IntelMemory::unmap(Address virt)
 
 void IntelMemory::release(Address virt)
 {
+    Address physical = lookup(virt);
+
+    if (physical)
+        m_phys->release(physical);
+
     unmap(virt);
-    m_memoryMap->unset(virt >> PAGESHIFT);
 }
 
 void IntelMemory::releaseAll()
@@ -169,7 +165,7 @@ void IntelMemory::releaseAll()
         for (Size j = 0; j < PAGETAB_MAX; j++)
         {
             if (table[j] & PAGE_PRESENT && !(table[j] & PAGE_PIN))
-                m_memoryMap->unset(table[j] >> PAGESHIFT);
+                m_phys->release(table[j] & PAGEMASK);
         }
     }
 }

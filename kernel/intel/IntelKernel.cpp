@@ -34,8 +34,8 @@ extern C void executeInterrupt(CPUState state)
     Kernel::instance->executeInterrupt(state.vector, &state);
 }
 
-IntelKernel::IntelKernel(Address kernel, Size size, Size memorySize)
-    : Kernel(kernel, size, memorySize)
+IntelKernel::IntelKernel(Memory::Range kernel, Memory::Range memory)
+    : Kernel(kernel, memory)
 {
     /* ICW1: Initialize PIC's (Edge triggered, Cascade) */
     IO::outb(PIC1_CMD, 0x11);
@@ -172,7 +172,7 @@ bool IntelKernel::loadBootImage()
 {
     MultibootModule *mod;
     BootImage *image;
-    Arch::Memory virt(0, m_memory->getBitArray());
+    Arch::Memory virt(0, m_memory);
     Arch::Memory::Range range;
     Address vaddr;
 
@@ -229,7 +229,7 @@ void IntelKernel::loadBootProcess(BootImage *image, Address imagePAddr, Size ind
     BootSymbol *program;
     BootSegment *segment;
     Process *proc;
-    Arch::Memory local(0, Kernel::instance->getMemory()->getBitArray());
+    Arch::Memory local(0, Kernel::instance->getMemory());
     
     // Point to the program and segments table
     program = &((BootSymbol *) (imageVAddr + image->symbolTableOffset))[index];
@@ -244,8 +244,7 @@ void IntelKernel::loadBootProcess(BootImage *image, Address imagePAddr, Size ind
     proc->setState(Process::Ready);
 
     // Obtain process memory
-    Arch::Memory mem(proc->getPageDirectory(),
-                     getMemory()->getBitArray());
+    Arch::Memory mem(proc->getPageDirectory(), getMemory());
     
     // Map program segment into it's virtual memory
     for (Size i = 0; i < program->segmentsCount; i++)

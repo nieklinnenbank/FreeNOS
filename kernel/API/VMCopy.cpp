@@ -33,9 +33,9 @@ Error VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
         return API::NotFound;
     }
     // TODO: Verify memory addresses
-    BitArray *bits = Kernel::instance->getMemory()->getBitArray();
-    Arch::Memory local(0, bits);
-    Arch::Memory remote(proc->getPageDirectory(), bits);
+    BitAllocator *alloc = Kernel::instance->getMemory();
+    Arch::Memory local(0, alloc);
+    Arch::Memory remote(proc->getPageDirectory(), alloc);
 
     // Keep on going until all memory is processed
     while (total < sz)

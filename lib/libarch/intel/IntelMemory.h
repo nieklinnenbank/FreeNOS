@@ -50,11 +50,11 @@ class IntelMemory : public Memory
      * @param pageDirectory Physical memory address of the page directory
      *                      or ZERO to map the page directory of the current
      *                      active address space.
-     * @param memoryMap     BitArray pointer of the physical memory page allocations
-     *                      or ZERO to ask the kernel for the BitArray.
+     * @param phys          BitAllocator pointer of the physical memory page allocations
+     *                      or ZERO to ask the kernel for the BitAllocator.
      */
     IntelMemory(Address pageDirectory = ZERO,
-                BitArray *memoryMap = ZERO);
+                BitAllocator *phys = ZERO);
 
     /**
      * Destructor.

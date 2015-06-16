@@ -17,11 +17,16 @@
 
 #include "BitAllocator.h"
 
-BitAllocator::BitAllocator(Address base, Size size, Size chunkSize)
-    : Allocator(), m_array(size / chunkSize)
+BitAllocator::BitAllocator(Memory::Range range, Size chunkSize)
+    : Allocator(), m_array(range.size / chunkSize)
 {
-    m_base      = base;
+    m_base      = range.phys;
     m_chunkSize = chunkSize;
+}
+
+Size BitAllocator::chunkSize()
+{
+    return m_chunkSize;
 }
 
 Size BitAllocator::size()
@@ -46,28 +51,32 @@ Allocator::Result BitAllocator::allocate(Size *size, Address *addr)
     if ((*size) % m_chunkSize)
         num++;
 
-    *addr = m_array.setNext(num) * m_chunkSize;
+    *addr = m_base + (m_array.setNext(num) * m_chunkSize);
     return Success;
 }
 
 Allocator::Result BitAllocator::allocate(Address addr)
 {
-    if (isAllocated(addr))
-        return InvalidAddress;        
+    if (addr < m_base || isAllocated(addr))
+        return InvalidAddress;
 
-    m_array.set(addr / m_chunkSize);
+    m_array.set((addr - m_base) / m_chunkSize);
     return Success;
 }
 
 bool BitAllocator::isAllocated(Address addr)
 {
-    return m_array.isSet(addr / m_chunkSize);
+    if (addr < m_base)
+        return false;
+    else
+        return m_array.isSet((addr - m_base) / m_chunkSize);
 }
 
 Allocator::Result BitAllocator::release(Address addr)
 {
-    // TODO: sanity check addr
+    if (addr < m_base)
+        return InvalidAddress;
 
-    m_array.unset(addr / m_chunkSize);
+    m_array.unset((addr - m_base) / m_chunkSize);
     return Success;
 }

@@ -26,7 +26,7 @@ IntelProcess::IntelProcess(ProcessID id, Address entry, bool privileged)
     Address stack, stackBase, *pageDir;
     BitAllocator *memory = Kernel::instance->getMemory();
     CPUState *regs;
-    Arch::Memory local(0, memory->getBitArray());
+    Arch::Memory local(0, memory);
     Arch::Memory::Range range;
     Size dirSize = PAGESIZE;
     u16 dataSel = privileged ? KERNEL_DS_SEL : USER_DS_SEL;
@@ -48,7 +48,7 @@ IntelProcess::IntelProcess(ProcessID id, Address entry, bool privileged)
     local.unmap((Address)pageDir);
 
     // Obtain memory mappings
-    Arch::Memory mem(m_pageDirectory, memory->getBitArray());
+    Arch::Memory mem(m_pageDirectory, memory);
 
     // User stack.
     range.phys   = 0;
@@ -111,7 +111,7 @@ IntelProcess::IntelProcess(ProcessID id, Address entry, bool privileged)
 IntelProcess::~IntelProcess()
 {
     BitAllocator *memory = Kernel::instance->getMemory();
-    Arch::Memory mem(getPageDirectory(), memory->getBitArray());
+    Arch::Memory mem(getPageDirectory(), memory);
 
     // Mark all our pages free
     mem.releaseAll();

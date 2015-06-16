@@ -24,6 +24,9 @@
 #include <BitOperations.h>
 #include <BitArray.h>
 
+/** Forward declaration */
+class BitAllocator;
+
 /**
  * Virtual memory abstract interface.
  */
@@ -66,9 +69,9 @@ class Memory
      * Constructor.
      *
      * @param pageDirectory Physical address of the page directory.
-     * @param memoryMap BitArray of physical memory page allocations.
+     * @param phys Physical memory allocator.
      */
-    Memory(Address pageDirectory, BitArray *memoryMap);
+    Memory(Address pageDirectory, BitAllocator *phys);
 
     /**
      * Destructor
@@ -165,8 +168,8 @@ class Memory
 
   protected:
 
-    /** Physical memory allocation bitmap */
-    BitArray *m_memoryMap;
+    /** Physical memory allocator */
+    BitAllocator *m_phys;
 };
 
 #endif /* __LIBARCH_MEMORY_H */
