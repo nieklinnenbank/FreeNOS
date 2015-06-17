@@ -34,17 +34,18 @@ IntelProcess::IntelProcess(ProcessID id, Address entry, bool privileged)
 
     // Allocate and map page directory
     memory->allocate(&dirSize, &m_pageDirectory);
-    pageDir = (Address *) local.map(m_pageDirectory, 0,
+    pageDir = (Address *) local.map(m_pageDirectory,
+                                    local.findFree(PAGESIZE, Memory::KernelPrivate),
                                     Arch::Memory::Present |
                                     Arch::Memory::Readable |
                                     Arch::Memory::Writable);
 
-    // Setup page directory
+    // Initialize page directory
     for (Size i = 0; i < PAGEDIR_MAX; i++)
-        pageDir[i] = PAGE_RESERVE;
+        pageDir[i] = 0;
 
     pageDir[0] = kernelPageDir[0];
-    pageDir[DIRENTRY(PAGEDIR_LOCAL) ] = m_pageDirectory | PAGE_PRESENT | PAGE_USER | PAGE_RESERVE;
+    pageDir[DIRENTRY(PAGEDIR_LOCAL) ] = m_pageDirectory | PAGE_PRESENT | PAGE_USER;
     local.unmap((Address)pageDir);
 
     // Obtain memory mappings
@@ -72,7 +73,7 @@ IntelProcess::IntelProcess(ProcessID id, Address entry, bool privileged)
                                            - sizeof(CPURegs));
 
     // Map kernel stack
-    range.virt = 0;
+    range.virt = local.findFree(range.size, Memory::KernelPrivate);
     stack      = local.mapRange(&range);
     stackBase  = stack + range.size;
 
@@ -110,11 +111,14 @@ IntelProcess::IntelProcess(ProcessID id, Address entry, bool privileged)
 
 IntelProcess::~IntelProcess()
 {
-    BitAllocator *memory = Kernel::instance->getMemory();
-    Arch::Memory mem(getPageDirectory(), memory);
+    Arch::Memory mem(getPageDirectory(), Kernel::instance->getMemory());
 
-    // Mark all our pages free
-    mem.releaseAll();
+    // Release regions
+    mem.releaseRegion(Memory::KernelStack);
+    mem.releaseRegion(Memory::UserData);
+    mem.releaseRegion(Memory::UserHeap);
+    mem.releaseRegion(Memory::UserStack);
+    mem.releaseRegion(Memory::UserPrivate);
 }
 
 void IntelProcess::execute(Process *previous)

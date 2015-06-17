@@ -64,9 +64,7 @@ class BootImageStorage : public Storage
         mem.phys      = info.bootImageAddress;
         mem.access    = Memory::Present |
                         Memory::User |
-                        Memory::Readable |
-                        Memory::Writable |
-                        Memory::Pinned;
+                        Memory::Readable;
         mem.type      = IPCType;
         IPCMessage(CORESRV_PID, API::SendReceive, &mem, sizeof(mem));
 

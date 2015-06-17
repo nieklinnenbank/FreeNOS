@@ -48,6 +48,8 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range)
             break;
 
         case Map:
+            if (!range->virt)
+                range->virt = mem.findFree(range->size, Memory::UserPrivate);
             mem.mapRange(range);
             break;
 

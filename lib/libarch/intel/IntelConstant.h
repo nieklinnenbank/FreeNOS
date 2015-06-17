@@ -86,7 +86,7 @@
 #define PAGEDIR_LOCAL   (1024 * 1024 * 4)
 
 /** Kernel stack address. */
-#define KERNEL_STACK    0xd0000000
+#define KERNEL_STACK    0x08400000
 
 /** Kernel heap address. */
 #define KERNEL_HEAP     0x00300000
@@ -117,12 +117,6 @@
 
 /** Marks a page accessible by user programs (ring 3). */
 #define PAGE_USER       4
-
-/** Pinned pages cannot be released by the physical memory allocator. */
-#define PAGE_PIN        (1 << 9)
-
-/** Page has been reserved in the virtual address space. */
-#define PAGE_RESERVE    (1 << 11)
 
 /**
  * @}

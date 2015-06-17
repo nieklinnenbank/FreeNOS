@@ -48,10 +48,35 @@ class Memory
         Writable   = PAGE_WRITE,
         Executable = PAGE_EXEC,
         User       = PAGE_USER,
-        Pinned     = PAGE_PIN,
-        Reserved   = PAGE_RESERVE
     }
     Access;
+
+    /**
+     * Memory regions.
+     *
+     * Various memory regions which are available on the system.
+     * Memory regions are labels which refer to predefined virtual memory ranges.
+     * The virtual memory address range of each region depends on the
+     * architecture implementation and can be obtained with range().
+     *
+     * @see range
+     */
+    typedef enum Region
+    {
+        KernelData,    /**<< Kernel program data from libexec, e.g. code, bss, (ro)data */
+        KernelHeap,    /**<< Kernel heap */
+        KernelStack,   /**<< Kernel stack */
+        KernelPrivate, /**<< Kernel dynamic memory mappings */
+
+        PageTables,    /**<< Page table mappings */
+
+        UserData,      /**<< User program data from libexec, e.g. code, bss, (ro)data */
+        UserHeap,      /**<< User heap */
+        UserStack,     /**<< User stack */
+        UserPrivate,   /**<< User private dynamic memory mappings */
+        UserShared     /**<< User shared dynamic memory mappings */
+    }
+    Region;
 
     /**
      * Memory range.
@@ -79,6 +104,14 @@ class Memory
     virtual ~Memory();
 
     /**
+     * Get region addresses.
+     *
+     * @param region Memory region.
+     * @return Range object
+     */
+    virtual Range range(Region region) = 0;
+
+    /**
      * Map a physical page to a virtual address.
      *
      * @param phys Physical address.
@@ -86,9 +119,29 @@ class Memory
      * @param access Page entry protection flags.
      * @return Mapped virtual address.
      */     
-    virtual Address map(Address phys,
-                        Address virt = ZERO,
-                        Access access = Present | User | Readable | Writable) = 0;
+    virtual Address map(Address phys, Address virt, Access access) = 0;
+
+    /**
+     * Map a range of physical pages to virtual addresses.
+     *
+     * @param range Range object describing the range of physical pages.
+     * @return First virtual memory address of the mapping.
+     */
+    virtual Address mapRange(Range *range);
+
+    /**
+     * Map virtual memory in a region.
+     *
+     * This function will allocate a certain amount
+     * of pages in the physical memory allocator and map
+     * them in unused virtual memory inside the given region.
+     *
+     * @param region Memory region to map in.
+     * @param size Number of bytes to map in the region.
+     * @return First virtual address of the mapping.
+     */
+    // TODO: should regions also define its (maximum) access permissions?
+    virtual Address mapRegion(Memory::Region region, Size size, Access access);
 
     /**
      * Unmap a virtual address.
@@ -99,14 +152,6 @@ class Memory
      * @param virt Virtual address to unmap.
      */
     virtual void unmap(Address virt) = 0;
-
-    /**
-     * Map a range of physical pages to virtual addresses.
-     *
-     * @param range Range object describing the range of physical pages.
-     * @return First virtual memory address of the mapping.
-     */
-    virtual Address mapRange(Range *range);
 
     /**
      * Unmaps a range of virtual memory.
@@ -149,22 +194,26 @@ class Memory
      */
     virtual void releaseRange(Range *range);
 
-    /** 
-     * Deallocate all associated physical memory.
+    /**
+     * Release memory region.
+     *
+     * Deallocate all associated physical memory
+     * which resides in the given memory region.
      */
-    virtual void releaseAll() = 0;
+    virtual void releaseRegion(Region region) = 0;
 
     /**
-     * Find unused virtual page range.
+     * Find unused memory.
      *
      * This function finds a contigeous block of a given size
      * of virtual memory which is unused and then returns
      * the virtual address of the first page in the block.
      *
+     * @param region Memory region to search in.
      * @param size Number of bytes requested to be free.
      * @return Virtual address of the first page.
      */
-    virtual Address findFree(Size size) = 0;
+    virtual Address findFree(Size size, Region region) = 0;
 
   protected:
 

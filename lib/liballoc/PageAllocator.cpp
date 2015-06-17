@@ -66,9 +66,9 @@ Allocator::Result PageAllocator::allocate(Size *size, Address *addr)
     msg.access = Memory::Present  |
                  Memory::User     |
                  Memory::Readable |
-                 Memory::Writable |
-                 Memory::Reserved;
+                 Memory::Writable;
     msg.virt   = m_base + m_allocated;
+#warning do we need to pass the region here too?
     msg.phys   = ZERO;
     msg.type   = IPCType;
     msg.from   = SELF;

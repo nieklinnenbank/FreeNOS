@@ -145,7 +145,7 @@ _start:
     /* Kernel page directory. */
     movl $kernelPageDir, %eax
     movl $kernelPageTab, %ebx
-    orl  $(PAGE_PRESENT | PAGE_USER | PAGE_PIN | PAGE_RESERVE), %ebx
+    orl  $(PAGE_PRESENT | PAGE_USER), %ebx
     movl %ebx, (%eax)
 
     /* Clear first 1MB */
@@ -162,7 +162,7 @@ _start:
     movl $kernelPageTab, %eax
     addl $1024, %eax
     movl $1048576, %ebx
-    orl $(PAGE_PRESENT | PAGE_WRITE | PAGE_PIN), %ebx
+    orl $(PAGE_PRESENT | PAGE_WRITE), %ebx
     movl $768, %ecx
 1:
     movl %ebx, (%eax)
@@ -180,7 +180,7 @@ _start:
     addl %eax, %ebx
     movl %ebx, %eax
     movl $kernelPageDir, %ebx
-    orl  $(PAGE_PRESENT | PAGE_USER | PAGE_PIN | PAGE_RESERVE), %ebx
+    orl  $(PAGE_PRESENT | PAGE_USER), %ebx
     movl %ebx, (%eax)
 
     /* Enter paged mode. */

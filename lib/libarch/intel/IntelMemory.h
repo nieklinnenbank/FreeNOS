@@ -62,6 +62,14 @@ class IntelMemory : public Memory
     virtual ~IntelMemory();
 
     /**
+     * Get region addresses.
+     *
+     * @param region Memory region.
+     * @return Range object
+     */
+    virtual Range range(Region region);
+
+    /**
      * Map a physical page to a virtual address.
      *
      * @param paddr Physical address.
@@ -69,9 +77,7 @@ class IntelMemory : public Memory
      * @param prot Page entry protection flags.
      * @return Mapped virtual address.
      */     
-    virtual Address map(Address phys,
-                        Address virt = ZERO,
-                        Access flags = Present | User | Readable | Writable);
+    virtual Address map(Address phys, Address virt, Access flags);
 
     /**
      * Unmap a virtual address.
@@ -110,22 +116,26 @@ class IntelMemory : public Memory
      */
     virtual void release(Address virt);
 
-    /** 
-     * Deallocate all associated physical memory.
+    /**
+     * Release memory region.
+     *
+     * Deallocate all associated physical memory
+     * which resides in the given memory region.
      */
-    virtual void releaseAll();
+    virtual void releaseRegion(Region region);
 
     /**
-     * Find unused virtual page range.
+     * Find unused memory.
      *
      * This function finds a contigeous block of a given size
      * of virtual memory which is unused and then returns
      * the virtual address of the first page in the block.
      *
+     * @param region Memory region to search in.
      * @param size Number of bytes requested to be free.
      * @return Virtual address of the first page.
      */
-    virtual Address findFree(Size size);
+    virtual Address findFree(Size size, Region region);
 
   private:
 
