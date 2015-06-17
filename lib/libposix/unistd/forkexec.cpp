@@ -64,6 +64,8 @@ int forkexec(const char *path, const char *argv[])
 
     // TODO: make this much more efficient. perhaps let libexec write directly to the target buffer.
     // at least Map & copy in one shot.
+    // TODO: move the memory administration updates to coreserver instead.
+    // this process can read the libexec data once, and then let coreserver create a process for it.
 
     // Map program regions into virtual memory of the new process
     for (int i = 0; i < numRegions; i++)

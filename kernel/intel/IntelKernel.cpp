@@ -180,13 +180,17 @@ bool IntelKernel::loadBootImage()
     for (Size n = 0; n < multibootInfo.modsCount; n++)
     {
         // Map MultibootModule struct
-        vaddr = virt.map(multibootInfo.modsAddress, 0,
+        // TODO: too many arguments. Make an easier wrapper.
+        vaddr = virt.map(multibootInfo.modsAddress,
+                         virt.findFree(PAGESIZE, Memory::KernelPrivate),
                          Arch::Memory::Present | Arch::Memory::Readable);
         mod = (MultibootModule *)(vaddr + multibootInfo.modsAddress % PAGESIZE);
         mod += n;
 
         // mod = &((MultibootModule *) multibootInfo.modsAddress)[n];
-        vaddr = virt.map(mod->string, 0, Arch::Memory::Present | Arch::Memory::Readable);
+        vaddr = virt.map(mod->string,
+                         virt.findFree(PAGESIZE, Memory::KernelPrivate),
+                         Arch::Memory::Present | Arch::Memory::Readable);
         String str = (char *) (vaddr + mod->string % PAGESIZE);
 
         // Mark its memory used
@@ -198,8 +202,8 @@ bool IntelKernel::loadBootImage()
         {
             // Map the BootImage into our address space
             range.phys   = mod->modStart;
-            range.virt   = 0;
             range.size   = mod->modEnd - mod->modStart;
+            range.virt   = virt.findFree(range.size, Memory::KernelPrivate);
             range.access = Arch::Memory::Present |
                            Arch::Memory::Readable;
             image = (BootImage *) virt.mapRange(&range);
@@ -263,7 +267,11 @@ void IntelKernel::loadBootProcess(BootImage *image, Address imagePAddr, Size ind
     // Map and copy program arguments
     m_memory->allocate(&args_size, &args);
     mem.map(args, ARGV_ADDR, Arch::Memory::Present | Arch::Memory::User | Arch::Memory::Writable);
-    MemoryBlock::copy( (char *) local.map(args), program->name, ARGV_SIZE);
+    MemoryBlock::copy(
+        (char *) local.map(args, local.findFree(ARGV_SIZE, Memory::KernelPrivate), Memory::Present|Memory::Readable|Memory::Writable),
+        program->name,
+        ARGV_SIZE
+    );
 
     // Done
     NOTICE("loaded: " << program->name);

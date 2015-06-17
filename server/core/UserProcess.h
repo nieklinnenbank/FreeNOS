@@ -38,6 +38,7 @@
 #define ARGV_ADDR  0x9ffff000
 
 /** Maximum size of each argument. */
+#warning ARGV_ADDR fixed address is dangerous. See Memory::range(). Perhaps put it on the stack?
 #define ARGV_SIZE  128
 
 /** Number of arguments at maximum. */

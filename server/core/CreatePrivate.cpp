@@ -21,16 +21,25 @@
 void CoreServer::createPrivate(CoreMessage *msg)
 {
     Memory::Range range;
+    ProcessInfo info;
+
+    // TODO: keep a local copy of the ProcessInfo in the user process table
+    //       That will save a system call here.
+    ProcessCtl(msg->from, InfoPID, (Address) &info);
 
     // Set mapping flags
-    // TODO: only allow pinned pages for uid == 0!
+#warning use regions!
+    Arch::Memory mem(info.pageDirectory);
     range.virt   = msg->virt & PAGEMASK;
-    range.phys   = msg->phys;
     range.size   = msg->size;    
+    range.phys   = msg->phys;
     range.access = msg->access;
 
+    if (!range.virt)
+        range.virt = mem.findFree(range.size, Memory::UserPrivate);
+
     // Try to map the range
-    VMCtl(msg->from, Map, &range);
+    mem.mapRange(&range);
 
     msg->virt = range.virt;
     msg->phys = range.phys;

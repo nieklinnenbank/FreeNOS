@@ -19,6 +19,7 @@
 #include <MemoryBlock.h>
 #include <Types.h>
 #include <BitAllocator.h>
+#include <Log.h>
 #include "IntelCore.h"
 #include "IntelMemory.h"
 
@@ -48,7 +49,7 @@ IntelMemory::IntelMemory(Address pageDirectory, BitAllocator *phys)
         // Modify the local page directory to insert the mapping
         Address *localDirectory = ((Address *) PAGEDIR_LOCAL) + (PAGEDIR_LOCAL >> PAGESHIFT);
         localDirectory[ DIRENTRY(m_pageTableBase) ] =
-            (Address) pageDirectory | PAGE_WRITE | PAGE_PRESENT | PAGE_RESERVE;
+            (Address) pageDirectory | PAGE_WRITE | PAGE_PRESENT;
         tlb_flush_all();
     }
 }
@@ -63,6 +64,31 @@ IntelMemory::~IntelMemory()
     }
 }
 
+Memory::Range IntelMemory::range(Memory::Region region)
+{
+    Memory::Range r;
+
+    // Initialize unused fields
+    r.phys   = 0;
+    r.access = None;
+
+    // Fill region virtual range
+    switch (region)
+    {
+        case KernelData:    r.virt = 0;          r.size = MegaByte(3);   break;
+        case KernelHeap:    r.virt = 0x00300000; r.size = MegaByte(1);   break;
+        case KernelStack:   r.virt = 0x08400000; r.size = KiloByte(4);   break;
+        case PageTables:    r.virt = 0x00400000; r.size = MegaByte(64);  break;
+        case KernelPrivate: r.virt = 0x04400000; r.size = MegaByte(64);  break;
+        case UserData:      r.virt = 0x80000000; r.size = MegaByte(256); break;
+        case UserHeap:      r.virt = 0xb0000000; r.size = MegaByte(256); break;
+        case UserStack:     r.virt = 0xc0000000; r.size = KiloByte(4);   break;
+        case UserPrivate:   r.virt = 0xa0000000; r.size = MegaByte(256); break;
+        case UserShared:    r.virt = 0xd0000000; r.size = MegaByte(256); break;
+    }
+    return r;
+}
+
 Address * IntelMemory::getPageTable(Address virt)
 {
     if (!(m_pageDirectory[ DIRENTRY(virt) ] & PAGE_PRESENT))
@@ -75,13 +101,16 @@ Address IntelMemory::map(Address phys, Address virt, Access flags)
 {
     Size size = PAGESIZE;
 
+    // Must have a virtual address
+    if (!virt)
+    {
+        FATAL("invalid ZERO virtual address");
+        return 0;
+    }
+
     // find unused physical page if not specified
     if (!phys)
         m_phys->allocate(&size, &phys);
-
-    // find unused virtual address if not specified.
-    if (!virt)
-        virt = findFree(PAGESIZE);
 
     Address *pageTable = getPageTable(virt);
 
@@ -149,65 +178,49 @@ void IntelMemory::release(Address virt)
     unmap(virt);
 }
 
-void IntelMemory::releaseAll()
+void IntelMemory::releaseRegion(Memory::Region region)
 {
-    // Walk page directory
-    for (Size i = 0; i < PAGEDIR_MAX; i++)
+    Range r = range(region);
+
+    // Release physical pages of the whole region
+    for (Size i = 0; i < r.size; i += PAGESIZE)
     {
-        // Skip pinned tables and non-present tables
-        if (!(m_pageDirectory[i] & PAGE_PRESENT) ||
-             (m_pageDirectory[i] & PAGE_PIN))
-            continue;
+        Address *table = getPageTable(r.virt + i);
 
-        Address *table = getPageTable(i * PAGETAB_MAX * PAGESIZE);
-
-        // Walk page table
-        for (Size j = 0; j < PAGETAB_MAX; j++)
-        {
-            if (table[j] & PAGE_PRESENT && !(table[j] & PAGE_PIN))
-                m_phys->release(table[j] & PAGEMASK);
-        }
+        if (table)
+            m_phys->release(table[TABENTRY(r.virt + i)] & PAGEMASK);
     }
 }
 
-Address IntelMemory::findFree(Size size)
+Address IntelMemory::findFree(Size size, Memory::Region region)
 {
-    Address addr = 0;
-    Size bytes = 0;
+    Range r = range(region);
+    Size currentSize = 0;
+    Address addr = r.virt, currentAddr = 0;
 
-    // Walk page directory
-    for (Size i = 0; i < PAGEDIR_MAX && bytes < size; i++)
+    while (addr < r.virt+r.size && currentSize < size)
     {
-        // Is the pagetable present?
-        if (!(m_pageDirectory[i] & (PAGE_PRESENT|PAGE_RESERVE)))
+        Address *table = getPageTable(addr);
+
+        // Does the page table exist at all?
+        if (!table)
         {
-            if (!addr)
-                addr = (i * PAGETAB_MAX * PAGESIZE);
-            bytes += PAGETAB_MAX * PAGESIZE;
-            continue;
+            if (!currentAddr) currentAddr = addr;
+            currentSize += PAGESIZE * PAGETAB_MAX;
+            addr += PAGESIZE * PAGETAB_MAX;
         }
-        // We dont need to search reserved page directory entries
-        if (m_pageDirectory[i] & PAGE_RESERVE)
-            continue;
-
-        Address *pageTable = getPageTable(i * PAGETAB_MAX * PAGESIZE);
-
-        // Walk the page tables
-        for (Size j = 0; j < PAGETAB_MAX && bytes < size; j++)
+        // Is this virtual address unused?
+        else if (!(table[TABENTRY(addr)] & PAGE_PRESENT))
         {
-            if (!(pageTable[j] & (PAGE_PRESENT|PAGE_RESERVE)))
-            {
-                if (!addr)
-                    addr  = (i * PAGETAB_MAX * PAGESIZE) + (j * PAGESIZE);
-
-                bytes += PAGESIZE;
-            }
-            else
-            {
-                addr  = 0;
-                bytes = 0;
-            }
+            if (!currentAddr)
+                currentAddr = addr;
+            currentSize += PAGESIZE; addr += PAGESIZE;
+        }
+        // Used. Reset the search
+        else
+        {
+            currentSize = 0; currentAddr = 0; addr += PAGESIZE;
         }
     }
-    return addr;
+    return currentAddr;
 }

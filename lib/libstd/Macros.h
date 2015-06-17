@@ -42,6 +42,12 @@
 #define IQUOTE(x) \
     QUOTE(x)
 
+/** Convert kilobytes to bytes */
+#define KiloByte(v) ((v) * 1024)
+
+/** Convert megabytes to bytes */
+#define MegaByte(v) ((v) * 1024 * 1024)
+
 // TODO: #warning Integer range depends on the architecture. Move to libarch.
 
 /** Minimum value of an object of type long int. */

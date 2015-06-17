@@ -32,13 +32,13 @@ Error VGA::initialize()
     /* Request VGA memory. */
     mem.action    = CreatePrivate;
     mem.size      = PAGESIZE;
+#warning this goes wrong in coreserver?
     mem.virt      = ZERO;
     mem.phys      = VGA_PADDR;
     mem.access    = Memory::Present |
                     Memory::User |
                     Memory::Readable |
-                    Memory::Writable |
-                    Memory::Pinned;
+                    Memory::Writable;
     mem.type      = IPCType;
     IPCMessage(CORESRV_PID, API::SendReceive, &mem, sizeof(mem));
 

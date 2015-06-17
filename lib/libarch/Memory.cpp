@@ -18,6 +18,7 @@
 #include <FreeNOS/API.h>
 #include <FreeNOS/Kernel.h>
 #include <BitAllocator.h>
+#include <Log.h>
 #include "Memory.h"
 
 Memory::Memory(Address pageDirectory, BitAllocator *phys)
@@ -38,27 +39,37 @@ Memory::~Memory()
 
 Address Memory::mapRange(Range *range)
 {
-    Address addr = 0;
+    // Must have virtual address
+    if (!range->virt)
+    {
+        FATAL("invalid ZERO virtual address");
+        return 0;
+    }
 
     // Allocate physical pages, if needed.
     if (!range->phys)
         m_phys->allocate(&range->size, &range->phys);
 
-    // Find free virtual pages, if not set.
-    if (!range->virt)
-        range->virt = findFree(range->size);
-    
     // Insert virtual page(s)
     for (Size i = 0; i < range->size; i += PAGESIZE)
     {
         Address r = map(range->phys + i,
                         range->virt + i,
                         range->access);
-
-        if (!addr)
-            addr = r;
     }
-    return addr;
+    return range->virt;
+}
+
+Address Memory::mapRegion(Memory::Region region, Size size, Access access)
+{
+    Memory::Range range;
+
+    range.virt   = findFree(size, region);
+    range.phys   = ZERO;
+    range.size   = size;
+    range.access = access;
+
+    return mapRange(&range);
 }
 
 void Memory::unmapRange(Range *range)
@@ -70,11 +81,5 @@ void Memory::unmapRange(Range *range)
 void Memory::releaseRange(Range *range)
 {
     for (Size i = 0; i < range->size; i += PAGESIZE)
-    {
-        // Don't release pinned pages. */
-        if (access(range->virt + i, PAGESIZE, Pinned))
-            continue;
-
         m_phys->release(lookup(range->virt + i));
-    }
 }
