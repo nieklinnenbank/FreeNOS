@@ -30,9 +30,11 @@ class ARMProcess : public Process
     /**
      * Constructor function.
      *
+     * @param id Process Identifier
      * @param entry Initial program counter value.
+     * @param privileged If true, the process has unlimited access to hardware.
      */
-    ARMProcess(ProcessID id, Address entry);
+    ARMProcess(ProcessID id, Address entry, bool privileged);
     
     /**
      * Destructor function.

@@ -81,8 +81,11 @@ class ARMKernel : public Kernel
     
     /**
      * Constructor function.
+     *
+     * @param kernel Describes the start and end of the kernel program in memory.
+     * @param memory Describes the start and end of physical RAM in the system.
      */
-    ARMKernel(Address kernel, Size size, Size memorySize);
+    ARMKernel(Memory::Range kernel, Memory::Range memory);
 
     /**
      * Hooks a function to an hardware interrupt.

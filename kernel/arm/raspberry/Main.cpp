@@ -34,10 +34,18 @@ extern C int kernel_main(void)
     // TODO: put this in the boot.S, or maybe hide it in the support library? maybe a _run_main() or something.
     constructors();
 
+    // Kernel memory range
+    Memory::Range kernelRange;
+    kernelRange.phys = 0x8000;
+    kernelRange.size = (1024 * 1024 * 4) - 0x8000;
+
+    // RAM physical range
+    Memory::Range ramRange;
+    ramRange.phys = 1024 * 1024;
+    ramRange.size = MegaByte(512);
+
     // Create and run the kernel
-    ARMKernel kernel( 0,                /* kernel start */
-                      1024 * 1024 * 4,  /* kernel size  */
-                      1042 * 1024 * 512 /* system memory */ );
+    ARMKernel kernel(kernelRange, ramRange);
 
     // Print some info
     ARMControl ctrl;

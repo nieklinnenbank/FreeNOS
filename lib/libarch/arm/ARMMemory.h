@@ -54,12 +54,20 @@ class ARMMemory : public Memory
      *                      or ZERO to ask the kernel for the BitArray.
      */
     ARMMemory(Address pageDirectory = ZERO,
-                BitArray *memoryMap = ZERO);
+              BitAllocator *alloc = ZERO);
 
     /**
      * Destructor.
      */
     virtual ~ARMMemory();
+
+    /**
+     * Get region addresses.
+     *
+     * @param region Memory region.
+     * @return Range object
+     */
+    virtual Range range(Region region);
 
     /**
      * Map a physical page to a virtual address.
@@ -110,10 +118,13 @@ class ARMMemory : public Memory
      */
     virtual void release(Address virt);
 
-    /** 
-     * Deallocate all associated physical memory.
+    /**
+     * Release memory region.
+     *
+     * Deallocate all associated physical memory
+     * which resides in the given memory region.
      */
-    virtual void releaseAll();
+    virtual void releaseRegion(Region region);
 
     /**
      * Find unused virtual page range.
@@ -125,7 +136,7 @@ class ARMMemory : public Memory
      * @param size Number of bytes requested to be free.
      * @return Virtual address of the first page.
      */
-    virtual Address findFree(Size size);
+    virtual Address findFree(Size size, Region region);
 
   private:
 

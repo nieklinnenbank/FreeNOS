@@ -18,10 +18,10 @@
 #include <Log.h>
 #include "ARMProcess.h"
 
-ARMProcess::ARMProcess(ProcessID id, Address entry)
-    : Process(id, entry)
+ARMProcess::ARMProcess(ProcessID id, Address entry, bool privileged)
+    : Process(id, entry, privileged)
 {
-    NOTICE("id =" << id << "entry =" << entry);
+    NOTICE("id =" << id << " entry =" << entry << " privileged = " << privileged);
 }
 
 ARMProcess::~ARMProcess()
