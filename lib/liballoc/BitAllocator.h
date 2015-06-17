@@ -20,6 +20,7 @@
 
 #include <BitArray.h>
 #include <Types.h>
+#include <Memory.h>
 #include "Allocator.h"
 
 /** 
@@ -41,11 +42,17 @@ class BitAllocator : public Allocator
     /**
      * Constructor function.
      *
-     * @param base Start memory address to manage.
-     * @param size Total amount of memory in bytes to manage.
+     * @param range Contigeous range of memory to manage.
      * @param chunkSize Total memory will be divided into chunks.
      */
-    BitAllocator(Address base, Size size, Size chunkSize);
+    BitAllocator(Memory::Range range, Size chunkSize);
+
+    /**
+     * Get chunk size.
+     *
+     * @return Chunk size.
+     */
+    Size chunkSize();
 
     /**
      * Get total size.

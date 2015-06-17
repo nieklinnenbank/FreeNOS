@@ -37,11 +37,17 @@ extern C int kernel_main()
     // TODO: put this in the boot.S, or maybe hide it in the support library? maybe a _run_main() or something.
     constructors();
 
+    // Kernel memory range
+    Memory::Range kernelRange;
+    kernelRange.phys = 1024 * 1024;
+    kernelRange.size = 1024 * 1024 * 3;
+
+    // RAM physical range
+    Memory::Range ramRange;
+    ramRange.phys = 1024 * 1024;
+    ramRange.size = multibootInfo.memUpper * 1024;
+
     // Create and run the kernel
-    IntelKernel *kernel = new IntelKernel(
-        0,
-        1024*1024*4,
-       (multibootInfo.memLower + multibootInfo.memUpper) * 1024
-    );
+    IntelKernel *kernel = new IntelKernel(kernelRange, ramRange);
     return kernel->run();
 }
