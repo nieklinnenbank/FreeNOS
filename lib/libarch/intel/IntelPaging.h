@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBARCH_INTEL_MEMORY_H
-#define __LIBARCH_INTEL_MEMORY_H
+#ifndef __LIBARCH_INTEL_PAGING_H
+#define __LIBARCH_INTEL_PAGING_H
 
 #include <Types.h>
 #include "Memory.h"
@@ -40,7 +40,7 @@
 /**
  * Intel virtual memory implementation.
  */
-class IntelMemory : public Memory
+class IntelPaging : public Memory
 {
   public:
 
@@ -53,13 +53,13 @@ class IntelMemory : public Memory
      * @param phys          BitAllocator pointer of the physical memory page allocations
      *                      or ZERO to ask the kernel for the BitAllocator.
      */
-    IntelMemory(Address pageDirectory = ZERO,
+    IntelPaging(Address pageDirectory = ZERO,
                 BitAllocator *phys = ZERO);
 
     /**
      * Destructor.
      */
-    virtual ~IntelMemory();
+    virtual ~IntelPaging();
 
     /**
      * Get region addresses.
@@ -167,7 +167,7 @@ class IntelMemory : public Memory
 
 namespace Arch
 {
-    typedef IntelMemory Memory;
+    typedef IntelPaging Memory;
 };
 
-#endif /* __LIBARCH_INTEL_MEMORY_H */
+#endif /* __LIBARCH_INTEL_PAGING_H */

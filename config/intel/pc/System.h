@@ -22,7 +22,7 @@
 #include <intel/IntelCore.h>
 #include <intel/IntelIO.h>
 #include <intel/IntelState.h>
-#include <intel/IntelMemory.h>
+#include <intel/IntelPaging.h>
 
 #include <intel/IntelKernel.h>
 #include <intel/IntelProcess.h>

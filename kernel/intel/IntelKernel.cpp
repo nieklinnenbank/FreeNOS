@@ -17,6 +17,7 @@
 
 #include <FreeNOS/API.h>
 #include <FreeNOS/ProcessManager.h>
+#include <FreeNOS/System.h>
 #include <Macros.h>
 #include <List.h>
 #include <ListIterator.h>
@@ -37,7 +38,7 @@ extern C void executeInterrupt(CPUState state)
 IntelKernel::IntelKernel(Memory::Range kernel, Memory::Range memory)
     : Kernel(kernel, memory)
 {
-    IntelMemory mem;
+    Arch::Memory mem;
 
     /* ICW1: Initialize PIC's (Edge triggered, Cascade) */
     IO::outb(PIC1_CMD, 0x11);

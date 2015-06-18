@@ -21,7 +21,7 @@
 #include <BitAllocator.h>
 #include <Log.h>
 #include "IntelCore.h"
-#include "IntelMemory.h"
+#include "IntelPaging.h"
 
 /* Temporary definitions. Need to be put in a separate class */
 #define PAGE_NONE       0
@@ -31,7 +31,7 @@
 #define PAGE_WRITE      2
 #define PAGE_USER       4
 
-IntelMemory::IntelMemory(Address pageDirectory, BitAllocator *phys)
+IntelPaging::IntelPaging(Address pageDirectory, BitAllocator *phys)
     : Memory(pageDirectory, phys)
 {
     // Default to the local page directory
@@ -58,7 +58,7 @@ IntelMemory::IntelMemory(Address pageDirectory, BitAllocator *phys)
     }
 }
 
-IntelMemory::~IntelMemory()
+IntelPaging::~IntelPaging()
 {
     if (m_pageTableBase != PAGEDIR_LOCAL)
     {
@@ -68,7 +68,7 @@ IntelMemory::~IntelMemory()
     }
 }
 
-Memory::Range IntelMemory::range(Memory::Region region)
+Memory::Range IntelPaging::range(Memory::Region region)
 {
     Memory::Range r;
 
@@ -93,7 +93,7 @@ Memory::Range IntelMemory::range(Memory::Region region)
     return r;
 }
 
-Address * IntelMemory::getPageTable(Address virt)
+Address * IntelPaging::getPageTable(Address virt)
 {
     if (!(m_pageDirectory[ DIRENTRY(virt) ] & PAGE_PRESENT))
         return (Address *) ZERO;
@@ -101,7 +101,7 @@ Address * IntelMemory::getPageTable(Address virt)
         return ((Address *) m_pageTableBase) + (((virt & PAGEMASK) >> DIRSHIFT) * PAGETAB_MAX);
 }
 
-Memory::Result IntelMemory::map(Address phys, Address virt, Access acc)
+Memory::Result IntelPaging::map(Address phys, Address virt, Access acc)
 {
     Size size = PAGESIZE;
 
@@ -141,7 +141,7 @@ Memory::Result IntelMemory::map(Address phys, Address virt, Access acc)
     return Success;
 }
 
-Address IntelMemory::lookup(Address virt)
+Address IntelPaging::lookup(Address virt)
 {
     Address *pageTable = getPageTable(virt);
 
@@ -151,7 +151,7 @@ Address IntelMemory::lookup(Address virt)
         return pageTable[ TABENTRY(virt) ] & PAGEMASK;
 }
 
-u32 IntelMemory::flags(Access acc)
+u32 IntelPaging::flags(Access acc)
 {
     u32 f = 0;
 
@@ -162,7 +162,7 @@ u32 IntelMemory::flags(Access acc)
     return f;
 }
 
-Memory::Access IntelMemory::access(Address virt)
+Memory::Access IntelPaging::access(Address virt)
 {
     Address *pageTable = getPageTable(virt);
     Access acc = None;
@@ -178,7 +178,7 @@ Memory::Access IntelMemory::access(Address virt)
     return acc;
 }
 
-Memory::Result IntelMemory::unmap(Address virt)
+Memory::Result IntelPaging::unmap(Address virt)
 {
     Address *pageTable = getPageTable(virt);
     
@@ -188,7 +188,7 @@ Memory::Result IntelMemory::unmap(Address virt)
     return Success;
 }
 
-Memory::Result IntelMemory::release(Address virt)
+Memory::Result IntelPaging::release(Address virt)
 {
     Address physical = lookup(virt);
 
@@ -199,7 +199,7 @@ Memory::Result IntelMemory::release(Address virt)
     return Success;
 }
 
-Memory::Result IntelMemory::releaseRegion(Memory::Region region)
+Memory::Result IntelPaging::releaseRegion(Memory::Region region)
 {
     Range r = range(region);
 
@@ -214,7 +214,7 @@ Memory::Result IntelMemory::releaseRegion(Memory::Region region)
     return Success;
 }
 
-Address IntelMemory::findFree(Size size, Memory::Region region)
+Address IntelPaging::findFree(Size size, Memory::Region region)
 {
     Range r = range(region);
     Size currentSize = 0;

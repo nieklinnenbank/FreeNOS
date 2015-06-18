@@ -26,7 +26,7 @@
 
 extern C int kernel_main()
 {
-    IntelMemory mem;
+    Arch::Memory mem;
 
     // Initialize physical memory.
     Kernel::heap( mem.range(Memory::KernelHeap).virt,
