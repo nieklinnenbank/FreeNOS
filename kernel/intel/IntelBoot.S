@@ -18,6 +18,11 @@
 #include <intel/IntelConstant.h>
 #include "IntelBoot.h"
 
+/* Page Table Entry flags */
+#define PAGE_PRESENT 1
+#define PAGE_WRITE   2
+#define PAGE_USER    4
+
 /* The size of our stack (16KB).  */
 #define STACK_SIZE 0x4000
 

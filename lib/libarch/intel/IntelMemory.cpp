@@ -23,6 +23,14 @@
 #include "IntelCore.h"
 #include "IntelMemory.h"
 
+/* Temporary definitions. Need to be put in a separate class */
+#define PAGE_NONE       0
+#define PAGE_PRESENT    1
+#define PAGE_READ       0
+#define PAGE_EXEC       0
+#define PAGE_WRITE      2
+#define PAGE_USER       4
+
 IntelMemory::IntelMemory(Address pageDirectory, BitAllocator *phys)
     : Memory(pageDirectory, phys)
 {
@@ -42,10 +50,6 @@ IntelMemory::IntelMemory(Address pageDirectory, BitAllocator *phys)
                 break;
             }
         }
-        // TODO: this function is a hack. Later, the kernel should not do any (virtual)memory anymore.
-        // the coreserver should have full access to the virtual memory, without kernel help. Perhaps
-        // it will need to run in ring0 for that on intel, which is acceptable.
-
         // Modify the local page directory to insert the mapping
         Address *localDirectory = ((Address *) PAGEDIR_LOCAL) + (PAGEDIR_LOCAL >> PAGESHIFT);
         localDirectory[ DIRENTRY(m_pageTableBase) ] =
@@ -97,7 +101,7 @@ Address * IntelMemory::getPageTable(Address virt)
         return ((Address *) m_pageTableBase) + (((virt & PAGEMASK) >> DIRSHIFT) * PAGETAB_MAX);
 }
 
-Address IntelMemory::map(Address phys, Address virt, Access flags)
+Memory::Result IntelMemory::map(Address phys, Address virt, Access acc)
 {
     Size size = PAGESIZE;
 
@@ -105,7 +109,7 @@ Address IntelMemory::map(Address phys, Address virt, Access flags)
     if (!virt)
     {
         FATAL("invalid ZERO virtual address");
-        return 0;
+        return InvalidAddress;
     }
 
     // find unused physical page if not specified
@@ -122,7 +126,7 @@ Address IntelMemory::map(Address phys, Address virt, Access flags)
         m_phys->allocate(&size, &table);
 
         // Map a new page table
-        m_pageDirectory[ DIRENTRY(virt) ] = table | PAGE_PRESENT | PAGE_WRITE | flags;
+        m_pageDirectory[ DIRENTRY(virt) ] = table | PAGE_PRESENT | PAGE_WRITE | flags(acc);
 
         // Flush and clear the page table
         pageTable = getPageTable(virt);
@@ -130,11 +134,11 @@ Address IntelMemory::map(Address phys, Address virt, Access flags)
         MemoryBlock::set(pageTable, 0, PAGESIZE);
     }
     // Map the physical page to a virtual address
-    m_pageDirectory[ DIRENTRY(virt) ] = m_pageDirectory[ DIRENTRY(virt) ] | flags;
+    m_pageDirectory[ DIRENTRY(virt) ] = m_pageDirectory[ DIRENTRY(virt) ] | flags(acc);
     tlb_flush(pageTable);
-    pageTable[ TABENTRY(virt) ] = (phys & PAGEMASK) | flags;
+    pageTable[ TABENTRY(virt) ] = (phys & PAGEMASK) | flags(acc);
     tlb_flush(virt);
-    return virt;
+    return Success;
 }
 
 Address IntelMemory::lookup(Address virt)
@@ -147,28 +151,44 @@ Address IntelMemory::lookup(Address virt)
         return pageTable[ TABENTRY(virt) ] & PAGEMASK;
 }
 
-bool IntelMemory::access(Address virt, Size size, Access flags)
+u32 IntelMemory::flags(Access acc)
 {
-    for (Size i = 0; i < size; i += PAGESIZE)
-    {
-        Address *pageTable = getPageTable(virt);
+    u32 f = 0;
 
-        if (!pageTable || !(pageTable[ TABENTRY(virt) ] & flags))
-            return false;
-    }
-    return true;
+    if (acc & Memory::Present)  f |= PAGE_PRESENT;
+    if (acc & Memory::Writable) f |= PAGE_WRITE;
+    if (acc & Memory::User)     f |= PAGE_USER;
+
+    return f;
 }
 
-void IntelMemory::unmap(Address virt)
+Memory::Access IntelMemory::access(Address virt)
+{
+    Address *pageTable = getPageTable(virt);
+    Access acc = None;
+
+    if (pageTable)
+    {
+        Address entry = pageTable[TABENTRY(virt)];
+
+        if (entry & PAGE_PRESENT) acc |= Memory::Present | Memory::Readable;
+        if (entry & PAGE_WRITE)   acc |= Memory::Writable;
+        if (entry & PAGE_USER)    acc |= Memory::User;
+    }
+    return acc;
+}
+
+Memory::Result IntelMemory::unmap(Address virt)
 {
     Address *pageTable = getPageTable(virt);
     
     // Remove the mapping and flush TLB cache
     pageTable[ TABENTRY(virt) ] = 0;
     tlb_flush(virt);
+    return Success;
 }
 
-void IntelMemory::release(Address virt)
+Memory::Result IntelMemory::release(Address virt)
 {
     Address physical = lookup(virt);
 
@@ -176,9 +196,10 @@ void IntelMemory::release(Address virt)
         m_phys->release(physical);
 
     unmap(virt);
+    return Success;
 }
 
-void IntelMemory::releaseRegion(Memory::Region region)
+Memory::Result IntelMemory::releaseRegion(Memory::Region region)
 {
     Range r = range(region);
 
@@ -190,6 +211,7 @@ void IntelMemory::releaseRegion(Memory::Region region)
         if (table)
             m_phys->release(table[TABENTRY(r.virt + i)] & PAGEMASK);
     }
+    return Success;
 }
 
 Address IntelMemory::findFree(Size size, Memory::Region region)
@@ -205,7 +227,8 @@ Address IntelMemory::findFree(Size size, Memory::Region region)
         // Does the page table exist at all?
         if (!table)
         {
-            if (!currentAddr) currentAddr = addr;
+            if (!currentAddr)
+                currentAddr = addr;
             currentSize += PAGESIZE * PAGETAB_MAX;
             addr += PAGESIZE * PAGETAB_MAX;
         }

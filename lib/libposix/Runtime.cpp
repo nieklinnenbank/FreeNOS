@@ -95,11 +95,13 @@ void setupHeap()
     PoolAllocator *pool;
     Address heapAddr;
     Size parentSize;
+    Arch::Memory mem; // TODO: inefficient. needs another kernel call for SystemInfo()...
 
     /* Only the core server allocates directly. */
     if (ProcessCtl(SELF, GetPID) == CORESRV_PID)
     {
-        MemoryAllocator alloc(USER_HEAP, USER_HEAP_SIZE);
+        MemoryAllocator alloc( mem.range(Memory::UserHeap).virt,
+                               mem.range(Memory::UserHeap).size );
 
         // Pre-allocate 4 pages
         Size sz = PAGESIZE * 4;
@@ -113,7 +115,8 @@ void setupHeap()
     }
     else
     {
-        PageAllocator alloc(USER_HEAP, USER_HEAP_SIZE);
+        PageAllocator alloc( mem.range(Memory::UserHeap).virt,
+                             mem.range(Memory::UserHeap).size );
 
         // Pre-allocate 4 pages
         Size sz = PAGESIZE * 4;

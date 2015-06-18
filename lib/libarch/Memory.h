@@ -18,7 +18,6 @@
 #ifndef __LIBARCH_MEMORY_H
 #define __LIBARCH_MEMORY_H
 
-#include <FreeNOS/System.h>
 #include <Types.h>
 #include <Macros.h>
 #include <BitOperations.h>
@@ -35,6 +34,17 @@ class Memory
   public:
 
     /**
+     * Result codes.
+     */
+    typedef enum Result
+    {
+        Success,
+        InvalidAddress,
+        OutOfMemory
+    }
+    Result;
+
+    /**
      * Memory access flags.
      *
      * The actual values of this enum depend on the architecture
@@ -42,12 +52,12 @@ class Memory
      */
     typedef enum Access
     {
-        None       = PAGE_NONE,
-        Present    = PAGE_PRESENT,
-        Readable   = PAGE_READ,
-        Writable   = PAGE_WRITE,
-        Executable = PAGE_EXEC,
-        User       = PAGE_USER,
+        None       = 0,
+        Present    = 1 << 0,
+        Readable   = 1 << 1,
+        Writable   = 1 << 2,
+        Executable = 1 << 3,
+        User       = 1 << 4
     }
     Access;
 
@@ -117,17 +127,17 @@ class Memory
      * @param phys Physical address.
      * @param virt Virtual address or ZERO to use the first unused page.
      * @param access Page entry protection flags.
-     * @return Mapped virtual address.
+     * @return Result code.
      */     
-    virtual Address map(Address phys, Address virt, Access access) = 0;
+    virtual Result map(Address phys, Address virt, Access access) = 0;
 
     /**
      * Map a range of physical pages to virtual addresses.
      *
      * @param range Range object describing the range of physical pages.
-     * @return First virtual memory address of the mapping.
+     * @return Result code.
      */
-    virtual Address mapRange(Range *range);
+    virtual Result mapRange(Range *range);
 
     /**
      * Map virtual memory in a region.
@@ -150,15 +160,17 @@ class Memory
      * mapping without deallocating any physical memory.
      *
      * @param virt Virtual address to unmap.
+     * @return Result code
      */
-    virtual void unmap(Address virt) = 0;
+    virtual Result unmap(Address virt) = 0;
 
     /**
      * Unmaps a range of virtual memory.
      *
      * @param range Range object describing the range of virtual addresses.
+     * @return Result code
      */
-    virtual void unmapRange(Range *range);
+    virtual Result unmapRange(Range *range);
 
     /**
      * Translate virtual address to physical address.
@@ -169,38 +181,39 @@ class Memory
     virtual Address lookup(Address virt) = 0;
 
     /**
-     * Verify protection access flags.
+     * Get Access flags for a virtual address.
      *
-     * @param virt Virtual address start to validate.
-     * @param size Number of bytes to check.
-     * @param flags Page protection flags which must be set.
-     * @return True if flags are set on the given range, false otherwise.
+     * @param virt Virtual address to get Access flags for.
+     * @return Access flags.
      */
-    virtual bool access(Address virt,
-                        Size size,
-                        Access flags = Present | User | Readable) = 0;
+    virtual Access access(Address virt) = 0;
 
     /**
      * Release a memory page mapping.
      *
      * @param virt Virtual address of the page to release.
+     * @return Result code
      */
-    virtual void release(Address virt) = 0;
+    virtual Result release(Address virt) = 0;
 
     /**
      * Release a range of physical memory by its virtual memory pages.
      *
      * @param range Range object describing the range of physical pages to release.
+     * @return Result code
      */
-    virtual void releaseRange(Range *range);
+    virtual Result releaseRange(Range *range);
 
     /**
      * Release memory region.
      *
      * Deallocate all associated physical memory
      * which resides in the given memory region.
+     *
+     * @param region Memory region to release
+     * @return Result code
      */
-    virtual void releaseRegion(Region region) = 0;
+    virtual Result releaseRegion(Region region) = 0;
 
     /**
      * Find unused memory.

@@ -75,9 +75,9 @@ class IntelMemory : public Memory
      * @param paddr Physical address.
      * @param vaddr Virtual address or ZERO to use the first unused page.
      * @param prot Page entry protection flags.
-     * @return Mapped virtual address.
+     * @return Result code
      */     
-    virtual Address map(Address phys, Address virt, Access flags);
+    virtual Result map(Address phys, Address virt, Access flags);
 
     /**
      * Unmap a virtual address.
@@ -86,8 +86,9 @@ class IntelMemory : public Memory
      * mapping without deallocating any physical memory.
      *
      * @param virt Virtual address to unmap.
+     * @return Result code
      */
-    virtual void unmap(Address virt);
+    virtual Result unmap(Address virt);
 
     /**
      * Translate virtual address to physical address.
@@ -98,31 +99,30 @@ class IntelMemory : public Memory
     virtual Address lookup(Address virt);
 
     /**
-     * Verify protection access flags.
+     * Get Access flags for a virtual address.
      *
-     * @param virt Virtual address start to validate.
-     * @param size Number of bytes to check.
-     * @param flags Page protection flags which must be set.
-     * @return True if flags are set on the given range, false otherwise.
+     * @param virt Virtual address to get Access flags for.
+     * @return Access flags.
      */
-    virtual bool access(Address virt,
-                        Size size,
-                        Access flags = Present | User | Readable);
+    virtual Access access(Address virt);
 
     /**
      * Release a memory page mapping.
      *
      * @param virt Virtual address of the page to release.
+     * @return Result code
      */
-    virtual void release(Address virt);
+    virtual Result release(Address virt);
 
     /**
      * Release memory region.
      *
      * Deallocate all associated physical memory
      * which resides in the given memory region.
+     *
+     * @return Result code
      */
-    virtual void releaseRegion(Region region);
+    virtual Result releaseRegion(Region region);
 
     /**
      * Find unused memory.
@@ -149,6 +149,14 @@ class IntelMemory : public Memory
      * @return Pointer to page table in virtual address.
      */
     Address * getPageTable(Address virt);
+
+    /**
+     * Convert Memory::Access to Intel Page Entry flags.
+     *
+     * @param acc Memory::Access flags
+     * @return Intel Page Entry flags
+     */
+    u32 flags(Access acc);
 
     /** Pointer to page directory in virtual memory. */
     Address *m_pageDirectory;

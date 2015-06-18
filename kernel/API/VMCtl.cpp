@@ -58,9 +58,7 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range)
             break;
 
         case Access:
-            ret = (API::Error) mem.access(range->virt,
-                                          range->size,
-                                          range->access);
+            ret = (API::Error) mem.access(range->virt);
             break;
             
         default:

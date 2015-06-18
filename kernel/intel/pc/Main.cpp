@@ -26,8 +26,11 @@
 
 extern C int kernel_main()
 {
+    IntelMemory mem;
+
     // Initialize physical memory.
-    Kernel::heap(KERNEL_HEAP, KERNEL_HEAP_SIZE);
+    Kernel::heap( mem.range(Memory::KernelHeap).virt,
+                  mem.range(Memory::KernelHeap).size );
 
     // Start kernel debug serial console
     // TODO: can I re-use the user-land driver here somehow????

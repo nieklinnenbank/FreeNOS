@@ -37,13 +37,15 @@ Memory::~Memory()
 {
 }
 
-Address Memory::mapRange(Range *range)
+Memory::Result Memory::mapRange(Range *range)
 {
+    Result r = Success;
+
     // Must have virtual address
     if (!range->virt)
     {
         FATAL("invalid ZERO virtual address");
-        return 0;
+        return InvalidAddress;
     }
 
     // Allocate physical pages, if needed.
@@ -53,11 +55,17 @@ Address Memory::mapRange(Range *range)
     // Insert virtual page(s)
     for (Size i = 0; i < range->size; i += PAGESIZE)
     {
-        Address r = map(range->phys + i,
-                        range->virt + i,
-                        range->access);
+        if ((r = map(range->phys + i,
+                     range->virt + i,
+                     range->access)) != Success)
+            break;
     }
-    return range->virt;
+
+    if (r != Success)
+    {
+        // TODO: unset the physical pages...
+    }
+    return r;
 }
 
 Address Memory::mapRegion(Memory::Region region, Size size, Access access)
@@ -72,14 +80,21 @@ Address Memory::mapRegion(Memory::Region region, Size size, Access access)
     return mapRange(&range);
 }
 
-void Memory::unmapRange(Range *range)
+Memory::Result Memory::unmapRange(Range *range)
 {
+    Result r = Success;
+
     for (Size i = 0; i < range->size; i += PAGESIZE)
-        unmap(range->virt + i);
+        if ((r = unmap(range->virt + i)) != Success)
+            break;
+
+    return r;
 }
 
-void Memory::releaseRange(Range *range)
+Memory::Result Memory::releaseRange(Range *range)
 {
     for (Size i = 0; i < range->size; i += PAGESIZE)
         m_phys->release(lookup(range->virt + i));
+
+    return Success;
 }

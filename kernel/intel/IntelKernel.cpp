@@ -37,6 +37,8 @@ extern C void executeInterrupt(CPUState state)
 IntelKernel::IntelKernel(Memory::Range kernel, Memory::Range memory)
     : Kernel(kernel, memory)
 {
+    IntelMemory mem;
+
     /* ICW1: Initialize PIC's (Edge triggered, Cascade) */
     IO::outb(PIC1_CMD, 0x11);
     IO::outb(PIC2_CMD, 0x11);
@@ -101,7 +103,7 @@ IntelKernel::IntelKernel(Memory::Range kernel, Memory::Range memory)
 
     // Fill the Task State Segment (TSS).
     MemoryBlock::set(&kernelTss, 0, sizeof(TSS));
-    kernelTss.esp0   = KERNEL_STACK + (PAGESIZE * 4);
+    kernelTss.esp0   = mem.range(Memory::KernelStack).virt + mem.range(Memory::KernelStack).size;
     kernelTss.ss0    = KERNEL_DS_SEL;
     kernelTss.bitmap = sizeof(TSS);
 
@@ -181,16 +183,16 @@ bool IntelKernel::loadBootImage()
     {
         // Map MultibootModule struct
         // TODO: too many arguments. Make an easier wrapper.
-        vaddr = virt.map(multibootInfo.modsAddress,
-                         virt.findFree(PAGESIZE, Memory::KernelPrivate),
-                         Arch::Memory::Present | Arch::Memory::Readable);
+        vaddr = virt.findFree(PAGESIZE, Memory::KernelPrivate);
+        virt.map(multibootInfo.modsAddress, vaddr,                        
+                 Arch::Memory::Present | Arch::Memory::Readable);
         mod = (MultibootModule *)(vaddr + multibootInfo.modsAddress % PAGESIZE);
         mod += n;
 
         // mod = &((MultibootModule *) multibootInfo.modsAddress)[n];
-        vaddr = virt.map(mod->string,
-                         virt.findFree(PAGESIZE, Memory::KernelPrivate),
-                         Arch::Memory::Present | Arch::Memory::Readable);
+        vaddr = virt.findFree(PAGESIZE, Memory::KernelPrivate),
+        virt.map(mod->string, vaddr,
+                 Arch::Memory::Present | Arch::Memory::Readable);
         String str = (char *) (vaddr + mod->string % PAGESIZE);
 
         // Mark its memory used
@@ -206,7 +208,8 @@ bool IntelKernel::loadBootImage()
             range.virt   = virt.findFree(range.size, Memory::KernelPrivate);
             range.access = Arch::Memory::Present |
                            Arch::Memory::Readable;
-            image = (BootImage *) virt.mapRange(&range);
+            virt.mapRange(&range);
+            image = (BootImage *) range.virt;
 
             // Verify this is a correct BootImage
             if (image->magic[0] == BOOTIMAGE_MAGIC0 &&
@@ -228,7 +231,7 @@ bool IntelKernel::loadBootImage()
 
 void IntelKernel::loadBootProcess(BootImage *image, Address imagePAddr, Size index)
 {
-    Address imageVAddr = (Address) image, args;
+    Address imageVAddr = (Address) image, args, vaddr;
     Size args_size = ARGV_SIZE;
     BootSymbol *program;
     BootSegment *segment;
@@ -264,14 +267,14 @@ void IntelKernel::loadBootProcess(BootImage *image, Address imagePAddr, Size ind
         }
     }
 
-    // Map and copy program arguments
+    // Map program arguments into the process
     m_memory->allocate(&args_size, &args);
     mem.map(args, ARGV_ADDR, Arch::Memory::Present | Arch::Memory::User | Arch::Memory::Writable);
-    MemoryBlock::copy(
-        (char *) local.map(args, local.findFree(ARGV_SIZE, Memory::KernelPrivate), Memory::Present|Memory::Readable|Memory::Writable),
-        program->name,
-        ARGV_SIZE
-    );
+
+    // Copy program arguments
+    vaddr = local.findFree(ARGV_SIZE, Memory::KernelPrivate);
+    local.map(args, vaddr, Memory::Present|Memory::Readable|Memory::Writable);
+    MemoryBlock::copy((char *)vaddr, program->name, ARGV_SIZE);
 
     // Done
     NOTICE("loaded: " << program->name);

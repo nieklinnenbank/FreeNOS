@@ -85,39 +85,6 @@
 /** Local page directory in virtual memory */
 #define PAGEDIR_LOCAL   (1024 * 1024 * 4)
 
-/** Kernel stack address. */
-#define KERNEL_STACK    0x08400000
-
-/** Kernel heap address. */
-#define KERNEL_HEAP     0x00300000
-
-/** Kernel heap size. */
-#define KERNEL_HEAP_SIZE (1024 * 1024)
-
-/** User stack address. */
-#define USER_STACK      0xc0000000
-
-/** User heap address. */
-#define USER_HEAP       0xb0000000
-
-/** User heap size (128MB). */
-#define USER_HEAP_SIZE  (1024 * 1024 * 128)
-
-#define PAGE_NONE       0
-
-/** Marks a page entry present. */
-#define PAGE_PRESENT    1
-
-#define PAGE_READ       0
-
-#define PAGE_EXEC       0
-
-/** Marks a page entry read/write. */
-#define PAGE_WRITE      2
-
-/** Marks a page accessible by user programs (ring 3). */
-#define PAGE_USER       4
-
 /**
  * @}
  */

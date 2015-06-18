@@ -20,6 +20,10 @@
 #include <BitAllocator.h>
 #include "IntelProcess.h"
 
+// TODO: this should not be done here. Try to use libarch's Memory class.
+#define PAGE_PRESENT    1
+#define PAGE_USER       4
+
 IntelProcess::IntelProcess(ProcessID id, Address entry, bool privileged)
     : Process(id, entry, privileged)
 {
@@ -34,17 +38,20 @@ IntelProcess::IntelProcess(ProcessID id, Address entry, bool privileged)
 
     // Allocate and map page directory
     memory->allocate(&dirSize, &m_pageDirectory);
-    pageDir = (Address *) local.map(m_pageDirectory,
-                                    local.findFree(PAGESIZE, Memory::KernelPrivate),
-                                    Arch::Memory::Present |
-                                    Arch::Memory::Readable |
-                                    Arch::Memory::Writable);
+
+    pageDir = (Address *) local.findFree(PAGESIZE, Memory::KernelPrivate);
+    local.map(m_pageDirectory, (Address) pageDir,
+              Arch::Memory::Present |
+              Arch::Memory::Readable |
+              Arch::Memory::Writable);
 
     // Initialize page directory
     for (Size i = 0; i < PAGEDIR_MAX; i++)
         pageDir[i] = 0;
 
+
     pageDir[0] = kernelPageDir[0];
+    // TODO: this should not be done here. Try to use libarch's Memory class.
     pageDir[DIRENTRY(PAGEDIR_LOCAL) ] = m_pageDirectory | PAGE_PRESENT | PAGE_USER;
     local.unmap((Address)pageDir);
 
@@ -53,8 +60,8 @@ IntelProcess::IntelProcess(ProcessID id, Address entry, bool privileged)
 
     // User stack.
     range.phys   = 0;
-    range.virt   = USER_STACK;
-    range.size   = PAGESIZE * 4;
+    range.virt   = mem.range(Memory::UserStack).virt;
+    range.size   = mem.range(Memory::UserStack).size;
     range.access = Arch::Memory::Present |
                    Arch::Memory::User |
                    Arch::Memory::Readable |
@@ -64,7 +71,8 @@ IntelProcess::IntelProcess(ProcessID id, Address entry, bool privileged)
 
     // Kernel stack.
     range.phys   = 0;
-    range.virt   = KERNEL_STACK;
+    range.virt   = mem.range(Memory::KernelStack).virt;
+    range.size   = mem.range(Memory::KernelStack).size;
     range.access = Arch::Memory::Present |
                    Arch::Memory::Writable;
     mem.mapRange(&range);
@@ -74,7 +82,8 @@ IntelProcess::IntelProcess(ProcessID id, Address entry, bool privileged)
 
     // Map kernel stack
     range.virt = local.findFree(range.size, Memory::KernelPrivate);
-    stack      = local.mapRange(&range);
+    stack      = range.virt;
+    local.mapRange(&range);
     stackBase  = stack + range.size;
 
     // loadCoreState: struct CPUState

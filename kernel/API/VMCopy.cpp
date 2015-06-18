@@ -50,9 +50,8 @@ Error VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
         if (!paddr) break;
                 
         // Map their address into our local address space
-        Address tmp = local.map(
-            paddr,
-            local.findFree(PAGESIZE, Memory::KernelPrivate),
+        Address tmp = local.findFree(PAGESIZE, Memory::KernelPrivate);
+        local.map(paddr, tmp,
             Arch::Memory::Present  |
             Arch::Memory::User     |
             Arch::Memory::Readable |
