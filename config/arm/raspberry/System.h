@@ -22,7 +22,7 @@
 #include <arm/ARMCore.h>
 #include <arm/ARMIO.h>
 #include <arm/ARMState.h>
-#include <arm/ARMMemory.h>
+#include <arm/ARMPaging.h>
 
 #include <arm/ARMKernel.h>
 #include <arm/ARMProcess.h>

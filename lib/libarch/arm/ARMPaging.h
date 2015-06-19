@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBARCH_ARM_MEMORY_H
-#define __LIBARCH_ARM_MEMORY_H
+#ifndef __LIBARCH_ARM_PAGING_H
+#define __LIBARCH_ARM_PAGING_H
 
 #include <Types.h>
 #include "Memory.h"
@@ -40,7 +40,7 @@
 /**
  * ARM virtual memory implementation.
  */
-class ARMMemory : public Memory
+class ARMPaging : public Memory
 {
   public:
 
@@ -50,16 +50,16 @@ class ARMMemory : public Memory
      * @param pageDirectory Physical memory address of the page directory
      *                      or ZERO to map the page directory of the current
      *                      active address space.
-     * @param memoryMap     BitArray pointer of the physical memory page allocations
-     *                      or ZERO to ask the kernel for the BitArray.
+     * @param phys          BitAllocator pointer of the physical memory page allocations
+     *                      or ZERO to ask the kernel for the BitAllocator.
      */
-    ARMMemory(Address pageDirectory = ZERO,
-              BitAllocator *alloc = ZERO);
+    ARMPaging(Address pageDirectory = ZERO,
+                BitAllocator *phys = ZERO);
 
     /**
      * Destructor.
      */
-    virtual ~ARMMemory();
+    virtual ~ARMPaging();
 
     /**
      * Get region addresses.
@@ -75,11 +75,9 @@ class ARMMemory : public Memory
      * @param paddr Physical address.
      * @param vaddr Virtual address or ZERO to use the first unused page.
      * @param prot Page entry protection flags.
-     * @return Mapped virtual address.
+     * @return Result code
      */     
-    virtual Address map(Address phys,
-                        Address virt = ZERO,
-                        Access flags = Present | User | Readable | Writable);
+    virtual Result map(Address phys, Address virt, Access flags);
 
     /**
      * Unmap a virtual address.
@@ -88,8 +86,9 @@ class ARMMemory : public Memory
      * mapping without deallocating any physical memory.
      *
      * @param virt Virtual address to unmap.
+     * @return Result code
      */
-    virtual void unmap(Address virt);
+    virtual Result unmap(Address virt);
 
     /**
      * Translate virtual address to physical address.
@@ -100,39 +99,39 @@ class ARMMemory : public Memory
     virtual Address lookup(Address virt);
 
     /**
-     * Verify protection access flags.
+     * Get Access flags for a virtual address.
      *
-     * @param virt Virtual address start to validate.
-     * @param size Number of bytes to check.
-     * @param flags Page protection flags which must be set.
-     * @return True if flags are set on the given range, false otherwise.
+     * @param virt Virtual address to get Access flags for.
+     * @return Access flags.
      */
-    virtual bool access(Address virt,
-                        Size size,
-                        Access flags = Present | User | Readable);
+    virtual Access access(Address virt);
 
     /**
      * Release a memory page mapping.
      *
      * @param virt Virtual address of the page to release.
+     * @return Result code
      */
-    virtual void release(Address virt);
+    virtual Result release(Address virt);
 
     /**
      * Release memory region.
      *
      * Deallocate all associated physical memory
      * which resides in the given memory region.
+     *
+     * @return Result code
      */
-    virtual void releaseRegion(Region region);
+    virtual Result releaseRegion(Region region);
 
     /**
-     * Find unused virtual page range.
+     * Find unused memory.
      *
      * This function finds a contigeous block of a given size
      * of virtual memory which is unused and then returns
      * the virtual address of the first page in the block.
      *
+     * @param region Memory region to search in.
      * @param size Number of bytes requested to be free.
      * @return Virtual address of the first page.
      */
@@ -151,6 +150,14 @@ class ARMMemory : public Memory
      */
     Address * getPageTable(Address virt);
 
+    /**
+     * Convert Memory::Access to ARM Page Entry flags.
+     *
+     * @param acc Memory::Access flags
+     * @return ARM Page Entry flags
+     */
+    u32 flags(Access acc);
+
     /** Pointer to page directory in virtual memory. */
     Address *m_pageDirectory;
 
@@ -160,7 +167,7 @@ class ARMMemory : public Memory
 
 namespace Arch
 {
-    typedef ARMMemory Memory;
+    typedef ARMPaging Memory;
 };
 
-#endif /* __LIBARCH_ARM_MEMORY_H */
+#endif /* __LIBARCH_ARM_PAGING_H */

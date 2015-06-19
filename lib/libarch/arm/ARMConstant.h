@@ -78,44 +78,6 @@
 /** Local page directory in virtual memory */
 #define PAGEDIR_LOCAL   (1024 * 1024 * 4)
 
-/** Kernel stack address. */
-#define KERNEL_STACK    0xd0000000
-
-/** Kernel heap address */
-#define KERNEL_HEAP     0x0030000
-
-/** Kernel heap size */
-#define KERNEL_HEAP_SIZE (1024 * 1024)
-
-/** User stack address. */
-#define USER_STACK      0xc0000000
-
-/** User heap address. */
-#define USER_HEAP       0xb0000000
-
-/** User heap size. */
-#define USER_HEAP_SIZE  (1024 * 1024 * 128)
-
-#define PAGE_NONE       0
-
-/** Marks a page entry present. */
-#define PAGE_PRESENT    9
-
-/**
- * These bits are set in APX, S, AP.
- * @see ARM Architecture Reference Manual, page 731.
- */
-#define PAGE_READ       7
-#define PAGE_EXEC       9
-#define PAGE_WRITE      0
-#define PAGE_USER       8
-
-/** Pinned pages cannot be released by the physical memory allocator. */
-#define PAGE_PIN        (1 << 9)
-
-/** Page has been reserved in the virtual address space. */
-#define PAGE_RESERVE    (1 << 11)
-
 /**
  * @}
  */

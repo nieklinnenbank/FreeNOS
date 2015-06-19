@@ -25,8 +25,11 @@
 
 extern C int kernel_main(void)
 {
+    Arch::Memory mem;
+
     // Initialize heap
-    Kernel::heap(KERNEL_HEAP, KERNEL_HEAP_SIZE);
+    Kernel::heap( mem.range(Memory::KernelHeap).virt,
+                  mem.range(Memory::KernelHeap).size );
 
     RaspiSerial console;
     console.setMinimumLogLevel(Log::Debug);
