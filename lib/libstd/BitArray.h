@@ -77,11 +77,13 @@ class BitArray
 
     /**
      * Sets the next unset bit(s).
+     *
      * @param count Number of consequetive bits required.
      * @param offset Start bit number to start searching at inside the BitArray.
+     * @param boundary First bit number must be on the given alignment boundary.
      * @return Start bit number on success and -1 otherwise.
      */
-    Error setNext(Size count = 1, Size offset = 0);
+    Error setNext(Size count = 1, Size offset = 0, Size boundary = 1);
 
     /**
      * Sets the given bit to zero.

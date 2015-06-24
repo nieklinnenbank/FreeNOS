@@ -90,14 +90,14 @@ void BitArray::setRange(Size from, Size to)
         set(i, true);
 }
 
-Error BitArray::setNext(Size count, Size start)
+Error BitArray::setNext(Size count, Size start, Size boundary)
 {
     Size from = 0, found = 0;
 
     // Loop BitArray for unset bits
     for (Size i = start; i < m_size; i++)
     {
-        if (!isSet(i))
+        if (!isSet(i) && !(i % boundary))
         {
             // Remember this bit
             if (!found)
