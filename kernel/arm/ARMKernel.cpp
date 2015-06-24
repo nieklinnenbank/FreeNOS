@@ -22,6 +22,9 @@ ARMKernel::ARMKernel(Memory::Range kernel, Memory::Range memory)
     : Kernel(kernel, memory)
 {
     NOTICE("");
+
+    ARMPaging mmu(0, m_memory);
+    mmu.initialize();
 }
 
 void ARMKernel::hookInterrupt(int vec, InterruptHandler h, ulong p)

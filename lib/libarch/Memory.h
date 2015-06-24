@@ -29,6 +29,7 @@ class BitAllocator;
 /**
  * Virtual memory abstract interface.
  */
+// TODO: #warning Rename to MemoryContext. and splitup a Memory/MemoryContext.
 class Memory
 {
   public:
@@ -57,7 +58,8 @@ class Memory
         Readable   = 1 << 1,
         Writable   = 1 << 2,
         Executable = 1 << 3,
-        User       = 1 << 4
+        User       = 1 << 4,
+        IO         = 1 << 5
     }
     Access;
 
@@ -120,6 +122,20 @@ class Memory
      * @return Range object
      */
     virtual Range range(Region region) = 0;
+
+    /**
+     * Create an address space.
+     *
+     * @return Result code.
+     */
+    virtual Result create() = 0;
+
+    /**
+     * Enables the MMU.
+     *
+     * @return Result code.
+     */
+    virtual Result initialize() = 0;
 
     /**
      * Map a physical page to a virtual address.

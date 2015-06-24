@@ -35,7 +35,7 @@
  * @return Index of the corresponding page table entry.
  */
 #define TABENTRY(vaddr) \
-    (((vaddr) >> PAGESHIFT) & 0x3ff)
+    (((vaddr) >> PAGESHIFT) & 0xff)
 
 /**
  * ARM virtual memory implementation.
@@ -68,6 +68,21 @@ class ARMPaging : public Memory
      * @return Range object
      */
     virtual Range range(Region region);
+
+    /**
+     * Create an address space.
+     *
+     * @return Result code.
+     */
+    virtual Result create();
+
+    /**
+     * Enables the MMU.
+     *
+     * @return Result code.
+     * @see ARM1176JZF-S Technical Reference Manuage, Section 6.4.1, page 326
+     */
+    virtual Result initialize();
 
     /**
      * Map a physical page to a virtual address.
@@ -163,6 +178,9 @@ class ARMPaging : public Memory
 
     /** Page tables virtual base address */
     Address m_pageTableBase;
+
+    /** True if the MMU is enabled */
+    bool m_mmuEnabled;
 };
 
 namespace Arch

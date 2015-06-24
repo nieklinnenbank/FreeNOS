@@ -41,6 +41,7 @@ IntelPaging::IntelPaging(Address pageDirectory, BitAllocator *phys)
     if (pageDirectory)
     {
         // Find a free range for the page table mappings
+        // TODO: only search inside the PageTable range!!!
         for (Size i = 0; i < PAGEDIR_MAX; i++)
         {
             if (!(m_pageDirectory[i] & PAGE_PRESENT))
@@ -66,6 +67,16 @@ IntelPaging::~IntelPaging()
         localDirectory[ DIRENTRY(m_pageTableBase) ] = 0;
         tlb_flush_all();
     }
+}
+
+Memory::Result IntelPaging::create()
+{
+    return Success;
+}
+
+Memory::Result IntelPaging::initialize()
+{
+    return Success;
 }
 
 Memory::Range IntelPaging::range(Memory::Region region)

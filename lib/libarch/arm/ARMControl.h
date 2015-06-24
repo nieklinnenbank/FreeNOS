@@ -40,10 +40,32 @@ class ARMControl
     enum Register
     {
         MainID = 0,
+        SystemControl,
+        DomainControl,
         TranslationTable0,
         TranslationTable1,
         TranslationTableCtrl,
+        InstructionCacheClear,
         UserProcID
+    };
+
+    /**
+     * System Control flags.
+     */
+    enum SystemControlFlags
+    {
+        MMUEnabled       = (1 <<  0),
+        InstructionCache = (1 << 12),
+        ExtendedPaging   = (1 << 23)
+    };
+
+    /**
+     * Domain Control flags.
+     */
+    enum DomainControlFlags
+    {
+        DomainClient  = 1,
+        DomainManager = 3
     };
 
     /**
@@ -71,6 +93,23 @@ class ARMControl
      * @param value 32-value to write.
      */
     void write(Register reg, u32 value);
+
+    void set(SystemControlFlags flags);
+    void unset(SystemControlFlags flags);
+
+    void set(DomainControlFlags flags);
+
+  private:
+
+    /**
+     * Set flag(s) in a CP15 register.
+     */
+    void set(Register reg, u32 flags);
+
+    /**
+     * Unset flag(s) in a CP15 register.
+     */
+    void unset(Register reg, u32 flags);
 };
 
 #endif /* __ARM_CONTROL_H */

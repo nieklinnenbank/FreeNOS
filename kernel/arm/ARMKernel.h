@@ -106,6 +106,16 @@ class ARMKernel : public Kernel
      * Loads the boot image.
      */
     virtual bool loadBootImage();
+
+  private:
+
+    /**
+     * Enable the MMU.
+     */
+    void enableMMU();
+
+    /** Kernel page tables base. */
+    Address m_kernelTablesBase;
 };
 
 #endif /* __ARM_KERNEL_H */

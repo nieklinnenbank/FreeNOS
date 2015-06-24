@@ -49,13 +49,13 @@ IntelProcess::IntelProcess(ProcessID id, Address entry, bool privileged)
     for (Size i = 0; i < PAGEDIR_MAX; i++)
         pageDir[i] = 0;
 
-
     pageDir[0] = kernelPageDir[0];
     // TODO: this should not be done here. Try to use libarch's Memory class.
     pageDir[DIRENTRY(PAGEDIR_LOCAL) ] = m_pageDirectory | PAGE_PRESENT | PAGE_USER;
     local.unmap((Address)pageDir);
 
     // Obtain memory mappings
+    // TODO: use Memory::create()
     Arch::Memory mem(m_pageDirectory, memory);
 
     // User stack.

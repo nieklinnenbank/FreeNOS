@@ -62,6 +62,20 @@ class IntelPaging : public Memory
     virtual ~IntelPaging();
 
     /**
+     * Create an address space.
+     *
+     * @return Result code.
+     */
+    virtual Result create();
+
+    /**
+     * Enables the MMU.
+     *
+     * @return Result code.
+     */
+    virtual Result initialize();
+
+    /**
      * Get region addresses.
      *
      * @param region Memory region.

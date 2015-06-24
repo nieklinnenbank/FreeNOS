@@ -40,3 +40,7 @@ env.TargetProgram('kernel', [ Glob('*.S'),
 #
 env.Targets(qemu = 'qemu-system-arm -kernel ' + build_env['BUILDROOT'] +
                    '/kernel/arm/raspberry/kernel -cpu arm1176 -M raspi -nographic')
+env.Targets(qemu_debug = 'qemu-system-arm -kernel ' + build_env['BUILDROOT'] +
+                         '/kernel/arm/raspberry/kernel -cpu arm1176 -M raspi -nographic -s -S')
+env.Targets(qemu_debugs = 'qemu-system-arm -kernel ' + build_env['BUILDROOT'] +
+                          '/kernel/arm/raspberry/kernel -cpu arm1176 -M raspi -nographic -s -S -d int,cpu_reset')

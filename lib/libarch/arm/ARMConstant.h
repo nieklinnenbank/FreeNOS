@@ -57,7 +57,8 @@
  * TTBR0 is the first-level page table for the application.
  * TTBR1 is always 16KB, the first-level page table of the kernel/OS.
  */
-#define PAGEDIR_MAX     1024
+#define PAGEDIR_MAX     4096
+#define PAGEDIR_SIZE    (PAGEDIR_MAX * sizeof(u32))
 
 /**
  * Number of entries in a second-level page table.
@@ -68,6 +69,7 @@
  * @see ARM Architecture Reference Manual, page 734.
  */
 #define PAGETAB_MAX     256
+#define PAGETAB_SIZE    (PAGETAB_MAX * sizeof(u32))
 
 /** Mask to find the page. */
 #define PAGEMASK        0xfffff000 
