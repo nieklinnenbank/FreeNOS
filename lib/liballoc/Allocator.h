@@ -52,6 +52,7 @@ class Allocator
         Success = 0,
         InvalidAddress,
         InvalidSize,
+        InvalidAlignment,
         OutOfMemory
     };
 
@@ -105,9 +106,10 @@ class Allocator
      *             On output, the amount of memory in bytes actually allocated.
      * @param addr Output parameter which contains the address
      *             allocated on success.
+     * @param align Alignment of the required memory or use ZERO for default.
      * @return Result value.
      */
-    virtual Result allocate(Size *size, Address *addr) = 0;
+    virtual Result allocate(Size *size, Address *addr, Size align = ZERO) = 0;
 
     /**
      * Release memory.

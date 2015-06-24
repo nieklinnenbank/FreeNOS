@@ -44,14 +44,21 @@ BitArray * BitAllocator::getBitArray()
     return &m_array;
 }
 
-Allocator::Result BitAllocator::allocate(Size *size, Address *addr)
+Allocator::Result BitAllocator::allocate(Size *size, Address *addr, Size align)
 {
     Size num = (*size) / m_chunkSize;
 
     if ((*size) % m_chunkSize)
         num++;
 
-    *addr = m_base + (m_array.setNext(num) * m_chunkSize);
+    if (!align)
+        align = 1;
+    else if (align % m_chunkSize)
+        return InvalidAlignment;
+    else
+        align /= m_chunkSize;    
+
+    *addr = m_base + (m_array.setNext(num, align) * m_chunkSize);
     return Success;
 }
 

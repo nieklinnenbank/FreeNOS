@@ -34,7 +34,7 @@ Size PoolAllocator::available()
     return m_parent ? m_parent->available() : ZERO;
 }
 
-Allocator::Result PoolAllocator::allocate(Size *size, Address *addr)
+Allocator::Result PoolAllocator::allocate(Size *size, Address *addr, Size align)
 {
     Size index, nPools = 1;
     MemoryPool *pool = ZERO;

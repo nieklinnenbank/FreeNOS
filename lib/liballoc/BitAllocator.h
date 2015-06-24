@@ -80,9 +80,12 @@ class BitAllocator : public Allocator
      *
      * @param size Size of memory to allocate.
      * @param addr Address allocated.
+     * @param align Alignment of the required memory or use
+     *              ZERO for chunksize. Must be a multiple
+     *              of the chunksize.
      * @return Result value.
      */
-    virtual Result allocate(Size *size, Address *addr);
+    virtual Result allocate(Size *size, Address *addr, Size align = ZERO);
 
     /**
      * Allocate address.

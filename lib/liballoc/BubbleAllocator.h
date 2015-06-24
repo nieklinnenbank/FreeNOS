@@ -60,9 +60,12 @@ class BubbleAllocator : public Allocator
      *
      * @param size Amount of memory in bytes to allocate on input. 
      *             On output, the amount of memory in bytes actually allocated.
+     * @param addr Output parameter which contains the address
+     *             allocated on success.
+     * @param align Alignment of the required memory or use ZERO for default.
      * @return New memory block on success and ZERO on failure.
      */
-    virtual Result allocate(Size *size, Address *addr);
+    virtual Result allocate(Size *size, Address *addr, Size align = ZERO);
 
     /**
      * Release memory.

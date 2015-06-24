@@ -48,7 +48,7 @@ Size PageAllocator::available()
     return m_size - m_allocated;
 }
 
-Allocator::Result PageAllocator::allocate(Size *size, Address *addr)
+Allocator::Result PageAllocator::allocate(Size *size, Address *addr, Size align)
 {
     CoreMessage msg;
     

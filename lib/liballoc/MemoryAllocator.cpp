@@ -50,7 +50,7 @@ Address MemoryAllocator::base()
     return m_base;
 }
 
-Allocator::Result MemoryAllocator::allocate(Size *size, Address *addr)
+Allocator::Result MemoryAllocator::allocate(Size *size, Address *addr, Size align)
 {
     Arch::Memory memory;
     Memory::Range range;

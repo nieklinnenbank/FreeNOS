@@ -34,7 +34,7 @@ Size BubbleAllocator::available()
     return m_size - (m_current - m_start);
 }
 
-Allocator::Result BubbleAllocator::allocate(Size *sz, Address *addr)
+Allocator::Result BubbleAllocator::allocate(Size *sz, Address *addr, Size align)
 {
     Size needed = aligned(*sz);
 
