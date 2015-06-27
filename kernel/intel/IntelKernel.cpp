@@ -130,6 +130,7 @@ void IntelKernel::enableIRQ(uint irq, bool enabled)
     }
 }
 
+// TODO: this is a generic function?
 void IntelKernel::exception(CPUState *state, ulong param)
 {
     IntelCore core;

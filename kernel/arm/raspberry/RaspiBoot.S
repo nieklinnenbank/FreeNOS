@@ -16,13 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define PAGESIZE    4096
+#define STACKSIZE   PAGESIZE
+#define IRQ_MODE    18
+#define FIQ_MODE    17
+#define SVC_MODE    19
+#define ABT_MODE    23
+#define UND_MODE    27
+#define SYS_MODE    31
+#define IRQ_BIT    (1 << 7)
+#define FIQ_BIT    (1 << 6)
+
 /* To keep this in the first portion of the binary. */
 .section ".text.boot"
  
 /* Make _start global. */
 .globl _start
  
-/* Entry point for the kernel.
+/*
+ * Entry point for the kernel.
+ *
  * r15 -> should begin execution at 0x8000.
  * r0 -> 0x00000000
  * r1 -> 0x00000C42
@@ -30,7 +43,23 @@
  * preserve these registers as argument for kernel_main
  */
 _start:
-    /* Setup the stack. */
+    /* Initialize stack pointers for all ARM modes */
+    msr cpsr_c, #(IRQ_MODE | IRQ_BIT | FIQ_BIT) /* IRQ mode */
+    ldr sp, =irqStack
+
+    msr cpsr_c, #(FIQ_MODE | IRQ_BIT | FIQ_BIT) /* FIQ mode */
+    ldr sp, =fiqStack
+
+    msr cpsr_c, #(SVC_MODE | IRQ_BIT | FIQ_BIT) /* SVC mode */
+    ldr sp, =irqStack
+
+    msr cpsr_c, #(ABT_MODE | IRQ_BIT | FIQ_BIT) /* Abort mode */
+    ldr sp, =irqStack
+
+    msr cpsr_c, #(UND_MODE | IRQ_BIT | FIQ_BIT) /* Undefined mode */
+    ldr sp, =irqStack
+
+    msr cpsr_c, #(SYS_MODE | IRQ_BIT | FIQ_BIT) /* System mode */
     mov sp, #0x8000
  
     /* Clear out bss. */
@@ -54,3 +83,20 @@ _start:
     /* Call kernel_main */
     ldr r3, =kernel_main
     blx r3
+
+.section ".data"
+.align 8
+.fill STACKSIZE, 1, 0
+irqStack:
+
+.fill STACKSIZE, 1, 0
+fiqStack:
+
+.fill STACKSIZE, 1, 0
+svcStack:
+
+.fill STACKSIZE, 1, 0
+abtStack:
+
+.fill STACKSIZE, 1, 0
+undStack:

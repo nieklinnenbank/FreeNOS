@@ -16,25 +16,47 @@
  */
 
 #include <Log.h>
+#include <arm/ARMInterrupt.h>
 #include "ARMKernel.h"
 
-ARMKernel::ARMKernel(Memory::Range kernel, Memory::Range memory)
+ARMKernel::ARMKernel(Memory::Range kernel,
+                     Memory::Range memory,
+                     ARMInterrupt *intr)
     : Kernel(kernel, memory)
-{
+{    
     NOTICE("");
+
+    intr->install(ARMInterrupt::UndefinedInstruction, exception);
+    intr->install(ARMInterrupt::SoftwareInterrupt, trap);
+    intr->install(ARMInterrupt::PrefetchAbort, exception);
+    intr->install(ARMInterrupt::DataAbort, exception);
+    intr->install(ARMInterrupt::Reserved, exception);
+    intr->install(ARMInterrupt::IRQ, interrupt);
+    intr->install(ARMInterrupt::FIQ, interrupt);
 
     ARMPaging mmu(0, m_memory);
     mmu.initialize();
 }
 
-void ARMKernel::hookInterrupt(int vec, InterruptHandler h, ulong p)
-{
-    DEBUG("vector =" << vec);
-}
-
 void ARMKernel::enableIRQ(uint vector, bool enabled)
 {
     DEBUG("vector =" << vector << "enabled =" << enabled);
+    //m_interruptControl->enable(vector, enabled);
+}
+
+void ARMKernel::interrupt(CPUState state)
+{
+    DEBUG("");
+}
+
+void ARMKernel::exception(CPUState state)
+{
+    DEBUG("");
+}
+
+void ARMKernel::trap(CPUState state)
+{
+    DEBUG("");
 }
 
 bool ARMKernel::loadBootImage()

@@ -21,11 +21,13 @@
 #include <FreeNOS/arm/ARMKernel.h>
 #include <Macros.h>
 #include <arm/ARMControl.h>
+#include <arm/ARMInterrupt.h>
 #include "RaspiSerial.h"
 
 extern C int kernel_main(void)
 {
     Arch::Memory mem;
+    ARMInterrupt irq;
 
     // Initialize heap
     Kernel::heap( mem.range(Memory::KernelHeap).virt,
@@ -48,7 +50,7 @@ extern C int kernel_main(void)
     ramRange.size = MegaByte(512);
 
     // Create and run the kernel
-    ARMKernel kernel(kernelRange, ramRange);
+    ARMKernel kernel(kernelRange, ramRange, &irq);
 
     // Print some info
     ARMControl ctrl;

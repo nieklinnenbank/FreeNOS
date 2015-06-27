@@ -116,7 +116,7 @@ Memory::Range ARMPaging::range(Memory::Region region)
     // Fill region virtual range
     switch (region)
     {
-        case KernelData:    r.virt = 0x4000;     r.size = MegaByte(3)-0x4000; break;
+        case KernelData:    r.virt = 0x0;        r.size = MegaByte(3);   break;
         case KernelHeap:    r.virt = 0x00300000; r.size = MegaByte(1);   break;
         case KernelStack:   r.virt = 0x08400000; r.size = KiloByte(4);   break;
         case PageTables:    r.virt = 0x00400000; r.size = MegaByte(64);  break;
@@ -205,20 +205,8 @@ Address * ARMPaging::getPageTable(Address virt)
 
 Memory::Result ARMPaging::map(Address phys, Address virt, Access acc)
 {
-    Size size = PAGESIZE;
-
-    // Must have a virtual address
-    if (!virt)
-    {
-        FATAL("invalid ZERO virtual address");
-        return InvalidAddress;
-    }
-
-    // find unused physical page if not specified
-    if (!phys)
-        m_phys->allocate(&size, &phys);
-
     Address *pageTable = getPageTable(virt);
+    Size size = PAGESIZE;
 
     // Does the page table exist?
     if (!pageTable)

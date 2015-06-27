@@ -22,6 +22,9 @@
 #include <FreeNOS/Process.h>
 #include <Types.h>
 
+/** Forward declaration */
+class ARMInterrupt;
+
 /** 
  * Perform a kernel trap with 1 argument.
  * @param num Unique number of the handler to execute. 
@@ -84,18 +87,13 @@ class ARMKernel : public Kernel
      *
      * @param kernel Describes the start and end of the kernel program in memory.
      * @param memory Describes the start and end of physical RAM in the system.
+     * @param intr ARM interrupt controller implementation.
      */
-    ARMKernel(Memory::Range kernel, Memory::Range memory);
+    ARMKernel(Memory::Range kernel,
+              Memory::Range memory,
+              ARMInterrupt *intr);
 
     /**
-     * Hooks a function to an hardware interrupt.
-     * @param vec Interrupt vector to hook on.
-     * @param h Handler function.
-     * @param p Parameter to pass to the handler function.
-     */
-    virtual void hookInterrupt(int vec, InterruptHandler h, ulong p);
-
-    /** 
      * Enable or disable an hardware interrupt (IRQ). 
      * @param vector IRQ number. 
      * @param enabled True to enable, and false to disable. 
@@ -109,13 +107,12 @@ class ARMKernel : public Kernel
 
   private:
 
-    /**
-     * Enable the MMU.
-     */
-    void enableMMU();
+    static void interrupt(CPUState state);
 
-    /** Kernel page tables base. */
-    Address m_kernelTablesBase;
+    static void trap(CPUState state);
+
+    static void exception(CPUState state);
+
 };
 
 #endif /* __ARM_KERNEL_H */
