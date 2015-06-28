@@ -36,6 +36,13 @@ env.TargetProgram('kernel', [ Glob('*.S'),
                    env['boot'])
 
 #
+# Provide binary kernel image to overwrite kernel.img on the Raspbian SD card.
+#
+env.Command('kernel.img', 'kernel', env['CROSS_COMPILE'] + 'objcopy -O binary ' +
+            env['BUILDROOT'] + '/kernel/arm/raspberry/kernel ' +
+            env['BUILDROOT'] + '/kernel/arm/raspberry/kernel.img')
+
+#
 # Trick QEMU into thinking we provide a Linux kernel, such that it will
 # pass ATAGS bootloader information (similar to Multiboot for intel)
 #
