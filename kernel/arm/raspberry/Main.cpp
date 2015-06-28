@@ -24,7 +24,7 @@
 #include <arm/ARMInterrupt.h>
 #include "RaspiSerial.h"
 
-extern C int kernel_main(void)
+extern C int kernel_main(u32 r0, u32 r1, u32 r2)
 {
     Arch::Memory mem;
     ARMInterrupt irq;
@@ -53,6 +53,7 @@ extern C int kernel_main(void)
     ARMKernel kernel(kernelRange, ramRange, &irq);
 
     // Print some info
+    DEBUG("ATAGS = " << r2);
     ARMControl ctrl;
     DEBUG("MainID = " << ctrl.read(ARMControl::MainID));
     ctrl.write(ARMControl::UserProcID, 11223344);
