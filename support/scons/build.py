@@ -94,7 +94,7 @@ Export('SubDirectories')
 
 # Create target, host and kernel environments.
 host = Environment(tools    = ["default", "phony"],
-		   toolpath = ["support/scons"]) #site_scons"])
+		   toolpath = ["support/scons"])
 host.AddMethod(HostProgram, "HostProgram")
 host.AddMethod(TargetProgram, "TargetProgram")
 host.AddMethod(TargetLibrary, "TargetLibrary")
@@ -108,8 +108,8 @@ host.Append(bin     = '${ROOTFS}/bin',
 	    server  = '${ROOTFS}/server',
             boot    = '${ROOTFS}/boot')
 
-target = host.Clone(tools    = ["default", "bootimage", "iso", "binary", "linn", "phony"], #),
-		    toolpath = ["support/scons"]) #site_scons"])
+target = host.Clone(tools    = ["default", "bootimage", "iso", "binary", "linn", "phony"],
+		    toolpath = ["support/scons"])
 
 # Apply configuration
 config.initialize(target, host, ARGUMENTS)
