@@ -22,6 +22,7 @@
 #include <Types.h>
 #include <Singleton.h>
 #include <Memory.h>
+#include <BootImage.h>
 #include "Process.h"
 #include "Memory.h"
 #include "ProcessManager.h"
@@ -167,6 +168,15 @@ class Kernel : public Singleton<Kernel>
      * Loads the boot image.
      */
     virtual bool loadBootImage() = 0;
+
+    /**
+     * Load a boot program.
+     *
+     * @param image BootImage pointer loaded by the bootloader in kernel virtual memory.
+     * @param imagePAddr Physical memory address of the boot image.
+     * @param index Index in the BootProcess table.
+     */
+    virtual void loadBootProcess(BootImage *image, Address imagePAddr, Size index);
 
   protected:
 

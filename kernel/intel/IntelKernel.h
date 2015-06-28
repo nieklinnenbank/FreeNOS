@@ -186,14 +186,6 @@ class IntelKernel : public Kernel
 
   private:
 
-    /**
-     * Creates a new Process from a BootProcess.
-     * @param image BootImage pointer loaded by the bootloader in kernel virtual memory.
-     * @param imagePAddr Physical memory address of the boot image.
-     * @param index Index in the BootProcess table.
-     */
-    void loadBootProcess(BootImage *image, Address imagePAddr, Size index);
-    
     /** 
      * Called when the CPU detects a fault. 
      * @param state Contains CPU registers, interrupt vector and error code. 

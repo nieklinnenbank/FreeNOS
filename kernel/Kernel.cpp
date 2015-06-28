@@ -20,6 +20,8 @@
 #include <BitAllocator.h>
 #include <BubbleAllocator.h>
 #include <PoolAllocator.h>
+#include <BootImage.h>
+#include <UserProcess.h>
 #include "Kernel.h"
 #include "Memory.h"
 #include "Process.h"
@@ -120,6 +122,57 @@ void Kernel::executeInterrupt(int vec, CPUState *state)
     {
         i.current()->handler(state, i.current()->param);
     }
+}
+
+void Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Size index)
+{
+    Address imageVAddr = (Address) image, args, vaddr;
+    Size args_size = ARGV_SIZE;
+    BootSymbol *program;
+    BootSegment *segment;
+    Process *proc;
+    Arch::Memory local(0, Kernel::instance->getMemory());
+
+    // Point to the program and segments table
+    program = &((BootSymbol *) (imageVAddr + image->symbolTableOffset))[index];
+    segment = &((BootSegment *) (imageVAddr + image->segmentsTableOffset))[program->segmentsOffset];
+
+    // Ignore non-BootProgram entries
+    if (program->type != BootProgram)
+        return;
+
+    // Create process
+    proc = m_procs->create(program->entry);
+    proc->setState(Process::Ready);
+
+    // Obtain process memory
+    Arch::Memory mem(proc->getPageDirectory(), getMemory());
+
+    // Map program segment into it's virtual memory
+    for (Size i = 0; i < program->segmentsCount; i++)
+    {
+        for (Size j = 0; j < segment[i].size; j += PAGESIZE)
+        {
+            mem.map(imagePAddr + segment[i].offset + j,
+                    segment[i].virtualAddress + j,
+                    Arch::Memory::Present  |
+                    Arch::Memory::User     |
+                    Arch::Memory::Readable |
+                    Arch::Memory::Writable);
+        }
+    }
+    
+    // Map program arguments into the process
+    m_memory->allocate(&args_size, &args);
+    mem.map(args, ARGV_ADDR, Arch::Memory::Present | Arch::Memory::User | Arch::Memory::Writable);
+
+    // Copy program arguments
+    vaddr = local.findFree(ARGV_SIZE, Memory::KernelPrivate);
+    local.map(args, vaddr, Memory::Present|Memory::Readable|Memory::Writable);
+    MemoryBlock::copy((char *)vaddr, program->name, ARGV_SIZE);
+
+    // Done
+    NOTICE("loaded: " << program->name);
 }
 
 int Kernel::run()
