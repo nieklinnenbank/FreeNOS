@@ -21,8 +21,9 @@
 
 ARMKernel::ARMKernel(Memory::Range kernel,
                      Memory::Range memory,
-                     ARMInterrupt *intr)
-    : Kernel(kernel, memory)
+                     ARMInterrupt *intr,
+                     Address tags)
+    : Kernel(kernel, memory), m_tags(tags)
 {    
     NOTICE("");
 
@@ -62,5 +63,9 @@ void ARMKernel::trap(CPUState state)
 bool ARMKernel::loadBootImage()
 {
     DEBUG("");
+
+    Memory::Range range = m_tags.getInitRd2();
+    DEBUG("initrd = " << range.phys << " (" << range.size << ")");
+
     return true;
 }

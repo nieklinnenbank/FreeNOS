@@ -21,6 +21,7 @@
 #include <FreeNOS/Kernel.h>
 #include <FreeNOS/Process.h>
 #include <Types.h>
+#include <arm/ARMTags.h>
 
 /** Forward declaration */
 class ARMInterrupt;
@@ -88,10 +89,12 @@ class ARMKernel : public Kernel
      * @param kernel Describes the start and end of the kernel program in memory.
      * @param memory Describes the start and end of physical RAM in the system.
      * @param intr ARM interrupt controller implementation.
+     * @param atags Address of the ARM boot tags
      */
     ARMKernel(Memory::Range kernel,
               Memory::Range memory,
-              ARMInterrupt *intr);
+              ARMInterrupt *intr,
+              Address atags);
 
     /**
      * Enable or disable an hardware interrupt (IRQ). 
@@ -113,6 +116,7 @@ class ARMKernel : public Kernel
 
     static void exception(CPUState state);
 
+    ARMTags m_tags;
 };
 
 #endif /* __ARM_KERNEL_H */

@@ -50,7 +50,7 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
     ramRange.size = MegaByte(512);
 
     // Create and run the kernel
-    ARMKernel kernel(kernelRange, ramRange, &irq);
+    ARMKernel kernel(kernelRange, ramRange, &irq, r2);
 
     // Print some info
     DEBUG("ATAGS = " << r2);
