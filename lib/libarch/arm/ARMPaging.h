@@ -163,7 +163,7 @@ class ARMPaging : public Memory
      * @param virt The virtual address to get the page table for.
      * @return Pointer to page table in virtual address.
      */
-    Address * getPageTable(Address virt);
+    Address * getPageTable(Address virt, bool useBase = false);
 
     /**
      * Convert Memory::Access to ARM Page Entry flags.

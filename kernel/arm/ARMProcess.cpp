@@ -31,5 +31,5 @@ ARMProcess::~ARMProcess()
 
 void ARMProcess::execute(Process *previous)
 {
-    DEBUG("");
+    FATAL("not yet implemented"); for(;;);
 }

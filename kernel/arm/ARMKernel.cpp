@@ -62,10 +62,35 @@ void ARMKernel::trap(CPUState state)
 
 bool ARMKernel::loadBootImage()
 {
+    Arch::Memory virt(0, m_memory);
+    BootImage *image;
+
     DEBUG("");
 
     Memory::Range range = m_tags.getInitRd2();
     DEBUG("initrd = " << range.phys << " (" << range.size << ")");
+
+    // TODO: most of this code should be moved to the generic Kernel.
+    // Map the BootImage into our address space
+    range.virt   = virt.findFree(range.size, Memory::KernelPrivate);
+    range.access = Arch::Memory::Present | Arch::Memory::Readable;
+    virt.mapRange(&range);
+    image = (BootImage *) range.virt;
+
+    // Verify this is a correct BootImage
+    if (image->magic[0] == BOOTIMAGE_MAGIC0 &&
+        image->magic[1] == BOOTIMAGE_MAGIC1 &&
+        image->layoutRevision == BOOTIMAGE_REVISION)
+    {
+        m_bootImageAddress = range.phys;
+        m_bootImageSize    = range.size;
+
+        // Loop BootPrograms
+        for (Size i = 0; i < image->symbolTableCount; i++)
+            loadBootProcess(image, m_bootImageAddress, i);
+    }
+    else
+        ERROR("invalid magic on BootImage");
 
     return true;
 }

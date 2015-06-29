@@ -78,7 +78,7 @@
 #define MEMALIGN        4
 
 /** Local page directory in virtual memory */
-#define PAGEDIR_LOCAL   (1024 * 1024 * 4)
+#define PAGEDIR_LOCAL   (0x04400000)
 
 /**
  * @}

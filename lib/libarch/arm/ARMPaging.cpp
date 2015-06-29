@@ -65,6 +65,11 @@
 #define PAGE2_AP_USERREAD  (1 << 5)
 #define PAGE2_AP_FULL     ((1 << 4) | (1 << 5))
 
+/*
+ * Second level page tables are mapped in the PageTables memory region.
+ * First level page table is mapped in the KernelPrivate memory region.
+ */
+
 ARMPaging::ARMPaging(Address pageDirectory, BitAllocator *phys)
     : Memory(pageDirectory, phys)
 {
@@ -72,13 +77,14 @@ ARMPaging::ARMPaging(Address pageDirectory, BitAllocator *phys)
 
     // Default to the local page directory
     m_mmuEnabled    = ctrl.read(ARMControl::SystemControl) & ARMControl::MMUEnabled;
-    m_pageTableBase = PAGEDIR_LOCAL;
-    m_pageDirectory = ((Address *) m_pageTableBase) + (PAGEDIR_LOCAL >> PAGESHIFT);
+    m_pageTableBase = range(PageTables).virt;
+    m_pageDirectory = (Address *) PAGEDIR_LOCAL;
 
     if (pageDirectory)
     {
         // Find a free range for the page table mappings
-        // TODO: actually search in the PageTables region
+#warning TODO: actually search in the PageTables region
+#warning TODO: search for a KernelPrivate address for the first level table
         for (Size i = 0; i < PAGEDIR_MAX; i++)
         {
             if (!(m_pageDirectory[i] & PAGE1_PRESENT))
@@ -89,6 +95,7 @@ ARMPaging::ARMPaging(Address pageDirectory, BitAllocator *phys)
             }
         }
         // Modify the local page directory to insert the mapping
+#warning TODO: update/remove PAGEDIR_LOCAL...?
         Address *localDirectory = ((Address *) PAGEDIR_LOCAL) + (PAGEDIR_LOCAL >> PAGESHIFT);
         localDirectory[ DIRENTRY(m_pageTableBase) ] = (Address) pageDirectory | PAGE1_PRESENT;
         tlb_flush_all();
@@ -120,7 +127,8 @@ Memory::Range ARMPaging::range(Memory::Region region)
         case KernelHeap:    r.virt = 0x00300000; r.size = MegaByte(1);   break;
         case KernelStack:   r.virt = 0x08400000; r.size = KiloByte(4);   break;
         case PageTables:    r.virt = 0x00400000; r.size = MegaByte(64);  break;
-        case KernelPrivate: r.virt = 0x04400000; r.size = MegaByte(64);  break;
+        /* PAGEDIR_LOCAL is at 0x440000 */
+        case KernelPrivate: r.virt = 0x04404000; r.size = MegaByte(64);  break;
         case UserData:      r.virt = 0x80000000; r.size = MegaByte(256); break;
         case UserHeap:      r.virt = 0xb0000000; r.size = MegaByte(256); break;
         case UserStack:     r.virt = 0xc0000000; r.size = KiloByte(4);   break;
@@ -154,6 +162,21 @@ Memory::Result ARMPaging::initialize()
     // Initialize first level page table
     for (Size i = 0; i < PAGEDIR_MAX; i++)
         *(m_pageDirectory + i) = PAGE1_NONE;
+
+    // Map second level page tables, which map the page tables for this context itself
+    for (Size i = 0; i < 4; i++)
+    {
+        Address tab2;
+        Size size = KiloByte(1);
+
+        m_phys->allocate(&size, &tab2, PAGESIZE);
+        MemoryBlock::set((void *)tab2, PAGE2_NONE, size);
+        m_pageDirectory[4+i] = tab2 | PAGE1_PRESENT;
+    }
+
+    // Map first level page table
+    for (Size i = 0; i < PAGEDIR_SIZE; i += PAGESIZE)
+        map(((Address)m_pageDirectory) + i, PAGEDIR_LOCAL + i, Readable | Writable);
 
     // Map kernel code and data
     Range r = range(KernelData);
@@ -191,16 +214,14 @@ Memory::Result ARMPaging::initialize()
     return Success;
 }
 
-Address * ARMPaging::getPageTable(Address virt)
+Address * ARMPaging::getPageTable(Address virt, bool useBase)
 {
-    // TODO: recalculate this. The firstlevel page table is 16K instead of 4K. Page tables are 1K each.
-
-    if (!(m_pageDirectory[ DIRENTRY(virt) ] & PAGE1_PRESENT))
+    if (!useBase && !(m_pageDirectory[ DIRENTRY(virt) ] & PAGE1_PRESENT))
         return (Address *) ZERO;
-    else if (m_mmuEnabled)
+    else if (m_mmuEnabled || useBase)
         return ((Address *) m_pageTableBase) + (((virt & PAGEMASK) >> DIRSHIFT) * PAGETAB_MAX);
     else
-        return (Address *) (m_pageDirectory[ DIRENTRY(virt) ] & PAGEMASK);
+        return (Address *) (m_pageDirectory[ DIRENTRY(virt) ] & ~0xff);
 }
 
 Memory::Result ARMPaging::map(Address phys, Address virt, Access acc)
@@ -211,17 +232,32 @@ Memory::Result ARMPaging::map(Address phys, Address virt, Access acc)
     // Does the page table exist?
     if (!pageTable)
     {
-        // Allocate a new page table
+        // Allocate a new page table buffer
         Address table;
         m_phys->allocate(&size, &table);
 
-        // Map a new page table
-        m_pageDirectory[ DIRENTRY(virt) ] = table | PAGE1_PRESENT;
+        // ARM has 1KB page tables, and 4KB pages. Thus we need
+        // to (de)allocate per 4 page tables on ARM.
+        Size idx = DIRENTRY(virt) - (DIRENTRY(virt) % 4);
+        for (Size i = 0; i < 4; i++)
+        {
+            // Insert in the first-level table
+            m_pageDirectory[ idx + i ] = (table + (i*PAGETAB_SIZE)) | PAGE1_PRESENT;
 
-        // Flush and clear the page table
+            // Map the page table itself inside the m_pageTableBase range.
+            Address tableSelfAddr = m_pageTableBase + ((idx + i) * PAGETAB_SIZE);
+            Address *tableSelfMap = getPageTable(tableSelfAddr);
+            tableSelfMap[ TABENTRY(tableSelfAddr) ] = table | PAGE2_PRESENT | PAGE2_AP_SYSONLY;
+        }
+
+        // Flush and clear the four page tables
+        for (Size i = 0; i < 4; i++)
+        {
+            pageTable = getPageTable((virt - (virt % (PAGESIZE*4))));
+            tlb_flush(pageTable);
+            MemoryBlock::set(pageTable, PAGE2_NONE, PAGESIZE);
+        }
         pageTable = getPageTable(virt);
-        tlb_flush(pageTable);
-        MemoryBlock::set(pageTable, 0, PAGESIZE);
     }
     // Map the physical page to a virtual address
     tlb_flush(pageTable);

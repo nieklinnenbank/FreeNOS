@@ -145,6 +145,9 @@ void Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Size index)
     proc = m_procs->create(program->entry);
     proc->setState(Process::Ready);
 
+    if (!proc->getPageDirectory())
+        return;
+
     // Obtain process memory
     Arch::Memory mem(proc->getPageDirectory(), getMemory());
 
@@ -158,13 +161,14 @@ void Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Size index)
                     Arch::Memory::Present  |
                     Arch::Memory::User     |
                     Arch::Memory::Readable |
-                    Arch::Memory::Writable);
+                    Arch::Memory::Writable |
+                    Arch::Memory::Executable);
         }
     }
     
     // Map program arguments into the process
     m_memory->allocate(&args_size, &args);
-    mem.map(args, ARGV_ADDR, Arch::Memory::Present | Arch::Memory::User | Arch::Memory::Writable);
+    mem.map(args, ARGV_ADDR, Arch::Memory::Present | Arch::Memory::User | Arch::Memory::Readable | Arch::Memory::Writable);
 
     // Copy program arguments
     vaddr = local.findFree(ARGV_SIZE, Memory::KernelPrivate);
