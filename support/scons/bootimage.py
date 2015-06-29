@@ -60,7 +60,7 @@ def boot_image_func(target, source, env):
     os.system(d + "/" + build.host['BUILDROOT'] + "/bin/img/img " +
 	      d + "/" + str(source[0]) + " " +
 	      d + "/" + image_out)
-    os.system("gzip " + d + "/" + image_out)
+    os.system("gzip -k " + d + "/" + image_out)
     os.chdir(d)
 
 def boot_image_str(target, source, env):
