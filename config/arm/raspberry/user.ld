@@ -23,6 +23,11 @@ SECTIONS
 {
     . = 0x80000000;
 
+    /DISCARD/ :
+    {
+        *(.note.gnu.build-id)
+    }
+
     .text :
     {
 	*(.entry)
