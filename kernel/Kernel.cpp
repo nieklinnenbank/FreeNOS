@@ -145,9 +145,6 @@ void Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Size index)
     proc = m_procs->create(program->entry);
     proc->setState(Process::Ready);
 
-    if (!proc->getPageDirectory())
-        return;
-
     // Obtain process memory
     Arch::Memory mem(proc->getPageDirectory(), getMemory());
 

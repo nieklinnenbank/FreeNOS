@@ -51,13 +51,13 @@ _start:
     ldr sp, =fiqStack
 
     msr cpsr_c, #(SVC_MODE | IRQ_BIT | FIQ_BIT) /* SVC mode */
-    ldr sp, =irqStack
+    ldr sp, =svcStack
 
     msr cpsr_c, #(ABT_MODE | IRQ_BIT | FIQ_BIT) /* Abort mode */
-    ldr sp, =irqStack
+    ldr sp, =abtStack
 
     msr cpsr_c, #(UND_MODE | IRQ_BIT | FIQ_BIT) /* Undefined mode */
-    ldr sp, =irqStack
+    ldr sp, =undStack
 
     msr cpsr_c, #(SYS_MODE | IRQ_BIT | FIQ_BIT) /* System mode */
     mov sp, #0x8000

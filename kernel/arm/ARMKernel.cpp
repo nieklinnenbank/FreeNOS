@@ -16,6 +16,7 @@
  */
 
 #include <Log.h>
+#include <BitAllocator.h>
 #include <arm/ARMInterrupt.h>
 #include "ARMKernel.h"
 
@@ -52,7 +53,7 @@ void ARMKernel::interrupt(CPUState state)
 
 void ARMKernel::exception(CPUState state)
 {
-    DEBUG("");
+    FATAL(""); for(;;);
 }
 
 void ARMKernel::trap(CPUState state)
@@ -84,6 +85,10 @@ bool ARMKernel::loadBootImage()
     {
         m_bootImageAddress = range.phys;
         m_bootImageSize    = range.size;
+
+       // Mark its memory used
+        for (Size i = 0; i < m_bootImageSize; i += PAGESIZE)
+            m_memory->allocate(m_bootImageAddress + i);
 
         // Loop BootPrograms
         for (Size i = 0; i < image->symbolTableCount; i++)
