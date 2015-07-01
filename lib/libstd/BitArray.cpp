@@ -97,11 +97,13 @@ Error BitArray::setNext(Size count, Size start, Size boundary)
     // Loop BitArray for unset bits
     for (Size i = start; i < m_size; i++)
     {
-        if (!isSet(i) && !(i % boundary))
+        if (!isSet(i))
         {
             // Remember this bit
             if (!found)
             {
+                if (i % boundary)
+                    continue;
                 from  = i;
                 found = 1;
             }
