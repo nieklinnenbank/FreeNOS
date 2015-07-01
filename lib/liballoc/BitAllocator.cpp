@@ -58,7 +58,7 @@ Allocator::Result BitAllocator::allocate(Size *size, Address *addr, Size align)
     else
         align /= m_chunkSize;    
 
-    *addr = m_base + (m_array.setNext(num, align) * m_chunkSize);
+    *addr = m_base + (m_array.setNext(num, 0, align) * m_chunkSize);
     return Success;
 }
 
