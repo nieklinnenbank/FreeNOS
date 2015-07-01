@@ -27,7 +27,7 @@
  * @return IRQ number.
  */
 #define IRQ_REG(state) \
-    ((state)->vector - 0x20)
+    ((state)->r[0] - 0x20)
 
 /**
  * We remap IRQ's to interrupt vectors 32-47.
@@ -107,7 +107,8 @@
  */
 typedef struct CPUState
 {
-    u32 vector;
+    u32 padding[4];
+    u32 r[14];
 }
 CPUState;
 

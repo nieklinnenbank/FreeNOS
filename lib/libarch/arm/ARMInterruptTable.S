@@ -48,58 +48,57 @@ ldr pc, [pc, #0x18] /* FIQ vector */
 .long(ex_irq)
 .long(ex_fiq)
 
-ex_reset:
-    push {r0}
-    mov r0, #0
-    b exceptionHandler
-
-ex_undefined:
-    push {r0}
-    mov r0, #1
-    b exceptionHandler
-
-ex_software:
-    push {r0}
-    mov r0, #2
-    b exceptionHandler
-
-ex_prefetch:
-    push {r0}
-    mov r0, #3
-    b exceptionHandler
-
-ex_data:
-    push {r0}
-    mov r0, #4
-    b exceptionHandler
-
-ex_reserved:
-    push {r0}
-    mov r0, #5
-    b exceptionHandler
-
-ex_irq:
-    push {r0}
-    mov r0, #6
-    b exceptionHandler
-
-ex_fiq:
-    push {r0}
-    mov r0, #7
-    b exceptionHandler
-
 /**
  * General exception handler
+ *
+ * @see ARM1176JZF-S Technical Reference Manual, page 110, Table 2-8
  */
-exceptionHandler:
-    ldr r1, =handlerTable
+.macro callHandler index
+    push {r14}            /* LR (return address) */
+    push {r0}             /* dummy for SP */
+    push {r0-r12}         /* save unbanked registers */
+    mov r0, #\index
+    ldr r1, =handlerTable /* load function from handlerTable */
     mov r2, #4
     mla r1, r0, r2, r1
     ldr r0, [r1]
     mov lr, pc
     bx r0
-    pop {r0}
-    movs pc, lr
+    pop {r0-r12}          /* restore unbanked registers */
+    add sp, sp, #4        /* skip SP */
+    pop {r14}             /* restore LR (return address) */
+.endm
+
+ex_reset:
+callHandler 0
+
+ex_undefined:
+callHandler 1
+movs pc, lr
+
+ex_software:
+callHandler 2
+movs pc, lr
+
+ex_prefetch:
+callHandler 3
+subs pc, r14, #4
+
+ex_data:
+callHandler 4
+subs pc, r14, #8
+
+ex_reserved:
+callHandler 5
+movs pc, lr
+
+ex_irq:
+callHandler 6
+subs pc, r14, #4
+
+ex_fiq:
+callHandler 7
+subs pc, r14, #4
 
 /*
  * ARM interrupt handler table.

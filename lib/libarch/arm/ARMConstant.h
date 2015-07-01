@@ -70,6 +70,7 @@
  */
 #define PAGETAB_MAX     256
 #define PAGETAB_SIZE    (PAGETAB_MAX * sizeof(u32))
+#define PAGETAB_SPAN    (PAGETAB_MAX*PAGESIZE)
 
 /** Mask to find the page. */
 #define PAGEMASK        0xfffff000 

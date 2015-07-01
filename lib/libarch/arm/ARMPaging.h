@@ -179,6 +179,9 @@ class ARMPaging : public Memory
     /** Page tables virtual base address */
     Address m_pageTableBase;
 
+    /** Pointer to the local page directory (of the current context). */
+    Address *m_localDirectory;
+
     /** True if the MMU is enabled */
     bool m_mmuEnabled;
 };
