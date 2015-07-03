@@ -51,6 +51,9 @@ void ARMControl::write(Register reg, u32 value)
         case TranslationTableCtrl:  mcr(p15, 0, 2, c2,  c0, value); break;
         case DomainControl:         mcr(p15, 0, 0, c3,  c0, value); break;
         case InstructionCacheClear: mcr(p15, 0, 0, c7,  c5, value); break;
+        case InstructionTLBClear:   mcr(p15, 0, 0, c8,  c5, value); break;
+        case DataTLBClear:          mcr(p15, 0, 0, c8,  c6, value); break;
+        case UnifiedTLBClear:       mcr(p15, 0, 0, c8,  c7, value); break;
         case UserProcID:            mcr(p15, 0, 4, c13, c0, value); break;
         default: break;
     }

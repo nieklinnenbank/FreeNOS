@@ -16,16 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define PAGESIZE    4096
+#include <arm/ARMConstant.h>
+
 #define STACKSIZE   PAGESIZE
-#define IRQ_MODE    18
-#define FIQ_MODE    17
-#define SVC_MODE    19
-#define ABT_MODE    23
-#define UND_MODE    27
-#define SYS_MODE    31
-#define IRQ_BIT    (1 << 7)
-#define FIQ_BIT    (1 << 6)
 
 /* To keep this in the first portion of the binary. */
 .section ".text.boot"
@@ -61,7 +54,10 @@ _start:
 
     msr cpsr_c, #(SYS_MODE | IRQ_BIT | FIQ_BIT) /* System mode */
     mov sp, #0x8000
- 
+
+    /* continue kernel in SVC mode */
+    msr cpsr_c, #(SVC_MODE | IRQ_BIT | FIQ_BIT) /* SVC mode */
+
     /* Clear out bss. */
     ldr r4, =__bss_start
     ldr r9, =__bss_end

@@ -44,26 +44,6 @@ extern C void switchCoreState(Address *currentStack,
  * Core. It is used by the kernel as a function to initialize
  * the Process register state when it starts the first time.
  */
-extern C void loadCoreState();
-
-/**
- * Interrupt Service Router (ISR) handler.
- *
- * This function saves and restores the complete user
- * state on the kernel stack (found via the TSS).
- * After the kernel has finished executing it will
- * restore the user state completely.
- */
-extern C void interruptHandler();
-
-/**
- * Process an interrupt.
- *
- * Callback function which is called by interruptHandler()
- * to process an interrupt.
- *
- * @see interruptHandler
- */
-extern C void (*interruptRun)(CPUState state);
+extern C void loadCoreState0();
 
 #endif /* __LIBARCH_ARM_STATE_H */

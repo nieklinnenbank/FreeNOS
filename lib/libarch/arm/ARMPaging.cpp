@@ -100,7 +100,6 @@ ARMPaging::ARMPaging(Address pageDirectory, BitAllocator *phys)
                 break;
             }
         }
-#warning TLB flushing not yet implemented on ARM
         tlb_flush_all();
     }
 }
@@ -172,6 +171,8 @@ Memory::Result ARMPaging::create()
     for (Size i = 0; i < r.size; i += PAGETAB_SPAN)
         m_pageDirectory[DIRENTRY(r.virt+i)] = m_localDirectory[DIRENTRY(r.virt+i)];
 
+    tlb_flush_all();
+
     // Allocate second level page tables, which map the page tables for this context itself
     m_phys->allocate(&size, &secondPageTabs);
 
@@ -215,7 +216,6 @@ Memory::Result ARMPaging::create()
             break;
         }
     }
-#warning TLB flushing not yet implemented on ARM
     tlb_flush_all();
     return Success;
 }

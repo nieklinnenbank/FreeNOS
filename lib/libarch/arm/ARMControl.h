@@ -46,6 +46,9 @@ class ARMControl
         TranslationTable1,
         TranslationTableCtrl,
         InstructionCacheClear,
+        InstructionTLBClear,
+        DataTLBClear,
+        UnifiedTLBClear,
         UserProcID
     };
 

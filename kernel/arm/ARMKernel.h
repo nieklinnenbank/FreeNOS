@@ -52,6 +52,12 @@ inline ulong trapKernel2(ulong num, ulong arg1, ulong arg2)
 inline ulong trapKernel3(ulong num, ulong arg1, ulong arg2, ulong arg3)
 {
     return 0;
+
+    ulong ret;
+    asm volatile ("int $0x90" : "=a"(ret) : "a"(num), "c"(arg1), "b"(arg2));
+    return ret;
+
+
 }
 
 /** 

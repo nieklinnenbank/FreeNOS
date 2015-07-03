@@ -18,6 +18,7 @@
 #include <Log.h>
 #include <BitAllocator.h>
 #include <arm/ARMInterrupt.h>
+#include <arm/ARMConstant.h>
 #include "ARMKernel.h"
 
 ARMKernel::ARMKernel(Memory::Range kernel,

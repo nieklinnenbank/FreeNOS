@@ -21,13 +21,14 @@
 #include <Types.h>
 #include <Macros.h>
 #include <Core.h>
+#include "ARMControl.h"
 
 /**
  * Retrieve the IRQ number from CPUState.
  * @return IRQ number.
  */
 #define IRQ_REG(state) \
-    ((state)->r[0] - 0x20)
+    ((state)->r0 - 0x20)
 
 /**
  * We remap IRQ's to interrupt vectors 32-47.
@@ -98,9 +99,15 @@
  */
 #define irq_restore(saved)
 
-#define tlb_flush_all()
+#define tlb_flush_all() \
+({ \
+    ARMControl ctrl; \
+    ctrl.write(ARMControl::InstructionTLBClear, 0); \
+    ctrl.write(ARMControl::DataTLBClear, 0); \
+    ctrl.write(ARMControl::UnifiedTLBClear, 0); \
+})
 
-#define tlb_flush(page)
+#define tlb_flush(page) tlb_flush_all()
 
 /** 
  * Contains all the CPU registers. 
@@ -108,7 +115,10 @@
 typedef struct CPUState
 {
     u32 padding[4];
-    u32 r[14];
+    u32 cpsr;
+    u32 r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12;
+    u32 sp, lr;
+    u32 pc;
 }
 CPUState;
 

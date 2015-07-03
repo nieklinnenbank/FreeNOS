@@ -27,6 +27,7 @@ ARMProcess::ARMProcess(ProcessID id, Address entry, bool privileged)
     Size size = PAGEDIR_SIZE;
     BitAllocator *memory = Kernel::instance->getMemory();
     Memory::Range range;
+    Size framesize = (14+17)*sizeof(u32);
 
     // Allocate first level page table
     memory->allocate(&size, &m_pageDirectory, KiloByte(16));
@@ -52,9 +53,29 @@ ARMProcess::ARMProcess(ProcessID id, Address entry, bool privileged)
     range.size   = mem.range(Memory::KernelStack).size;
     range.access = Memory::Present | Memory::Readable | Memory::Writable;
     mem.mapRange(&range);
-    setKernelStack(range.virt + range.size - MEMALIGN);/* - sizeof(CPUState)
-                                           - sizeof(IRQRegs0)
-                                           - sizeof(CPURegs));*/
+    setKernelStack(range.virt + range.size - MEMALIGN - framesize);
+
+    // Map kernel stack.
+    Arch::Memory local(0, memory);
+    range.virt = local.findFree(range.size, Memory::KernelPrivate);
+    local.mapRange(&range);
+    Address *stack = (Address *) (range.virt + range.size - framesize - MEMALIGN);
+
+    // Zero kernel stack
+    MemoryBlock::set((void *)range.virt, 0, range.size);
+
+    // restoreState: fill kernel register state
+    stack[0] = (Address) loadCoreState0; /* restoreState: pop {lr} */
+    stack += 14;
+
+    // loadCoreState0: fill user register state
+    stack[0] = USR_MODE | FIQ_BIT | IRQ_BIT; /* user program status (CPSR) */
+    stack++;
+    stack[13] = m_userStack; /* user program SP */
+    stack[14] = 0;           /* user program LR */
+    stack[15] = entry;       /* user program entry (PC) */
+
+    local.unmapRange(&range);
 }
 
 ARMProcess::~ARMProcess()
@@ -71,13 +92,9 @@ ARMProcess::~ARMProcess()
 
 void ARMProcess::execute(Process *previous)
 {
-    FATAL("not yet implemented"); for(;;);
-
-    /*
     ARMProcess *p = (ARMProcess *) previous;
 
     switchCoreState( p ? &p->m_kernelStack : ZERO,
                      m_pageDirectory,
                      m_kernelStack );
-     */
 }

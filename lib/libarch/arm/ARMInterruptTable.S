@@ -14,8 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#include "ARMConstant.h"
  
-.globl vecTable, handlerTable
+.globl vecTable, handlerTable, loadCoreState0
 
 /*
  * ARM exception vector table.
@@ -54,23 +56,36 @@ ldr pc, [pc, #0x18] /* FIQ vector */
  * @see ARM1176JZF-S Technical Reference Manual, page 110, Table 2-8
  */
 .macro callHandler index
-    push {r14}            /* LR (return address) */
-    push {r0}             /* dummy for SP */
-    push {r0-r12}         /* save unbanked registers */
-    mov r0, #\index
-    ldr r1, =handlerTable /* load function from handlerTable */
+    push {r14}            /* save calling PC (return address) */
+    push {sp, lr}^        /* save SP and LR of user */
+    push {r0-r12}         /* save user registers */
+    mrs r8, spsr
+    push {r8}             /* save program status (SPSR) for user */
+
+    mov r0, #\index       /* load function from handlerTable */
+    ldr r1, =handlerTable 
     mov r2, #4
     mla r1, r0, r2, r1
     ldr r0, [r1]
     mov lr, pc
     bx r0
-    pop {r0-r12}          /* restore unbanked registers */
-    add sp, sp, #4        /* skip SP */
-    pop {r14}             /* restore LR (return address) */
+
+loadCoreState\index:
+    pop {r8}              /* restore program status (SPSR, will be moved in CPSR by movs instruction) */
+    msr spsr, r8
+
+    add sp, sp, #(15*4)   /* restore all user registers */
+    mov r2, sp            
+    ldmdb r2, {r0-r14}^   
+    mov r0, r0            /* ARMv5T and earlier require a nop after ldm {}^ */
+
+    pop {r14}             /* restore calling PC (return address) */
+
 .endm
 
 ex_reset:
 callHandler 0
+movs pc, lr
 
 ex_undefined:
 callHandler 1

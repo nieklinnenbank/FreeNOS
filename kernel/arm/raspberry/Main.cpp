@@ -59,10 +59,5 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
     ctrl.write(ARMControl::UserProcID, 11223344);
     DEBUG("UserProcID = " << ctrl.read(ARMControl::UserProcID));
 
-    kernel.run();
-
-    while (true)
-        console.put(console.get());
-
-    return 0;
+    return kernel.run();
 }
