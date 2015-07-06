@@ -17,6 +17,7 @@
 
 #include <Log.h>
 #include <BitAllocator.h>
+#include <FreeNOS/API.h>
 #include <arm/ARMInterrupt.h>
 #include <arm/ARMConstant.h>
 #include "ARMKernel.h"
@@ -60,6 +61,15 @@ void ARMKernel::exception(CPUState state)
 void ARMKernel::trap(CPUState state)
 {
     DEBUG("");
+
+    state.r0 = Kernel::instance->getAPI()->invoke(
+        (API::Number) state.r0,
+                      state.r1,
+                      state.r2,
+                      state.r3,
+                      state.r4,
+                      state.r5
+    );
 }
 
 bool ARMKernel::loadBootImage()

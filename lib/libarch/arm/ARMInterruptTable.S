@@ -57,8 +57,12 @@ ldr pc, [pc, #0x18] /* FIQ vector */
  */
 .macro callHandler index
     push {r14}            /* save calling PC (return address) */
-    push {sp, lr}^        /* save SP and LR of user */
     push {r0-r12}         /* save user registers */
+
+    mov r2, sp            /* save SP and LR of user */
+    stmdb r2, {sp, lr}^  
+    sub sp, sp, #8
+
     mrs r8, spsr
     push {r8}             /* save program status (SPSR) for user */
 
@@ -74,10 +78,13 @@ loadCoreState\index:
     pop {r8}              /* restore program status (SPSR, will be moved in CPSR by movs instruction) */
     msr spsr, r8
 
-    add sp, sp, #(15*4)   /* restore all user registers */
+    add sp, sp, #(8)      /* restore user SP and LR */
+    mov r2, sp
+    ldmdb r2, {sp, lr}^
+
+    add sp, sp, #(13*4)   /* restore user registers */
     mov r2, sp            
-    ldmdb r2, {r0-r14}^   
-    mov r0, r0            /* ARMv5T and earlier require a nop after ldm {}^ */
+    ldmdb r2, {r0-r12}^   
 
     pop {r14}             /* restore calling PC (return address) */
 

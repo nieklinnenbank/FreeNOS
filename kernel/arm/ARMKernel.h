@@ -31,17 +31,35 @@ class ARMInterrupt;
  * @param num Unique number of the handler to execute. 
  * @return An integer. 
  */
-inline ulong trapKernel1(ulong num, ulong arg1)
+inline ulong trapKernel1(ulong api, ulong arg1)
 {
-    return 0;
+    ulong ret;
+    asm volatile ("mov r0, %[api]\n"
+                  "mov r1, %[arg1]\n"
+                  "swi #0\n"
+                  "mov r0, %[ret]\n"
+                : [ret]"=r"(ret)
+                : [api]"r"(api),
+                  [arg1]"r"(arg1));
+    return ret;
 }
 
 /**
  * Perform a kernel trap with 2 arguments.
  */
-inline ulong trapKernel2(ulong num, ulong arg1, ulong arg2)
+inline ulong trapKernel2(ulong api, ulong arg1, ulong arg2)
 {
-    return 0;
+    ulong ret;
+    asm volatile ("mov r0, %[api]\n"
+                  "mov r1, %[arg1]\n"
+                  "mov r2, %[arg2]\n"
+                  "swi #0\n"
+                  "mov r0, %[ret]\n"
+                : [ret]"=r"(ret)
+                : [api]"r"(api),
+                  [arg1]"r"(arg1),
+                  [arg2]"r"(arg2));
+    return ret;
 }
 
 /** 
@@ -49,15 +67,21 @@ inline ulong trapKernel2(ulong num, ulong arg1, ulong arg2)
  * @param num Unique number of the handler to execute. 
  * @return An integer. 
  */
-inline ulong trapKernel3(ulong num, ulong arg1, ulong arg2, ulong arg3)
+inline ulong trapKernel3(ulong api, ulong arg1, ulong arg2, ulong arg3)
 {
-    return 0;
-
     ulong ret;
-    asm volatile ("int $0x90" : "=a"(ret) : "a"(num), "c"(arg1), "b"(arg2));
+    asm volatile ("mov r0, %[api]\n"
+                  "mov r1, %[arg1]\n"
+                  "mov r2, %[arg2]\n"
+                  "mov r3, %[arg3]\n"
+                  "swi #0\n"
+                  "mov r0, %[ret]\n"
+                : [ret]"=r"(ret)
+                : [api]"r"(api),
+                  [arg1]"r"(arg1),
+                  [arg2]"r"(arg2),
+                  [arg3]"r"(arg3));
     return ret;
-
-
 }
 
 /** 
@@ -65,10 +89,24 @@ inline ulong trapKernel3(ulong num, ulong arg1, ulong arg2, ulong arg3)
  * @param num Unique number of the handler to execute. 
  * @return An integer.
  */
-inline ulong trapKernel4(ulong num, ulong arg1, ulong arg2, ulong arg3,
+inline ulong trapKernel4(ulong api, ulong arg1, ulong arg2, ulong arg3,
                          ulong arg4)
 {
-    return 0;
+    ulong ret;
+    asm volatile ("mov r0, %[api]\n"
+                  "mov r1, %[arg1]\n"
+                  "mov r2, %[arg2]\n"
+                  "mov r3, %[arg3]\n"
+                  "mov r4, %[arg4]\n"
+                  "swi #0\n"
+                  "mov r0, %[ret]\n"
+                : [ret]"=r"(ret)
+                : [api]"r"(api),
+                  [arg1]"r"(arg1),
+                  [arg2]"r"(arg2),
+                  [arg3]"r"(arg3),
+                  [arg4]"r"(arg4));
+    return ret;
 }
 
 /** 
@@ -76,10 +114,26 @@ inline ulong trapKernel4(ulong num, ulong arg1, ulong arg2, ulong arg3,
  * @param num Unique number of the handler to execute. 
  * @return An integer. 
  */
-inline ulong trapKernel5(ulong num, ulong arg1, ulong arg2, ulong arg3,
+inline ulong trapKernel5(ulong api, ulong arg1, ulong arg2, ulong arg3,
                          ulong arg4, ulong arg5)
 {
-    return 0;
+    ulong ret;
+    asm volatile ("mov r0, %[api]\n"
+                  "mov r1, %[arg1]\n"
+                  "mov r2, %[arg2]\n"
+                  "mov r3, %[arg3]\n"
+                  "mov r4, %[arg4]\n"
+                  "mov r5, %[arg5]\n"
+                  "swi #0\n"
+                  "mov r0, %[ret]\n"
+                : [ret]"=r"(ret)
+                : [api]"r"(api),
+                  [arg1]"r"(arg1),
+                  [arg2]"r"(arg2),
+                  [arg3]"r"(arg3),
+                  [arg4]"r"(arg4),
+                  [arg5]"r"(arg5));
+    return ret;
 }
 
 /**

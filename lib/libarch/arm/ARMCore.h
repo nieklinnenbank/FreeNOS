@@ -116,8 +116,8 @@ typedef struct CPUState
 {
     u32 padding[4];
     u32 cpsr;
-    u32 r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12;
     u32 sp, lr;
+    u32 r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12;
     u32 pc;
 }
 CPUState;

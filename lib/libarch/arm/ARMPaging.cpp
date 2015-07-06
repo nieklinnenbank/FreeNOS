@@ -185,8 +185,6 @@ Memory::Result ARMPaging::create()
     // Fill second level page tables (requires mapping them into the local address space)
     Address v = findFree(size, KernelPrivate);
     map(secondPageTabs, v, Readable|Writable);
-
-    //Address *selfTables = (Address *) (m_pageTableBase + (DIRENTRY(pageTabRange.virt) * PAGETAB_SIZE));
     MemoryBlock::set((void *)v, PAGE2_NONE, size);
 
     // Note that the 2nd page tables that map all 2nd page tables also needs to be modified,
@@ -217,6 +215,11 @@ Memory::Result ARMPaging::create()
         }
     }
     tlb_flush_all();
+
+    // TODO: add the memory mapped I/O zone (identity mapping)
+    for (Size i = 0; i < 0x1000000; i += PAGESIZE)
+        map(0x20000000+i, 0x20000000+i, Readable | Writable | IO);
+
     return Success;
 }
 

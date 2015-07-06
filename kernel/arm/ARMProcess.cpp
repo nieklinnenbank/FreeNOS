@@ -69,11 +69,12 @@ ARMProcess::ARMProcess(ProcessID id, Address entry, bool privileged)
     stack += 14;
 
     // loadCoreState0: fill user register state
-    stack[0] = USR_MODE | FIQ_BIT | IRQ_BIT; /* user program status (CPSR) */
+    stack[0] = (privileged ? SYS_MODE : USR_MODE) | FIQ_BIT | IRQ_BIT; /* user program status (CPSR) */
     stack++;
-    stack[13] = m_userStack; /* user program SP */
-    stack[14] = 0;           /* user program LR */
-    stack[15] = entry;       /* user program entry (PC) */
+    stack[0] = m_userStack; /* user program SP */
+    stack[1] = 0;           /* user program LR */
+    stack+=15;
+    stack[0] = entry;       /* user program entry (PC) */
 
     local.unmapRange(&range);
 }
