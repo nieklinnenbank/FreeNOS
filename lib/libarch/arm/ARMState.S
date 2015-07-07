@@ -34,8 +34,8 @@ switchCoreState:
     beq restoreState
 
     /* Save kernel registers on current stack. */
-    push {lr}
     push {r0-r12}
+    push {lr}
 
     /* Save stack pointer in currentStack */
     stm r0, {sp}
