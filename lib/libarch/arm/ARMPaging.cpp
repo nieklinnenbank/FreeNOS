@@ -73,7 +73,7 @@ ARMPaging::ARMPaging(Address pageDirectory, BitAllocator *phys)
     Memory::Range pageTabRange = range(PageTables);
 
     // Default to the local page directory
-    m_mmuEnabled     = ctrl.read(ARMControl::SystemControl) & ARMControl::MMUEnabled;
+    m_mmuEnabled     = true;
     m_pageTableBase  = range(PageTables).virt;
     m_localDirectory = (Address *) PAGEDIR_LOCAL;
     m_pageDirectory  = m_localDirectory;
@@ -229,10 +229,10 @@ Memory::Result ARMPaging::initialize()
     ARMControl ctrl;
     Size size = KiloByte(16);
     Address secondPageTabs;
-
     Address *savedPageDirectory = m_pageDirectory;
 
     // Allocate first level page table
+    m_mmuEnabled = false;
     m_phys->allocate(
         &size,               // 16KB size. We use it for both the OS and user for now
         (Address *) &m_pageDirectory, // first level page table
