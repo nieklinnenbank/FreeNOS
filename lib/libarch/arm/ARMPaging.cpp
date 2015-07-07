@@ -73,10 +73,11 @@ ARMPaging::ARMPaging(Address pageDirectory, BitAllocator *phys)
     Memory::Range pageTabRange = range(PageTables);
 
     // Default to the local page directory
-    m_mmuEnabled     = true;
-    m_pageTableBase  = range(PageTables).virt;
-    m_localDirectory = (Address *) PAGEDIR_LOCAL;
-    m_pageDirectory  = m_localDirectory;
+    m_mmuEnabled        = true;
+    m_pageTableBase     = range(PageTables).virt;
+    m_localDirectory    = (Address *) PAGEDIR_LOCAL;
+    m_pageDirectory     = m_localDirectory;
+    m_pageDirectoryPhys = 0;
 
     if (pageDirectory)
     {
@@ -85,7 +86,8 @@ ARMPaging::ARMPaging(Address pageDirectory, BitAllocator *phys)
         for (Size i = 0; i < PAGEDIR_SIZE; i += PAGESIZE)
             map(pageDirectory + i, dir + i, Readable | Writable);
 
-        m_pageDirectory = (Address *) dir;
+        m_pageDirectoryPhys = pageDirectory;
+        m_pageDirectory     = (Address *) dir;
 
         // Map second level page tables
         for (Size i = 0; i < pageTabRange.size; i += MegaByte(4))
@@ -162,7 +164,7 @@ Memory::Result ARMPaging::create()
     // Clear the first level page table
     MemoryBlock::set(m_pageDirectory, PAGE1_NONE, PAGEDIR_SIZE);
 
-    // Inherit only the kernel data and heap into the new context
+    // Inherit the kernel data and heap into the new context
     r = range(KernelData);
     for (Size i = 0; i < r.size; i += PAGETAB_SPAN)
         m_pageDirectory[DIRENTRY(r.virt+i)] = m_localDirectory[DIRENTRY(r.virt+i)];
@@ -215,6 +217,10 @@ Memory::Result ARMPaging::create()
         }
     }
     tlb_flush_all();
+
+    // Map first level page table
+    for (Size i = 0; i < PAGEDIR_SIZE; i += PAGESIZE)
+        map((m_pageDirectoryPhys) + i, PAGEDIR_LOCAL + i, Readable | Writable);
 
     // TODO: add the memory mapped I/O zone (identity mapping)
     for (Size i = 0; i < 0x1000000; i += PAGESIZE)

@@ -176,6 +176,9 @@ class ARMPaging : public Memory
     /** Pointer to page directory in virtual memory. */
     Address *m_pageDirectory;
 
+    /** Pointer to page directory in physical memory. */
+    Address m_pageDirectoryPhys;
+
     /** Page tables virtual base address */
     Address m_pageTableBase;
 
