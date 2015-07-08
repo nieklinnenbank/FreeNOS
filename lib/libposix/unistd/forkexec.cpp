@@ -77,7 +77,8 @@ int forkexec(const char *path, const char *argv[])
         range.access = Memory::Present |
                        Memory::User |
                        Memory::Readable |
-                       Memory::Writable;
+                       Memory::Writable |
+                       Memory::Executable;
         
         // Create mapping first
         if (VMCtl(pid, Map, &range) != 0)
