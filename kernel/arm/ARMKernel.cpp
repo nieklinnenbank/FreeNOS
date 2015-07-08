@@ -20,6 +20,7 @@
 #include <FreeNOS/API.h>
 #include <arm/ARMInterrupt.h>
 #include <arm/ARMConstant.h>
+#include <arm/BCM2835Interrupt.h>
 #include "ARMKernel.h"
 
 ARMKernel::ARMKernel(Memory::Range kernel,
@@ -30,6 +31,7 @@ ARMKernel::ARMKernel(Memory::Range kernel,
 {    
     NOTICE("");
 
+    m_intr = intr;
     intr->install(ARMInterrupt::UndefinedInstruction, exception);
     intr->install(ARMInterrupt::SoftwareInterrupt, trap);
     intr->install(ARMInterrupt::PrefetchAbort, exception);
@@ -38,29 +40,56 @@ ARMKernel::ARMKernel(Memory::Range kernel,
     intr->install(ARMInterrupt::IRQ, interrupt);
     intr->install(ARMInterrupt::FIQ, interrupt);
 
+    // Enable MMU
     ARMPaging mmu(0, m_memory);
     mmu.initialize();
+
+    // Enable clocks and irqs
+    m_timer.setInterval( 250 ); /* trigger timer interrupts at 250Hz (clock runs at 1Mhz) */
+    m_intr->enableIRQ(BCM_IRQ_SYSTIMERM1);
 }
 
 void ARMKernel::enableIRQ(uint vector, bool enabled)
 {
     DEBUG("vector =" << vector << "enabled =" << enabled);
-    //m_interruptControl->enable(vector, enabled);
+
+    if (enabled)
+        m_intr->enableIRQ(vector);
+    else
+        m_intr->disableIRQ(vector);
 }
 
 void ARMKernel::interrupt(CPUState state)
 {
+    ARMKernel *kernel = (ARMKernel *) Kernel::instance;
+
     DEBUG("");
+
+    // TODO: remove BCM2835 specific code
+    if (kernel->m_intr->isTriggered(BCM_IRQ_SYSTIMERM1))
+    {
+        kernel->m_timer.next();
+        kernel->getProcessManager()->schedule();
+    }
+    else
+    {
+        for (uint i = 0; i < 64; i++)
+        {
+            if (kernel->m_intr->isTriggered(i))
+                kernel->executeInterrupt(i, &state);
+        }
+    }
 }
 
 void ARMKernel::exception(CPUState state)
 {
-    FATAL(""); for(;;);
+    FATAL("");
+    for(;;);
 }
 
 void ARMKernel::trap(CPUState state)
 {
-    DEBUG("");
+    DEBUG("procId = " << Kernel::instance->getProcessManager()->current()->getID() << " api = " << state.r0);
 
     state.r0 = Kernel::instance->getAPI()->invoke(
         (API::Number) state.r0,

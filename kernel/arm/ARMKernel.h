@@ -22,6 +22,7 @@
 #include <FreeNOS/Process.h>
 #include <Types.h>
 #include <arm/ARMTags.h>
+#include <arm/BCMSysTimer.h>
 
 /** Forward declaration */
 class ARMInterrupt;
@@ -143,6 +144,10 @@ class ARMKernel : public Kernel
     static void exception(CPUState state);
 
     ARMTags m_tags;
+
+    ARMInterrupt *m_intr;
+
+    BCMSysTimer m_timer;
 };
 
 #endif /* __ARM_KERNEL_H */

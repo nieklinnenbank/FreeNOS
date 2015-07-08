@@ -76,6 +76,21 @@ class ARMInterrupt : public InterruptControl
      */
     Result install(Interrupt vector, Handler handler);
 
+    /**
+     * Enable an IRQ vector
+     */
+    virtual void enableIRQ(u32 vector) = 0;
+
+    /**
+     * Disable an IRQ vector
+     */
+    virtual void disableIRQ(u32 vector) = 0;
+
+    /**
+     * Check if an IRQ vector is set.
+     */
+    virtual bool isTriggered(u32 vector) = 0;
+
   private:
 
     /**

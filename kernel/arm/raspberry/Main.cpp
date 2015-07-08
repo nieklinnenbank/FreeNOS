@@ -21,13 +21,14 @@
 #include <FreeNOS/arm/ARMKernel.h>
 #include <Macros.h>
 #include <arm/ARMControl.h>
-#include <arm/ARMInterrupt.h>
+#include <arm/BCM2835Interrupt.h>
+#include <arm/BCMSysTimer.h>
 #include "RaspiSerial.h"
 
 extern C int kernel_main(u32 r0, u32 r1, u32 r2)
 {
     Arch::Memory mem;
-    ARMInterrupt irq;
+    BCM2835Interrupt irq;
 
     // Initialize heap
     Kernel::heap( mem.range(Memory::KernelHeap).virt,
@@ -49,7 +50,7 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
     ramRange.phys = 1024 * 1024;
     ramRange.size = MegaByte(512);
 
-    // Create and run the kernel
+    // Create the kernel
     ARMKernel kernel(kernelRange, ramRange, &irq, r2);
 
     // Print some info
@@ -59,5 +60,6 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
     ctrl.write(ARMControl::UserProcID, 11223344);
     DEBUG("UserProcID = " << ctrl.read(ARMControl::UserProcID));
 
+    // Run the kernel
     return kernel.run();
 }
