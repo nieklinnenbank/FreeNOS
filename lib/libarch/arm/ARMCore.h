@@ -85,13 +85,23 @@
 /**
  * Explicitely enable interrupts.
  */
-#define irq_enable()
+#define irq_enable() \
+({ \
+    asm volatile("mrs r0,cpsr;" \
+                 "bic r0, r0, #0x180;" /* both IRQ and FIQ */ \
+                 "msr cpsr_c,r0"); \
+})
 
 /**
  * Disable interrupts, and store current interrupt state.
  * @warning This is dangerous: no guarantee of the current stack state.
  */
-#define irq_disable()
+#define irq_disable() \
+({ \
+    asm volatile("mrs r0,cpsr;" \
+                 "orr r0, r0, #0x180;" /* both IRQ and FIQ */ \
+                 "msr cpsr_c,r0"); \
+})
 
 /**
  * Restore the previous interrupt state.
