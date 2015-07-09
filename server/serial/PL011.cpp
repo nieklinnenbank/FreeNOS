@@ -19,8 +19,6 @@
 #include <FreeNOS/System.h>
 #include "PL011.h"
 
-#warning place memory barriers please!!!
-
 PL011::PL011(u32 irq)
 {
     m_irq = irq;
@@ -113,6 +111,8 @@ Error PL011::write(s8 *buffer, Size size, Size offset)
     u32 mis = IO::read(PL011_MIS);
     if (mis & PL011_MIS_TXMIS)
         IO::write(PL011_ICR, PL011_ICR_TXIC);
+
+#warning if FR_TXFE sets while buffer isnt empty, we need to wait for the TX IRQ, which we disabled!
 
     // Write as much bytes as possible
     while ((IO::read(PL011_FR) & PL011_FR_TXFE) && bytes < size)

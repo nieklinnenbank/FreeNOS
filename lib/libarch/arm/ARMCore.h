@@ -120,6 +120,14 @@
 
 #define tlb_flush(page) tlb_flush_all()
 
+/**
+ * Data Memory Barrier
+ */
+inline void dmb()
+{
+    asm volatile("mcr p15, 0, r12, c7, c10, 5");
+}
+
 /** 
  * Contains all the CPU registers. 
  */

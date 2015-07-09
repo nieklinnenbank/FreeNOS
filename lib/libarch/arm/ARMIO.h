@@ -19,6 +19,7 @@
 #define __LIBARCH_ARMIO_H
 
 #include <Types.h>
+#include "ARMCore.h"
 
 class IO
 {
@@ -71,14 +72,19 @@ class IO
     {
     }
 
+    // TODO: it is not needed to use dmb() before and after _every_ I/O operation.
+    // TODO: update the drivers to use dmb() instead.
+
     /**
      * write to MMIO register
      */
     static inline void write(u32 reg, u32 data)
     {
+        dmb();
         u32 *ptr = (u32 *) reg;
         asm volatile("str %[data], [%[reg]]"
                  : : [reg]"r"(ptr), [data]"r"(data));
+        dmb();
     }
 
     /**
@@ -86,10 +92,12 @@ class IO
      */
     static inline u32 read(u32 reg)
     {
+        dmb();
         u32 *ptr = (u32 *) reg;
         u32 data;
         asm volatile("ldr %[data], [%[reg]]"
                  : [data]"=r"(data) : [reg]"r"(ptr));
+        dmb();
         return data;
     }
 };
