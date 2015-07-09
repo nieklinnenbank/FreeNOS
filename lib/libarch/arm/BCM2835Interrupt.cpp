@@ -70,5 +70,5 @@ bool BCM2835Interrupt::isTriggered(u32 vector)
     if (vector < 32)
         return (pend1 & (1 << vector));
     else
-        return (pend2 & (1 << vector));
+        return (pend2 & (1 << (vector-32)));
 }
