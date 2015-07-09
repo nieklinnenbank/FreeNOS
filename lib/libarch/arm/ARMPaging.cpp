@@ -224,7 +224,7 @@ Memory::Result ARMPaging::create()
 
     // TODO: add the memory mapped I/O zone (identity mapping)
     for (Size i = 0; i < 0x1000000; i += PAGESIZE)
-        map(0x20000000+i, 0x20000000+i, Readable | Writable | IO);
+        map(0x20000000+i, 0x20000000+i, Readable | Writable | IO | User);
 
     return Success;
 }
@@ -278,7 +278,7 @@ Memory::Result ARMPaging::initialize()
 
     // TODO: add the memory mapped I/O zone (identity mapping)
     for (Size i = 0; i < 0x1000000; i += PAGESIZE)
-        map(0x20000000+i, 0x20000000+i, Readable | Writable | IO);
+        map(0x20000000+i, 0x20000000+i, Readable | Writable | IO | User);
 
     // Program first level tables
     ctrl.write(ARMControl::TranslationTable0, (u32) m_pageDirectory);
