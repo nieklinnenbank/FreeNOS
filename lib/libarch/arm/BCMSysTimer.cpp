@@ -32,5 +32,5 @@ void BCMSysTimer::next()
 {
     // Clear+acknowledge the timer interrupt
     SYSTIMER_CS |= (1 << M1);
-    SYSTIMER_C1 += m_cycles;
+    SYSTIMER_C1  = SYSTIMER_CLO + m_cycles;
 }
