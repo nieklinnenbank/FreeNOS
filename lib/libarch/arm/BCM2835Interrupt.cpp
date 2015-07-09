@@ -16,12 +16,13 @@
  */
 
 #include "BCM2835Interrupt.h"
+#include "ARMIO.h"
 
 BCM2835Interrupt::BCM2835Interrupt() : ARMInterrupt()
 {
-    //disable all IRQ sources first, just to be "safe"
-    INTERRUPT_DISABLEIRQ1 = 0xFFFFFFFF;
-    INTERRUPT_DISABLEIRQ2 = 0xFFFFFFFF;
+    // disable all IRQ sources first, just to be "safe"
+    IO::write(INTERRUPT_DISABLEIRQ1, 0xFFFFFFFF);
+    IO::write(INTERRUPT_DISABLEIRQ2, 0xFFFFFFFF);
 }
 
 void BCM2835Interrupt::enableIRQ(u32 vector)
@@ -37,11 +38,11 @@ void BCM2835Interrupt::enableIRQ(u32 vector)
         //  routine, the |= would write back the old state of the enable
         //  bits. This would effectively be re-enabling interrupts that we
         //  wanted disabled.
-        INTERRUPT_ENABLEIRQ1 = (1<<vector); //zeroes are ignored, don't use |=
+        IO::write(INTERRUPT_ENABLEIRQ1, (1<<vector)); //zeroes are ignored, don't use |=
     }
     else
     {
-        INTERRUPT_ENABLEIRQ2 = (1<<(vector-32)); //zeroes are ignored, don't use |=
+        IO::write(INTERRUPT_ENABLEIRQ2, (1<<(vector-32))); //zeroes are ignored, don't use |=
     }
 }
 
@@ -54,18 +55,18 @@ void BCM2835Interrupt::disableIRQ(u32 vector)
     //  which will put us in a never-ending IRQ loop.
     if(vector < 32)
     {
-        INTERRUPT_DISABLEIRQ1 = (1<<vector); //zeroes are ignored, don't use |=
+        IO::write(INTERRUPT_DISABLEIRQ1, (1<<vector)); //zeroes are ignored, don't use |=
     }
     else
     {
-        INTERRUPT_DISABLEIRQ2 = (1<<(vector-32)); //zeroes are ignored, don't use |=
+        IO::write(INTERRUPT_DISABLEIRQ2, (1<<(vector-32))); //zeroes are ignored, don't use |=
     }
 }
 
 bool BCM2835Interrupt::isTriggered(u32 vector)
 {
-    u32 pend1 = INTERRUPT_IRQPEND1;
-    u32 pend2 = INTERRUPT_IRQPEND2;
+    u32 pend1 = IO::read(INTERRUPT_IRQPEND1);
+    u32 pend2 = IO::read(INTERRUPT_IRQPEND2);
 
     if (vector < 32)
         return (pend1 & (1 << vector));

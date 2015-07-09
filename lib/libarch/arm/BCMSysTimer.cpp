@@ -16,21 +16,20 @@
  */
 
 #include "BCMSysTimer.h"
+#include "ARMIO.h"
 
 void BCMSysTimer::setInterval(u32 hertz)
 {
     m_cycles = BCM_SYSTIMER_FREQ / hertz;
 
-#warning we need to use memory barriers???
-
     // Use timer slot 1. Enable.
-    SYSTIMER_C1  = SYSTIMER_CLO + m_cycles;
-    SYSTIMER_CS |= (1 << M1);
+    IO::write(SYSTIMER_C1, IO::read(SYSTIMER_CLO) + m_cycles);
+    IO::write(SYSTIMER_CS, IO::read(SYSTIMER_CS) | (1 << M1));
 }
 
 void BCMSysTimer::next()
 {
     // Clear+acknowledge the timer interrupt
-    SYSTIMER_CS |= (1 << M1);
-    SYSTIMER_C1  = SYSTIMER_CLO + m_cycles;
+    IO::write(SYSTIMER_CS, IO::read(SYSTIMER_CS) | (1 << M1));
+    IO::write(SYSTIMER_C1, IO::read(SYSTIMER_CLO) + m_cycles);
 }
