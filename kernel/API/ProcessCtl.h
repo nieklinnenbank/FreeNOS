@@ -37,6 +37,8 @@ typedef enum ProcessOperation
     KillPID,
     GetPID,
     WatchIRQ,
+    EnableIRQ,
+    DisableIRQ,
     InfoPID,
     Schedule,
     Resume,

@@ -75,7 +75,14 @@ Error ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
 
     case WatchIRQ:
         Kernel::instance->hookInterrupt(IRQ(addr), (InterruptHandler *)interruptNotify, (ulong)proc);
+        break;
+
+    case EnableIRQ:
         Kernel::instance->enableIRQ(addr, true);
+        break;
+
+    case DisableIRQ:
+        Kernel::instance->enableIRQ(addr, false);
         break;
     
     case InfoPID:
@@ -103,8 +110,10 @@ Log & operator << (Log &log, ProcessOperation op)
         case Schedule:  log.write("Schedule"); break;
         case Resume:    log.write("Resume"); break;
         case WatchIRQ:  log.write("WatchIRQ"); break;
+        case EnableIRQ: log.write("EnableIRQ"); break;
         case InfoPID:   log.write("InfoPID"); break;
         case SetStack:  log.write("SetStack"); break;
+        default:        log.write("???"); break;
     }
     return log;
 }
