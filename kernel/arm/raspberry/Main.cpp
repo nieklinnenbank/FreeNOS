@@ -35,7 +35,7 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
                   mem.range(Memory::KernelHeap).size );
 
     RaspiSerial console;
-    console.setMinimumLogLevel(Log::Debug);
+    console.setMinimumLogLevel(Log::Notice);
 
     // TODO: put this in the boot.S, or maybe hide it in the support library? maybe a _run_main() or something.
     constructors();

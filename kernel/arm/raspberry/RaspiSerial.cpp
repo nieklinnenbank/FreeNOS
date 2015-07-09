@@ -24,11 +24,11 @@ RaspiSerial::RaspiSerial()
     init();
 }
 
-void RaspiSerial::init(void)
+void RaspiSerial::init()
 {
-    // Disable UART0.
-    IO::write(UART0_CR, 0x00000000);
-    
+    // Disable PL011.
+    IO::write(PL011_CR, 0x00000000);
+
     // Setup the GPIO pin 14 && 15.
     // Disable pull up/down for all GPIO pins & delay for 150 cycles.
     IO::write(GPPUD, 0x00000000);
@@ -40,9 +40,9 @@ void RaspiSerial::init(void)
 
     // Write 0 to GPPUDCLK0 to make it take effect.
     IO::write(GPPUDCLK0, 0x00000000);
-    
+
     // Clear pending interrupts.
-    IO::write(UART0_ICR, 0x7FF);
+    IO::write(PL011_ICR, 0x7FF);
 
     // Set integer & fractional part of baud rate.
     // Divider = UART_CLOCK/(16 * Baud)
@@ -51,32 +51,40 @@ void RaspiSerial::init(void)
 
     // Divider = 3000000/(16 * 115200) = 1.627 = ~1.
     // Fractional part register = (.627 * 64) + 0.5 = 40.6 = ~40.
-    IO::write(UART0_IBRD, 1);
-    IO::write(UART0_FBRD, 40);
+    IO::write(PL011_IBRD, 1);
+    IO::write(PL011_FBRD, 40);
 
-    // Enable FIFO & 8 bit data transmissio (1 stop bit, no parity).
-    IO::write(UART0_LCRH, (1 << 4) | (1 << 5) | (1 << 6));
+    // Disable FIFO, use 8 bit data transmission, 1 stop bit, no parity
+    IO::write(PL011_LCRH, PL011_LCRH_WLEN_8BIT);
 
-    // Mask all interrupts.
-    IO::write(UART0_IMSC, (1 << 1) | (1 << 4) | (1 << 5) |
-                          (1 << 6) | (1 << 7) | (1 << 8) |
-                          (1 << 9) | (1 << 10));
+    // Enable Rx/Tx interrupts
+    IO::write(PL011_IMSC,
+         PL011_IMSC_RXIM | PL011_IMSC_TXIM);
 
-    // Enable UART0, receive & transfer part of UART.
-    IO::write(UART0_CR, (1 << 0) | (1 << 8) | (1 << 9));
+    // Enable PL011, receive & transfer part of UART.
+    IO::write(PL011_CR, (1 << 0) | (1 << 8) | (1 << 9));
 }
 
 void RaspiSerial::put(u8 byte)
 {
+    // Temporary disable interrupts
+    u32 imsc = IO::read(PL011_IMSC);
+    IO::write(PL011_IMSC, 0);
+
     // wait for UART to become ready to transmit
     while(true)
-    {
-        if (!(IO::read(UART0_FR) & (1 << 5)))
-        {
+        if (!(IO::read(PL011_FR) & (1 << 5)))
             break;
-        }
-    }
-    IO::write(UART0_DR, byte);
+
+    IO::write(PL011_DR, byte);
+
+    // wait for UART to empty the transmit queue
+    while(true)
+        if (!(IO::read(PL011_FR) & (1 << 5)))
+            break;
+
+    // Restore interrupts
+    IO::write(PL011_IMSC, imsc);
 }
 
 u8 RaspiSerial::get(void)
@@ -84,12 +92,12 @@ u8 RaspiSerial::get(void)
     // wait for UART to have recieved something
     while(true)
     {
-        if (!(IO::read(UART0_FR) & (1 << 4)))
+        if (!(IO::read(PL011_FR) & (1 << 4)))
         {
             break;
         }
     }
-    return IO::read(UART0_DR);
+    return IO::read(PL011_DR);
 }
 
 void RaspiSerial::write(const char *str)

@@ -22,7 +22,7 @@
 ARMProcess::ARMProcess(ProcessID id, Address entry, bool privileged)
     : Process(id, entry, privileged)
 {
-    NOTICE("id =" << id << " entry =" << entry << " privileged = " << privileged);
+    DEBUG("id =" << id << " entry =" << entry << " privileged = " << privileged);
 
     Size size = PAGEDIR_SIZE;
     BitAllocator *memory = Kernel::instance->getMemory();

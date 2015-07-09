@@ -111,7 +111,7 @@ IntelKernel::IntelKernel(Memory::Range kernel, Memory::Range memory)
     ltr(KERNEL_TSS_SEL);
 }
 
-void IntelKernel::enableIRQ(uint irq, bool enabled)
+void IntelKernel::enableIRQ(u32 irq, bool enabled)
 {
     if (enabled)
     {
@@ -168,6 +168,7 @@ void IntelKernel::trap(CPUState *state, ulong param)
 
 void IntelKernel::clocktick(CPUState *state, ulong param)
 {
+    Kernel::instance->enableIRQ(0, true);
     Kernel::instance->getProcessManager()->schedule();
 }
 

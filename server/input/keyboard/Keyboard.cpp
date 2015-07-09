@@ -60,6 +60,8 @@ Error Keyboard::interrupt(Size vector)
 
 Error Keyboard::read(s8 *buffer, Size size, Size offset)
 {
+    Error ret = EAGAIN;
+
     /* Do we have any new key events? */
     if (pending)
     {
@@ -81,8 +83,10 @@ Error Keyboard::read(s8 *buffer, Size size, Size offset)
 	{
 	    /* Write to buffer. */
 	    buffer[0] = keymap[keycode & 0x7f][shiftState];
-    	    return 1;
+    	    ret = 1;
 	}
+        /* Re-enable interrupt */
+        ProcessCtl(SELF, EnableIRQ, PS2_IRQ);
     }
-    return EAGAIN;
+    return ret;
 }

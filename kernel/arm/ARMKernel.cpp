@@ -49,7 +49,7 @@ ARMKernel::ARMKernel(Memory::Range kernel,
     m_intr->enableIRQ(BCM_IRQ_SYSTIMERM1);
 }
 
-void ARMKernel::enableIRQ(uint vector, bool enabled)
+void ARMKernel::enableIRQ(u32 vector, bool enabled)
 {
     DEBUG("vector =" << vector << "enabled =" << enabled);
 
@@ -63,7 +63,7 @@ void ARMKernel::interrupt(CPUState state)
 {
     ARMKernel *kernel = (ARMKernel *) Kernel::instance;
 
-    DEBUG("");
+    //DEBUG("");
 
     // TODO: remove BCM2835 specific code
     if (kernel->m_intr->isTriggered(BCM_IRQ_SYSTIMERM1))
@@ -89,7 +89,7 @@ void ARMKernel::exception(CPUState state)
 
 void ARMKernel::trap(CPUState state)
 {
-    DEBUG("procId = " << Kernel::instance->getProcessManager()->current()->getID() << " api = " << state.r0);
+    //DEBUG("procId = " << Kernel::instance->getProcessManager()->current()->getID() << " api = " << state.r0);
 
     state.r0 = Kernel::instance->getAPI()->invoke(
         (API::Number) state.r0,

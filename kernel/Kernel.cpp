@@ -92,7 +92,7 @@ Size Kernel::getBootImageSize()
     return m_bootImageSize;
 }
 
-void Kernel::hookInterrupt(int vec, InterruptHandler h, ulong p)
+void Kernel::hookInterrupt(u32 vec, InterruptHandler h, ulong p)
 {
     InterruptHook hook(h, p);
 
@@ -108,16 +108,21 @@ void Kernel::hookInterrupt(int vec, InterruptHandler h, ulong p)
     }
 }
 
-void Kernel::executeInterrupt(int vec, CPUState *state)
+void Kernel::executeInterrupt(u32 vec, CPUState *state)
 {
-    /* Fetch the list of interrupt hooks (for this vector). */
+    // Auto-Mask the IRQ. Any interrupt handler or user program
+    // needs to re-enable the IRQ to receive it again. This prevents
+    // interrupt loops in case the kernel cannot clear the IRQ immediately.
+    enableIRQ(vec, false);
+
+    // Fetch the list of interrupt hooks (for this vector)
     List<InterruptHook *> *lst = m_interrupts[vec];
 
-    /* Does at least one handler exist? */
+    // Does at least one handler exist?
     if (!lst)
         return;
 
-    /* Execute them all. */
+    // Execute them all
     for (ListIterator<InterruptHook *> i(lst); i.hasCurrent(); i++)
     {
         i.current()->handler(state, i.current()->param);

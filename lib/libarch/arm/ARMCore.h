@@ -25,16 +25,17 @@
 
 /**
  * Retrieve the IRQ number from CPUState.
+ * This does not work for ARM. See BCM2835Interrupt instead.
  * @return IRQ number.
  */
 #define IRQ_REG(state) \
-    ((state)->r0 - 0x20)
+    (0)
+//(state)->r0)
 
 /**
  * We remap IRQ's to interrupt vectors 32-47.
  */
-#define IRQ(vector) \
-    (vector) + 32
+#define IRQ(vector) (vector)
 
 /**
  * Move to ARM from CoProcessor (MRC).

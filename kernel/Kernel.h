@@ -147,7 +147,7 @@ class Kernel : public Singleton<Kernel>
      * @param h Handler function.
      * @param p Parameter to pass to the handler function.
      */
-    virtual void hookInterrupt(int vec, InterruptHandler h, ulong p);
+    virtual void hookInterrupt(u32 vec, InterruptHandler h, ulong p);
 
     /**
      * Execute an interrupt handler.
@@ -155,14 +155,14 @@ class Kernel : public Singleton<Kernel>
      * @param vec Interrupt Vector.
      * @param state CPU state.
      */
-    virtual void executeInterrupt(int vec, CPUState *state);
+    virtual void executeInterrupt(u32 vec, CPUState *state);
 
     /** 
      * Enable or disable an hardware interrupt (IRQ). 
      * @param vector IRQ number. 
      * @param enabled True to enable, and false to disable. 
      */
-    virtual void enableIRQ(uint vector, bool enabled) = 0;
+    virtual void enableIRQ(u32 vector, bool enabled) = 0;
 
     /**
      * Loads the boot image.

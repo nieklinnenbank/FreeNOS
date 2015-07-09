@@ -177,7 +177,7 @@ class IntelKernel : public Kernel
      * @param vector Interrupt vector. 
      * @param enabled Either to mask (true) or unmask (false). 
      */
-    virtual void enableIRQ(uint vector, bool enabled);
+    virtual void enableIRQ(u32 vector, bool enabled);
 
     /**
      * Loads the boot image.

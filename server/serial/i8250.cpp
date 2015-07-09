@@ -32,6 +32,7 @@ Error i8250::initialize()
 {
     /* Aquire I/O port and IRQ line permissions. */
     ProcessCtl(SELF, WatchIRQ, irq);
+    ProcessCtl(SELF, EnableIRQ, irq);
     
     /* 8bit Words, no parity. */
     WriteByte(base + LINECONTROL, 3);
@@ -55,6 +56,11 @@ Error i8250::initialize()
 
     /* Done! */
     return ESUCCESS;
+}
+
+Error i8250::interrupt(Size vector)
+{
+    ProcessCtl(SELF, EnableIRQ, irq);
 }
 
 Error i8250::read(s8 *buffer, Size size, Size offset)

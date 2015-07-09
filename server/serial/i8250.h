@@ -66,7 +66,14 @@ class i8250 : public Device
      * @brief Initializes the i8250 serial UART.
      * @return Error status code.
      */
-    Error initialize();
+    virtual Error initialize();
+
+    /**
+     * Called when an interrupt has been triggered for this device.
+     * @param vector Vector number of the interrupt.
+     * @return Error result code.
+     */
+    virtual Error interrupt(Size vector);
 
     /** 
      * Read bytes from the i8250.
@@ -75,7 +82,7 @@ class i8250 : public Device
      * @param offset Unused.
      * @return Number of bytes on success and ZERO on failure. 
      */
-    Error read(s8 *buffer, Size size, Size offset);
+    virtual Error read(s8 *buffer, Size size, Size offset);
 
     /** 
      * Write bytes to the device.
@@ -84,7 +91,7 @@ class i8250 : public Device
      * @param offset Unused.
      * @return Number of bytes on success and ZERO on failure. 
      */
-    Error write(s8 *buffer, Size size, Size offset);
+    virtual Error write(s8 *buffer, Size size, Size offset);
 
   private:
 

@@ -128,7 +128,7 @@ class ARMKernel : public Kernel
      * @param vector IRQ number. 
      * @param enabled True to enable, and false to disable. 
      */
-    virtual void enableIRQ(uint vector, bool enabled);
+    virtual void enableIRQ(u32 vector, bool enabled);
 
     /**
      * Loads the boot image.

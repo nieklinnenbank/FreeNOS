@@ -157,6 +157,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
             {
                 /* Register to kernel. */
                 ProcessCtl(SELF, WatchIRQ, i);
+                ProcessCtl(SELF, EnableIRQ, i);
         
                 /* Register interrupt handler. */
                 addIRQHandler(i, &DeviceServer::interruptHandler);

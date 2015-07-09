@@ -71,27 +71,42 @@ class RaspiSerial : public Log
         GPPUDCLK0 = (GPIO_BASE + 0x98),
 
         // The base address for UART.
-        UART0_BASE = 0x20201000,
+        PL011_BASE = 0x20201000,
 
         // The offsets for reach register for the UART.
-        UART0_DR     = (UART0_BASE + 0x00),
-        UART0_RSRECR = (UART0_BASE + 0x04),
-        UART0_FR     = (UART0_BASE + 0x18),
-        UART0_ILPR   = (UART0_BASE + 0x20),
-        UART0_IBRD   = (UART0_BASE + 0x24),
-        UART0_FBRD   = (UART0_BASE + 0x28),
-        UART0_LCRH   = (UART0_BASE + 0x2C),
-        UART0_CR     = (UART0_BASE + 0x30),
-        UART0_IFLS   = (UART0_BASE + 0x34),
-        UART0_IMSC   = (UART0_BASE + 0x38),
-        UART0_RIS    = (UART0_BASE + 0x3C),
-        UART0_MIS    = (UART0_BASE + 0x40),
-        UART0_ICR    = (UART0_BASE + 0x44),
-        UART0_DMACR  = (UART0_BASE + 0x48),
-        UART0_ITCR   = (UART0_BASE + 0x80),
-        UART0_ITIP   = (UART0_BASE + 0x84),
-        UART0_ITOP   = (UART0_BASE + 0x88),
-        UART0_TDR    = (UART0_BASE + 0x8C),
+        PL011_DR     = (PL011_BASE + 0x00),
+        PL011_RSRECR = (PL011_BASE + 0x04),
+        PL011_FR     = (PL011_BASE + 0x18),
+        PL011_FR_RXFE = (1 << 4),
+        PL011_FR_TXFE = (1 << 7),
+
+        PL011_ILPR   = (PL011_BASE + 0x20),
+        PL011_IBRD   = (PL011_BASE + 0x24),
+        PL011_FBRD   = (PL011_BASE + 0x28),
+        PL011_LCRH   = (PL011_BASE + 0x2C),
+        PL011_LCRH_WLEN_8BIT = (0b11<<5),
+
+        PL011_CR     = (PL011_BASE + 0x30),
+        PL011_IFLS   = (PL011_BASE + 0x34),
+        PL011_IMSC   = (PL011_BASE + 0x38),
+        PL011_IMSC_RXIM = (1 << 4),
+        PL011_IMSC_TXIM = (1 << 5),
+
+        PL011_RIS    = (PL011_BASE + 0x3C),
+        PL011_MIS    = (PL011_BASE + 0x40),
+
+        PL011_MIS_RXMIS = (1 << 4),
+        PL011_MIS_TXMIS = (1 << 5),
+
+        PL011_ICR    = (PL011_BASE + 0x44),
+        PL011_ICR_TXIC = (1 << 5),
+        PL011_ICR_RXIC = (1 << 4),
+
+        PL011_DMACR  = (PL011_BASE + 0x48),
+        PL011_ITCR   = (PL011_BASE + 0x80),
+        PL011_ITIP   = (PL011_BASE + 0x84),
+        PL011_ITOP   = (PL011_BASE + 0x88),
+        PL011_TDR    = (PL011_BASE + 0x8C),
     };
 
     /*
