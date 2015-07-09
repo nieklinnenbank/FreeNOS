@@ -27,4 +27,6 @@
 #include <arm/ARMKernel.h>
 #include <arm/ARMProcess.h>
 
+#define BCM2835
+
 #endif /* __ARM_RASPBERRY_SYSTEM_H */
