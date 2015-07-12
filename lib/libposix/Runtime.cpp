@@ -131,7 +131,7 @@ void setupHeap()
     // Make a pool
     pool = new (heapAddr + parentSize) PoolAllocator();
     pool->setParent(parent);
-
+    
     // Set default allocator
     Allocator::setDefault(pool);
 }
@@ -247,6 +247,11 @@ extern C void SECTION(".entry") _entry()
     int ret, argc;
     char *arguments;
     char **argv;
+
+    /* Clear BSS */
+    extern Address __bss_start, __bss_end;
+    Address bss_size = &__bss_end - &__bss_start;
+    MemoryBlock::set(&__bss_start, 0, bss_size);
 
     /* Setup the heap, C++ constructors and default mounts. */
     setupHeap();

@@ -67,6 +67,11 @@ SECTIONS
 	KEEP (*(SORT(.init*)))
 	KEEP (*(.init*))
 	initEnd   = .;
-	*(.bss)
+
+        . = ALIGN(4096);
+        __bss_start = .;
+        *(.bss)
+        . = ALIGN(4096); /* align to page size */
+        __bss_end = .;
     }
 }
