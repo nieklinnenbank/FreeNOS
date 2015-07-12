@@ -141,7 +141,13 @@ class ARMKernel : public Kernel
 
     static void trap(CPUState state);
 
-    static void exception(CPUState state);
+    static void undefinedInstruction(CPUState state);
+
+    static void prefetchAbort(CPUState state);
+
+    static void dataAbort(CPUState state);
+
+    static void reserved(CPUState state);
 
     ARMTags m_tags;
 

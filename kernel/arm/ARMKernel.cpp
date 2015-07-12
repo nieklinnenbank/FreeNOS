@@ -32,11 +32,11 @@ ARMKernel::ARMKernel(Memory::Range kernel,
     NOTICE("");
 
     m_intr = intr;
-    intr->install(ARMInterrupt::UndefinedInstruction, exception);
+    intr->install(ARMInterrupt::UndefinedInstruction, undefinedInstruction);
     intr->install(ARMInterrupt::SoftwareInterrupt, trap);
-    intr->install(ARMInterrupt::PrefetchAbort, exception);
-    intr->install(ARMInterrupt::DataAbort, exception);
-    intr->install(ARMInterrupt::Reserved, exception);
+    intr->install(ARMInterrupt::PrefetchAbort, prefetchAbort);
+    intr->install(ARMInterrupt::DataAbort, dataAbort);
+    intr->install(ARMInterrupt::Reserved, reserved);
     intr->install(ARMInterrupt::IRQ, interrupt);
     intr->install(ARMInterrupt::FIQ, interrupt);
 
@@ -81,9 +81,36 @@ void ARMKernel::interrupt(CPUState state)
     }
 }
 
-void ARMKernel::exception(CPUState state)
+void ARMKernel::undefinedInstruction(CPUState state)
 {
-    FATAL("");
+    ARMCore core;
+    core.logException(&state);
+    FATAL("procId = " << Kernel::instance->getProcessManager()->current()->getID());
+    for(;;);
+}
+
+void ARMKernel::prefetchAbort(CPUState state)
+{
+    ARMCore core;
+    core.logException(&state);
+    FATAL("procId = " << Kernel::instance->getProcessManager()->current()->getID());
+    for(;;);
+}
+
+void ARMKernel::dataAbort(CPUState state)
+{
+    ARMCore core;
+    core.logException(&state);
+    FATAL("procId = " << Kernel::instance->getProcessManager()->current()->getID());
+    for(;;);
+}
+
+
+void ARMKernel::reserved(CPUState state)
+{
+    ARMCore core;
+    core.logException(&state);
+    FATAL("procId = " << Kernel::instance->getProcessManager()->current()->getID());
     for(;;);
 }
 
