@@ -70,6 +70,9 @@ Allocator::Result MemoryAllocator::allocate(Size *size, Address *addr, Size alig
                    Memory::Writable;
     memory.mapRange(&range);
 
+    // Clear the pages
+    MemoryBlock::set((void *) range.virt, 0, range.size);
+
     // Update count
     m_allocated += range.size;
 
