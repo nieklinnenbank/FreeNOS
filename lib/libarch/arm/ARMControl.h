@@ -41,15 +41,21 @@ class ARMControl
     {
         MainID = 0,
         SystemControl,
+        AuxControl,
         DomainControl,
         TranslationTable0,
         TranslationTable1,
         TranslationTableCtrl,
+        CacheClear,
         InstructionCacheClear,
         InstructionTLBClear,
         DataTLBClear,
         UnifiedTLBClear,
-        UserProcID
+        UserProcID,
+        InstructionFaultAddress,
+        InstructionFaultStatus,
+        DataFaultAddress,
+        DataFaultStatus
     };
 
     /**
@@ -59,7 +65,16 @@ class ARMControl
     {
         MMUEnabled       = (1 <<  0),
         InstructionCache = (1 << 12),
+        DataCache        = (1 << 2),
         ExtendedPaging   = (1 << 23)
+    };
+
+    /**
+     * Aux Control flags.
+     */
+    enum AuxControlFlags
+    {
+        DisablePageColoring = (1 << 6)
     };
 
     /**
@@ -99,7 +114,7 @@ class ARMControl
 
     void set(SystemControlFlags flags);
     void unset(SystemControlFlags flags);
-
+    void set(AuxControlFlags flags);
     void set(DomainControlFlags flags);
 
   private:
