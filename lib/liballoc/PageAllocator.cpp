@@ -60,6 +60,8 @@ Allocator::Result PageAllocator::allocate(Size *size, Address *addr, Size align)
     Size bytes  = *size > PAGEALLOC_MINIMUM ?
                   *size : PAGEALLOC_MINIMUM;
 
+    bytes = aligned(bytes);
+
     // Fill in the message. */
     msg.action = CreatePrivate;
     msg.size   = bytes;
@@ -73,6 +75,9 @@ Allocator::Result PageAllocator::allocate(Size *size, Address *addr, Size align)
     msg.type   = IPCType;
     msg.from   = SELF;
     IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
+
+    // Clear the pages
+    MemoryBlock::set((void *) msg.virt, 0, msg.size);
 
     // Update count
     m_allocated += msg.size;
