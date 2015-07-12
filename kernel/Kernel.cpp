@@ -57,6 +57,9 @@ Error Kernel::heap(Address base, Size size)
 
     NOTICE("base = " << base << " size = " << size);
 
+    // Clear the heap first
+    MemoryBlock::set((void *) base, 0, size);
+
     // Setup the dynamic memory heap
     bubble = new (base) BubbleAllocator(base + meta, size - meta);
     pool   = new (base + sizeof(BubbleAllocator)) PoolAllocator();
