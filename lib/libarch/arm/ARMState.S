@@ -49,6 +49,10 @@ restoreState:
     /* Reload first page table */
     mcr p15, 0, r4, c7, c5, 0    /* flush entire instruction cache */
     mcr p15, 0, r4, c7, c10, 0   /* flush entire data cache */
+    mcr p15, 0, r4, c7, c7, 0    /* flush entire cache */
+    mcr p15, 0, r4, c7, c10, 5   /* data memory barrier */
+    mcr p15, 0, r4, c7, c10, 4   /* memory sync barrier */
+
     mcr p15, 0, r1, c2, c0, 0    /* switch first page table */
 
     mcr p15, 0, r4, c8, c5, 0    /* flush instruction TLB */
