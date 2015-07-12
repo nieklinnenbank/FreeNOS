@@ -125,7 +125,17 @@
  */
 inline void dmb()
 {
-    asm volatile("mcr p15, 0, r12, c7, c10, 5");
+    asm volatile("mov r0, #0\n"
+                 "mcr p15, 0, r0, c7, c10, 5\n");
+}
+
+/**
+ * Data Synchronisation Barrier.
+ */
+inline void dsb()
+{
+    asm volatile("mov r0, #0\n"
+                 "mcr p15, 0, r0, c7, c10, 4\n");
 }
 
 /** 
@@ -152,6 +162,29 @@ class ARMCore : public Core
     {
         Success = 0,
     };
+
+    /**
+     * Log a CPU exception.
+     *
+     * @param state The current CPU state.
+     */
+    void logException(CPUState *state);
+
+    /**
+     * Log the CPU state.
+     *
+     * @param state The current CPU state.
+     */
+    void logState(CPUState *state);
+
+    /**
+     * Log a register.
+     *
+     * @param name Name of the register.
+     * @param reg Value of the register.
+     * @param text Additional information text.
+     */
+    void logRegister(const char *name, u32 reg, const char *text = "");
 };
 
 #endif /* __ARM_CORE_H */
