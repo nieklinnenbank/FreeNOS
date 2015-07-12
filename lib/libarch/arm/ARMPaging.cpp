@@ -47,11 +47,13 @@
  * @see ARM Architecture Reference Manual, page 709.
  */
 #define PAGE2_NONE      (0)
-#define PAGE2_PRESENT   (1 << 1)
+#define PAGE2_PRESENT   ((1 << 1) | PAGE2_SHARED | PAGE2_TEX) /*| PAGE2_CACHED | PAGE2_BUFFERED | PAGE2_TEX */
+#define PAGE2_TEX       (1 << 6)
 #define PAGE2_NOEXEC    (1 << 0)
 #define PAGE2_CACHED    (1 << 3)
 #define PAGE2_BUFFERED  (1 << 2)
-#define PAGE2_DEVICE    (1 << 7)
+#define PAGE2_DEVICE    ((1 << 7))
+#define PAGE2_SHARED    (1 << 10)
 
 /* System Read-only Flag */
 #define PAGE2_APX       (1 << 9)
@@ -229,6 +231,8 @@ Memory::Result ARMPaging::create()
     return Success;
 }
 
+
+
 // TODO: put this in separate ARM memory management module instead?
 Memory::Result ARMPaging::initialize()
 {
@@ -281,19 +285,47 @@ Memory::Result ARMPaging::initialize()
         map(0x20000000+i, 0x20000000+i, Readable | Writable | IO | User);
 
     // Program first level tables
-    ctrl.write(ARMControl::TranslationTable0, (u32) m_pageDirectory);
+    ctrl.write(ARMControl::TranslationTable0, ((u32) m_pageDirectory) | 3); // inner cache, outer non-cache, shareable. Needed???
     ctrl.write(ARMControl::TranslationTable1,    0);
     ctrl.write(ARMControl::TranslationTableCtrl, 0);
 
-    // Disable and invalidate instruction cache
-    ctrl.unset(ARMControl::InstructionCache);
-    ctrl.write(ARMControl::InstructionCacheClear, 0);
-
-    // Enable the MMU. Reactivate instruction cache.
+    // Set Control flags
     ctrl.set(ARMControl::DomainClient);
     ctrl.set(ARMControl::ExtendedPaging);
-    ctrl.set(ARMControl::MMUEnabled);
-    ctrl.set(ARMControl::InstructionCache);
+    ctrl.set(ARMControl::DisablePageColoring);
+
+    // Flush TLB's
+    tlb_flush_all();
+
+    // Disable and invalidate instruction cache
+#if 0
+    ctrl.unset(ARMControl::InstructionCache);
+    ctrl.unset(ARMControl::DataCache);
+#endif
+    ctrl.write(ARMControl::InstructionCacheClear, 0);
+    ctrl.write(ARMControl::CacheClear, 0);
+
+    // Place memory barriers
+    dsb();
+    //dmb();
+
+    // Enable the MMU. This re-enables instruction and data cache too.
+    // ctrl.set(ARMControl::MMUEnabled | ARMControl::InstructionCache | ARMControl::DataCache);
+  // invalidate data cache and flush prefetch buffer
+//  asm volatile ("mcr p15, 0, %0, c7, c5,  4" :: "r" (0) : "memory");
+  //asm volatile ("mcr p15, 0, %0, c7, c6,  0" :: "r" (0) : "memory");
+
+  // enable MMU, L1 cache and instruction cache, L2 cache, write buffer,
+  //   branch prediction and extended page table on
+  unsigned mode;
+  asm volatile ("mrc p15,0,%0,c1,c0,0" : "=r" (mode));
+  mode |= 0x0480180D;
+  asm volatile ("mcr p15,0,%0,c1,c0,0" :: "r" (mode) : "memory");
+
+    // Reactivate caches
+    //DEBUG("restore caches");
+    //ctrl.set(ARMControl::InstructionCache);
+    //ctrl.set(ARMControl::DataCache);
     NOTICE("MMUEnabled = " << (ctrl.read(ARMControl::SystemControl) & ARMControl::MMUEnabled));
 
     // Restore members
