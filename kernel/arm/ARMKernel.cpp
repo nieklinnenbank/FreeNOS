@@ -47,6 +47,12 @@ ARMKernel::ARMKernel(Memory::Range kernel,
     // Enable clocks and irqs
     m_timer.setInterval( 250 ); /* trigger timer interrupts at 250Hz (clock runs at 1Mhz) */
     m_intr->enableIRQ(BCM_IRQ_SYSTIMERM1);
+
+    // Set ARMCore modes
+    ARMControl ctrl;
+    ctrl.unset(ARMControl::AlignmentCorrect);
+    ctrl.set(ARMControl::AlignmentFaults);
+    ctrl.unset(ARMControl::BigEndian);
 }
 
 void ARMKernel::enableIRQ(u32 vector, bool enabled)

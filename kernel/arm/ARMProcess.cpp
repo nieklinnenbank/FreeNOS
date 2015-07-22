@@ -18,6 +18,7 @@
 #include <Log.h>
 #include <BitAllocator.h>
 #include "ARMProcess.h"
+#define MEMALIGN8 8
 
 ARMProcess::ARMProcess(ProcessID id, Address entry, bool privileged)
     : Process(id, entry, privileged)
@@ -45,7 +46,7 @@ ARMProcess::ARMProcess(ProcessID id, Address entry, bool privileged)
                    Memory::Readable |
                    Memory::Writable;
     mem.mapRange(&range);
-    setUserStack(range.virt + range.size - MEMALIGN);
+    setUserStack(range.virt + range.size - MEMALIGN8);
 
     // Kernel stack.
     range.phys   = 0;
@@ -53,13 +54,13 @@ ARMProcess::ARMProcess(ProcessID id, Address entry, bool privileged)
     range.size   = mem.range(Memory::KernelStack).size;
     range.access = Memory::Present | Memory::Readable | Memory::Writable;
     mem.mapRange(&range);
-    setKernelStack(range.virt + range.size - MEMALIGN - framesize);
+    setKernelStack(range.virt + range.size - MEMALIGN8 - framesize);
 
     // Map kernel stack.
     Arch::Memory local(0, memory);
     range.virt = local.findFree(range.size, Memory::KernelPrivate);
     local.mapRange(&range);
-    Address *stack = (Address *) (range.virt + range.size - framesize - MEMALIGN);
+    Address *stack = (Address *) (range.virt + range.size - framesize - MEMALIGN8);
 
     // Zero kernel stack
     MemoryBlock::set((void *)range.virt, 0, range.size);
