@@ -21,7 +21,6 @@
 #include <BubbleAllocator.h>
 #include <PoolAllocator.h>
 #include <BootImage.h>
-#include <UserProcess.h>
 #include "Kernel.h"
 #include "Memory.h"
 #include "Process.h"

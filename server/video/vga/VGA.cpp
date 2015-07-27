@@ -16,7 +16,7 @@
  */
 
 #include <FreeNOS/API.h>
-#include <CoreMessage.h>
+#include <FreeNOS/System.h>
 #include <Types.h>
 #include <errno.h>
 #include "VGA.h"
@@ -27,35 +27,32 @@ VGA::VGA(Size w, Size h) : width(w), height(h)
 
 Error VGA::initialize()
 {
-    CoreMessage mem;
+    Memory::Range range;
 
-    /* Request VGA memory. */
-    mem.action    = CreatePrivate;
-    mem.size      = PAGESIZE;
-#warning this goes wrong in coreserver?
-    mem.virt      = ZERO;
-    mem.phys      = VGA_PADDR;
-    mem.access    = Memory::Present |
-                    Memory::User |
-                    Memory::Readable |
-                    Memory::Writable;
-    mem.type      = IPCType;
-    IPCMessage(CORESRV_PID, API::SendReceive, &mem, sizeof(mem));
+    // Request VGA memory
+    range.size   = PAGESIZE;
+    range.access = Memory::Present  |
+                   Memory::User     |
+                   Memory::Readable |
+                   Memory::Writable;
+    range.virt   = ZERO;
+    range.phys   = VGA_PADDR;
+    VMCtl(SELF, Map, &range);
 
-    /* Point to the VGA mapping. */
-    vga = (u16 *) mem.virt;
+    // Point to the VGA mapping
+    vga = (u16 *) range.virt;
 
-    /* Clear screen. */
+    // Clear screen
     for (uint i = 0; i < width * height; i++)
-    {                                                  
+    {
         vga[i] = VGA_CHAR(' ', LIGHTGREY, BLACK);
     }
-    
-    /* Disable hardware cursor. */
+
+    // Disable hardware cursor
     WriteByte(VGA_IOADDR, 0x0a);
     WriteByte(VGA_IODATA, 1 << 5);
-    
-    /* Successfull. */
+
+    // Successfull
     return ESUCCESS;
 }
 
@@ -63,7 +60,7 @@ Error VGA::read(s8 *buffer, Size size, Size offset)
 {
     if (offset + size > width * height * sizeof(u16))
     {
-	return EFAULT;
+        return EFAULT;
     }
     memcpy(buffer, vga + (offset / sizeof(u16)), size);
     return size;
@@ -73,7 +70,7 @@ Error VGA::write(s8 *buffer, Size size, Size offset)
 {
     if (offset + size > width * height * sizeof(u16))
     {
-	return EFAULT;
+        return EFAULT;
     }
     memcpy(vga + (offset / sizeof(u16)), buffer, size);    
     return size;

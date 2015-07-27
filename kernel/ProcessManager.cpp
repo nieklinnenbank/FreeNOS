@@ -19,6 +19,8 @@
 #include <Log.h>
 #include "ProcessManager.h"
 
+// TODO: replace Vector with an Index..
+
 ProcessManager::ProcessManager(Scheduler *scheduler)
     : m_procs(MAX_PROCS)
 {
@@ -43,10 +45,12 @@ Process * ProcessManager::create(Address entry)
 
 Process * ProcessManager::get(ProcessID id)
 {
-    return m_procs[id];
+    // TODO: replace with an Index to make this more easy.
+    Process **p = (Process **) m_procs.get(id);
+    return p ? *p : ZERO;
 }
 
-void ProcessManager::remove(Process *proc)
+void ProcessManager::remove(Process *proc, uint exitStatus)
 {
     if (proc == m_previous)
         m_previous = ZERO;
@@ -55,14 +59,28 @@ void ProcessManager::remove(Process *proc)
         m_idle = ZERO;
 
     if (proc == m_current)
-    {
-        FATAL("removing currently executing process"); for(;;);
         m_current = ZERO;
+
+    // Wakeup any Processes which are waiting for this Process
+    Size size = m_procs.size();
+
+    for (Size i = 0; i < size; i++)
+    {
+        Process *p = m_procs.at(i);
+
+        if (m_procs[i] != ZERO &&
+            m_procs[i]->getState() == Process::Waiting &&
+            m_procs[i]->getWait() == proc->getID())
+        {
+            m_procs[i]->setState(Process::Ready);
+            m_procs[i]->setWait(exitStatus);
+        }
     }
-    /* Remove process from administration */
+
+    // Remove process from administration
     m_procs[proc->getID()] = ZERO;
 
-    /* Free the process memory */
+    // Free the process memory
     delete proc;
 }
 

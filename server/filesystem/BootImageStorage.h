@@ -19,7 +19,6 @@
 #define __FILESYSTEM_BOOTIMAGESTORAGE_H
 
 #include <FreeNOS/API.h>
-#include <CoreMessage.h>
 #include <Types.h>
 #include <BootImage.h>
 #include "Storage.h"
@@ -54,22 +53,20 @@ class BootImageStorage : public Storage
         BootImage *image;
         BootSymbol *symbol;
         BootSegment *segment;
+        Memory::Range range;
         u8 *base;
-        CoreMessage mem;
 
-        // Map BootImage
-        mem.action    = CreatePrivate;
-        mem.size      = info.bootImageSize;
-        mem.virt      = ZERO;
-        mem.phys      = info.bootImageAddress;
-        mem.access    = Memory::Present |
-                        Memory::User |
-                        Memory::Readable;
-        mem.type      = IPCType;
-        IPCMessage(CORESRV_PID, API::SendReceive, &mem, sizeof(mem));
+        // Request VGA memory
+        range.size   = info.bootImageSize;
+        range.access = Memory::Present  |
+                       Memory::User     |
+                       Memory::Readable;
+        range.virt   = ZERO;
+        range.phys   = info.bootImageAddress;
+        VMCtl(SELF, Map, &range);
 
         // Update our state
-        image = (BootImage *) mem.virt;
+        image = (BootImage *) range.virt;
         base  = (u8 *) image;
 
         // Search for the given BootSymbol

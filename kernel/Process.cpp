@@ -24,6 +24,8 @@ Process::Process(ProcessID id, Address addr, bool privileged)
     m_kernelStack   = 0;
     m_userStack     = 0;
     m_pageDirectory = 0;
+    m_parent        = 0;
+    m_waitId        = 0;
     m_privileged    = privileged;
 }
     
@@ -34,6 +36,16 @@ Process::~Process()
 ProcessID Process::getID() const
 {
     return m_id;
+}
+
+ProcessID Process::getParent() const
+{
+    return m_parent;
+}
+
+ProcessID Process::getWait() const
+{
+    return m_waitId;
 }
 
 Process::State Process::getState() const
@@ -64,6 +76,16 @@ bool Process::isPrivileged() const
 void Process::setState(Process::State st)
 {
     m_state = st;
+}
+
+void Process::setParent(ProcessID id)
+{
+    m_parent = id;
+}
+
+void Process::setWait(ProcessID id)
+{
+    m_waitId = id;
 }
 
 void Process::setPageDirectory(Address addr)

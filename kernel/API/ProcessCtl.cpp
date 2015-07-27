@@ -56,14 +56,19 @@ Error ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
     {
     case Spawn:
         proc = procs->create(addr);
+        proc->setParent(procs->current()->getID());
         return proc->getID();
     
     case KillPID:
-            procs->remove(proc);
+        procs->remove(proc, addr); // Addr contains the exit status
+        procs->schedule();
         break;
 
     case GetPID:
         return procs->current()->getID();
+
+    case GetParent:
+        return procs->current()->getParent();
 
     case Schedule:
         procs->schedule();
@@ -91,7 +96,14 @@ Error ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
         info->userStack     = proc->getUserStack();
         info->kernelStack   = proc->getKernelStack();
         info->pageDirectory = proc->getPageDirectory();
+        info->parent = proc->getParent();
         break;
+
+    case WaitPID:
+        procs->current()->setWait(proc->getID());
+        procs->current()->setState(Process::Waiting);
+        procs->schedule();
+        return procs->current()->getWait(); // contains the exit status of the other process
         
     case SetStack:
         proc->setUserStack(addr);
@@ -107,11 +119,13 @@ Log & operator << (Log &log, ProcessOperation op)
         case Spawn:     log.write("Spawn"); break;
         case KillPID:   log.write("KillPID"); break;
         case GetPID:    log.write("GetPID"); break;
+        case GetParent: log.write("GetParent"); break;
         case Schedule:  log.write("Schedule"); break;
         case Resume:    log.write("Resume"); break;
         case WatchIRQ:  log.write("WatchIRQ"); break;
         case EnableIRQ: log.write("EnableIRQ"); break;
         case InfoPID:   log.write("InfoPID"); break;
+        case WaitPID:   log.write("WaitPID"); break;
         case SetStack:  log.write("SetStack"); break;
         default:        log.write("???"); break;
     }

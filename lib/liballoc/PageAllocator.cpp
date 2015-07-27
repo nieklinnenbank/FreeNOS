@@ -16,7 +16,6 @@
  */
 
 #include <FreeNOS/API.h>
-#include <CoreMessage.h>
 #include "PageAllocator.h"
 
 PageAllocator::PageAllocator(Address base, Size size)
@@ -50,40 +49,39 @@ Size PageAllocator::available()
 
 Allocator::Result PageAllocator::allocate(Size *size, Address *addr, Size align)
 {
-    CoreMessage msg;
+    Memory::Range range;
     
     // Set return address
     *addr = m_base + m_allocated;
 
     // TODO: sanity checks
-    // TODO: #warning TODO: perhaps align to page size???
     Size bytes  = *size > PAGEALLOC_MINIMUM ?
                   *size : PAGEALLOC_MINIMUM;
 
-    bytes = aligned(bytes);
+    // Align to pagesize
+    bytes = aligned(bytes, PAGESIZE);
 
     // Fill in the message. */
-    msg.action = CreatePrivate;
-    msg.size   = bytes;
-    msg.access = Memory::Present  |
-                 Memory::User     |
-                 Memory::Readable |
-                 Memory::Writable;
-    msg.virt   = m_base + m_allocated;
-#warning do we need to pass the region here too?
-    msg.phys   = ZERO;
-    msg.type   = IPCType;
-    msg.from   = SELF;
-    IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
+    range.size   = bytes;
+    range.access = Memory::Present  |
+                   Memory::User     |
+                   Memory::Readable |
+                   Memory::Writable;
+    range.virt   = m_base + m_allocated;
+    range.phys   = ZERO;
+
+// TODO: #warning do we need to pass the region here too?
+//  range.region = Memory::UserPrivate;
+    VMCtl(SELF, Map, &range);
 
     // Clear the pages
-    MemoryBlock::set((void *) msg.virt, 0, msg.size);
+    MemoryBlock::set((void *) range.virt, 0, range.size);
 
     // Update count
-    m_allocated += msg.size;
+    m_allocated += range.size; 
 
     // Success
-    *size = msg.size;
+    *size = range.size;
     return Success;
 }
 

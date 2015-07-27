@@ -16,32 +16,18 @@
  */
 
 #include <FreeNOS/API.h>
-#include <CoreMessage.h>
 #include "sys/wait.h"
 #include "sys/types.h"
 #include <errno.h>
 
 pid_t waitpid(pid_t pid, int *stat_loc, int options)
 {
-    CoreMessage msg;
-    
-    /* Fill in the message. */
-    msg.action = WaitProcess;
-    msg.number = pid;
-    msg.type   = IPCType;
-    
-    /* Ask CoreServer. */
-    IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
+#warning change to API::Result later in kernel. Also in the ProcessCtl.h header etc.
+    Error result = ProcessCtl(pid, WaitPID);
 
-    /* Did we succeed? */
-    if (msg.result == ESUCCESS)
+    if (stat_loc)
     {
-	if (stat_loc)
-	{
-	    *stat_loc = msg.number;
-	}
-	return pid;
+        *stat_loc = result;
     }
-    else
-	return msg.result;
+    return result;
 }

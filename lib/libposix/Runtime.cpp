@@ -142,13 +142,14 @@ void setupMappings()
     if (getpid() == CORESRV_PID)
         return;
 
-    // Ask CoreServer for FileSystemMounts table
-    CoreMessage msg;
-    msg.action = GetMounts;
-    msg.mounts = mounts;
-    msg.type   = IPCType;
-    msg.from   = SELF;
-    IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
+    // Fill the mounts table
+    memset(mounts, 0, sizeof(FileSystemMount) * FILESYSTEM_MAXMOUNTS);
+    strlcpy(mounts[0].path, "/dev", PATHLEN);
+    strlcpy(mounts[1].path, "/", PATHLEN);
+    mounts[0].procID  = DEVSRV_PID;
+    mounts[0].options = ZERO;
+    mounts[1].procID  = ROOTSRV_PID;
+    mounts[1].options = ZERO;
 
     // Set currentDirectory
     currentDirectory = "/";
@@ -175,6 +176,10 @@ void setupMappings()
         return;
 
     // Inherit file descriptors, current directory, and more.
+    CoreMessage msg;
+    msg.type   = IPCType;
+    msg.from   = SELF;
+
     // NOTE: we "abuse" the CoreMessage for ipc with our parent...
     IPCMessage(ppid, API::Receive, &msg, sizeof(msg));
 

@@ -26,8 +26,6 @@
 #include <FreeNOS/System.h>
 #include <FreeNOS/API.h>
 #include <IPCServer.h>
-#include <UserProcess.h>
-#include <FileSystemMount.h>
 #include <List.h>
 #include <ListIterator.h>
 #include <String.h>
@@ -52,57 +50,6 @@ class CoreServer : public IPCServer<CoreServer, CoreMessage>
 
   private:
     
-    /**
-     * Create a new private mapping.
-     * @param msg Request message.
-     */
-    void createPrivate(CoreMessage *msg);
-
-    /**
-     * Release an private memory mapping.
-     * @param msg Request message.
-     */
-    void releasePrivate(CoreMessage *msg);
-    
-    /**
-     * Read the user process table.
-     * @param msg Incoming message.
-     */
-    void readProcessHandler(CoreMessage *msg);
-
-    /**
-     * Terminate a process.
-     * @param msg Incoming message.
-     */
-    void exitProcessHandler(CoreMessage *msg);
-    
-    /**
-     * Create a process.
-     * @param msg Incoming message.
-     */
-    void spawnProcessHandler(CoreMessage *msg);
-
-    /**
-     * Waits until a process has died.
-     * @param msg Incoming message.
-     */
-    void waitProcessHandler(CoreMessage *msg);
-
-    /**
-     * Get Filesystem mounts.
-     */
-    void getMountsHandler(CoreMessage *msg);
-
-    /**
-     * (Un)set FileSystem mount.
-     */
-    void setMountHandler(CoreMessage *msg);
-
-    /** User Process table. */
-    UserProcess *procs;
-    
-    /** Pointer to the filesystem mounts table. */
-    FileSystemMount *mounts;
 };
 
 /**

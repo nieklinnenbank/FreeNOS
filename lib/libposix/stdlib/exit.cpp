@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,16 +16,10 @@
  */
 
 #include <FreeNOS/API.h>
-#include <CoreMessage.h>
 #include "stdlib.h"
 
 extern C void exit(int status)
 {
-    CoreMessage msg;
-
-    /* Request immediate termination. */
-    msg.action = ExitProcess;
-    msg.number = status;
-    msg.type   = IPCType;
-    IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
+    // Request immediate termination
+    ProcessCtl(SELF, KillPID, status);
 }    

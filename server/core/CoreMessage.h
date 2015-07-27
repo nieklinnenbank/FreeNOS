@@ -39,21 +39,9 @@ struct FileSystemMount;
  */
 typedef enum CoreAction
 {
-    /* Process operations. */
-    GetID = 0,
-    ReadProcess,
-    ExitProcess,
-    SpawnProcess,
-    WaitProcess,
-    
     /* FileSystem mounts. */
     GetMounts,
     SetMount,
-
-    /* Private mappings. */
-    CreatePrivate,
-    ReleasePrivate,
-    ListPrivate,
     
     /* Diagnostics. */
     ProcessMemory
@@ -78,17 +66,8 @@ typedef struct CoreMessage : public Message, public Memory::Range
     /** Used to store somekind of number (e.g. PID's). */
     ulong number;
 
-    union
-    {    
-        /** Input/Output buffer (for Readprocess). */
-        UserProcess *buffer;
-
-        /** FileSystemMounts table */
-        FileSystemMount *mounts;
-
-        /** Pointer to an array of arguments for SpawnProcess. */
-        char *arguments;
-    };
+    /** FileSystemMounts table */
+    FileSystemMount *mounts;
     
     /** Path to an executable program, or FileSystemMount path. */
     char *path;

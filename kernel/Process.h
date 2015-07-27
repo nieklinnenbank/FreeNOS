@@ -30,6 +30,16 @@
 /** @see IPCMessage.h. */
 struct Message;
 
+/** Virtual memory address of the array of arguments for new processes. */
+#define ARGV_ADDR  0x9ffff000
+
+/** Maximum size of each argument. */
+// TODO: ARGV_ADDR fixed address here is wrong. Put it in Arch::Memory::range(). Or perhaps put it on the stack?
+#define ARGV_SIZE  128
+
+/** Number of arguments at maximum. */
+#define ARGV_COUNT (PAGESIZE / ARGV_SIZE)
+
 /**
  * Represents a process which may run on the host.
  */
@@ -42,7 +52,8 @@ class Process
         Running,
         Ready,
         Stopped,
-        Sleeping
+        Sleeping,
+        Waiting
     };    
     
     /**
@@ -64,7 +75,18 @@ class Process
      * @return Process Identification number.
      */
     ProcessID getID() const;
-        
+
+    /**
+     * Retrieve our parent ID.
+     * @return Process ID of our parent.
+     */
+    ProcessID getParent() const;
+
+    /**
+     * Get Wait ID.
+     */
+    ProcessID getWait() const;
+
     /**
      * Retrieves the current state.
      * @return Current status of the Process.
@@ -103,6 +125,16 @@ class Process
      * @param st New state of the Process.
      */
     void setState(State st);
+
+    /**
+     * Set parent process ID.
+     */
+    void setParent(ProcessID id);
+
+    /**
+     * Set Wait ID.
+     */
+    void setWait(ProcessID id);
 
     /**
      * Set page directory address.
@@ -150,8 +182,14 @@ class Process
     /** Process Identifier */
     const ProcessID m_id;
 
+    /** Parent process */
+    ProcessID m_parent;
+
     /** Current process status. */
     State m_state;
+
+    /** Waits for exit of this Process. */
+    ProcessID m_waitId;
 
     /** Privilege level */
     bool m_privileged;

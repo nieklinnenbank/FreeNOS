@@ -33,7 +33,7 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range)
         return API::NotFound;
     }
 
-    Arch::Memory mem(proc->getPageDirectory(),
+    Arch::Memory mem(procID == SELF ? ZERO : proc->getPageDirectory(),
                      Kernel::instance->getMemory());
 
     // Perform operation

@@ -45,22 +45,10 @@ int forkexec(const char *path, const char *argv[])
     if ((numRegions = fmt->regions(regions, 16)) < 0)
         return -1;
 
-    // We want to spawn a new process
-    msg.action    = SpawnProcess;
-    msg.path      = (char *) path;
-    msg.number    = fmt->entry();
-    msg.type      = IPCType;
-    msg.from      = SELF;
-    
-    // Ask CoreServer to create a new process
-    IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
+    // Create new process
+    pid = ProcessCtl(ANY, Spawn, fmt->entry());
 
-    // Obtain results
-    errno = msg.result;
-    pid   = msg.number;
-
-    if (msg.result != ESUCCESS)
-        return msg.result;
+    // TODO: check the result of ProcessCtl()
 
     // TODO: make this much more efficient. perhaps let libexec write directly to the target buffer.
     // at least Map & copy in one shot.
@@ -122,6 +110,8 @@ int forkexec(const char *path, const char *argv[])
 
     // Send a pointer to our list of file descriptors to the child
     // TODO: ofcourse, insecure. To be fixed later.
+    msg.type      = IPCType;
+    msg.from      = SELF;
     msg.path = (char *) fds->vector();
     IPCMessage(pid, API::SendReceive, &msg, sizeof(msg));
 

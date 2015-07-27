@@ -16,8 +16,6 @@
  */
 
 #include <FreeNOS/API.h>
-#include <CoreMessage.h>
-#include <UserProcess.h>
 #include <Types.h>
 #include <Macros.h>
 #include <stdio.h>
@@ -25,58 +23,43 @@
 #include <string.h>
 #include <errno.h>
 
-UserProcess procs[MAX_PROCS];
-
 char * states[] =
 {
     "Running",
     "Ready",
     "Stopped",
     "Sleeping",
+    "Waiting"
 };
+
+char cmd[PAGESIZE];
 
 int main(int argc, char **argv)
 {
-    CoreMessage msg;
     ProcessInfo info;
 
-    // Receive UserProcess table from the CoreServer
-    msg.action = ReadProcess;
-    msg.buffer = procs;
-    msg.number = ZERO;
-    msg.from   = SELF;
-    msg.type   = IPCType;
-    IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
-
-    // Check the result
-    if (msg.result != 0)
-    {
-        printf("%s: failed to receive process table: %s\n",
-                argv[0], strerror(msg.result));
-        return EXIT_FAILURE;
-    }
+    // TODO: ask the kernel for the whole process table in one shot.
 
     // Print header
     printf("ID  PARENT  USER GROUP STATUS     CMD\r\n");
 
+    memset(&cmd, 0, sizeof(cmd));
+
     // Loop processes
-    for (int i = 0; i < MAX_PROCS; i++)
+    for (uint i = 0; i < MAX_PROCS; i++)
     {
-        // Skip unused PIDs
-        if (!procs[i].command[0])
-            continue;
-
         // Request kernel's process information
-        ProcessCtl(i, InfoPID, (Address) &info);
+        if (ProcessCtl(i, InfoPID, (Address) &info) != API::NotFound)
+        {
+            // Get the command
+            VMCopy(i, API::Read, (Address) cmd, ARGV_ADDR, PAGESIZE);
 
-        // Output a line
-        printf("%3d %7d %4d %5d %10s %32s\r\n",
-                i,
-                procs[i].parent,
-                procs[i].userID,
-                procs[i].groupID,
-                states[info.state],
-                procs[i].command);
+            // Output a line
+            printf("%3d %7d %4d %5d %10s %32s\r\n",
+                    i,
+                    info.parent, 0, 0,
+                    states[info.state], cmd);
+        }
     }
     return EXIT_SUCCESS;
 }

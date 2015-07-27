@@ -16,36 +16,20 @@
  */
 
 #include <FreeNOS/API.h>
-#include <CoreMessage.h>
 #include <FileSystemMount.h>
-#include <UserProcess.h>
 #include <Runtime.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 
-UserProcess procs[MAX_PROCS];
+char cmd[PAGESIZE];
 
 int main(int argc, char **argv)
 {
-    CoreMessage msg;
     FileSystemMount *mounts = getMounts();
 
-    // Obtain the user process table
-    msg.action = ReadProcess;
-    msg.number = ZERO;
-    msg.buffer = procs;
-    msg.type   = IPCType;
-    msg.from   = SELF;
-
-    IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
-    if (msg.result != ESUCCESS)
-    {
-        printf("%s: failed to receive process table: %s\n",
-                argv[0], strerror(msg.result));
-        return EXIT_FAILURE;
-    }
+    // TODO: ask the kernel for the process table instead. With ARGV_ADDR copies.
 
     // Print header
     printf("PATH       FILESYSTEM\r\n");
@@ -54,7 +38,11 @@ int main(int argc, char **argv)
     for (Size i = 0; i < FILESYSTEM_MAXMOUNTS; i++)
     {
         if (mounts[i].path[0])
-            printf("%10s %s\r\n", mounts[i].path, procs[mounts[i].procID].command);
+        {
+            // Get the command
+            VMCopy(mounts[i].procID, API::Read, (Address) cmd, ARGV_ADDR, PAGESIZE);
+            printf("%10s %s\r\n", mounts[i].path, cmd);
+        }
     }
     // Done
     return EXIT_SUCCESS;

@@ -57,7 +57,7 @@ class ProcessManager
     /**
      * Remove a Process.
      */
-    void remove(Process *proc);
+    void remove(Process *proc, uint exitStatus = 0);
 
     /**
      * Schedule next process to run.

@@ -36,10 +36,12 @@ typedef enum ProcessOperation
     Spawn = 0,
     KillPID,
     GetPID,
+    GetParent,
     WatchIRQ,
     EnableIRQ,
     DisableIRQ,
     InfoPID,
+    WaitPID,
     Schedule,
     Resume,
     SetStack
@@ -53,6 +55,9 @@ typedef struct ProcessInfo
 {
     /** Process Identity number. Must be unique. */
     ProcessID id;
+
+    /** Parent process id. */
+    ProcessID parent;
     
     /** Defines the current state of the Process. */
     Process::State state;

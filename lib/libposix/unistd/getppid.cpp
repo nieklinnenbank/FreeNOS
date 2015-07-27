@@ -16,21 +16,9 @@
  */
 
 #include <FreeNOS/API.h>
-#include <CoreMessage.h>
-#include <UserProcess.h>
 #include "unistd.h"
 
 pid_t getppid()
 {
-    CoreMessage msg;
-    UserProcess info;
-
-    msg.action = ReadProcess;
-    msg.buffer = &info;
-    msg.number = getpid();
-    msg.type   = IPCType;
-    msg.from   = SELF;
-    IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
-
-    return info.parent;
+    return ProcessCtl(SELF, GetParent);
 }
