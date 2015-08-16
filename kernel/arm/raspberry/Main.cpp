@@ -36,11 +36,12 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
     // Initialize heap
     Kernel::heap( MegaByte(3), MegaByte(1) );
 
-    RaspiSerial console;
-    console.setMinimumLogLevel(Log::Notice);
-
     // TODO: put this in the boot.S, or maybe hide it in the support library? maybe a _run_main() or something.
     constructors();
+
+    // Open the serial console as default Log
+    RaspiSerial console;
+    console.setMinimumLogLevel(Log::Notice);
 
     // Kernel memory range
     Memory::Range kernelRange;

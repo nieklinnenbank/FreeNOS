@@ -58,8 +58,6 @@ Error Kernel::heap(Address base, Size size)
     Allocator *bubble, *pool;
     Size meta = sizeof(BubbleAllocator) + sizeof(PoolAllocator);
 
-    NOTICE("base = " << base << " size = " << size);
-
     // Clear the heap first
     MemoryBlock::set((void *) base, 0, size);
 

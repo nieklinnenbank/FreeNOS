@@ -20,8 +20,6 @@
 #include <FreeNOS/API.h>
 #include "RaspiSerial.h"
 
-#warning The I/O base is mapped as cachable and not as Device!
-
 RaspiSerial::RaspiSerial()
 {
     init();
@@ -60,9 +58,10 @@ void RaspiSerial::init()
     // Disable FIFO, use 8 bit data transmission, 1 stop bit, no parity
     IO::write(PL011_LCRH, PL011_LCRH_WLEN_8BIT);
 
-    // Enable Rx/Tx interrupts
-    IO::write(PL011_IMSC,
-         PL011_IMSC_RXIM | PL011_IMSC_TXIM);
+    // Mask all interrupts.
+    IO::write(PL011_IMSC, (1 << 1) | (1 << 4) | (1 << 5) |
+                          (1 << 6) | (1 << 7) | (1 << 8) |
+                          (1 << 9) | (1 << 10));
 
     // Enable PL011, receive & transfer part of UART.
     IO::write(PL011_CR, (1 << 0) | (1 << 8) | (1 << 9));
@@ -70,24 +69,12 @@ void RaspiSerial::init()
 
 void RaspiSerial::put(u8 byte)
 {
-    // Temporary disable interrupts
-    u32 imsc = IO::read(PL011_IMSC);
-    IO::write(PL011_IMSC, 0);
-
     // wait for UART to become ready to transmit
     while(true)
         if (!(IO::read(PL011_FR) & (1 << 5)))
             break;
 
     IO::write(PL011_DR, byte);
-
-    // wait for UART to empty the transmit queue
-    while(true)
-        if (!(IO::read(PL011_FR) & (1 << 5)))
-            break;
-
-    // Restore interrupts
-    IO::write(PL011_IMSC, imsc);
 }
 
 u8 RaspiSerial::get(void)
