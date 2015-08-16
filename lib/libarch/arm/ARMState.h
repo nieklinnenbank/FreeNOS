@@ -30,11 +30,9 @@
  * to a different Process.
  *
  * @param currentStack Address to a pointer of the current stack.
- * @param pageDirectory Virtual memory page directory address.
  * @param stackAddr Saved kernel stack pointer.
  */
 extern C void switchCoreState(Address *currentStack,
-                              Address pageDirectory,
                               Address stackAddr);
 
 /**

@@ -16,7 +16,7 @@
  */
 
 #include <Log.h>
-#include <BitAllocator.h>
+#include <SplitAllocator.h>
 #include <FreeNOS/API.h>
 #include <arm/ARMInterrupt.h>
 #include <arm/ARMConstant.h>
@@ -39,10 +39,6 @@ ARMKernel::ARMKernel(Memory::Range kernel,
     intr->install(ARMInterrupt::Reserved, reserved);
     intr->install(ARMInterrupt::IRQ, interrupt);
     intr->install(ARMInterrupt::FIQ, interrupt);
-
-    // Enable MMU
-    ARMPaging mmu(0, m_memory);
-    mmu.initialize();
 
     // Enable clocks and irqs
     m_timer.setInterval( 250 ); /* trigger timer interrupts at 250Hz (clock runs at 1Mhz) */
@@ -136,7 +132,6 @@ void ARMKernel::trap(CPUState state)
 
 bool ARMKernel::loadBootImage()
 {
-    Arch::Memory virt(0, m_memory);
     BootImage *image;
 
     DEBUG("");
@@ -145,11 +140,7 @@ bool ARMKernel::loadBootImage()
     DEBUG("initrd = " << range.phys << " (" << range.size << ")");
 
     // TODO: most of this code should be moved to the generic Kernel.
-    // Map the BootImage into our address space
-    range.virt   = virt.findFree(range.size, Memory::KernelPrivate);
-    range.access = Arch::Memory::Present | Arch::Memory::Readable;
-    virt.mapRange(&range);
-    image = (BootImage *) range.virt;
+    image = (BootImage *) range.phys;
 
     // Verify this is a correct BootImage
     if (image->magic[0] == BOOTIMAGE_MAGIC0 &&
@@ -161,7 +152,7 @@ bool ARMKernel::loadBootImage()
 
        // Mark its memory used
         for (Size i = 0; i < m_bootImageSize; i += PAGESIZE)
-            m_memory->allocate(m_bootImageAddress + i);
+            m_alloc->allocate(m_bootImageAddress + i);
 
         // Loop BootPrograms
         for (Size i = 0; i < image->symbolTableCount; i++)

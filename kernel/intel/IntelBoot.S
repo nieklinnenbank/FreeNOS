@@ -18,12 +18,12 @@
 #include <intel/IntelConstant.h>
 #include "IntelBoot.h"
 
-/* Page Table Entry flags */
-#define PAGE_PRESENT 1
-#define PAGE_WRITE   2
-#define PAGE_USER    4
-
-/* The size of our stack (16KB).  */
+/* Constants */
+#define PAGE_PRESENT    1
+#define PAGE_WRITE      2
+#define PAGE_4MB        (1 << 7)
+#define PAGE_4MB_SHIFT  22
+#define KERNEL_LOWMEM   ((1024 * 1024 * 1024) - (1024 * 1024 * 128))
 #define STACK_SIZE 0x4000
 
 /* TODO: move interrupt handling and IDT setup to libarch's IntelCore code. */
@@ -147,46 +147,36 @@ _start:
     movl %eax, %es
     movl %eax, %ss
 
-    /* Kernel page directory. */
-    movl $kernelPageDir, %eax
-    movl $kernelPageTab, %ebx
-    orl  $(PAGE_PRESENT | PAGE_USER), %ebx
-    movl %ebx, (%eax)
+setupKernelDir:
 
-    /* Clear first 1MB */
-    movl $kernelPageTab, %eax
+    /* map 1GB for the kernel (incl 128MB private mappings) */
+    movl $kernelPageDir, %eax /* eax: pagedir pointer */
+    xorl %ecx, %ecx           /* ecx: address to map */
+
+1:
+    movl %ecx, %ebx           /* ebx: pagedir entry */
+    orl  $(PAGE_PRESENT | PAGE_WRITE | PAGE_4MB), %ebx
+    movl %ebx, (%eax)
+    addl $4, %eax
+    addl $4194304, %ecx
+    cmpl $KERNEL_LOWMEM, %ecx
+    jnz 1b
+
+    /* Clear the rest of the page directory */
+    movl $kernelPageDir, %ecx
+    addl $4096, %ecx
     xorl %ebx, %ebx
-    movl $256, %ecx
 2:
     movl %ebx, (%eax)
     addl $4, %eax
-    decl %ecx
+    cmpl %ecx, %eax
     jnz 2b
 
-    /* Identity map from 1MB till 4MB. */
-    movl $kernelPageTab, %eax
-    addl $1024, %eax
-    movl $1048576, %ebx
-    orl $(PAGE_PRESENT | PAGE_WRITE), %ebx
-    movl $768, %ecx
-1:
-    movl %ebx, (%eax)
-    addl $PAGESIZE, %ebx
-    addl $4, %eax
-    decl %ecx
-    jnz 1b
-
-    /* Map page directory into itself. */
-    movl $4, %eax
-    movl $PAGEDIR_LOCAL, %ebx
-    shrl $DIRSHIFT, %ebx
-    imul %ebx
-    movl $kernelPageDir, %ebx
-    addl %eax, %ebx
-    movl %ebx, %eax
-    movl $kernelPageDir, %ebx
-    orl  $(PAGE_PRESENT | PAGE_USER), %ebx
-    movl %ebx, (%eax)
+    /* Enable timestamp counter and page size extension. */
+    movl %cr4, %eax
+    andl  $(~CR4_TSD), %eax
+    orl $(CR4_PSE), %eax
+    movl %eax, %cr4
 
     /* Enter paged mode. */
     movl $kernelPageDir, %eax
@@ -195,11 +185,6 @@ _start:
     orl  $(CR0_PG), %eax
     movl %eax, %cr0
     
-    /* Enable timestamp counter. */
-    movl %cr4, %eax
-    andl  $(~CR4_TSD), %eax
-    movl %eax, %cr4
-
     /* Invoke kernel. */
     call kernel_main
                 
@@ -267,9 +252,7 @@ stack:  .fill STACK_SIZE, 1, 0
  */
 .align PAGESIZE
 kernelPageDir:  .fill PAGESIZE, 1, 0
-kernelPageTab:  .fill PAGESIZE, 1, 0
 kernelTss:      .fill PAGESIZE, 1, 0
-kernelioBitMap: .fill PAGESIZE, 1, 1
 
 .section ".data"
 

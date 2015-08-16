@@ -22,23 +22,21 @@
 #include <Macros.h>
 
 /**
- * Switch Core State.
+ * Switch Core Stack.
  *
  * This function only needs to save the current Kernel state,
  * and restore the new Kernel state. It will be used by the kernel
  * to preserve its call stack and registers when it wants to switch
  * to a different Process.
  *
- * @param currentStack Address to a pointer of the current stack.
- * @param pageDirectory Virtual memory page directory address.
- * @param stackAddr Saved kernel stack pointer.
+ * @param currentStack Address to a pointer to save the current Core state, or ZERO to skip.
+ * @param stack Address of the stack to set.
  */
 extern C void switchCoreState(Address *currentStack,
-                              Address pageDirectory,
-                              Address stackAddr);
+                              Address stack);
 
 /**
- * Full Core State restore.
+ * Load Core State.
  *
  * This function is used to restore the full state of the
  * Core. It is used by the kernel as a function to initialize

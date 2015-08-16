@@ -56,10 +56,9 @@ class BootImageStorage : public Storage
         Memory::Range range;
         u8 *base;
 
-        // Request VGA memory
+        // Request boot image memory
         range.size   = info.bootImageSize;
-        range.access = Memory::Present  |
-                       Memory::User     |
+        range.access = Memory::User |
                        Memory::Readable;
         range.virt   = ZERO;
         range.phys   = info.bootImageAddress;

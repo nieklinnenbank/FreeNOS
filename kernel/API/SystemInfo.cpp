@@ -18,11 +18,11 @@
 #include <FreeNOS/API.h>
 #include <FreeNOS/Config.h>
 #include <FreeNOS/Kernel.h>
-#include <BitAllocator.h>
+#include <SplitAllocator.h>
 
 Error SystemInfoHandler(SystemInformation *info)
 {
-    BitAllocator *memory = Kernel::instance->getMemory();
+    SplitAllocator *memory = Kernel::instance->getAllocator();
 
     // TODO: Verify memory access
 
@@ -30,7 +30,6 @@ Error SystemInfoHandler(SystemInformation *info)
     info->version          = VERSIONCODE;
     info->memorySize       = memory->size();
     info->memoryAvail      = memory->available();
-    info->memoryAllocator  = memory;
 
     // TODO: this interface could be improved using libarch?
     info->bootImageAddress = Kernel::instance->getBootImageAddress();

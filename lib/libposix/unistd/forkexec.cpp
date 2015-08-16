@@ -59,11 +59,10 @@ int forkexec(const char *path, const char *argv[])
     for (int i = 0; i < numRegions; i++)
     {
         // Copy executable memory from this region
-        range.virt  = regions[i].virtualAddress;
-        range.phys  = ZERO;
-        range.size  = regions[i].size;
-        range.access = Memory::Present |
-                       Memory::User |
+        range.virt   = regions[i].virtualAddress;
+        range.phys   = ZERO;
+        range.size   = regions[i].size;
+        range.access = Memory::User |
                        Memory::Readable |
                        Memory::Writable |
                        Memory::Executable;

@@ -35,12 +35,18 @@ ProcessManager::~ProcessManager()
 {
 }
 
-Process * ProcessManager::create(Address entry)
+Process * ProcessManager::create(Address entry, const MemoryMap &map)
 {
     // first process is privileged (the coreserver)
-    Process *proc = new Arch::Process(m_procs.count(), entry, m_procs.count() == 0);
-    m_procs.insert(proc);
-    return proc;
+    Process *proc = new Arch::Process(m_procs.count(), entry, m_procs.count() == 0, map);
+
+    // Insert to the process table
+    if (proc && proc->initialize() == Process::Success)
+    {
+        m_procs.insert(proc);
+        return proc;
+    }
+    return ZERO;
 }
 
 Process * ProcessManager::get(ProcessID id)
@@ -66,8 +72,6 @@ void ProcessManager::remove(Process *proc, uint exitStatus)
 
     for (Size i = 0; i < size; i++)
     {
-        Process *p = m_procs.at(i);
-
         if (m_procs[i] != ZERO &&
             m_procs[i]->getState() == Process::Waiting &&
             m_procs[i]->getWait() == proc->getID())

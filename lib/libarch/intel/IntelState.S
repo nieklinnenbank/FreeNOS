@@ -45,10 +45,8 @@ switchCoreState:
 
 restoreState:
 
-    /* Reload page directory, stack. */
-    movl 16(%ebp), %esp
-    movl 12(%ebp), %eax
-    movl %eax, %cr3
+    /* Switch to new stack */
+    movl 12(%ebp), %esp
 
     /* Restore kernel state. */
     popa
@@ -57,7 +55,6 @@ restoreState:
 resume:
     pop %ebp
     ret
-
 
 interruptHandler:
 

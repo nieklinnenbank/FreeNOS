@@ -16,7 +16,7 @@
  */
 
 #include <MemoryBlock.h>
-#include <BitAllocator.h>
+#include <SplitAllocator.h>
 #include "VMCopy.h"
 
 Error VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
@@ -24,7 +24,7 @@ Error VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
 {
     ProcessManager *procs = Kernel::instance->getProcessManager();
     Process *proc;
-    Address paddr;
+    Address paddr, vaddr;
     Size bytes = 0, pageOff, total = 0;
 
     // Find the corresponding Process
@@ -33,15 +33,16 @@ Error VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
         return API::NotFound;
     }
     // TODO: Verify memory addresses
-    BitAllocator *alloc = Kernel::instance->getMemory();
-    Arch::Memory local(0, alloc);
-    Arch::Memory remote(proc->getPageDirectory(), alloc);
+    MemoryContext *local  = procs->current()->getMemoryContext();
+    MemoryContext *remote = proc->getMemoryContext();
 
     // Keep on going until all memory is processed
     while (total < sz)
     {
         /* Update variables. */
-        paddr   = remote.lookup(theirs);
+        if (remote->lookup(theirs, &paddr) != MemoryContext::Success)
+            return API::AccessViolation;
+
         pageOff = theirs & ~PAGEMASK;
         bytes   = (PAGESIZE - pageOff) < (sz - total) ?
                   (PAGESIZE - pageOff) : (sz - total);
@@ -50,30 +51,27 @@ Error VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
         if (!paddr) break;
                 
         // Map their address into our local address space
-        Address tmp = local.findFree(PAGESIZE, Memory::KernelPrivate);
-        local.map(paddr, tmp,
-            Arch::Memory::Present  |
-            Arch::Memory::User     |
-            Arch::Memory::Readable |
-            Arch::Memory::Writable
-        );
+        if (local->findFree(PAGESIZE, MemoryMap::KernelPrivate, &vaddr) != MemoryContext::Success)
+            return API::RangeError;
+
+        local->map(vaddr, paddr, Memory::Readable | Memory::Writable);
 
         /* Process the action appropriately. */
         switch (how)
         {
             case API::Read:
-                MemoryBlock::copy((void *)ours, (void *)(tmp + pageOff), bytes);
+                MemoryBlock::copy((void *)ours, (void *)(vaddr + pageOff), bytes);
                 break;
                         
             case API::Write:
-                MemoryBlock::copy((void *)(tmp + pageOff), (void *)ours, bytes);
+                MemoryBlock::copy((void *)(vaddr + pageOff), (void *)ours, bytes);
                 break;
             
             default:
                 ;
         }       
         // Unmap
-        local.unmap(tmp);
+        local->unmap(vaddr);
 
         // Update counters
         ours   += bytes;

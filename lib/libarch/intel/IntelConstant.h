@@ -31,6 +31,7 @@
 
 /** Timestamp Counter Disable. */
 #define CR4_TSD         0x00000004
+#define CR4_PSE         (1 << 4)
 
 /** Kernel Code Segment. */
 #define KERNEL_CS       1 
@@ -81,9 +82,6 @@
 
 /** Memory address alignment. */
 #define MEMALIGN        4
-
-/** Local page directory in virtual memory */
-#define PAGEDIR_LOCAL   (1024 * 1024 * 4)
 
 /**
  * @}

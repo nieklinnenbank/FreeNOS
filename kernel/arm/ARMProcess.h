@@ -34,12 +34,22 @@ class ARMProcess : public Process
      * @param entry Initial program counter value.
      * @param privileged If true, the process has unlimited access to hardware.
      */
-    ARMProcess(ProcessID id, Address entry, bool privileged);
+    ARMProcess(ProcessID id, Address entry, bool privileged, const MemoryMap &map);
     
     /**
      * Destructor function.
      */
     virtual ~ARMProcess();
+
+    /**
+     * Initialize the Process.
+     *
+     * Allocates various (architecture specific) resources,
+     * creates MMU context and stacks.
+     *
+     * @return Result code
+     */
+    virtual Result initialize();
 
     /**
      * Allow the Process to run on the CPU.

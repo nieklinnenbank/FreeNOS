@@ -38,6 +38,7 @@ Error ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
     Process *proc = ZERO;
     ProcessInfo *info = (ProcessInfo *) addr;
     ProcessManager *procs = Kernel::instance->getProcessManager();
+    Arch::MemoryMap map;
 
     DEBUG("#" << procs->current()->getID() << " " << action << " -> " << procID << " (" << addr << ")");
 
@@ -55,7 +56,7 @@ Error ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
     switch (action)
     {
     case Spawn:
-        proc = procs->create(addr);
+        proc = procs->create(addr, map);
         proc->setParent(procs->current()->getID());
         return proc->getID();
     

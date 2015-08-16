@@ -61,6 +61,7 @@ Error i8250::initialize()
 Error i8250::interrupt(Size vector)
 {
     ProcessCtl(SELF, EnableIRQ, irq);
+    return ESUCCESS;
 }
 
 Error i8250::read(s8 *buffer, Size size, Size offset)

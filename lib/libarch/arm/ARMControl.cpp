@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "ARMCore.h"
 #include "ARMControl.h"
 
 ARMControl::ARMControl()
@@ -50,13 +51,15 @@ void ARMControl::write(Register reg, u32 value)
 {
     switch (reg)
     {
-        case SystemControl:         mcr(p15, 0, 0, c1,  c0, value);  break;
-        case AuxControl:            mcr(p15, 0, 1, c1,  c0, value);  break;
-        case TranslationTable0:     mcr(p15, 0, 0, c2,  c0, value);  break;
-        case TranslationTable1:     mcr(p15, 0, 1, c2,  c0, value);  break;
-        case TranslationTableCtrl:  mcr(p15, 0, 2, c2,  c0, value);  break;
-        case DomainControl:         mcr(p15, 0, 0, c3,  c0, value);  break;
-        case CacheClear:            mcr(p15, 0, 0, c7,  c7 /*c15*/, value); break;
+        case SystemControl:         mcr(p15, 0, 0, c1,  c0, value); break;
+        case AuxControl:            mcr(p15, 0, 1, c1,  c0, value); break;
+        case TranslationTable0:     mcr(p15, 0, 0, c2,  c0, value); break;
+        case TranslationTable1:     mcr(p15, 0, 1, c2,  c0, value); break;
+        case TranslationTableCtrl:  mcr(p15, 0, 2, c2,  c0, value); break;
+        case DomainControl:         mcr(p15, 0, 0, c3,  c0, value); break;
+        case CacheClear:            mcr(p15, 0, 0, c7,  c7, value); break;
+        case DataCacheClean:        mcr(p15, 0, 0, c7, c14, value); break;
+        case FlushPrefetchBuffer:   mcr(p15, 0, 4, c7,  c5, value); break;
         case InstructionCacheClear: mcr(p15, 0, 0, c7,  c5, value); break;
         case InstructionTLBClear:   mcr(p15, 0, 0, c8,  c5, value); break;
         case DataTLBClear:          mcr(p15, 0, 0, c8,  c6, value); break;

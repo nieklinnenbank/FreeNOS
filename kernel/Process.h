@@ -21,6 +21,7 @@
 #include <Types.h>
 #include <Macros.h>
 #include <List.h>
+#include <MemoryMap.h>
 
 /** 
  * @defgroup kernel kernel (generic)
@@ -29,6 +30,7 @@
 
 /** @see IPCMessage.h. */
 struct Message;
+class MemoryContext;
 
 /** Virtual memory address of the array of arguments for new processes. */
 #define ARGV_ADDR  0x9ffff000
@@ -47,6 +49,13 @@ class Process
 {
   public:
 
+    enum Result
+    {
+        Success,
+        MemoryMapError,
+        OutOfMemory
+    };
+
     enum State
     {
         Running,
@@ -63,7 +72,7 @@ class Process
      * @param entry Initial program counter value.
      * @param privileged If true, the process has unlimited access to hardware.
      */
-    Process(ProcessID id, Address entry, bool privileged);
+    Process(ProcessID id, Address entry, bool privileged, const MemoryMap &map);
     
     /**
      * Destructor function.
@@ -112,6 +121,13 @@ class Process
      * @return Kernel stack address.
      */
     Address getKernelStack() const;
+
+    /**
+     * Get MMU memory context.
+     *
+     * @return MemoryContext pointer.
+     */
+    MemoryContext * getMemoryContext();
 
     /**
      * Get privilege.
@@ -171,6 +187,16 @@ class Process
     bool operator == (Process *proc);
 
     /**
+     * Initialize the Process.
+     *
+     * Allocates various (architecture specific) resources,
+     * creates MMU context and stacks.
+     *
+     * @return Result code
+     */
+    virtual Result initialize() = 0;
+
+    /**
      * Allow the Process to run on the CPU.
      *
      * @param previous The previous Process which ran on the CPU. ZERO if none.
@@ -194,6 +220,15 @@ class Process
     /** Privilege level */
     bool m_privileged;
 
+    /** Entry point of the program */
+    Address m_entry;
+
+    /** Virtual memory layout */
+    MemoryMap m_map;
+
+    /** MMU memory context */
+    MemoryContext *m_memoryContext;
+
     /** Incoming messages. */
     List<Message *> m_messages;
 
@@ -203,8 +238,11 @@ class Process
     /** User stack address. */
     Address m_userStack;
 
-    /** Kernel stack address. */
+    /** Current kernel stack address (changes during execution). */
     Address m_kernelStack;
+
+    /** Base kernel stack (fixed) */
+    Address m_kernelStackBase;
 };
 
 /**

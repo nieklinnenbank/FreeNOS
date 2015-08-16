@@ -27,12 +27,14 @@
 
 extern C int kernel_main(u32 r0, u32 r1, u32 r2)
 {
-    Arch::Memory mem;
+    // Enforce default I/O base offset
+    IO::base = IO_BASE;
+
+    Arch::MemoryMap mem;
     BCM2835Interrupt irq;
 
     // Initialize heap
-    Kernel::heap( mem.range(Memory::KernelHeap).virt,
-                  mem.range(Memory::KernelHeap).size );
+    Kernel::heap( MegaByte(3), MegaByte(1) );
 
     RaspiSerial console;
     console.setMinimumLogLevel(Log::Notice);
@@ -42,12 +44,12 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
 
     // Kernel memory range
     Memory::Range kernelRange;
-    kernelRange.phys = 0x8000;
-    kernelRange.size = (1024 * 1024 * 4) - 0x8000;
+    kernelRange.phys = 0;
+    kernelRange.size = MegaByte(4);
 
     // RAM physical range
     Memory::Range ramRange;
-    ramRange.phys = 1024 * 1024;
+    ramRange.phys = 0;
     ramRange.size = MegaByte(512);
 
     // Create the kernel

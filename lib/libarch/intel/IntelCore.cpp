@@ -84,7 +84,7 @@ void IntelCore::logException(CPUState *state)
         case INTEL_PAGEFAULT:
             ERROR("Page Fault Exception");
             // TODO: modify Log() to accept a String.
-            s << "Error " << state->error << " at " << Number::Hex << read_cr2();
+            s << "Error " << state->error << " at " << Number::Hex << readCR2();
             ERROR(*s);
             break;
 
@@ -134,4 +134,26 @@ void IntelCore::logRegister(const char *name, u32 reg)
     s << Number::Hex << name << " = " << reg << Number::Dec << " (" << reg << ")";
 
     ERROR(*s);
+}
+
+u32 IntelCore::readCR2()
+{
+    u32 cr2;
+    asm volatile("mov %%cr2, %%eax\n"
+                 "mov %%eax, %0\n" : "=r" (cr2));
+    return cr2;
+}
+
+u32 IntelCore::readCR3()
+{
+    u32 cr3;
+    asm volatile("mov %%cr3, %%eax\n"
+                 "mov %%eax, %0\n" : "=r" (cr3));
+    return cr3;
+}
+
+void IntelCore::writeCR3(u32 cr3)
+{
+    asm volatile("mov %0, %%eax\n"
+                 "mov %%eax, %%cr3" :: "r" (cr3));
 }

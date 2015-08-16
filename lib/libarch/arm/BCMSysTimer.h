@@ -21,16 +21,18 @@
 #include <Types.h>
 #include <Macros.h>
 
-#define SYSTIMER_CS  0x20003000
-#define SYSTIMER_CLO 0x20003004
+#define SYSTIMER_BASE 0x3000
+
+#define SYSTIMER_CS   (SYSTIMER_BASE + 0x0)
+#define SYSTIMER_CLO  (SYSTIMER_BASE + 0x4)
 
 /** Used by GPU */
-#define SYSTIMER_C0  0x2000300C
-#define SYSTIMER_C1  0x20003010
+#define SYSTIMER_C0   (SYSTIMER_BASE + 0xC)
+#define SYSTIMER_C1   (SYSTIMER_BASE + 0x10)
 
 /** Used by GPU */
-#define SYSTIMER_C2  0x20003014
-#define SYSTIMER_C3  0x20003018
+#define SYSTIMER_C2   (SYSTIMER_BASE + 0x14)
+#define SYSTIMER_C3   (SYSTIMER_BASE + 0x18)
     #define M3 3
     #define M2 2
     #define M1 1

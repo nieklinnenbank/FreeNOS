@@ -44,7 +44,7 @@ int __assertRead(Address addr)
     range.virt   = addr;
     range.phys   = ZERO;
     range.size   = sizeof(Address);
-    range.access = Memory::Present | Memory::User | Memory::Readable;
+    range.access = Memory::User | Memory::Readable;
 
     return VMCtl(SELF, Access, &range);
 }
@@ -56,7 +56,7 @@ int __assertWrite(Address addr)
     range.virt   = addr;
     range.phys   = ZERO;
     range.size   = sizeof(Address);
-    range.access = Memory::Present | Memory::User | Memory::Readable;
+    range.access = Memory::User | Memory::Readable;
 
     return VMCtl(SELF, Access, &range);
 }

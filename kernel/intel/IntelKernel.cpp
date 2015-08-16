@@ -21,11 +21,12 @@
 #include <Macros.h>
 #include <List.h>
 #include <ListIterator.h>
-#include <BitAllocator.h>
+#include <SplitAllocator.h>
 #include <Vector.h>
 #include <MemoryBlock.h>
 #include <String.h>
 #include <BootImage.h>
+#include <intel/IntelMap.h>
 #include "IntelKernel.h"
 #include "IntelBoot.h"
 
@@ -37,7 +38,7 @@ extern C void executeInterrupt(CPUState state)
 IntelKernel::IntelKernel(Memory::Range kernel, Memory::Range memory)
     : Kernel(kernel, memory)
 {
-    Arch::Memory mem;
+    IntelMap map;
 
     /* ICW1: Initialize PIC's (Edge triggered, Cascade) */
     IO::outb(PIC1_CMD, 0x11);
@@ -103,11 +104,9 @@ IntelKernel::IntelKernel(Memory::Range kernel, Memory::Range memory)
 
     // Fill the Task State Segment (TSS).
     MemoryBlock::set(&kernelTss, 0, sizeof(TSS));
-    kernelTss.esp0   = mem.range(Memory::KernelStack).virt + mem.range(Memory::KernelStack).size;
     kernelTss.ss0    = KERNEL_DS_SEL;
+    kernelTss.esp0   = 0;
     kernelTss.bitmap = sizeof(TSS);
-
-    // Load Task State Register
     ltr(KERNEL_TSS_SEL);
 }
 
@@ -176,41 +175,24 @@ bool IntelKernel::loadBootImage()
 {
     MultibootModule *mod;
     BootImage *image;
-    Arch::Memory virt(0, m_memory);
-    Arch::Memory::Range range;
-    Address vaddr;
 
     // Startup boot modules
     for (Size n = 0; n < multibootInfo.modsCount; n++)
     {
         // Map MultibootModule struct
         // TODO: too many arguments. Make an easier wrapper.
-        vaddr = virt.findFree(PAGESIZE, Memory::KernelPrivate);
-        virt.map(multibootInfo.modsAddress, vaddr,                        
-                 Arch::Memory::Present | Arch::Memory::Readable);
-        mod = (MultibootModule *)(vaddr + multibootInfo.modsAddress % PAGESIZE);
+        mod = (MultibootModule *) multibootInfo.modsAddress;
         mod += n;
-
-        vaddr = virt.findFree(PAGESIZE, Memory::KernelPrivate),
-        virt.map(mod->string, vaddr,
-                 Arch::Memory::Present | Arch::Memory::Readable);
-        String str = (char *) (vaddr + mod->string % PAGESIZE);
+        String str((char *)(mod->string));
 
         // Mark its memory used
         for (Address a = mod->modStart; a < mod->modEnd; a += PAGESIZE)
-            m_memory->allocate(a);
+            m_alloc->allocate(a);
 
         // Is this a BootImage?
         if (str.match("*.img.gz"))
         {
-            // Map the BootImage into our address space
-            range.phys   = mod->modStart;
-            range.size   = mod->modEnd - mod->modStart;
-            range.virt   = virt.findFree(range.size, Memory::KernelPrivate);
-            range.access = Arch::Memory::Present |
-                           Arch::Memory::Readable;
-            virt.mapRange(&range);
-            image = (BootImage *) range.virt;
+            image = (BootImage *) mod->modStart;
 
             // Verify this is a correct BootImage
             if (image->magic[0] == BOOTIMAGE_MAGIC0 &&
@@ -220,6 +202,7 @@ bool IntelKernel::loadBootImage()
                 m_bootImageAddress = mod->modStart;
                 m_bootImageSize    = mod->modEnd - mod->modStart;
 
+                // TODO: move this to Kernel.cpp
                 // Loop BootPrograms
                 for (Size i = 0; i < image->symbolTableCount; i++)
                     loadBootProcess(image, mod->modStart, i);

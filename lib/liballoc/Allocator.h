@@ -19,16 +19,13 @@
 #define __LIBALLOC_ALLOCATOR_H
 #ifndef __ASSEMBLER__
 
-#include <FreeNOS/System.h>
+#include <Macros.h>
 #include <Types.h>
 
 /**
  * @defgroup liballoc liballoc
  * @{
  */
-
-// TODO: #warning maybe make a splitup: RootAllocator and Child/SubAllocator.
-// Root allocators never have a parent, sub allocators do.
 
 /**
  * Memory Allocator.
@@ -67,13 +64,6 @@ class Allocator
     virtual ~Allocator();
 
     /**
-     * Set parent allocator.
-     *
-     * @param p New parent allocator.
-     */
-    void setParent(Allocator *parent);
-
-    /**
      * Makes the given Allocator the default.
      * @param alloc Instance of an Allocator.
      */ 
@@ -84,6 +74,34 @@ class Allocator
      * @return Allocator pointer.
      */
     static Allocator *getDefault();
+
+    /**
+     * Set parent allocator.
+     *
+     * @param p New parent allocator.
+     */
+    void setParent(Allocator *parent);
+
+    /**
+     * Set allocation alignment.
+     *
+     * Configure the Allocator such that each allocated
+     * address must be aligned to the given size.
+     *
+     * @param size Alignment size
+     * @return Result code
+     */
+    Result setAlignment(Size size);
+
+    /**
+     * Set allocation base.
+     *
+     * The allocation base will be added to each allocation.
+     *
+     * @param addr Allocation base address.
+     * @return Result code
+     */
+    Result setBase(Address addr);
 
     /**
      * Get memory size.
@@ -133,10 +151,16 @@ class Allocator
      * @param boundary Boundary size to align the address for.
      * @return Aligned Address.
      */
-    Address aligned(Address addr, Size boundary = MEMALIGN);
+    Address aligned(Address addr, Size boundary);
 
     /** Our parent Allocator, if any. */
     Allocator *m_parent;
+
+    /** Allocation memory alignment. */
+    Size m_alignment;
+
+    /** Allocation base address */
+    Address m_base;
     
   private:
 

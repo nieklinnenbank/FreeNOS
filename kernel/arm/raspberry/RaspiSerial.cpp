@@ -17,7 +17,10 @@
  */
 
 #include <FreeNOS/System.h>
+#include <FreeNOS/API.h>
 #include "RaspiSerial.h"
+
+#warning The I/O base is mapped as cachable and not as Device!
 
 RaspiSerial::RaspiSerial()
 {

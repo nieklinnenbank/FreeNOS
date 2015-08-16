@@ -19,7 +19,7 @@
 #define __LIBEXEC_EXECUTABLEFORMAT_H
 #ifndef __ASSEMBLER__
 
-#include <FreeNOS/System.h>
+#include <Memory.h>
 #include <Types.h>
 
 /**  
@@ -31,7 +31,7 @@
  * Abstracts a memory region read from a format.
  */
 
-// TODO: reuse this from libarch????
+#warning TODO: reuse this from libarch????
 
 typedef struct MemoryRegion
 {
@@ -58,7 +58,7 @@ typedef struct MemoryRegion
     Size size;
 
     /** Page protection flags. */
-    Arch::Memory::Access access;
+    Memory::Access access;
     
     /** Memory contents. */
     u8 *data;

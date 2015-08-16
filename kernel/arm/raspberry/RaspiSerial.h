@@ -60,7 +60,7 @@ class RaspiSerial : public Log
 
     enum {
         // The GPIO registers base address.
-        GPIO_BASE = 0x20200000,
+        GPIO_BASE = 0x200000,
 
         // The offsets for reach register.
 
@@ -71,7 +71,7 @@ class RaspiSerial : public Log
         GPPUDCLK0 = (GPIO_BASE + 0x98),
 
         // The base address for UART.
-        PL011_BASE = 0x20201000,
+        PL011_BASE = (GPIO_BASE + 0x1000),
 
         // The offsets for reach register for the UART.
         PL011_DR     = (PL011_BASE + 0x00),

@@ -17,7 +17,7 @@
 
 #include <Log.h>
 #include <ListIterator.h>
-#include <BitAllocator.h>
+#include <SplitAllocator.h>
 #include <BubbleAllocator.h>
 #include <PoolAllocator.h>
 #include <BootImage.h>
@@ -35,15 +35,19 @@ Kernel::Kernel(Memory::Range kernel, Memory::Range memory)
     Log::instance->write(BANNER);
     Log::instance->write(COPYRIGHT "\r\n");
 
+    // TODO: compute lower & higher memory for this core.
+    Memory::Range highMem;
+    MemoryBlock::set(&highMem, 0, sizeof(highMem));
+
     // Initialize members
-    m_memory = new BitAllocator(memory, PAGESIZE);
+    m_alloc  = new SplitAllocator(memory, highMem);
     m_procs  = new ProcessManager(new Scheduler());
     m_api    = new API();
     m_bootImageAddress = 0;
 
-    // Mark kernel memory used
+    // Mark kernel memory used (first 4MB in phys memory)
     for (Size i = 0; i < kernel.size; i += PAGESIZE)
-        m_memory->allocate(kernel.phys + i);
+        m_alloc->allocate(kernel.phys + i);
 
     // Clear interrupts table
     m_interrupts.fill(ZERO);
@@ -69,9 +73,9 @@ Error Kernel::heap(Address base, Size size)
     return 0;
 }
 
-BitAllocator * Kernel::getMemory()
+SplitAllocator * Kernel::getAllocator()
 {
-    return m_memory;
+    return m_alloc;
 }
 
 ProcessManager * Kernel::getProcessManager()
@@ -92,6 +96,11 @@ Address Kernel::getBootImageAddress()
 Size Kernel::getBootImageSize()
 {
     return m_bootImageSize;
+}
+
+MemoryContext * Kernel::getMemoryContext()
+{
+    return m_procs->current()->getMemoryContext();
 }
 
 void Kernel::hookInterrupt(u32 vec, InterruptHandler h, ulong p)
@@ -131,14 +140,15 @@ void Kernel::executeInterrupt(u32 vec, CPUState *state)
     }
 }
 
-void Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Size index)
+bool Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Size index)
 {
-    Address imageVAddr = (Address) image, args, vaddr;
+    Address imageVAddr = (Address) image, args;
     Size args_size = ARGV_SIZE;
     BootSymbol *program;
     BootSegment *segment;
     Process *proc;
-    Arch::Memory local(0, Kernel::instance->getMemory());
+    char *vaddr;
+    Arch::MemoryMap map;
 
     // Point to the program and segments table
     program = &((BootSymbol *) (imageVAddr + image->symbolTableOffset))[index];
@@ -146,41 +156,48 @@ void Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Size index)
 
     // Ignore non-BootProgram entries
     if (program->type != BootProgram)
-        return;
+        return false;
 
     // Create process
-    proc = m_procs->create(program->entry);
+    proc = m_procs->create(program->entry, map);
+    if (!proc)
+    {
+        FATAL("failed to create boot program: " << program->name);
+        return false;
+    }
+
     proc->setState(Process::Ready);
 
     // Obtain process memory
-    Arch::Memory mem(proc->getPageDirectory(), getMemory());
+    MemoryContext *mem = proc->getMemoryContext();
 
     // Map program segment into it's virtual memory
     for (Size i = 0; i < program->segmentsCount; i++)
     {
         for (Size j = 0; j < segment[i].size; j += PAGESIZE)
         {
-            mem.map(imagePAddr + segment[i].offset + j,
-                    segment[i].virtualAddress + j,
-                    Arch::Memory::Present  |
-                    Arch::Memory::User     |
-                    Arch::Memory::Readable |
-                    Arch::Memory::Writable |
-                    Arch::Memory::Executable);
+            mem->map(segment[i].virtualAddress + j,
+                     imagePAddr + segment[i].offset + j,
+                     Memory::User     |
+                     Memory::Readable |
+                     Memory::Writable |
+                     Memory::Executable);
         }
     }
     
     // Map program arguments into the process
-    m_memory->allocate(&args_size, &args);
-    mem.map(args, ARGV_ADDR, Arch::Memory::Present | Arch::Memory::User | Arch::Memory::Readable | Arch::Memory::Writable);
+    // TODO: move into the high memory???
+    m_alloc->allocateLow(args_size, &args);
+    mem->map(ARGV_ADDR, args, Memory::User | Memory::Readable | Memory::Writable);
 
     // Copy program arguments
-    vaddr = local.findFree(ARGV_SIZE, Memory::KernelPrivate);
-    local.map(args, vaddr, Memory::Present|Memory::Readable|Memory::Writable);
-    MemoryBlock::copy((char *)vaddr, program->name, ARGV_SIZE);
+    vaddr = (char *) m_alloc->toVirtual(args);
+    MemoryBlock::set(vaddr, 0, PAGESIZE);
+    MemoryBlock::copy(vaddr, program->name, ARGV_SIZE);
 
     // Done
     NOTICE("loaded: " << program->name);
+    return true;
 }
 
 int Kernel::run()

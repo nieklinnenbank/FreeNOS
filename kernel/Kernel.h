@@ -21,15 +21,14 @@
 #include <Macros.h>
 #include <Types.h>
 #include <Singleton.h>
-#include <Memory.h>
 #include <BootImage.h>
+#include <Memory.h>
 #include "Process.h"
-#include "Memory.h"
 #include "ProcessManager.h"
 
 /** Forward declaration. */
 class API;
-class BitAllocator;
+class SplitAllocator;
 struct CPUState;
 
 /**
@@ -107,9 +106,9 @@ class Kernel : public Singleton<Kernel>
     /**
      * Get physical memory allocator.
      *
-     * @return BitAllocator object pointer
+     * @return SplitAllocator object pointer
      */
-    BitAllocator * getMemory();
+    SplitAllocator * getAllocator();
 
     /**
      * Get process manager.
@@ -134,6 +133,13 @@ class Kernel : public Singleton<Kernel>
      * BootImage size
      */
     Size getBootImageSize();
+
+    /**
+     * Get the current MMU context.
+     *
+     * @return MemoryContext object pointer
+     */
+    MemoryContext * getMemoryContext();
 
     /**
      * Execute the kernel.
@@ -176,12 +182,12 @@ class Kernel : public Singleton<Kernel>
      * @param imagePAddr Physical memory address of the boot image.
      * @param index Index in the BootProcess table.
      */
-    virtual void loadBootProcess(BootImage *image, Address imagePAddr, Size index);
+    virtual bool loadBootProcess(BootImage *image, Address imagePAddr, Size index);
 
   protected:
 
     /** Physical memory allocator */
-    BitAllocator *m_memory;
+    SplitAllocator *m_alloc;
 
     /** Process Manager */
     ProcessManager *m_procs;

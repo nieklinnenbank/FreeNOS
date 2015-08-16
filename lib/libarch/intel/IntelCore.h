@@ -88,16 +88,6 @@ inline u64 timestamp()
     asm volatile("mov %cr3, %eax\n" \
                  "mov %eax, %cr3\n")
 
-/**
- * Read the CR2 register.
- */
-inline u32 read_cr2()
-{
-    u32 cr2;
-    asm volatile("mov %%cr2, %%eax\n"
-                 "mov %%eax, %0\n" : "=r" (cr2));
-    return cr2;
-}
 
 /**
  * Enables interrupts.
@@ -319,6 +309,21 @@ class IntelCore : public Core
      * @param reg Value of the register.
      */
     void logRegister(const char *name, u32 reg);
+
+    /**
+     * Read the CR2 register.
+     */
+    u32 readCR2();
+
+    /**
+     * Read the CR3 register.
+     */
+    u32 readCR3();
+
+    /**
+     * Write the CR3 register
+     */
+    void writeCR3(u32 cr3);
 };
 
 #ifdef __KERNEL__

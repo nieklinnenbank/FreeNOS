@@ -19,6 +19,7 @@
 #define __KERNEL_PROCESS_MANAGER_H
 
 #include <Types.h>
+#include <MemoryMap.h>
 #include "Process.h"
 #include "Scheduler.h"
 
@@ -45,7 +46,7 @@ class ProcessManager
     /**
      * Create and add a new Process.
      */
-    Process * create(Address entry);
+    Process * create(Address entry, const MemoryMap &map);
 
     /**
      * Retrieve a Process by it's ID.

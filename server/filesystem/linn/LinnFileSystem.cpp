@@ -38,6 +38,7 @@ int main(int argc, char **argv)
     // Mount the given file, or try to use the BootImage embedded rootfs
     if (argc > 3)
     {
+        NOTICE("file storage: " << argv[1] << " at offset " << atoi(argv[2]));
         storage    = new FileStorage(argv[1], atoi(argv[2]));
         background = true;
         path       = argv[3];
@@ -47,7 +48,7 @@ int main(int argc, char **argv)
         BootImageStorage *bm = new BootImageStorage(LINNFS_ROOTFS_FILE);
         if (bm->load())
         {
-            NOTICE("loaded: " << LINNFS_ROOTFS_FILE);
+            NOTICE("boot image: " << LINNFS_ROOTFS_FILE);
             storage = bm;
         } else
             FATAL("unable to load: " << LINNFS_ROOTFS_FILE);

@@ -28,9 +28,10 @@ Error PrivExecHandler(PrivOperation op, Address addr)
         
         procs->setIdle(procs->current());
         irq_enable();
-        
+
+#warning ARM does not implement idle() yet!        
         while (true)
-        idle();
+            idle();
     
     case Reboot:
         reboot();

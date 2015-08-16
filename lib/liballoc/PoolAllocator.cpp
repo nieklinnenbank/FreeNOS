@@ -92,7 +92,7 @@ MemoryPool * PoolAllocator::newPool(Size index, Size cnt)
     if (m_parent->allocate(&sz, (Address *)&pool) == Success)
     {
         pool->count  = cnt;
-        pool->addr   = aligned( ((Address) (pool + 1)) + BITMAP_NUM_BYTES(pool->count) );
+        pool->addr   = aligned( ((Address) (pool + 1)) + BITMAP_NUM_BYTES(pool->count), MEMALIGN );
         pool->next   = m_pools[index];
         pool->free   = pool->count;
         pool->size   = (1 << (index + 1));
@@ -104,6 +104,7 @@ MemoryPool * PoolAllocator::newPool(Size index, Size cnt)
 
 Allocator::Result PoolAllocator::release(Address addr)
 {
+    // TODO: very slow! requires a full scan of the heap in the worst case.
     for (Size i = POOL_MIN_POWER - 1; i < POOL_MAX_POWER; i++)
     {
         for (MemoryPool *p = m_pools[i]; p; p = p->next)

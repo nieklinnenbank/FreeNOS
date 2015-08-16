@@ -63,15 +63,12 @@ Allocator::Result PageAllocator::allocate(Size *size, Address *addr, Size align)
 
     // Fill in the message. */
     range.size   = bytes;
-    range.access = Memory::Present  |
-                   Memory::User     |
-                   Memory::Readable |
-                   Memory::Writable;
+    range.access = Memory::User | Memory::Readable | Memory::Writable;
     range.virt   = m_base + m_allocated;
     range.phys   = ZERO;
 
-// TODO: #warning do we need to pass the region here too?
-//  range.region = Memory::UserPrivate;
+    // TODO: #warning do we need to pass the region here too?
+    //range.region = Memory::UserPrivate;
     VMCtl(SELF, Map, &range);
 
     // Clear the pages

@@ -17,77 +17,57 @@
 
 #include <FreeNOS/System.h>
 #include <MemoryBlock.h>
-#include <BitAllocator.h>
+#include <Memory.h>
+#include <SplitAllocator.h>
+#include <intel/IntelPaging.h>
 #include "IntelProcess.h"
 
-// TODO: this should not be done here. Try to use libarch's Memory class.
-#define PAGE_PRESENT    1
-#define PAGE_USER       4
-
-IntelProcess::IntelProcess(ProcessID id, Address entry, bool privileged)
-    : Process(id, entry, privileged)
+IntelProcess::IntelProcess(ProcessID id, Address entry, bool privileged, const MemoryMap &map)
+    : Process(id, entry, privileged, map)
 {
-    Address stack, stackBase, *pageDir;
-    BitAllocator *memory = Kernel::instance->getMemory();
+    // TODO: set some members
+}
+
+Process::Result IntelProcess::initialize()
+{
+    Address stackSize, stackAddr;
+    Memory::Range range;
     CPUState *regs;
-    Arch::Memory local(0, memory);
-    Arch::Memory::Range range;
-    Size dirSize = PAGESIZE;
-    u16 dataSel = privileged ? KERNEL_DS_SEL : USER_DS_SEL;
-    u16 codeSel = privileged ? KERNEL_CS_SEL : USER_CS_SEL;
+    u16 dataSel = m_privileged ? KERNEL_DS_SEL : USER_DS_SEL;
+    u16 codeSel = m_privileged ? KERNEL_CS_SEL : USER_CS_SEL;
 
-    // Allocate and map page directory
-    memory->allocate(&dirSize, &m_pageDirectory);
+    // Create MMU context
+    m_memoryContext = new IntelPaging(
+        &m_map,
+        Kernel::instance->getAllocator()
+    );
+    if (!m_memoryContext)
+        return OutOfMemory;
 
-    pageDir = (Address *) local.findFree(PAGESIZE, Memory::KernelPrivate);
-    local.map(m_pageDirectory, (Address) pageDir,
-              Arch::Memory::Present |
-              Arch::Memory::Readable |
-              Arch::Memory::Writable);
+    // User stack (high memory).
+    range = m_map.range(MemoryMap::UserStack);
+    range.access = Memory::Readable | Memory::Writable | Memory::User;
+    if (Kernel::instance->getAllocator()->allocateHigh(range.size, &range.phys) != Allocator::Success)
+        return OutOfMemory;
 
-    // Initialize page directory
-    for (Size i = 0; i < PAGEDIR_MAX; i++)
-        pageDir[i] = 0;
-
-    pageDir[0] = kernelPageDir[0];
-    // TODO: this should not be done here. Try to use libarch's Memory class.
-    pageDir[DIRENTRY(PAGEDIR_LOCAL) ] = m_pageDirectory | PAGE_PRESENT | PAGE_USER;
-    local.unmap((Address)pageDir);
-
-    // Obtain memory mappings
-    // TODO: use Memory::create()
-    Arch::Memory mem(m_pageDirectory, memory);
-
-    // User stack.
-    range.phys   = 0;
-    range.virt   = mem.range(Memory::UserStack).virt;
-    range.size   = mem.range(Memory::UserStack).size;
-    range.access = Arch::Memory::Present |
-                   Arch::Memory::User |
-                   Arch::Memory::Readable |
-                   Arch::Memory::Writable;
-    mem.mapRange(&range);
+    if (m_memoryContext->mapRange(&range) != MemoryContext::Success)
+        return MemoryMapError;
     setUserStack(range.virt + range.size - MEMALIGN);
 
-    // Kernel stack.
-    range.phys   = 0;
-    range.virt   = mem.range(Memory::KernelStack).virt;
-    range.size   = mem.range(Memory::KernelStack).size;
-    range.access = Arch::Memory::Present |
-                   Arch::Memory::Writable;
-    mem.mapRange(&range);
-    setKernelStack(range.virt + range.size - sizeof(CPUState)
-                                           - sizeof(IRQRegs0)
-                                           - sizeof(CPURegs));
+    // Kernel stack (low memory).
+    stackSize = PAGESIZE;
+    if (Kernel::instance->getAllocator()->allocateLow(stackSize, &stackAddr) != Allocator::Success)
+        return OutOfMemory;
 
-    // Map kernel stack
-    range.virt = local.findFree(range.size, Memory::KernelPrivate);
-    stack      = range.virt;
-    local.mapRange(&range);
-    stackBase  = stack + range.size;
+    stackAddr = (Address) Kernel::instance->getAllocator()->toVirtual(stackAddr);
+    m_kernelStackBase = stackAddr + stackSize;
+    setKernelStack(m_kernelStackBase - sizeof(CPUState)
+                                     - sizeof(IRQRegs0)
+                                     - sizeof(CPURegs));
 
+    // Fill kernel stack with initial (user)registers to restore
     // loadCoreState: struct CPUState
-    regs = (CPUState *) stackBase - 1;
+    regs = (CPUState *) m_kernelStackBase - 1;
     MemoryBlock::set(regs, 0, sizeof(CPUState));
     regs->seg.ss0    = KERNEL_DS_SEL;
     regs->seg.fs     = dataSel;
@@ -96,7 +76,7 @@ IntelProcess::IntelProcess(ProcessID id, Address entry, bool privileged)
     regs->seg.ds     = dataSel;
     regs->regs.ebp   = m_userStack;
     regs->regs.esp0  = m_kernelStack;
-    regs->irq.eip    = entry;
+    regs->irq.eip    = m_entry;
     regs->irq.cs     = codeSel;
     regs->irq.eflags = INTEL_EFLAGS_DEFAULT |
                        INTEL_EFLAGS_IRQ;
@@ -112,29 +92,32 @@ IntelProcess::IntelProcess(ProcessID id, Address entry, bool privileged)
     // restoreState: popa
     CPURegs *pusha = (CPURegs *) irq - 1;
     MemoryBlock::set(pusha, 0, sizeof(CPURegs));
-    pusha->ebp  = m_kernelStack - sizeof(CPURegs);
+    pusha->ebp  = m_kernelStackBase - sizeof(CPURegs);
     pusha->esp0 = pusha->ebp;
-
-    local.unmapRange(&range);
+    return Success;
 }
 
 IntelProcess::~IntelProcess()
 {
-    Arch::Memory mem(getPageDirectory(), Kernel::instance->getMemory());
-
-    // Release regions
-    mem.releaseRegion(Memory::KernelStack);
-    mem.releaseRegion(Memory::UserData);
-    mem.releaseRegion(Memory::UserHeap);
-    mem.releaseRegion(Memory::UserStack);
-    mem.releaseRegion(Memory::UserPrivate);
+    // TODO: release() on m_kernelStack
+    m_memoryContext->releaseRegion(MemoryMap::UserData);
+    m_memoryContext->releaseRegion(MemoryMap::UserHeap);
+    m_memoryContext->releaseRegion(MemoryMap::UserStack);
+    m_memoryContext->releaseRegion(MemoryMap::UserPrivate);
 }
 
 void IntelProcess::execute(Process *previous)
 {
     IntelProcess *p = (IntelProcess *) previous;
 
+    // Reload Task State Register (with kernel stack for interrupts)
+    kernelTss.esp0 = m_kernelStackBase;
+    //ltr(KERNEL_TSS_SEL);
+
+    // Activate the memory context of this process
+    m_memoryContext->activate();    
+
+    // Switch kernel stack (includes saved userspace registers)
     switchCoreState( p ? &p->m_kernelStack : ZERO,
-                     m_pageDirectory,
                      m_kernelStack );
 }

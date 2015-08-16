@@ -22,9 +22,9 @@
 #include <Vector.h>
 #include <PageAllocator.h>
 #include <PoolAllocator.h>
-#include <MemoryAllocator.h>
 #include <FileSystemMount.h>
 #include <CoreServer.h>
+#include <MemoryMap.h>
 #include "FileDescriptor.h"
 #include "stdlib.h"
 #include "string.h"
@@ -95,39 +95,26 @@ void setupHeap()
     PoolAllocator *pool;
     Address heapAddr;
     Size parentSize;
-    Arch::Memory mem; // TODO: inefficient. needs another kernel call for SystemInfo()...
 
-    /* Only the core server allocates directly. */
-    if (ProcessCtl(SELF, GetPID) == CORESRV_PID)
-    {
-        MemoryAllocator alloc( mem.range(Memory::UserHeap).virt,
-                               mem.range(Memory::UserHeap).size );
+    // TODO: inefficient. needs another kernel call. Make forkexec() have zero kernel calls and/or IPC until main() for
+    // maximum efficiency.
+    // TODO: ProcessCtl(SELF, InfoPID, &info);
+    // map = info.map....
+    Arch::MemoryMap map;
 
-        // Pre-allocate 4 pages
-        Size sz = PAGESIZE * 4;
-        Address addr;
-        alloc.allocate(&sz, &addr);
+    PageAllocator alloc( map.range(MemoryMap::UserHeap).virt,
+                         map.range(MemoryMap::UserHeap).size );
 
-        // Allocate instance copy on vm pages itself
-        heapAddr   = alloc.base();
-        parent     = new (heapAddr) MemoryAllocator(&alloc);
-        parentSize = sizeof(MemoryAllocator);
-    }
-    else
-    {
-        PageAllocator alloc( mem.range(Memory::UserHeap).virt,
-                             mem.range(Memory::UserHeap).size );
+    // Pre-allocate 4 pages
+    Size sz = PAGESIZE * 4;
+    Address addr;
+    alloc.allocate(&sz, &addr);
 
-        // Pre-allocate 4 pages
-        Size sz = PAGESIZE * 4;
-        Address addr;
-        alloc.allocate(&sz, &addr);
+    // Allocate instance copy on vm pages itself
+    heapAddr   = alloc.base();
+    parent     = new (heapAddr) PageAllocator(&alloc);
+    parentSize = sizeof(PageAllocator);
 
-        // Allocate instance copy on vm pages itself
-        heapAddr   = alloc.base();
-        parent     = new (heapAddr) PageAllocator(&alloc);
-        parentSize = sizeof(PageAllocator);
-    }
     // Make a pool
     pool = new (heapAddr + parentSize) PoolAllocator();
     pool->setParent(parent);
@@ -162,6 +149,8 @@ void setupMappings()
 
         files.insert(fd);
     }
+#warning Solve this, by passing the file descriptor, procinfo, etc as a parameter to entry(), constructed by the kernel
+#warning If there was a parent, it would have passed the file descriptor table, argc/argv, memorymap, etc as an argument to ProcessCtl()
 
     // TODO: perhaps we can "bundle" the GetMounts() and ReadProcess() calls, so that
     // we do not need to send IPC message twice in this part (for mounts and getppid())

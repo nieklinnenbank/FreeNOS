@@ -24,13 +24,14 @@
 #include <Macros.h>
 #include <Log.h>
 
+#warning take the kernel physical memory base here. it varies per core.
+
 extern C int kernel_main()
 {
-    Arch::Memory mem;
-
-    // Initialize heap
-    Kernel::heap( mem.range(Memory::KernelHeap).virt,
-                  mem.range(Memory::KernelHeap).size );
+    // Initialize heap at 3MB offset
+    // TODO: fix this
+    Kernel::heap( MegaByte(3),
+                  MegaByte(1) );
 
     // Start kernel debug serial console
     // TODO: can I re-use the user-land driver here somehow????
@@ -40,15 +41,15 @@ extern C int kernel_main()
     // TODO: put this in the boot.S, or maybe hide it in the support library? maybe a _run_main() or something.
     constructors();
 
-    // Kernel memory range
+    // Kernel memory range (first 4MB, includes 1MB heap)
     Memory::Range kernelRange;
-    kernelRange.phys = 1024 * 1024;
-    kernelRange.size = 1024 * 1024 * 3;
+    kernelRange.phys = 0;
+    kernelRange.size = MegaByte(4);
 
-    // RAM physical range
+    // RAM physical range for this core (SplitAllocator lower memory).
     Memory::Range ramRange;
-    ramRange.phys = 1024 * 1024;
-    ramRange.size = multibootInfo.memUpper * 1024;
+    ramRange.phys = 0;
+    ramRange.size = (multibootInfo.memUpper * 1024) + MegaByte(1);
 
     // Create and run the kernel
     IntelKernel *kernel = new IntelKernel(kernelRange, ramRange);

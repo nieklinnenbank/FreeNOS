@@ -118,7 +118,12 @@
     ctrl.write(ARMControl::UnifiedTLBClear, 0); \
 })
 
-#define tlb_flush(page) tlb_flush_all()
+#define tlb_invalidate(page) \
+({ \
+    mcr(p15, 0, 1, c8, c5, (page)); \
+    mcr(p15, 0, 1, c8, c6, (page)); \
+    mcr(p15, 0, 1, c8, c7, (page)); \
+})
 
 /**
  * Data Memory Barrier
@@ -131,12 +136,21 @@ inline void dmb()
 
 /**
  * Data Synchronisation Barrier.
+ * @see ARM1176JZF-S Technical Reference Manual, page 342, Data Synchronization Barrier
  */
 inline void dsb()
 {
     asm volatile("mov r0, #0\n"
                  "mcr p15, 0, r0, c7, c10, 4\n");
 }
+
+/**
+ * Level One Cache clean by page.
+ *
+ * @param page Virtual memory address to clean.
+ */
+#define cache1_clean(page) \
+    mcr(p15, 0, 1, c7, c10, ((u32) page));
 
 /** 
  * Contains all the CPU registers. 

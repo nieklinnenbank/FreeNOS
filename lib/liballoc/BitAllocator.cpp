@@ -39,12 +39,27 @@ Size BitAllocator::available()
     return m_array.count(false) * m_chunkSize;
 }
 
+Address BitAllocator::base()
+{
+    return m_base;
+}
+
 BitArray * BitAllocator::getBitArray()
 {
     return &m_array;
 }
 
-Allocator::Result BitAllocator::allocate(Size *size, Address *addr, Size align)
+Allocator::Result BitAllocator::allocate(Size *size,
+                                         Address *addr,
+                                         Size align)
+{
+    return allocate(size, addr, align, 0);
+}
+
+Allocator::Result BitAllocator::allocate(Size *size,
+                                         Address *addr,
+                                         Size align,
+                                         Address allocStart)
 {
     Size num = (*size) / m_chunkSize;
 
@@ -58,7 +73,7 @@ Allocator::Result BitAllocator::allocate(Size *size, Address *addr, Size align)
     else
         align /= m_chunkSize;    
 
-    *addr = m_base + (m_array.setNext(num, 0, align) * m_chunkSize);
+    *addr = m_base + (m_array.setNext(num, allocStart / m_chunkSize, align) * m_chunkSize);
     return Success;
 }
 

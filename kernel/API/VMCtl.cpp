@@ -33,14 +33,15 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range)
         return API::NotFound;
     }
 
-    Arch::Memory mem(procID == SELF ? ZERO : proc->getPageDirectory(),
-                     Kernel::instance->getMemory());
+    // TODO: capability checking.
+    MemoryContext *mem = proc->getMemoryContext();
 
     // Perform operation
     switch (op)
     {
         case LookupVirtual:
-            range->phys = mem.lookup(range->virt);
+            if (mem->lookup(range->virt, &range->phys) != MemoryContext::Success)
+                return API::AccessViolation;
             break;
 
         case LookupPhysical:
@@ -49,16 +50,16 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range)
 
         case Map:
             if (!range->virt)
-                range->virt = mem.findFree(range->size, Memory::UserPrivate);
-            mem.mapRange(range);
+                mem->findFree(range->size, MemoryMap::UserPrivate, &range->virt);
+            mem->mapRange(range);
             break;
 
         case UnMap:
-            mem.releaseRange(range);
+            mem->releaseRange(range);
             break;
 
         case Access:
-            ret = (API::Error) mem.access(range->virt);
+            ret = (API::Error) mem->access(range->virt, &range->access);
             break;
             
         default:

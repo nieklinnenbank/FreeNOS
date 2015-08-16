@@ -20,11 +20,6 @@
 .global switchCoreState
 .section ".text"
 
-/*
- void switchCoreState(Address *currentStack,
-                      Address pageDirectory,
-                      Address stackAddr);
- */
 switchCoreState:
 
     /* Setup correct stackframe. */
@@ -43,21 +38,8 @@ switchCoreState:
 restoreState:
 
     /* Reload stack */
-    mov sp, r2
+    mov sp, r1
     mov r4, #0
-
-    /* Reload first page table */
-    mcr p15, 0, r4, c7, c5, 0    /* flush entire instruction cache */
-    mcr p15, 0, r4, c7, c10, 0   /* flush entire data cache */
-    mcr p15, 0, r4, c7, c7, 0    /* flush entire cache */
-    mcr p15, 0, r4, c7, c10, 5   /* data memory barrier */
-    mcr p15, 0, r4, c7, c10, 4   /* memory sync barrier */
-
-    mcr p15, 0, r1, c2, c0, 0    /* switch first page table */
-
-    mcr p15, 0, r4, c8, c5, 0    /* flush instruction TLB */
-    mcr p15, 0, r4, c8, c6, 0    /* flush data TLB */
-    mcr p15, 0, r4, c8, c7, 0    /* flush unified TLB */
 
     /* Restore kernel registers. */
     pop {lr}

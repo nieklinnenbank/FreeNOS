@@ -81,7 +81,7 @@ class IO
     static inline void write(u32 reg, u32 data)
     {
         dmb();
-        u32 *ptr = (u32 *) reg;
+        u32 *ptr = (u32 *) (reg + base);
         asm volatile("str %[data], [%[reg]]"
                  : : [reg]"r"(ptr), [data]"r"(data));
         dmb();
@@ -93,13 +93,16 @@ class IO
     static inline u32 read(u32 reg)
     {
         dmb();
-        u32 *ptr = (u32 *) reg;
+        u32 *ptr = (u32 *) (reg + base);
         u32 data;
         asm volatile("ldr %[data], [%[reg]]"
                  : [data]"=r"(data) : [reg]"r"(ptr));
         dmb();
         return data;
     }
+
+    /** I/O base address */
+    static u32 base;
 };
 
 #endif /* __LIBARCH_ARMIO_H */

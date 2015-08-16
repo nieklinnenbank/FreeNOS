@@ -47,6 +47,8 @@ class ARMControl
         TranslationTable1,
         TranslationTableCtrl,
         CacheClear,
+        DataCacheClean,
+        FlushPrefetchBuffer,
         InstructionCacheClear,
         InstructionTLBClear,
         DataTLBClear,
@@ -63,14 +65,15 @@ class ARMControl
      */
     enum SystemControlFlags
     {
-        MMUEnabled       = (1 << 0),
-        InstructionCache = (1 << 12),
-        DataCache        = (1 << 2),
-        ExtendedPaging   = (1 << 23),
-        BranchPrediction = (1 << 11),
-        AlignmentCorrect = (1 << 22),
-        AlignmentFaults  = (1 << 1),
-        BigEndian        = (1 << 7)
+        MMUEnabled        = (1 << 0),
+        InstructionCache  = (1 << 12),
+        DataCache         = (1 << 2),
+        ExtendedPaging    = (1 << 23),
+        AccessPermissions = (1 << 29),
+        BranchPrediction  = (1 << 11),
+        AlignmentCorrect  = (1 << 22),
+        AlignmentFaults   = (1 << 1),
+        BigEndian         = (1 << 7)
     };
 
     /**

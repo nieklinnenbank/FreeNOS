@@ -97,9 +97,6 @@
 /** Memory address alignment. */
 #define MEMALIGN        4
 
-/** Local page directory in virtual memory */
-#define PAGEDIR_LOCAL   (0x04400000)
-
 /**
  * @}
  */

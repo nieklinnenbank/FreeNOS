@@ -18,8 +18,8 @@
 Import('build_env')
 
 env = build_env.Clone()
-env.UseLibraries([ 'libstd', 'libarch' ])
-env.UseLibraries([ 'libstd', 'libarch' ], 'host')
+env.UseLibraries([ 'libstd', 'libarch', 'liballoc' ])
+env.UseLibraries([ 'libstd', 'libarch', 'liballoc' ], 'host')
 env.UseServers([ 'core' ])
 
 if env['ARCH'] == 'host':

@@ -15,88 +15,91 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/System.h>
 #include <Log.h>
-#include <BitAllocator.h>
+#include <SplitAllocator.h>
 #include "ARMProcess.h"
 #define MEMALIGN8 8
 
-ARMProcess::ARMProcess(ProcessID id, Address entry, bool privileged)
-    : Process(id, entry, privileged)
+ARMProcess::ARMProcess(ProcessID id, Address entry, bool privileged, const MemoryMap &map)
+    : Process(id, entry, privileged, map)
 {
-    DEBUG("id =" << id << " entry =" << entry << " privileged = " << privileged);
+    // TODO: set some members
+}
 
-    Size size = PAGEDIR_SIZE;
-    BitAllocator *memory = Kernel::instance->getMemory();
+Process::Result ARMProcess::initialize()
+{
     Memory::Range range;
     Size framesize = (14+17)*sizeof(u32);
+    Address stackAddr;
 
-    // Allocate first level page table
-    memory->allocate(&size, &m_pageDirectory, KiloByte(16));
+    // Create MMU context
+    m_memoryContext = new ARMPaging(
+        &m_map,
+        Kernel::instance->getAllocator()
+    );
+    if (!m_memoryContext)
+        return OutOfMemory;
 
-    // Initialize memory context
-    Arch::Memory mem(m_pageDirectory, memory);
-    mem.create();
+    // User stack (high memory).
+    range = m_map.range(MemoryMap::UserStack);
+    range.access = Memory::Readable | Memory::Writable | Memory::User;
+    if (Kernel::instance->getAllocator()->allocateHigh(range.size, &range.phys) != Allocator::Success)
+        return OutOfMemory;
 
-    // User stack.
-    range.phys   = 0;
-    range.virt   = mem.range(Memory::UserStack).virt;
-    range.size   = mem.range(Memory::UserStack).size;
-    range.access = Memory::Present |
-                   Memory::User |
-                   Memory::Readable |
-                   Memory::Writable;
-    mem.mapRange(&range);
+    if (m_memoryContext->mapRange(&range) != MemoryContext::Success)
+        return MemoryMapError;
     setUserStack(range.virt + range.size - MEMALIGN8);
 
-    // Kernel stack.
-    range.phys   = 0;
-    range.virt   = mem.range(Memory::KernelStack).virt;
-    range.size   = mem.range(Memory::KernelStack).size;
-    range.access = Memory::Present | Memory::Readable | Memory::Writable;
-    mem.mapRange(&range);
-    setKernelStack(range.virt + range.size - MEMALIGN8 - framesize);
+    // Kernel stack (low memory).
+    Size stackSize = PAGESIZE;
+    if (Kernel::instance->getAllocator()->allocateLow(stackSize, &stackAddr) != Allocator::Success)
+        return OutOfMemory;
 
-    // Map kernel stack.
-    Arch::Memory local(0, memory);
-    range.virt = local.findFree(range.size, Memory::KernelPrivate);
-    local.mapRange(&range);
-    Address *stack = (Address *) (range.virt + range.size - framesize - MEMALIGN8);
+    stackAddr = (Address) Kernel::instance->getAllocator()->toVirtual(stackAddr);
+    m_kernelStackBase = stackAddr + stackSize;
+    setKernelStack(m_kernelStackBase - framesize - MEMALIGN8);
+    Address *stack = (Address *) m_kernelStack;
 
     // Zero kernel stack
-    MemoryBlock::set((void *)range.virt, 0, range.size);
+    MemoryBlock::set((void *) stackAddr, 0, stackSize);
 
     // restoreState: fill kernel register state
     stack[0] = (Address) loadCoreState0; /* restoreState: pop {lr} */
     stack += 14;
 
     // loadCoreState0: fill user register state
-    stack[0] = (privileged ? SYS_MODE : USR_MODE) | FIQ_BIT | IRQ_BIT; /* user program status (CPSR) */
+    stack[0] = (m_privileged ? SYS_MODE : USR_MODE) | FIQ_BIT | IRQ_BIT; /* user program status (CPSR) */
     stack++;
     stack[0] = m_userStack; /* user program SP */
     stack[1] = 0;           /* user program LR */
     stack+=15;
-    stack[0] = entry;       /* user program entry (PC) */
-
-    local.unmapRange(&range);
+    stack[0] = m_entry;       /* user program entry (PC) */
+    return Success;
 }
 
 ARMProcess::~ARMProcess()
 {
-    Arch::Memory mem(getPageDirectory(), Kernel::instance->getMemory());
-
-    // Release regions
-    mem.releaseRegion(Memory::KernelStack);
-    mem.releaseRegion(Memory::UserData);
-    mem.releaseRegion(Memory::UserHeap);
-    mem.releaseRegion(Memory::UserStack);
-    mem.releaseRegion(Memory::UserPrivate);
+    // TODO: release() on m_kernelStack
+    m_memoryContext->releaseRegion(MemoryMap::UserData);
+    m_memoryContext->releaseRegion(MemoryMap::UserHeap);
+    m_memoryContext->releaseRegion(MemoryMap::UserStack);
+    m_memoryContext->releaseRegion(MemoryMap::UserPrivate);
 }
 
 void ARMProcess::execute(Process *previous)
 {
     ARMProcess *p = (ARMProcess *) previous;
 
+    // No need to assign the process kernel stack somewhere (compared to TSS.esp0 for Intel).
+    // ARM cores have banked registers for each ARM mode. Once the stack
+    // register is set in the current ARM mode (supervisor), it will be saved
+    // in the banked (copied) stack register. When user code interrupts, the
+    // banked register will be applied for the stack automatically.
+
+    // Activate the memory context of this process
+    m_memoryContext->activate();
+
     switchCoreState( p ? &p->m_kernelStack : ZERO,
-                     m_pageDirectory,
                      m_kernelStack );
 }

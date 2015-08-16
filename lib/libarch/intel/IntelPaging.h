@@ -19,42 +19,27 @@
 #define __LIBARCH_INTEL_PAGING_H
 
 #include <Types.h>
-#include "Memory.h"
+#include "MemoryContext.h"
+#include "MemoryMap.h"
+#include "IntelPageDirectory.h"
 
-/**
- * Entry inside the page directory of a given virtual address.
- * @param vaddr Virtual Address.
- * @return Index of the corresponding page directory entry.
- */
-#define DIRENTRY(vaddr) \
-    ((vaddr) >> DIRSHIFT)
-
-/**
- * Entry inside the page table of a given virtual address.
- * @param vaddr Virtual Address.
- * @return Index of the corresponding page table entry.
- */
-#define TABENTRY(vaddr) \
-    (((vaddr) >> PAGESHIFT) & 0x3ff)
+/** Forward declaration */
+class SplitAllocator;
 
 /**
  * Intel virtual memory implementation.
  */
-class IntelPaging : public Memory
+class IntelPaging : public MemoryContext
 {
   public:
 
     /**
      * Constructor.
      *
-     * @param pageDirectory Physical memory address of the page directory
-     *                      or ZERO to map the page directory of the current
-     *                      active address space.
-     * @param phys          BitAllocator pointer of the physical memory page allocations
-     *                      or ZERO to ask the kernel for the BitAllocator.
+     * @param map Virtual memory map.
+     * @param alloc Allocator pointer of the physical memory page allocations.
      */
-    IntelPaging(Address pageDirectory = ZERO,
-                BitAllocator *phys = ZERO);
+    IntelPaging(MemoryMap *map, SplitAllocator *alloc);
 
     /**
      * Destructor.
@@ -62,36 +47,22 @@ class IntelPaging : public Memory
     virtual ~IntelPaging();
 
     /**
-     * Create an address space.
+     * Activate the MemoryContext.
      *
+     * This function applies this MemoryContext to the hardware MMU.
      * @return Result code.
      */
-    virtual Result create();
-
-    /**
-     * Enables the MMU.
-     *
-     * @return Result code.
-     */
-    virtual Result initialize();
-
-    /**
-     * Get region addresses.
-     *
-     * @param region Memory region.
-     * @return Range object
-     */
-    virtual Range range(Region region);
+    virtual Result activate();
 
     /**
      * Map a physical page to a virtual address.
      *
-     * @param paddr Physical address.
-     * @param vaddr Virtual address or ZERO to use the first unused page.
-     * @param prot Page entry protection flags.
+     * @param virt Virtual address.
+     * @param phys Physical address.    
+     * @param access Memory access flags.
      * @return Result code
      */     
-    virtual Result map(Address phys, Address virt, Access flags);
+    virtual Result map(Address virt, Address phys, Memory::Access access);
 
     /**
      * Unmap a virtual address.
@@ -107,76 +78,27 @@ class IntelPaging : public Memory
     /**
      * Translate virtual address to physical address.
      *
-     * @param virt Virtual address to lookup.
-     * @return Physical address of the virtual address given.
+     * @param virt Virtual address to lookup on input, physical address on output.
+     * @return Result code
      */
-    virtual Address lookup(Address virt);
+    virtual Result lookup(Address virt, Address *phys);
 
     /**
      * Get Access flags for a virtual address.
      *
      * @param virt Virtual address to get Access flags for.
-     * @return Access flags.
+     * @param access MemoryAccess object pointer.
+     * @return Result code.
      */
-    virtual Access access(Address virt);
-
-    /**
-     * Release a memory page mapping.
-     *
-     * @param virt Virtual address of the page to release.
-     * @return Result code
-     */
-    virtual Result release(Address virt);
-
-    /**
-     * Release memory region.
-     *
-     * Deallocate all associated physical memory
-     * which resides in the given memory region.
-     *
-     * @return Result code
-     */
-    virtual Result releaseRegion(Region region);
-
-    /**
-     * Find unused memory.
-     *
-     * This function finds a contigeous block of a given size
-     * of virtual memory which is unused and then returns
-     * the virtual address of the first page in the block.
-     *
-     * @param region Memory region to search in.
-     * @param size Number of bytes requested to be free.
-     * @return Virtual address of the first page.
-     */
-    virtual Address findFree(Size size, Region region);
+    virtual Result access(Address addr, Memory::Access *access);
 
   private:
 
-    /**
-     * Get page table virtual address.
-     *
-     * This function will retrieve a pointer to the page table
-     * which maps the given virtual address.
-     *
-     * @param virt The virtual address to get the page table for.
-     * @return Pointer to page table in virtual address.
-     */
-    Address * getPageTable(Address virt);
+    /** Pointer to page directory in kernel's virtual memory. */
+    IntelPageDirectory *m_pageDirectory;
 
-    /**
-     * Convert Memory::Access to Intel Page Entry flags.
-     *
-     * @param acc Memory::Access flags
-     * @return Intel Page Entry flags
-     */
-    u32 flags(Access acc);
-
-    /** Pointer to page directory in virtual memory. */
-    Address *m_pageDirectory;
-
-    /** Page tables virtual base address */
-    Address m_pageTableBase;
+    /** Physical address of the page directory */
+    Address m_pageDirectoryAddr;
 };
 
 namespace Arch

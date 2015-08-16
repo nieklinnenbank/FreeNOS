@@ -69,6 +69,11 @@ class BitAllocator : public Allocator
     virtual Size available();
 
     /**
+     * Get base memory address.
+     */
+    Address base();
+
+    /**
      * Get allocation BitArray.
      *
      * @return BitArray object pointer.
@@ -86,6 +91,19 @@ class BitAllocator : public Allocator
      * @return Result value.
      */
     virtual Result allocate(Size *size, Address *addr, Size align = ZERO);
+
+    /**
+     * Allocate memory.
+     *
+     * @param size Size of memory to allocate.
+     * @param addr Address allocated.
+     * @param align Alignment of the required memory or use
+     *              ZERO for chunksize. Must be a multiple
+     *              of the chunksize.
+     * @param allocStart Allocation address to start searching at.
+     * @return Result value.
+     */
+    Result allocate(Size *size, Address *addr, Size align = ZERO, Address allocStart = 0);
 
     /**
      * Allocate address.

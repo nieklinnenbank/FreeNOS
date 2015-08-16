@@ -26,6 +26,18 @@ PL011::PL011(u32 irq)
 
 Error PL011::initialize()
 {
+    // Remap IO base to ensure we have user-level access to the registers.
+    Memory::Range range;
+    range.virt   = 0;
+    range.phys   = IO_BASE + GPIO_BASE;
+    range.access = Memory::User | Memory::Readable | Memory::Writable | Memory::Device;
+    range.size   = PAGESIZE * 2;
+
+    if (VMCtl(SELF, Map, &range) != API::Success)
+        return EINVAL;
+
+    IO::base = range.virt;
+
     // TODO: hack. disable IRQ_REG() == 0...
     ProcessCtl(SELF, DisableIRQ, 0);
 

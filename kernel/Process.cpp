@@ -17,8 +17,8 @@
 
 #include "Process.h"
 
-Process::Process(ProcessID id, Address addr, bool privileged)
-    : m_id(id)
+Process::Process(ProcessID id, Address entry, bool privileged, const MemoryMap &map)
+    : m_id(id), m_map(map)
 {
     m_state         = Stopped;
     m_kernelStack   = 0;
@@ -26,7 +26,9 @@ Process::Process(ProcessID id, Address addr, bool privileged)
     m_pageDirectory = 0;
     m_parent        = 0;
     m_waitId        = 0;
+    m_entry         = entry;
     m_privileged    = privileged;
+    m_memoryContext = ZERO;
 }
     
 Process::~Process()
@@ -66,6 +68,11 @@ Address Process::getUserStack() const
 Address Process::getKernelStack() const
 {
     return m_kernelStack;
+}
+
+MemoryContext * Process::getMemoryContext()
+{
+    return m_memoryContext;
 }
 
 bool Process::isPrivileged() const

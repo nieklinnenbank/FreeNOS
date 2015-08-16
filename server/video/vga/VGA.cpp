@@ -31,8 +31,7 @@ Error VGA::initialize()
 
     // Request VGA memory
     range.size   = PAGESIZE;
-    range.access = Memory::Present  |
-                   Memory::User     |
+    range.access = Memory::User     |
                    Memory::Readable |
                    Memory::Writable;
     range.virt   = ZERO;
