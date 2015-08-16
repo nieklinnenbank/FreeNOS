@@ -112,11 +112,9 @@ MemoryContext::Result ARMPaging::activate()
         tlb_flush_all();
 
         // Reactivate both caches and branch prediction
-        NOTICE("Going to enable the caches....");
         ctrl.set(ARMControl::InstructionCache);
         ctrl.set(ARMControl::DataCache);
         ctrl.set(ARMControl::BranchPrediction);
-        NOTICE("Caches enabled");
     }
     // MMU already enabled, we only need to change first level table and flush caches.
     else
