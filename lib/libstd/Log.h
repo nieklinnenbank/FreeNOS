@@ -15,48 +15,49 @@
  * Output a log line to the system log (syslog).
  *
  * @param type Log level
+ * @param typestr Log level string
  * @param msg Message to output
  */
-#define MAKE_LOG(type, msg) \
+#define MAKE_LOG(type, typestr, msg) \
     {\
      if (Log::instance && type <= Log::instance->getMinimumLogLevel())  \
-        (*Log::instance) << "[" #type "] " << __FILE__ ":" <<  __LINE__ << " " << __FUNCTION__ << " -- " << msg << "\r\n"; \
+        (*Log::instance) << "[" typestr "] " << __FILE__ ":" <<  __LINE__ << " " << __FUNCTION__ << " -- " << msg << "\r\n"; \
     }
 
 /**
  * Output a critical message and terminate program immediatly.
  * @param msg The critical message.
  */
-#define FATAL(msg)   MAKE_LOG(Log::Emergency, msg)
+#define FATAL(msg)   MAKE_LOG(Log::Emergency, "Emergency", msg)
 
 /**
  * Output an error message.
  * @param msg The error message.
  */
-#define ERROR(msg)   MAKE_LOG(Log::Error, msg)
+#define ERROR(msg)   MAKE_LOG(Log::Error, "Error", msg)
 
 /**
  * Output a warning message.
  * @param msg The warning message.
  */
-#define WARNING(msg) MAKE_LOG(Log::Warning, msg)
+#define WARNING(msg) MAKE_LOG(Log::Warning, "Warning", msg)
 
 /**
  * Output a notice message.
  */
-#define NOTICE(msg)  MAKE_LOG(Log::Notice, msg)
+#define NOTICE(msg)  MAKE_LOG(Log::Notice, "Notice", msg)
 
 /**
  * Output a regular message to standard output.
  */
-#define INFO(msg)    MAKE_LOG(Log::Info, msg)
+#define INFO(msg)    MAKE_LOG(Log::Info, "Info", msg)
 
 /**
  * Output a debug message to standard output.
  *
  * @param msg The message to output
  */
-#define DEBUG(msg)   MAKE_LOG(Log::Debug, msg)
+#define DEBUG(msg)   MAKE_LOG(Log::Debug, "Debug", msg)
 
 /**
  * Logging class.
