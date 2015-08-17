@@ -35,12 +35,11 @@ int main(int argc, char **argv)
     NOTICE("Starting init script: " << av[1]);
 
     // Execute the run commands file
-    forkexec("/bin/sh", av);
-
-    // If we reach here the forkexec() failed.
-    ERROR("forkexec() failed for /bin/sh: " <<
-          strerror(errno));
-
-    /* Exit immediately. */
+    if (forkexec("/bin/sh", av) == -1)
+    {
+        ERROR("forkexec() failed for /bin/sh: " <<
+              strerror(errno));
+        return EXIT_FAILURE;
+    }
     return EXIT_SUCCESS;
 }
