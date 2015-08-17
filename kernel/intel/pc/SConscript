@@ -52,5 +52,4 @@ env.Targets(qemu         = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT'] +
 env.Targets(qemu_curses  = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -curses')
 env.Targets(qemu_serial  = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -nographic')
 env.Targets(qemu_debug   = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -curses -s -S')
-env.Targets(qemu_debugs  = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -nographic -s -S')
-
+env.Targets(qemu_debugs  = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -nographic -s -S -d int,cpu_reset')
