@@ -44,21 +44,6 @@
 /** Base of IRQ's from the PIC's. */
 #define PIC_IRQ_BASE    0x20
 
-/** PIT maximum frequency. */
-#define PIT_FREQUENCY   1193182
-
-/** PIT IRQ interval. */
-#define PIT_HZ          250
-
-/** PIT divisor. */
-#define PIT_DIVISOR     (PIT_FREQUENCY / PIT_HZ)
-
-/** PIT command port. */
-#define PIT_CMD         0x43
-
-/** PIT channel zero. */
-#define PIT_CHAN0       0x40
-
 /**
  * We remap IRQ's to interrupt vectors 32-47.
  */
@@ -159,6 +144,7 @@ inline ulong trapKernel5(ulong num, ulong arg1, ulong arg2, ulong arg3,
  */
 
 #include <FreeNOS/Kernel.h>
+#include <intel/IntelPIT.h>
 
 /**
  * Implements an x86 compatible kernel.
@@ -213,6 +199,9 @@ class IntelKernel : public Kernel
      * @param param Not used.
      */
     static void clocktick(CPUState *state, ulong param);
+
+    /** PIT timer instance */
+    IntelPIT m_pit;
 };
 
 /**

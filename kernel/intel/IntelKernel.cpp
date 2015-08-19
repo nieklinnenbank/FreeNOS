@@ -38,6 +38,9 @@ extern C void executeInterrupt(CPUState state)
 IntelKernel::IntelKernel(Memory::Range kernel, Memory::Range memory)
     : Kernel(kernel, memory)
 {
+    // Set PIT interrupt frequency to 250 hertz
+    m_pit.setFrequency(250);
+
     IntelMap map;
 
     /* ICW1: Initialize PIC's (Edge triggered, Cascade) */
@@ -59,15 +62,10 @@ IntelKernel::IntelKernel(Memory::Range kernel, Memory::Range memory)
     /* OCW1: Disable all IRQ's for now. */
     IO::outb(PIC1_DATA, 0xff);
     IO::outb(PIC2_DATA, 0xff);
-
-    /* Let the i8253 timer run continuously (square wave). */
-    IO::outb(PIT_CMD, 0x36);
-    IO::outb(PIT_CHAN0, PIT_DIVISOR & 0xff);
-    IO::outb(PIT_CHAN0, PIT_DIVISOR >> 8);
     
-    /* Make sure to enable PIC2 and the i8253. */
+    /* Make sure to enable PIC2 and the PIT interrupt */
     enableIRQ(2, true);
-    enableIRQ(0, true);
+    enableIRQ(m_pit.getInterruptVector(), true);
 
     // Install interruptRun() callback
     interruptRun = ::executeInterrupt;
@@ -89,7 +87,7 @@ IntelKernel::IntelKernel(Memory::Range kernel, Memory::Range memory)
             hookInterrupt(i, interrupt, 0);
     }
     /* Install PIT (i8253) IRQ handler. */
-    hookInterrupt(IRQ(0), clocktick, 0);
+    hookInterrupt(IRQ(m_pit.getInterruptVector()), clocktick, 0);
 
     // Initialize TSS Segment
     gdt[KERNEL_TSS].limitLow    = sizeof(TSS) + (0xfff / 8);
@@ -167,8 +165,10 @@ void IntelKernel::trap(CPUState *state, ulong param)
 
 void IntelKernel::clocktick(CPUState *state, ulong param)
 {
-    Kernel::instance->enableIRQ(0, true);
-    Kernel::instance->getProcessManager()->schedule();
+    IntelKernel *kern = (IntelKernel *) Kernel::instance;
+
+    kern->enableIRQ(kern->m_pit.getInterruptVector(), true);
+    kern->getProcessManager()->schedule();
 }
 
 bool IntelKernel::loadBootImage()
