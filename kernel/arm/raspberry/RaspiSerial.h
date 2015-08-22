@@ -34,7 +34,7 @@ class RaspiSerial : public Log
     /*
      * Initialize UART0.
      */
-    static void init(void);
+    void init(void);
 
     /*
      * Receive a byte via UART0.
@@ -116,7 +116,10 @@ class RaspiSerial : public Log
      * This just loops <delay> times in a way that the compiler
      * wont optimize away.
      */
-    static void delay(s32 count);
+    void delay(s32 count);
+
+    /** I/O instance */
+    ARMIO m_io;
 };
 
 #endif /* __ARM_RASPISERIAL_H */

@@ -26,30 +26,6 @@
  * @{   
  */
 
-/** IO base address for master PIC */
-#define PIC1_CMD        0x20 
-
-/** IO base address for slave PIC */                      
-#define PIC2_CMD        0xa0                              
-                                                          
-/* Master PIC data port */                                
-#define PIC1_DATA       0x21                              
-                                                          
-/* Slave PIC data port */                                 
-#define PIC2_DATA       0xa1 
-
-/** End of Interrupt (EOI). */
-#define PIC_EOI         0x20
-
-/** Base of IRQ's from the PIC's. */
-#define PIC_IRQ_BASE    0x20
-
-/**
- * We remap IRQ's to interrupt vectors 32-47.
- */
-#define IRQ(vector) \
-    (vector) + 32
-
 /**  
  * @group Intel Kernel Traps
  *
@@ -145,6 +121,15 @@ inline ulong trapKernel5(ulong num, ulong arg1, ulong arg2, ulong arg3,
 
 #include <FreeNOS/Kernel.h>
 #include <intel/IntelPIT.h>
+#include <intel/IntelPIC.h>
+#include <intel/IntelAPIC.h>
+
+/**
+ * We remap IRQ's to interrupt vectors 32-47.
+ */
+// TODO: needed by ProcessCtl.cpp. Should avoid this.
+#define IRQ(vector) \
+    (vector) + 32
 
 /**
  * Implements an x86 compatible kernel.
@@ -157,13 +142,6 @@ class IntelKernel : public Kernel
      * Constructor function.
      */
     IntelKernel(Memory::Range kernel, Memory::Range memory);
-
-    /** 
-     * Uses the PIC to (un)mask an IRQ. 
-     * @param vector Interrupt vector. 
-     * @param enabled Either to mask (true) or unmask (false). 
-     */
-    virtual void enableIRQ(u32 vector, bool enabled);
 
     /**
      * Loads the boot image.
@@ -202,6 +180,15 @@ class IntelKernel : public Kernel
 
     /** PIT timer instance */
     IntelPIT m_pit;
+
+    /** APIC instance (used if available) */
+    IntelAPIC m_apic;
+
+    /** PIC instance */
+    IntelPIC m_pic;
+
+    /** Timer interrupt number. */
+    uint m_timerInt;
 };
 
 /**

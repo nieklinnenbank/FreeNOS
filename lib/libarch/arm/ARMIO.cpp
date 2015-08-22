@@ -18,4 +18,7 @@
 #include <FreeNOS/System.h>
 #include "ARMIO.h"
 
-u32 IO::base = IO_BASE;
+ARMIO::ARMIO()
+{
+    setBase(IO_BASE);
+}

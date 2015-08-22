@@ -36,10 +36,24 @@ class IntelPaging : public MemoryContext
     /**
      * Constructor.
      *
+     * Allocates new page tables for the paged memory context.
+     *
      * @param map Virtual memory map.
-     * @param alloc Allocator pointer of the physical memory page allocations.
+     * @param alloc Allocator for physical memory page allocations.
      */
     IntelPaging(MemoryMap *map, SplitAllocator *alloc);
+
+    /**
+     * Constructor.
+     *
+     * Assign the given page directory to this paged memory context.
+     * This constructor does not allocate new page tables.
+     *
+     * @param map Virtual memory map.
+     * @param pageDirectory Physical address of the page directory to use.
+     * @param alloc Allocator for physical memory page allocations.
+     */
+    IntelPaging(MemoryMap *map, Address pageDirectory, SplitAllocator *alloc);
 
     /**
      * Destructor.

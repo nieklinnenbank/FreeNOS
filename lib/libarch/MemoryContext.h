@@ -60,6 +60,13 @@ class MemoryContext
     virtual ~MemoryContext();
 
     /**
+     * Get currently active MemoryContext.
+     *
+     * @return MemoryContext object pointer or NULL.
+     */
+    static MemoryContext * getCurrent();
+
+    /**
      * Activate the MemoryContext.
      *
      * This function applies this MemoryContext to the hardware MMU.
@@ -184,6 +191,9 @@ class MemoryContext
 
     /** Virtual memory layout */
     MemoryMap *m_map;
+
+    /** The currently active MemoryContext */
+    static MemoryContext *m_current;
 };
 
 #endif /* __LIBARCH_MEMORYCONTEXT_H */

@@ -21,11 +21,11 @@
 BCM2835Interrupt::BCM2835Interrupt() : ARMInterrupt()
 {
     // disable all IRQ sources first, just to be "safe"
-    IO::write(INTERRUPT_DISABLEIRQ1, 0xFFFFFFFF);
-    IO::write(INTERRUPT_DISABLEIRQ2, 0xFFFFFFFF);
+    m_io.write(INTERRUPT_DISABLEIRQ1, 0xFFFFFFFF);
+    m_io.write(INTERRUPT_DISABLEIRQ2, 0xFFFFFFFF);
 }
 
-void BCM2835Interrupt::enableIRQ(u32 vector)
+BCM2835Interrupt::Result BCM2835Interrupt::enable(uint vector)
 {
     //enable the respective interrupt
     if(vector < 32)
@@ -38,15 +38,16 @@ void BCM2835Interrupt::enableIRQ(u32 vector)
         //  routine, the |= would write back the old state of the enable
         //  bits. This would effectively be re-enabling interrupts that we
         //  wanted disabled.
-        IO::write(INTERRUPT_ENABLEIRQ1, (1<<vector)); //zeroes are ignored, don't use |=
+        m_io.write(INTERRUPT_ENABLEIRQ1, (1<<vector)); //zeroes are ignored, don't use |=
     }
     else
     {
-        IO::write(INTERRUPT_ENABLEIRQ2, (1<<(vector-32))); //zeroes are ignored, don't use |=
+        m_io.write(INTERRUPT_ENABLEIRQ2, (1<<(vector-32))); //zeroes are ignored, don't use |=
     }
+    return Success;
 }
 
-void BCM2835Interrupt::disableIRQ(u32 vector)
+BCM2835Interrupt::Result BCM2835Interrupt::disable(uint vector)
 {
     //disable IRQs for this device before NULL-ing the vector. otherwise,
     //  we might interrupt with a NULL_VECT in the handler's address.
@@ -55,18 +56,24 @@ void BCM2835Interrupt::disableIRQ(u32 vector)
     //  which will put us in a never-ending IRQ loop.
     if(vector < 32)
     {
-        IO::write(INTERRUPT_DISABLEIRQ1, (1<<vector)); //zeroes are ignored, don't use |=
+        m_io.write(INTERRUPT_DISABLEIRQ1, (1<<vector)); //zeroes are ignored, don't use |=
     }
     else
     {
-        IO::write(INTERRUPT_DISABLEIRQ2, (1<<(vector-32))); //zeroes are ignored, don't use |=
+        m_io.write(INTERRUPT_DISABLEIRQ2, (1<<(vector-32))); //zeroes are ignored, don't use |=
     }
+    return Success;
+}
+
+BCM2835Interrupt::Result BCM2835Interrupt::clear(uint vector)
+{
+    return Success;
 }
 
 bool BCM2835Interrupt::isTriggered(u32 vector)
 {
-    u32 pend1 = IO::read(INTERRUPT_IRQPEND1);
-    u32 pend2 = IO::read(INTERRUPT_IRQPEND2);
+    u32 pend1 = m_io.read(INTERRUPT_IRQPEND1);
+    u32 pend2 = m_io.read(INTERRUPT_IRQPEND2);
 
     if (vector < 32)
         return (pend1 & (1 << vector));

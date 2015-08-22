@@ -19,7 +19,7 @@
 #define __LIBARCH_ARM_INTERRUPT_H
 
 #include <Types.h>
-#include <InterruptControl.h>
+#include <IntController.h>
 
 /** Size of the ARM exception vector table in bytes */
 #define ARM_INTR_VECTAB_SIZE   (64)
@@ -34,7 +34,7 @@
  *
  * @see http://www.state-machine.com/arm/Building_bare-metal_ARM_with_GNU.pdf
  */
-class ARMInterrupt : public InterruptControl
+class ARMInterrupt : public IntController
 {
   public:
 
@@ -54,14 +54,6 @@ class ARMInterrupt : public InterruptControl
     };
 
     /**
-     * Result codes.
-     */
-    enum Result
-    {
-        Success
-    };
-
-    /**
      * Constructor
      *
      * @param base Base address of the interrupt jump table.
@@ -77,19 +69,9 @@ class ARMInterrupt : public InterruptControl
     Result install(Interrupt vector, Handler handler);
 
     /**
-     * Enable an IRQ vector
-     */
-    virtual void enableIRQ(u32 vector) = 0;
-
-    /**
-     * Disable an IRQ vector
-     */
-    virtual void disableIRQ(u32 vector) = 0;
-
-    /**
      * Check if an IRQ vector is set.
      */
-    virtual bool isTriggered(u32 vector) = 0;
+    virtual bool isTriggered(uint irq) = 0;
 
   private:
 

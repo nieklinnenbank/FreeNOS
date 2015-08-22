@@ -20,6 +20,7 @@
 #include <SplitAllocator.h>
 #include <BubbleAllocator.h>
 #include <PoolAllocator.h>
+#include <IntController.h>
 #include <BootImage.h>
 #include "Kernel.h"
 #include "Memory.h"
@@ -43,6 +44,7 @@ Kernel::Kernel(Memory::Range kernel, Memory::Range memory)
     m_alloc  = new SplitAllocator(memory, highMem);
     m_procs  = new ProcessManager(new Scheduler());
     m_api    = new API();
+    m_intControl       = 0;
     m_bootImageAddress = 0;
 
     // Mark kernel memory used (first 4MB in phys memory)
@@ -101,7 +103,18 @@ MemoryContext * Kernel::getMemoryContext()
     return m_procs->current()->getMemoryContext();
 }
 
-void Kernel::hookInterrupt(u32 vec, InterruptHandler h, ulong p)
+void Kernel::enableIRQ(u32 irq, bool enabled)
+{
+    if (m_intControl)
+    {
+        if (enabled)
+            m_intControl->enable(irq);
+        else
+            m_intControl->disable(irq);
+    }
+}
+
+void Kernel::hookIntVector(u32 vec, InterruptHandler h, ulong p)
 {
     InterruptHook hook(h, p);
 
@@ -117,7 +130,7 @@ void Kernel::hookInterrupt(u32 vec, InterruptHandler h, ulong p)
     }
 }
 
-void Kernel::executeInterrupt(u32 vec, CPUState *state)
+void Kernel::executeIntVector(u32 vec, CPUState *state)
 {
     // Auto-Mask the IRQ. Any interrupt handler or user program
     // needs to re-enable the IRQ to receive it again. This prevents

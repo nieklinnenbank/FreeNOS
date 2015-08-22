@@ -23,13 +23,13 @@ void BCMSysTimer::setInterval(u32 hertz)
     m_cycles = BCM_SYSTIMER_FREQ / hertz;
 
     // Use timer slot 1. Enable.
-    IO::write(SYSTIMER_C1, IO::read(SYSTIMER_CLO) + m_cycles);
-    IO::write(SYSTIMER_CS, IO::read(SYSTIMER_CS) | (1 << M1));
+    m_io.write(SYSTIMER_C1, m_io.read(SYSTIMER_CLO) + m_cycles);
+    m_io.write(SYSTIMER_CS, m_io.read(SYSTIMER_CS) | (1 << M1));
 }
 
 void BCMSysTimer::next()
 {
     // Clear+acknowledge the timer interrupt
-    IO::write(SYSTIMER_CS, IO::read(SYSTIMER_CS) | (1 << M1));
-    IO::write(SYSTIMER_C1, IO::read(SYSTIMER_CLO) + m_cycles);
+    m_io.write(SYSTIMER_CS, m_io.read(SYSTIMER_CS) | (1 << M1));
+    m_io.write(SYSTIMER_C1, m_io.read(SYSTIMER_CLO) + m_cycles);
 }

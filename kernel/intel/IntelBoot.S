@@ -26,7 +26,10 @@
 #define KERNEL_LOWMEM   ((1024 * 1024 * 1024) - (1024 * 1024 * 128))
 #define STACK_SIZE 0x4000
 
-/* TODO: move interrupt handling and IDT setup to libarch's IntelCore code. */
+/*
+ * TODO: move interrupt handling and IDT setup to libarch's IntelCore code.
+ * see Desktop/scratch1
+ */
 
 /**
  * Generates interrupt handlers.
@@ -82,6 +85,12 @@ _start:
     /* Disable interrupts. */
     cli
 
+#warning rewrite this so that cpu1 uses a different physical memory base and remaps the kernel here to 0x0 virtual.
+#warning CPU0 will need to prepare a info struct somewhere, so that CPU1 can know which address it owns.
+#warning We need to use the boot parameters maybe?
+#warning Better solution: use a struct which we can read in this file, CPU0 will use its address + cpu1 base for writing
+#warning it when inserting the kernel memory (from coreserver)
+
     /* Setup temporary boot stack. */
     movl $(stack + STACK_SIZE), %esp
     movl %esp, %ebp
@@ -136,6 +145,7 @@ _start:
     idtEntry 45, 0x8e
     idtEntry 46, 0x8e
     idtEntry 47, 0x8e
+    idtEntry 48, 0x8e
     idtEntry 0x90, 0xee
 
     /* Load IDT. */
@@ -232,6 +242,7 @@ interruptHandler 44, 0
 interruptHandler 45, 0
 interruptHandler 46, 0
 interruptHandler 47, 0
+interruptHandler 48, 0
 interruptHandler 0x90, 0
 
 .section ".bss"

@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "IntelIO.h"
 #include "IntelPIT.h"
 
 IntelPIT::IntelPIT(uint hertz)
@@ -28,20 +27,20 @@ uint IntelPIT::getCounter()
     uint count = 0;
 
     setControl(LatchedRead | Channel0);
-    count  = IO::inb(Channel0Data);
-    count |= IO::inb(Channel0Data) << 8;
+    count  = m_io.inb(Channel0Data);
+    count |= m_io.inb(Channel0Data) << 8;
 
     return count;
 }
 
-uint IntelPIT::getInterruptVector()
+uint IntelPIT::getInterruptNumber()
 {
-    return InterruptVec;
+    return InterruptNumber;
 }
 
 uint IntelPIT::getFrequency()
 {
-    return m_hertz;
+    return m_freq;
 }
 
 IntelPIT::Result IntelPIT::setFrequency(uint hertz)
@@ -59,14 +58,32 @@ IntelPIT::Result IntelPIT::setFrequency(uint hertz)
 
     // Let the i8254 timer run continuously (square wave)
     setControl(SquareWave | Channel0 | AccessLowHigh);
-    IO::outb(Channel0Data, divisor & 0xff);
-    IO::outb(Channel0Data, (divisor >> 8) & 0xff);
-    m_hertz = hertz;
+    m_io.outb(Channel0Data, divisor & 0xff);
+    m_io.outb(Channel0Data, (divisor >> 8) & 0xff);
+    m_freq = hertz;
+    return Success;
+}
+
+IntelPIT::Result IntelPIT::wait()
+{
+    uint previous, current;
+
+    // Wait until the 16-bit counter restarts
+    // at its initial counter value.
+    current = getCounter();
+    do
+    {
+        previous = current;
+        current  = getCounter();
+    }
+    while (previous >= current);
+
+    // Now at the trigger moment.
     return Success;
 }
 
 IntelPIT::Result IntelPIT::setControl(IntelPIT::ControlFlags flags)
 {
-    IO::outb(Control, flags);
+    m_io.outb(Control, flags);
     return Success;
 }

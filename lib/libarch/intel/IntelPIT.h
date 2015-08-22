@@ -20,6 +20,7 @@
 
 #include <Types.h>
 #include <BitOperations.h>
+#include "IntelIO.h"
 
 /**
  * Intel 8254 Programmable Interrupt Timer (PIT).
@@ -31,8 +32,8 @@ class IntelPIT
     /** Oscillator frequency in hertz used by the PIT. */
     static const uint OscillatorFreq = 1193182;
 
-    /** The IRQ vector for channel 0 */
-    static const uint InterruptVec = 0;
+    /** The IRQ vector for channel 0 is fixed to IRQ0 */
+    static const uint InterruptNumber = 0;
 
     /**
      * Hardware registers.
@@ -74,13 +75,13 @@ class IntelPIT
     IntelPIT(uint hertz = 250);
 
     /**
-     * Get interrupt vector.
+     * Get interrupt number.
      *
-     * The interrupt vector for channel 0 is fixed to vector 0.
+     * The interrupt number for channel 0 is fixed to IRQ0.
      *
-     * @return Interrupt vector number.
+     * @return Interrupt number.
      */
-    uint getInterruptVector();
+    uint getInterruptNumber();
 
     /**
      * Get current timer counter.
@@ -115,6 +116,13 @@ class IntelPIT
      */
     Result setFrequency(uint hertz);
 
+    /**
+     * Wait until trigger.
+     *
+     * @return Result code.
+     */
+    Result wait();
+
   private:
 
     /**
@@ -125,8 +133,11 @@ class IntelPIT
      */
     Result setControl(ControlFlags flags);
 
-    /** Interrupt frequency of the PIT */
-    uint m_hertz;
+    /** Interrupt frequency of the PIT in hertz. */
+    uint m_freq;
+
+    /** I/O instance */
+    IntelIO m_io;
 };
 
 #endif /* __LIBARCH_INTEL_PIT_H */

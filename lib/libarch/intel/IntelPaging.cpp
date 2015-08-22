@@ -50,11 +50,23 @@ IntelPaging::IntelPaging(MemoryMap *map, SplitAllocator *alloc)
         // physical memory (i.e. the "low memory" in SplitAllocator). The low
         // memory starts at its physical base address offset (varies per core).
         Memory::Range kdata = m_map->range(MemoryMap::KernelData);
+        m_pageDirectory->copy(currentDirectory,
+                              kdata.virt,
+                              kdata.virt + kdata.size);
 
+        // Also inherit kernel private mappings, such as APIC mappings.
+        kdata = m_map->range(MemoryMap::KernelPrivate);
         m_pageDirectory->copy(currentDirectory,
                               kdata.virt,
                               kdata.virt + kdata.size);
     }
+}
+
+IntelPaging::IntelPaging(MemoryMap *map, Address pageDirectory, SplitAllocator *alloc)
+    : MemoryContext(map, alloc)
+{
+    m_pageDirectory     = (IntelPageDirectory *) alloc->toVirtual(pageDirectory);
+    m_pageDirectoryAddr = pageDirectory;
 }
 
 IntelPaging::~IntelPaging()
@@ -68,6 +80,7 @@ MemoryContext::Result IntelPaging::activate()
     // That way it is also more similar to the ARM implementation.
     IntelCore core;
     core.writeCR3(m_pageDirectoryAddr);
+    m_current = this;
     return Success;
 }
 

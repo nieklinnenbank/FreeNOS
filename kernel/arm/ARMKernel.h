@@ -124,13 +124,6 @@ class ARMKernel : public Kernel
               Address atags);
 
     /**
-     * Enable or disable an hardware interrupt (IRQ). 
-     * @param vector IRQ number. 
-     * @param enabled True to enable, and false to disable. 
-     */
-    virtual void enableIRQ(u32 vector, bool enabled);
-
-    /**
      * Loads the boot image.
      */
     virtual bool loadBootImage();
@@ -150,8 +143,6 @@ class ARMKernel : public Kernel
     static void reserved(CPUState state);
 
     ARMTags m_tags;
-
-    ARMInterrupt *m_intr;
 
     BCMSysTimer m_timer;
 };

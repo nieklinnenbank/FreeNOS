@@ -19,11 +19,12 @@
 #define __LIBARCH_INTELIO_H
 
 #include <Types.h>
+#include <IO.h>
 
 /**
  * Intel I/O functions.
  */
-class IO
+class IntelIO : public IO
 {
   public:
 
@@ -32,9 +33,10 @@ class IO
      * @param port The I/O port to read from.
      * @return A byte read from the port.
      */
-    static inline u8 inb(u16 port)
+    inline u8 inb(u16 port)
     {
         u8 b;
+        port += m_base;
         asm volatile ("inb %%dx, %%al" : "=a" (b) : "d" (port));
         return b;
     }
@@ -44,9 +46,10 @@ class IO
      * @param port The I/O port to read from.
      * @return Word read from the port.
      */
-    static inline u16 inw(u16 port)
+    inline u16 inw(u16 port)
     {
         u16 w;
+        port += m_base;
         asm volatile ("inw %%dx, %%ax" : "=a" (w) : "d" (port));
         return w;
     }
@@ -56,8 +59,9 @@ class IO
      * @param port Port to write to.
      * @param byte The byte to output.
      */
-    static inline void outb(u16 port, u8 byte)
+    inline void outb(u16 port, u8 byte)
     {
+        port += m_base;
         asm volatile ("outb %%al,%%dx"::"a" (byte),"d" (port));
     }
 
@@ -66,8 +70,9 @@ class IO
      * @param port Port to write to.
      * @param byte The word to output.
      */
-    static inline void outw(u16 port, u16 word)
+    inline void outw(u16 port, u16 word)
     {
+        port += m_base;
         asm volatile ("outw %%ax,%%dx"::"a" (word),"d" (port));
     }
 
@@ -76,26 +81,66 @@ class IO
      * @param port Target I/O port.
      * @param l The long 32-bit number to output.
      */
-    static inline void outl(u16 port, u32 l)
+    inline void outl(u16 port, u32 l)
     {
+        port += m_base;
         asm volatile ("outl %%eax,%%dx"::"a" (l),"d" (port));
     }
 
     /**
-     * read from MMIO register
+     * Read memory mapped register.
+     *
+     * @param addr Address of the register to read.
+     * @return 32-bit value of the register.
      */
-    static inline u32 read(Address reg)
+    inline u32 read(Address addr)
     {
-        return *(u32 *) reg;
+        addr += m_base;
+        return *(volatile u32 *) addr;
     }
 
     /**
-     * write to MMIO register
+     * Write memory mapped register.
+     *
+     * @param addr Address of the register to write.
+     * @param data 32-bit value to write in the register.
      */
-    static inline void write(Address reg, u32 data)
+    inline void write(Address addr, u32 data)
     {
-        *(u32 *) reg = data;
+        addr += m_base;
+        *(volatile u32 *) addr = data;
     }
+
+    /**
+     * Set bits in memory mapped register.
+     *
+     * @param addr Address of the register to write.
+     * @param data 32-bit value containing the bits to set (bitwise or).
+     */
+    inline void set(Address addr, u32 data)
+    {
+        u32 current = read(addr);
+        current |= data;
+        write(addr, current);
+    }
+
+    /**
+     * Unset bits in memory mapped register.
+     *
+     * @param addr Address of the register to write.
+     * @param data 32-bit value containing the bits to set (bitwise or).
+     */
+    inline void unset(Address addr, u32 data)
+    {
+        u32 current = read(addr);
+        current &= ~(data);
+        write(addr, current);
+    }
+};
+
+namespace Arch
+{
+    typedef IntelIO IO;
 };
 
 #endif /* __LIBARCH_INTELIO_H */

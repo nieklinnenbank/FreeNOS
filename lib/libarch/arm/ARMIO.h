@@ -19,18 +19,27 @@
 #define __LIBARCH_ARMIO_H
 
 #include <Types.h>
+#include <IO.h>
 #include "ARMCore.h"
 
-class IO
+class ARMIO : public IO
 {
   public:
+
+    /**
+     * Constructor
+     */
+    ARMIO();
+
+    // TODO: it is not needed to use dmb() before and after _every_ I/O operation.
+    // TODO: update the drivers to use dmb() instead.
 
     /**
      * Read a byte from a port.
      * @param port The I/O port to read from.
      * @return A byte read from the port.
      */
-    static inline u8 inb(u16 port)
+    inline u8 inb(u16 port)
     {
         return 0;
     }
@@ -40,7 +49,7 @@ class IO
      * @param port The I/O port to read from.
      * @return Word read from the port.
      */
-    static inline u16 inw(u16 port)
+    inline u16 inw(u16 port)
     {
         return 0;
     }
@@ -50,7 +59,7 @@ class IO
      * @param port Port to write to.
      * @param byte The byte to output.
      */
-    static inline void outb(u16 port, u8 byte)
+    inline void outb(u16 port, u8 byte)
     {
     }
 
@@ -59,7 +68,7 @@ class IO
      * @param port Port to write to.
      * @param byte The word to output.
      */
-    static inline void outw(u16 port, u16 word)
+    inline void outw(u16 port, u16 word)
     {
     }
 
@@ -68,20 +77,17 @@ class IO
      * @param port Target I/O port.
      * @param l The long 32-bit number to output.
      */
-    static inline void outl(u16 port, u32 l)
+    inline void outl(u16 port, u32 l)
     {
     }
-
-    // TODO: it is not needed to use dmb() before and after _every_ I/O operation.
-    // TODO: update the drivers to use dmb() instead.
 
     /**
      * write to MMIO register
      */
-    static inline void write(u32 reg, u32 data)
+    inline void write(u32 reg, u32 data)
     {
         dmb();
-        u32 *ptr = (u32 *) (reg + base);
+        u32 *ptr = (u32 *) (reg + m_base);
         asm volatile("str %[data], [%[reg]]"
                  : : [reg]"r"(ptr), [data]"r"(data));
         dmb();
@@ -90,10 +96,10 @@ class IO
     /**
      * read from MMIO register
      */
-    static inline u32 read(u32 reg)
+    inline u32 read(u32 reg)
     {
         dmb();
-        u32 *ptr = (u32 *) (reg + base);
+        u32 *ptr = (u32 *) (reg + m_base);
         u32 data;
         asm volatile("ldr %[data], [%[reg]]"
                  : [data]"=r"(data) : [reg]"r"(ptr));
@@ -101,8 +107,36 @@ class IO
         return data;
     }
 
-    /** I/O base address */
-    static u32 base;
+    /**
+     * Set bits in memory mapped register.
+     *
+     * @param addr Address of the register to write.
+     * @param data 32-bit value containing the bits to set (bitwise or).
+     */
+    inline void set(Address addr, u32 data)
+    {
+        u32 current = read(addr);
+        current |= data;
+        write(addr, current);
+    }
+
+    /**
+     * Unset bits in memory mapped register.
+     *
+     * @param addr Address of the register to write.
+     * @param data 32-bit value containing the bits to set (bitwise or).
+     */
+    inline void unset(Address addr, u32 data)
+    {
+        u32 current = read(addr);
+        current &= ~(data);
+        write(addr, current);
+    }
+};
+
+namespace Arch
+{
+    typedef ARMIO IO;
 };
 
 #endif /* __LIBARCH_ARMIO_H */

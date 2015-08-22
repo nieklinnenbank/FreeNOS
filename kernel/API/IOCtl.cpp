@@ -15,30 +15,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/System.h>
 #include "IOCtl.h"
 
 Error IOCtlHandler(IOOperation op, Address addr, ulong value)
 {
+    Arch::IO io;
+
     DEBUG("op =" << op << " addr=" << addr << " value=" << value);
 
     switch (op)
     {
         case IOByteRead:
-            return IO::inb(addr);
+            return io.inb(addr);
 
         case IOByteWrite:
-            IO::outb(addr, value);
+            io.outb(addr, value);
             break;
 
         case IOWordRead:
-            return IO::inw(addr);
+            return io.inw(addr);
         
         case IOWordWrite:
-            IO::outw(addr, value);
+            io.outw(addr, value);
             break;
 
         case IOLongWrite:
-            IO::outl(addr, value);
+            io.outl(addr, value);
             break;
     }
     return API::Success;

@@ -126,10 +126,13 @@ class PL011 : public Device
      * This just loops <delay> times in a way that the compiler
      * wont optimize away.
      */
-    static void delay(s32 count);
+    void delay(s32 count);
 
     /** interrupt vector */
     u32 m_irq;
+
+    /** I/O instance */
+    Arch::IO m_io;
 };
 
 #endif /* __ARM_PL011_H */

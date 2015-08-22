@@ -26,9 +26,10 @@
 #include "Process.h"
 #include "ProcessManager.h"
 
-/** Forward declaration. */
+/** Forward declarations. */
 class API;
 class SplitAllocator;
+class IntController;
 struct CPUState;
 
 /**
@@ -37,6 +38,10 @@ struct CPUState;
  * @param state State of the CPU on the moment the interrupt occurred. 
  * @param param Optional parameter for the handler. 
  */
+
+// TODO: move this to libarch's IntController? The IntController
+// could take care of invocing a certain ISR when interrupt is raised.
+
 typedef void InterruptHandler(struct CPUState *state, ulong param);
     
 /**
@@ -146,6 +151,14 @@ class Kernel : public Singleton<Kernel>
      */
     int run();
 
+    /** 
+     * Enable or disable an hardware interrupt (IRQ). 
+     *
+     * @param irq IRQ number. 
+     * @param enabled True to enable, and false to disable. 
+     */
+    void enableIRQ(u32 irq, bool enabled);
+
     /**
      * Hooks a function to an hardware interrupt.
      *
@@ -153,22 +166,15 @@ class Kernel : public Singleton<Kernel>
      * @param h Handler function.
      * @param p Parameter to pass to the handler function.
      */
-    virtual void hookInterrupt(u32 vec, InterruptHandler h, ulong p);
+    virtual void hookIntVector(u32 vec, InterruptHandler h, ulong p);
 
     /**
      * Execute an interrupt handler.
      *
-     * @param vec Interrupt Vector.
+     * @param vec Interrupt vector.
      * @param state CPU state.
      */
-    virtual void executeInterrupt(u32 vec, CPUState *state);
-
-    /** 
-     * Enable or disable an hardware interrupt (IRQ). 
-     * @param vector IRQ number. 
-     * @param enabled True to enable, and false to disable. 
-     */
-    virtual void enableIRQ(u32 vector, bool enabled) = 0;
+    virtual void executeIntVector(u32 vec, CPUState *state);
 
     /**
      * Loads the boot image.
@@ -203,6 +209,9 @@ class Kernel : public Singleton<Kernel>
 
     /** Interrupt handlers. */
     Vector<List<InterruptHook *> *> m_interrupts;
+
+    /** Interrupt Controller. */
+    IntController *m_intControl;
 };
 
 /**

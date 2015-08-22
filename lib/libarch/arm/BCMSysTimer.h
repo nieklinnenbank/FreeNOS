@@ -20,6 +20,7 @@
 
 #include <Types.h>
 #include <Macros.h>
+#include "ARMIO.h"
 
 #define SYSTIMER_BASE 0x3000
 
@@ -52,6 +53,9 @@ class BCMSysTimer
   private:
 
     u32 m_cycles;
+
+    /** I/O instance */
+    ARMIO m_io;
 };
 
 #endif /* __LIBARCH_ARM_BCM_SYSTIMER_H */

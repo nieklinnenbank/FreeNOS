@@ -129,6 +129,8 @@ MemoryContext::Result ARMPaging::activate()
         mcr(p15, 0, 0, c8, c6,  0);    // flush data TLB 
         mcr(p15, 0, 0, c8, c7,  0);    // flush unified TLB 
     }
+    // Done. Update currently active context pointer
+    m_current = this;
     return Success;
 }
 

@@ -19,6 +19,7 @@
 #define __LIBARCH_ARM_BCM2835INTERRUPT_H
 
 #include "ARMInterrupt.h"
+#include "ARMIO.h"
 
 #define INTERRUPT_BASE_ADDR        0xB000
 #define INTERRUPT_BASICPEND       (INTERRUPT_BASE_ADDR+0x200)
@@ -45,7 +46,6 @@
 /**
  * Raspberry Pi Interrupt Controller implementation
  */
-
 class BCM2835Interrupt : public ARMInterrupt
 {
   public:
@@ -58,17 +58,27 @@ class BCM2835Interrupt : public ARMInterrupt
     /**
      * Enable an IRQ vector
      */
-    virtual void enableIRQ(u32 vector);
+    virtual Result enable(uint vector);
 
     /**
      * Disable an IRQ vector
      */
-    virtual void disableIRQ(u32 vector);
+    virtual Result disable(uint vector);
+
+    /**
+     * Clear an IRQ vector
+     */
+    virtual Result clear(uint vector);
 
     /**
      * Check if an IRQ vector is set.
      */
-    virtual bool isTriggered(u32 vector);
+    virtual bool isTriggered(uint vector);
+
+  private:
+
+    /** I/O instance */
+    ARMIO m_io;
 };
 
 #endif /* LIBARCH_ARM_BCM2835INTERRUPT_H */

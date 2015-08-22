@@ -15,29 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBARCH_INTERRUPT_CONTROL_H
-#define __LIBARCH_INTERRUPT_CONTROL_H
+#include "IntController.h"
 
-#include <Types.h>
-#include <Macros.h>
-
-/** Forward declaration */
-struct CPUState;
-
-/**
- * Interrupt controller.
- */
-class InterruptControl
+IntController::IntController()
 {
-  public:
+    m_base = 0;
+}
 
-    /**
-     * Function which is called when the CPU is interrupted.
-     *
-     * @param state State of the CPU on the moment the interrupt occurred.
-     */
-    typedef void Handler(struct CPUState state);
-
-};
-
-#endif /* __LIBARCH_INTERRUPT_CONTROL_H */
+uint IntController::getBase()
+{
+    return m_base;
+}

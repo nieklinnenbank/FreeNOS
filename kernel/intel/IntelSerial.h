@@ -10,6 +10,9 @@
 
 #include <Log.h>
 
+/** Forward declare */
+class IntelIO;
+
 /**
  * Intel Serial port debug log class.
  *
@@ -52,8 +55,8 @@ class IntelSerial : public Log
         BAUDRATE     = 9600,
     };
 
-    /** Port I/O base */
-    u16 m_base;
+    /** I/O instance */
+    IntelIO m_io;
 };
 
 #endif /* _INTEL_SERIAL_H */

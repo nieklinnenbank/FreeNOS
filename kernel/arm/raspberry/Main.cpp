@@ -27,9 +27,6 @@
 
 extern C int kernel_main(u32 r0, u32 r1, u32 r2)
 {
-    // Enforce default I/O base offset
-    IO::base = IO_BASE;
-
     Arch::MemoryMap mem;
     BCM2835Interrupt irq;
 

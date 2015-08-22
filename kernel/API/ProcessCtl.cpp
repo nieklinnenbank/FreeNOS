@@ -80,7 +80,7 @@ Error ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
         break;
 
     case WatchIRQ:
-        Kernel::instance->hookInterrupt(IRQ(addr), (InterruptHandler *)interruptNotify, (ulong)proc);
+        Kernel::instance->hookIntVector(IRQ(addr), (InterruptHandler *)interruptNotify, (ulong)proc);
         break;
 
     case EnableIRQ:

@@ -36,28 +36,28 @@ Error PL011::initialize()
     if (VMCtl(SELF, Map, &range) != API::Success)
         return EINVAL;
 
-    IO::base = range.virt;
+    m_io.setBase(range.virt);
 
     // TODO: hack. disable IRQ_REG() == 0...
     ProcessCtl(SELF, DisableIRQ, 0);
 
     // Disable PL011.
-    IO::write(PL011_CR, 0x00000000);
+    m_io.write(PL011_CR, 0x00000000);
     
     // Setup the GPIO pin 14 && 15.
     // Disable pull up/down for all GPIO pins & delay for 150 cycles.
-    IO::write(GPPUD, 0x00000000);
+    m_io.write(GPPUD, 0x00000000);
     delay(150);
 
     // Disable pull up/down for pin 14,15 & delay for 150 cycles.
-    IO::write(GPPUDCLK0, (1 << 14) | (1 << 15));
+    m_io.write(GPPUDCLK0, (1 << 14) | (1 << 15));
     delay(150);
 
     // Write 0 to GPPUDCLK0 to make it take effect.
-    IO::write(GPPUDCLK0, 0x00000000);
+    m_io.write(GPPUDCLK0, 0x00000000);
     
     // Clear pending interrupts.
-    IO::write(PL011_ICR, 0x7FF);
+    m_io.write(PL011_ICR, 0x7FF);
 
     // Set integer & fractional part of baud rate.
     // Divider = UART_CLOCK/(16 * Baud)
@@ -66,32 +66,32 @@ Error PL011::initialize()
 
     // Divider = 3000000/(16 * 115200) = 1.627 = ~1.
     // Fractional part register = (.627 * 64) + 0.5 = 40.6 = ~40.
-    IO::write(PL011_IBRD, 1);
-    IO::write(PL011_FBRD, 40);
+    m_io.write(PL011_IBRD, 1);
+    m_io.write(PL011_FBRD, 40);
 
     // Disable FIFO, use 8 bit data transmission, 1 stop bit, no parity
-    IO::write(PL011_LCRH, PL011_LCRH_WLEN_8BIT);
+    m_io.write(PL011_LCRH, PL011_LCRH_WLEN_8BIT);
 
     // Enable Rx/Tx interrupts
-    IO::write(PL011_IMSC,
+    m_io.write(PL011_IMSC,
          PL011_IMSC_RXIM); // | PL011_IMSC_TXIM);
 
     // Enable PL011, receive & transfer part of UART.
-    IO::write(PL011_CR, (1 << 0) | (1 << 8) | (1 << 9));
+    m_io.write(PL011_CR, (1 << 0) | (1 << 8) | (1 << 9));
     return 0;
 }
 
 Error PL011::interrupt(u32 vector)
 {
     // Clear Receive Interrupts
-    u32 mis = IO::read(PL011_MIS);
+    u32 mis = m_io.read(PL011_MIS);
     if (mis & PL011_MIS_RXMIS)
-        IO::write(PL011_ICR, PL011_ICR_RXIC);
+        m_io.write(PL011_ICR, PL011_ICR_RXIC);
 
     // Clear Transmit Interrupts
-    mis = IO::read(PL011_MIS);
+    mis = m_io.read(PL011_MIS);
     if (mis & PL011_MIS_TXMIS)
-        IO::write(PL011_ICR, PL011_ICR_TXIC);
+        m_io.write(PL011_ICR, PL011_ICR_TXIC);
 
     // Re-enable interrupts
     ProcessCtl(SELF, EnableIRQ, m_irq);
@@ -103,14 +103,14 @@ Error PL011::read(s8 *buffer, Size size, Size offset)
     Size bytes = 0;
 
     // Clear Receive Interrupts
-    u32 mis = IO::read(PL011_MIS);
+    u32 mis = m_io.read(PL011_MIS);
     if (mis & PL011_MIS_RXMIS)
-        IO::write(PL011_ICR, PL011_ICR_RXIC);
+        m_io.write(PL011_ICR, PL011_ICR_RXIC);
 
     // Read as much bytes as possible
-    while (!(IO::read(PL011_FR) & PL011_FR_RXFE) && bytes < size)
+    while (!(m_io.read(PL011_FR) & PL011_FR_RXFE) && bytes < size)
     {
-        buffer[bytes++] = IO::read(PL011_DR);
+        buffer[bytes++] = m_io.read(PL011_DR);
     }
     return bytes ? (Error) bytes : EAGAIN;
 }
@@ -120,16 +120,16 @@ Error PL011::write(s8 *buffer, Size size, Size offset)
     Size bytes = 0;
 
     // Clear Transmit Interrupts
-    u32 mis = IO::read(PL011_MIS);
+    u32 mis = m_io.read(PL011_MIS);
     if (mis & PL011_MIS_TXMIS)
-        IO::write(PL011_ICR, PL011_ICR_TXIC);
+        m_io.write(PL011_ICR, PL011_ICR_TXIC);
 
 #warning if FR_TXFE sets while buffer isnt empty, we need to wait for the TX IRQ, which we disabled!
 
     // Write as much bytes as possible
-    while ((IO::read(PL011_FR) & PL011_FR_TXFE) && bytes < size)
+    while ((m_io.read(PL011_FR) & PL011_FR_TXFE) && bytes < size)
     {
-        IO::write(PL011_DR, buffer[bytes++]);
+        m_io.write(PL011_DR, buffer[bytes++]);
     }
     return bytes ? (Error) bytes : EAGAIN;
 }

@@ -19,6 +19,8 @@
 #include <SplitAllocator.h>
 #include "MemoryContext.h"
 
+MemoryContext * MemoryContext::m_current = 0;
+
 MemoryContext::MemoryContext(MemoryMap *map, SplitAllocator *alloc)
 {
     m_alloc = alloc;
@@ -27,6 +29,11 @@ MemoryContext::MemoryContext(MemoryMap *map, SplitAllocator *alloc)
 
 MemoryContext::~MemoryContext()
 {
+}
+
+MemoryContext * MemoryContext::getCurrent()
+{
+    return m_current;
 }
 
 MemoryContext::Result MemoryContext::mapRange(Memory::Range *range)
@@ -122,7 +129,7 @@ MemoryContext::Result MemoryContext::findFree(Size size, MemoryMap::Region regio
         else
         {
             currentSize = 0; 
-            currentAddr = addr;
+            currentAddr = addr + PAGESIZE;
         }
         addr += PAGESIZE;
     }

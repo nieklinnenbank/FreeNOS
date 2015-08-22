@@ -31,7 +31,7 @@ ARMKernel::ARMKernel(Memory::Range kernel,
 {    
     NOTICE("");
 
-    m_intr = intr;
+    m_intControl = intr;
     intr->install(ARMInterrupt::UndefinedInstruction, undefinedInstruction);
     intr->install(ARMInterrupt::SoftwareInterrupt, trap);
     intr->install(ARMInterrupt::PrefetchAbort, prefetchAbort);
@@ -42,7 +42,7 @@ ARMKernel::ARMKernel(Memory::Range kernel,
 
     // Enable clocks and irqs
     m_timer.setInterval( 250 ); /* trigger timer interrupts at 250Hz (clock runs at 1Mhz) */
-    m_intr->enableIRQ(BCM_IRQ_SYSTIMERM1);
+    m_intControl->enable(BCM_IRQ_SYSTIMERM1);
 
     // Set ARMCore modes
     ARMControl ctrl;
@@ -51,24 +51,15 @@ ARMKernel::ARMKernel(Memory::Range kernel,
     ctrl.unset(ARMControl::BigEndian);
 }
 
-void ARMKernel::enableIRQ(u32 vector, bool enabled)
-{
-    DEBUG("vector =" << vector << "enabled =" << enabled);
-
-    if (enabled)
-        m_intr->enableIRQ(vector);
-    else
-        m_intr->disableIRQ(vector);
-}
-
 void ARMKernel::interrupt(CPUState state)
 {
     ARMKernel *kernel = (ARMKernel *) Kernel::instance;
+    ARMInterrupt *intr = (ARMInterrupt *) kernel->m_intControl;
 
     //DEBUG("");
 
     // TODO: remove BCM2835 specific code
-    if (kernel->m_intr->isTriggered(BCM_IRQ_SYSTIMERM1))
+    if (intr->isTriggered(BCM_IRQ_SYSTIMERM1))
     {
         kernel->m_timer.next();
         kernel->getProcessManager()->schedule();
@@ -77,8 +68,8 @@ void ARMKernel::interrupt(CPUState state)
     {
         for (uint i = 0; i < 64; i++)
         {
-            if (kernel->m_intr->isTriggered(i))
-                kernel->executeInterrupt(i, &state);
+            if (intr->isTriggered(i))
+                kernel->executeIntVector(i, &state);
         }
     }
 }

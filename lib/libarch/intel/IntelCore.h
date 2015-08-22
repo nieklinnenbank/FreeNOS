@@ -20,7 +20,8 @@
 
 #include <Types.h>
 #include <Macros.h>
-#include "Core.h"
+#include <Core.h>
+#include "IntelIO.h"
 
 /**
  * Retrieve the IRQ number from CPUState.
@@ -48,15 +49,22 @@ inline u64 timestamp()
  * Reboot the system (by sending the a reset signal on the keyboard I/O port)
  */
 #define reboot() \
-    IO::outb(0x64, 0xfe)
+({ \
+    IntelIO io; \
+    io.outb(0x64, 0xfe); \
+})
 
 /**
  * Shutdown the machine via ACPI.
+ *
  * @note We do not have ACPI yet. Shutdown now has a bit naive implementation.
  * @see http://forum.osdev.org/viewtopic.php?t=16990
  */
 #define shutdown() \
-    IO::outw(0xB004, 0x0 | 0x2000)
+({ \
+    IntelIO io; \
+    io.outw(0xB004, 0x0 | 0x2000); \
+})
 
 /**  
  * Puts the CPU in a lower power consuming state. 
