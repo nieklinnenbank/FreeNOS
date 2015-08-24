@@ -129,6 +129,14 @@ class IntelMP
      */
     Result discover();
 
+    /**
+     * Boot a processor.
+     *
+     * @param cpuId CPU identity number
+     * @param kernelPath Path to the kernel to boot.
+     */
+    Result boot(uint cpuId, const char *kernelPath);
+
   private:
 
     /**

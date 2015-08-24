@@ -29,6 +29,7 @@
 #include <arm/ARMProcess.h>
 
 /** Raspberry Pi A/B/B+ have a Broadcom 2835 SoC */
+#define ARM
 #define BCM2835
 
 /** Default IO base on the Broadcom 2835 */

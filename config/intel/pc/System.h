@@ -29,4 +29,7 @@
 #include <intel/IntelProcess.h>
 #include <intel/IntelSerial.h>
 
+#define INTEL
+#define PC
+
 #endif /* __INTEL_NUC_SYSTEM_H */

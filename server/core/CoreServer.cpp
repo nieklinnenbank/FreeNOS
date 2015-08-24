@@ -17,6 +17,7 @@
 
 #include <FreeNOS/API.h>
 #include <FreeNOS/System.h>
+#include <intel/IntelMP.h>
 #include "CoreServer.h"
 #include "CoreMessage.h"
 #include <stdio.h>
@@ -25,14 +26,22 @@
 CoreServer::CoreServer()
     : IPCServer<CoreServer, CoreMessage>(this)
 {
+    /*
+     * TODO:
+     * discover other CPUs with libarch APIC. Determine the memory
+     * splitup. Claim the memory for that CPU. Fill the boot struct with various argument
+     * inside the cpu1 memory so that IntelBoot.S can find its base.
+     * start new kernel with /boot/kernel (or any other kernel, depending on configuration)
+     * introduce a IntelGeometry, which uses APIC. CoreServer uses the Arch::Geometry to discover CPUs here.
+     * once CPU1 is up & running, we can implement libmpi! :-)
+     */
 
-#warning discover other CPUs with libarch APIC. Determine the memory
-#warning splitup. Claim the memory for that CPU. Fill the boot struct with various argument
-#warning inside the cpu1 memory so that IntelBoot.S can find its base.
+#ifdef INTEL
+    IntelMP mp;
+    mp.discover();
 
-    // start new kernel with /boot/kernel (or any other kernel, depending on configuration)
-
-#warning introduce a IntelGeometry, which uses APIC. CoreServer uses the Arch::Geometry to discover CPUs here.
-#warning once CPU1 is up & running, we can implement libmpi! :-)
+    List<uint> & cpus = mp.getCPUs();
+    NOTICE("found " << cpus.count() << " cores");
+#endif
 
 }
