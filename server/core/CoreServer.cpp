@@ -17,11 +17,14 @@
 
 #include <FreeNOS/API.h>
 #include <FreeNOS/System.h>
-#include <intel/IntelMP.h>
 #include "CoreServer.h"
 #include "CoreMessage.h"
 #include <stdio.h>
 #include <string.h>
+
+#ifdef INTEL
+#include <intel/IntelMP.h>
+#endif
 
 CoreServer::CoreServer()
     : IPCServer<CoreServer, CoreMessage>(this)
@@ -42,6 +45,14 @@ CoreServer::CoreServer()
 
     List<uint> & cpus = mp.getCPUs();
     NOTICE("found " << cpus.count() << " cores");
+
+    for (ListIterator<uint> i(cpus); i.hasCurrent(); i++)
+    {
+        uint cpuId = i.current();
+
+        if (cpuId != 0)
+            mp.boot(cpuId, "/boot/kernel");
+    }
 #endif
 
 }

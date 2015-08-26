@@ -26,6 +26,7 @@
 #define PAGE_EXEC       0
 #define PAGE_WRITE      2
 #define PAGE_USER       4
+#define PAGE_SECTION    (1 << 7)
 
 /**
  * Entry inside the page directory of a given virtual address.
@@ -96,7 +97,14 @@ MemoryContext::Result IntelPageDirectory::translate(Address virt, Address *phys,
 {
     IntelPageTable *table = getPageTable(virt, alloc);
     if (!table)
+    {
+        if (m_tables[DIRENTRY(virt)] & PAGE_SECTION)
+        {
+            *phys = (m_tables[DIRENTRY(virt)] & PAGEMASK) + ((virt % MegaByte(4)) & PAGEMASK);
+            return MemoryContext::Success;
+        }
         return MemoryContext::InvalidAddress;
+    }
     else
         return table->translate(virt, phys);
 }

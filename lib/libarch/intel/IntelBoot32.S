@@ -15,8 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#warning WARNING!!!!!! move to libarch. avoid kernel_main dependency by building without whole-archive.
+
 #include <intel/IntelConstant.h>
-#include "IntelBoot.h"
+#include <intel/IntelBoot.h>
 
 /* Constants */
 #define PAGE_PRESENT    1
@@ -60,7 +62,7 @@ i\vnum:
     movb $\vtype, 5(%eax)        /* Present, 32 bits, 01110 */
 .endm
 
-.global _start, multibootHeader, multibootInfo, gdt, kernelPageDir, kernelPageTab, kernelTss, kernelioBitMap
+.global bootEntry32, multibootHeader, multibootInfo, gdt, kernelPageDir, kernelPageTab, kernelTss, kernelioBitMap
 
 .section ".boot"
 
@@ -81,7 +83,7 @@ multibootHeader:
 /**
  * Entry point.
  */
-_start:
+bootEntry32:
     /* Disable interrupts. */
     cli
 

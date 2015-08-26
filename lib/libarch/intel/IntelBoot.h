@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __INTEL_MULTIBOOT_H
-#define __INTEL_MULTIBOOT_H
+#ifndef __LIBARCH_INTEL_BOOT_H
+#define __LIBARCH_INTEL_BOOT_H
 
 /**
  * @defgroup kernel kernel (generic)
@@ -118,8 +118,18 @@ MultibootMemoryMap;
 extern MultibootInfo multibootInfo;
 
 /**
+ * Entry point in 16-bit real mode.
+ */
+extern C void bootEntry16();
+
+/**
+ * Entry point in 32-bit protected mode.
+ */
+extern C void bootEntry32();
+
+/**
  * @}
  */
 
 #endif /* !__ASSEMBLER__ */
-#endif /* __INTEL_MULTIBOOT_H */
+#endif /* __LIBARCH_INTEL_BOOT_H */

@@ -28,10 +28,11 @@ Error VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
     Size bytes = 0, pageOff, total = 0;
 
     // Find the corresponding Process
-    if (!(proc = procs->get(procID)))
-    {
+    if (procID == SELF)
+        proc = procs->current();
+    else if (!(proc = procs->get(procID)))
         return API::NotFound;
-    }
+
     // TODO: Verify memory addresses
     MemoryContext *local  = procs->current()->getMemoryContext();
     MemoryContext *remote = proc->getMemoryContext();

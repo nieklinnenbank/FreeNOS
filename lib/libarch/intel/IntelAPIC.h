@@ -27,7 +27,7 @@
 class MemoryContext;
 class IntelPIT;
 
-// TODO (needed for SMP startup)
+// TODO (needed for SMP startup). Move inside class as members.
 #define APIC_DEST(x) ((x) << 24)
 #define APIC_DEST_FIELD         0x00000
 #define APIC_DEST_LEVELTRIG     0x08000
@@ -109,6 +109,13 @@ class IntelAPIC : public IntController
     IntelAPIC();
 
     /**
+     * Get I/O object.
+     *
+     * @return I/O object reference.
+     */
+    IntelIO & getIO();
+
+    /**
      * Get timer interrupt number.
      *
      * The interrupt number for channel 0 is fixed to IRQ0.
@@ -166,6 +173,15 @@ class IntelAPIC : public IntController
      * @return Result code.
      */
     virtual Result clear(uint irq);
+
+    /**
+     * Send startup Intercore-Processor-Interrupt.
+     *
+     * @param cpuId CPU identifier to send startup IPI.
+     * @param addr Start of execution address.
+     * @return Result code.
+     */
+    Result sendStartupIPI(uint cpuId, Address addr);
 
   private:
 

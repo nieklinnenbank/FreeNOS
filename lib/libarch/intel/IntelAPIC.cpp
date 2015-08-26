@@ -26,6 +26,11 @@ IntelAPIC::IntelAPIC() : IntController()
     m_io.setBase(IOBase);
 }
 
+IntelIO & IntelAPIC::getIO()
+{
+    return m_io;
+}
+
 uint IntelAPIC::getTimerInterrupt()
 {
     return TimerVector;
@@ -108,5 +113,37 @@ IntelAPIC::Result IntelAPIC::disable(uint irq)
 IntelAPIC::Result IntelAPIC::clear(uint irq)
 {
     m_io.write(EndOfInterrupt, 0);
+    return Success;
+}
+
+IntelAPIC::Result IntelAPIC::sendStartupIPI(uint cpuId, Address addr)
+{
+    ulong cfg;
+
+    // Write APIC Destination
+    cfg  = m_io.read(IntCommand2);
+    cfg &= 0x00ffffff;
+    m_io.write(IntCommand2, cfg | APIC_DEST(cpuId));
+
+    // Assert INIT
+    cfg  = m_io.read(IntCommand1);
+    cfg &= ~0xcdfff;
+    cfg |= (APIC_DEST_FIELD | APIC_DEST_LEVELTRIG |
+            APIC_DEST_ASSERT | APIC_DEST_DM_INIT);
+    m_io.write(IntCommand1, cfg);
+
+    // Write APIC Destination
+    cfg  = m_io.read(IntCommand2);
+    cfg &= 0x00ffffff;
+    m_io.write(IntCommand2, cfg | APIC_DEST(cpuId));
+
+    // Assert STARTUP
+    cfg  = m_io.read(IntCommand1);
+    cfg &= ~0xcdfff;
+    cfg |= (APIC_DEST_FIELD | APIC_DEST_DM_STARTUP |
+           (addr >> 12));
+    m_io.write(IntCommand1, cfg);
+
+    // Startup interrupt delivered.
     return Success;
 }

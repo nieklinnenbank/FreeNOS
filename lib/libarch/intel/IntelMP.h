@@ -23,6 +23,7 @@
 #include <BitOperations.h>
 #include <IntController.h>
 #include "IntelIO.h"
+#include "IntelAPIC.h"
 
 /** Forward declarations */
 class MemoryContext;
@@ -107,6 +108,7 @@ class IntelMP
     enum Result
     {
         Success,
+        IOError,
         NotFound
     };
 
@@ -151,6 +153,9 @@ class IntelMP
 
     /** I/O instance */
     IntelIO m_io;
+
+    /** APIC instance */
+    IntelAPIC m_apic;
 };
 
 #endif /* __LIBARCH_INTEL_MP_H */

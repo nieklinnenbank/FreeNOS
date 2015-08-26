@@ -27,8 +27,8 @@
 #include <String.h>
 #include <BootImage.h>
 #include <intel/IntelMap.h>
+#include <intel/IntelBoot.h>
 #include "IntelKernel.h"
-#include "IntelBoot.h"
 
 extern C void executeInterrupt(CPUState state)
 {

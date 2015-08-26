@@ -15,8 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/API.h>
 #include <Log.h>
+#include "IntelConstant.h"
 #include "IntelMP.h"
+#include "IntelBoot.h"
 
 IntelMP::IntelMP()
 {
@@ -62,7 +65,28 @@ IntelMP::Result IntelMP::discover()
     for (uint i = 0; i < mpc->count; i++)
         entry = parseEntry(entry);
 
+    // Remap APIC in virtual memory
+    m_apic.getIO().map(mpc->apicAddr, PAGESIZE);
+
     return Success;
+}
+
+IntelMP::Result IntelMP::boot(uint cpuId, const char *kernelPath)
+{
+    NOTICE("booting core#" << cpuId << " with kernel: " << kernelPath);
+
+    // TODO: load the kernel, reserve memory, etc
+    // TODO: upper layer should have loaded the kernel in memory already.
+
+    // Copy 16-bit realmode startup code
+    // TODO: place this in the kernel somewhere instead?
+    VMCopy(SELF, API::Write, (Address) bootEntry16, 0xf000, PAGESIZE);
+
+    // Send inter-processor-interrupt to wakeup the processor
+    if (m_apic.sendStartupIPI(cpuId, 0xf000) == IntelAPIC::Success)
+        return Success;
+    else
+        return IOError;        
 }
 
 IntelMP::MPEntry * IntelMP::parseEntry(IntelMP::MPEntry *entry)
