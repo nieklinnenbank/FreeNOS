@@ -22,7 +22,7 @@ int main(int argc, char **argv)
 {
     KernelLog log;
 
-    log.setMinimumLogLevel(Log::Notice);
+    log.setMinimumLogLevel(Log::Debug);
     NOTICE("initializing on core#0");
 
     CoreServer server;

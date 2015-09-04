@@ -57,7 +57,7 @@ CoreServer::Result CoreServer::initialize()
 
 CoreServer::Result CoreServer::loadKernel()
 {
-    NOTICE("Opening : " << kernelPath);
+    DEBUG("Opening : " << kernelPath);
 
     // Attempt to read kernel executable format
     if (!(m_kernel = ExecutableFormat::find(kernelPath)))
@@ -65,7 +65,7 @@ CoreServer::Result CoreServer::loadKernel()
         ERROR("kernel not found: " << kernelPath << ": " << strerror(errno));
         return NotFound;
     }
-    NOTICE("Reading : " << kernelPath);
+    DEBUG("Reading : " << kernelPath);
 
     // Retrieve memory regions
     if ((m_numRegions = m_kernel->regions(m_regions, 16)) < 0)
@@ -73,7 +73,7 @@ CoreServer::Result CoreServer::loadKernel()
         ERROR("kernel not usable: " << kernelPath << ": " << strerror(errno));
         return ExecError;
     }
-    NOTICE("kernel loaded");
+    DEBUG("kernel loaded");
     return Success;
 }
 
@@ -102,7 +102,7 @@ CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info, MemoryRegio
         //                         regions[i].size);
     
         // Unmap the target kernel's memory
-        NOTICE(kernelPath << "[" << i << "] = " << (void *) m_regions[i].virtualAddress);
+        DEBUG(kernelPath << "[" << i << "] = " << (void *) m_regions[i].virtualAddress);
     }
 #ifdef INTEL
     // Signal the core to boot

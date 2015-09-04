@@ -48,7 +48,6 @@ IntelMP::Result IntelMP::discover()
 
         if (mpf->signature == MPFloatSignature)
         {
-	    NOTICE("mpf = " << (void *) mpf);
             mpc = (MPConfig *) (mpf->configAddr - MPAreaAddr + addr);
             break;
         }
@@ -58,8 +57,8 @@ IntelMP::Result IntelMP::discover()
         return NotFound;
 
     // Found config
-    NOTICE("MP header found at " << mpc);
-    NOTICE("Local APIC at " << (void *) mpc->apicAddr);
+    DEBUG("MP header found at " << mpc);
+    DEBUG("Local APIC at " << (void *) mpc->apicAddr);
     entry = (MPEntry *)(mpc + 1);
 
     // Search for multiprocessor entries
@@ -74,7 +73,7 @@ IntelMP::Result IntelMP::discover()
 
 IntelMP::Result IntelMP::boot(CoreInfo *info)
 {
-    NOTICE("booting core#" << info->coreId << " at " <<
+    DEBUG("booting core#" << info->coreId << " at " <<
             (void *) info->memory.phys << " with kernel: " << info->kernel);
 
     // TODO: load the kernel, reserve memory, etc
