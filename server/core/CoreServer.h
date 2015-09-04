@@ -31,7 +31,13 @@
 #include <String.h>
 #include <Types.h>
 #include <Macros.h>
+#include <ExecutableFormat.h>
+#include <CoreInfo.h>
 #include "CoreMessage.h"
+
+#ifdef INTEL
+#include <intel/IntelMP.h>
+#endif /* INTEL */
 
 /**
  * Represents a single Core in a Central Processing Unit (CPU).
@@ -41,15 +47,49 @@
  */
 class CoreServer : public IPCServer<CoreServer, CoreMessage>
 {
+  private:
+
+    /** The default kernel for starting new cores. */
+    static const char *kernelPath;
+
   public:
-    
+
+    /**
+     * Result codes.
+     */    
+    enum Result
+    {
+        Success,
+        NotFound,
+        BootError,
+        ExecError,
+        OutOfMemory
+    };
+
     /**
      * Class constructor function.
      */
     CoreServer();
 
+    Result initialize();
+
+    Result bootCore(uint coreId, CoreInfo *info, MemoryRegion *regions);
+
+    Result discover();
+
+    Result loadKernel();
+
   private:
-    
+
+#ifdef INTEL
+    IntelMP m_cores;
+#endif /* INTEL */
+
+    ExecutableFormat *m_kernel;
+
+    MemoryRegion m_regions[16]; 
+
+    int m_numRegions;    
 };
 
 /**

@@ -26,9 +26,9 @@ IntelMP::IntelMP()
     m_io.map(MPAreaAddr, MPAreaSize);
 }
 
-List<uint> & IntelMP::getCPUs()
+List<uint> & IntelMP::getCores()
 {
-    return m_cpus;
+    return m_cores;
 }
 
 IntelMP::Result IntelMP::discover()
@@ -39,16 +39,17 @@ IntelMP::Result IntelMP::discover()
     Address addr = m_io.getBase();
 
     // Clear previous discoveries
-    m_cpus.clear();
+    m_cores.clear();
 
     // Look for the Multiprocessor configuration
-    for (uint i = 0; i < MPAreaSize; i += sizeof(Address))
+    for (uint i = 0; i < MPAreaSize - sizeof(Address); i += sizeof(Address))
     {
         mpf = (MPFloat *)(addr + i);
 
         if (mpf->signature == MPFloatSignature)
         {
-            mpc = (MPConfig *) mpf->configAddr;
+	    NOTICE("mpf = " << (void *) mpf);
+            mpc = (MPConfig *) (mpf->configAddr - MPAreaAddr + addr);
             break;
         }
     }
@@ -71,29 +72,44 @@ IntelMP::Result IntelMP::discover()
     return Success;
 }
 
-IntelMP::Result IntelMP::boot(uint cpuId, const char *kernelPath)
+IntelMP::Result IntelMP::boot(CoreInfo *info)
 {
-    NOTICE("booting core#" << cpuId << " with kernel: " << kernelPath);
+    NOTICE("booting core#" << info->coreId << " at " <<
+            (void *) info->memory.phys << " with kernel: " << info->kernel);
 
     // TODO: load the kernel, reserve memory, etc
     // TODO: upper layer should have loaded the kernel in memory already.
 
     // Copy 16-bit realmode startup code
-    // TODO: place this in the kernel somewhere instead?
-    VMCopy(SELF, API::Write, (Address) bootEntry16, 0xf000, PAGESIZE);
+    // TODO: place this in the kernel binary somewhere instead?
+    VMCopy(SELF, API::Write, (Address) bootEntry16, MPEntryAddr, PAGESIZE);
+
+    // Copy the CoreInfo structure
+    VMCopy(SELF, API::Write, (Address) info, MPInfoAddr, sizeof(*info));
 
     // Send inter-processor-interrupt to wakeup the processor
-    if (m_apic.sendStartupIPI(cpuId, 0xf000) == IntelAPIC::Success)
-        return Success;
-    else
-        return IOError;        
+    if (m_apic.sendStartupIPI(info->coreId, MPEntryAddr) != IntelAPIC::Success)
+        return IOError;
+
+    // Wait until the core raises the 'booted' flag in CoreInfo
+    // TODO: set somekind of limit to wait???
+    while (1)
+    {
+        CoreInfo check;
+
+        VMCopy(SELF, API::Read, (Address) &check, MPInfoAddr, sizeof(check));
+
+        if (check.booted)
+            break;
+    }
+    return Success;
 }
 
 IntelMP::MPEntry * IntelMP::parseEntry(IntelMP::MPEntry *entry)
 {
     if (entry->type == MPEntryProc)
     {
-        m_cpus.append(entry->apicId);
+        m_cores.append(entry->apicId);
         return entry + 1;
     }
     else

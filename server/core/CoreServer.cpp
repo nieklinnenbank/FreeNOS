@@ -17,6 +17,7 @@
 
 #include <FreeNOS/API.h>
 #include <FreeNOS/System.h>
+#include <ExecutableFormat.h>
 #include "CoreServer.h"
 #include "CoreMessage.h"
 #include <stdio.h>
@@ -25,6 +26,8 @@
 #ifdef INTEL
 #include <intel/IntelMP.h>
 #endif
+
+const char * CoreServer::kernelPath = "/boot/kernel";
 
 CoreServer::CoreServer()
     : IPCServer<CoreServer, CoreMessage>(this)
@@ -38,21 +41,109 @@ CoreServer::CoreServer()
      * introduce a IntelGeometry, which uses APIC. CoreServer uses the Arch::Geometry to discover CPUs here.
      * once CPU1 is up & running, we can implement libmpi! :-)
      */
+    m_numRegions = 0;
+    m_kernel = ZERO;
+}
 
-#ifdef INTEL
-    IntelMP mp;
-    mp.discover();
+CoreServer::Result CoreServer::initialize()
+{
+    Result r = loadKernel();
 
-    List<uint> & cpus = mp.getCPUs();
-    NOTICE("found " << cpus.count() << " cores");
+    if (r == Success)
+        return discover();
+    else
+        return r;
+}
 
-    for (ListIterator<uint> i(cpus); i.hasCurrent(); i++)
+CoreServer::Result CoreServer::loadKernel()
+{
+    NOTICE("Opening : " << kernelPath);
+
+    // Attempt to read kernel executable format
+    if (!(m_kernel = ExecutableFormat::find(kernelPath)))
     {
-        uint cpuId = i.current();
+        ERROR("kernel not found: " << kernelPath << ": " << strerror(errno));
+        return NotFound;
+    }
+    NOTICE("Reading : " << kernelPath);
 
-        if (cpuId != 0)
-            mp.boot(cpuId, "/boot/kernel");
+    // Retrieve memory regions
+    if ((m_numRegions = m_kernel->regions(m_regions, 16)) < 0)
+    {
+        ERROR("kernel not usable: " << kernelPath << ": " << strerror(errno));
+        return ExecError;
+    }
+    NOTICE("kernel loaded");
+    return Success;
+}
+
+CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info, MemoryRegion *regions)
+{
+    // Claim the core's memory
+    if (VMCtl(SELF, RemoveMem, &info->memory) != API::Success)
+    {
+        ERROR("failed to reserve memory for core#" << coreId <<
+              " at " << (void *)info->memory.phys);
+        return OutOfMemory;
+    }
+
+    for (int i = 0; i < m_numRegions; i++)
+    {
+        // Map the target kernel's memory for regions[i].size
+        //if (VMCtl(pid, Map, &range) != 0)
+        //{
+            // TODO: convert from API::Error to errno.
+            //errno = EFAULT;
+            //return -1;
+        //}
+        // Copy the kernel to the target core's memory
+        //VMCopy(SELF, API::Write, (Address) regions[i].data,
+        //                         regions[i].virtualAddress,
+        //                         regions[i].size);
+    
+        // Unmap the target kernel's memory
+        NOTICE(kernelPath << "[" << i << "] = " << (void *) m_regions[i].virtualAddress);
+    }
+#ifdef INTEL
+    // Signal the core to boot
+    if (m_cores.boot(info) != IntelMP::Success) {
+        ERROR("failed to boot core " << coreId);
+        return BootError;
+    } else {
+        NOTICE("core " << coreId << " started");
     }
 #endif
+    return Success;
+}
 
+CoreServer::Result CoreServer::discover()
+{
+#ifdef INTEL
+    CoreInfo info;
+    SystemInformation sysInfo;
+    Size memPerCore = 0;
+
+    m_cores.discover();
+    List<uint> & cores = m_cores.getCores();
+    memPerCore = sysInfo.memorySize / cores.count();
+
+    NOTICE("found " << cores.count() << " cores -- " <<
+            (memPerCore / 1024 / 1024) << "MB per core");
+
+    for (ListIterator<uint> i(cores); i.hasCurrent(); i++)
+    {
+        uint coreId = i.current();
+
+        if (coreId != 0)
+        {
+            MemoryBlock::set(&info, 0, sizeof(info));
+            info.coreId = coreId;
+            info.memory.phys = memPerCore * coreId;
+            strlcpy(info.kernel, kernelPath, KERNEL_PATHLEN);
+
+            bootCore(coreId, &info, m_regions);
+        }
+    }
+#endif
+    return Success;
 }

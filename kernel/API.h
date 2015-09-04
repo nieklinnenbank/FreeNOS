@@ -62,6 +62,7 @@ class API
         RangeError      = -2,
         NotFound        = -3,
         InvalidArgument = -4,
+        OutOfMemory     = -5
     }
     Error;
 

@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#warning WARNING!!!!!! move to libarch. avoid kernel_main dependency by building without whole-archive.
-
 #include <intel/IntelConstant.h>
 #include <intel/IntelBoot.h>
 
@@ -84,6 +82,7 @@ multibootHeader:
  * Entry point.
  */
 bootEntry32:
+
     /* Disable interrupts. */
     cli
 

@@ -41,7 +41,7 @@ IO::Result IO::map(Address phys, Size size)
 
     range.virt   = 0;
     range.phys   = phys;
-    range.access = Memory::Readable | Memory::Writable;
+    range.access = Memory::Readable | Memory::Writable | Memory::User;
     range.size   = size;
 
     if (!isKernel)

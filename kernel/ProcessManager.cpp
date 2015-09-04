@@ -37,8 +37,7 @@ ProcessManager::~ProcessManager()
 
 Process * ProcessManager::create(Address entry, const MemoryMap &map)
 {
-    // first process is privileged (the coreserver)
-    Process *proc = new Arch::Process(m_procs.count(), entry, m_procs.count() == 0, map);
+    Process *proc = new Arch::Process(m_procs.count(), entry, false, map);
 
     // Insert to the process table
     if (proc && proc->initialize() == Process::Success)

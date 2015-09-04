@@ -15,17 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <KernelLog.h>
-#include "CoreServer.h"
+#ifndef __LIBARCH_COREINFO_H
+#define __LIBARCH_COREINFO_H
 
-int main(int argc, char **argv)
+#include <Macros.h>
+#include <Types.h>
+#include <Memory.h>
+
+#define KERNEL_PATHLEN 64
+
+typedef struct CoreInfo
 {
-    KernelLog log;
+    uint booted;
+    uint coreId;
+    Memory::Range memory;
+    char kernel[KERNEL_PATHLEN];
 
-    log.setMinimumLogLevel(Log::Notice);
-    NOTICE("initializing on core#0");
+} CoreInfo;
 
-    CoreServer server;
-    server.initialize();
-    return server.run();
-}
+#endif /* __LIBARCH_COREINFO_H */

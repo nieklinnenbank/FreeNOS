@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <BitAllocator.h>
+#include <SplitAllocator.h>
 #include "VMCtl.h"
 #include "ProcessID.h"
 
@@ -61,7 +61,15 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range)
         case Access:
             ret = (API::Error) mem->access(range->virt, &range->access);
             break;
-            
+
+        case RemoveMem:
+            for (uint i = 0; i < range->size; i+=PAGESIZE)
+            {
+                if (Kernel::instance->getAllocator()->allocate(range->phys + i) != Allocator::Success)
+                    return API::OutOfMemory;
+            }
+            break;
+
         default:
             ret = API::InvalidArgument;
             break;

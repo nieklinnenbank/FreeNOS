@@ -22,6 +22,7 @@
 #include <List.h>
 #include <BitOperations.h>
 #include <IntController.h>
+#include <CoreInfo.h>
 #include "IntelIO.h"
 #include "IntelAPIC.h"
 
@@ -42,8 +43,11 @@ class IntelMP
     /** Multiprocessor Configuration Type ID for processors. */
     static const uint MPEntryProc = 0;
 
-    /** Physical memory address at which cores start. */
+    /** Physical memory address at which cores start (bootEntry16). */
     static const Address MPEntryAddr = 0xf000;
+
+    /** Physical memory address for the CoreInfo structure. */
+    static const Address MPInfoAddr = 0x10000;
 
     /** BIOS memory area to search for MP tables */
     static const Address MPAreaAddr = 0xf0000;
@@ -118,11 +122,11 @@ class IntelMP
     IntelMP();
 
     /**
-     * Get list of CPU identities.
+     * Get list of core identities.
      *
-     * @return List of CPU identities.
+     * @return List of core identities.
      */
-    List<uint> & getCPUs();
+    List<uint> & getCores();
 
     /**
      * Discover processors.
@@ -134,10 +138,10 @@ class IntelMP
     /**
      * Boot a processor.
      *
-     * @param cpuId CPU identity number
-     * @param kernelPath Path to the kernel to boot.
+     * @param info CoreInfo object pointer.
+     * @return Result code.
      */
-    Result boot(uint cpuId, const char *kernelPath);
+    Result boot(CoreInfo *info);
 
   private:
 
@@ -148,8 +152,8 @@ class IntelMP
      */
     MPEntry * parseEntry(MPEntry *entry);
 
-    /** List of CPU ids found. */
-    List<uint> m_cpus;
+    /** List of core ids found. */
+    List<uint> m_cores;
 
     /** I/O instance */
     IntelIO m_io;

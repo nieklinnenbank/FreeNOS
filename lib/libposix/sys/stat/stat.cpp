@@ -47,7 +47,7 @@ int stat(const char *path, struct stat *buf)
 	errno = msg.result;
     }
     else
-	errno = ENOENT;
+	errno = msg.result = ENOENT;
     
     /* Success. */
     return msg.result == ESUCCESS ? 0 : -1;

@@ -18,6 +18,12 @@
 
 #include "IntelConstant.h"
 
+/** Offset in physical memory where bootEntry16 must be loaded. */
+#define LOADADDR 0xf000
+
+/** Offset in physical memory of the CoreInfo struct. */
+#define INFOADDR 0x10000
+
 /* Export symbols. */
 .global bootEntry16
 
@@ -51,7 +57,7 @@ base = .
     mov %ax, %ds
 
     /* Reload code segment: jump to 32-bit entry point. */
-    ljmpl $KERNEL_CS_SEL, $bootEntry32 - base + 0xf000
+    ljmpl $KERNEL_CS_SEL, $bootEntry32 - base + LOADADDR
 
 gdt16:
         .quad   0x0000000000000000 /* NULL descriptor. */
@@ -64,13 +70,17 @@ gdt16_end:
 
 gdt16_ptr:
         .word gdt16_end - gdt16
-        .long gdt16 - base + 0xf000
+        .long gdt16 - base + LOADADDR
         .word 0
 
 .data
 .code32
 
 bootEntry32:
+
+    /* Raise the booted flag in CoreInfo */
+    movl $INFOADDR, %eax
+    movl $1, (%eax)
 
     /* Freeze the core, until the rest is working. */
     hlt

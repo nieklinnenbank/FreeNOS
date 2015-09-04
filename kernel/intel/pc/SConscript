@@ -47,9 +47,9 @@ Alias('iso', cd)
 #
 # Qemu targets
 #
-env.Targets(qemu           = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -smp 4')
-env.Targets(qemu_curses    = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -smp 4 -curses')
-env.Targets(qemu_serial    = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -smp 4 -nographic')
-env.Targets(qemu_debug     = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -smp 4 -curses -s -S')
-env.Targets(qemu_debugs    = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -smp 4 -nographic -s -S')
-env.Targets(qemu_debug_int = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -smp 4 -nographic -s -S -d int,cpu_reset')
+env.Targets(qemu           = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -smp 2')
+env.Targets(qemu_curses    = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -smp 2 -curses')
+env.Targets(qemu_serial    = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -smp 2 -nographic')
+env.Targets(qemu_debug     = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -smp 2 -curses -s -S')
+env.Targets(qemu_debugs    = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -smp 2 -nographic -s -S')
+env.Targets(qemu_debug_int = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -smp 2 -nographic -s -S -d int,cpu_reset')

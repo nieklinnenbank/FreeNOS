@@ -125,10 +125,6 @@ void setupHeap()
 
 void setupMappings()
 {
-    // The CoreServer does not need to setup mappings
-    if (getpid() == CORESRV_PID)
-        return;
-
     // Fill the mounts table
     memset(mounts, 0, sizeof(FileSystemMount) * FILESYSTEM_MAXMOUNTS);
     strlcpy(mounts[0].path, "/dev", PATHLEN);
