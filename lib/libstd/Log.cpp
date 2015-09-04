@@ -37,18 +37,27 @@ void Log::setIdent(const char *ident)
     m_ident = ident;
 }
 
-// TODO: #warning use String to buffer the line(s) until (auto)flush() or linefeed
+void Log::append(const char *str)
+{
+    m_outputBuffer << str;
+
+    if (m_outputBuffer.endsWith("\n"))
+    {
+	write(*m_outputBuffer);
+	m_outputBuffer = "";
+    }
+}
 
 Log & operator << (Log &log, const char *str)
 {
-    log.write(str);
+    log.append(str);
     return log;
 }
 
 Log & operator << (Log &log, int number)
 {
     String s = number;
-    log.write(*s);
+    log.append(*s);
     return log;
 }
 
@@ -56,14 +65,14 @@ Log & operator << (Log &log, unsigned number)
 {
 // TODO: #warning: string does not have unsigned conversions yet
     String s = number;
-    log.write(*s);
+    log.append(*s);
     return log;
 }
 
 Log & operator << (Log &log, unsigned long number)
 {
     String s = number;
-    log.write(*s);
+    log.append(*s);
     return log;
 }
 
@@ -71,6 +80,6 @@ Log & operator << (Log &log, void *ptr)
 {
     String s;
     s << Number::Hex << (long ) ptr;
-    log.write(*s);
+    log.append(*s);
     return log;
 }

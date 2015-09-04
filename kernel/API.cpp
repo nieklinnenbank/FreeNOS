@@ -52,13 +52,13 @@ Log & operator << (Log &log, API::Operation op)
 {
     switch (op)
     {
-        case API::Create:      log.write("Create");      break;
-        case API::Delete:      log.write("Delete");      break;
-        case API::Send:        log.write("Send");        break;
-        case API::Receive:     log.write("Receive");     break;
-        case API::SendReceive: log.write("SendReceive"); break;
-        case API::Read:        log.write("Read");        break;
-        case API::Write:       log.write("Write");       break;
+        case API::Create:      log.append("Create");      break;
+        case API::Delete:      log.append("Delete");      break;
+        case API::Send:        log.append("Send");        break;
+        case API::Receive:     log.append("Receive");     break;
+        case API::SendReceive: log.append("SendReceive"); break;
+        case API::Read:        log.append("Read");        break;
+        case API::Write:       log.append("Write");       break;
     }    
     return log;
 }

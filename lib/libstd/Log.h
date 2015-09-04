@@ -10,6 +10,7 @@
 
 #include "Singleton.h"
 #include "Macros.h"
+#include "String.h"
 
 /**
  * Output a log line to the system log (syslog).
@@ -102,9 +103,9 @@ class Log : public Singleton<Log>
     void setMinimumLogLevel(Level level);
 
     /**
-     * Write to the actual output device.
+     * Append to buffered output.
      */
-    virtual void write(const char *str) = 0;
+    void append(const char *str);
 
     /**
      * Set log identity.
@@ -116,6 +117,13 @@ class Log : public Singleton<Log>
      */
     const char * getIdent();
 
+  protected:
+
+    /**
+     * Write to the actual output device.
+     */
+    virtual void write(const char *str) = 0;
+
   private:
     
     /** Minimum log level required to log. */
@@ -123,6 +131,9 @@ class Log : public Singleton<Log>
 
     /** Identity */
     const char *m_ident;
+
+    /** Buffered output */
+    String m_outputBuffer;
 };
 
 /**

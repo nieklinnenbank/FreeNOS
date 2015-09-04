@@ -27,6 +27,8 @@ class IntelSerial : public Log
      */
     IntelSerial(u16 base);
 
+  protected:
+
     /**
      * Write to the actual output device.
      */

@@ -117,18 +117,18 @@ Log & operator << (Log &log, ProcessOperation op)
 {
     switch (op)
     {
-        case Spawn:     log.write("Spawn"); break;
-        case KillPID:   log.write("KillPID"); break;
-        case GetPID:    log.write("GetPID"); break;
-        case GetParent: log.write("GetParent"); break;
-        case Schedule:  log.write("Schedule"); break;
-        case Resume:    log.write("Resume"); break;
-        case WatchIRQ:  log.write("WatchIRQ"); break;
-        case EnableIRQ: log.write("EnableIRQ"); break;
-        case InfoPID:   log.write("InfoPID"); break;
-        case WaitPID:   log.write("WaitPID"); break;
-        case SetStack:  log.write("SetStack"); break;
-        default:        log.write("???"); break;
+        case Spawn:     log.append("Spawn"); break;
+        case KillPID:   log.append("KillPID"); break;
+        case GetPID:    log.append("GetPID"); break;
+        case GetParent: log.append("GetParent"); break;
+        case Schedule:  log.append("Schedule"); break;
+        case Resume:    log.append("Resume"); break;
+        case WatchIRQ:  log.append("WatchIRQ"); break;
+        case EnableIRQ: log.append("EnableIRQ"); break;
+        case InfoPID:   log.append("InfoPID"); break;
+        case WaitPID:   log.append("WaitPID"); break;
+        case SetStack:  log.append("SetStack"); break;
+        default:        log.append("???"); break;
     }
     return log;
 }

@@ -33,8 +33,8 @@ Kernel::Kernel(Memory::Range kernel, Memory::Range memory)
     : Singleton<Kernel>(this), m_interrupts(256)
 {
     // Output log banners
-    Log::instance->write(BANNER);
-    Log::instance->write(COPYRIGHT "\r\n");
+    Log::instance->append(BANNER);
+    Log::instance->append(COPYRIGHT "\r\n");
 
     // TODO: compute lower & higher memory for this core.
     Memory::Range highMem;

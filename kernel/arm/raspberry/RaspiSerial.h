@@ -50,6 +50,8 @@ class RaspiSerial : public Log
      */
     void put(u8 byte);
 
+  protected:
+
     /*
      * print a string to the UART one character at a time
      * const char *str: 0-terminated string

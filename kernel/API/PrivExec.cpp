@@ -41,9 +41,9 @@ Error PrivExecHandler(PrivOperation op, Address addr)
         shutdown();
         return API::Success;
 
-        case WriteConsole:            
-            (*Log::instance) << (char *)addr;
-            return API::Success;
+    case WriteConsole:
+        (*Log::instance) << (char *)addr;
+        return API::Success;
 
     default:
         ;

@@ -51,11 +51,11 @@ Log & operator << (Log &log, IOOperation op)
 {
     switch (op)
     {
-        case IOByteRead:  log.write("IOByteRead");  break;
-        case IOByteWrite: log.write("IOByteWrite"); break;
-        case IOWordRead:  log.write("IOWordRead");  break;
-        case IOWordWrite: log.write("IOWordWrite"); break;
-        case IOLongWrite: log.write("IOLongWrite"); break;
+        case IOByteRead:  log.append("IOByteRead");  break;
+        case IOByteWrite: log.append("IOByteWrite"); break;
+        case IOWordRead:  log.append("IOWordRead");  break;
+        case IOWordWrite: log.append("IOWordWrite"); break;
+        case IOLongWrite: log.append("IOLongWrite"); break;
     }
     return log;
 }
