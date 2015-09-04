@@ -86,7 +86,8 @@ CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info, MemoryRegio
               " at " << (void *)info->memory.phys);
         return OutOfMemory;
     }
-
+    
+    DEBUG("Starting core" << coreId << " with " << info->memory.size / 1024 / 1024 << "MB");
     for (int i = 0; i < m_numRegions; i++)
     {
         // Map the target kernel's memory for regions[i].size
@@ -110,7 +111,7 @@ CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info, MemoryRegio
         ERROR("failed to boot core " << coreId);
         return BootError;
     } else {
-        NOTICE("core " << coreId << " started");
+        NOTICE("core" << coreId << " started");
     }
 #endif
     return Success;
@@ -139,6 +140,7 @@ CoreServer::Result CoreServer::discover()
             MemoryBlock::set(&info, 0, sizeof(info));
             info.coreId = coreId;
             info.memory.phys = memPerCore * coreId;
+	    info.memory.size = memPerCore;
             strlcpy(info.kernel, kernelPath, KERNEL_PATHLEN);
 
             bootCore(coreId, &info, m_regions);

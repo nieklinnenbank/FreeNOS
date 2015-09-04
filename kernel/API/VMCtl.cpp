@@ -63,6 +63,7 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range)
             break;
 
         case RemoveMem:
+#warning TODO: claiming memory should be atomic single shot call.
             for (uint i = 0; i < range->size; i+=PAGESIZE)
             {
                 if (Kernel::instance->getAllocator()->allocate(range->phys + i) != Allocator::Success)
