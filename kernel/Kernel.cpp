@@ -22,6 +22,7 @@
 #include <PoolAllocator.h>
 #include <IntController.h>
 #include <BootImage.h>
+#include <CoreInfo.h>
 #include "Kernel.h"
 #include "Memory.h"
 #include "Process.h"
@@ -45,7 +46,6 @@ Kernel::Kernel(Memory::Range kernel, Memory::Range memory)
     m_procs  = new ProcessManager(new Scheduler());
     m_api    = new API();
     m_intControl       = 0;
-    m_bootImageAddress = 0;
 
     // Mark kernel memory used (first 4MB in phys memory)
     for (Size i = 0; i < kernel.size; i += PAGESIZE)
@@ -86,16 +86,6 @@ ProcessManager * Kernel::getProcessManager()
 API * Kernel::getAPI()
 {
     return m_api;
-}
-
-Address Kernel::getBootImageAddress()
-{
-    return m_bootImageAddress;
-}
-
-Size Kernel::getBootImageSize()
-{
-    return m_bootImageSize;
 }
 
 MemoryContext * Kernel::getMemoryContext()
@@ -151,7 +141,30 @@ void Kernel::executeIntVector(u32 vec, CPUState *state)
     }
 }
 
-bool Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Size index)
+Kernel::Result Kernel::loadBootImage()
+{
+    BootImage *image = (BootImage *) coreInfo.bootImageAddress;
+
+    // Verify this is a correct BootImage
+    if (image->magic[0] == BOOTIMAGE_MAGIC0 &&
+        image->magic[1] == BOOTIMAGE_MAGIC1 &&
+        image->layoutRevision == BOOTIMAGE_REVISION)
+    {
+        // Mark BootImage memory used
+        for (Size i = 0; i < coreInfo.bootImageSize; i += PAGESIZE)
+            m_alloc->allocate(coreInfo.bootImageAddress + i);
+
+        // Loop BootPrograms
+        for (Size i = 0; i < image->symbolTableCount; i++)
+#warning here we need the PHYSICAL address of the boot image, not the virtual.
+            loadBootProcess(image, coreInfo.bootImageAddress, i);
+
+        return Success;
+    }
+    return InvalidBootImage;
+}
+
+Kernel::Result Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Size index)
 {
     Address imageVAddr = (Address) image, args;
     Size args_size = ARGV_SIZE;
@@ -167,14 +180,14 @@ bool Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Size index)
 
     // Ignore non-BootProgram entries
     if (program->type != BootProgram)
-        return false;
+        return InvalidBootImage;
 
     // Create process
     proc = m_procs->create(program->entry, map);
     if (!proc)
     {
         FATAL("failed to create boot program: " << program->name);
-        return false;
+        return ProcessError;
     }
 
     proc->setState(Process::Ready);
@@ -208,7 +221,7 @@ bool Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Size index)
 
     // Done
     NOTICE("loaded: " << program->name);
-    return true;
+    return Success;
 }
 
 int Kernel::run()

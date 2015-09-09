@@ -15,34 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBARCH_COREINFO_H
-#define __LIBARCH_COREINFO_H
+#include "CoreInfo.h"
 
-#include <Macros.h>
-#include <Types.h>
-#include <Memory.h>
-
-#define KERNEL_PATHLEN 64
-
-typedef struct CoreInfo
-{
-    uint booted;
-    uint coreId;
-    Memory::Range memory;
-    char kernel[KERNEL_PATHLEN];
-    Address bootImageAddress;
-    Address bootImageSize;
-    Address coreChannelBase;
-}
-CoreInfo;
-
-/**
- * Local CoreInfo instance.
- *
- * Architecture is responsible for filling the
- * CoreInfo struct instance for the core on which it
- * executes.
- */
-extern CoreInfo coreInfo;
-
-#endif /* __LIBARCH_COREINFO_H */
+CoreInfo coreInfo = { 0 };

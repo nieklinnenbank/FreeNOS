@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#warning rename to sysinfo? then make -m for memory info, and -c for cores, -a for all.
+
 #include <CoreMessage.h>
 #include <stdio.h>
 #include <stdlib.h>

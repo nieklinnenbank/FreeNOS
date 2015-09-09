@@ -128,6 +128,22 @@ extern C void bootEntry16();
 extern C void bootEntry32();
 
 /**
+ * Entry point from GRUB multiboot.
+ *
+ * The Bootstrap Processor (BSP) starts from GRUB.
+ * This routine transforms the GRUB multiboot info to a 
+ * CoreInfo and then continues with bootEntry32.
+ *
+ * @see bootEntry32
+ */
+extern C void multibootEntry();
+
+/**
+ * Convert multiboot info to a CoreInfo struct.
+ */
+extern C void multibootToCoreInfo(MultibootInfo *info);
+
+/**
  * @}
  */
 

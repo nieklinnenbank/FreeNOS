@@ -17,6 +17,7 @@
 
 #include <Log.h>
 #include <SplitAllocator.h>
+#include <CoreInfo.h>
 #include <FreeNOS/API.h>
 #include <arm/ARMInterrupt.h>
 #include <arm/ARMConstant.h>
@@ -28,9 +29,20 @@ ARMKernel::ARMKernel(Memory::Range kernel,
                      ARMInterrupt *intr,
                      Address tags)
     : Kernel(kernel, memory), m_tags(tags)
-{    
+{
     NOTICE("");
 
+    Memory::Range range = m_tags.getInitRd2();
+    DEBUG("initrd = " << range.phys << " (" << range.size << ")");
+
+    // Setup the CoreInfo using ARMTags
+    MemoryBlock::set(&coreInfo, 0, sizeof(CoreInfo));
+    coreInfo.bootImageAddress = range.phys;
+    coreInfo.bootImageSize    = range.size;
+    coreInfo.memory.phys = memory.phys;
+    coreInfo.memory.size = memory.size;
+
+    // Setup interrupt callbacks
     m_intControl = intr;
     intr->install(ARMInterrupt::UndefinedInstruction, undefinedInstruction);
     intr->install(ARMInterrupt::SoftwareInterrupt, trap);
@@ -55,8 +67,6 @@ void ARMKernel::interrupt(CPUState state)
 {
     ARMKernel *kernel = (ARMKernel *) Kernel::instance;
     ARMInterrupt *intr = (ARMInterrupt *) kernel->m_intControl;
-
-    //DEBUG("");
 
     // TODO: remove BCM2835 specific code
     if (intr->isTriggered(BCM_IRQ_SYSTIMERM1))
@@ -119,38 +129,4 @@ void ARMKernel::trap(CPUState state)
                       state.r4,
                       state.r5
     );
-}
-
-bool ARMKernel::loadBootImage()
-{
-    BootImage *image;
-
-    DEBUG("");
-
-    Memory::Range range = m_tags.getInitRd2();
-    DEBUG("initrd = " << range.phys << " (" << range.size << ")");
-
-    // TODO: most of this code should be moved to the generic Kernel.
-    image = (BootImage *) range.phys;
-
-    // Verify this is a correct BootImage
-    if (image->magic[0] == BOOTIMAGE_MAGIC0 &&
-        image->magic[1] == BOOTIMAGE_MAGIC1 &&
-        image->layoutRevision == BOOTIMAGE_REVISION)
-    {
-        m_bootImageAddress = range.phys;
-        m_bootImageSize    = range.size;
-
-       // Mark its memory used
-        for (Size i = 0; i < m_bootImageSize; i += PAGESIZE)
-            m_alloc->allocate(m_bootImageAddress + i);
-
-        // Loop BootPrograms
-        for (Size i = 0; i < image->symbolTableCount; i++)
-            loadBootProcess(image, m_bootImageAddress, i);
-    }
-    else
-        ERROR("invalid magic on BootImage");
-
-    return true;
 }

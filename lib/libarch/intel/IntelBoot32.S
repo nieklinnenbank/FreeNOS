@@ -60,20 +60,7 @@ i\vnum:
     movb $\vtype, 5(%eax)        /* Present, 32 bits, 01110 */
 .endm
 
-.global bootEntry32, multibootHeader, multibootInfo, gdt, kernelPageDir, kernelPageTab, kernelTss, kernelioBitMap
-
-.section ".boot"
-
-/*
- * Multiboot header, 32-bit aligned.
- */
-.align 4
-
-multibootHeader:
-        .long  (MULTIBOOT_HEADER_MAGIC)
-        .long  (MULTIBOOT_HEADER_FLAGS)
-        .long -(MULTIBOOT_HEADER_MAGIC + MULTIBOOT_HEADER_FLAGS)
-        .long  (multibootHeader)
+.global bootEntry32, gdt, kernelPageDir, kernelPageTab, kernelTss, kernelioBitMap
 
 .section ".text"
 .code32
@@ -86,28 +73,9 @@ bootEntry32:
     /* Disable interrupts. */
     cli
 
-#warning rewrite this so that cpu1 uses a different physical memory base and remaps the kernel here to 0x0 virtual.
-#warning CPU0 will need to prepare a info struct somewhere, so that CPU1 can know which address it owns.
-#warning We need to use the boot parameters maybe?
-#warning Better solution: use a struct which we can read in this file, CPU0 will use its address + cpu1 base for writing
-#warning it when inserting the kernel memory (from coreserver)
-
     /* Setup temporary boot stack. */
     movl $(stack + STACK_SIZE), %esp
     movl %esp, %ebp
-
-    /* Multiboot magic + struct. */
-    cmpl $MULTIBOOT_BOOTLOADER_MAGIC, %eax
-    jnz halt
-    movl $multibootInfo, %eax
-    movl $MULTIBOOT_HEADER_SIZE, %ecx
-1:
-    movl (%ebx), %edx
-    movl %edx, (%eax)
-    addl $4, %ebx
-    addl $4, %eax
-    subl $4, %ecx
-    jnz 1b
 
     /* Load GDT. */
     lgdt gdtPtr
@@ -247,11 +215,6 @@ interruptHandler 48, 0
 interruptHandler 0x90, 0
 
 .section ".bss"
-
-/**
- * Multiboot information struct.
- */
-multibootInfo: .fill MULTIBOOT_HEADER_SIZE, 1, 0
 
 /**
  * Kernel boot stack.

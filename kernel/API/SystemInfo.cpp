@@ -19,6 +19,7 @@
 #include <FreeNOS/Config.h>
 #include <FreeNOS/Kernel.h>
 #include <SplitAllocator.h>
+#include <CoreInfo.h>
 
 Error SystemInfoHandler(SystemInformation *info)
 {
@@ -31,11 +32,9 @@ Error SystemInfoHandler(SystemInformation *info)
     info->memorySize       = memory->size();
     info->memoryAvail      = memory->available();
 
-    // TODO: this interface could be improved using libarch?
-    info->bootImageAddress = Kernel::instance->getBootImageAddress();
-    info->bootImageSize    = Kernel::instance->getBootImageSize();
+    info->bootImageAddress = coreInfo.bootImageAddress;
+    info->bootImageSize    = coreInfo.bootImageSize;
 
-    // TODO: we dont have the commandline info of kernel yet.
-    MemoryBlock::copy(info->cmdline, "", 64);
+    MemoryBlock::copy(info->cmdline, coreInfo.kernel, 64);
     return API::Success;
 }

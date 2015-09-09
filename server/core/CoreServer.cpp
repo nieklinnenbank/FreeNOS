@@ -77,7 +77,8 @@ CoreServer::Result CoreServer::loadKernel()
     return Success;
 }
 
-CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info, MemoryRegion *regions)
+CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info,
+                                        MemoryRegion *regions)
 {
     // Claim the core's memory
     if (VMCtl(SELF, RemoveMem, &info->memory) != API::Success)
@@ -86,23 +87,40 @@ CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info, MemoryRegio
               " at " << (void *)info->memory.phys);
         return OutOfMemory;
     }
-    
-    DEBUG("Starting core" << coreId << " with " << info->memory.size / 1024 / 1024 << "MB");
+
+    DEBUG("Starting core" << coreId << " with "
+          << info->memory.size / 1024 / 1024 << "MB");
+
     for (int i = 0; i < m_numRegions; i++)
     {
+        Memory::Range range;
+        range.phys = info->memory.phys + regions[i].virtualAddress;
+        range.virt = 0;
+        range.size = regions[i].size;
+        range.access = Memory::Readable | Memory::Writable |
+                       Memory::User;
+
         // Map the target kernel's memory for regions[i].size
-        //if (VMCtl(pid, Map, &range) != 0)
-        //{
+        if (VMCtl(SELF, Map, &range) != 0)
+        {
             // TODO: convert from API::Error to errno.
             //errno = EFAULT;
-            //return -1;
-        //}
+            return OutOfMemory;
+        }
         // Copy the kernel to the target core's memory
-        //VMCopy(SELF, API::Write, (Address) regions[i].data,
-        //                         regions[i].virtualAddress,
-        //                         regions[i].size);
-    
+#warning VMCopy should just return API::Result, not a Size
+	Error r = VMCopy(SELF, API::Write, (Address) regions[i].data,
+                                 range.virt,
+                                 regions[i].size);
+	if (r != regions[i].size)
+	    return MemoryError;
+
         // Unmap the target kernel's memory
+        if (VMCtl(SELF, UnMap, &range) != API::Success)
+        {
+            return MemoryError;
+        }
+
         DEBUG(kernelPath << "[" << i << "] = " << (void *) m_regions[i].virtualAddress);
     }
 #ifdef INTEL

@@ -20,11 +20,9 @@
 #include <FreeNOS/System.h>
 #include <intel/IntelKernel.h>
 #include <intel/IntelSerial.h>
-#include <intel/IntelBoot.h>
+#include <CoreInfo.h>
 #include <Macros.h>
 #include <Log.h>
-
-#warning take the kernel physical memory base here. it varies per core.
 
 extern C int kernel_main()
 {
@@ -46,12 +44,7 @@ extern C int kernel_main()
     kernelRange.phys = 0;
     kernelRange.size = MegaByte(4);
 
-    // RAM physical range for this core (SplitAllocator lower memory).
-    Memory::Range ramRange;
-    ramRange.phys = 0;
-    ramRange.size = (multibootInfo.memUpper * 1024) + MegaByte(1);
-
     // Create and run the kernel
-    IntelKernel *kernel = new IntelKernel(kernelRange, ramRange);
+    IntelKernel *kernel = new IntelKernel(kernelRange, coreInfo.memory);
     return kernel->run();
 }

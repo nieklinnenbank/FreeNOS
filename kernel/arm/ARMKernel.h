@@ -123,11 +123,6 @@ class ARMKernel : public Kernel
               ARMInterrupt *intr,
               Address atags);
 
-    /**
-     * Loads the boot image.
-     */
-    virtual bool loadBootImage();
-
   private:
 
     static void interrupt(CPUState state);

@@ -63,7 +63,8 @@ class CoreServer : public IPCServer<CoreServer, CoreMessage>
         NotFound,
         BootError,
         ExecError,
-        OutOfMemory
+        OutOfMemory,
+        MemoryError
     };
 
     /**

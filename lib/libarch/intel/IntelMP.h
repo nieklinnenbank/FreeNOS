@@ -18,6 +18,11 @@
 #ifndef __LIBARCH_INTEL_MP_H
 #define __LIBARCH_INTEL_MP_H
 
+/** Physical memory address for the CoreInfo structure. */
+#define MPINFOADDR 0x10000
+
+#ifndef __ASSEMBLER__
+
 #include <Types.h>
 #include <List.h>
 #include <BitOperations.h>
@@ -25,6 +30,7 @@
 #include <CoreInfo.h>
 #include "IntelIO.h"
 #include "IntelAPIC.h"
+
 
 /** Forward declarations */
 class MemoryContext;
@@ -47,7 +53,7 @@ class IntelMP
     static const Address MPEntryAddr = 0xf000;
 
     /** Physical memory address for the CoreInfo structure. */
-    static const Address MPInfoAddr = 0x10000;
+    static const Address MPInfoAddr = MPINFOADDR;
 
     /** BIOS memory area to search for MP tables */
     static const Address MPAreaAddr = 0xf0000;
@@ -162,4 +168,5 @@ class IntelMP
     IntelAPIC m_apic;
 };
 
+#endif /* __ASSEMBLER__ */
 #endif /* __LIBARCH_INTEL_MP_H */

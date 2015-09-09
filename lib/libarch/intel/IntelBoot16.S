@@ -17,12 +17,10 @@
  */
 
 #include "IntelConstant.h"
+#include "IntelMP.h"
 
 /** Offset in physical memory where bootEntry16 must be loaded. */
 #define LOADADDR 0xf000
-
-/** Offset in physical memory of the CoreInfo struct. */
-#define INFOADDR 0x10000
 
 /* Export symbols. */
 .global bootEntry16
@@ -79,8 +77,13 @@ gdt16_ptr:
 bootEntry32:
 
     /* Raise the booted flag in CoreInfo */
-    movl $INFOADDR, %eax
+    movl $MPINFOADDR, %eax
     movl $1, (%eax)
+
+    /* Obtain memory base address: CoreInfo.memory.phys */
+    movl $MPINFOADDR, %eax
+    addl $12, %eax
+    movl (%eax), %eax
 
     /* Freeze the core, until the rest is working. */
     hlt

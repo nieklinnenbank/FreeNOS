@@ -89,6 +89,16 @@ class Kernel : public Singleton<Kernel>
   public:
 
     /**
+     * Result codes.
+     */
+    enum Result
+    {
+        Success,
+        InvalidBootImage,
+        ProcessError
+    };
+
+    /**
      * Constructor function.
      *
      * @param kernel Describes the start and end of the kernel program in memory.
@@ -130,16 +140,6 @@ class Kernel : public Singleton<Kernel>
     API * getAPI();
 
     /**
-     * BootImage physical address.
-     */
-    Address getBootImageAddress();
-
-    /**
-     * BootImage size
-     */
-    Size getBootImageSize();
-
-    /**
      * Get the current MMU context.
      *
      * @return MemoryContext object pointer
@@ -179,7 +179,9 @@ class Kernel : public Singleton<Kernel>
     /**
      * Loads the boot image.
      */
-    virtual bool loadBootImage() = 0;
+    virtual Result loadBootImage();
+
+  private:
 
     /**
      * Load a boot program.
@@ -188,7 +190,7 @@ class Kernel : public Singleton<Kernel>
      * @param imagePAddr Physical memory address of the boot image.
      * @param index Index in the BootProcess table.
      */
-    virtual bool loadBootProcess(BootImage *image, Address imagePAddr, Size index);
+    virtual Result loadBootProcess(BootImage *image, Address imagePAddr, Size index);
 
   protected:
 
@@ -200,12 +202,6 @@ class Kernel : public Singleton<Kernel>
 
     /** API handlers object */
     API *m_api;
-
-    /** Physical address of the BootImage */
-    Address m_bootImageAddress;
-
-    /** Size of the boot image in bytes */
-    Size m_bootImageSize;
 
     /** Interrupt handlers. */
     Vector<List<InterruptHook *> *> m_interrupts;

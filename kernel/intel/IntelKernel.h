@@ -143,11 +143,6 @@ class IntelKernel : public Kernel
      */
     IntelKernel(Memory::Range kernel, Memory::Range memory);
 
-    /**
-     * Loads the boot image.
-     */
-    virtual bool loadBootImage();
-
   private:
 
     /** 
