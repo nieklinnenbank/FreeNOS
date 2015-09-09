@@ -80,10 +80,14 @@ CoreServer::Result CoreServer::loadKernel()
 CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info,
                                         MemoryRegion *regions)
 {
+    SystemInformation sysInfo;
+    DEBUG("Reserving: " << (void *)info->memory.phys << " size=" <<
+            info->memory.size << " available=" << sysInfo.memoryAvail);
+
     // Claim the core's memory
     if (VMCtl(SELF, RemoveMem, &info->memory) != API::Success)
     {
-        ERROR("failed to reserve memory for core#" << coreId <<
+        ERROR("failed to reserve memory for core" << coreId <<
               " at " << (void *)info->memory.phys);
         return OutOfMemory;
     }
@@ -126,7 +130,7 @@ CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info,
 #ifdef INTEL
     // Signal the core to boot
     if (m_cores.boot(info) != IntelMP::Success) {
-        ERROR("failed to boot core " << coreId);
+        ERROR("failed to boot core" << coreId);
         return BootError;
     } else {
         NOTICE("core" << coreId << " started");
@@ -158,7 +162,7 @@ CoreServer::Result CoreServer::discover()
             MemoryBlock::set(&info, 0, sizeof(info));
             info.coreId = coreId;
             info.memory.phys = memPerCore * coreId;
-	    info.memory.size = memPerCore;
+            info.memory.size = memPerCore - PAGESIZE;
             strlcpy(info.kernel, kernelPath, KERNEL_PATHLEN);
 
             bootCore(coreId, &info, m_regions);

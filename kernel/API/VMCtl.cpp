@@ -67,7 +67,10 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range)
             for (uint i = 0; i < range->size; i+=PAGESIZE)
             {
                 if (Kernel::instance->getAllocator()->allocate(range->phys + i) != Allocator::Success)
+                {
+                    ERROR("address " << (void *) range->phys +i << " already allocated");
                     return API::OutOfMemory;
+                }
             }
             break;
 
