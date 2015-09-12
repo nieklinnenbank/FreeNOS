@@ -24,8 +24,14 @@
 #include <Macros.h>
 #include <Log.h>
 
-extern C int kernel_main()
+extern C int kernel_main(CoreInfo *info)
 {
+    // Block new cores here temporarily
+    if (info->coreId != 0)
+    {
+        for (;;);
+    }
+
     // Initialize heap at 3MB offset
     // TODO: fix this
     Kernel::heap( MegaByte(3),

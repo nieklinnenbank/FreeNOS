@@ -149,6 +149,8 @@ CoreServer::Result CoreServer::discover()
     m_cores.discover();
     List<uint> & cores = m_cores.getCores();
     memPerCore = sysInfo.memorySize / cores.count();
+    memPerCore /= MegaByte(4);
+    memPerCore *= MegaByte(4);
 
     NOTICE("found " << cores.count() << " cores -- " <<
             (memPerCore / 1024 / 1024) << "MB per core");
@@ -163,6 +165,7 @@ CoreServer::Result CoreServer::discover()
             info.coreId = coreId;
             info.memory.phys = memPerCore * coreId;
             info.memory.size = memPerCore - PAGESIZE;
+            info.kernelEntry = m_kernel->entry();
             strlcpy(info.kernel, kernelPath, KERNEL_PATHLEN);
 
             bootCore(coreId, &info, m_regions);

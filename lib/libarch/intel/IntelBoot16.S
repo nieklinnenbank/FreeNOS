@@ -16,6 +16,7 @@
  *
  */
 
+#include <CoreInfo.h>
 #include "IntelConstant.h"
 #include "IntelMP.h"
 
@@ -55,7 +56,7 @@ base = .
     mov %ax, %ds
 
     /* Reload code segment: jump to 32-bit entry point. */
-    ljmpl $KERNEL_CS_SEL, $bootEntry32 - base + LOADADDR
+    ljmpl $KERNEL_CS_SEL, $mode32 - base + LOADADDR
 
 gdt16:
         .quad   0x0000000000000000 /* NULL descriptor. */
@@ -74,16 +75,21 @@ gdt16_ptr:
 .data
 .code32
 
-bootEntry32:
-
-    /* Raise the booted flag in CoreInfo */
-    movl $MPINFOADDR, %eax
-    movl $1, (%eax)
+mode32:
 
     /* Obtain memory base address: CoreInfo.memory.phys */
     movl $MPINFOADDR, %eax
     addl $12, %eax
     movl (%eax), %eax
 
-    /* Freeze the core, until the rest is working. */
-    hlt
+    /* Point to IntelBoot32.S */
+    movl $MPINFOADDR, %ecx
+    addl $24, %ecx
+    mov (%ecx), %ecx
+    addl %eax, %ecx
+
+    /* Set eax to coreInfo address */
+    movl $MPINFOADDR, %eax
+
+    /* Jump to IntelBoot32.S */
+    jmp *%ecx

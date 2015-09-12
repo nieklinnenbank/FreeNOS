@@ -17,6 +17,8 @@
 
 #include <intel/IntelConstant.h>
 #include <intel/IntelBoot.h>
+#include <intel/IntelMP.h>
+#include <CoreInfo.h>
 
 /* Constants */
 #define PAGE_PRESENT    1
@@ -48,13 +50,15 @@ i\vnum:
  */
 .macro idtEntry vnum, vtype
     mov $8, %eax
-    mov $\vnum, %ebx
-    imul %ebx
-    add $idt, %eax
-    mov $i\vnum, %ebx
-    movw %bx, (%eax)             /* Offset low */
-    shrl $16, %ebx
-    movw %bx, 6(%eax)            /* Offset high */
+    mov $\vnum, %ecx
+    imul %ecx
+    add $idt, %eax               /* idt entry */
+    add %ebx, %eax
+    mov $i\vnum, %ecx            /* irq handler */
+    addl %ebx, %ecx
+    movw %cx, (%eax)             /* Offset low */
+    shrl $16, %ecx
+    movw %cx, 6(%eax)            /* Offset high */
     movw $KERNEL_CS_SEL, 2(%eax) /* Kernel CS */
     movb $0, 4(%eax)             /* Zeroes */
     movb $\vtype, 5(%eax)        /* Present, 32 bits, 01110 */
@@ -67,18 +71,44 @@ i\vnum:
 
 /**
  * Entry point.
+ *
+ * eax: coreInfo address
+ * 
  */
 bootEntry32:
+
+    /* Obtain memory base address: CoreInfo.memory.phys */
+    movl %eax, %ebx
+    addl $12, %ebx
+    movl (%ebx), %ebx
+
+    /* Copy CoreInfo struct to kernel */
+    movl $coreInfo, %ecx
+    addl %ebx, %ecx
+    movl %eax, %edx
+    movl $COREINFO_SIZE, %esi
+1:
+    movl (%edx), %edi
+    movl %edi, (%ecx)
+    addl $4, %ecx
+    addl $4, %edx
+    subl $4, %esi
+    jnz 1b
+
+    /* Raise the booted flag in CoreInfo for IntelMP at core0 */
+    movl %eax, %ecx
+    movl $1, (%ecx)
 
     /* Disable interrupts. */
     cli
 
-    /* Setup temporary boot stack. */
-    movl $(stack + STACK_SIZE), %esp
-    movl %esp, %ebp
-
     /* Load GDT. */
-    lgdt gdtPtr
+    movl $gdt, %ecx
+    addl %ebx, %ecx
+    movl $gdtPtr, %edx
+    addl %ebx, %edx
+    movl %ecx, 0x2(%edx)
+    lgdt (%edx)
 
     /* Fill in IDT entries 0 - 16, and 32 - 47. */
     idtEntry 0, 0x8e
@@ -118,7 +148,12 @@ bootEntry32:
     idtEntry 0x90, 0xee
 
     /* Load IDT. */
-    lidt idtPtr
+    movl $idt, %ecx
+    addl %ebx, %ecx
+    movl $idtPtr, %edx
+    addl %ebx, %edx
+    movl %ecx, 0x2(%edx)
+    lidt (%edx)
 
     /* Setup segments. */
     movl $KERNEL_DS_SEL, %eax
@@ -130,43 +165,99 @@ setupKernelDir:
 
     /* map 1GB for the kernel (incl 128MB private mappings) */
     movl $kernelPageDir, %eax /* eax: pagedir pointer */
-    xorl %ecx, %ecx           /* ecx: address to map */
+    addl %ebx, %eax
+    movl %ebx, %ecx           /* ecx: address to map */
+    xorl %esi, %esi           /* esi: counter */
 
 1:
-    movl %ecx, %ebx           /* ebx: pagedir entry */
-    orl  $(PAGE_PRESENT | PAGE_WRITE | PAGE_4MB), %ebx
-    movl %ebx, (%eax)
+    movl %ecx, %edx           /* edx: pagedir entry */
+    orl  $(PAGE_PRESENT | PAGE_WRITE | PAGE_4MB), %edx
+    movl %edx, (%eax)
     addl $4, %eax
     addl $4194304, %ecx
-    cmpl $KERNEL_LOWMEM, %ecx
+    addl $4194304, %esi
+    cmpl $KERNEL_LOWMEM, %esi
     jnz 1b
 
     /* Clear the rest of the page directory */
     movl $kernelPageDir, %ecx
+    addl %ebx, %ecx
     addl $4096, %ecx
-    xorl %ebx, %ebx
+    xorl %edx, %edx
 2:
-    movl %ebx, (%eax)
+    movl %edx, (%eax)
     addl $4, %eax
     cmpl %ecx, %eax
     jnz 2b
 
+tmpIdMap:
+
+    /* identity map 4MB for this code only. Then remap it after paging is enabled. */
+    movl $bootEntry32, %eax
+    addl %ebx, %eax
+    movl $4194304, %ecx
+    div %ecx
+    movl %eax, %esi
+    shll $2, %eax
+    addl %ebx, %eax
+    addl $kernelPageDir, %eax  
+    movl %eax, %ecx             /* ecx: points to the 4MB section pagedir Entry of this code. */
+    movl $4194304, %eax
+    mul %esi
+    orl  $(PAGE_PRESENT | PAGE_WRITE | PAGE_4MB), %eax
+    movl %eax, (%ecx)           /* insert mapping */
+
     /* Enable timestamp counter and page size extension. */
-    movl %cr4, %eax
-    andl  $(~CR4_TSD), %eax
-    orl $(CR4_PSE), %eax
-    movl %eax, %cr4
+    movl %cr4, %edx
+    andl  $(~CR4_TSD), %edx
+    orl $(CR4_PSE), %edx
+    movl %edx, %cr4
 
     /* Enter paged mode. */
-    movl $kernelPageDir, %eax
+    movl $kernelPageDir, %edx
+    addl %ebx, %edx
+    movl %edx, %cr3
+    movl %cr0, %edx
+    orl  $(CR0_PG), %edx
+    movl %edx, %cr0
+
+    /* Jump to remapped kernel */
+    movl $remapped, %edx
+    jmp *%edx
+
+remapped:
+
+    /* Remove identity mapping. Flush TLBs */
+    subl %ebx, %ecx
+    addl %ebx, %eax
+    movl %eax, (%ecx)
+    movl %cr3, %eax
     movl %eax, %cr3
-    movl %cr0, %eax
-    orl  $(CR0_PG), %eax
-    movl %eax, %cr0
-    
+
+#if 0
+    /* Is this core0? */
+    movl $coreInfo, %ecx
+    addl %ebx, %ecx
+    addl $4, %ecx
+    movl (%ecx), %ecx
+    cmpl $0, %ecx
+    je bsp
+
+    /* stop AP cores */
+    cli
+    hlt
+
+bsp:
+#endif
+
+    /* Setup temporary boot stack. */
+    movl $(stack + STACK_SIZE), %esp
+    movl %esp, %ebp
+
     /* Invoke kernel. */
+    pushl $coreInfo
     call kernel_main
-                
+
 /**
  * Stop execution immediately.
  */
@@ -259,3 +350,5 @@ idtPtr:                     /* 256 IDT entries. */
         .long idt
 
 .align PAGESIZE
+
+
