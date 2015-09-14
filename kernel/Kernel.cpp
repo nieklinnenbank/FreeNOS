@@ -51,8 +51,8 @@ Kernel::Kernel(CoreInfo *info)
     m_intControl = 0;
 
     // Mark kernel memory used (first 4MB in phys memory)
-    for (Size i = 0; i < info->kernelRange.size; i += PAGESIZE)
-        m_alloc->allocate(info->kernelRange.phys + i);
+    for (Size i = 0; i < info->kernel.size; i += PAGESIZE)
+        m_alloc->allocate(info->kernel.phys + i);
 
     // Clear interrupts table
     m_interrupts.fill(ZERO);

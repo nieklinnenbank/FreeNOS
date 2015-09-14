@@ -36,10 +36,10 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
     MemoryBlock::set(&coreInfo, 0, sizeof(CoreInfo));
     coreInfo.bootImageAddress = initrd.phys;
     coreInfo.bootImageSize    = initrd.size;
+    coreInfo.kernel.phys      = 0;
+    coreInfo.kernel.size      = MegaByte(4);
     coreInfo.memory.phys      = 0;
     coreInfo.memory.size      = MegaByte(512);
-    coreInfo.kernelRange.phys = 0;
-    coreInfo.kernelRange.size = MegaByte(4);
 
     // Initialize heap
     Kernel::heap( MegaByte(3), MegaByte(1) );

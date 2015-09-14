@@ -40,10 +40,10 @@ typedef struct CoreInfo
     Address kernelEntry;
 
     /** Kernel memory range */
-    Memory::Range kernelRange;
+    Memory::Range kernel;
 
-    /** Kernel program name */
-    char kernel[KERNEL_PATHLEN];
+    /** Kernel command */
+    char kernelCommand[KERNEL_PATHLEN];
 
     Address bootImageAddress;
     Address bootImageSize;

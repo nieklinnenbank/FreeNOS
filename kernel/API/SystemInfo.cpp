@@ -35,6 +35,6 @@ Error SystemInfoHandler(SystemInformation *info)
     info->bootImageAddress = coreInfo.bootImageAddress;
     info->bootImageSize    = coreInfo.bootImageSize;
 
-    MemoryBlock::copy(info->cmdline, coreInfo.kernel, 64);
+    MemoryBlock::copy(info->cmdline, coreInfo.kernelCommand, 64);
     return API::Success;
 }

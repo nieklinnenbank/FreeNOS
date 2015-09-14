@@ -165,8 +165,10 @@ CoreServer::Result CoreServer::discover()
             info.coreId = coreId;
             info.memory.phys = memPerCore * coreId;
             info.memory.size = memPerCore - PAGESIZE;
+            info.kernel.phys = memPerCore;
+            info.kernel.size = MegaByte(4);
             info.kernelEntry = m_kernel->entry();
-            strlcpy(info.kernel, kernelPath, KERNEL_PATHLEN);
+            strlcpy(info.kernelCommand, kernelPath, KERNEL_PATHLEN);
 
             bootCore(coreId, &info, m_regions);
         }

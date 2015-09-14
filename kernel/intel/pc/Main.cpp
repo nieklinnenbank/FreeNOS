@@ -26,10 +26,6 @@
 
 extern C int kernel_main(CoreInfo *info)
 {
-    // Enforce: Kernel uses the first 4MB of its core's memory
-    info->kernelRange.phys = info->memory.phys;
-    info->kernelRange.size = MegaByte(4);
-
     // Initialize heap at 3MB offset
     // TODO: fix this
     Kernel::heap( MegaByte(3),

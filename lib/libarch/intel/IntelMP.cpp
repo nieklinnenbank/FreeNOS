@@ -74,7 +74,7 @@ IntelMP::Result IntelMP::discover()
 IntelMP::Result IntelMP::boot(CoreInfo *info)
 {
     DEBUG("booting core" << info->coreId << " at " <<
-            (void *) info->memory.phys << " with kernel: " << info->kernel);
+            (void *) info->memory.phys << " with kernel: " << info->kernelCommand);
 
     // TODO: load the kernel, reserve memory, etc
     // TODO: upper layer should have loaded the kernel in memory already.
