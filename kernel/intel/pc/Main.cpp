@@ -26,11 +26,9 @@
 
 extern C int kernel_main(CoreInfo *info)
 {
-    // Block new cores here temporarily
-    if (info->coreId != 0)
-    {
-        for (;;);
-    }
+    // Enforce: Kernel uses the first 4MB of its core's memory
+    info->kernelRange.phys = info->memory.phys;
+    info->kernelRange.size = MegaByte(4);
 
     // Initialize heap at 3MB offset
     // TODO: fix this
@@ -39,18 +37,22 @@ extern C int kernel_main(CoreInfo *info)
 
     // Start kernel debug serial console
     // TODO: can I re-use the user-land driver here somehow????
-    IntelSerial *serial = new IntelSerial(0x3f8);
-    serial->setMinimumLogLevel(Log::Notice);
+    if (info->coreId == 0)
+    {
+        IntelSerial *serial = new IntelSerial(0x3f8);
+        serial->setMinimumLogLevel(Log::Notice);
+    }
 
     // TODO: put this in the boot.S, or maybe hide it in the support library? maybe a _run_main() or something.
     constructors();
 
-    // Kernel memory range (first 4MB, includes 1MB heap)
-    Memory::Range kernelRange;
-    kernelRange.phys = 0;
-    kernelRange.size = MegaByte(4);
+    // Block new cores here temporarily
+    if (info->coreId != 0)
+    {
+        for (;;);
+    }
 
     // Create and run the kernel
-    IntelKernel *kernel = new IntelKernel(kernelRange, coreInfo.memory);
+    IntelKernel *kernel = new IntelKernel(info);
     return kernel->run();
 }

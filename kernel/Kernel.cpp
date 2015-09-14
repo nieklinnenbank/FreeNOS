@@ -30,7 +30,7 @@
 #include "Scheduler.h"
 #include "API.h"
 
-Kernel::Kernel(Memory::Range kernel, Memory::Range memory)
+Kernel::Kernel(CoreInfo *info)
     : Singleton<Kernel>(this), m_interrupts(256)
 {
     // Output log banners
@@ -39,17 +39,20 @@ Kernel::Kernel(Memory::Range kernel, Memory::Range memory)
 
     // TODO: compute lower & higher memory for this core.
     Memory::Range highMem;
+    Arch::MemoryMap map;
     MemoryBlock::set(&highMem, 0, sizeof(highMem));
+    highMem.phys = info->memory.phys + map.range(MemoryMap::KernelData).size;
 
     // Initialize members
-    m_alloc  = new SplitAllocator(memory, highMem);
+    m_alloc  = new SplitAllocator(info->memory, highMem);
     m_procs  = new ProcessManager(new Scheduler());
     m_api    = new API();
-    m_intControl       = 0;
+    m_coreInfo   = info;
+    m_intControl = 0;
 
     // Mark kernel memory used (first 4MB in phys memory)
-    for (Size i = 0; i < kernel.size; i += PAGESIZE)
-        m_alloc->allocate(kernel.phys + i);
+    for (Size i = 0; i < info->kernelRange.size; i += PAGESIZE)
+        m_alloc->allocate(info->kernelRange.phys + i);
 
     // Clear interrupts table
     m_interrupts.fill(ZERO);
@@ -91,6 +94,11 @@ API * Kernel::getAPI()
 MemoryContext * Kernel::getMemoryContext()
 {
     return m_procs->current()->getMemoryContext();
+}
+
+CoreInfo * Kernel::getCoreInfo()
+{
+    return m_coreInfo;
 }
 
 void Kernel::enableIRQ(u32 irq, bool enabled)

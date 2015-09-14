@@ -29,6 +29,17 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
 {
     Arch::MemoryMap mem;
     BCM2835Interrupt irq;
+    ARMTags tags(r2);
+    Memory::Range initrd = tags.getInitRd2();
+
+    // Fill coreInfo
+    MemoryBlock::set(&coreInfo, 0, sizeof(CoreInfo));
+    coreInfo.bootImageAddress = initrd.phys;
+    coreInfo.bootImageSize    = initrd.size;
+    coreInfo.memory.phys      = 0;
+    coreInfo.memory.size      = MegaByte(512);
+    coreInfo.kernelRange.phys = 0;
+    coreInfo.kernelRange.size = MegaByte(4);
 
     // Initialize heap
     Kernel::heap( MegaByte(3), MegaByte(1) );
@@ -40,18 +51,8 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
     RaspiSerial console;
     console.setMinimumLogLevel(Log::Notice);
 
-    // Kernel memory range
-    Memory::Range kernelRange;
-    kernelRange.phys = 0;
-    kernelRange.size = MegaByte(4);
-
-    // RAM physical range
-    Memory::Range ramRange;
-    ramRange.phys = 0;
-    ramRange.size = MegaByte(512);
-
     // Create the kernel
-    ARMKernel kernel(kernelRange, ramRange, &irq, r2);
+    ARMKernel kernel(&irq, &coreInfo);
 
     // Print some info
     DEBUG("ATAGS = " << r2);

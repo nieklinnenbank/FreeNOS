@@ -141,7 +141,7 @@ class IntelKernel : public Kernel
     /**
      * Constructor function.
      */
-    IntelKernel(Memory::Range kernel, Memory::Range memory);
+    IntelKernel(CoreInfo *info);
 
   private:
 

@@ -31,6 +31,10 @@ void multibootToCoreInfo(MultibootInfo *info)
     // Fill the kernel command line
     MemoryBlock::copy(coreInfo.kernel, (void *)info->cmdline, KERNEL_PATHLEN);
 
+    // Kernel uses the first 4MB
+    coreInfo.kernelRange.phys = coreInfo.memory.phys;
+    coreInfo.kernelRange.size = MegaByte(4);
+
     // Fill the bootimage address
     for (Size n = 0; n < info->modsCount; n++)
     {

@@ -44,7 +44,7 @@ Process::Result ARMProcess::initialize()
     // User stack (high memory).
     range = m_map.range(MemoryMap::UserStack);
     range.access = Memory::Readable | Memory::Writable | Memory::User;
-    if (Kernel::instance->getAllocator()->allocateHigh(range.size, &range.phys) != Allocator::Success)
+    if (Kernel::instance->getAllocator()->allocate(&range.size, &range.phys) != Allocator::Success)
         return OutOfMemory;
 
     if (m_memoryContext->mapRange(&range) != MemoryContext::Success)

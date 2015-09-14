@@ -35,8 +35,16 @@ typedef struct CoreInfo
     uint booted;
     uint coreId;
     Memory::Range memory;
+
+    /** Kernel entry point */
     Address kernelEntry;
+
+    /** Kernel memory range */
+    Memory::Range kernelRange;
+
+    /** Kernel program name */
     char kernel[KERNEL_PATHLEN];
+
     Address bootImageAddress;
     Address bootImageSize;
     Address coreChannelBase;

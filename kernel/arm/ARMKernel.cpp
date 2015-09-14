@@ -24,23 +24,11 @@
 #include <arm/BCM2835Interrupt.h>
 #include "ARMKernel.h"
 
-ARMKernel::ARMKernel(Memory::Range kernel,
-                     Memory::Range memory,
-                     ARMInterrupt *intr,
-                     Address tags)
-    : Kernel(kernel, memory), m_tags(tags)
+ARMKernel::ARMKernel(ARMInterrupt *intr,
+                     CoreInfo *info)
+    : Kernel(info)
 {
     NOTICE("");
-
-    Memory::Range range = m_tags.getInitRd2();
-    DEBUG("initrd = " << range.phys << " (" << range.size << ")");
-
-    // Setup the CoreInfo using ARMTags
-    MemoryBlock::set(&coreInfo, 0, sizeof(CoreInfo));
-    coreInfo.bootImageAddress = range.phys;
-    coreInfo.bootImageSize    = range.size;
-    coreInfo.memory.phys = memory.phys;
-    coreInfo.memory.size = memory.size;
 
     // Setup interrupt callbacks
     m_intControl = intr;

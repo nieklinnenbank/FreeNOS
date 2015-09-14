@@ -62,6 +62,8 @@ Allocator::Result BitAllocator::allocate(Size *size,
                                          Address allocStart)
 {
     Size num = (*size) / m_chunkSize;
+    BitArray::Result result;
+    Size bit;
 
     if ((*size) % m_chunkSize)
         num++;
@@ -73,7 +75,11 @@ Allocator::Result BitAllocator::allocate(Size *size,
     else
         align /= m_chunkSize;    
 
-    *addr = m_base + (m_array.setNext(num, allocStart / m_chunkSize, align) * m_chunkSize);
+    result = m_array.setNext(&bit, num, allocStart / m_chunkSize, align);
+    if (result != BitArray::Success)
+        return OutOfMemory;
+
+    *addr = m_base + (bit * m_chunkSize);
     return Success;
 }
 

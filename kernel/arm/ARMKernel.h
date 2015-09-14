@@ -118,10 +118,8 @@ class ARMKernel : public Kernel
      * @param intr ARM interrupt controller implementation.
      * @param atags Address of the ARM boot tags
      */
-    ARMKernel(Memory::Range kernel,
-              Memory::Range memory,
-              ARMInterrupt *intr,
-              Address atags);
+    ARMKernel(ARMInterrupt *intr,
+              CoreInfo *info);
 
   private:
 
@@ -136,8 +134,6 @@ class ARMKernel : public Kernel
     static void dataAbort(CPUState state);
 
     static void reserved(CPUState state);
-
-    ARMTags m_tags;
 
     BCMSysTimer m_timer;
 };

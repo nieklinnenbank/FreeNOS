@@ -35,8 +35,8 @@ extern C void executeInterrupt(CPUState state)
     Kernel::instance->executeIntVector(state.vector, &state);
 }
 
-IntelKernel::IntelKernel(Memory::Range kernel, Memory::Range memory)
-    : Kernel(kernel, memory)
+IntelKernel::IntelKernel(CoreInfo *info)
+    : Kernel(info)
 {
     IntelMap map;
     IntelCore core;

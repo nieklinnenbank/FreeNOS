@@ -172,9 +172,10 @@ TestCase(BitArraySetNextRandom)
     Size size = sizes.random();
     TestInt<Size> indexes(0, 127-size);
     BitArray ba(128);
+    Size bit;
 
     // Set a random number of bits at a random offset
-    ba.setNext(size, indexes.random());
+    testAssert(ba.setNext(&bit, size, indexes.random()) == BitArray::Success);
 
     // Check that only the bits starting at the random index are set
     for (Size i = 0; i < 128; i++)
@@ -199,6 +200,7 @@ TestCase(BitArraySetNextOverwrite)
 {
     TestInt<Size> indexes(0, 63);
     BitArray ba(128);
+    Size bit;
 
     // Set half of the array to 1.
     for (Size i = 0; i < 64; i++)
@@ -207,7 +209,8 @@ TestCase(BitArraySetNextOverwrite)
     // Now try to claim 32 unset bits. Start searching
     // anywhere in the first half of the array + 31bits.
     // setNext should always choose bit 64 until 96.
-    testAssert(ba.setNext(32, indexes.random()) == 64);
+    testAssert(ba.setNext(&bit, 32, indexes.random()) == BitArray::Success);
+    testAssert(bit == 64);
 
     // Always bits 64 until 96 should be choosen and set to 1.
     for (Size i = 0; i < 128; i++)
@@ -233,6 +236,7 @@ TestCase(BitArraySetNextExact)
     TestInt<Size> indexes(0, 128 - 32 - 1);
     BitArray ba(128);
     Size idx = indexes.random();
+    Size bit;
 
     // Create a bitmap which has exactly the given number of bits unset.
     for (Size i = 0; i < 128; i++)
@@ -248,7 +252,8 @@ TestCase(BitArraySetNextExact)
     }
 
     // Now let setNext run. It should take exactly the unset block.
-    testAssert(ba.setNext(32) == (int) idx);
+    testAssert(ba.setNext(&bit, 32) == BitArray::Success);
+    testAssert(bit == idx);
 
     // Now the whole bit array should be set.
     for (Size i = 0; i < 128; i++)
@@ -260,6 +265,20 @@ TestCase(BitArraySetNextExact)
     testAssert(ba.count(false) == 0);
     testAssert(ba.size() == 128);
     return OK;
+}
+
+TestCase(BitArraySetNextOutOfMemory)
+{
+    BitArray ba(128);
+    Size bit;
+
+    // start offset out of range
+    testAssert(ba.setNext(&bit, 4, 128) == BitArray::OutOfMemory);
+    testAssert(ba.setNext(&bit, 4, 1000) == BitArray::OutOfMemory);
+
+    // No bits available
+    ba.setRange(0, 128);
+    testAssert(ba.setNext(&bit, 4) == BitArray::OutOfMemory);
 }
 
 TestCase(BitArrayClear)

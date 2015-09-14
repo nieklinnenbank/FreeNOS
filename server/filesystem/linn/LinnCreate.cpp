@@ -122,7 +122,7 @@ le32 LinnCreate::createInode(char *inputFile, struct stat *st)
     /* Find an empty inode number. */
     inodeMap.setArray(BLOCKPTR(u8, group->inodeMap),
 		    super->inodesPerGroup);
-    in = inodeMap.setNext();
+    inodeMap.setNext(&in);
 
     /* Instantiate the inode. */
     inode = createInode(in, FILETYPE_FROM_ST(st),

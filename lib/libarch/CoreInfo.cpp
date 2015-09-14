@@ -17,4 +17,10 @@
 
 #include "CoreInfo.h"
 
-CoreInfo coreInfo = { 0, 0, { 0, 0, 0, Memory::None }, 0, 0, 0, 0, 0};
+CoreInfo coreInfo = 
+{
+      0, 0,
+    { 0, 0, 0, Memory::None }, 0,
+    { 0, 0, 0, Memory::None },
+      0, 0, 0, 0
+};

@@ -23,6 +23,7 @@
 #include <Singleton.h>
 #include <BootImage.h>
 #include <Memory.h>
+#include <CoreInfo.h>
 #include "Process.h"
 #include "ProcessManager.h"
 
@@ -101,10 +102,9 @@ class Kernel : public Singleton<Kernel>
     /**
      * Constructor function.
      *
-     * @param kernel Describes the start and end of the kernel program in memory.
-     * @param memory Describes the start and end of physical RAM in the system.
+     * @param info CoreInfo structure for this core.
      */
-    Kernel(Memory::Range kernel, Memory::Range memory);
+    Kernel(CoreInfo *info);
 
     /**
      * Initialize heap.
@@ -145,6 +145,13 @@ class Kernel : public Singleton<Kernel>
      * @return MemoryContext object pointer
      */
     MemoryContext * getMemoryContext();
+
+    /**
+     * Get CoreInfo.
+     *
+     * @return CoreInfo object pointer
+     */
+    CoreInfo * getCoreInfo();
 
     /**
      * Execute the kernel.
@@ -202,6 +209,9 @@ class Kernel : public Singleton<Kernel>
 
     /** API handlers object */
     API *m_api;
+
+    /** CoreInfo object for this core. */
+    CoreInfo *m_coreInfo;
 
     /** Interrupt handlers. */
     Vector<List<InterruptHook *> *> m_interrupts;
