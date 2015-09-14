@@ -127,6 +127,29 @@ CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info,
 
         DEBUG(kernelPath << "[" << i << "] = " << (void *) m_regions[i].virtualAddress);
     }
+
+    // Copy the BootImage after the kernel.
+    Memory::Range range;
+    range.phys = info->bootImageAddress;
+    range.virt = 0;
+    range.size = info->bootImageSize;
+    range.access = Memory::Readable | Memory::Writable | Memory::User;
+
+    // Map BootImage buffer
+    if (VMCtl(SELF, Map, &range) != API::Success)
+    {
+        return OutOfMemory;
+    }
+    // Copy the BootImage
+    Error r = VMCopy(SELF, API::Write, sysInfo.bootImageAddress,
+                     range.virt, sysInfo.bootImageSize);
+    if (r != (Error) sysInfo.bootImageSize)
+        return MemoryError;
+
+    // Unmap the BootImage
+    if (VMCtl(SELF, UnMap, &range) != API::Success)
+        return MemoryError;
+
 #ifdef INTEL
     // Signal the core to boot
     if (m_cores.boot(info) != IntelMP::Success) {
@@ -165,9 +188,12 @@ CoreServer::Result CoreServer::discover()
             info.coreId = coreId;
             info.memory.phys = memPerCore * coreId;
             info.memory.size = memPerCore - PAGESIZE;
-            info.kernel.phys = memPerCore;
+            info.kernel.phys = info.memory.phys;
             info.kernel.size = MegaByte(4);
-            info.kernelEntry = m_kernel->entry();
+            info.bootImageAddress = info.kernel.phys + info.kernel.size;
+            info.bootImageSize    = sysInfo.bootImageSize;
+            info.kernelEntry  = m_kernel->entry();
+            info.timerCounter = sysInfo.timerCounter;
             strlcpy(info.kernelCommand, kernelPath, KERNEL_PATHLEN);
 
             bootCore(coreId, &info, m_regions);

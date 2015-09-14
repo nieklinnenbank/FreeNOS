@@ -41,6 +41,11 @@ uint IntelAPIC::getTimerFrequency()
     return m_hertz;
 }
 
+uint IntelAPIC::getTimerCounter()
+{
+    return m_io.read(InitialCount);
+}
+
 IntelAPIC::Result IntelAPIC::startTimer(IntelPIT *pit)
 {
     u32 t1, t2, ic, loops = 20;
@@ -76,6 +81,18 @@ IntelAPIC::Result IntelAPIC::startTimer(IntelPIT *pit)
     NOTICE("Detected " << busFreq / 1000000 << "."
                        << busFreq % 1000000 << " Mhz APIC bus");
     NOTICE("APIC counter set at " << ic);
+    return Success;
+}
+
+IntelAPIC::Result IntelAPIC::startTimer(u32 initialCounter, uint hertz)
+{
+    // Set hertz
+    m_hertz = hertz;
+
+    // Start the APIC timer
+    m_io.write(DivideConfig, Divide16);
+    m_io.write(InitialCount, initialCounter);
+    m_io.write(Timer, TimerVector | PeriodicMode);
     return Success;
 }
 

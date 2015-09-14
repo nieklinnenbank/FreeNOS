@@ -42,12 +42,6 @@ extern C int kernel_main(CoreInfo *info)
     // TODO: put this in the boot.S, or maybe hide it in the support library? maybe a _run_main() or something.
     constructors();
 
-    // Block new cores here temporarily
-    if (info->coreId != 0)
-    {
-        for (;;);
-    }
-
     // Create and run the kernel
     IntelKernel *kernel = new IntelKernel(info);
     return kernel->run();

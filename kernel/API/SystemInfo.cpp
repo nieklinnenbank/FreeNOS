@@ -32,8 +32,9 @@ Error SystemInfoHandler(SystemInformation *info)
     info->memorySize       = memory->size();
     info->memoryAvail      = memory->available();
 
-    info->bootImageAddress = coreInfo.bootImageAddress;
-    info->bootImageSize    = coreInfo.bootImageSize;
+    info->bootImageAddress = Kernel::instance->getCoreInfo()->bootImageAddress;
+    info->bootImageSize    = Kernel::instance->getCoreInfo()->bootImageSize;
+    info->timerCounter     = Kernel::instance->getCoreInfo()->timerCounter;
 
     MemoryBlock::copy(info->cmdline, coreInfo.kernelCommand, 64);
     return API::Success;

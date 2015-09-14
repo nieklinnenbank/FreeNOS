@@ -51,6 +51,7 @@ extern Error SystemInfoHandler(SystemInformation *info);
 /**
  * System information structure.
  */
+// TODO: replace this with CoreInfo.
 typedef struct SystemInformation
 {
     /**
@@ -75,6 +76,9 @@ typedef struct SystemInformation
 
     /** BootImage size */
     Size bootImageSize;
+
+    /** Timer counter */
+    uint timerCounter;
 }
 SystemInformation;
 

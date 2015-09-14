@@ -155,10 +155,12 @@ bootEntry32:
     movl %ecx, 0x2(%edx)
     lidt (%edx)
 
-    /* Setup segments. */
+    /* Reload segments. */
     movl $KERNEL_DS_SEL, %eax
     movl %eax, %ds
     movl %eax, %es
+    movl %eax, %fs
+    movl %eax, %gs
     movl %eax, %ss
 
 setupKernelDir:
@@ -234,21 +236,25 @@ remapped:
     movl %cr3, %eax
     movl %eax, %cr3
 
-#if 0
-    /* Is this core0? */
-    movl $coreInfo, %ecx
-    addl %ebx, %ecx
-    addl $4, %ecx
-    movl (%ecx), %ecx
-    cmpl $0, %ecx
-    je bsp
+    /* Reload GDT. */
+    movl $gdt, %ecx
+    movl $gdtPtr, %edx
+    movl %ecx, 0x2(%edx)
+    lgdt (%edx)
 
-    /* stop AP cores */
-    cli
-    hlt
+    /* Reload IDT. */
+    movl $idt, %ecx
+    movl $idtPtr, %edx
+    movl %ecx, 0x2(%edx)
+    lidt (%edx)
 
-bsp:
-#endif
+    /* Reload segments. */
+    movl $KERNEL_DS_SEL, %eax
+    movl %eax, %ds
+    movl %eax, %es
+    movl %eax, %fs
+    movl %eax, %gs
+    movl %eax, %ss
 
     /* Setup temporary boot stack. */
     movl $(stack + STACK_SIZE), %esp
@@ -350,5 +356,3 @@ idtPtr:                     /* 256 IDT entries. */
         .long idt
 
 .align PAGESIZE
-
-

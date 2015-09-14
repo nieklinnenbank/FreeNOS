@@ -38,6 +38,7 @@ extern C void executeInterrupt(CPUState state)
 IntelKernel::IntelKernel(CoreInfo *info)
     : Kernel(info)
 {
+
     IntelMap map;
     IntelCore core;
     IntelPaging memContext(&map, core.readCR3(), m_alloc);
@@ -68,11 +69,17 @@ IntelKernel::IntelKernel(CoreInfo *info)
     // Set PIT interrupt frequency to 250 hertz
     m_pit.setFrequency(250);
 
-    // Configure the master and slave PICs
-    // TODO: the IntelKernel should also have a method ::initialize(),
-    //       such that it can capture the result of these functions.
-    m_pic.initialize();
-    m_intControl = &m_pic;
+    // Only core0 uses PIC and PIT.
+    if (info->coreId == 0)
+    {
+        // Configure the master and slave PICs
+        // TODO: the IntelKernel should also have a method ::initialize(),
+        //       such that it can capture the result of these functions.
+        m_pic.initialize();
+        m_intControl = &m_pic;
+    }
+    else
+        m_intControl = 0;
 
     // Try to configure the APIC.
     if (m_apic.initialize() == IntelAPIC::Success)
@@ -87,7 +94,14 @@ IntelKernel::IntelKernel(CoreInfo *info)
         hookIntVector(m_apic.getTimerInterrupt(), clocktick, 0);
 
         m_timerInt = m_apic.getTimerInterrupt();
-        m_apic.startTimer(&m_pit);
+
+        if (m_coreInfo->timerCounter == 0)
+        {
+            m_apic.startTimer(&m_pit);
+            m_coreInfo->timerCounter = m_apic.getTimerCounter();
+        }
+        else
+            m_apic.startTimer(m_coreInfo->timerCounter, m_pit.getFrequency());
     }
     // Use PIT as system timer.
     else
@@ -104,15 +118,16 @@ IntelKernel::IntelKernel(CoreInfo *info)
     }
 
     // Initialize TSS Segment
+    Address tssAddr = (Address) &kernelTss;
     gdt[KERNEL_TSS].limitLow    = sizeof(TSS) + (0xfff / 8);
-    gdt[KERNEL_TSS].baseLow     = ((Address) &kernelTss) & 0xffff;
-    gdt[KERNEL_TSS].baseMid     = (((Address) &kernelTss) >> 16) & 0xff;
+    gdt[KERNEL_TSS].baseLow     = (tssAddr) & 0xffff;
+    gdt[KERNEL_TSS].baseMid     = (tssAddr >> 16) & 0xff;
     gdt[KERNEL_TSS].type        = 9;
     gdt[KERNEL_TSS].privilege   = 0;
     gdt[KERNEL_TSS].present     = 1;
     gdt[KERNEL_TSS].limitHigh   = 0;
     gdt[KERNEL_TSS].granularity = 8;
-    gdt[KERNEL_TSS].baseHigh    = (((Address) &kernelTss) >> 24) & 0xff;
+    gdt[KERNEL_TSS].baseHigh    = (tssAddr >> 24) & 0xff;
 
     // Fill the Task State Segment (TSS).
     MemoryBlock::set(&kernelTss, 0, sizeof(TSS));

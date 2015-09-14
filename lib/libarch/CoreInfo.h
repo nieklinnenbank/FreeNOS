@@ -22,7 +22,7 @@
 
 // TODO: needed by IntelBoot16.S.
 // TODO: warning depends on sizeof(Memory::Access) which is an emum
-#define COREINFO_SIZE  (KERNEL_PATHLEN + (6 * 4) + (4 * 4))
+#define COREINFO_SIZE  (KERNEL_PATHLEN + (7 * 4) + (4 * 4) + (4 * 4))
 
 #ifndef __ASSEMBLER__
 
@@ -48,6 +48,9 @@ typedef struct CoreInfo
     Address bootImageAddress;
     Address bootImageSize;
     Address coreChannelBase;
+
+    /** Arch-specific timer counter */
+    uint timerCounter;
 }
 CoreInfo;
 

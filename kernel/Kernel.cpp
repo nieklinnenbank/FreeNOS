@@ -34,8 +34,11 @@ Kernel::Kernel(CoreInfo *info)
     : Singleton<Kernel>(this), m_interrupts(256)
 {
     // Output log banners
-    Log::instance->append(BANNER);
-    Log::instance->append(COPYRIGHT "\r\n");
+    if (Log::instance)
+    {
+        Log::instance->append(BANNER);
+        Log::instance->append(COPYRIGHT "\r\n");
+    }
 
     // TODO: compute lower & higher memory for this core.
     Memory::Range highMem;
@@ -53,6 +56,10 @@ Kernel::Kernel(CoreInfo *info)
     // Mark kernel memory used (first 4MB in phys memory)
     for (Size i = 0; i < info->kernel.size; i += PAGESIZE)
         m_alloc->allocate(info->kernel.phys + i);
+
+    // Mark BootImage memory used
+    for (Size i = 0; i < m_coreInfo->bootImageSize; i += PAGESIZE)
+        m_alloc->allocate(m_coreInfo->bootImageAddress + i);
 
     // Clear interrupts table
     m_interrupts.fill(ZERO);
@@ -151,21 +158,16 @@ void Kernel::executeIntVector(u32 vec, CPUState *state)
 
 Kernel::Result Kernel::loadBootImage()
 {
-    BootImage *image = (BootImage *) coreInfo.bootImageAddress;
+    BootImage *image = (BootImage *) (m_alloc->toVirtual(m_coreInfo->bootImageAddress));
 
     // Verify this is a correct BootImage
     if (image->magic[0] == BOOTIMAGE_MAGIC0 &&
         image->magic[1] == BOOTIMAGE_MAGIC1 &&
         image->layoutRevision == BOOTIMAGE_REVISION)
     {
-        // Mark BootImage memory used
-        for (Size i = 0; i < coreInfo.bootImageSize; i += PAGESIZE)
-            m_alloc->allocate(coreInfo.bootImageAddress + i);
-
         // Loop BootPrograms
         for (Size i = 0; i < image->symbolTableCount; i++)
-#warning here we need the PHYSICAL address of the boot image, not the virtual.
-            loadBootProcess(image, coreInfo.bootImageAddress, i);
+            loadBootProcess(image, m_coreInfo->bootImageAddress, i);
 
         return Success;
     }
@@ -238,6 +240,9 @@ int Kernel::run()
 
     // Load boot image programs
     loadBootImage();
+
+    if (m_coreInfo->coreId != 0)
+        for (;;);
 
     // Start the scheduler
     m_procs->schedule();

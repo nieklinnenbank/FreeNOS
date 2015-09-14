@@ -132,12 +132,28 @@ class IntelAPIC : public IntController
     uint getTimerFrequency();
 
     /**
-     * Start the timer.
+     * Get timer initial counter.
+     *
+     * @return Initial timer counter.
+     */
+    uint getTimerCounter();
+
+    /**
+     * Start the timer using PIT as reference timer.
      *
      * @param pit PIT instance used to measure the APIC bus speed for clock calibration.
      * @return Result code.
      */
     Result startTimer(IntelPIT *pit);
+
+    /**
+     * Start the timer with initial counter.
+     *
+     * @param initialCounter The value of the InitialCount register.
+     * @param hertz Hertz associated to the initial counter.
+     * @return Result code.
+     */
+    Result startTimer(uint initialCounter, uint hertz);
 
     /**
      * Initialize the APIC.
