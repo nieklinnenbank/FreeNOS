@@ -24,6 +24,7 @@
 Error SystemInfoHandler(SystemInformation *info)
 {
     SplitAllocator *memory = Kernel::instance->getAllocator();
+    CoreInfo *core = Kernel::instance->getCoreInfo();
 
     // TODO: Verify memory access
 
@@ -31,10 +32,11 @@ Error SystemInfoHandler(SystemInformation *info)
     info->version          = VERSIONCODE;
     info->memorySize       = memory->size();
     info->memoryAvail      = memory->available();
+    info->coreId           = core->coreId;
 
-    info->bootImageAddress = Kernel::instance->getCoreInfo()->bootImageAddress;
-    info->bootImageSize    = Kernel::instance->getCoreInfo()->bootImageSize;
-    info->timerCounter     = Kernel::instance->getCoreInfo()->timerCounter;
+    info->bootImageAddress = core->bootImageAddress;
+    info->bootImageSize    = core->bootImageSize;
+    info->timerCounter     = core->timerCounter;
 
     MemoryBlock::copy(info->cmdline, coreInfo.kernelCommand, 64);
     return API::Success;

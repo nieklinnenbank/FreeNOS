@@ -69,10 +69,8 @@ class IntelPIT
 
     /**
      * Constructor
-     *
-     * @param hertz Number of interrupt triggers per second (in hertz)
      */
-    IntelPIT(uint hertz = 250);
+    IntelPIT();
 
     /**
      * Get interrupt number.

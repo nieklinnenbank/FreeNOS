@@ -32,6 +32,11 @@ int main(int argc, char **argv)
     Storage *storage = ZERO;
     bool background  = false;
     const char *path = "/";
+    SystemInformation info;
+
+    // Only run on core0
+    if (info.coreId != 0)
+        return EXIT_SUCCESS;
 
     log.setMinimumLogLevel(Log::Debug);
 

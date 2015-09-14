@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/API.h>
 #include <KernelLog.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -23,7 +24,12 @@
 
 int main(int argc, char **argv)
 {
+    SystemInformation info;
     const char *av[] = { "/bin/sh", "/etc/init.sh", ZERO };
+
+    // Only run on core0
+    if (info.coreId != 0)
+        return EXIT_SUCCESS;
 
     /* Open kernel logging facilities. */
     Log *log = new KernelLog();

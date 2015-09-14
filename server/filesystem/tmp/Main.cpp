@@ -15,10 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/API.h>
 #include "TmpFileSystem.h"
 
 int main(int argc, char **argv)
 {
+    SystemInformation info;
+
+    // Only run on core0
+    if (info.coreId != 0)
+        return EXIT_SUCCESS;
+
     TmpFileSystem server("/dev");
     
     /*

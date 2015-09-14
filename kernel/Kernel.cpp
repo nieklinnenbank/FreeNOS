@@ -241,9 +241,6 @@ int Kernel::run()
     // Load boot image programs
     loadBootImage();
 
-    if (m_coreInfo->coreId != 0)
-        for (;;);
-
     // Start the scheduler
     m_procs->schedule();
 

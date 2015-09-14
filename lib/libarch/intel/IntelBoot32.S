@@ -55,7 +55,6 @@ i\vnum:
     add $idt, %eax               /* idt entry */
     add %ebx, %eax
     mov $i\vnum, %ecx            /* irq handler */
-    addl %ebx, %ecx
     movw %cx, (%eax)             /* Offset low */
     shrl $16, %ecx
     movw %cx, 6(%eax)            /* Offset high */

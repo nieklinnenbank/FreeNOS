@@ -17,9 +17,8 @@
 
 #include "IntelPIT.h"
 
-IntelPIT::IntelPIT(uint hertz)
+IntelPIT::IntelPIT()
 {
-    setFrequency(hertz);
 }
 
 uint IntelPIT::getCounter()

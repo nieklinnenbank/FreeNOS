@@ -42,7 +42,10 @@ Error PrivExecHandler(PrivOperation op, Address addr)
         return API::Success;
 
     case WriteConsole:
-        (*Log::instance) << (char *)addr;
+        if (Log::instance)
+        {
+            (*Log::instance) << (char *)addr;
+        }
         return API::Success;
 
     default:

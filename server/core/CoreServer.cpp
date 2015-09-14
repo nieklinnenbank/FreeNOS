@@ -47,6 +47,12 @@ CoreServer::CoreServer()
 
 CoreServer::Result CoreServer::initialize()
 {
+    SystemInformation info;
+
+    // Only core0 needs to start other coreservers
+    if (info.coreId != 0)
+        return Success;
+
     Result r = loadKernel();
 
     if (r == Success)

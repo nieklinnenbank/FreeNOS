@@ -66,12 +66,12 @@ IntelKernel::IntelKernel(CoreInfo *info)
             hookIntVector(i, interrupt, 0);
     }
 
-    // Set PIT interrupt frequency to 250 hertz
-    m_pit.setFrequency(250);
-
     // Only core0 uses PIC and PIT.
     if (info->coreId == 0)
     {
+        // Set PIT interrupt frequency to 250 hertz
+        m_pit.setFrequency(250);
+
         // Configure the master and slave PICs
         // TODO: the IntelKernel should also have a method ::initialize(),
         //       such that it can capture the result of these functions.
@@ -155,9 +155,12 @@ void IntelKernel::interrupt(CPUState *state, ulong param)
 {
     IntelKernel *kern = (IntelKernel *) Kernel::instance;
 
-    kern->m_intControl->clear(
-        state->vector - kern->m_intControl->getBase()
-    );
+    if (kern->m_intControl)
+    {
+        kern->m_intControl->clear(
+            state->vector - kern->m_intControl->getBase()
+        );
+    }
 }
 
 void IntelKernel::trap(CPUState *state, ulong param)
