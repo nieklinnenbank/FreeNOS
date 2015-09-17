@@ -100,6 +100,21 @@ class IntelIO : public IO
     }
 
     /**
+     * Read a number of 32-bit values.
+     *
+     * @param addr Address of the starting 32-bit value.
+     * @param count Number of bytes to read.
+     * @param buf Output buffer.
+     */
+    inline void read(Address addr, Size count, void *buf)
+    {
+        for (Size i = 0; i < count; i+= sizeof(u32))
+        {
+            *(u32 *)(((u8 *)buf) + i) = read(addr + i);
+        }
+    }
+
+    /**
      * Write memory mapped register.
      *
      * @param addr Address of the register to write.
@@ -109,6 +124,21 @@ class IntelIO : public IO
     {
         addr += m_base;
         *(volatile u32 *) addr = data;
+    }
+
+    /**
+     * Write a number of 32-bit values.
+     *
+     * @param addr Address of the starting 32-bit value.
+     * @param count Number of bytes to write.
+     * @param buf Input buffer.
+     */
+    inline void write(Address addr, Size count, void *buf)
+    {
+        for (Size i = 0; i < count; i+= sizeof(u32))
+        {
+            write(addr + i, *(u32 *) (((u8 *)buf) + i));
+        }
     }
 
     /**

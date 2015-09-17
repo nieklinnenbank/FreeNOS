@@ -43,22 +43,60 @@ CoreServer::CoreServer()
      */
     m_numRegions = 0;
     m_kernel = ZERO;
+    m_coreInfo = ZERO;
+}
+
+CoreServer::Result CoreServer::test()
+{
+#ifdef INTEL
+    SystemInformation info;
+
+    if (info.coreId != 0)
+    {
+        CoreMessage msg;
+        msg.action = Ping;
+        msg.path = (char *)0x12345678;
+        msg.coreId = info.coreId;
+        m_toMaster->write(&msg);
+    }
+    else
+    {
+        CoreMessage msg;
+        Size numCores = m_cores.getCores().count();
+
+        for (Size i = 1; i < numCores; i++)
+        {
+            MemoryChannel *ch = (MemoryChannel *) m_fromSlave->get(i);
+            if (!ch)
+                return IOError;
+
+            ch->read(&msg);
+            if (msg.action == Ping)
+            {
+                NOTICE("core" << i << " send a Ping");
+            }
+        }
+    }
+#endif /* INTEL */
+    return Success;
 }
 
 CoreServer::Result CoreServer::initialize()
 {
     SystemInformation info;
+    Result r;
 
     // Only core0 needs to start other coreservers
     if (info.coreId != 0)
-        return Success;
+        return setupChannels();
 
-    Result r = loadKernel();
-
-    if (r == Success)
-        return discover();
-    else
+    if ((r = loadKernel()) != Success)
         return r;
+
+    if ((r = discover()) != Success)
+        return r;
+
+    return setupChannels();
 }
 
 CoreServer::Result CoreServer::loadKernel()
@@ -101,6 +139,7 @@ CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info,
     DEBUG("Starting core" << coreId << " with "
           << info->memory.size / 1024 / 1024 << "MB");
 
+    // Map the kernel
     for (int i = 0; i < m_numRegions; i++)
     {
         Memory::Range range;
@@ -168,10 +207,10 @@ CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info,
     return Success;
 }
 
+
 CoreServer::Result CoreServer::discover()
 {
 #ifdef INTEL
-    CoreInfo info;
     SystemInformation sysInfo;
     Size memPerCore = 0;
 
@@ -184,27 +223,84 @@ CoreServer::Result CoreServer::discover()
     NOTICE("found " << cores.count() << " cores -- " <<
             (memPerCore / 1024 / 1024) << "MB per core");
 
+    // Allocate CoreInfo for each core
+    m_coreInfo = new Index<CoreInfo>(cores.count());
+
+    // Boot each core
     for (ListIterator<uint> i(cores); i.hasCurrent(); i++)
     {
         uint coreId = i.current();
 
         if (coreId != 0)
         {
-            MemoryBlock::set(&info, 0, sizeof(info));
-            info.coreId = coreId;
-            info.memory.phys = memPerCore * coreId;
-            info.memory.size = memPerCore - PAGESIZE;
-            info.kernel.phys = info.memory.phys;
-            info.kernel.size = MegaByte(4);
-            info.bootImageAddress = info.kernel.phys + info.kernel.size;
-            info.bootImageSize    = sysInfo.bootImageSize;
-            info.kernelEntry  = m_kernel->entry();
-            info.timerCounter = sysInfo.timerCounter;
-            strlcpy(info.kernelCommand, kernelPath, KERNEL_PATHLEN);
+            CoreInfo *info = new CoreInfo;
+            m_coreInfo->insert(coreId, *info);
+            MemoryBlock::set(info, 0, sizeof(CoreInfo));
+            info->coreId = coreId;
+            info->memory.phys = memPerCore * coreId;
+            info->memory.size = memPerCore - PAGESIZE;
+            info->kernel.phys = info->memory.phys;
+            info->kernel.size = MegaByte(4);
+            info->bootImageAddress = info->kernel.phys + info->kernel.size;
+            info->bootImageSize    = sysInfo.bootImageSize;
+            info->coreChannelAddress = info->bootImageAddress + info->bootImageSize;
+            info->coreChannelAddress += PAGESIZE - (info->bootImageSize % PAGESIZE);
+            info->coreChannelSize    = PAGESIZE * 4;
+            info->kernelEntry  = m_kernel->entry();
+            info->timerCounter = sysInfo.timerCounter;
+            strlcpy(info->kernelCommand, kernelPath, KERNEL_PATHLEN);
 
-            bootCore(coreId, &info, m_regions);
+            bootCore(coreId, info, m_regions);
         }
     }
 #endif
+    return Success;
+}
+
+CoreServer::Result CoreServer::setupChannels()
+{
+#ifdef INTEL
+    SystemInformation info;
+
+    if (info.coreId == 0)
+    {
+        Size numCores = m_cores.getCores().count();
+
+        m_toSlave    = new Index<MemoryChannel>(numCores);
+        m_fromSlave  = new Index<MemoryChannel>(numCores);
+
+        for (Size i = 1; i < numCores; i++)
+        {
+            MemoryChannel *ch = new MemoryChannel();
+            CoreInfo *coreInfo = (CoreInfo *) m_coreInfo->get(i);
+            ch->setMode(Channel::Producer);
+            ch->setMessageSize(sizeof(CoreMessage));
+            ch->setData(coreInfo->coreChannelAddress + (PAGESIZE * 2));
+            ch->setFeedback(coreInfo->coreChannelAddress + (PAGESIZE * 3));
+            m_toSlave->insert(i, *ch);
+
+            ch = new MemoryChannel();
+            ch->setMode(Channel::Consumer);
+            ch->setMessageSize(sizeof(CoreMessage));
+            ch->setData(coreInfo->coreChannelAddress);
+            ch->setFeedback(coreInfo->coreChannelAddress + PAGESIZE);
+            m_fromSlave->insert(i, *ch);
+        }
+    }
+    else
+    {
+        m_toMaster = new MemoryChannel();
+        m_toMaster->setMode(Channel::Producer);
+        m_toMaster->setMessageSize(sizeof(CoreMessage));
+        m_toMaster->setData(info.coreChannelAddress);
+        m_toMaster->setFeedback(info.coreChannelAddress + PAGESIZE);
+
+        m_fromMaster = new MemoryChannel();
+        m_fromMaster->setMode(Channel::Consumer);
+        m_fromMaster->setMessageSize(sizeof(CoreMessage));
+        m_fromMaster->setData(info.coreChannelAddress + (PAGESIZE * 2));
+        m_fromMaster->setFeedback(info.coreChannelAddress + (PAGESIZE *3));
+    }
+#endif /* INTEL */
     return Success;
 }

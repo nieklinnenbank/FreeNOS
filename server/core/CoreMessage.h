@@ -39,20 +39,14 @@ struct FileSystemMount;
  */
 typedef enum CoreAction
 {
-    /* FileSystem mounts. */
-    GetMounts,
-    SetMount,
-    
-    /* Diagnostics. */
-    ProcessMemory
+    Ping = 1
 }
 CoreAction;
 
 /**
  * Core operation message.
  */
-// TODO: remove the UGLY ::Range inheritance...
-typedef struct CoreMessage : public Message, public Memory::Range
+typedef struct CoreMessage : public Message
 {
     union
     {
@@ -62,14 +56,9 @@ typedef struct CoreMessage : public Message, public Memory::Range
         /** Result code. */
         Error result;
     };
-    
-    /** Used to store somekind of number (e.g. PID's). */
-    ulong number;
 
-    /** FileSystemMounts table */
-    FileSystemMount *mounts;
-    
-    /** Path to an executable program, or FileSystemMount path. */
+    uint coreId;
+    // TODO: remove. it is used by the libposix Runtime hack for file descriptors
     char *path;
 }
 CoreMessage;

@@ -61,6 +61,10 @@ Kernel::Kernel(CoreInfo *info)
     for (Size i = 0; i < m_coreInfo->bootImageSize; i += PAGESIZE)
         m_alloc->allocate(m_coreInfo->bootImageAddress + i);
 
+    // Reserve CoreChannel memory
+    for (Size i = 0; i < m_coreInfo->coreChannelSize; i += PAGESIZE)
+        m_alloc->allocate(m_coreInfo->coreChannelAddress + i);
+
     // Clear interrupts table
     m_interrupts.fill(ZERO);
 }

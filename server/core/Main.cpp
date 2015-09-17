@@ -27,5 +27,6 @@ int main(int argc, char **argv)
 
     CoreServer server;
     server.initialize();
+    server.test();
     return server.run();
 }

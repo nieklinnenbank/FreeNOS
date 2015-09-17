@@ -80,6 +80,9 @@ typedef struct SystemInformation
     /** BootImage size */
     Size bootImageSize;
 
+    Address coreChannelAddress;
+    Size coreChannelSize;
+
     /** Timer counter */
     uint timerCounter;
 }

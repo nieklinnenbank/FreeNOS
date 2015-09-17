@@ -37,6 +37,8 @@ Error SystemInfoHandler(SystemInformation *info)
     info->bootImageAddress = core->bootImageAddress;
     info->bootImageSize    = core->bootImageSize;
     info->timerCounter     = core->timerCounter;
+    info->coreChannelAddress = core->coreChannelAddress;
+    info->coreChannelSize    = core->coreChannelSize;
 
     MemoryBlock::copy(info->cmdline, coreInfo.kernelCommand, 64);
     return API::Success;

@@ -31,7 +31,9 @@
 #include <String.h>
 #include <Types.h>
 #include <Macros.h>
+#include <Index.h>
 #include <ExecutableFormat.h>
+#include <MemoryChannel.h>
 #include <CoreInfo.h>
 #include "CoreMessage.h"
 
@@ -64,6 +66,7 @@ class CoreServer : public IPCServer<CoreServer, CoreMessage>
         BootError,
         ExecError,
         OutOfMemory,
+        IOError,
         MemoryError
     };
 
@@ -80,7 +83,11 @@ class CoreServer : public IPCServer<CoreServer, CoreMessage>
 
     Result loadKernel();
 
+    Result test();
+
   private:
+
+    Result setupChannels();
 
 #ifdef INTEL
     IntelMP m_cores;
@@ -90,7 +97,15 @@ class CoreServer : public IPCServer<CoreServer, CoreMessage>
 
     MemoryRegion m_regions[16]; 
 
-    int m_numRegions;    
+    int m_numRegions;
+
+    Index<CoreInfo> *m_coreInfo;
+
+    Index<MemoryChannel> *m_fromSlave;
+    Index<MemoryChannel> *m_toSlave;
+
+    MemoryChannel *m_toMaster;
+    MemoryChannel *m_fromMaster;
 };
 
 /**

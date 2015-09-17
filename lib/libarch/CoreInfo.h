@@ -22,7 +22,7 @@
 
 // TODO: needed by IntelBoot16.S.
 // TODO: warning depends on sizeof(Memory::Access) which is an emum
-#define COREINFO_SIZE  (KERNEL_PATHLEN + (7 * 4) + (4 * 4) + (4 * 4))
+#define COREINFO_SIZE  (KERNEL_PATHLEN + (8 * 4) + (4 * 4) + (4 * 4))
 
 #ifndef __ASSEMBLER__
 
@@ -47,10 +47,21 @@ typedef struct CoreInfo
 
     Address bootImageAddress;
     Address bootImageSize;
-    Address coreChannelBase;
+    Address coreChannelAddress;
+    Size coreChannelSize;
 
     /** Arch-specific timer counter */
     uint timerCounter;
+
+    // TODO: fix this in libstd. we should not need to do this for Index.
+    bool operator == (const struct CoreInfo & info) const
+    {
+        return false;
+    }
+    bool operator != (const struct CoreInfo & info) const
+    {
+        return true;
+    }
 }
 CoreInfo;
 

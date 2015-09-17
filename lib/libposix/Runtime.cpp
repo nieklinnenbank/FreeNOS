@@ -23,8 +23,8 @@
 #include <PageAllocator.h>
 #include <PoolAllocator.h>
 #include <FileSystemMount.h>
-#include <CoreServer.h>
 #include <MemoryMap.h>
+#include <CoreMessage.h>
 #include "FileDescriptor.h"
 #include "stdlib.h"
 #include "string.h"

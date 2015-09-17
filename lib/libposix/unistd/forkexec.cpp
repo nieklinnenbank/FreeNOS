@@ -17,7 +17,6 @@
 
 #include <FreeNOS/API.h>
 #include <FreeNOS/System.h>
-#include <CoreServer.h>
 #include <CoreMessage.h>
 #include <ExecutableFormat.h>
 #include <Types.h>
