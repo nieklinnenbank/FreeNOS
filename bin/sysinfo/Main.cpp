@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#warning rename to sysinfo? then make -m for memory info, and -c for cores, -a for all.
-
 #include <CoreMessage.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,10 +23,19 @@
 int main(int argc, char **argv)
 {
     SystemInformation info;
-    
-    printf("Total:     %u KB\r\n"
-           "Available: %u KB\r\n",
-            info.memorySize / 1024, info.memoryAvail / 1024);
+    CoreMessage msg;
+
+    msg.action = GetCoreCount;
+    msg.type = IPCType;
+    msg.from = SELF;
+    IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
+
+    printf("Memory Total:     %u KB\r\n"
+           "Memory Available: %u KB\r\n"
+           "Processor Cores:  %u\r\n",
+            info.memorySize / 1024,
+            info.memoryAvail / 1024,
+            msg.coreCount);
     
     return EXIT_SUCCESS;
 }

@@ -89,6 +89,8 @@ class CoreServer : public IPCServer<CoreServer, CoreMessage>
 
     Result setupChannels();
 
+    void getCoreCount(CoreMessage *msg);
+
 #ifdef INTEL
     IntelMP m_cores;
 #endif /* INTEL */

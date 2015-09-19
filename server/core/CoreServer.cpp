@@ -44,6 +44,26 @@ CoreServer::CoreServer()
     m_numRegions = 0;
     m_kernel = ZERO;
     m_coreInfo = ZERO;
+
+    // Register IPC handlers
+    addIPCHandler(GetCoreCount, &CoreServer::getCoreCount);
+}
+
+void CoreServer::getCoreCount(CoreMessage *msg)
+{
+    SystemInformation info;
+
+    if (info.coreId == 0)
+    {
+#ifdef INTEL
+        msg->coreCount = m_cores.getCores().count();
+#else
+        msg->coreCount = 1;
+#endif
+        msg->result = ESUCCESS;
+    }
+    else
+        msg->result = EINVAL;
 }
 
 CoreServer::Result CoreServer::test()

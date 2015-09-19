@@ -39,7 +39,10 @@ struct FileSystemMount;
  */
 typedef enum CoreAction
 {
-    Ping = 1
+    Ping = 1,
+    Pong,
+    CreateProcess,
+    GetCoreCount
 }
 CoreAction;
 
@@ -58,8 +61,22 @@ typedef struct CoreMessage : public Message
     };
 
     uint coreId;
-    // TODO: remove. it is used by the libposix Runtime hack for file descriptors
-    char *path;
+
+    /** Physical address of the program image to start. */
+    Address program;
+
+    /** Program argument count */
+    int argc;
+
+    /** Program arguments */
+    char *argv;
+
+    union
+    {
+        // TODO: remove. it is used by the libposix Runtime hack for file descriptors
+        char *path;
+        Size coreCount;
+    };
 }
 CoreMessage;
 

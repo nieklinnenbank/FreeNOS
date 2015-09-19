@@ -19,4 +19,5 @@ Import('build_env')
 
 env = build_env.Clone()
 env.UseLibraries(['libposix', 'libstd', 'libarch', 'libipc'])
+env.UseServers(['core'])
 env.TargetLibrary('libmpi', [ Glob('*.cpp') ])

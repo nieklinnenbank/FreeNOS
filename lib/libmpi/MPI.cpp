@@ -15,11 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/API.h>
+#include <CoreMessage.h>
 #include "mpi.h"
 
 int MPI_Init(int *argc, char ***argv)
 {
+    SystemInformation info;
+    CoreMessage msg;
+
     // If we are master (node 0):
+    msg.action = GetCoreCount;
+    msg.from = SELF;
+    msg.type = IPCType;
+    IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
 
     // provide -n COUNT, --help and other stuff in here too.
     // to influence the launching of more MPI programs
@@ -30,6 +39,13 @@ int MPI_Init(int *argc, char ***argv)
 
     // If we are slave (node N): 
     // read the -addr argument, and map the UniChannels into our address space.
+
+/*
+#error Process creation: send a message to the local CoreServer
+#error which in turn sends a message to the destination core.
+#error the message contains the physical address of the ELF executable and program arguments
+#error later, a capability for the physical address will be applied to do access control.
+ */
 
     return MPI_SUCCESS;
 }
