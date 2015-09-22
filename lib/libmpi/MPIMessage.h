@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,28 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __IMG_BOOTENTRY_H
-#define __IMG_BOOTENTRY_H
+#ifndef __LIBMPI_MPIMESSAGE_H
+#define __LIBMPI_MPIMESSAGE_H
 
-#include <ExecutableFormat.h>
-
-/** Maximum memory regions. */
-#define MAX_REGIONS	16
-
-/**
- * Executable for use inside a BootImage.
- */
-typedef struct BootEntry
+typedef struct MPIMessage
 {
-    /** BootSymbol definition */
-    BootSymbol symbol;
-
-    /** Memory regions for this symbol */
-    ExecutableFormat::Region regions[MAX_REGIONS];
-    
-    /** Number of memory regions. */
-    Size numRegions;
+    union
+    {
+        int integer;
+    };
 }
-BootEntry;
+MPIMessage;
 
-#endif /* __IMG_BOOTENTRY_H */
+#endif /* __LIBMPI_MPIMESSAGE_H */

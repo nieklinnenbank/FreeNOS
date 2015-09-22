@@ -84,6 +84,7 @@ class API
         SendReceive = 4,
         Read        = 5,
         Write       = 6,
+        ReadPhys    = 7
     }
     Operation;
 

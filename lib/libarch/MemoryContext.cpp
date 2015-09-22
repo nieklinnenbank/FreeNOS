@@ -122,6 +122,7 @@ MemoryContext::Result MemoryContext::findFree(Size size, MemoryMap::Region regio
     
     while (addr < r.virt+r.size && currentSize < size)
     {
+        // TODO: check for success instead. error codes may change.
         if (lookup(addr, &tmp) == InvalidAddress)
         {
             currentSize += PAGESIZE;

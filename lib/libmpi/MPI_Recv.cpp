@@ -15,7 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/System.h>
+#include <Index.h>
+#include <MemoryChannel.h>
 #include "mpi.h"
+#include "MPIMessage.h"
+
+extern Index<MemoryChannel> *readChannel;
 
 int MPI_Recv(void *buf,
              int count,
@@ -25,5 +31,19 @@ int MPI_Recv(void *buf,
              MPI_Comm comm,
              MPI_Status *status)
 {
+    MPIMessage msg;
+    MemoryChannel *ch;
+
+    if (datatype != MPI_INT)
+        return MPI_ERR_UNSUPPORTED_DATAREP;
+
+    if (!(ch = (MemoryChannel *) readChannel->get(source)))
+        return MPI_ERR_RANK;
+
+    for (int i = 0; i < count; i++)
+    {
+        ch->read(&msg);
+        *(((int *) buf) + i) = msg.integer;
+    }
     return MPI_SUCCESS;
 }

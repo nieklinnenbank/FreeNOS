@@ -237,6 +237,11 @@ extern C pid_t fork(void);
 extern C int forkexec(const char *path, const char *argv[]);
 
 /**
+ * @brief Create a new process using in-memory image.
+ */
+extern C int spawn(Address program, Size programSize, const char *command);
+
+/**
  * @brief Get name of current host.
  *
  * The gethostname() function shall return the standard host name for the

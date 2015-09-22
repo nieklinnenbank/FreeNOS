@@ -22,43 +22,21 @@
 #include <Types.h>
 #include <Runtime.h>
 #include <string.h>
-#include <sys/stat.h>
 #include <errno.h>
-#include <fcntl.h>
 #include "unistd.h"
 
-int forkexec(const char *path, const char *argv[])
+int spawn(Address program, Size programSize, const char *command)
 {
-    CoreMessage msg;
     ExecutableFormat *fmt;
     ExecutableFormat::Region regions[16];
     Memory::Range range;
     uint count = 0;
     pid_t pid = 0;
     Size numRegions = 16;
-    int fd;
-    Vector<FileDescriptor> *fds = getFiles();
-    struct stat st;
-    u8 *image;
     Address entry;
 
-    // Read the program image
-    if (stat(path, &st) != 0)
-        return -1;
-
-    if ((fd = open(path, O_RDONLY)) < 0)
-        return -1;
-
-    image = new u8[st.st_size];
-    if (read(fd, image, st.st_size) != st.st_size)
-    {
-        delete image;
-        return -1;
-    }
-    close(fd);
-    
     // Attempt to read executable format
-    if (ExecutableFormat::find(image, st.st_size, &fmt) != ExecutableFormat::Success)
+    if (ExecutableFormat::find((u8 *) program, programSize, &fmt) != ExecutableFormat::Success)
         return -1;
 
     // Retrieve memory regions
@@ -109,14 +87,22 @@ int forkexec(const char *path, const char *argv[])
 
     // Allocate arguments
     char *arguments = new char[PAGESIZE];
+    char *arg = (char *)command;
     memset(arguments, 0, PAGESIZE);
 
     // Fill in arguments
-    while (argv[count] && count < PAGESIZE / ARGV_SIZE)
+    while (*command && count < PAGESIZE / ARGV_SIZE)
     {
-        strlcpy(arguments + (ARGV_SIZE * count), argv[count], ARGV_SIZE);
-        count++;
+        if (*command == ' ')
+        {
+            strlcpy(arguments + (ARGV_SIZE * count), arg, command-arg+1);
+            count++;
+            arg = (char *)(command+1);
+        }
+        command++;
     }
+    // The last argument
+    strlcpy(arguments + (ARGV_SIZE * count), arg, command-arg+1);
 
     // Copy argc/argv into the new process
     if ((VMCopy(pid, API::Write, (Address) arguments,
@@ -129,13 +115,6 @@ int forkexec(const char *path, const char *argv[])
 
     // Let the Child begin execution
     ProcessCtl(pid, Resume);
-
-    // Send a pointer to our list of file descriptors to the child
-    // TODO: ofcourse, insecure. To be fixed later.
-    msg.type      = IPCType;
-    msg.from      = SELF;
-    msg.path = (char *) fds->vector();
-    IPCMessage(pid, API::SendReceive, &msg, sizeof(msg));
 
     // Done. Cleanup.
     delete arguments;

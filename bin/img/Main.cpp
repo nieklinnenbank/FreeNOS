@@ -31,7 +31,7 @@ Size readBootSymbols(char *prog, char *file,
                      Vector<BootEntry *> *entries)
 {
     char line[128];
-    int num = 0;
+    Size num = MAX_REGIONS;
     Size totalBytes = 0, totalEntries = 0;
     BootEntry *entry;
     FILE *fp;
@@ -53,20 +53,47 @@ Size readBootSymbols(char *prog, char *file,
         /* Allocate new boot entry. */
         entry = new BootEntry;
         strncpy(entry->symbol.name, line, BOOTIMAGE_NAMELEN);
-    
+
+        // Find the file
+        struct stat st;
+        if (stat(line, &st) == -1)
+        {
+            fprintf(stderr, "%s: failed to stat `%s': %s\n",
+                    prog, line, strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+        // Allocate buffer
+        u8 *buffer = new u8[st.st_size];
+
+        // Read the file
+        FILE *entry_fd = fopen(line, "r");
+        if (!entry_fd)
+        {
+            fprintf(stderr, "%s: failed to open `%s': %s\n",
+                    prog, line, strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+        if (fread(buffer, st.st_size, 1, entry_fd) != 1)
+        {
+            fprintf(stderr, "%s: failed to fread `%s': %s\n",
+                    prog, line, strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+        fclose(entry_fd);
+
         // Try to parse as BootProgram using libexec.
-        if ((format = ExecutableFormat::find(strdup(line))) != ZERO)
+        if (ExecutableFormat::find(buffer, st.st_size, &format) == ExecutableFormat::Success)
         {
             // Extract memory regions
-            if ((num = format->regions(entry->regions, MAX_REGIONS)) <= 0)
+            if (format->regions(entry->regions, &num) != ExecutableFormat::Success || num <= 0)
             {
                 fprintf(stderr, "%s: failed to extract memory regions from `%s': %s\n",
                             prog, line, strerror(errno));
                 exit(EXIT_FAILURE);
             }
-            entry->numRegions  = num;
+            entry->numRegions   = num;
             entry->symbol.type  = BootProgram;
-            entry->symbol.entry = format->entry();
+            format->entry((Address *)&entry->symbol.entry);
         }
         // BootData
         else
@@ -74,37 +101,10 @@ Size readBootSymbols(char *prog, char *file,
             // Fill BootEntry
             entry->symbol.type = BootData;
             entry->numRegions  = 1;
-            entry->regions[0].virtualAddress = 0;
+            entry->regions[0].virt = 0;
             entry->regions[0].access = Memory::User | Memory::Readable | Memory::Writable;
-            entry->regions[0].size = 0;
-            entry->regions[0].data = 0;
-
-            // Check the binary data
-            struct stat st;
-            if (stat(line, &st) == -1)
-            {
-                fprintf(stderr, "%s: failed to stat `%s': %s\n",
-                        prog, line, strerror(errno));
-                exit(EXIT_FAILURE);
-            }
             entry->regions[0].size = st.st_size;
-            entry->regions[0].data = (u8 *) malloc(entry->regions[0].size);
-
-            // Read binary data into BootEntry
-            FILE *entry_fd = fopen(line, "r");
-            if (!entry_fd)
-            {
-                fprintf(stderr, "%s: failed to open `%s': %s\n",
-                        prog, line, strerror(errno));
-                exit(EXIT_FAILURE);
-            }
-            if (fread(entry->regions[0].data, entry->regions[0].size, 1, entry_fd) != 1)
-            {
-                fprintf(stderr, "%s: failed to fread `%s': %s\n",
-                        prog, line, strerror(errno));
-                exit(EXIT_FAILURE);
-            }
-            fclose(entry_fd);
+            entry->regions[0].data = buffer;
         }
         // Insert into Array
         entries->insert(entry);
@@ -114,7 +114,7 @@ Size readBootSymbols(char *prog, char *file,
         for (Size i = 0; i < entry->numRegions; i++)
         {
             printf("%s[%u]: vaddr=%x size=%u\n",
-                    line, i, (uint) entry->regions[i].virtualAddress,
+                    line, i, (uint) entry->regions[i].virt,
                     entry->regions[i].size);
             totalBytes += entry->regions[i].size;
         }
@@ -190,7 +190,7 @@ int main(int argc, char **argv)
         for (Size j = 0; j < input[i]->numRegions; j++)
         {
             /* Fill in the segment. */
-            segments[i].virtualAddress = input[i]->regions[j].virtualAddress;
+            segments[i].virtualAddress = input[i]->regions[j].virt;
             segments[i].size           = input[i]->regions[j].size;
             segments[i].offset         = dataOffset;
             

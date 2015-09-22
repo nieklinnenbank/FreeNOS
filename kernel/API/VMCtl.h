@@ -34,7 +34,6 @@ typedef enum MemoryOperation
     Map = 0,
     UnMap,
     LookupVirtual,
-    LookupPhysical,
     Access,
     RemoveMem,
     AddMem

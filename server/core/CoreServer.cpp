@@ -22,6 +22,9 @@
 #include "CoreMessage.h"
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #ifdef INTEL
 #include <intel/IntelMP.h>
@@ -43,17 +46,81 @@ CoreServer::CoreServer()
      */
     m_numRegions = 0;
     m_kernel = ZERO;
+    m_kernelImage = ZERO;
     m_coreInfo = ZERO;
 
     // Register IPC handlers
-    addIPCHandler(GetCoreCount, &CoreServer::getCoreCount);
+    addIPCHandler(GetCoreCount,  &CoreServer::getCoreCount);
+    addIPCHandler(CreateProcess, &CoreServer::createProcess);
+}
+
+int CoreServer::runCore()
+{
+    CoreMessage msg;
+
+    if (m_info.coreId == 0)
+        return run();
+
+    while (true)
+    {
+        // wait from a message of the master core
+        m_fromMaster->read(&msg);
+
+        if (ipcHandlers->at(msg.action))
+        {
+            sendReply = ipcHandlers->at(msg.action)->sendReply;
+            (this->*(ipcHandlers->at(msg.action))->exec)(&msg);
+
+            if (sendReply)
+                m_toMaster->write(&msg);
+        }
+    }
+}
+
+void CoreServer::createProcess(CoreMessage *msg)
+{
+    char cmd[128];
+    Memory::Range range;
+
+    if (m_info.coreId == 0)
+    {
+        MemoryChannel *ch = (MemoryChannel *) m_toSlave->get(msg->coreId);
+
+        if (!ch)
+        {
+            msg->result = EBADF;
+            return;
+        }
+
+        // TODO:move in libmpi?
+        range.virt = msg->program;
+        VMCtl(msg->from, LookupVirtual, &range);
+        msg->program = range.phys;
+
+        range.virt = (Address) msg->programCommand;
+        VMCtl(msg->from, LookupVirtual, &range);
+        msg->programCommand = (char *) range.phys;
+
+        ch->write(msg);
+    }
+    else
+    {
+        VMCopy(SELF, API::ReadPhys, (Address) cmd, (Address) msg->programCommand, sizeof(cmd));
+
+        range.phys   = msg->program;
+        range.virt   = 0;
+        range.access = Memory::Readable | Memory::User;
+        range.size   = msg->programSize;
+        VMCtl(SELF, Map, &range);
+
+        spawn(range.virt, msg->programSize, cmd);
+    }
+    msg->result = ESUCCESS;
 }
 
 void CoreServer::getCoreCount(CoreMessage *msg)
 {
-    SystemInformation info;
-
-    if (info.coreId == 0)
+    if (m_info.coreId == 0)
     {
 #ifdef INTEL
         msg->coreCount = m_cores.getCores().count();
@@ -69,14 +136,12 @@ void CoreServer::getCoreCount(CoreMessage *msg)
 CoreServer::Result CoreServer::test()
 {
 #ifdef INTEL
-    SystemInformation info;
-
-    if (info.coreId != 0)
+    if (m_info.coreId != 0)
     {
         CoreMessage msg;
         msg.action = Ping;
         msg.path = (char *)0x12345678;
-        msg.coreId = info.coreId;
+        msg.coreId = m_info.coreId;
         m_toMaster->write(&msg);
     }
     else
@@ -103,11 +168,10 @@ CoreServer::Result CoreServer::test()
 
 CoreServer::Result CoreServer::initialize()
 {
-    SystemInformation info;
     Result r;
 
     // Only core0 needs to start other coreservers
-    if (info.coreId != 0)
+    if (m_info.coreId != 0)
         return setupChannels();
 
     if ((r = loadKernel()) != Success)
@@ -121,28 +185,40 @@ CoreServer::Result CoreServer::initialize()
 
 CoreServer::Result CoreServer::loadKernel()
 {
+    struct stat st;
+    int fd;
+
     DEBUG("Opening : " << kernelPath);
 
-    // Attempt to read kernel executable format
-    if (!(m_kernel = ExecutableFormat::find(kernelPath)))
+    // Read the program image
+    if (stat(kernelPath, &st) != 0)
+        return IOError;
+
+    if ((fd = open(kernelPath, O_RDONLY)) < 0)
+        return IOError;
+
+    m_kernelImage = new u8[st.st_size];
+    if (read(fd, m_kernelImage, st.st_size) != st.st_size)
     {
-        ERROR("kernel not found: " << kernelPath << ": " << strerror(errno));
-        return NotFound;
+        return IOError;
     }
-    DEBUG("Reading : " << kernelPath);
+    close(fd);
+    
+    // Attempt to read executable format
+    if (ExecutableFormat::find(m_kernelImage, st.st_size, &m_kernel) != ExecutableFormat::Success)
+        return ExecError;
 
     // Retrieve memory regions
-    if ((m_numRegions = m_kernel->regions(m_regions, 16)) < 0)
-    {
-        ERROR("kernel not usable: " << kernelPath << ": " << strerror(errno));
+    m_numRegions = 16;
+    if (m_kernel->regions(m_regions, &m_numRegions) != ExecutableFormat::Success)
         return ExecError;
-    }
+
     DEBUG("kernel loaded");
     return Success;
 }
 
 CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info,
-                                        MemoryRegion *regions)
+                                        ExecutableFormat::Region *regions)
 {
     SystemInformation sysInfo;
     DEBUG("Reserving: " << (void *)info->memory.phys << " size=" <<
@@ -163,7 +239,7 @@ CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info,
     for (int i = 0; i < m_numRegions; i++)
     {
         Memory::Range range;
-        range.phys = info->memory.phys + regions[i].virtualAddress;
+        range.phys = info->memory.phys + regions[i].virt;
         range.virt = 0;
         range.size = regions[i].size;
         range.access = Memory::Readable | Memory::Writable |
@@ -190,7 +266,7 @@ CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info,
             return MemoryError;
         }
 
-        DEBUG(kernelPath << "[" << i << "] = " << (void *) m_regions[i].virtualAddress);
+        DEBUG(kernelPath << "[" << i << "] = " << (void *) m_regions[i].virt);
     }
 
     // Copy the BootImage after the kernel.
@@ -266,7 +342,7 @@ CoreServer::Result CoreServer::discover()
             info->coreChannelAddress = info->bootImageAddress + info->bootImageSize;
             info->coreChannelAddress += PAGESIZE - (info->bootImageSize % PAGESIZE);
             info->coreChannelSize    = PAGESIZE * 4;
-            info->kernelEntry  = m_kernel->entry();
+            m_kernel->entry(&info->kernelEntry);
             info->timerCounter = sysInfo.timerCounter;
             strlcpy(info->kernelCommand, kernelPath, KERNEL_PATHLEN);
 
@@ -324,3 +400,4 @@ CoreServer::Result CoreServer::setupChannels()
 #endif /* INTEL */
     return Success;
 }
+

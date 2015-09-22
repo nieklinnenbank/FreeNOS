@@ -17,35 +17,172 @@
 
 #include <FreeNOS/API.h>
 #include <CoreMessage.h>
+#include "MPIMessage.h"
+#include <MemoryChannel.h>
+#include <Index.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
 #include "mpi.h"
+
+#define MEMBASE(id) (memChannelBase.phys + (coreCount * PAGESIZE * 2 * (id)))
+
+Size coreCount = 0;
+Index<MemoryChannel> *readChannel  = 0;
+Index<MemoryChannel> *writeChannel = 0;
 
 int MPI_Init(int *argc, char ***argv)
 {
     SystemInformation info;
     CoreMessage msg;
+    struct stat st;
+    char *programName = (*argv)[0];
+    char programPath[64];
+    u8 *programBuffer;
+    int fd;
+    Memory::Range memChannelBase;
 
     // If we are master (node 0):
-    msg.action = GetCoreCount;
-    msg.from = SELF;
-    msg.type = IPCType;
-    IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
+    if (info.coreId == 0)
+    {
+        msg.action = GetCoreCount;
+        msg.from = SELF;
+        msg.type = IPCType;
+        IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
 
-    // provide -n COUNT, --help and other stuff in here too.
-    // to influence the launching of more MPI programs
+        // provide -n COUNT, --help and other stuff in here too.
+        // to influence the launching of more MPI programs
+        coreCount = msg.coreCount;
 
-    // Allocate memory space on the local processor for the whole
-    // UniChannel array, NxN communication with MPI.
-    // Then pass the channel offset physical address as an argument -addr 0x.... to spawn()
+        // Read our own ELF program to a buffer and pass it to CoreServer
+        // for creating new programs on the remote core.
+        if (strncmp(programName, "/bin/", 5) != 0)
+            snprintf(programPath, sizeof(programPath), "/bin/%s", programName);
+        else
+            strlcpy(programPath, programName, sizeof(programPath));
 
-    // If we are slave (node N): 
-    // read the -addr argument, and map the UniChannels into our address space.
+        if (stat(programPath, &st) != 0)
+        {
+            printf("%s: failed to stat '%s': %s\n",
+                    programName, programPath, strerror(errno));
+            return MPI_ERR_BAD_FILE;
+        }
+        programBuffer = new u8[st.st_size];
+        MemoryBlock::set(programBuffer, 0, st.st_size);
 
-/*
-#error Process creation: send a message to the local CoreServer
-#error which in turn sends a message to the destination core.
-#error the message contains the physical address of the ELF executable and program arguments
-#error later, a capability for the physical address will be applied to do access control.
- */
+        // Read ELF program
+        if ((fd = open(programPath, O_RDONLY)) == -1)
+        {
+            printf("%s: failed to open '%s': %s\n",
+                    programName, programPath, strerror(errno));
+            return MPI_ERR_BAD_FILE;
+        }
+        if (read(fd, programBuffer, st.st_size) != st.st_size)
+        {
+            printf("%s: failed to read '%s': %s\n",
+                    programName, programPath, strerror(errno));
+            return MPI_ERR_BAD_FILE;
+        }
+        if (close(fd) != 0)
+        {
+            printf("%s: failed to close '%s': %s\n",
+                    programName, programPath, strerror(errno));
+            return MPI_ERR_BAD_FILE;
+        }
+
+        // Allocate memory space on the local processor for the whole
+        // UniChannel array, NxN communication with MPI.
+        // Then pass the channel offset physical address as an argument -addr 0x.... to spawn()
+        memChannelBase.size = (PAGESIZE * 2) * (msg.coreCount * msg.coreCount * 2);
+        memChannelBase.phys = 0;
+        memChannelBase.virt = 0;
+        memChannelBase.access = Memory::Readable | Memory::Writable | Memory::User;
+        if (VMCtl(SELF, Map, &memChannelBase) != API::Success)
+        {
+            printf("%s: failed to allocate MemoryChannel\n",
+                    programName);
+            return MPI_ERR_NO_MEM;
+        }
+        printf("%s: MemoryChannel at physical address %x\n",
+                programName, memChannelBase.phys);
+
+        // now create the slaves using coreservers.
+        for (Size i = 1; i < coreCount; i++)
+        {
+            char *cmd = new char[64];
+            snprintf(cmd, 64, "%s -a %x -c %d",
+                     programPath, memChannelBase.phys, coreCount);
+
+            msg.action = CreateProcess;
+            msg.coreId = i;
+            msg.program = (Address) programBuffer;
+            msg.programSize = st.st_size;
+            msg.programCommand = cmd;
+            IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
+        }
+    }
+    else
+    {
+        // If we are slave (node N): 
+        // read the -addr argument, and map the UniChannels into our address space.
+        for (int i = 1; i < (*argc); i++)
+        {
+            if (!strcmp((*argv)[i], "--addr") ||
+                !strcmp((*argv)[i], "-a"))
+            {
+                if ((*argc) < i+1)
+                    return MPI_ERR_ARG;
+
+                String s = (*argv)[i+1];
+                memChannelBase.phys = s.toLong(Number::Hex);
+                i++;
+            }
+            else if (!strcmp((*argv)[i], "--cores") ||
+                     !strcmp((*argv)[i], "-c"))
+            {
+                if ((*argc) < i+1)
+                    return MPI_ERR_ARG;
+                coreCount = atoi((*argv)[i+1]);
+                i++;
+            }
+            else
+            {
+                printf("%s: unknown argument '%s'\n",
+                        programName, (*argv)[i]);
+                return MPI_ERR_ARG;
+            }
+        }
+    }
+
+    // Create MemoryChannels
+    readChannel  = new Index<MemoryChannel>(coreCount);
+    writeChannel = new Index<MemoryChannel>(coreCount);
+
+    // Fill read channels
+    for (Size i = 0; i < coreCount; i++)
+    {
+        MemoryChannel *ch = new MemoryChannel();
+        ch->setMode(MemoryChannel::Consumer);
+        ch->setMessageSize(sizeof(MPIMessage));
+        ch->setData(MEMBASE(i) + (PAGESIZE * 2 * info.coreId));
+        ch->setFeedback(MEMBASE(i) + (PAGESIZE * 2 * info.coreId) + PAGESIZE);
+        readChannel->insert(i, *ch);
+    }
+
+    // Fill write channels
+    for (Size i = 0; i < coreCount; i++)
+    {
+        MemoryChannel *ch = new MemoryChannel();
+        ch->setMode(MemoryChannel::Producer);
+        ch->setMessageSize(sizeof(MPIMessage));
+        ch->setData(MEMBASE(info.coreId) + (PAGESIZE * 2 * i));
+        ch->setFeedback(MEMBASE(info.coreId) + (PAGESIZE * 2 * i) + PAGESIZE);
+        writeChannel->insert(i, *ch);
+    }
 
     return MPI_SUCCESS;
 }

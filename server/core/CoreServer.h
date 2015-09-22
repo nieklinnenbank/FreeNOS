@@ -77,7 +77,7 @@ class CoreServer : public IPCServer<CoreServer, CoreMessage>
 
     Result initialize();
 
-    Result bootCore(uint coreId, CoreInfo *info, MemoryRegion *regions);
+    Result bootCore(uint coreId, CoreInfo *info, ExecutableFormat::Region *regions);
 
     Result discover();
 
@@ -85,23 +85,28 @@ class CoreServer : public IPCServer<CoreServer, CoreMessage>
 
     Result test();
 
+    int runCore();
+
   private:
 
     Result setupChannels();
 
     void getCoreCount(CoreMessage *msg);
+    void createProcess(CoreMessage *msg);
 
 #ifdef INTEL
     IntelMP m_cores;
 #endif /* INTEL */
 
     ExecutableFormat *m_kernel;
+    u8 *m_kernelImage;
 
-    MemoryRegion m_regions[16]; 
+    ExecutableFormat::Region m_regions[16]; 
 
-    int m_numRegions;
+    Size m_numRegions;
 
     Index<CoreInfo> *m_coreInfo;
+    SystemInformation m_info;
 
     Index<MemoryChannel> *m_fromSlave;
     Index<MemoryChannel> *m_toSlave;

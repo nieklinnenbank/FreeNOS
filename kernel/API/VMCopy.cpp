@@ -41,7 +41,9 @@ Error VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
     while (total < sz)
     {
         /* Update variables. */
-        if (remote->lookup(theirs, &paddr) != MemoryContext::Success)
+        if (how == API::ReadPhys)
+            paddr = theirs & PAGEMASK;
+        else if (remote->lookup(theirs, &paddr) != MemoryContext::Success)
             return API::AccessViolation;
 
         pageOff = theirs & ~PAGEMASK;
@@ -61,6 +63,7 @@ Error VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
         switch (how)
         {
             case API::Read:
+            case API::ReadPhys:
                 MemoryBlock::copy((void *)ours, (void *)(vaddr + pageOff), bytes);
                 break;
                         

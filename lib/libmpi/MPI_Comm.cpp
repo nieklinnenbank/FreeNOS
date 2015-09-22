@@ -15,16 +15,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/API.h>
+#include <CoreMessage.h>
 #include "mpi.h"
 
 int MPI_Comm_rank(MPI_Comm comm,
                   int *rank)
 {
+    SystemInformation info;
+    *rank = info.coreId;
     return MPI_SUCCESS;
 }
 
 int MPI_Comm_size(MPI_Comm comm,
                   int *size)
 {
+    CoreMessage msg;
+    msg.action = GetCoreCount;
+    msg.from   = SELF;
+    msg.type   = IPCType;
+    IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
+
+    *size = msg.coreCount;
     return MPI_SUCCESS;
 }

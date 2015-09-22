@@ -44,13 +44,12 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range)
                 return API::AccessViolation;
             break;
 
-        case LookupPhysical:
-            ret = API::InvalidArgument;
-            break;
-
         case Map:
             if (!range->virt)
+            {
                 mem->findFree(range->size, MemoryMap::UserPrivate, &range->virt);
+                range->virt += range->phys & ~PAGEMASK;
+            }
             mem->mapRange(range);
             break;
 

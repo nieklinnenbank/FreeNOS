@@ -156,8 +156,6 @@ template <class Base, class MsgType> class IPCServer
     /** Should we send a reply message? */
     bool sendReply;
 
-  private:
-    
     /** IPC handler functions. */
     Vector<MessageHandler<IPCHandlerFunction> *> *ipcHandlers;
     

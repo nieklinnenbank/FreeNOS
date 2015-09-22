@@ -65,11 +65,11 @@ typedef struct CoreMessage : public Message
     /** Physical address of the program image to start. */
     Address program;
 
-    /** Program argument count */
-    int argc;
+    /** Size of the program image. */
+    Size programSize;
 
     /** Program arguments */
-    char *argv;
+    char *programCommand;
 
     union
     {
