@@ -67,7 +67,7 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range)
             {
                 if (Kernel::instance->getAllocator()->allocate(range->phys + i) != Allocator::Success)
                 {
-                    ERROR("address " << (void *) range->phys +i << " already allocated");
+                    ERROR("address " << (void *) (range->phys + i) << " already allocated");
                     return API::OutOfMemory;
                 }
             }
