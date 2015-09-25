@@ -477,7 +477,6 @@ TestCase(ListGet)
             // Retrieve reference and by-value.
             testAssert(lst[j] == ints[j]);
             testAssert(lst.at(j) == ints[j]);
-            testAssert(lst.value(j) == ints[j]);
 
             // The get() function should return a valid pointer for
             // and existing item, and ZERO for non-existing.

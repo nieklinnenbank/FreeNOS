@@ -119,24 +119,6 @@ template <class T> class Sequence : public Container, public Comparable<Sequence
     virtual const T & at(Size position) const = 0;
 
     /**
-     * Return value at the given position.
-     * If position is not within bounds of this array,
-     * this function will return a default constructed T.
-     *
-     * @param position Index inside this array.
-     * @return T at the given position or default constructed T.
-     */
-    virtual const T value(Size position) const
-    {
-        const T *t = get(position);
-
-        if (!t)
-            return T();
-        else
-            return (*t);
-    }
-
-    /**
      * Check if the given item is stored in this Sequence.
      */
     virtual bool contains(const T value) const
