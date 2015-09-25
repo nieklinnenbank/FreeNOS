@@ -54,7 +54,10 @@ IntelMP::Result IntelMP::discover()
     }
     // MPTables not found
     if (!mpc)
+    {
+        ERROR("MP header not found");
         return NotFound;
+    }
 
     // Found config
     DEBUG("MP header found at " << mpc);

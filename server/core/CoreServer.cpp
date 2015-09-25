@@ -310,7 +310,12 @@ CoreServer::Result CoreServer::discover()
     SystemInformation sysInfo;
     Size memPerCore = 0;
 
-    m_cores.discover();
+    if (m_cores.discover() != IntelMP::Success)
+    {
+        ERROR("failed to discover cores");
+        return NotFound;
+    }
+
     List<uint> & cores = m_cores.getCores();
     memPerCore = sysInfo.memorySize / cores.count();
     memPerCore /= MegaByte(4);
