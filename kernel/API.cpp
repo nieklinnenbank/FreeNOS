@@ -58,6 +58,7 @@ Log & operator << (Log &log, API::Operation op)
         case API::Receive:     log.append("Receive");     break;
         case API::SendReceive: log.append("SendReceive"); break;
         case API::Read:        log.append("Read");        break;
+        case API::ReadPhys:    log.append("ReadPhys");    break;
         case API::Write:       log.append("Write");       break;
     }    
     return log;
