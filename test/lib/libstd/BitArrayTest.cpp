@@ -279,6 +279,7 @@ TestCase(BitArraySetNextOutOfMemory)
     // No bits available
     ba.setRange(0, 128);
     testAssert(ba.setNext(&bit, 4) == BitArray::OutOfMemory);
+    return OK;
 }
 
 TestCase(BitArrayClear)
