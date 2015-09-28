@@ -20,7 +20,6 @@
 
 #include <FreeNOS/API.h>
 #include <FreeNOS/Process.h>
-#include <Error.h>
 #include <Types.h>
 
 /**  
@@ -29,20 +28,23 @@
  */
 
 /**
- * Available operation to perform using PrivExec().
- * @see PrivExec
+ * Available operation to perform using ProcessCtl.
+ * @see ProcessCtl
  */
 typedef enum ProcessOperation
 {
-    Spawn    = 0,
-    KillPID  = 1,
-    GetPID   = 2,
-    AllowIO  = 3,
-    WatchIRQ = 4,
-    InfoPID  = 5,
-    Schedule = 6,
-    Resume   = 7,
-    SetStack = 8,
+    Spawn = 0,
+    KillPID,
+    GetPID,
+    GetParent,
+    WatchIRQ,
+    EnableIRQ,
+    DisableIRQ,
+    InfoPID,
+    WaitPID,
+    Schedule,
+    Resume,
+    SetStack
 }
 ProcessOperation;
 
@@ -53,12 +55,18 @@ typedef struct ProcessInfo
 {
     /** Process Identity number. Must be unique. */
     ProcessID id;
+
+    /** Parent process id. */
+    ProcessID parent;
     
     /** Defines the current state of the Process. */
     Process::State state;
     
-    /** Virtual address of the stack. */
-    Address stack;
+    /** Virtual address of the user stack. */
+    Address userStack;
+
+    /** Virtual address of the kernel stack. */
+    Address kernelStack;
     
     /** Physical address of the page directory. */
     Address pageDirectory;
@@ -70,6 +78,7 @@ Log & operator << (Log &log, ProcessOperation op);
 
 /**
  * Prototype for user applications. Process management related operations.
+ *
  * @param proc Target Process' ID.
  * @param op The operation to perform.
  * @param addr Argument address, used for program entry point for Spawn,
@@ -78,7 +87,7 @@ Log & operator << (Log &log, ProcessOperation op);
  */
 inline Error ProcessCtl(ProcessID proc, ProcessOperation op, Address addr = 0)
 {
-    return trapKernel3(ProcessCtlNumber, proc, op, addr);
+    return trapKernel3(API::ProcessCtlNumber, proc, op, addr);
 }
 
 /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,113 +18,176 @@
 #ifndef __INTEL_KERNEL_H
 #define __INTEL_KERNEL_H
 
-#ifndef __ASSEMBLY__
-
-#include <FreeNOS/Kernel.h>
 #include <Types.h>
-#include "IntelInterrupt.h"
-#include "IntelCPU.h"
-#include "IntelMemory.h"
+#include <BootImage.h>
 
 /**   
  * @defgroup x86kernel kernel (x86)  
  * @{   
  */
 
-/** IO base address for master PIC */
-#define PIC1_CMD        0x20 
+/**  
+ * @group Intel Kernel Traps
+ *
+ * These functions are called by the user program to
+ * invoke the kernel APIs.
+ *
+ * @{  
+ */
 
-/** IO base address for slave PIC */                      
-#define PIC2_CMD        0xa0                              
-                                                          
-/* Master PIC data port */                                
-#define PIC1_DATA       0x21                              
-                                                          
-/* Slave PIC data port */                                 
-#define PIC2_DATA       0xa1 
+/** 
+ * Perform a kernel trap with 1 argument.
+ * @param num Unique number of the handler to execute. 
+ * @param arg1 First argument becomes ECX. 
+ * @return An integer. 
+ */
+inline ulong trapKernel1(ulong num, ulong arg1)
+{
+    ulong ret;
+    asm volatile ("int $0x90" : "=a"(ret) : "a"(num), "c"(arg1) : "memory");
+    return ret;
+}
 
-/** End of Interrupt (EOI). */
-#define PIC_EOI         0x20
+/** 
+ * Perform a kernel trap with 2 arguments.
+ * @param num Unique number of the handler to execute. 
+ * @param arg1 First argument becomes ECX. 
+ * @param arg2 Second argument becomes EBX.
+ * @return An integer. 
+ */
+inline ulong trapKernel2(ulong num, ulong arg1, ulong arg2)
+{
+    ulong ret;
+    asm volatile ("int $0x90" : "=a"(ret) : "a"(num), "c"(arg1), "b"(arg2) : "memory");
+    return ret;
+}
 
-/** Base of IRQ's from the PIC's. */
-#define PIC_IRQ_BASE    0x20
+/** 
+ * Perform a kernel trap with 3 arguments. 
+ * @param num Unique number of the handler to execute. 
+ * @param arg1 First argument becomes ECX. 
+ * @param arg2 Second argument becomes EBX. 
+ * @param arg3 Third argument becomes EDX. 
+ * @return An integer. 
+ */
+inline ulong trapKernel3(ulong num, ulong arg1, ulong arg2, ulong arg3)
+{
+    ulong ret;
+    asm volatile ("int $0x90" : "=a"(ret) : "a"(num), "c"(arg1), "b"(arg2),
+                        "d"(arg3) : "memory");
+    return ret;
+}
 
-/** PIT maximum frequency. */
-#define PIT_FREQUENCY   1193182
+/** 
+ * Perform a kernel trap with 4 arguments. 
+ * @param num Unique number of the handler to execute. 
+ * @param arg1 First argument becomes ECX. 
+ * @param arg2 Second argument becomes EBX. 
+ * @param arg3 Third argument becomes EDX. 
+ * @param arg4 Fourth argument becomes ESI.
+ * @return An integer. 
+ */
+inline ulong trapKernel4(ulong num, ulong arg1, ulong arg2, ulong arg3,
+             ulong arg4)
+{
+    ulong ret;
+    asm volatile ("int $0x90" : "=a"(ret) : "a"(num), "c"(arg1), "b"(arg2),
+                        "d"(arg3), "S"(arg4) : "memory");
+    return ret;
+}
 
-/** PIT IRQ interval. */
-#define PIT_HZ          250
+/** 
+ * Perform a kernel trap with 5 arguments. 
+ * @param num Unique number of the handler to execute. 
+ * @param arg1 First argument becomes ECX. 
+ * @param arg2 Second argument becomes EBX. 
+ * @param arg3 Third argument becomes EDX. 
+ * @param arg4 Fourth argument becomes ESI.
+ * @param arg5 Fifth argument becomes EDI.
+ * @return An integer. 
+ */
+inline ulong trapKernel5(ulong num, ulong arg1, ulong arg2, ulong arg3,
+             ulong arg4, ulong arg5)
+{
+    ulong ret;
+    asm volatile ("int $0x90" : "=a"(ret) : "a"(num), "c"(arg1), "b"(arg2),
+                 "d"(arg3), "S"(arg4), "D"(arg5) : "memory");
+    return ret;
+}
 
-/** PIT divisor. */
-#define PIT_DIVISOR     (PIT_FREQUENCY / PIT_HZ)
+/**
+ * @}
+ */
 
-/** PIT command port. */
-#define PIT_CMD         0x43
+#include <FreeNOS/Kernel.h>
+#include <intel/IntelPIT.h>
+#include <intel/IntelPIC.h>
+#include <intel/IntelAPIC.h>
 
-/** PIT channel zero. */
-#define PIT_CHAN0       0x40
+/**
+ * We remap IRQ's to interrupt vectors 32-47.
+ */
+// TODO: needed by ProcessCtl.cpp. Should avoid this.
+#define IRQ(vector) \
+    (vector) + 32
 
 /**
  * Implements an x86 compatible kernel.
  */
-class IntelKernel : public Kernel, public Singleton<IntelKernel>
+class IntelKernel : public Kernel
 {
- public:
+  public:
 
-        /**
-         * Constructor function.
-         */
-        IntelKernel(IntelMemory *memory, ProcessManager *procs);
+    /**
+     * Constructor function.
+     */
+    IntelKernel(CoreInfo *info);
 
-        /**
-         * Hooks a function to an hardware interrupt.
-         * @param vec Interrupt vector to hook on.
-         * @param h Handler function.
-         * @param p Parameter to pass to the handler function.
-         */
-        void hookInterrupt(int vec, InterruptHandler h, ulong p);
+  private:
 
-        /** 
-         * Uses the PIC to (un)mask an IRQ. 
-         * @param vector Interrupt vector. 
-         * @param enabled Either to mask (true) or unmask (false). 
-         */
-        void enableIRQ(uint vector, bool enabled);
-
-    private:
-    
-        /** 
-         * Called when the CPU detects a fault. 
-         * @param state Contains CPU registers, interrupt vector and error code. 
-         * @param param Not used. 
-         */
-        static void exception(CPUState *state, ulong param);
+    /** 
+     * Called when the CPU detects a fault. 
+     * @param state Contains CPU registers, interrupt vector and error code. 
+     * @param param Not used. 
+     */
+    static void exception(CPUState *state, ulong param);
         
-        /** 
-         * Default interrupt handler. 
-         * @param state Contains CPU registers, interrupt vector and error code. 
-         * @param param Not used. 
-         */
-        static void interrupt(CPUState *state, ulong param);
+    /** 
+     * Default interrupt handler. 
+     * @param state Contains CPU registers, interrupt vector and error code. 
+     * @param param Not used. 
+     */
+    static void interrupt(CPUState *state, ulong param);
 
-        /**
-         * Kernel trap handler (system calls).
-         * @param state Contains the arguments for the APIHandler, in CPU registers.
-         * @param param Not used.
-         */
-        static void trap(CPUState *state, ulong param);
+    /**
+     * Kernel trap handler (system calls).
+     * @param state Contains the arguments for the APIHandler, in CPU registers.
+     * @param param Not used.
+     */
+    static void trap(CPUState *state, ulong param);
         
-        /** 
-         * i8253 system clock interrupt handler. 
-         * @param state CPU registers on time of interrupt. 
-         * @param param Not used.
-         */
-        static void clocktick(CPUState *state, ulong param);
+    /** 
+     * i8253 system clock interrupt handler. 
+     * @param state CPU registers on time of interrupt. 
+     * @param param Not used.
+     */
+    static void clocktick(CPUState *state, ulong param);
+
+    /** PIT timer instance */
+    IntelPIT m_pit;
+
+    /** APIC instance (used if available) */
+    IntelAPIC m_apic;
+
+    /** PIC instance */
+    IntelPIC m_pic;
+
+    /** Timer interrupt number. */
+    uint m_timerInt;
 };
 
 /**
  * @}
  */
 
-#endif /* __ASSEMBLY__ */
-#endif /* __X86_CPU_H */
+#endif /* __INTEL_KERNEL_H */

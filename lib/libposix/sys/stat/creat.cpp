@@ -15,11 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/IPCMessage.h>
+#include <FreeNOS/API.h>
 #include <FileSystemMessage.h>
 #include <FileType.h>
 #include <FileMode.h>
-#include <ProcessID.h>
 #include "Runtime.h"
 #include <errno.h>
 #include "sys/stat.h"
@@ -31,14 +30,15 @@ int creat(const char *path, mode_t mode)
 
     /* Fill in the message. */
     msg.action   = CreateFile;
-    msg.buffer   = (char *) path;
+    msg.path     = (char *) path;
     msg.filetype = RegularFile;
     msg.mode     = (FileModes) (mode & FILEMODE_MASK);
+    msg.type     = IPCType;
 
     /* Ask FileSystem to create the file for us. */
     if (mnt)
     {
-	IPCMessage(mnt, SendReceive, &msg, sizeof(msg));
+	IPCMessage(mnt, API::SendReceive, &msg, sizeof(msg));
 
 	/* Set errno. */
 	errno = msg.result;

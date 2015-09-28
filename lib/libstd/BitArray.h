@@ -33,6 +33,16 @@ class BitArray
   public:
 
     /**
+     * Result codes.
+     */
+    enum Result
+    {
+        Success,
+        InvalidArgument,
+        OutOfMemory
+    };
+
+    /**
      * Class constructor.
      *
      * @param bits Number of bits.
@@ -77,11 +87,14 @@ class BitArray
 
     /**
      * Sets the next unset bit(s).
+     *
+     * @param bit Start bit number on success.
      * @param count Number of consequetive bits required.
      * @param offset Start bit number to start searching at inside the BitArray.
-     * @return Start bit number on success and -1 otherwise.
+     * @param boundary First bit number must be on the given alignment boundary.
+     * @return Result code.
      */
-    Error setNext(Size count = 1, Size offset = 0);
+    Result setNext(Size *bit, Size count = 1, Size offset = 0, Size boundary = 1);
 
     /**
      * Sets the given bit to zero.

@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <PrivExecLog.h>
-#include <API/VMCopy.h>
+#include <FreeNOS/API.h>
 #include "LinnDirectory.h"
 #include "LinnFile.h"
 
@@ -24,8 +23,6 @@ LinnDirectory::LinnDirectory(LinnFileSystem *f,
 			     LinnInode *i)
     : fs(f), inode(i)
 {
-    DEBUG("");
-
     size   = inode->size;
     access = inode->mode;
 }
@@ -89,17 +86,11 @@ File * LinnDirectory::lookup(const char *name)
     
     /* Try to find the given LinnDirectoryEntry. */
     if (!getLinnDirectoryEntry(&entry, name))
-    {
-        DEBUG("LinnDirectoryEntry not found: " << name);
 	return ZERO;
-    }
+
     /* Then retrieve it's LinnInode. */
     if (!(inode = fs->getInode(entry.inode)))
-    {
-        DEBUG("LinnInode not found: " << name);
-	return ZERO;
-    }
-    DEBUG("found: " << name);
+        return ZERO;
 
     /* Create the appropriate in-memory file. */
     switch ((FileType)inode->type)

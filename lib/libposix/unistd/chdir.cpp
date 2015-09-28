@@ -15,21 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/IPCMessage.h>
 #include <String.h>
 #include <List.h>
 #include <FileSystemPath.h>
-#include <ProcessMessage.h>
+#include <CoreMessage.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include "Runtime.h"
 
 int chdir(const char *filepath)
 {
-    ProcessMessage msg;
-    FileSystemPath path;
     String *last = ZERO;
     List<String *> lst;
-    char cwd[PATHLEN], buf[PATHLEN];
+    char cwd[PATHLEN], buf[PATHLEN], *path = ZERO;
+    FileSystemPath fspath;
     struct stat st;
 
     /* First stat the file. */
@@ -50,11 +49,11 @@ int chdir(const char *filepath)
     if (filepath[0] != '/')
     {
         snprintf(buf, sizeof(buf), "%s/%s", cwd, filepath);
-        path.parse(buf);
+        fspath.parse(buf);
         memset(buf, 0, sizeof(buf));
     
         /* Process '..' */
-        for (ListIterator<String *> i(path.split()); i.hasCurrent(); i++)
+        for (ListIterator<String *> i(fspath.split()); i.hasCurrent(); i++)
         {
             if ((**i.current())[0] != '.')
             {
@@ -72,22 +71,19 @@ int chdir(const char *filepath)
             strcat(buf, "/");
             strcat(buf, **i.current());
         }
-        msg.path = buf;
+        path = buf;
     }
     else
-        msg.path = (char *) filepath;
+        path = (char *) filepath;
     
     /* Fall back to slash? */
-    if (!msg.path[0])
+    if (!path[0])
     {
         strcpy(buf, "/");
-        msg.path = buf;
+        path = buf;
     }
-    /* Fill the message. */
-    msg.action = SetCurrentDirectory;
-    
-    /* Ask the process server. */
-    IPCMessage(PROCSRV_PID, SendReceive, &msg, sizeof(msg));
+    // Set current directory
+    (*getCurrentDirectory()) = path;
 
     /* Done. */
     errno = ZERO;

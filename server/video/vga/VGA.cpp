@@ -15,10 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/ProcessCtl.h>
-#include <Error.h>
+#include <FreeNOS/API.h>
+#include <FreeNOS/System.h>
 #include <Types.h>
-#include <MemoryMessage.h>
+#include <errno.h>
 #include "VGA.h"
 
 VGA::VGA(Size w, Size h) : width(w), height(h)
@@ -27,34 +27,31 @@ VGA::VGA(Size w, Size h) : width(w), height(h)
 
 Error VGA::initialize()
 {
-    MemoryMessage mem;
+    Memory::Range range;
 
-    /* Request VGA memory. */
-    mem.action    = CreatePrivate;
-    mem.bytes     = PAGESIZE;
-    mem.virtualAddress  = ZERO;
-    mem.physicalAddress = VGA_PADDR;
-    mem.access    = Memory::Present | Memory::User | Memory::Readable | Memory::Writable | Memory::Pinned;
-    mem.ipc(MEMSRV_PID, SendReceive, sizeof(mem));
+    // Request VGA memory
+    range.size   = PAGESIZE;
+    range.access = Memory::User     |
+                   Memory::Readable |
+                   Memory::Writable;
+    range.virt   = ZERO;
+    range.phys   = VGA_PADDR;
+    VMCtl(SELF, Map, &range);
 
-    /* Point to the VGA mapping. */
-    vga = (u16 *) mem.virtualAddress;
+    // Point to the VGA mapping
+    vga = (u16 *) range.virt;
 
-    /* Clear screen. */
+    // Clear screen
     for (uint i = 0; i < width * height; i++)
-    {                                                  
+    {
         vga[i] = VGA_CHAR(' ', LIGHTGREY, BLACK);
     }
 
-    /* Request CRT I/O ports. */
-    ProcessCtl(SELF, AllowIO, VGA_IOADDR);
-    ProcessCtl(SELF, AllowIO, VGA_IODATA);
-    
-    /* Disable hardware cursor. */
+    // Disable hardware cursor
     WriteByte(VGA_IOADDR, 0x0a);
     WriteByte(VGA_IODATA, 1 << 5);
-    
-    /* Successfull. */
+
+    // Successfull
     return ESUCCESS;
 }
 
@@ -62,7 +59,7 @@ Error VGA::read(s8 *buffer, Size size, Size offset)
 {
     if (offset + size > width * height * sizeof(u16))
     {
-	return EFAULT;
+        return EFAULT;
     }
     memcpy(buffer, vga + (offset / sizeof(u16)), size);
     return size;
@@ -72,7 +69,7 @@ Error VGA::write(s8 *buffer, Size size, Size offset)
 {
     if (offset + size > width * height * sizeof(u16))
     {
-	return EFAULT;
+        return EFAULT;
     }
     memcpy(vga + (offset / sizeof(u16)), buffer, size);    
     return size;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,13 +17,11 @@
 
 #ifndef __KERNEL_PROCESS_H
 #define __KERNEL_PROCESS_H
-#ifndef __ASSEMBLER__
 
 #include <Types.h>
 #include <Macros.h>
-
-#ifdef CPP
 #include <List.h>
+#include <MemoryMap.h>
 
 /** 
  * @defgroup kernel kernel (generic)
@@ -31,8 +29,18 @@
  */
 
 /** @see IPCMessage.h. */
-class UserMessage;
-class ProcessScheduler;
+struct Message;
+class MemoryContext;
+
+/** Virtual memory address of the array of arguments for new processes. */
+#define ARGV_ADDR  0x9ffff000
+
+/** Maximum size of each argument. */
+// TODO: ARGV_ADDR fixed address here is wrong. Put it in Arch::Memory::range(). Or perhaps put it on the stack?
+#define ARGV_SIZE  128
+
+/** Number of arguments at maximum. */
+#define ARGV_COUNT (PAGESIZE / ARGV_SIZE)
 
 /**
  * Represents a process which may run on the host.
@@ -41,19 +49,30 @@ class Process
 {
   public:
 
+    enum Result
+    {
+        Success,
+        MemoryMapError,
+        OutOfMemory
+    };
+
     enum State
     {
         Running,
         Ready,
         Stopped,
-        Sleeping
+        Sleeping,
+        Waiting
     };    
     
     /**
      * Constructor function.
+     *
+     * @param id Process Identifier
      * @param entry Initial program counter value.
+     * @param privileged If true, the process has unlimited access to hardware.
      */
-    Process(ProcessID id, Address entry);
+    Process(ProcessID id, Address entry, bool privileged, const MemoryMap &map);
     
     /**
      * Destructor function.
@@ -65,12 +84,57 @@ class Process
      * @return Process Identification number.
      */
     ProcessID getID() const;
-        
+
+    /**
+     * Retrieve our parent ID.
+     * @return Process ID of our parent.
+     */
+    ProcessID getParent() const;
+
+    /**
+     * Get Wait ID.
+     */
+    ProcessID getWait() const;
+
     /**
      * Retrieves the current state.
      * @return Current status of the Process.
      */
     State getState() const;
+
+    /*
+     * Get the address of our page directory.
+     * @return Page directory address.
+     */
+    Address getPageDirectory() const;
+
+    /**
+     * Get the address of the user stack.
+     *
+     * @return User stack address.
+     */
+    Address getUserStack() const;
+
+    /**
+     * Get the address of the kernel stack.
+     *
+     * @return Kernel stack address.
+     */
+    Address getKernelStack() const;
+
+    /**
+     * Get MMU memory context.
+     *
+     * @return MemoryContext pointer.
+     */
+    MemoryContext * getMemoryContext();
+
+    /**
+     * Get privilege.
+     *
+     * @return Privilege of the Process.
+     */
+    bool isPrivileged() const;
 
     /**
      * Puts the Process in a new state.
@@ -79,10 +143,41 @@ class Process
     void setState(State st);
 
     /**
+     * Set parent process ID.
+     */
+    void setParent(ProcessID id);
+
+    /**
+     * Set Wait ID.
+     */
+    void setWait(ProcessID id);
+
+    /**
+     * Set page directory address.
+     *
+     * @param addr New page directory address.
+     */
+    void setPageDirectory(Address addr);
+
+    /**
+     * Sets the address of the user stack.
+     *
+     * @param addr New stack address.
+     */
+    void setUserStack(Address addr);
+
+    /**
+     * Set the kernel stack address.
+     *
+     * @param addr New kernel stack address.
+     */
+    void setKernelStack(Address addr);
+
+    /**
      * Retrieve the list of Messages for this Process.
      * @return Pointer to the message queue.
      */
-    List<UserMessage *> * getMessages();
+    List<Message *> * getMessages();
 
     /**
      * Compare two processes.
@@ -92,26 +187,66 @@ class Process
     bool operator == (Process *proc);
 
     /**
-     * Allow the Process to run on the CPU.
+     * Initialize the Process.
+     *
+     * Allocates various (architecture specific) resources,
+     * creates MMU context and stacks.
+     *
+     * @return Result code
      */
-    virtual void execute() = 0;
+    virtual Result initialize() = 0;
 
-  private:
+    /**
+     * Allow the Process to run on the CPU.
+     *
+     * @param previous The previous Process which ran on the CPU. ZERO if none.
+     */
+    virtual void execute(Process *previous) = 0;
+
+  protected:
 
     /** Process Identifier */
     const ProcessID m_id;
 
+    /** Parent process */
+    ProcessID m_parent;
+
     /** Current process status. */
     State m_state;
 
+    /** Waits for exit of this Process. */
+    ProcessID m_waitId;
+
+    /** Privilege level */
+    bool m_privileged;
+
+    /** Entry point of the program */
+    Address m_entry;
+
+    /** Virtual memory layout */
+    MemoryMap m_map;
+
+    /** MMU memory context */
+    MemoryContext *m_memoryContext;
+
     /** Incoming messages. */
-    List<UserMessage *> m_messages;
+    List<Message *> m_messages;
+
+    /** Page directory. */
+    Address m_pageDirectory;
+
+    /** User stack address. */
+    Address m_userStack;
+
+    /** Current kernel stack address (changes during execution). */
+    Address m_kernelStack;
+
+    /** Base kernel stack (fixed) */
+    Address m_kernelStackBase;
 };
 
 /**
  * @}
  */
 
-#endif /* CPP */
-#endif /* __ASSEMBLER__ */
 #endif /* __KERNEL_PROCESS_H */

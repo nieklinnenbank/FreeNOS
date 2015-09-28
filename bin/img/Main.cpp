@@ -15,26 +15,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/BootImage.h>
-#include <FreeNOS/System/Constant.h>
+#include <FreeNOS/System.h>
 #include <FreeNOS/Config.h>
 #include <Vector.h>
 #include <ExecutableFormat.h>
+#include <BootImage.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/stat.h>
 #include "BootEntry.h"
-#include "Main.h"
 
-Size readBootEntries(char *prog, char *file,
+Size readBootSymbols(char *prog, char *file,
                      Vector<BootEntry *> *entries)
 {
     char line[128];
-    int num = 0;
+    Size num = MAX_REGIONS;
     Size totalBytes = 0, totalEntries = 0;
     BootEntry *entry;
     FILE *fp;
+    ExecutableFormat *format;
     
     /* Open configuration file. */
     if ((fp = fopen(file, "r")) == NULL)
@@ -51,25 +52,61 @@ Size readBootEntries(char *prog, char *file,
 
         /* Allocate new boot entry. */
         entry = new BootEntry;
-    
-        /* Attempt to parse the executable headers. */
-        if (!(entry->format = ExecutableFormat::find(strdup(line))))
+        strncpy(entry->symbol.name, line, BOOTIMAGE_NAMELEN);
+
+        // Find the file
+        struct stat st;
+        if (stat(line, &st) == -1)
         {
-            fprintf(stderr, "%s: failed to read `%s': %s\n",
+            fprintf(stderr, "%s: failed to stat `%s': %s\n",
                     prog, line, strerror(errno));
             exit(EXIT_FAILURE);
         }
-        /* Extract memory regions. */
-        else if ((num = entry->format->regions(entry->regions, MAX_REGIONS)) <= 0)
+        // Allocate buffer
+        u8 *buffer = new u8[st.st_size];
+
+        // Read the file
+        FILE *entry_fd = fopen(line, "r");
+        if (!entry_fd)
         {
-            fprintf(stderr, "%s: failed to extract memory regions from `%s': %s\n",
-                        prog, line, strerror(errno));
+            fprintf(stderr, "%s: failed to open `%s': %s\n",
+                    prog, line, strerror(errno));
             exit(EXIT_FAILURE);
         }
-        else
-            entry->numRegions = num;
+        if (fread(buffer, st.st_size, 1, entry_fd) != 1)
+        {
+            fprintf(stderr, "%s: failed to fread `%s': %s\n",
+                    prog, line, strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+        fclose(entry_fd);
 
-        /* Insert into Array. */
+        // Try to parse as BootProgram using libexec.
+        if (ExecutableFormat::find(buffer, st.st_size, &format) == ExecutableFormat::Success)
+        {
+            // Extract memory regions
+            if (format->regions(entry->regions, &num) != ExecutableFormat::Success || num <= 0)
+            {
+                fprintf(stderr, "%s: failed to extract memory regions from `%s': %s\n",
+                            prog, line, strerror(errno));
+                exit(EXIT_FAILURE);
+            }
+            entry->numRegions   = num;
+            entry->symbol.type  = BootProgram;
+            format->entry((Address *)&entry->symbol.entry);
+        }
+        // BootData
+        else
+        {
+            // Fill BootEntry
+            entry->symbol.type = BootData;
+            entry->numRegions  = 1;
+            entry->regions[0].virt = 0;
+            entry->regions[0].access = Memory::User | Memory::Readable | Memory::Writable;
+            entry->regions[0].size = st.st_size;
+            entry->regions[0].data = buffer;
+        }
+        // Insert into Array
         entries->insert(entry);
         totalEntries++;
         
@@ -77,7 +114,7 @@ Size readBootEntries(char *prog, char *file,
         for (Size i = 0; i < entry->numRegions; i++)
         {
             printf("%s[%u]: vaddr=%x size=%u\n",
-                    line, i, (uint) entry->regions[i].virtualAddress,
+                    line, i, (uint) entry->regions[i].virt,
                     entry->regions[i].size);
             totalBytes += entry->regions[i].size;
         }
@@ -89,13 +126,12 @@ Size readBootEntries(char *prog, char *file,
 
 int main(int argc, char **argv)
 {
-    Vector<BootEntry *> entries(128);
+    Vector<BootEntry *> input;
     BootImage image;
-    BootVariable variables[12];
-    BootProgram *programs;
+    BootSymbol *symbols;
     BootSegment *segments;
     FILE *fp;
-    Size numEntries, numSegments = 0, dataOffset = 0;
+    Size numSegments = 0, dataOffset = 0;
     
     /* Verify command-line arguments. */
     if (argc < 3)
@@ -104,53 +140,37 @@ int main(int argc, char **argv)
                 argv[0]);
         return EXIT_FAILURE;
     }
-    /* Read executables. */
-    numEntries = readBootEntries(argv[0], argv[1], &entries);
+    // Read boot symbols
+    readBootSymbols(argv[0], argv[1], &input);
 
     /* Allocate tables. */
-    programs = new BootProgram[numEntries];
+    symbols = new BootSymbol[ input.count() ];
 
     /* Clear first. */
     memset(&image, 0, sizeof(image));
-    memset(&variables, 0, sizeof(variables));
-    memset(programs, 0, sizeof(BootProgram) * numEntries);
+    memset(symbols, 0, sizeof(BootSymbol) * input.count());
 
     /* Fill in the boot image header. */
     image.magic[0]       = BOOTIMAGE_MAGIC0;
     image.magic[1]       = BOOTIMAGE_MAGIC1;
     image.layoutRevision = BOOTIMAGE_REVISION;
-    image.variablesTableOffset = sizeof(BootImage);
-    image.variablesTableCount  = 12;
-    image.programsTableOffset  = image.variablesTableOffset + 
-                                 (image.variablesTableCount  * sizeof(BootVariable));
-    image.programsTableCount   = numEntries;
-    image.segmentsTableOffset  = image.programsTableOffset  +
-                                 (image.programsTableCount   * sizeof(BootProgram));
+    image.symbolTableOffset   = sizeof(BootImage);
+    image.symbolTableCount    = input.count();
+    image.segmentsTableOffset  = image.symbolTableOffset  +
+                                (image.symbolTableCount   * sizeof(BootSymbol));
 
-    /* Fill in the boot variables. */
-    VARIABLE(variables[0],  RELEASE);
-    VARIABLE(variables[1],  COMPILER);
-    VARIABLE(variables[2],  DATETIME);
-    VARIABLE(variables[3],  ARCH);
-    VARIABLE(variables[4],  BUILDUSER);
-    VARIABLE(variables[5],  BUILDHOST);
-    VARIABLE(variables[6],  BUILDOS);
-    VARIABLE(variables[7],  BUILDARCH);
-    VARIABLE(variables[8],  BUILDPY);
-    VARIABLE(variables[9],  BUILDER);
-    VARIABLE(variables[10], BUILDPATH);
-    VARIABLE(variables[11], BUILDURL);
-
-    /* Fill in the boot programs. */
-    for (Size i = 0; i < numEntries; i++)
+    // Fill in the boot symbols
+    for (Size i = 0; i < input.count(); i++)
     {
-        strncpy(programs[i].path, entries[i]->format->getPath(), BOOTIMAGE_PATH);
-        programs[i].entry = (u32) entries[i]->format->entry();
-        programs[i].segmentsOffset = numSegments;
-        programs[i].segmentsCount  = entries[i]->numRegions;
-        numSegments += entries[i]->numRegions;
+        strncpy(symbols[i].name, input[i]->symbol.name, BOOTIMAGE_NAMELEN);
+        symbols[i].type  = input[i]->symbol.type;
+        symbols[i].entry = input[i]->symbol.entry;
+        symbols[i].segmentsOffset = numSegments;
+        symbols[i].segmentsCount  = input[i]->numRegions;
+        symbols[i].segmentsTotalSize = 0;
+        numSegments += input[i]->numRegions;
     }
-    /* Update BootImage. */
+    // Update BootImage
     image.segmentsTableCount = numSegments;
     
     /* Now we allocate and clear the segments table. */
@@ -162,17 +182,21 @@ int main(int argc, char **argv)
                   image.segmentsTableCount  * sizeof(BootSegment);
     dataOffset += PAGESIZE - (dataOffset % PAGESIZE);
     
-    /* Fill the segments table by looping programs. */
-    for (Size i = 0; i < numEntries; i++)
+    /* Fill the segments table by looping symbols */
+    for (Size i = 0; i < input.count(); i++)
     {
-        /* Loop this program's segments. */
-        for (Size j = 0; j < entries[i]->numRegions; j++)
+        // TODO: warning this code assumes only one segment per BootSymbol!
+        /* Loop the symbol segments. */
+        for (Size j = 0; j < input[i]->numRegions; j++)
         {
             /* Fill in the segment. */
-            segments[i].virtualAddress = entries[i]->regions[j].virtualAddress;
-            segments[i].size           = entries[i]->regions[j].size;
+            segments[i].virtualAddress = input[i]->regions[j].virt;
+            segments[i].size           = input[i]->regions[j].size;
             segments[i].offset         = dataOffset;
             
+            // Increment total segments size
+            symbols[i].segmentsTotalSize += segments[i].size;
+
             /* Increment data pointer. Align on memory page boundary. */
             dataOffset += segments[i].size;
             dataOffset += PAGESIZE - (dataOffset % PAGESIZE);
@@ -186,23 +210,22 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
     /* Write the final boot image headers. */
-    if (fwrite(&image,     sizeof(image),     1, fp) <= 0 ||
-        fwrite(&variables, sizeof(variables), 1, fp) <= 0 ||
-        fwrite( programs,  sizeof(BootProgram) * numEntries,  1, fp) <= 0 ||
-        fwrite( segments,  sizeof(BootSegment) * numSegments, 1, fp) <= 0)
+    if (fwrite(&image,    sizeof(image), 1, fp) <= 0 ||
+        fwrite( symbols,  sizeof(BootSymbol)  * input.count(),  1, fp) <= 0 ||
+        fwrite( segments, sizeof(BootSegment) * numSegments, 1, fp) <= 0)
     {
         fprintf(stderr, "%s: failed to write BootImage headers to `%s': %s\n",
                 argv[0], argv[2], strerror(errno));
         return EXIT_FAILURE;
     }
     /* Write the contents of the BootSegments. */
-    for (Size i = 0; i < numEntries; i++)
+    for (Size i = 0; i < input.count(); i++)
     {
-        /* Loop regions/segments per BootProgram entry. */
-        for (Size j = 0; j < entries[i]->numRegions; j++)
+        /* Loop regions/segments per boot symbol entry. */
+        for (Size j = 0; j < input[i]->numRegions; j++)
         {
             /* Adjust file pointer. */
-            if (fseek(fp, segments[programs[i].segmentsOffset].offset,
+            if (fseek(fp, segments[symbols[i].segmentsOffset].offset,
                       SEEK_SET) == -1)
             {
                 fprintf(stderr, "%s: failed to seek to BootSegment contents in `%s': %s\n",
@@ -210,8 +233,8 @@ int main(int argc, char **argv)
                 return EXIT_FAILURE;
             }
             /* Write segment contents. */
-            if (fwrite(entries[i]->regions[j].data,
-                       entries[i]->regions[j].size, 1, fp) <= 0)
+            if (fwrite(input[i]->regions[j].data,
+                       input[i]->regions[j].size, 1, fp) <= 0)
             {
                 fprintf(stderr, "%s: failed to write BootSegment contents to `%s': %s\n",
                         argv[0], argv[2], strerror(errno));

@@ -125,11 +125,6 @@ class Time : public Device
          *       take a look over there how they do it.
          */
         unsigned char readCMOS(unsigned char addr);
-        
-        /**
-         * @brief Requests that the cpu does a NOP instruction.
-         */
-        static inline void cpuRelax();
 
 	/**
 	 * @brief Convert from binary coded decimal to binary form.

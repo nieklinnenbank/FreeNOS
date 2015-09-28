@@ -33,49 +33,40 @@
  */
 class ELF : public ExecutableFormat
 {
-    public:
+  public:
 
-	/**
-	 * Class constructor.
-	 * @param path Path on filesystem to the ELF executable.
-	 * @param fd File descriptor of the ELF executable.
-	 * @param header ELF header read from the file.
-	 */
-	ELF(const char *path, int fd, ELFHeader *header);
+    /**
+     * Class constructor.
+     */
+    ELF(u8 *image, Size size);
 
-	/**
-	 * Class destructor.
-	 */
-	~ELF();
-    
-	/**
-	 * Reads out segments from the ELF program table.
-	 * @param regions Memory regions to fill.
-	 * @param max Maximum number of memory regions.
-	 * @return Number of memory regions or an error code on error.
-	 */
-	int regions(MemoryRegion *regions, Size max);
+    /**
+     * Class destructor.
+     */
+    virtual ~ELF();
 
-	/**
-	 * Lookup the program entry point.
-	 * @return Program entry point.
-	 */
-	Address entry();
+    /**
+     * Reads out segments from the ELF program table.
+     *
+     * @param regions Memory regions to fill.
+     * @param count Maximum number of memory regions on input.
+     *              Actual number of memory regions on output.
+     * @return Result code.
+     */
+    virtual Result regions(Region *regions, Size *count);
 
-	/**
-	 * Confirms if we understand the given format.
-	 * @param path Path to the file to read.
-	 * @return true on success and false on failure.
-	 */
-	static ExecutableFormat * detect(const char *path);
+    /**
+     * Lookup the program entry point.
+     *
+     * @param entry Program entry point on output.
+     * @return Result code.
+     */
+    virtual Result entry(Address *entry);
 
-    private:
-
-	/** File descriptor of the ELF executable. */
-	int fd;
-	
-	/** ELF header. */
-	ELFHeader header;
+    /**
+     * Read ELF header from memory.
+     */
+    static Result detect(u8 *program, Size size, ExecutableFormat **fmt);
 };
 
 /**

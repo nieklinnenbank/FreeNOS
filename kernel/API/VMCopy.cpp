@@ -15,41 +15,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#warning Do not depend on Intel specific flags for generic APIs
-
-#include "VMCopy.h"
-#include <FreeNOS/Process.h>
-#include <FreeNOS/API.h>
-#include <FreeNOS/Kernel.h>
-#include <FreeNOS/System/Constant.h>
-#include <Error.h>
 #include <MemoryBlock.h>
+#include <SplitAllocator.h>
+#include "VMCopy.h"
 
-Error VMCopyHandler(ProcessID procID, Operation how, Address ours,
-                                    Address theirs, Size sz)
+Error VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
+                    Address theirs, Size sz)
 {
     ProcessManager *procs = Kernel::instance->getProcessManager();
-    Memory *memory = Kernel::instance->getMemory();
     Process *proc;
-    Address paddr, tmpAddr;
+    Address paddr, vaddr;
     Size bytes = 0, pageOff, total = 0;
-    
-    /* Find the corresponding Process. */
-    if (!(proc = procs->get(procID)))
-    {
-        return ESRCH;
-    }
-    /* Verify memory addresses. */
-    if (!memory->access(procs->current(), ours, sz) ||
-        !memory->access(proc, theirs, sz))
-    {
-        return EFAULT;
-    }
-    /* Keep on going until all memory is processed. */
+
+    // Find the corresponding Process
+    if (procID == SELF)
+        proc = procs->current();
+    else if (!(proc = procs->get(procID)))
+        return API::NotFound;
+
+    // TODO: Verify memory addresses
+    MemoryContext *local  = procs->current()->getMemoryContext();
+    MemoryContext *remote = proc->getMemoryContext();
+
+    // Keep on going until all memory is processed
     while (total < sz)
     {
         /* Update variables. */
-        paddr   = memory->lookup(proc, theirs) & PAGEMASK;
+        if (how == API::ReadPhys)
+            paddr = theirs & PAGEMASK;
+        else if (remote->lookup(theirs, &paddr) != MemoryContext::Success)
+            return API::AccessViolation;
+
         pageOff = theirs & ~PAGEMASK;
         bytes   = (PAGESIZE - pageOff) < (sz - total) ?
                   (PAGESIZE - pageOff) : (sz - total);
@@ -57,29 +53,34 @@ Error VMCopyHandler(ProcessID procID, Operation how, Address ours,
         /* Valid address? */
         if (!paddr) break;
                 
-        /* Map the physical page. */
-        tmpAddr = memory->map(paddr);
+        // Map their address into our local address space
+        if (local->findFree(PAGESIZE, MemoryMap::KernelPrivate, &vaddr) != MemoryContext::Success)
+            return API::RangeError;
+
+        local->map(vaddr, paddr, Memory::Readable | Memory::Writable);
 
         /* Process the action appropriately. */
         switch (how)
         {
-            case Read:
-                MemoryBlock::copy((void *)ours, (void *)(tmpAddr + pageOff), bytes);
+            case API::Read:
+            case API::ReadPhys:
+                MemoryBlock::copy((void *)ours, (void *)(vaddr + pageOff), bytes);
                 break;
                         
-            case Write:
-                MemoryBlock::copy((void *)(tmpAddr + pageOff), (void *)ours, bytes);
+            case API::Write:
+                MemoryBlock::copy((void *)(vaddr + pageOff), (void *)ours, bytes);
                 break;
             
             default:
                 ;
         }       
-        /* Remove mapping. */
-        memory->map((Address) 0, (Address) tmpAddr, Memory::None);
+        // Unmap
+        local->unmap(vaddr);
+
+        // Update counters
         ours   += bytes;
         theirs += bytes;
         total  += bytes;
     }
-    /* Success. */
     return total;
 }

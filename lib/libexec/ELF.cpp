@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System/Constant.h>
+#include <FreeNOS/System.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
@@ -24,110 +24,84 @@
 #include <sys/types.h>
 #include "ELF.h"
 
-ELF::ELF(const char *p, int f, ELFHeader *h)
-    : ExecutableFormat(p), fd(f)
+ELF::ELF(u8 *image, Size size)
+    : ExecutableFormat(image, size)
 {
-    memcpy(&header, h, sizeof(header));
 }
 
 ELF::~ELF()
 {
-    close(fd);
 }
 
-ExecutableFormat * ELF::detect(const char *path)
+ELF::Result ELF::detect(u8 *program, Size size, ExecutableFormat **fmt)
 {
-    ELFHeader header;
-    int fd;
+    ELFHeader *header = (ELFHeader *) program;
 
-    /* Open target file. */
-    if ((fd = open(path, ZERO)) < 0)
-    {
-	return ZERO;
-    }
-    /* Read ELF header. */
-    if (read(fd, (void *) &header, sizeof(header)) != sizeof(header))
-    {
-	close(fd);
-	return ZERO;
-    }    
     /* Verify ELF magic. */    
-    if (header.ident[ELF_INDEX_MAGIC0] == ELF_MAGIC0 &&
-	header.ident[ELF_INDEX_MAGIC1] == ELF_MAGIC1 &&
-	header.ident[ELF_INDEX_MAGIC2] == ELF_MAGIC2 &&
-	header.ident[ELF_INDEX_MAGIC3] == ELF_MAGIC3)
+    if (header->ident[ELF_INDEX_MAGIC0] == ELF_MAGIC0 &&
+        header->ident[ELF_INDEX_MAGIC1] == ELF_MAGIC1 &&
+        header->ident[ELF_INDEX_MAGIC2] == ELF_MAGIC2 &&
+        header->ident[ELF_INDEX_MAGIC3] == ELF_MAGIC3)
     {
-	/* Only accept current, 32-bit ELF executable programs. */
-	if (header.ident[ELF_INDEX_CLASS] == ELF_CLASS_32 &&
-	    header.version == ELF_VERSION_CURRENT &&
-	    header.type    == ELF_TYPE_EXEC)
-	{
-	    return new ELF(path, fd, &header);
-	}
+        /* Only accept current, 32-bit ELF executable programs. */
+        if (header->ident[ELF_INDEX_CLASS] == ELF_CLASS_32 &&
+            header->version == ELF_VERSION_CURRENT &&
+            header->type    == ELF_TYPE_EXEC)
+        {
+            (*fmt) = new ELF(program, size);
+            return Success;
+        }
     }
-    close(fd);
-    return ZERO;
+    return InvalidFormat;
 }
 
-int ELF::regions(MemoryRegion *regions, Size max)
+ELF::Result ELF::regions(ELF::Region *regions, Size *count)
 {
-    ELFSegment segments[16];
-    Size count = 0;
+    ELFSegment *segments;
+    ELFHeader *header = (ELFHeader *) m_image;
+    Size max = *count, num = header->programHeaderEntryCount;
     
     /* Must be of the same sizes. */
-    if (!(header.programHeaderEntrySize == sizeof(ELFSegment) &&
-          header.programHeaderEntryCount < 16))
+    if (!(header->programHeaderEntrySize == sizeof(ELFSegment) &&
+          header->programHeaderEntryCount < 16))
     {
-	errno = ENOEXEC;
-	return -1;
+        return InvalidFormat;
     }
-    /* Point to the program header. */
-    if (lseek(fd, header.programHeaderOffset, SEEK_SET) == -1)
-    {
-	return -1;
-    }
-    /* Read all segments. */
-    if (read(fd, &segments,
-	     sizeof(ELFSegment) * header.programHeaderEntryCount) < 0)
-    {
-	return -1;
-    }
-    /* Fill in the memory regions. */
-    for (Size i = 0; i < max && i < header.programHeaderEntryCount; i++)
-    {
-	/* We are only interested in loadable segments. */
-	if (segments[i].type != ELF_SEGMENT_LOAD)
-	{
-	    continue;
-	}
-	regions[i].virtualAddress = segments[i].virtualAddress;
-	regions[i].size   = segments[i].memorySize;
-	regions[i].access = Memory::Present | Memory::User | Memory::Readable | Memory::Writable;
-	regions[i].data   = new u8[segments[i].memorySize];
-	
-	/* Read segment contents from file. */
-	if (lseek(fd, segments[i].offset, SEEK_SET) == -1 ||
-	    read (fd, regions[i].data, segments[i].fileSize) < 0)
-	{
-	    errno = ENOEXEC;
-	    return -1;
-	}
+    /* Point to the program segments. */
+    segments = (ELFSegment *) (m_image + header->programHeaderOffset);
+    (*count) = 0;
 
-	/* Nulify remaining space. */
-	if (segments[i].memorySize > segments[i].fileSize)
-	{
-	    memset(regions[i].data + segments[i].fileSize, 0,
-		   segments[i].memorySize - segments[i].fileSize);
-	}
-	/* Increment counter. */
-	count++;
+    /* Fill in the memory regions. */
+    for (Size i = 0; i < max && i < num; i++)
+    {
+        /* We are only interested in loadable segments. */
+        if (segments[i].type != ELF_SEGMENT_LOAD)
+            continue;
+
+        regions[i].virt   = segments[i].virtualAddress;
+        regions[i].size   = segments[i].memorySize;
+        regions[i].access = Memory::User | Memory::Readable | Memory::Writable;
+        regions[i].data   = new u8[segments[i].memorySize];
+    
+        /* Read segment contents from file. */
+        MemoryBlock::copy(regions[i].data, m_image + segments[i].offset,
+                          segments[i].fileSize);
+
+        /* Nulify remaining space. */
+        if (segments[i].memorySize > segments[i].fileSize)
+        {
+            memset(regions[i].data + segments[i].fileSize, 0,
+                   segments[i].memorySize - segments[i].fileSize);
+        }
+        (*count) = (*count) + 1;
     }
     /* All done. */
-    errno = 0;
-    return count;
+    return Success;
 }
 
-Address ELF::entry()
+ELF::Result ELF::entry(Address *entry)
 {
-    return header.entry;
+    ELFHeader *header = (ELFHeader *) m_image;
+    *entry = header->entry;
+    return Success;
 }

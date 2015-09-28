@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,42 +16,80 @@
  */
 
 #include <Log.h>
+#include <ListIterator.h>
+#include <SplitAllocator.h>
+#include <BubbleAllocator.h>
+#include <PoolAllocator.h>
+#include <IntController.h>
+#include <BootImage.h>
+#include <CoreInfo.h>
 #include "Kernel.h"
 #include "Memory.h"
 #include "Process.h"
 #include "ProcessManager.h"
-#include <System/Multiboot.h>
-#include <System/Constant.h>
-#include "BootImage.h"
-#include <UserProcess.h>
-#include <String.h>
+#include "Scheduler.h"
+#include "API.h"
 
-Kernel::Kernel(Memory *memory, ProcessManager *procs)
-    : Singleton<Kernel>(this)
+Kernel::Kernel(CoreInfo *info)
+    : Singleton<Kernel>(this), m_interrupts(256)
 {
-    DEBUG("");
+    // Output log banners
+    if (Log::instance)
+    {
+        Log::instance->append(BANNER);
+        Log::instance->append(COPYRIGHT "\r\n");
+    }
 
-    /* Initialize members */
-    m_memory = memory;
-    m_procs  = procs;
+    // TODO: compute lower & higher memory for this core.
+    Memory::Range highMem;
+    Arch::MemoryMap map;
+    MemoryBlock::set(&highMem, 0, sizeof(highMem));
+    highMem.phys = info->memory.phys + map.range(MemoryMap::KernelData).size;
 
-    /* Register generic API handlers */
-    m_apis.fill(ZERO);
-    m_apis.insert(IPCMessageNumber, (APIHandler *) IPCMessageHandler);
-    m_apis.insert(PrivExecNumber,   (APIHandler *) PrivExecHandler);
-    m_apis.insert(ProcessCtlNumber, (APIHandler *) ProcessCtlHandler);
-    m_apis.insert(SystemInfoNumber, (APIHandler *) SystemInfoHandler);
-    m_apis.insert(VMCopyNumber,     (APIHandler *) VMCopyHandler);
-    m_apis.insert(VMCtlNumber,      (APIHandler *) VMCtlHandler);
-    m_apis.insert(IOCtlNumber,      (APIHandler *) IOCtlHandler);
+    // Initialize members
+    m_alloc  = new SplitAllocator(info->memory, highMem);
+    m_procs  = new ProcessManager(new Scheduler());
+    m_api    = new API();
+    m_coreInfo   = info;
+    m_intControl = 0;
 
-    /* Load boot image programs */
-    loadBootImage();
+    // Mark kernel memory used (first 4MB in phys memory)
+    for (Size i = 0; i < info->kernel.size; i += PAGESIZE)
+        m_alloc->allocate(info->kernel.phys + i);
+
+    // Mark BootImage memory used
+    for (Size i = 0; i < m_coreInfo->bootImageSize; i += PAGESIZE)
+        m_alloc->allocate(m_coreInfo->bootImageAddress + i);
+
+    // Reserve CoreChannel memory
+    for (Size i = 0; i < m_coreInfo->coreChannelSize; i += PAGESIZE)
+        m_alloc->allocate(m_coreInfo->coreChannelAddress + i);
+
+    // Clear interrupts table
+    m_interrupts.fill(ZERO);
 }
 
-Memory * Kernel::getMemory()
+Error Kernel::heap(Address base, Size size)
 {
-    return m_memory;
+    Allocator *bubble, *pool;
+    Size meta = sizeof(BubbleAllocator) + sizeof(PoolAllocator);
+
+    // Clear the heap first
+    MemoryBlock::set((void *) base, 0, size);
+
+    // Setup the dynamic memory heap
+    bubble = new (base) BubbleAllocator(base + meta, size - meta);
+    pool   = new (base + sizeof(BubbleAllocator)) PoolAllocator();
+    pool->setParent(bubble);
+
+    // Set default allocator
+    Allocator::setDefault(pool);
+    return 0;
+}
+
+SplitAllocator * Kernel::getAllocator()
+{
+    return m_alloc;
 }
 
 ProcessManager * Kernel::getProcessManager()
@@ -59,99 +97,157 @@ ProcessManager * Kernel::getProcessManager()
     return m_procs;
 }
 
-void Kernel::run()
+API * Kernel::getAPI()
 {
-    DEBUG("");
-    m_procs->schedule();
+    return m_api;
 }
 
-Error Kernel::invokeAPI(APINumber number,
-                        ulong arg1, ulong arg2, ulong arg3, ulong arg4, ulong arg5)
+MemoryContext * Kernel::getMemoryContext()
 {
-    APIHandler **handler = (APIHandler **) m_apis.get(number);
-
-    if (handler)
-        return (*handler)(arg1, arg2, arg3, arg4, arg5);
-    else
-        return EINVAL;
+    return m_procs->current()->getMemoryContext();
 }
 
-bool Kernel::loadBootImage()
+CoreInfo * Kernel::getCoreInfo()
 {
-    MultibootModule *mod;
-    BootImage *image;
-    bool found = false;
+    return m_coreInfo;
+}
 
-#warning Do not assume multiboot support for an architecture
-
-    /* Startup boot modules. */
-    for (Size n = 0; n < multibootInfo.modsCount; n++)
+void Kernel::enableIRQ(u32 irq, bool enabled)
+{
+    if (m_intControl)
     {
-        mod = &((MultibootModule *) multibootInfo.modsAddress)[n];
-        String str = (char *) mod->string;
-
-        /* Mark its memory used */
-        for (Address a = mod->modStart; a < mod->modEnd; a += PAGESIZE)
-        {
-            m_memory->allocatePhysicalAddress(a);
-        }
-
-        /* Is this a BootImage? */
-        if (str.match("*.img.gz"))
-        {
-            /* Map the BootImage into our address space. */
-            image = (BootImage *) m_memory->map(mod->modStart);
-                                  m_memory->map(mod->modStart + PAGESIZE);
-
-            found = true;        
-
-            /* Verify this is a correct BootImage. */
-            if (image->magic[0] == BOOTIMAGE_MAGIC0 &&
-                image->magic[1] == BOOTIMAGE_MAGIC1 &&
-                image->layoutRevision == BOOTIMAGE_REVISION)
-            {       
-                /* Loop BootPrograms. */
-                for (Size i = 0; i < image->programsTableCount; i++)
-                {
-                    loadBootProcess(image, mod->modStart, i);
-                }
-            }
-        }
+        if (enabled)
+            m_intControl->enable(irq);
+        else
+            m_intControl->disable(irq);
     }
-    /* Done */
-    return found;
 }
 
-void Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Size index)
+void Kernel::hookIntVector(u32 vec, InterruptHandler h, ulong p)
+{
+    InterruptHook hook(h, p);
+
+    // Insert into interrupts; create List if neccesary
+    if (!m_interrupts[vec])
+    {
+        m_interrupts.insert(vec, new List<InterruptHook *>());
+    }
+    // Just append it. */
+    if (!m_interrupts[vec]->contains(&hook))
+    {
+        m_interrupts[vec]->append(new InterruptHook(h, p));
+    }
+}
+
+void Kernel::executeIntVector(u32 vec, CPUState *state)
+{
+    // Auto-Mask the IRQ. Any interrupt handler or user program
+    // needs to re-enable the IRQ to receive it again. This prevents
+    // interrupt loops in case the kernel cannot clear the IRQ immediately.
+    enableIRQ(vec, false);
+
+    // Fetch the list of interrupt hooks (for this vector)
+    List<InterruptHook *> *lst = m_interrupts[vec];
+
+    // Does at least one handler exist?
+    if (!lst)
+        return;
+
+    // Execute them all
+    for (ListIterator<InterruptHook *> i(lst); i.hasCurrent(); i++)
+    {
+        i.current()->handler(state, i.current()->param);
+    }
+}
+
+Kernel::Result Kernel::loadBootImage()
+{
+    BootImage *image = (BootImage *) (m_alloc->toVirtual(m_coreInfo->bootImageAddress));
+
+    // Verify this is a correct BootImage
+    if (image->magic[0] == BOOTIMAGE_MAGIC0 &&
+        image->magic[1] == BOOTIMAGE_MAGIC1 &&
+        image->layoutRevision == BOOTIMAGE_REVISION)
+    {
+        // Loop BootPrograms
+        for (Size i = 0; i < image->symbolTableCount; i++)
+            loadBootProcess(image, m_coreInfo->bootImageAddress, i);
+
+        return Success;
+    }
+    return InvalidBootImage;
+}
+
+Kernel::Result Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Size index)
 {
     Address imageVAddr = (Address) image, args;
-    BootProgram *program;
+    Size args_size = ARGV_SIZE;
+    BootSymbol *program;
     BootSegment *segment;
     Process *proc;
-    
-    /* Point to the program and segments table. */
-    program = &((BootProgram *) (imageVAddr + image->programsTableOffset))[index];
+    char *vaddr;
+    Arch::MemoryMap map;
+
+    // Point to the program and segments table
+    program = &((BootSymbol *) (imageVAddr + image->symbolTableOffset))[index];
     segment = &((BootSegment *) (imageVAddr + image->segmentsTableOffset))[program->segmentsOffset];
 
-    /* Create process. */
-    proc = m_procs->create(program->entry);
+    // Ignore non-BootProgram entries
+    if (program->type != BootProgram)
+        return InvalidBootImage;
+
+    // Create process
+    proc = m_procs->create(program->entry, map);
+    if (!proc)
+    {
+        FATAL("failed to create boot program: " << program->name);
+        return ProcessError;
+    }
+
     proc->setState(Process::Ready);
-                    
-    /* Loop program segments. */
+
+    // Obtain process memory
+    MemoryContext *mem = proc->getMemoryContext();
+
+    // Map program segment into it's virtual memory
     for (Size i = 0; i < program->segmentsCount; i++)
     {
-        /* Map program segment into it's virtual memory. */
         for (Size j = 0; j < segment[i].size; j += PAGESIZE)
         {
-
-            m_memory->map(proc,
-                          imagePAddr + segment[i].offset + j,
-                          segment[i].virtualAddress + j,
-                          Memory::Present | Memory::User | Memory::Readable | Memory::Writable);
+            mem->map(segment[i].virtualAddress + j,
+                     imagePAddr + segment[i].offset + j,
+                     Memory::User     |
+                     Memory::Readable |
+                     Memory::Writable |
+                     Memory::Executable);
         }
     }
-    /* Map and copy program arguments. */
-    args = m_memory->allocatePhysical(PAGESIZE);
-    m_memory->map(proc, args, ARGV_ADDR, Memory::Present | Memory::User | Memory::Writable);
-    MemoryBlock::copy( (char *) m_memory->map(args), program->path, ARGV_SIZE);
+    
+    // Map program arguments into the process
+    // TODO: move into the high memory???
+    m_alloc->allocateLow(args_size, &args);
+    mem->map(ARGV_ADDR, args, Memory::User | Memory::Readable | Memory::Writable);
+
+    // Copy program arguments
+    vaddr = (char *) m_alloc->toVirtual(args);
+    MemoryBlock::set(vaddr, 0, PAGESIZE);
+    MemoryBlock::copy(vaddr, program->name, ARGV_SIZE);
+
+    // Done
+    NOTICE("loaded: " << program->name);
+    return Success;
+}
+
+int Kernel::run()
+{
+    NOTICE("");
+
+    // Load boot image programs
+    loadBootImage();
+
+    // Start the scheduler
+    m_procs->schedule();
+
+    // Never actually returns.
+    return 0;
 }

@@ -26,7 +26,6 @@
 #include <Device.h>
 #include <Macros.h>
 #include <Types.h>
-#include <Error.h>
 
 /** PS2 Keyboard input port. */
 #define PS2_PORT        0x60

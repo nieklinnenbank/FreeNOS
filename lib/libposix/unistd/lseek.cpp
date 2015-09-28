@@ -15,33 +15,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/IPCMessage.h>
-#include <FileSystemMessage.h>
-#include <ProcessID.h>
 #include "Runtime.h"
-#include <errno.h>
+#include "errno.h"
 #include "unistd.h"
 
 off_t lseek(int fildes, off_t offset, int whence)
 {
-    FileSystemMessage msg;
-    ProcessID mnt = findMount(fildes);
-    
-    /* Ask for the seek. */
-    if (mnt)
+    FileDescriptor *fd = (FileDescriptor *) getFiles()->get(fildes);
+
+    // Do we have this file descriptor?
+    if (!fd)
     {
-	// TODO: use the whence argument.
-	msg.action = SeekFile;
-	msg.fd     = fildes;
-	msg.offset = offset;
-	IPCMessage(mnt, SendReceive, &msg, sizeof(msg));
-	
-	/* Set error number. */
-        errno = msg.result;
+        errno = ENOENT;
+        return -1;
     }
-    else
-	errno = ENOENT;
-    
-    /* Done. */
-    return errno == ESUCCESS ? 0 : (off_t) -1;
+
+    // TODO: use the whence parameter
+    // TODO: check for file size too
+
+    // Update the file pointer
+    fd->position = offset;
+
+    // Done
+    return 0;
 }

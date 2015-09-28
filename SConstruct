@@ -15,6 +15,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import sys
+
+sys.path.insert(1, './support/scons')
+
 from build import *
 from archive import *
 
@@ -35,6 +39,8 @@ VariantDir(target['BUILDROOT'] + '/kernel', '#kernel', duplicate = 0)
 target.TargetInstall('VERSION')
 target.TargetInstall('build.conf', target['etc'])
 target.TargetInstall('build.host.conf', target['etc'])
+target.TargetInstall(target['BUILDROOT'] + '/include/Config.h', target['etc'])
+target.TargetInstall('config/' + target['ARCH'] + '/' + target['SYSTEM'] + '/init.sh', target['etc'])
 
 SConscript(target['BUILDROOT'] + '/lib/SConscript')
 SConscript(target['BUILDROOT'] + '/bin/SConscript')
@@ -57,3 +63,15 @@ SConscript(host['BUILDROOT'] + '/lib/SConscript')
 SConscript(host['BUILDROOT'] + '/bin/SConscript')
 SConscript(host['BUILDROOT'] + '/server/SConscript')
 SConscript(host['BUILDROOT'] + '/test/SConscript')
+
+#
+# Boot Image
+#
+target.BootImage('#${BUILDROOT}/boot.img.gz', '#config/' + target['ARCH'] + '/' + target['SYSTEM'] + '/boot.imgdesc')
+
+#
+# RootFS
+#
+Import('rootfs_files')
+target.LinnImage('#${BUILDROOT}/rootfs.linn', rootfs_files)
+target.Depends('#${BUILDROOT}/rootfs.linn', '#build/host')

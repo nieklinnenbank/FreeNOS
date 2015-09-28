@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,38 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/IPCMessage.h>
-#include <ProcessServer.h>
-#include <FileDescriptor.h>
-#include <ProcessID.h>
-#include "Runtime.h"
-#include <errno.h>
 #include "unistd.h"
 
 pid_t fork(void)
 {
-    ProcessMessage msg;
-    char key[64];
-    
-    /* Fill in the message. */
-    msg.action = CloneProcess;
-    
-    /* Ask the process server. */
-    IPCMessage(PROCSRV_PID, SendReceive, &msg, sizeof(msg));
-    
-    /*
-     * Child must reload file descriptor table.
-     */
-
-    /* Format FileDescriptor key. */
-    snprintf(key, sizeof(key), "%s%u", FILE_DESCRIPTOR_KEY, getpid());
-
-    /* Then reload the FileDescriptor table. */
-    getFiles()->load(key, FILE_DESCRIPTOR_MAX);
-    
-    /* Set errno. */
-    errno = msg.result;
-    
-    /* All done. */
-    return msg.result == ESUCCESS ? (pid_t) msg.number : (pid_t) -1;
+    return -1;
 }

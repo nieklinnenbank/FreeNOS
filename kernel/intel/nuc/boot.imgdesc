@@ -1,6 +1,0 @@
-./server/process/server
-./server/memory/server
-./server/filesystem/tmp/server
-./server/filesystem/linn/server
-./server/idle/server
-./bin/init/init

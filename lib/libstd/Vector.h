@@ -192,6 +192,16 @@ template <class T> class Vector : public Sequence<T>
     }
 
     /**
+     * Get Vector data pointer.
+     *
+     * @return Pointer to Vector data.
+     */
+    virtual const T * vector() const
+    {
+        return m_array;
+    }
+
+    /**
      * Resize the Vector.
      *
      * @param increase Size to add to the Vector.

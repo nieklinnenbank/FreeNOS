@@ -22,7 +22,6 @@
 #include <FileSystemMessage.h>
 #include <FileSystemPath.h>
 #include <Types.h>
-#include <Error.h>
 
 /** 
  * @defgroup tmpfs tmpfs (Temporary Filesystem) 

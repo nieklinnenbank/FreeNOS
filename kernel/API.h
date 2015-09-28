@@ -19,8 +19,8 @@
 #define __KERNEL_API_H
 
 #include <Log.h>
-#include <System/Function.h>
 #include <Types.h>
+#include <Vector.h>
 
 /**
  * @defgroup kernel kernel (generic)
@@ -28,46 +28,89 @@
  */
 
 /**
- * Enumeration of supported generic kernel API functions.
- *
- * Architectures or System implementations can optionally
- * introduce additional specific APIs.
+ * Generic Kernel API implementation.
  */
-typedef enum APINumber
+class API
 {
-    IPCMessageNumber = 1,
-    PrivExecNumber   = 2,
-    ProcessCtlNumber = 3,
-    SystemInfoNumber = 4,        
-    VMCopyNumber     = 5,
-    VMCtlNumber      = 6,
-    IOCtlNumber      = 7
-}
-APINumber;
+  public:
 
-/**
- * Function which handles an kernel API (system call) request.
- * @return Status code of the APIHandler execution.
- */
-typedef Error APIHandler(ulong, ulong, ulong, ulong, ulong);
+    /**
+     * Enumeration of supported generic kernel API functions.
+     *
+     * Architectures or System implementations can optionally
+     * introduce additional specific APIs.
+     */
+    typedef enum Number
+    {
+        IPCMessageNumber = 1,
+        PrivExecNumber   = 2,
+        ProcessCtlNumber = 3,
+        SystemInfoNumber = 4,        
+        VMCopyNumber     = 5,
+        VMCtlNumber      = 6,
+        IOCtlNumber      = 7
+    }
+    Number;
 
-/**
- * Various actions which may be performed inside an APIHandler.
- */
-typedef enum Operation
-{
-    Create      = 0,
-    Delete      = 1,
-    Send        = 2,
-    Receive     = 3,
-    SendReceive = 4,
-    Read        = 5,
-    Write       = 6,
-}
-Operation;
+    /**
+     * Enumeration of generic kernel API error codes.
+     */
+    typedef enum Error
+    {
+        Success         =  0,
+        AccessViolation = -1,
+        RangeError      = -2,
+        NotFound        = -3,
+        InvalidArgument = -4,
+        OutOfMemory     = -5
+    }
+    Error;
+
+    /**
+     * Function which handles an kernel API (system call) request.
+     * @return Status code of the APIHandler execution.
+     */
+    typedef ::Error Handler(ulong, ulong, ulong, ulong, ulong);
+
+    /**
+     * Various actions which may be performed inside an APIHandler.
+     */
+    typedef enum Operation
+    {
+        Create      = 0,
+        Delete      = 1,
+        Send        = 2,
+        Receive     = 3,
+        SendReceive = 4,
+        Read        = 5,
+        Write       = 6,
+        ReadPhys    = 7
+    }
+    Operation;
+
+    /**
+     * Constructor
+     */
+    API();
+
+    /**
+     * Execute a generic API function.
+     */
+    ::Error invoke(Number number,
+                   ulong arg1,
+                   ulong arg2,
+                   ulong arg3,
+                   ulong arg4,
+                   ulong arg5);
+
+  private:
+
+    /** API handlers */
+    Vector<Handler *> m_apis;
+};
 
 /** Operator to print a Operation to a Log */
-Log & operator << (Log &log, Operation op);
+Log & operator << (Log &log, API::Operation op);
 
 /*
  * Include generic kernel API functions.
@@ -80,6 +123,7 @@ Log & operator << (Log &log, Operation op);
 #include "API/VMCopy.h"
 #include "API/VMCtl.h"
 #include "API/IOCtl.h"
+#include "API/ProcessID.h"
 
 /**
  * @}

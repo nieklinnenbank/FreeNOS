@@ -19,11 +19,11 @@
 #define __FILESYSTEM_FILESTORAGE_H
 
 #include <Types.h>
-#include <Error.h>
 #include "Storage.h"
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <errno.h>
 
 /**
  * @brief Use a file as Storage provider.

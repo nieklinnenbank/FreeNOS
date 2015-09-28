@@ -22,10 +22,10 @@
 #include <File.h>
 #include <FileSystemMessage.h>
 #include <Types.h>
-#include <Error.h>
 #include "LinnFileSystem.h"
 #include "LinnInode.h"
 #include "IOBuffer.h"
+#include <errno.h>
 
 /**
  * @defgroup linn LinnFS (Linnenbank Filesystem) 

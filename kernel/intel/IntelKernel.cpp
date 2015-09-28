@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,143 +17,134 @@
 
 #include <FreeNOS/API.h>
 #include <FreeNOS/ProcessManager.h>
+#include <FreeNOS/System.h>
 #include <Macros.h>
 #include <List.h>
 #include <ListIterator.h>
+#include <SplitAllocator.h>
 #include <Vector.h>
+#include <MemoryBlock.h>
+#include <String.h>
+#include <BootImage.h>
+#include <intel/IntelMap.h>
+#include <intel/IntelBoot.h>
 #include "IntelKernel.h"
-#include "IntelCPU.h"
-#include "IntelInterrupt.h"
-#include "IntelMemory.h"
 
-/** Interrupt handlers. */
-Vector<List<InterruptHook *> *> interrupts(256);
-
-void executeInterrupt(CPUState state)
+extern C void executeInterrupt(CPUState state)
 {
-    /* Fetch the list of interrupt hooks (for this vector). */
-    List<InterruptHook *> *lst = interrupts[state.vector];
-
-    /* Does at least one handler exist? */
-    if (!lst)
-        return;
-
-    /* Execute them all. */
-    for (ListIterator<InterruptHook *> i(lst); i.hasCurrent(); i++)
-    {
-        i.current()->handler(&state, i.current()->param);
-    }
+    Kernel::instance->executeIntVector(state.vector, &state);
 }
 
-IntelKernel::IntelKernel(IntelMemory *memory, ProcessManager *proc)
-    : Kernel(memory, proc), Singleton<IntelKernel>(this)
+IntelKernel::IntelKernel(CoreInfo *info)
+    : Kernel(info)
 {
-    /* ICW1: Initialize PIC's (Edge triggered, Cascade) */
-    outb(PIC1_CMD, 0x11);
-    outb(PIC2_CMD, 0x11);
-    
-    /* ICW2: Remap IRQ's to interrupts 32-47. */
-    outb(PIC1_DATA, PIC_IRQ_BASE);
-    outb(PIC2_DATA, PIC_IRQ_BASE + 8);
 
-    /* ICW3: PIC2 is connected to PIC1 via IRQ2. */
-    outb(PIC1_DATA, 0x04);
-    outb(PIC2_DATA, 0x02);
+    IntelMap map;
+    IntelCore core;
+    IntelPaging memContext(&map, core.readCR3(), m_alloc);
 
-    /* ICW4: 8086 mode, fully nested, not buffered, no implicit EOI. */
-    outb(PIC1_DATA, 0x01);
-    outb(PIC2_DATA, 0x01);
+    // Refresh MemoryContext::current()
+    memContext.activate();
 
-    /* OCW1: Disable all IRQ's for now. */
-    outb(PIC1_DATA, 0xff);
-    outb(PIC2_DATA, 0xff);
+    // Install interruptRun() callback
+    interruptRun = ::executeInterrupt;
 
-    /* Let the i8253 timer run continuously (square wave). */
-    outb(PIT_CMD, 0x36);
-    outb(PIT_CHAN0, PIT_DIVISOR & 0xff);
-    outb(PIT_CHAN0, PIT_DIVISOR >> 8);
-    
-    /* Make sure to enable PIC2 and the i8253. */
-    enableIRQ(2, true);
-    enableIRQ(0, true);
-
-    // Clear interrupts table
-    interrupts.fill(ZERO);
-
-    /* Setup exception handlers. */
+    // Setup exception handlers
     for (int i = 0; i < 17; i++)
     {
-        hookInterrupt(i, exception, 0);
+        hookIntVector(i, exception, 0);
     }
-    /* Setup IRQ handlers. */
+    // Setup IRQ handlers
     for (int i = 17; i < 256; i++)
     {
-        /* Trap gate. */
+        // Trap gate
         if (i == 0x90)
-            hookInterrupt(0x90, trap, 0);
+            hookIntVector(0x90, trap, 0);
 
-        /* Hardware Interrupt. */
+        // Hardware Interrupt
         else
-            hookInterrupt(i, interrupt, 0);
+            hookIntVector(i, interrupt, 0);
     }
-    /* Install PIT (i8253) IRQ handler. */
-    hookInterrupt(IRQ(0), clocktick, 0);
 
-    /* Initialize TSS Segment. */
-    gdt[USER_TSS].limitLow    = sizeof(TSS) + (0xfff / 8);
-    gdt[USER_TSS].baseLow     = ((Address) &kernelTss) & 0xffff;
-    gdt[USER_TSS].baseMid     = (((Address) &kernelTss) >> 16) & 0xff;
-    gdt[USER_TSS].type        = 9;
-    gdt[USER_TSS].privilege  = 0;
-    gdt[USER_TSS].present     = 1;
-    gdt[USER_TSS].limitHigh   = 0;
-    gdt[USER_TSS].granularity = 8;
-    gdt[USER_TSS].baseHigh    = (((Address) &kernelTss) >> 24) & 0xff;
-
-    /* Let TSS point to I/O bitmap page. */
-    kernelTss.bitmap = PAGESIZE << 16;
-
-    /* Load Task State Register. */
-    ltr(USER_TSS_SEL);
-}
-
-void IntelKernel::hookInterrupt(int vec, InterruptHandler h, ulong p)
-{
-    InterruptHook hook(h, p);
-
-    /* Insert into interrupts; create List if neccessary. */
-    if (!interrupts[vec])
+    // Only core0 uses PIC and PIT.
+    if (info->coreId == 0)
     {
-        interrupts.insert(vec, new List<InterruptHook *>());
-    }
-    /* Just append it. */
-    if (!interrupts[vec]->contains(&hook))
-    {
-	interrupts[vec]->append(new InterruptHook(h, p));
-    }
-}
+        // Set PIT interrupt frequency to 250 hertz
+        m_pit.setFrequency(250);
 
-void IntelKernel::enableIRQ(uint irq, bool enabled)
-{
-    if (enabled)
-    {
-    	if (irq < 8)
-    	    outb(PIC1_DATA, inb(PIC1_DATA) & ~(1 << irq));
-    	else
-    	    outb(PIC2_DATA, inb(PIC2_DATA) & ~(1 << (irq - 8)));
+        // Configure the master and slave PICs
+        // TODO: the IntelKernel should also have a method ::initialize(),
+        //       such that it can capture the result of these functions.
+        m_pic.initialize();
+        m_intControl = &m_pic;
     }
     else
+        m_intControl = 0;
+
+    // Try to configure the APIC.
+    if (m_apic.initialize() == IntelAPIC::Success)
     {
-    	if (irq < 8)
-    	    outb(PIC1_DATA, inb(PIC1_DATA) | (1 << irq));
-    	else
-    	    outb(PIC2_DATA, inb(PIC2_DATA) | (1 << (irq - 8)));
+        NOTICE("Using APIC timer");
+        // TODO: do we need to explicityly disable the PICs?
+#warning the APIC is not used as IntController yet
+        // m_intControl = &m_apic;
+
+        // Enable APIC timer interrupt
+        //enableIRQ(m_apic.getTimerInterrupt(), true);
+        hookIntVector(m_apic.getTimerInterrupt(), clocktick, 0);
+
+        m_timerInt = m_apic.getTimerInterrupt();
+
+        if (m_coreInfo->timerCounter == 0)
+        {
+            m_apic.startTimer(&m_pit);
+            m_coreInfo->timerCounter = m_apic.getTimerCounter();
+        }
+        else
+            m_apic.startTimer(m_coreInfo->timerCounter, m_pit.getFrequency());
     }
+    // Use PIT as system timer.
+    else
+    {
+        NOTICE("Using PIT timer");
+        m_timerInt = m_pit.getInterruptNumber();
+
+        // Install PIT interrupt vector handler
+        hookIntVector(m_intControl->getBase() +
+                      m_pit.getInterruptNumber(), clocktick, 0);
+
+        // Enable PIT interrupt
+        enableIRQ(m_pit.getInterruptNumber(), true);
+    }
+
+    // Initialize TSS Segment
+    Address tssAddr = (Address) &kernelTss;
+    gdt[KERNEL_TSS].limitLow    = sizeof(TSS) + (0xfff / 8);
+    gdt[KERNEL_TSS].baseLow     = (tssAddr) & 0xffff;
+    gdt[KERNEL_TSS].baseMid     = (tssAddr >> 16) & 0xff;
+    gdt[KERNEL_TSS].type        = 9;
+    gdt[KERNEL_TSS].privilege   = 0;
+    gdt[KERNEL_TSS].present     = 1;
+    gdt[KERNEL_TSS].limitHigh   = 0;
+    gdt[KERNEL_TSS].granularity = 8;
+    gdt[KERNEL_TSS].baseHigh    = (tssAddr >> 24) & 0xff;
+
+    // Fill the Task State Segment (TSS).
+    MemoryBlock::set(&kernelTss, 0, sizeof(TSS));
+    kernelTss.ss0    = KERNEL_DS_SEL;
+    kernelTss.esp0   = 0;
+    kernelTss.bitmap = sizeof(TSS);
+    ltr(KERNEL_TSS_SEL);
 }
 
+// TODO: this is a generic function?
 void IntelKernel::exception(CPUState *state, ulong param)
 {
+    IntelCore core;
     ProcessManager *procs = Kernel::instance->getProcessManager();
+
+    ERROR("Exception in Process: " << procs->current()->getID());
+    core.logException(state);
 
     assert(procs->current() != ZERO);
     procs->remove(procs->current());
@@ -162,31 +153,38 @@ void IntelKernel::exception(CPUState *state, ulong param)
 
 void IntelKernel::interrupt(CPUState *state, ulong param)
 {
-    /* End of Interrupt to slave. */
-    if (IRQ(state->vector) >= 8)
+    IntelKernel *kern = (IntelKernel *) Kernel::instance;
+
+    if (kern->m_intControl)
     {
-        outb(PIC2_CMD, PIC_EOI);
+        kern->m_intControl->clear(
+            state->vector - kern->m_intControl->getBase()
+        );
     }
-    /* End of Interrupt to master. */
-    outb(PIC1_CMD, PIC_EOI);
 }
 
 void IntelKernel::trap(CPUState *state, ulong param)
 {
-    state->eax = Kernel::instance->invokeAPI(
-        (APINumber) state->eax,
-                    state->ecx,
-                    state->ebx,
-                    state->edx,
-                    state->esi,
-                    state->edi
+    state->regs.eax = Kernel::instance->getAPI()->invoke(
+        (API::Number) state->regs.eax,
+                      state->regs.ecx,
+                      state->regs.ebx,
+                      state->regs.edx,
+                      state->regs.esi,
+                      state->regs.edi
     );
 }
 
 void IntelKernel::clocktick(CPUState *state, ulong param)
 {
-    IntelKernel *kernel = Singleton<IntelKernel>::instance;
+    IntelKernel *kern = (IntelKernel *) Kernel::instance;
 
-    /* Reschedule. */
-    kernel->getProcessManager()->schedule();
+#warning not working for APIC timer, because the timer IRQ is out of range on the PIC
+    kern->enableIRQ(kern->m_timerInt, true);
+
+#warning TODO: tmp hack for APIC timer end-of-interrupt
+    if (kern->m_timerInt == kern->m_apic.getTimerInterrupt())
+        kern->m_apic.clear(kern->m_timerInt);
+
+    kern->getProcessManager()->schedule();
 }

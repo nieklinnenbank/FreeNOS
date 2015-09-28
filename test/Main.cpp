@@ -32,11 +32,6 @@
 int run_test(char *path)
 {
     int status;
-    char *argv[2];
-
-    argv[0] = path;
-    argv[1] = (char *) "-n";
-    argv[2] = 0;
 
 #ifdef __HOST__
     char tmp[255];
@@ -47,6 +42,12 @@ int run_test(char *path)
     if (WIFEXITED(status))
         status = WEXITSTATUS(status);
 #else
+    char *argv[3];
+
+    argv[0] = path;
+    argv[1] = (char *) "-n";
+    argv[2] = 0;
+
     pid_t pid = forkexec(path, (const char **) argv);
     waitpid(pid, &status, 0);
 #endif

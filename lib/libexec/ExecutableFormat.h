@@ -19,48 +19,13 @@
 #define __LIBEXEC_EXECUTABLEFORMAT_H
 #ifndef __ASSEMBLER__
 
-#include <FreeNOS/Memory.h>
+#include <Memory.h>
 #include <Types.h>
 
 /**  
  * @defgroup libexec libexec
  * @{  
  */
-
-/**
- * Abstracts a memory region read from a format.
- */
-typedef struct MemoryRegion
-{
-    /**
-     * Constructor.
-     */
-    MemoryRegion() : virtualAddress(0), size(0), data(0)
-    {
-    }
-    
-    /**
-     * Destructor.
-     */
-    ~MemoryRegion()
-    {
-	if (data)
-	    delete data;
-    }
-
-    /** Beginning of the region. */
-    Address virtualAddress;
-    
-    /** Size of the memory region. */
-    Size size;
-
-    /** Page protection flags. */
-    Memory::MemoryAccess access;
-    
-    /** Memory contents. */
-    u8 *data;
-}
-MemoryRegion;
 
 /** Entry point of a program. */
 typedef Address EntryPoint;
@@ -72,61 +37,84 @@ class ExecutableFormat;
  * Confirms if we understand the given format.
  * @return true on success and false on failure.
  */
-typedef ExecutableFormat * FormatDetector(const char *path);
+typedef ExecutableFormat * FormatDetector(u8 *image, Size size);
 
 /**
  * Abstraction class of various executable formats.
  */
 class ExecutableFormat
 {
-    public:
+  public:
 
-	/**
-	 * Class constructor.
-	 * @param path Filesystem path to the executable.
-	 */
-	ExecutableFormat(const char *path);
+    /**
+     * Memory region.
+     */
+    typedef struct Region
+    {
+        Address virt;
+        Size size;
+        Memory::Access access;
+        u8 *data;
+    }
+    Region;
 
-	/**
-	 * Class destructor.
-	 */
-	virtual ~ExecutableFormat();
+    /**
+     * Result code
+     */
+    enum Result
+    {
+        Success,
+        NotFound,
+        InvalidFormat,
+        OutOfMemory
+    };
 
-	/**
-	 * Retrieve path to the executable.
-	 * @return Path on filesystem to the executable.
-	 */
-	const char * getPath()
-	{
-	    return path;
-	}
-    
-	/**
-	 * Memory regions a program needs at runtime.
-	 * @param regions Memory regions to fill.
-	 * @param max Maximum number of memory regions.
-	 * @return Number of memory regions or an error code on error.
-	 */
-	virtual int regions(MemoryRegion *regions, Size max) = 0;
+    /**
+     * Class constructor.
+     *
+     * @param image Pointer to program image.
+     * @param size Size of the program image.
+     */
+    ExecutableFormat(u8 *image, Size size);
 
-	/**
-	 * Lookup the program entry point.
-	 * @return Program entry point.
-	 */
-	virtual Address entry() = 0;
+    /**
+     * Class destructor.
+     */
+    virtual ~ExecutableFormat();
 
-	/**
-	 * Find a ExecFormat which can handle the given format.
-	 * @param path Path to the file to read.
-	 * @return A pointer to an ExecutableFormat on success
-	 *         and NULL if not found.
-	 */
-	static ExecutableFormat * find(const char *path);
+    /**
+     * Memory regions a program needs at runtime.
+     *
+     * @param regions Memory regions to fill.
+     * @param count On input, the maximum number of regions to read.
+     *              On output, the actual number of regions read.
+     * @return Result code.
+     */
+    virtual Result regions(Region *regions, Size *count) = 0;
 
-    private:
-    
-	/** Path to the executable. */
-	const char *path;
+    /**
+     * Lookup the program entry point.
+     *
+     * @param entry Entry point on output.
+     * @return Result code.
+     */
+    virtual Result entry(Address *entry) = 0;
+
+    /**
+     * Find a ExecutableFormat which can handle the given format.
+     *
+     * @param image Program image to read.
+     * @param size Program image size.
+     * @param fmt ExecutableFormat object pointer on output.
+     * @return Result code.
+     */
+    static Result find(u8 *image, Size size, ExecutableFormat **fmt);
+
+  protected:
+
+    u8 *m_image;
+
+    Size m_size;
 };
 
 /**

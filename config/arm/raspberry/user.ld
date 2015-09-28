@@ -23,6 +23,11 @@ SECTIONS
 {
     . = 0x80000000;
 
+    /DISCARD/ :
+    {
+        *(.note.gnu.build-id)
+    }
+
     .text :
     {
 	*(.entry)
@@ -52,12 +57,21 @@ SECTIONS
         KEEP (*(.fini_array))
         LONG(0)
         DTOR_END = .;
+
+        isKernel = .;
+        LONG(0);
 	. += 4;
+
 	
 	initStart = .;
 	KEEP (*(SORT(.init*)))
 	KEEP (*(.init*))
 	initEnd   = .;
-	*(.bss)
+
+        . = ALIGN(4096);
+        __bss_start = .;
+        *(.bss)
+        . = ALIGN(4096); /* align to page size */
+        __bss_end = .;
     }
 }

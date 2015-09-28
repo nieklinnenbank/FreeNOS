@@ -18,16 +18,7 @@
 #ifndef __INTEL_PROCESS_H
 #define __INTEL_PROCESS_H
 
-/**   
- * @defgroup x86kernel kernel (x86)  
- * @{   
- */
-
-#ifndef __ASSEMBLY__
-#if defined(__cplusplus)
-
 #include <FreeNOS/Process.h>
-#include "IntelCPU.h"
 #include <Types.h>
 
 /**
@@ -35,89 +26,45 @@
  */
 class IntelProcess : public Process
 {
-    public:
+  public:
 
-        /**
-         * Constructor function.
-	 * @param entry Initial EIP register value.
-         */
-	IntelProcess(ProcessID id, Address entry);
+    /**
+     * Constructor function.
+     *
+     * @param id Process Identifier.
+     * @param entry Initial EIP register value.
+     * @param privileged If true, the Process has unlimited access to hardware.
+     * @param map Virtual memory layout.
+     */
+    IntelProcess(ProcessID id, Address entry, bool privileged, const MemoryMap &map);
 
-	/**
-	 * Destructor function.
-	 */
-	virtual ~IntelProcess();
-	
-	/**
-	 * Save and restore registers, then perform a context switch.
-	 */
-	void execute();
+    /**
+     * Destructor function.
+     */
+    virtual ~IntelProcess();
 
-	/**
-	 * Get the address of our page directory.
-	 * @return Page directory address.
-	 */
-	Address getPageDirectory()
-	{
-	    return pageDirAddr;
-	}
-	
-	/**
-	 * Get the address of our stack.
-	 * @return Stack address.
-	 */
-	Address getStack()
-	{
-	    return stackAddr;
-	}
-	
-        /**
-         * (Dis)allows a process direct I/O to a port.
-         * @param port I/O port.
-         * @param enabled (Dis)allow access.
-         */
-        void IOPort(u16 port, bool enabled);
+    /**
+     * Initialize the Process.
+     *
+     * Allocates various (architecture specific) resources,
+     * creates MMU context and stacks.
+     *
+     * @return Result code
+     */
+    virtual Result initialize();
 
-	/**
-	 * Sets the address of our stack.
-	 * @param addr New stack address.
-	 */
-	void setStack(Address addr)
-	{
-	    stackAddr = addr;
-	}
-
-    private:
-	
-	/** Page Directory physical address. */
-	Address pageDirAddr;
-	
-	/** Current stack pointer. */
-	Address stackAddr;
-	
-	/** Kernel stack pointer. */
-	Address kernelStackAddr;
-	
-	/** I/O bitmap physical address. */
-	Address ioMapAddr;
+    /**
+     * Execute the process.
+     *
+     * Saves and restores registers, then perform a context switch.
+     */
+    virtual void execute(Process *previous);
 };
 
-/**
- * Assembly routine which performs context switches.
- * @param oldStackPtr Pointer to the stackAddr of the currently running IntelProcess, if any.
- * @param pageDirAddr Address of the page directory.
- * @param stackAddr Address of the user stack.
- * @param kernelTss Pointer to the kernel's TSS.
- * @param kernelStackAddr Address of the kernel stack.
- * @see TSS
- * @see contextSwitch.S
- */
-extern C void contextSwitch(Address *oldStack,  Address pageDirAddr,
-			    Address  stackAddr, TSS *kernelTss,
-			    Address  kernelStackAddr);
-
-#endif /* __cplusplus */
-#endif /* __ASSEMBLY__ */
+namespace Arch
+{
+    typedef IntelProcess Process;
+};
 
 /**
  * @}

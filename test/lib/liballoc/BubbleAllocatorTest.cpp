@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System/Constant.h>
+#include <FreeNOS/System.h>
 #include <TestCase.h>
 #include <TestRunner.h>
 #include <TestInt.h>
@@ -30,25 +30,8 @@ TestCase(BubbleConstruct)
     BubbleAllocator ba(addresses.random(),
                        sizes.random());
 
-    testAssert(ba.start == (u8 *) addresses[0]);
-    testAssert(ba.size == sizes[0]);
-
-    return OK;
-}
-
-TestCase(BubbleAlloc)
-{
-    TestInt<uint> addresses(UINT_MIN, UINT_MAX);
-    TestInt<uint> sizes(PAGESIZE, PAGESIZE * 16);
-
-    BubbleAllocator ba(addresses.random(),
-                       sizes.random());
-
-    Size sz = 1024, big = sizes[0] * 2;
-
-    testAssert(ba.allocate(&sz) == addresses[0]);
-    testAssert(ba.current == (u8 *) addresses[0] + sz);
-    testAssert(ba.allocate(&big) == 0);
+    testAssert(ba.m_start == (u8 *) addresses[0]);
+    testAssert(ba.m_size == sizes[0]);
 
     return OK;
 }

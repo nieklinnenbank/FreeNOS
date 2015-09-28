@@ -28,5 +28,5 @@ int main(int argc, char **argv)
      * Start serving requests.
      */
     server.add(new Terminal);
-    return server.run();
+    return server.run(argc, argv);
 }

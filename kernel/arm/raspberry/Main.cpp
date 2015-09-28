@@ -16,17 +16,51 @@
  */
 
 #include <FreeNOS/Config.h>
+#include <FreeNOS/Support.h>
+#include <FreeNOS/System.h>
+#include <FreeNOS/arm/ARMKernel.h>
 #include <Macros.h>
-#include "UART.h"
+#include <arm/ARMControl.h>
+#include <arm/BCM2835Interrupt.h>
+#include <arm/BCMSysTimer.h>
+#include "RaspiSerial.h"
 
-extern C int kmain(void)
+extern C int kernel_main(u32 r0, u32 r1, u32 r2)
 {
-    UART console;
+    Arch::MemoryMap mem;
+    BCM2835Interrupt irq;
+    ARMTags tags(r2);
+    Memory::Range initrd = tags.getInitRd2();
 
-    console.put("FreeNOS " RELEASE "\r\n");
+    // Fill coreInfo
+    MemoryBlock::set(&coreInfo, 0, sizeof(CoreInfo));
+    coreInfo.bootImageAddress = initrd.phys;
+    coreInfo.bootImageSize    = initrd.size;
+    coreInfo.kernel.phys      = 0;
+    coreInfo.kernel.size      = MegaByte(4);
+    coreInfo.memory.phys      = 0;
+    coreInfo.memory.size      = MegaByte(512);
 
-    while (true)
-	console.put(console.get());
+    // Initialize heap
+    Kernel::heap( MegaByte(3), MegaByte(1) );
 
-    return 0;
+    // TODO: put this in the boot.S, or maybe hide it in the support library? maybe a _run_main() or something.
+    constructors();
+
+    // Open the serial console as default Log
+    RaspiSerial console;
+    console.setMinimumLogLevel(Log::Notice);
+
+    // Create the kernel
+    ARMKernel kernel(&irq, &coreInfo);
+
+    // Print some info
+    DEBUG("ATAGS = " << r2);
+    ARMControl ctrl;
+    DEBUG("MainID = " << ctrl.read(ARMControl::MainID));
+    ctrl.write(ARMControl::UserProcID, 11223344);
+    DEBUG("UserProcID = " << ctrl.read(ARMControl::UserProcID));
+
+    // Run the kernel
+    return kernel.run();
 }

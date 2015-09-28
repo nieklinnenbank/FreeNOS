@@ -28,11 +28,11 @@
  */
 typedef struct BootEntry
 {
-    /** Pointer to the executable format. */
-    ExecutableFormat *format;
-    
-    /** Memory regions extracted from the program. */
-    MemoryRegion regions[MAX_REGIONS];
+    /** BootSymbol definition */
+    BootSymbol symbol;
+
+    /** Memory regions for this symbol */
+    ExecutableFormat::Region regions[MAX_REGIONS];
     
     /** Number of memory regions. */
     Size numRegions;

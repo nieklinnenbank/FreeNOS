@@ -15,45 +15,47 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System/Function.h>
+#include <FreeNOS/System.h>
 #include "IOCtl.h"
 
 Error IOCtlHandler(IOOperation op, Address addr, ulong value)
 {
+    Arch::IO io;
+
     DEBUG("op =" << op << " addr=" << addr << " value=" << value);
 
     switch (op)
     {
         case IOByteRead:
-            return inb(addr);
+            return io.inb(addr);
 
         case IOByteWrite:
-            outb(addr, value);
+            io.outb(addr, value);
             break;
 
         case IOWordRead:
-            return inw(addr);
+            return io.inw(addr);
         
         case IOWordWrite:
-            outw(addr, value);
+            io.outw(addr, value);
             break;
 
         case IOLongWrite:
-            outl(addr, value);
+            io.outl(addr, value);
             break;
     }
-    return ESUCCESS;
+    return API::Success;
 }
 
 Log & operator << (Log &log, IOOperation op)
 {
     switch (op)
     {
-        case IOByteRead:  log.write("IOByteRead");  break;
-        case IOByteWrite: log.write("IOByteWrite"); break;
-        case IOWordRead:  log.write("IOWordRead");  break;
-        case IOWordWrite: log.write("IOWordWrite"); break;
-        case IOLongWrite: log.write("IOLongWrite"); break;
+        case IOByteRead:  log.append("IOByteRead");  break;
+        case IOByteWrite: log.append("IOByteWrite"); break;
+        case IOWordRead:  log.append("IOWordRead");  break;
+        case IOWordWrite: log.append("IOWordWrite"); break;
+        case IOLongWrite: log.append("IOLongWrite"); break;
     }
     return log;
 }

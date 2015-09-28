@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,128 +15,68 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#warning Do not depend on Intel specific functions in a generic API
-
+#include <SplitAllocator.h>
 #include "VMCtl.h"
-#include <FreeNOS/Kernel.h>
-#include <Error.h>
-#include <ProcessID.h>
+#include "ProcessID.h"
 
-Error VMCtlHandler(ProcessID procID, MemoryOperation op, MemoryRange *range)
+Error VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range)
 {
     ProcessManager *procs = Kernel::instance->getProcessManager();
-    IntelMemory *memory = (IntelMemory *) Kernel::instance->getMemory();
     Process *proc = ZERO;
-    Address  page     = ZERO;
-    Address *remotePG = (Address *) PAGETABADDR_FROM(PAGETABFROM,
-                                                     PAGEUSERFROM);
+    Error ret = API::Success;
     
-    /* Find the given process. */
+    // Find the given process
     if (procID == SELF)
         proc = procs->current();
     else if (!(proc = procs->get(procID)))
     {
-        return ESRCH;
+        return API::NotFound;
     }
 
-    /* Validate the given MemoryRange pointer, if needed. */
-    if (op != MapTables && op != UnMapTables &&
-        !memory->access(procs->current(),
-                       (Address) range, sizeof(MemoryRange)))
-    {
-        return EFAULT;
-    }
-    /* Perform operation. */
+    // TODO: capability checking.
+    MemoryContext *mem = proc->getMemoryContext();
+
+    // Perform operation
     switch (op)
     {
         case LookupVirtual:
-            range->physicalAddress = memory->lookup(proc, range->virtualAddress);
+            if (mem->lookup(range->virt, &range->phys) != MemoryContext::Success)
+                return API::AccessViolation;
             break;
 
-        case LookupPhysical:
-            return EINVAL;
-            //return memory->isMarked(range->physicalAddress);
-
         case Map:
+            if (!range->virt)
+            {
+                mem->findFree(range->size, MemoryMap::UserPrivate, &range->virt);
+                range->virt += range->phys & ~PAGEMASK;
+            }
+            mem->mapRange(range);
+            break;
 
-            /* Map the memory page. */
-            if (range->access & Memory::Present)
-            {
-                /* Acquire physical page(s) first. */
-                if (!range->physicalAddress)
-                {
-                    range->physicalAddress = memory->allocatePhysical(range->bytes);
-                }
-                /* Insert virtual page(s). */
-                for (Size i = 0; i < range->bytes; i += PAGESIZE)
-                {
-                    memory->map(proc,
-                                range->physicalAddress + i,
-                                range->virtualAddress  + i,
-                                range->access);
-                }
-            }
-            /* Release memory page(s). */
-            else
-            {
-                for (Size i = 0; i < range->bytes; i += PAGESIZE)
-                {
-                    /* Don't release pinned pages. */
-                    if (memory->access(proc, range->virtualAddress + i,
-                                       Memory::Pinned))
-                        continue;
-                
-                    if ((page = memory->lookup(proc,
-                                               range->virtualAddress + i)))
-                    {
-                        memory->releasePhysical(page & PAGEMASK);
-                    }
-                }
-            }
+        case UnMap:
+            mem->releaseRange(range);
             break;
 
         case Access:
-            return memory->access(proc, range->virtualAddress,
-                                        range->bytes, range->access);
-            
-        case MapTables:
-
-            /* Map remote page tables. */
-            memory->mapRemote((IntelProcess *)proc, 0,
-                             (Address) PAGETABADDR_FROM(PAGETABFROM, PAGEUSERFROM),
-                              Memory::Present | Memory::User | Memory::Writable); // PAGE_USER);
-            
-            /* Temporarily allow userlevel access to the page tables. */
-            for (Size i = 0; i < PAGEDIR_MAX; i++)
-            {
-                if (!(remotePG[i] & PAGE_USER))
-                {
-                    remotePG[i] |= PAGE_MARKED;
-                }
-                remotePG[i] |= PAGE_USER;
-            }
-            /* Flush caches. */
-            tlb_flush_all();
+            ret = (API::Error) mem->access(range->virt, &range->access);
             break;
-            
-        case UnMapTables:
 
-            /* Remove userlevel access where needed. */
-            for (Size i = 0; i < PAGEDIR_MAX; i++)
+        case RemoveMem:
+#warning TODO: claiming memory should be atomic single shot call.
+            for (uint i = 0; i < range->size; i+=PAGESIZE)
             {
-                if (remotePG[i] & PAGE_MARKED)
+                if (Kernel::instance->getAllocator()->allocate(range->phys + i) != Allocator::Success)
                 {
-                    remotePG[i] &= ~PAGE_USER;
+                    ERROR("address " << (void *) (range->phys + i) << " already allocated");
+                    return API::OutOfMemory;
                 }
             }
-            /* Flush caches. */
-            tlb_flush_all();
             break;
-            
+
         default:
-            return EINVAL;
-        
+            ret = API::InvalidArgument;
+            break;
     }
-    /* Success. */
-    return 0;
+    // Done
+    return ret;
 }

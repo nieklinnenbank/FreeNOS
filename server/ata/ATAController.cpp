@@ -17,23 +17,19 @@
 
 #include <DeviceServer.h>
 #include "ATAController.h"
-#include <Error.h>
 #include <Types.h>
 #include <stdlib.h>
-#include <syslog.h>
+#include <errno.h>
 
 int main(int argc, char **argv)
 {
     DeviceServer server("ata", CharacterDeviceFile);
 
-    /* Open the system log. */
-    openlog("ATA", LOG_PID | LOG_CONS, LOG_USER);
-
     /* 
      * Start serving requests. 
      */
     server.add(new ATAController);
-    return server.run();
+    return server.run(argc, argv);
 }
 
 ATAController::ATAController()
@@ -44,22 +40,10 @@ Error ATAController::initialize()
 {
     ATADrive *drive;
 
-    /*
-     * Request ATA Control I/O port.
-     */
-    ProcessCtl(SELF, AllowIO, ATA_BASE_CTL0);
-
-    /*
-     * Request ATA Command I/O ports.
-     */
-    for (Size i = 0; i <= ATA_REG_CMD; i++)
-    {
-	ProcessCtl(SELF, AllowIO, ATA_BASE_CMD0 + i);
-    }
     /* Detect ATA Controller. */
     if (ReadByte(ATA_BASE_CMD0 + ATA_REG_STATUS) == 0xff)
     {
-	exit(EXIT_FAILURE);
+    exit(EXIT_FAILURE);
     }
     pollReady(true);
     
@@ -70,38 +54,36 @@ Error ATAController::initialize()
 
     switch (ReadByte(ATA_BASE_CMD0 + ATA_REG_STATUS))
     {
-	case 0:
-	    syslog(LOG_INFO, "No ATA drive(s) detected");
-	    break;
-	
-	default:
-	    /* Wait until the command completed. */
-	    pollReady();
+    case 0:
+        NOTICE("No ATA drive(s) detected");
+        break;
+    
+    default:
+        /* Wait until the command completed. */
+        pollReady();
 
-	    /* Allocate a new drive. */
-	    drive = new ATADrive;
-	    drives.append(drive);
+        /* Allocate a new drive. */
+        drive = new ATADrive;
+        drives.append(drive);
 
-	    /* Read IDENTIFY data. */
-	    for (int i = 0; i < 256; i++)
-	    {
-		((u16 *) &drive->identity)[i] = ReadWord(ATA_BASE_CMD0 + ATA_REG_DATA);
-	    }
-	    /* Fixup ASCII bytes. */
-	    IDENTIFY_TEXT_SWAP(drive->identity.firmware, 8);
-	    IDENTIFY_TEXT_SWAP(drive->identity.serial, 20);
-	    IDENTIFY_TEXT_SWAP(drive->identity.model, 40);
+        /* Read IDENTIFY data. */
+        for (int i = 0; i < 256; i++)
+        {
+        ((u16 *) &drive->identity)[i] = ReadWord(ATA_BASE_CMD0 + ATA_REG_DATA);
+        }
+        /* Fixup ASCII bytes. */
+        IDENTIFY_TEXT_SWAP(drive->identity.firmware, 8);
+        IDENTIFY_TEXT_SWAP(drive->identity.serial, 20);
+        IDENTIFY_TEXT_SWAP(drive->identity.model, 40);
 
-	    /* Print out information. */
-	    syslog(LOG_INFO, "ATA drive detected: SERIAL=%20s FIRMWARE=%8s "
-			     "MODEL=%40s MAJOR=%x MINOR=%x SECTORS=%x",
-			      drive->identity.serial,
-			      drive->identity.firmware,
-			      drive->identity.model,
-			      drive->identity.majorRevision,
-			      drive->identity.minorRevision,
-			      drive->identity.sectors28);
-	    break;
+        /* Print out information. */
+        NOTICE("ATA drive detected: SERIAL=" << drive->identity.serial <<
+               " FIRMWARE=" << drive->identity.firmware <<
+               " MODEL=" << drive->identity.model <<
+               " MAJOR=" << drive->identity.majorRevision <<
+               " MINOR=" << drive->identity.minorRevision <<
+               " SECTORS=" << drive->identity.sectors28);
+        break;
     }
     return ESUCCESS;
 }
@@ -116,7 +98,7 @@ Error ATAController::read(s8 *buffer, Size size, Size offset)
     /* Verify LBA. */
     if (drives.isEmpty() || drives.first()->identity.sectors28 < lba)
     {
-	return EIO;
+        return EIO;
     }
     /* Perform ATA Read Command. */
     WriteByte(ATA_BASE_CMD0 + ATA_REG_SELECT, ATA_SEL_MASTER_28);
@@ -131,31 +113,31 @@ Error ATAController::read(s8 *buffer, Size size, Size offset)
      */
     while(result < size)
     {
-	/* Poll the status register. */
-	pollReady(true);
+        /* Poll the status register. */
+        pollReady(true);
 
         /* Read out bytes. */
-	for (int i = 0; i < 256; i++)
-	{
-	    block[i] = ReadWord(ATA_BASE_CMD0 + ATA_REG_DATA);
-	}
-	/* Calculate maximum bytes. */
-	Size bytes = (size - result) < 512 - (offset % 512) ?
-		     (size - result) : 512 - (offset % 512);
+        for (int i = 0; i < 256; i++)
+        {
+            block[i] = ReadWord(ATA_BASE_CMD0 + ATA_REG_DATA);
+        }
+        /* Calculate maximum bytes. */
+        Size bytes = (size - result) < 512 - (offset % 512) ?
+                     (size - result) : 512 - (offset % 512);
 
-	/* Copy to buffer. */
-	memcpy(buffer + result, ((u8 *)block) + (offset % 512), bytes);
-	
-	/* Update state. */
-	result += bytes;
-	offset += bytes;
+        /* Copy to buffer. */
+        memcpy(buffer + result, ((u8 *)block) + (offset % 512), bytes);
+    
+        /* Update state. */
+        result += bytes;
+        offset += bytes;
     }
     return result;
 }
 
 Error ATAController::interrupt(Size vector)
 {
-    syslog(LOG_INFO, "ATA interrupted on IRQ %u", vector);
+    INFO("ATA interrupted on IRQ " << vector);
     return ESUCCESS;
 }
 
@@ -163,12 +145,12 @@ void ATAController::pollReady(bool noData)
 {
     while (true)
     {
-	u8 status = ReadByte(ATA_BASE_CMD0 + ATA_REG_STATUS);
-	
-	if (!(status & ATA_STATUS_BUSY) &&
-	     (status & ATA_STATUS_DATA || noData))
-	{
-	    break;
-	}
+        u8 status = ReadByte(ATA_BASE_CMD0 + ATA_REG_STATUS);
+
+        if (!(status & ATA_STATUS_BUSY) &&
+             (status & ATA_STATUS_DATA || noData))
+        {
+            break;
+        }
     }
 }

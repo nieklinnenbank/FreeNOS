@@ -15,10 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/ProcessCtl.h>
+#include <FreeNOS/API.h>
 #include <Macros.h>
-#include <Error.h>
-#include <ProcessID.h>
+#include <errno.h>
 #include "Keyboard.h"
 
 /**
@@ -50,7 +49,7 @@ Keyboard::Keyboard() : shiftState(ZERO)
 
 Error Keyboard::initialize()
 {
-    return ProcessCtl(SELF, AllowIO,  PS2_PORT);
+    return ESUCCESS;
 }
 
 Error Keyboard::interrupt(Size vector)
@@ -61,6 +60,8 @@ Error Keyboard::interrupt(Size vector)
 
 Error Keyboard::read(s8 *buffer, Size size, Size offset)
 {
+    Error ret = EAGAIN;
+
     /* Do we have any new key events? */
     if (pending)
     {
@@ -82,8 +83,10 @@ Error Keyboard::read(s8 *buffer, Size size, Size offset)
 	{
 	    /* Write to buffer. */
 	    buffer[0] = keymap[keycode & 0x7f][shiftState];
-    	    return 1;
+    	    ret = 1;
 	}
+        /* Re-enable interrupt */
+        ProcessCtl(SELF, EnableIRQ, PS2_IRQ);
     }
-    return EAGAIN;
+    return ret;
 }

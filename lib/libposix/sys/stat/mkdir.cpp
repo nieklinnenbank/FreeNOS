@@ -15,9 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/IPCMessage.h>
+#include <FreeNOS/API.h>
 #include <FileSystemMessage.h>
-#include <ProcessID.h>
 #include "Runtime.h"
 #include <errno.h>
 #include "sys/stat.h"
@@ -29,14 +28,15 @@ int mkdir(const char *path, mode_t mode)
 
     /* Fill message. */
     msg.action = CreateFile;
-    msg.buffer = (char *) path;
+    msg.path   = (char *) path;
     msg.mode   = mode;
     msg.filetype = DirectoryFile;
+    msg.type   = IPCType;
     
     /* Ask the FileSystem to create it. */
     if (mnt)
     {
-	IPCMessage(mnt, SendReceive, &msg, sizeof(msg));
+	IPCMessage(mnt, API::SendReceive, &msg, sizeof(msg));
 
 	/* Set errno. */
 	errno = msg.result;

@@ -15,11 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/IPCMessage.h>
+#include <FreeNOS/API.h>
 #include <FileSystemMessage.h>
 #include <FileType.h>
 #include <FileMode.h>
-#include <ProcessID.h>
 #include "Runtime.h"
 #include <errno.h>
 #include "sys/stat.h"
@@ -31,15 +30,16 @@ int mknod(const char *path, mode_t mode, dev_t dev)
     
     /* Fill in the message. */
     msg.action   = CreateFile;
-    msg.buffer   = (char *) path;
+    msg.path     = (char *) path;
     msg.deviceID = dev;
     msg.filetype = (FileType) ((mode >> FILEMODE_BITS) & FILETYPE_MASK);
     msg.mode     = (FileModes) (mode & FILEMODE_MASK);
+    msg.type     = IPCType;
     
     /* Ask FileSystem to create the file for us. */
     if (mnt)
     {
-	IPCMessage(mnt, SendReceive, &msg, sizeof(msg));
+	IPCMessage(mnt, API::SendReceive, &msg, sizeof(msg));
     
 	/* Set errno. */
 	errno = msg.result;

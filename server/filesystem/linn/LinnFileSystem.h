@@ -34,6 +34,9 @@
  * @{
  */
 
+/** Default filename of the embedded root filesystem (ramfs) */
+#define LINNFS_ROOTFS_FILE "./rootfs.linn"
+
 /**
  * @name Filesystem limits.
  * @{

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #define __LIBALLOC_ALLOCATOR_H
 #ifndef __ASSEMBLER__
 
+#include <Macros.h>
 #include <Types.h>
 
 /**
@@ -27,95 +28,144 @@
  */
 
 /**
- * Memory allocator class.
+ * Memory Allocator.
+ *
+ * This class defines an abstract memory allocator. Each
+ * class which derives must provide functions for memory
+ * allocation and release. The memory allocators form a hierarcy
+ * of parent-child. A parent allocator can provide memory to a child
+ * allocator. If a child allocator runs out of memory, it can ask the
+ * parent for more memory.
  */
 class Allocator
 {
-    public:
+  public:
 
-	/**
-	 * Class constructor.
-	 */
-	Allocator();
+    /**
+     * Allocation results.
+     */
+    enum Result
+    {
+        Success = 0,
+        InvalidAddress,
+        InvalidSize,
+        InvalidAlignment,
+        OutOfMemory
+    };
 
-	/**
-	 * Class destructor.
-	 */
-	virtual ~Allocator();
+    /**
+     * Class constructor.
+     */
+    Allocator();
 
-        /**
-         * Allocate a block of memory.
-         * @param size Amount of memory in bytes to allocate on input.
-	 *             On output, the amount of memory in bytes actually allocated.
-         * @return Pointer to the new memory block on success
-         *         and ZERO on failure.
-         */
-        virtual Address allocate(Size *size) = 0;
+    /**
+     * Class destructor.
+     */
+    virtual ~Allocator();
 
-        /**
-         * Free a block of memory.
-         * @param addr Points to memory previously returned by allocate().
-         * @see allocate
-         */
-        virtual void release(Address addr) = 0;
+    /**
+     * Makes the given Allocator the default.
+     * @param alloc Instance of an Allocator.
+     */ 
+    static void setDefault(Allocator *alloc);
 
-	/**
-	 * Use the given memory address and size for the allocator.
-	 * Allocators are free to use multiple memory regions for allocation.
-	 * @param address Memory address to use.
-	 * @param size Size of the memory address.
-	 */
-	virtual void region(Address addr, Size size)
-	{
-	}
+    /**
+     * Retrieve the currently default Allocator.
+     * @return Allocator pointer.
+     */
+    static Allocator *getDefault();
 
-	/**
-	 * Sets a new parent Allocator.
-	 * @param p New parent allocator.
-	 */
-	void setParent(Allocator *p)
-	{
-	    parent = p;
-	}
+    /**
+     * Set parent allocator.
+     *
+     * @param p New parent allocator.
+     */
+    void setParent(Allocator *parent);
 
-	/**
-	 * Makes the given Allocator the default.
-	 * @param alloc Instance of an Allocator.
-	 */	
-	static void setDefault(Allocator *alloc)
-	{
-	    _default = alloc;
-	}
+    /**
+     * Set allocation alignment.
+     *
+     * Configure the Allocator such that each allocated
+     * address must be aligned to the given size.
+     *
+     * @param size Alignment size
+     * @return Result code
+     */
+    Result setAlignment(Size size);
 
-	/**
-	 * Retrieve the currently default Allocator.
-	 * @return Allocator pointer.
-	 */
-	static Allocator *getDefault()
-	{
-	    return _default;
-	}
+    /**
+     * Set allocation base.
+     *
+     * The allocation base will be added to each allocation.
+     *
+     * @param addr Allocation base address.
+     * @return Result code
+     */
+    Result setBase(Address addr);
 
-    protected:
+    /**
+     * Get memory size.
+     *
+     * @return Size of memory owned by the Allocator.
+     */
+    virtual Size size() = 0;
 
-	/**
-	 * Calculate correctly aligned memory address.
-	 *
-	 * Any alignment corrections on the input address will result
-	 * in an address which is higher than the input address.
-	 * 
-	 * @param input Input address which need to be aligned.
-	 * @return Aligned input address.
-	 */
-	Address aligned(Address input);
+    /**
+     * Get memory available.
+     *
+     * @return Size of memory available by the Allocator.
+     */
+    virtual Size available() = 0;
 
-	/** Our parent Allocator, if any. */
-	Allocator *parent;
-	
-    private:
+    /**
+     * Allocate memory.
+     *
+     * @param size Amount of memory in bytes to allocate on input.
+     *             On output, the amount of memory in bytes actually allocated.
+     * @param addr Output parameter which contains the address
+     *             allocated on success.
+     * @param align Alignment of the required memory or use ZERO for default.
+     * @return Result value.
+     */
+    virtual Result allocate(Size *size, Address *addr, Size align = ZERO) = 0;
 
-	/** Points to the default Allocator. */
-	static Allocator *_default;	
+    /**
+     * Release memory.
+     *
+     * @param addr Points to memory previously returned by allocate().
+     * @return Result value.
+     *
+     * @see allocate
+     */
+    virtual Result release(Address addr) = 0;
+
+  protected:
+
+    /**
+     * Align memory address.
+     *
+     * Any alignment corrections on the input address will result
+     * in an address which is higher than the input address.
+     * 
+     * @param addr Input address which need to be aligned.
+     * @param boundary Boundary size to align the address for.
+     * @return Aligned Address.
+     */
+    Address aligned(Address addr, Size boundary);
+
+    /** Our parent Allocator, if any. */
+    Allocator *m_parent;
+
+    /** Allocation memory alignment. */
+    Size m_alignment;
+
+    /** Allocation base address */
+    Address m_base;
+    
+  private:
+
+    /** Points to the default Allocator for new()/delete(). */
+    static Allocator *m_default; 
 };
 
 #ifndef __HOST__
@@ -131,7 +181,12 @@ class Allocator
  */
 inline void * operator new(__SIZE_TYPE__ sz)
 {
-    return (void *) Allocator::getDefault()->allocate((Size *) &sz);
+    Address addr;
+
+    if (Allocator::getDefault()->allocate((Size *) &sz, &addr) == Allocator::Success)
+        return (void *) addr;
+    else
+        return (void *) NULL;
 }
 
 /**
@@ -140,7 +195,12 @@ inline void * operator new(__SIZE_TYPE__ sz)
  */
 inline void * operator new[](__SIZE_TYPE__ sz)
 {
-    return (void *) Allocator::getDefault()->allocate((Size *) &sz);
+    Address addr;
+
+    if (Allocator::getDefault()->allocate((Size *) &sz, &addr) == Allocator::Success)
+        return (void *) addr;
+    else
+        return (void *) NULL;
 }
 
 /**

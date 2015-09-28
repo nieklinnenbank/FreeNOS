@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,111 +15,109 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Types.h>
+#include <FreeNOS/System.h>
 #include <MemoryBlock.h>
-#include <FreeNOS/Kernel.h>
-#include <FreeNOS/ProcessScheduler.h>
-#include "IntelCPU.h"
-#include "IntelMemory.h"
+#include <Memory.h>
+#include <SplitAllocator.h>
+#include <intel/IntelPaging.h>
 #include "IntelProcess.h"
 
-IntelProcess::IntelProcess(ProcessID id, Address entry)
-    : Process(id, entry)
+IntelProcess::IntelProcess(ProcessID id, Address entry, bool privileged, const MemoryMap &map)
+    : Process(id, entry, privileged, map)
 {
-    Address *pageDir, *tmpStack, *ioMap;
-    IntelMemory *memory = (IntelMemory *) Kernel::instance->getMemory();
+    // TODO: set some members
+}
+
+Process::Result IntelProcess::initialize()
+{
+    Address stackSize, stackAddr;
+    Memory::Range range;
     CPUState *regs;
+    u16 dataSel = m_privileged ? KERNEL_DS_SEL : USER_DS_SEL;
+    u16 codeSel = m_privileged ? KERNEL_CS_SEL : USER_CS_SEL;
 
-    /* Allocate page directory. */
-    pageDirAddr = memory->allocatePhysical(PAGESIZE);
-    pageDir     = (Address *) memory->map(pageDirAddr);
+    // Create MMU context
+    m_memoryContext = new IntelPaging(
+        &m_map,
+        Kernel::instance->getAllocator()
+    );
+    if (!m_memoryContext)
+        return OutOfMemory;
 
-    /* One page for the I/O bitmap. */
-    ioMapAddr   = memory->allocatePhysical(PAGESIZE);
-    ioMap       = (Address *) memory->map(ioMapAddr);
+    // User stack (high memory).
+    range = m_map.range(MemoryMap::UserStack);
+    range.access = Memory::Readable | Memory::Writable | Memory::User;
+    if (Kernel::instance->getAllocator()->allocate(&range.size, &range.phys) != Allocator::Success)
+        return OutOfMemory;
 
-    /* Clear them first. */
-    MemoryBlock::set(pageDir,   0, PAGESIZE);
-    MemoryBlock::set(ioMap,  0xff, PAGESIZE);
+    if (m_memoryContext->mapRange(&range) != MemoryContext::Success)
+        return MemoryMapError;
+    setUserStack(range.virt + range.size - MEMALIGN);
 
-    /* Setup mappings. */
-    pageDir[0] = kernelPageDir[0];
-    pageDir[DIRENTRY(PAGETABFROM) ] = pageDirAddr | PAGE_PRESENT | PAGE_RW;
-    pageDir[DIRENTRY(PAGEUSERFROM)] = pageDirAddr | PAGE_PRESENT | PAGE_RW;
+    // Kernel stack (low memory).
+    stackSize = PAGESIZE;
+    if (Kernel::instance->getAllocator()->allocateLow(stackSize, &stackAddr) != Allocator::Success)
+        return OutOfMemory;
 
-    /* Point stacks. */
-    stackAddr       = 0xc0000000 - MEMALIGN;
-    kernelStackAddr = 0xd0000000 - MEMALIGN;
+    stackAddr = (Address) Kernel::instance->getAllocator()->toVirtual(stackAddr);
+    m_kernelStackBase = stackAddr + stackSize;
+    setKernelStack(m_kernelStackBase - sizeof(CPUState)
+                                     - sizeof(IRQRegs0)
+                                     - sizeof(CPURegs));
 
-    /* Allocate stacks. */
-    for (int i = 0; i < 4; i++)
-    {
-        memory->allocate(this, stackAddr - (i * PAGESIZE),
-                                Memory::Present | Memory::User | Memory::Writable | Memory::Readable);
-        memory->allocate(this, kernelStackAddr - (i * PAGESIZE),
-                                Memory::Present | Memory::Readable | Memory::Writable);
-    }
-    /* Map kernel stack. */
-    tmpStack = (Address *) memory->map(
-				memory->lookup(this, kernelStackAddr) & PAGEMASK);
-	
-    /* Setup initial registers. */
-    regs = (CPUState *) (((u32)tmpStack) + PAGESIZE - sizeof(CPUState));
+    // Fill kernel stack with initial (user)registers to restore
+    // loadCoreState: struct CPUState
+    regs = (CPUState *) m_kernelStackBase - 1;
     MemoryBlock::set(regs, 0, sizeof(CPUState));
-    regs->ss0    = KERNEL_DS_SEL;
-    regs->fs     = USER_DS_SEL;
-    regs->gs     = USER_DS_SEL;
-    regs->es     = USER_DS_SEL;
-    regs->ds     = USER_DS_SEL;
-    regs->ebp    = stackAddr;
-    regs->esp0   = kernelStackAddr;
-    regs->eip    = entry;
-    regs->cs     = USER_CS_SEL;
-    regs->eflags = 0x202;
-    regs->esp3   = stackAddr;
-    regs->ss3    = USER_DS_SEL;
-    
-    /* Repoint our stack. */
-    stackAddr = kernelStackAddr - sizeof(CPUState) + MEMALIGN;
+    regs->seg.ss0    = KERNEL_DS_SEL;
+    regs->seg.fs     = dataSel;
+    regs->seg.gs     = dataSel;
+    regs->seg.es     = dataSel;
+    regs->seg.ds     = dataSel;
+    regs->regs.ebp   = m_userStack;
+    regs->regs.esp0  = m_kernelStack;
+    regs->irq.eip    = m_entry;
+    regs->irq.cs     = codeSel;
+    regs->irq.eflags = INTEL_EFLAGS_DEFAULT |
+                       INTEL_EFLAGS_IRQ;
+    regs->irq.esp3   = m_userStack;
+    regs->irq.ss3    = dataSel;
 
-    /* Release temporary mappings. */
-    memory->map((Address) 0, (Address) pageDir, Memory::None);
-    memory->map((Address) 0, (Address) tmpStack, Memory::None);
-    memory->map((Address) 0, (Address) ioMap, Memory::None);
+    // restoreState: iret
+    IRQRegs0 *irq = (IRQRegs0 *) regs - 1;
+    irq->eip = (Address) loadCoreState;
+    irq->cs  = KERNEL_CS_SEL;
+    irq->eflags = INTEL_EFLAGS_DEFAULT;
+
+    // restoreState: popa
+    CPURegs *pusha = (CPURegs *) irq - 1;
+    MemoryBlock::set(pusha, 0, sizeof(CPURegs));
+    pusha->ebp  = m_kernelStackBase - sizeof(CPURegs);
+    pusha->esp0 = pusha->ebp;
+    return Success;
 }
 
 IntelProcess::~IntelProcess()
 {
-    Memory *memory = Kernel::instance->getMemory();
-
-    /* Mark all our pages free. */
-    memory->release(this);
+    // TODO: release() on m_kernelStack
+    m_memoryContext->releaseRegion(MemoryMap::UserData);
+    m_memoryContext->releaseRegion(MemoryMap::UserHeap);
+    m_memoryContext->releaseRegion(MemoryMap::UserStack);
+    m_memoryContext->releaseRegion(MemoryMap::UserPrivate);
 }
 
-void IntelProcess::IOPort(u16 port, bool enable)
+void IntelProcess::execute(Process *previous)
 {
-    Memory *memory = Kernel::instance->getMemory();
+    IntelProcess *p = (IntelProcess *) previous;
 
-    Address tmp = memory->map(ioMapAddr);
-    kernelTss.setPort(port, enable, (u8 *) tmp);
-    memory->map((Address) 0, tmp, Memory::None);
-}
+    // Reload Task State Register (with kernel stack for interrupts)
+    kernelTss.esp0 = m_kernelStackBase;
+    //ltr(KERNEL_TSS_SEL);
 
-void IntelProcess::execute()
-{
-    Memory *memory = Kernel::instance->getMemory();
-    ProcessManager *procs = Kernel::instance->getProcessManager();
-    IntelProcess *old = (IntelProcess *) procs->previous();
+    // Activate the memory context of this process
+    m_memoryContext->activate();    
 
-    /* Refresh I/O bitmap. */
-    memory->map(ioMapAddr, (Address) &kernelioBitMap);
-
-#warning FIX this. Context switching should not depend on a previous process. Split up into two functions: saveContext() restoreContext()
-
-    /* Perform a context switch. */
-    contextSwitch( old ? &old->stackAddr : ZERO,
-		   pageDirAddr,
-		   stackAddr,
-		  &kernelTss,
-		   kernelStackAddr);
+    // Switch kernel stack (includes saved userspace registers)
+    switchCoreState( p ? &p->m_kernelStack : ZERO,
+                     m_kernelStack );
 }

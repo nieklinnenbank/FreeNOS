@@ -21,19 +21,26 @@
 #include <FreeNOS/Kernel.h>
 #include "IPCMessage.h"
 
-Error IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg, Size size)
+Error IPCMessageHandler(ProcessID id, API::Operation action, Message *msg, Size size)
 {
     Process *proc;
     ProcessManager *procs = Kernel::instance->getProcessManager();
-    Memory *memory = Kernel::instance->getMemory();
-    
-    /* Verify memory read/write access. */
-    if (size > MAX_MESSAGE_SIZE || !memory->access(procs->current(),
-                                                  (Address) msg, sizeof(UserMessage)))
+
+    // Sanity check the incoming message.
+    if (!msg)
     {
-        return EFAULT;
+        FATAL("Message == 0"); for(;;);
     }
-    /* Enforce correct fields. */
+    if (msg->type != IPCType)
+    {
+        FATAL("Message->type != IPCType"); for(;;);
+    }
+    if (size > MAX_MESSAGE_SIZE)
+    {
+        FATAL("size > MAX"); for(;;);
+    }
+
+    // Enforce correct fields
     msg->from = procs->current()->getID();
     msg->type = IPCType;
 
@@ -42,42 +49,61 @@ Error IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg, Size s
     /* Handle IPC request appropriately. */
     switch (action)
     {
-        case Send:
-        case SendReceive:
-  
+        case API::Send:
+        case API::SendReceive:
+        {
             /* Find the remote process to send to. */
             if (!(proc = procs->get(id)))
             {
-                return ESRCH;
+                return API::NotFound;
             }
-            /* Put our message on their list, and try to let them execute! */
-            proc->getMessages()->prepend(new UserMessage(msg, size));
+            // Copy the message
+            UserMessage *copy = new UserMessage;
+            copy->from = msg->from;
+            copy->type = msg->type;
+            MemoryBlock::copy(copy, msg, size);
+
+            // Put our message on their list, and try to let them execute!
+            proc->getMessages()->prepend(copy);
             proc->setState(Process::Ready);
 
-            if (action == SendReceive && proc != procs->current())
+            if (action == API::SendReceive && proc != procs->current())
             {
                 procs->current()->setState(Process::Sleeping);
                 procs->schedule(proc);
             }
-            if (action == Send)
+            if (action == API::Send)
                 break;
+        }
             
-        case Receive:
+        case API::Receive:
 
-            /* Block until we have a message. */
+            proc = procs->current();
+
+            // Block until we have a message
             while (true)
             {
                 /* Look for a message, with origin 'id'. */
-                for (ListIterator<UserMessage *> i(procs->current()->getMessages());
-                     i.hasCurrent(); i++)
+                for (ListIterator<Message *> i(proc->getMessages()); i.hasCurrent(); i++)
                 {
-                    if (i.current()->from == id || id == ANY)
+                    Message *m = i.current();
+
+                    if (!m)
                     {
-                        MemoryBlock::copy(msg, i.current()->data, size < i.current()->size ?
-                                                       size : i.current()->size);
-                        delete i.current();
+                        FATAL("empty message from queue"); for(;;);
+                    }
+                    if (m->type > FaultType)
+                    {
+                        FATAL("invalid type from queue"); for(;;);
+                    }
+
+                    // TODO: #warning i.current() gets corrupted here!
+                    if (m->from == id || id == ANY)
+                    {
+                        MemoryBlock::copy(msg, m, size);
                         i.remove();
-                        return 0;
+                        delete m;
+                        return API::Success;
                     }
                 }
                 /* Let some other process run while we wait. */
@@ -86,8 +112,9 @@ Error IPCMessageHandler(ProcessID id, Operation action, UserMessage *msg, Size s
             }
 
         default:
-            return EINVAL;
+            FATAL("unknown action: " << (int) action); for(;;);
+            return API::InvalidArgument;
     }
     /* Success. */
-    return 0;
+    return API::Success;
 }

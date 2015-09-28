@@ -18,9 +18,8 @@
 #ifndef __FILESYSTEM_IOBUFFER_H
 #define __FILESYSTEM_IOBUFFER_H
 
-#include <API/VMCopy.h>
+#include <FreeNOS/API.h>
 #include <Types.h>
-#include <Error.h>
 #include "FileSystemMessage.h"
 
 /**
@@ -49,7 +48,7 @@ class IOBuffer
 	 */
 	Error read(void *buffer, Size size, Size offset = ZERO)
 	{
-	    return VMCopy(message->from, Read,
+	    return VMCopy(message->from, API::Read,
                          (Address) buffer,
                          (Address) message->buffer + offset, size);
 	}
@@ -65,7 +64,7 @@ class IOBuffer
 	 */
 	Error write(void *buffer, Size size, Size offset = ZERO)
 	{
-	    return VMCopy(message->from, Write,
+	    return VMCopy(message->from, API::Write,
                          (Address) buffer,
                          (Address) message->buffer + offset, size);
 	}

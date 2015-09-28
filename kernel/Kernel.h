@@ -18,16 +18,64 @@
 #ifndef __KERNEL_H
 #define __KERNEL_H
 
-#include <System/Function.h>
 #include <Macros.h>
 #include <Types.h>
 #include <Singleton.h>
-#include "BootImage.h"
+#include <BootImage.h>
+#include <Memory.h>
+#include <CoreInfo.h>
 #include "Process.h"
-#include "Memory.h"
-#include "ProcessFactory.h"
 #include "ProcessManager.h"
-#include "API.h"
+
+/** Forward declarations. */
+class API;
+class SplitAllocator;
+class IntController;
+struct CPUState;
+
+/**
+ * Function which is called when the CPU is interrupted. 
+ *
+ * @param state State of the CPU on the moment the interrupt occurred. 
+ * @param param Optional parameter for the handler. 
+ */
+
+// TODO: move this to libarch's IntController? The IntController
+// could take care of invocing a certain ISR when interrupt is raised.
+
+typedef void InterruptHandler(struct CPUState *state, ulong param);
+    
+/**
+ * Interrupt hook class.
+ */
+typedef struct InterruptHook
+{
+    /**
+     * Constructor function.
+     * @param h Handler function for the hook.
+     * @param p Parameter to pass.
+     */
+    InterruptHook(InterruptHandler *h, ulong p) : handler(h), param(p)
+    {
+    }
+
+    /**
+     * Comparision operator.
+     * @param i InterruptHook pointer.
+     * @return True if equal, false otherwise.
+     */
+    bool operator == (InterruptHook *i)
+    {
+        return handler == i->handler && param == i->param;
+    }
+
+    /** Executed at time of interrupt. */
+    InterruptHandler *handler;
+
+    /** Passed to the handler. */
+    ulong param;
+}
+InterruptHook;
 
 /** 
  * @defgroup kernel kernel (generic)
@@ -35,85 +83,142 @@
  */
 
 /**
- * Represents the kernel core.
+ * FreeNOS kernel implementation.
  */
 class Kernel : public Singleton<Kernel>
 {
   public:
 
     /**
-     * Constructor function.
-     *
-     * @param memory Pointer to a Memory implementation
+     * Result codes.
      */
-    Kernel(Memory *memory, ProcessManager *proc);
+    enum Result
+    {
+        Success,
+        InvalidBootImage,
+        ProcessError
+    };
 
     /**
-     * Get memory.
+     * Constructor function.
+     *
+     * @param info CoreInfo structure for this core.
      */
-    Memory * getMemory();
+    Kernel(CoreInfo *info);
+
+    /**
+     * Initialize heap.
+     *
+     * This function sets up the kernel heap for
+     * dynamic memory allocation with new() and delete()
+     * operators. It must be called before any object
+     * is created using new().
+     *
+     * @return Zero on success or error code on failure.
+     */
+    static Error heap(Address base, Size size);
+
+    /**
+     * Get physical memory allocator.
+     *
+     * @return SplitAllocator object pointer
+     */
+    SplitAllocator * getAllocator();
 
     /**
      * Get process manager.
+     *
+     * @return Kernel ProcessManager object pointer.
      */
     ProcessManager * getProcessManager();
 
     /**
-     * Execute the kernel.
+     * Get API.
+     *
+     * @return Kernel API object pointer.
      */
-    void run();
+    API * getAPI();
 
     /**
-     * Execute a generic API function.
+     * Get the current MMU context.
+     *
+     * @return MemoryContext object pointer
      */
-    virtual Error invokeAPI(APINumber number,
-                            ulong arg1, ulong arg2, ulong arg3, ulong arg4, ulong arg5);
+    MemoryContext * getMemoryContext();
+
+    /**
+     * Get CoreInfo.
+     *
+     * @return CoreInfo object pointer
+     */
+    CoreInfo * getCoreInfo();
+
+    /**
+     * Execute the kernel.
+     */
+    int run();
+
+    /** 
+     * Enable or disable an hardware interrupt (IRQ). 
+     *
+     * @param irq IRQ number. 
+     * @param enabled True to enable, and false to disable. 
+     */
+    void enableIRQ(u32 irq, bool enabled);
 
     /**
      * Hooks a function to an hardware interrupt.
+     *
      * @param vec Interrupt vector to hook on.
      * @param h Handler function.
      * @param p Parameter to pass to the handler function.
      */
-    virtual void hookInterrupt(int vec, InterruptHandler h, ulong p) = 0;
+    virtual void hookIntVector(u32 vec, InterruptHandler h, ulong p);
 
-    /** 
-     * Enable or disable an hardware interrupt (IRQ). 
-     * @param vector IRQ number. 
-     * @param enabled True to enable, and false to disable. 
+    /**
+     * Execute an interrupt handler.
+     *
+     * @param vec Interrupt vector.
+     * @param state CPU state.
      */
-    virtual void enableIRQ(uint vector, bool enabled) = 0;
-
-protected:
+    virtual void executeIntVector(u32 vec, CPUState *state);
 
     /**
      * Loads the boot image.
      */
-    bool loadBootImage();
-    
+    virtual Result loadBootImage();
+
+  private:
+
     /**
-     * Creates a new Process from a BootProcess.
+     * Load a boot program.
+     *
      * @param image BootImage pointer loaded by the bootloader in kernel virtual memory.
      * @param imagePAddr Physical memory address of the boot image.
      * @param index Index in the BootProcess table.
      */
-    void loadBootProcess(BootImage *image, Address imagePAddr, Size index);
+    virtual Result loadBootProcess(BootImage *image, Address imagePAddr, Size index);
 
-    /** Memory object */
-    Memory *m_memory;
+  protected:
+
+    /** Physical memory allocator */
+    SplitAllocator *m_alloc;
 
     /** Process Manager */
     ProcessManager *m_procs;
 
-    /** API handlers */
-    Vector<APIHandler *> m_apis;
+    /** API handlers object */
+    API *m_api;
+
+    /** CoreInfo object for this core. */
+    CoreInfo *m_coreInfo;
+
+    /** Interrupt handlers. */
+    Vector<List<InterruptHook *> *> m_interrupts;
+
+    /** Interrupt Controller. */
+    IntController *m_intControl;
 };
-
-/** Start of kernel text and data. */
-extern Address kernelStart;
-
-/** End of kernel. */
-extern Address kernelEnd;
 
 /**
  * @}

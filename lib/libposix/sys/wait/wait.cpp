@@ -15,31 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/IPCMessage.h>
-#include <ProcessMessage.h>
+#include <FreeNOS/API.h>
 #include "sys/wait.h"
 #include "sys/types.h"
+#include <errno.h>
 
 pid_t waitpid(pid_t pid, int *stat_loc, int options)
 {
-    ProcessMessage msg;
-    
-    /* Fill in the message. */
-    msg.action = WaitProcess;
-    msg.number = pid;
-    
-    /* Ask ProcessServer. */
-    IPCMessage(PROCSRV_PID, SendReceive, &msg, sizeof(msg));
+#warning change to API::Result later in kernel. Also in the ProcessCtl.h header etc.
+    Error result = ProcessCtl(pid, WaitPID);
 
-    /* Did we succeed? */
-    if (msg.result == ESUCCESS)
+    if (stat_loc)
     {
-	if (stat_loc)
-	{
-	    *stat_loc = msg.number;
-	}
-	return pid;
+        *stat_loc = result;
     }
-    else
-	return msg.result;
+    return result;
 }

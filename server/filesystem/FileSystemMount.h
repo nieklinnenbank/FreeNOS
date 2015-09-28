@@ -22,10 +22,7 @@
 #include <Types.h>
 
 /** Maximum number of mounted filesystems. */
-#define MAX_MOUNTS 16
-
-/** Shared mapping key for the mounts table. */
-#define FILE_SYSTEM_MOUNT_KEY "FileSystemMount"
+#define FILESYSTEM_MAXMOUNTS 16
 
 /**
  * Represents a mounted filesystem.

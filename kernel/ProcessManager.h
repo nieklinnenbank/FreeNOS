@@ -17,12 +17,11 @@
 
 #ifndef __KERNEL_PROCESS_MANAGER_H
 #define __KERNEL_PROCESS_MANAGER_H
-#ifndef __ASSEMBLER__
 
 #include <Types.h>
+#include <MemoryMap.h>
 #include "Process.h"
-#include "ProcessFactory.h"
-#include "ProcessScheduler.h"
+#include "Scheduler.h"
 
 /** Maximum number of processes. */
 #define MAX_PROCS 1024
@@ -32,87 +31,81 @@
  */
 class ProcessManager
 {
-    public:
+  public:
     
-        /**
-         * Constructor function.
-         * @param entry Initial program counter value.
-         */
-        ProcessManager(ProcessFactory *factory,
-                       ProcessScheduler *scheduler);
+    /**
+     * Constructor function.
+     */
+    ProcessManager(Scheduler *scheduler);
     
-        /**
-         * Destructor function.
-         */
-        virtual ~ProcessManager();
+    /**
+     * Destructor function.
+     */
+    virtual ~ProcessManager();
 
-        /**
-         * Create and add a new Process.
-         */
-        Process * create(Address entry);
+    /**
+     * Create and add a new Process.
+     */
+    Process * create(Address entry, const MemoryMap &map);
 
-        /**
-         * Retrieve a Process by it's ID.
-         * @param id ProcessID number.
-         * @return Pointer to the appropriate process or ZERO if not found.
-         */
-        Process * get(ProcessID id);        
+    /**
+     * Retrieve a Process by it's ID.
+     * @param id ProcessID number.
+     * @return Pointer to the appropriate process or ZERO if not found.
+     */
+    Process * get(ProcessID id);        
 
-        /**
-         * Remove a Process.
-         */
-        void remove(Process *proc);
+    /**
+     * Remove a Process.
+     */
+    void remove(Process *proc, uint exitStatus = 0);
 
-        /**
-         * Schedule next process to run.
-         */
-        void schedule(Process *proc = ZERO);
+    /**
+     * Schedule next process to run.
+     */
+    void schedule(Process *proc = ZERO);
 
-        /**
-         * Set the idle process.
-         */
-        void setIdle(Process *proc);
+    /**
+     * Set the idle process.
+     */
+    void setIdle(Process *proc);
 
-        /**
-         * Current process running. NULL if no process running yet.
-         */
-        Process * current();
+    /**
+     * Current process running. NULL if no process running yet.
+     */
+    Process * current();
 
-        /**
-         * Previous process running.
-         */
-        Process * previous();
+    /**
+     * Previous process running.
+     */
+    Process * previous();
 
-        /**
-         * Retrieve the process table.
-         * @return Pointer to the process table.
-         */
-        Vector<Process *> * getProcessTable();
+    /**
+     * Retrieve the process table.
+     * @return Pointer to the process table.
+     */
+    Vector<Process *> * getProcessTable();
 
-    private:
+  private:
 
-        /** All known Processes. */
-        Vector<Process *> m_procs;
+    /** All known Processes. */
+    Vector<Process *> m_procs;
 
-        /** Object which creates processes for us. */
-        ProcessFactory *m_factory;
+    /** Object which selects processes to run. */
+    Scheduler *m_scheduler;
 
-        /** Object which selects processes to run. */
-        ProcessScheduler *m_scheduler;
+    /** Currently executing process */
+    Process *m_current;
 
-        /** Currently executing process */
-        Process *m_current;
+    /** Previous process executing */
+    Process *m_previous;
 
-        /** Previous process executing */
-        Process *m_previous;
-
-        /** Idle process */
-        Process *m_idle;
+    /** Idle process */
+    Process *m_idle;
 };
 
 /**
  * @}
  */
 
-#endif /* __ASSEMBLER__ */
 #endif /* __KERNEL_PROCESS_H */

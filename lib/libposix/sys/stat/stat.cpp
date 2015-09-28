@@ -15,9 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/IPCMessage.h>
+#include <FreeNOS/API.h>
 #include <FileSystemMessage.h>
-#include <ProcessID.h>
 #include "Runtime.h"
 #include <errno.h>
 #include "sys/stat.h"
@@ -30,13 +29,14 @@ int stat(const char *path, struct stat *buf)
 
     /* Fill message. */
     msg.action = StatFile;
-    msg.buffer = (char *) path;
+    msg.path   = (char *) path;
     msg.stat   = &st;
+    msg.type   = IPCType;
     
     /* Ask the FileSystem for the information. */
     if (mnt)
     {
-	IPCMessage(mnt, SendReceive, &msg, sizeof(msg));
+	IPCMessage(mnt, API::SendReceive, &msg, sizeof(msg));
 
         /* Copy information into buf. */
 	if (msg.result == ESUCCESS)
@@ -47,7 +47,7 @@ int stat(const char *path, struct stat *buf)
 	errno = msg.result;
     }
     else
-	errno = ENOENT;
+	errno = msg.result = ENOENT;
     
     /* Success. */
     return msg.result == ESUCCESS ? 0 : -1;

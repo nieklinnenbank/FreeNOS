@@ -15,40 +15,43 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Types.h>
+#include <FreeNOS/System.h>
 #include "BubbleAllocator.h"
-
-BubbleAllocator::BubbleAllocator()
-{
-    region(0, 0);
-}
 
 BubbleAllocator::BubbleAllocator(Address start, Size size)
 {
-    region(start, size);
+    m_start   = (u8 *) start;
+    m_current = (u8 *) start;
+    m_size    = size;
 }
 
-Address BubbleAllocator::allocate(Size *sz)
+Size BubbleAllocator::size()
 {
-    Size needed = aligned(*sz);
+    return m_size;
+}
 
-    /* Do we still have enough room? */
-    if (current + needed < start + size)
+Size BubbleAllocator::available()
+{
+    return m_size - (m_current - m_start);
+}
+
+Allocator::Result BubbleAllocator::allocate(Size *sz, Address *addr, Size align)
+{
+    Size needed = aligned(*sz, MEMALIGN);
+
+    // Do we still have enough room?
+    if (m_current + needed < m_start + m_size)
     {
-	current += needed;
-	return (Address) (current - needed);
+        m_current += needed;
+        *addr = (Address) (m_current - needed);
+        return Success;
     }
-    /* No more memory available. */
-    return (Address) 0;
+    // No more memory available
+    return OutOfMemory;
 }
 
-void BubbleAllocator::release(Address addr)
+Allocator::Result BubbleAllocator::release(Address addr)
 {
-}
-
-void BubbleAllocator::region(Address addr, Size size)
-{
-    this->start   = (u8 *) addr;
-    this->current = (u8 *) addr;
-    this->size    = size;
+    // BubbleAllocator never releases memory
+    return InvalidAddress;
 }

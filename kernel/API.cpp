@@ -15,20 +15,51 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <Log.h>
 #include "API.h"
 
-/** Operator to print a Operation to a Log */
-Log & operator << (Log &log, Operation op)
+API::API()
+{
+    DEBUG("");
+
+    // Register generic API handlers
+    m_apis.fill(ZERO);
+    m_apis.insert(IPCMessageNumber, (Handler *) IPCMessageHandler);
+    m_apis.insert(PrivExecNumber,   (Handler *) PrivExecHandler);
+    m_apis.insert(ProcessCtlNumber, (Handler *) ProcessCtlHandler);
+    m_apis.insert(SystemInfoNumber, (Handler *) SystemInfoHandler);
+    m_apis.insert(VMCopyNumber,     (Handler *) VMCopyHandler);
+    m_apis.insert(VMCtlNumber,      (Handler *) VMCtlHandler);
+    m_apis.insert(IOCtlNumber,      (Handler *) IOCtlHandler);
+}
+
+Error API::invoke(Number number,
+                  ulong arg1,
+                  ulong arg2,
+                  ulong arg3,
+                  ulong arg4,
+                  ulong arg5)
+{
+    Handler **handler = (Handler **) m_apis.get(number);
+
+    if (handler)
+        return (*handler)(arg1, arg2, arg3, arg4, arg5);
+    else
+        return InvalidArgument;
+}
+
+Log & operator << (Log &log, API::Operation op)
 {
     switch (op)
     {
-        case Create: log.write("Create");   break;
-        case Delete: log.write("Delete");   break;
-        case Send:   log.write("Send");     break;
-        case Receive: log.write("Receive"); break;
-        case SendReceive: log.write("SendReceive"); break;
-        case Read: log.write("Read");       break;
-        case Write: log.write("Write");     break;
+        case API::Create:      log.append("Create");      break;
+        case API::Delete:      log.append("Delete");      break;
+        case API::Send:        log.append("Send");        break;
+        case API::Receive:     log.append("Receive");     break;
+        case API::SendReceive: log.append("SendReceive"); break;
+        case API::Read:        log.append("Read");        break;
+        case API::ReadPhys:    log.append("ReadPhys");    break;
+        case API::Write:       log.append("Write");       break;
     }    
     return log;
 }

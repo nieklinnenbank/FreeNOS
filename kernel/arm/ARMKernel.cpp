@@ -15,22 +15,106 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <Log.h>
+#include <SplitAllocator.h>
+#include <CoreInfo.h>
+#include <FreeNOS/API.h>
+#include <arm/ARMInterrupt.h>
+#include <arm/ARMConstant.h>
+#include <arm/BCM2835Interrupt.h>
 #include "ARMKernel.h"
 
-ARMKernel::ARMKernel(Memory *memory, ProcessManager *procs)
-    : Kernel(memory, procs)
+ARMKernel::ARMKernel(ARMInterrupt *intr,
+                     CoreInfo *info)
+    : Kernel(info)
 {
+    NOTICE("");
+
+    // Setup interrupt callbacks
+    m_intControl = intr;
+    intr->install(ARMInterrupt::UndefinedInstruction, undefinedInstruction);
+    intr->install(ARMInterrupt::SoftwareInterrupt, trap);
+    intr->install(ARMInterrupt::PrefetchAbort, prefetchAbort);
+    intr->install(ARMInterrupt::DataAbort, dataAbort);
+    intr->install(ARMInterrupt::Reserved, reserved);
+    intr->install(ARMInterrupt::IRQ, interrupt);
+    intr->install(ARMInterrupt::FIQ, interrupt);
+
+    // Enable clocks and irqs
+    m_timer.setInterval( 250 ); /* trigger timer interrupts at 250Hz (clock runs at 1Mhz) */
+    m_intControl->enable(BCM_IRQ_SYSTIMERM1);
+
+    // Set ARMCore modes
+    ARMControl ctrl;
+    ctrl.unset(ARMControl::AlignmentCorrect);
+    ctrl.set(ARMControl::AlignmentFaults);
+    ctrl.unset(ARMControl::BigEndian);
 }
 
-void ARMKernel::hookInterrupt(int vec, InterruptHandler h, ulong p)
+void ARMKernel::interrupt(CPUState state)
 {
+    ARMKernel *kernel = (ARMKernel *) Kernel::instance;
+    ARMInterrupt *intr = (ARMInterrupt *) kernel->m_intControl;
+
+    // TODO: remove BCM2835 specific code
+    if (intr->isTriggered(BCM_IRQ_SYSTIMERM1))
+    {
+        kernel->m_timer.next();
+        kernel->getProcessManager()->schedule();
+    }
+    else
+    {
+        for (uint i = 0; i < 64; i++)
+        {
+            if (intr->isTriggered(i))
+                kernel->executeIntVector(i, &state);
+        }
+    }
 }
 
-void ARMKernel::enableIRQ(uint vector, bool enabled)
+void ARMKernel::undefinedInstruction(CPUState state)
 {
+    ARMCore core;
+    core.logException(&state);
+    FATAL("procId = " << Kernel::instance->getProcessManager()->current()->getID());
+    for(;;);
 }
 
-Process * ARMKernel::createProcess(Address entry)
+void ARMKernel::prefetchAbort(CPUState state)
 {
-    return (Process *) NULL;
+    ARMCore core;
+    core.logException(&state);
+    FATAL("procId = " << Kernel::instance->getProcessManager()->current()->getID());
+    for(;;);
+}
+
+void ARMKernel::dataAbort(CPUState state)
+{
+    ARMCore core;
+    core.logException(&state);
+    FATAL("procId = " << Kernel::instance->getProcessManager()->current()->getID());
+    for(;;);
+}
+
+
+void ARMKernel::reserved(CPUState state)
+{
+    ARMCore core;
+    core.logException(&state);
+    FATAL("procId = " << Kernel::instance->getProcessManager()->current()->getID());
+    for(;;);
+}
+
+void ARMKernel::trap(CPUState state)
+{
+    //DEBUG("procId = " << Kernel::instance->getProcessManager()->current()->getID() << " api = " << state.r0);
+
+    state.r0 = Kernel::instance->getAPI()->invoke(
+        (API::Number) state.r0,
+                      state.r1,
+                      state.r2,
+                      state.r3,
+                      state.r4,
+                      state.r5
+    );
 }

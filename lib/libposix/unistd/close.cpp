@@ -15,33 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/IPCMessage.h>
+#include <FreeNOS/API.h>
 #include <FileSystemMessage.h>
-#include <ProcessID.h>
 #include "Runtime.h"
 #include <errno.h>
 #include "unistd.h"
 
 int close(int fildes)
 {
-    FileSystemMessage msg;
-    ProcessID mnt = findMount(fildes);
-    
-    /* Fill the message. */
-    msg.action = CloseFile;
-    msg.fd     = fildes;
-    
-    /* Ask the FileSystem. */
-    if (mnt)
+    Vector<FileDescriptor> *fds = getFiles();
+    FileDescriptor *fd = ZERO;
+
+    if ((fd = (FileDescriptor *) fds->get(fildes)) == ZERO || !fd->open)
     {
-	IPCMessage(mnt, SendReceive, &msg, sizeof(msg));
-    
-	/* Set error number. */
-	errno = msg.result;
+        errno = ENOENT;
+        return -1;
     }
-    else
-	errno = ENOENT;
-    
-    /* All done. */
-    return errno == ESUCCESS ? 0 : -1;
+    fd->open = false;
+    return 0;
 }

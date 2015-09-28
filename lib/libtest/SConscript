@@ -19,6 +19,6 @@ Import('build_env')
 
 env = build_env.Clone()
 env.UseServers(['filesystem', 'terminal'])
-env.UseLibraries(['libposix', 'libc', 'libstd'])
+env.UseLibraries(['libposix', 'libstd', 'libarch'])
 env.UseLibraries(['libstd'], 'host')
 env.Library('libtest', [ Glob('*.cpp') ])

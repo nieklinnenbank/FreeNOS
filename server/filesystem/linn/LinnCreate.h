@@ -168,7 +168,7 @@ class LinnCreate
 	 * @param type FileType for the entry to insert.
 	 */
 	void insertEntry(le32 dirInode, le32 entryInode,
-			 char *name, FileType type);
+			 const char *name, FileType type);
 
 	/**
 	 * Inserts the given directory and it's childs to the filesystem image.

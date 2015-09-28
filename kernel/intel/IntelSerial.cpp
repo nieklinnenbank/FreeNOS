@@ -15,38 +15,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/Config.h>
-#include "IntelCPU.h"
+#include <FreeNOS/System.h>
 #include "IntelSerial.h"
 
 IntelSerial::IntelSerial(u16 base)
 {
-    m_base = base;
+    m_io.setBase(base);
 
     /* 8bit Words, no parity. */
-    outb(base + LINECONTROL, 3);
+    m_io.outb(LINECONTROL, 3);
     
     /* Enable interrupts. */
-    outb(base + IRQCONTROL, 1);
+    m_io.outb(IRQCONTROL, 1);
     
     /* No FIFO. */
-    outb(base + FIFOCONTROL, 0);
+    m_io.outb(FIFOCONTROL, 0);
     
     /* Data Ready, Request to Send. */
-    outb(base + MODEMCONTROL, 3);
+    m_io.outb(MODEMCONTROL, 3);
     
     /* Set baudrate. */
-    outb(base + LINECONTROL, inb(base + LINECONTROL) | DLAB);
-    outb(base + DIVISORLOW,  (11500 / BAUDRATE) & 0xff);
-    outb(base + DIVISORHIGH, (11500 / BAUDRATE) >> 8);
-    outb(base + LINECONTROL, inb(base + LINECONTROL) & ~DLAB);
+    m_io.outb(LINECONTROL, m_io.inb(LINECONTROL) | DLAB);
+    m_io.outb(DIVISORLOW,  (11500 / BAUDRATE) & 0xff);
+    m_io.outb(DIVISORHIGH, (11500 / BAUDRATE) >> 8);
+    m_io.outb(LINECONTROL, m_io.inb(LINECONTROL) & ~DLAB);
 }
 
 void IntelSerial::write(const char *str)
 {
     /* Write as much bytes as possible. */
-    while (inb(m_base + LINESTATUS) & TXREADY && *str)
+    while (m_io.inb(LINESTATUS) & TXREADY && *str)
     {
-    	outb(m_base, *str++);
+        m_io.outb(TRANSMIT, *str++);
     }
 }

@@ -27,71 +27,79 @@
 #include <Types.h>
 #include <Device.h>
 
-/**
- * Constants used to communicate with the UART.
- */
-enum
-{
-    TRANSMIT     = 0,
-    RECEIVE      = 0,
-    DIVISORLOW   = 0,
-    DIVISORHIGH  = 1,
-    RXREADY      = 1,
-    IRQCONTROL   = 1,
-    IRQSTATUS    = 2,
-    FIFOCONTROL  = 2,
-    LINECONTROL  = 3,
-    MODEMCONTROL = 4,
-    LINESTATUS   = 5,
-    TXREADY      = 0x20,
-    DLAB	 = 0x80,
-    BAUDRATE     = 9600,
-};
 
 /**
  * i8250 serial UART.
  */
 class i8250 : public Device
 {
-    public:
+  public:
 
-	/**
-	 * Constructor function.
-	 * @param base I/O base port.
-	 */
-        i8250(u16 base, u16 irq);
+    /**
+     * Constants used to communicate with the UART.
+     */
+    enum Constants
+    {
+        TRANSMIT     = 0,
+        RECEIVE      = 0,
+        DIVISORLOW   = 0,
+        DIVISORHIGH  = 1,
+        RXREADY      = 1,
+        IRQCONTROL   = 1,
+        IRQSTATUS    = 2,
+        FIFOCONTROL  = 2,
+        LINECONTROL  = 3,
+        MODEMCONTROL = 4,
+        LINESTATUS   = 5,
+        TXREADY      = 0x20,
+        DLAB         = 0x80,
+        BAUDRATE     = 9600,
+    };
 
-	/**
-	 * @brief Initializes the i8250 serial UART.
-	 * @return Error status code.
-	 */
-	Error initialize();
+    /**
+     * Constructor function.
+     * @param base I/O base port.
+     */
+    i8250(u16 base, u16 irq);
 
-	/** 
-	 * Read bytes from the i8250.
-	 * @param buffer Buffer to save the read bytes.
-	 * @param size Number of bytes to read.
-	 * @param offset Unused.
-	 * @return Number of bytes on success and ZERO on failure. 
-	 */
-	Error read(s8 *buffer, Size size, Size offset);
+    /**
+     * @brief Initializes the i8250 serial UART.
+     * @return Error status code.
+     */
+    virtual Error initialize();
 
-	/** 
-	 * Write bytes to the device.
-	 * @param buffer Buffer containing bytes to write. 
-	 * @param size Number of bytes to write.
-	 * @param offset Unused.
-	 * @return Number of bytes on success and ZERO on failure. 
-	 */
-	Error write(s8 *buffer, Size size, Size offset);
+    /**
+     * Called when an interrupt has been triggered for this device.
+     * @param vector Vector number of the interrupt.
+     * @return Error result code.
+     */
+    virtual Error interrupt(Size vector);
 
-    private:
+    /** 
+     * Read bytes from the i8250.
+     * @param buffer Buffer to save the read bytes.
+     * @param size Number of bytes to read.
+     * @param offset Unused.
+     * @return Number of bytes on success and ZERO on failure. 
+     */
+    virtual Error read(s8 *buffer, Size size, Size offset);
 
-	/** Base I/O port. */
-	u16 base;
-	
-	/** Interrupt vector. */
-	u16 irq;
+    /** 
+     * Write bytes to the device.
+     * @param buffer Buffer containing bytes to write. 
+     * @param size Number of bytes to write.
+     * @param offset Unused.
+     * @return Number of bytes on success and ZERO on failure. 
+     */
+    virtual Error write(s8 *buffer, Size size, Size offset);
+
+  private:
+
+    /** Base I/O port. */
+    u16 base;
+    
+    /** Interrupt vector. */
+    u16 irq;
 };
 
 /**

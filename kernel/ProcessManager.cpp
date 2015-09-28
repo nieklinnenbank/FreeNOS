@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,16 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/System.h>
 #include <Log.h>
-#include <Error.h>
 #include "ProcessManager.h"
-#include <System/Function.h>
 
-ProcessManager::ProcessManager(ProcessFactory *factory,
-                               ProcessScheduler *scheduler)
+// TODO: replace Vector with an Index..
+
+ProcessManager::ProcessManager(Scheduler *scheduler)
     : m_procs(MAX_PROCS)
 {
-    m_factory   = factory;
+    DEBUG("m_procs = " << MAX_PROCS);
     m_scheduler = scheduler;
     m_current   = ZERO;
     m_previous  = ZERO;
@@ -35,21 +35,27 @@ ProcessManager::~ProcessManager()
 {
 }
 
-Process * ProcessManager::create(Address entry)
+Process * ProcessManager::create(Address entry, const MemoryMap &map)
 {
-    Process *proc = m_factory->createProcess(m_procs.count(), entry);
-    ProcessID id  = m_procs.insert(proc);
-    assert(id == proc()->getID());
+    Process *proc = new Arch::Process(m_procs.count(), entry, false, map);
 
-    return proc;
+    // Insert to the process table
+    if (proc && proc->initialize() == Process::Success)
+    {
+        m_procs.insert(proc);
+        return proc;
+    }
+    return ZERO;
 }
 
 Process * ProcessManager::get(ProcessID id)
 {
-    return m_procs[id];
+    // TODO: replace with an Index to make this more easy.
+    Process **p = (Process **) m_procs.get(id);
+    return p ? *p : ZERO;
 }
 
-void ProcessManager::remove(Process *proc)
+void ProcessManager::remove(Process *proc, uint exitStatus)
 {
     if (proc == m_previous)
         m_previous = ZERO;
@@ -58,14 +64,26 @@ void ProcessManager::remove(Process *proc)
         m_idle = ZERO;
 
     if (proc == m_current)
-    {
-        FATAL("removing currently executing process"); for(;;);
         m_current = ZERO;
+
+    // Wakeup any Processes which are waiting for this Process
+    Size size = m_procs.size();
+
+    for (Size i = 0; i < size; i++)
+    {
+        if (m_procs[i] != ZERO &&
+            m_procs[i]->getState() == Process::Waiting &&
+            m_procs[i]->getWait() == proc->getID())
+        {
+            m_procs[i]->setState(Process::Ready);
+            m_procs[i]->setWait(exitStatus);
+        }
     }
-    /* Remove process from administration */
+
+    // Remove process from administration
     m_procs[proc->getID()] = ZERO;
 
-    /* Free the process memory */
+    // Free the process memory
     delete proc;
 }
 
@@ -91,7 +109,12 @@ void ProcessManager::schedule(Process *proc)
     {
         m_previous = m_current;
         m_current  = proc;
-        proc->execute();
+
+        if (m_previous && m_previous->getState() == Process::Running)
+            m_previous->setState(Process::Ready);
+
+        proc->setState(Process::Running);
+        proc->execute(m_previous);
     }
 }
 

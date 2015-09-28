@@ -19,11 +19,8 @@
 #define __API_SYSTEMINFO_H
 
 #include <FreeNOS/API.h>
-#include <System/Multiboot.h>
 #include <FreeNOS/Config.h>
 #include <FreeNOS/Kernel.h>
-#include <Error.h>
-#include <Types.h>
 
 /**  
  * @defgroup kernelapi kernel (API) 
@@ -34,7 +31,8 @@
  * Forward declaration.
  * @see SystemInformation
  */
-class SystemInformation;
+struct SystemInformation;
+class BitAllocator;
 
 /**
  * Prototype for user applications. Retrieves system information.
@@ -42,7 +40,7 @@ class SystemInformation;
  */
 inline Error SystemInfo(SystemInformation *info)
 {
-    return trapKernel1(SystemInfoNumber, (Address) info);
+    return trapKernel1(API::SystemInfoNumber, (Address) info);
 }
 
 /**
@@ -53,6 +51,7 @@ extern Error SystemInfoHandler(SystemInformation *info);
 /**
  * System information structure.
  */
+// TODO: replace this with CoreInfo.
 typedef struct SystemInformation
 {
     /**
@@ -60,7 +59,7 @@ typedef struct SystemInformation
      */
     SystemInformation()
     {
-	SystemInfo(this);
+        SystemInfo(this);
     }
 
     /** System version. */
@@ -72,21 +71,20 @@ typedef struct SystemInformation
     /** Total and available memory in bytes. */
     Size memorySize, memoryAvail;
 
-    /**
-     * Multiboot modules.
-     */
-    struct
-    {
-	/** Physical addresses. */
-	Address modStart, modEnd;
-	
-	/** Configured boot string. */
-	char string[32];
-    }
-    modules[32];
-    
-    /** Number of modules. */
-    Size moduleCount;
+    /** Core Identifier */
+    uint coreId;
+
+    /** BootImage physical address */
+    Address bootImageAddress;
+
+    /** BootImage size */
+    Size bootImageSize;
+
+    Address coreChannelAddress;
+    Size coreChannelSize;
+
+    /** Timer counter */
+    uint timerCounter;
 }
 SystemInformation;
 

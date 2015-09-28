@@ -90,7 +90,7 @@ void BitArray::setRange(Size from, Size to)
         set(i, true);
 }
 
-Error BitArray::setNext(Size count, Size start)
+BitArray::Result BitArray::setNext(Size *bit, Size count, Size start, Size boundary)
 {
     Size from = 0, found = 0;
 
@@ -102,6 +102,8 @@ Error BitArray::setNext(Size count, Size start)
             // Remember this bit
             if (!found)
             {
+                if (i % boundary)
+                    continue;
                 from  = i;
                 found = 1;
             }
@@ -112,7 +114,8 @@ Error BitArray::setNext(Size count, Size start)
             if (found >= count)
             {
                 setRange(from, i);
-                return from;
+                *bit = from;
+                return Success;
             }
         }
         else
@@ -121,7 +124,7 @@ Error BitArray::setNext(Size count, Size start)
         }
     }
     // No unset bits left!
-    return -1;
+    return OutOfMemory;
 }
 
 u8 * BitArray::array() const

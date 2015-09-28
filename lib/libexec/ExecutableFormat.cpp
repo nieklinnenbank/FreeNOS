@@ -16,51 +16,20 @@
  */
 
 #include <Macros.h>
-#include <Error.h>
-#include <List.h>
-#include <ListIterator.h>
-#include <sys/stat.h>
-#include <errno.h>
 #include "ExecutableFormat.h"
 #include "ELF.h"
 
-ExecutableFormat::ExecutableFormat(const char *p) : path(p)
+ExecutableFormat::ExecutableFormat(u8 *image, Size size)
 {
+    m_image = image;
+    m_size  = size;
 }
 
 ExecutableFormat::~ExecutableFormat()
 {
 }
 
-ExecutableFormat * ExecutableFormat::find(const char *path)
+ExecutableFormat::Result ExecutableFormat::find(u8 *image, Size size, ExecutableFormat **fmt)
 {
-    ExecutableFormat *fmt = ZERO;
-    List<FormatDetector *> formats;
-    struct stat st;
-
-    /* Insert known formats. */
-    formats.append(ELF::detect);
-
-    /* Must be an existing, regular, executable file. */
-    if (stat(path, &st) != -1)
-    {
-        if (!S_ISREG(st.st_mode))
-        {
-            errno = EINVAL;
-            return ZERO;
-        }
-    }
-    else
-        return ZERO;
-
-    /* Search for the corresponding executable format. */
-    for (ListIterator<FormatDetector *> i(&formats); i.hasCurrent(); i++)
-    {
-	if ((fmt = (i.current())(path)))
-	{
-	    return fmt;
-	}
-    }
-    errno = ENOEXEC;
-    return ZERO;
+    return ELF::detect(image, size, fmt);
 }

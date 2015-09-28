@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,94 +15,51 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <errno.h>
-#include <dirent.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include <FreeNOS/API.h>
 #include <Types.h>
 #include <Macros.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 
-void readfile(char *buf, Size size, char *fmt, ...)
+char * states[] =
 {
-    char path[128];
-    int fd;
-    Error e;
-    va_list av;
-    
-    /* Format the path. */
-    va_start(av, fmt);
-    vsnprintf(path, sizeof(path), fmt, av);
-    va_end(av);
+    "Running",
+    "Ready",
+    "Stopped",
+    "Sleeping",
+    "Waiting"
+};
 
-    /* Attempt to open the file first. */
-    if ((fd = open(path, ZERO)) < 0)
-    {
-        printf("Failed to open '%s': %s\r\n",
-                path, strerror(errno));
-	exit(EXIT_FAILURE);
-    }
-    /* Read contents. */
-    switch ((e = read(fd, buf, size)))
-    {
-        /* Error occurred. */
-	case -1:
-	    printf("Failed to read '%s': %s\r\n",
-	            path, strerror(errno));
-	    close(fd);
-	    exit(EXIT_FAILURE);
-    
-	/* End of file. */
-	case 0:
-	    close(fd);
-	    return;
-	
-	/* Success. */
-	default:
-	    buf[e] = ZERO;
-	    return;
-    }
-}
+char cmd[PAGESIZE];
 
 int main(int argc, char **argv)
 {
-    DIR *d;
-    struct dirent *dent;
-    char status[11];
-    char cmdline[64];
+    ProcessInfo info;
 
-    /* Print header. */
-    printf("PID   STATUS     CMD\r\n");
-    
-    /* Attempt to open the directory. */
-    if (!(d = opendir("/proc")))
-    {
-	printf("Failed to open '/proc': %s\r\n",
-		strerror(errno));
-	return errno;
-    }
-    /* Read directory. */
-    while ((dent = readdir(d)))
-    {
-	if (dent->d_name[0] != '.' && dent->d_name[0] >= '0' && dent->d_name[0] <= '9')
-	{
-	    /* Read the process' status. */
-	    readfile(status,  sizeof(status),
-		    "/proc/%s/status",  dent->d_name);
-	    readfile(cmdline, sizeof(cmdline),
-		    "/proc/%s/cmdline", dent->d_name);
+    // TODO: ask the kernel for the whole process table in one shot.
 
-	    /* Output a line. */	
-	    printf("%5s %10s %32s\r\n",
-		    dent->d_name, status, cmdline);
-	}
+    // Print header
+    printf("ID  PARENT  USER GROUP STATUS     CMD\r\n");
+
+    memset(&cmd, 0, sizeof(cmd));
+
+    // Loop processes
+    for (uint i = 0; i < MAX_PROCS; i++)
+    {
+        // Request kernel's process information
+        if (ProcessCtl(i, InfoPID, (Address) &info) != API::NotFound)
+        {
+            // Get the command
+            VMCopy(i, API::Read, (Address) cmd, ARGV_ADDR, PAGESIZE);
+
+            // Output a line
+            printf("%3d %7d %4d %5d %10s %32s\r\n",
+                    i,
+                    info.parent, 0, 0,
+                    states[info.state], cmd);
+        }
     }
-    /* Close it. */
-    closedir(d);
-    
-    /* Done. */
     return EXIT_SUCCESS;
 }

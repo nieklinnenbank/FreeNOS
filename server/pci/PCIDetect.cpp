@@ -160,4 +160,5 @@ int main(int argc, char **argv)
 	 closedir(slotDir);
     }
     closedir(busDir);
+    return EXIT_SUCCESS;
 }

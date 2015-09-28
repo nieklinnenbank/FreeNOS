@@ -29,5 +29,5 @@ int main(int argc, char **argv)
      * Start serving requests.
      */    
     server.add(new VGA);
-    return server.run();
+    return server.run(argc, argv);
 }

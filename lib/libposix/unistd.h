@@ -50,6 +50,13 @@
 extern C pid_t getpid();
 
 /**
+ * Get parent process ID.
+ *
+ * @return The parent process ID.
+ */
+extern C pid_t getppid();
+
+/**
  * Read from a file
  * @param fildes The read() function shall attempt to read nbyte bytes from the file
  *               associated with the open file descriptor, fildes, into the buffer
@@ -230,6 +237,11 @@ extern C pid_t fork(void);
 extern C int forkexec(const char *path, const char *argv[]);
 
 /**
+ * @brief Create a new process using in-memory image.
+ */
+extern C int spawn(Address program, Size programSize, const char *command);
+
+/**
  * @brief Get name of current host.
  *
  * The gethostname() function shall return the standard host name for the
@@ -278,6 +290,13 @@ extern C char *getcwd(char *buf, size_t size);
  *         remain unchanged, and errno shall be set to indicate the error.
  */
 extern C int chdir(const char *path);
+
+/**
+ * @brief Remove a file from the filesystem.
+ * @param path Parh to the file to remove.
+ * @return Zero on success or -1 on failure with errno set.
+ */
+extern C int unlink(const char *path);
 
 /**
  * @}

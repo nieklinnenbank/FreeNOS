@@ -22,7 +22,7 @@
 #include <FileMode.h>
 #include <FileStat.h>
 #include <Macros.h>
-#include <Error.h>
+#include <errno.h>
 #include "types.h"
 #include "time.h"
 

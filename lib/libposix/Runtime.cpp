@@ -16,21 +16,20 @@
  */
 
 #include <FreeNOS/API.h>
-#include <FreeNOS/System/Constant.h>
+#include <FreeNOS/System.h>
 #include <Types.h>
 #include <Macros.h>
+#include <Vector.h>
 #include <PageAllocator.h>
 #include <PoolAllocator.h>
-#include <VMCtlAllocator.h>
-#include <ProcessServer.h>
-#include <stdlib.h>
+#include <FileSystemMount.h>
+#include <MemoryMap.h>
+#include <CoreMessage.h>
+#include "FileDescriptor.h"
+#include "stdlib.h"
+#include "string.h"
 #include "Runtime.h"
-#include <string.h>
 #include "unistd.h"
-
-Shared<FileSystemMount> mounts;
-Shared<FileDescriptor> files;
-Shared<UserProcess> procs;
 
 /** List of constructors. */
 extern void (*CTOR_LIST)();
@@ -38,22 +37,40 @@ extern void (*CTOR_LIST)();
 /** List of destructors. */
 extern void (*DTOR_LIST)();
 
+/** FileSystem mounts table */
+FileSystemMount mounts[FILESYSTEM_MAXMOUNTS];
+
+/** Vector of FileDescriptors. */
+// TODO: inefficient for memory usage. Replace this with an Index (array of data pointers).
+Vector<FileDescriptor> files;
+
+/** Current Directory String */
+String currentDirectory;
+
+void * __dso_handle = 0;
+
 extern C int __cxa_atexit(void (*func) (void *),
                           void * arg, void * dso_handle)
 {
     return (0);
 }
 
-extern C void __cxa_pure_virtual()
+extern C int __aeabi_atexit()
 {
+    return 0;
 }
 
-extern C void __dso_handle()
+extern C void __cxa_pure_virtual()
 {
 }
 
 extern C void __stack_chk_fail(void)
 {
+}
+
+extern C int raise(int sig)
+{
+    return 0;
 }
 
 void runConstructors()
@@ -76,59 +93,86 @@ void setupHeap()
 {
     Allocator *parent;
     PoolAllocator *pool;
-    Address heapAddr, heapOff;
+    Address heapAddr;
     Size parentSize;
 
-    /* Only the memory server allocates directly. */
-    if (ProcessCtl(SELF, GetPID) == MEMSRV_PID)
-    {
-        VMCtlAllocator alloc(PAGESIZE * 4);
+    // TODO: inefficient. needs another kernel call. Make forkexec() have zero kernel calls and/or IPC until main() for
+    // maximum efficiency.
+    // TODO: ProcessCtl(SELF, InfoPID, &info);
+    // map = info.map....
+    Arch::MemoryMap map;
 
-        /* Allocate instance copy on vm pages itself. */
-        heapAddr   = alloc.getHeapStart();
-        parent     = new (heapAddr) VMCtlAllocator(&alloc);
-        parentSize = sizeof(VMCtlAllocator);
-    }
-    else
-    {
-        PageAllocator alloc(PAGESIZE * 4);
+    PageAllocator alloc( map.range(MemoryMap::UserHeap).virt,
+                         map.range(MemoryMap::UserHeap).size );
 
-        /* Allocate instance copy on vm pages itself. */
-        heapAddr   = alloc.getStart();
-        parent     = new (heapAddr) PageAllocator(&alloc);
-        parentSize = sizeof(PageAllocator);
-    }
-    /* Make a pool. */
+    // Pre-allocate 4 pages
+    Size sz = PAGESIZE * 4;
+    Address addr;
+    alloc.allocate(&sz, &addr);
+
+    // Allocate instance copy on vm pages itself
+    heapAddr   = alloc.base();
+    parent     = new (heapAddr) PageAllocator(&alloc);
+    parentSize = sizeof(PageAllocator);
+
+    // Make a pool
     pool = new (heapAddr + parentSize) PoolAllocator();
-    
-    /* Point to the next free space. */
-    heapOff   = parentSize + sizeof(PoolAllocator);
-    heapAddr += heapOff;
-
-    /* Setup the userspace heap allocator region. */
-    pool->region(heapAddr, (PAGESIZE * 4) - heapOff);
     pool->setParent(parent);
-
-    /* Set default allocator. */
+    
+    // Set default allocator
     Allocator::setDefault(pool);
 }
 
 void setupMappings()
 {
-    char key[256];
+    // Fill the mounts table
+    memset(mounts, 0, sizeof(FileSystemMount) * FILESYSTEM_MAXMOUNTS);
+    strlcpy(mounts[0].path, "/dev", PATHLEN);
+    strlcpy(mounts[1].path, "/", PATHLEN);
+    mounts[0].procID  = DEVSRV_PID;
+    mounts[0].options = ZERO;
+    mounts[1].procID  = ROOTSRV_PID;
+    mounts[1].options = ZERO;
 
-    if (getpid() != MEMSRV_PID)
+    // Set currentDirectory
+    currentDirectory = "/";
+
+    // Load FileDescriptors.
+    for (Size i = 0; i < FILE_DESCRIPTOR_MAX; i++)
     {
-        /* Load the mounts and process table. */
-        mounts.load(FILE_SYSTEM_MOUNT_KEY, MAX_MOUNTS);
-        procs.load(USER_PROCESS_KEY, MAX_PROCS);
-    
-        /* Format FileDescriptor key. */
-        snprintf(key, sizeof(key), "%s%u", FILE_DESCRIPTOR_KEY, getpid());
-    
-        /* Then load the FileDescriptor table. */
-        files.load(key, FILE_DESCRIPTOR_MAX);
+        FileDescriptor fd;
+        fd.open = false;
+
+        files.insert(fd);
     }
+#warning Solve this, by passing the file descriptor, procinfo, etc as a parameter to entry(), constructed by the kernel
+#warning If there was a parent, it would have passed the file descriptor table, argc/argv, memorymap, etc as an argument to ProcessCtl()
+
+    // TODO: perhaps we can "bundle" the GetMounts() and ReadProcess() calls, so that
+    // we do not need to send IPC message twice in this part (for mounts and getppid())
+
+    // TODO: this is inefficient. It should take only one IPC request to retrieve these things from our parent. Or better, avoid it.
+
+    // Get our parent ID
+    ProcessID ppid = getppid();
+
+    // Skip processes with no parent (e.g. from the BootImage)
+    if (!ppid)
+        return;
+
+    // Inherit file descriptors, current directory, and more.
+    CoreMessage msg;
+    msg.type   = IPCType;
+    msg.from   = SELF;
+
+    // NOTE: we "abuse" the CoreMessage for ipc with our parent...
+    IPCMessage(ppid, API::Receive, &msg, sizeof(msg));
+
+    // Copy the file descriptors
+    VMCopy(ppid, API::Read, (Address) files.vector(), (Address) msg.path, files.size() * sizeof(FileDescriptor));
+
+    // Dummy reply, to tell our parent we received the fds.... very inefficient.
+    IPCMessage(ppid, API::Send, &msg, sizeof(msg));
 }
 
 ProcessID findMount(const char *path)
@@ -147,20 +191,20 @@ ProcessID findMount(const char *path)
         strlcpy(tmp, path, PATHLEN);
         
     /* Find the longest match. */
-    for (Size i = 0; i < MAX_MOUNTS; i++)
+    for (Size i = 0; i < FILESYSTEM_MAXMOUNTS; i++)
     {
-        if (mounts[i]->path[0])
+        if (mounts[i].path[0])
         {
-            len = strlen(mounts[i]->path);
+            len = strlen(mounts[i].path);
     
             /*
              * Only choose this mount, if it matches,
              * and is longer than the last match.
              */
-            if (strncmp(tmp, mounts[i]->path, len) == 0 && len > length)
+            if (strncmp(tmp, mounts[i].path, len) == 0 && len > length)
             {
                 length = len;
-                m = mounts[i];
+                m = &mounts[i];
             }
         }
     }
@@ -170,22 +214,22 @@ ProcessID findMount(const char *path)
 
 ProcessID findMount(int fildes)
 {
-    return files[fildes] ? files[fildes]->mount : ZERO;
+    return files.get(fildes) ? files.get(fildes)->mount : ZERO;
 }
 
-Shared<FileSystemMount> * getMounts()
+FileSystemMount * getMounts()
 {
-    return &mounts;
+    return mounts;
 }
 
-Shared<UserProcess> * getProcesses()
-{
-    return &procs;
-}
-
-Shared<FileDescriptor> * getFiles()
+Vector<FileDescriptor> * getFiles()
 {
     return &files;
+}
+
+String * getCurrentDirectory()
+{
+    return &currentDirectory;
 }
 
 extern C void SECTION(".entry") _entry() 
@@ -193,6 +237,11 @@ extern C void SECTION(".entry") _entry()
     int ret, argc;
     char *arguments;
     char **argv;
+
+    /* Clear BSS */
+    extern Address __bss_start, __bss_end;
+    Address bss_size = &__bss_end - &__bss_start;
+    MemoryBlock::set(&__bss_start, 0, bss_size);
 
     /* Setup the heap, C++ constructors and default mounts. */
     setupHeap();

@@ -18,8 +18,8 @@
 Import('build_env')
 
 env = build_env.Clone()
-env.UseLibraries([ 'libposix', 'libc', 'liballoc', 'libstd', 'libtest' ])
-env.UseLibraries([ 'libstd', 'libtest' ], 'host')
+env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libtest', 'libexec', 'libarch' ])
+env.UseLibraries([ 'libtest', 'liballoc', 'libarch', 'libstd' ], 'host')
 env.Append(CPPPATH = [ '#lib/liballoc' ])
 
 #
@@ -32,6 +32,4 @@ env.Append(CPPPATH = [ '#lib/liballoc' ])
 #print()
 
 env.TargetProgram('BubbleAllocatorTest', 'BubbleAllocatorTest.cpp')
-env.HostProgram('BubbleAllocatorTest', ['BubbleAllocatorTest.cpp',
-                                        '#${BUILDROOT}/lib/liballoc/BubbleAllocator.cpp',
-                                        '#${BUILDROOT}/lib/liballoc/Allocator.cpp'])
+env.HostProgram('BubbleAllocatorTest', 'BubbleAllocatorTest.cpp')

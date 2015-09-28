@@ -15,34 +15,41 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/IPCMessage.h>
+#include <FreeNOS/API.h>
 #include <FileSystemMessage.h>
 #include "Runtime.h"
-#include <ProcessID.h>
 #include <errno.h>
 #include "unistd.h"
 
 ssize_t write(int fildes, const void *buf, size_t nbyte)
 {
     FileSystemMessage msg;
-    ProcessID mnt = findMount(fildes);
+    FileDescriptor *fd = (FileDescriptor *) getFiles()->get(fildes);
     
-    /* Write the file. */
-    if (mnt)
+    // Write the file
+    if (fd)
     {
-	msg.action = WriteFile;
-        msg.fd     = fildes;
+        msg.action = WriteFile;
+        msg.path   = fd->path;
         msg.buffer = (char *) buf;
         msg.size   = nbyte;
         msg.offset = ZERO;
-        IPCMessage(mnt, SendReceive, &msg, sizeof(msg)); 
-    
-        /* Set error number. */
-	errno = msg.result;
+        msg.type   = IPCType;
+        msg.from   = SELF;
+        IPCMessage(fd->mount, API::SendReceive, &msg, sizeof(msg)); 
+
+        // Did we write something?
+        if (msg.result >= 0)
+        {
+            fd->position += msg.result;
+            return msg.result;
+        }
+
+        // Set error number
+        errno = msg.result;
     }
     else
-	errno = ENOENT;
+        errno = ENOENT;
     
-    /* Give the result back. */
-    return errno >= 0 ? errno : (ssize_t) -1;
+    return -1;
 }

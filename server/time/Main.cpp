@@ -31,5 +31,5 @@ int main(int argc, char **argv)
      */
     Time* t = new Time();
     server.add(t);
-    return server.run();
+    return server.run(argc, argv);
 }

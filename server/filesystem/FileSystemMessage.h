@@ -18,10 +18,9 @@
 #ifndef __FILESYSTEM_FILE_SYSTEM_MESSAGE_H
 #define __FILESYSTEM_FILE_SYSTEM_MESSAGE_H
 
-#include <API/IPCMessage.h>
+#include <FreeNOS/API.h>
 #include <IPCServer.h>
 #include <Types.h>
-#include <Error.h>
 #include "FileType.h"
 #include "FileMode.h"
 #include "FileStat.h"
@@ -31,14 +30,11 @@
  */
 typedef enum FileSystemAction
 {
-    CreateFile    = 0,
-    OpenFile      = 1,
-    ReadFile      = 2,
-    WriteFile     = 3,
-    SeekFile      = 4,
-    StatFile      = 5,
-    ChangeFile    = 6,
-    CloseFile     = 7,
+    CreateFile = 0,
+    ReadFile,
+    WriteFile,
+    StatFile,
+    DeleteFile
 }
 FileSystemAction;
 
@@ -47,13 +43,6 @@ FileSystemAction;
  */
 typedef struct FileSystemMessage : public Message
 {
-    /** 
-     * Default constructor. 
-     */
-    FileSystemMessage() : action(ReadFile)
-    {
-    }
-
     /** 
      * Assignment operator. 
      * @param m FileSystemMessage pointer to copy from. 
@@ -72,10 +61,10 @@ typedef struct FileSystemMessage : public Message
         deviceID    = m->deviceID;
         mode        = m->mode;
         stat        = m->stat;
-        fd          = m->fd;
+        path        = m->path;
         filetype    = m->filetype;
     }
-    
+
     /**
      * @brief Comparison operator.
      * @param m Other FileSystemMessage to compare with.
@@ -83,9 +72,9 @@ typedef struct FileSystemMessage : public Message
      */
     bool operator == (FileSystemMessage *m)
     {
-	return this->from   == m->from &&
-	       this->type   == m->type &&
-	       this->action == m->action;
+        return this->from   == m->from &&
+               this->type   == m->type &&
+               this->action == m->action;
     }
 
     /** Action to perform. */
@@ -100,9 +89,12 @@ typedef struct FileSystemMessage : public Message
     /** Size of the buffer. */
     Size size;
 
-    /** Offset in the file to read. */
+    /** Offset in the file for I/O. */
     Size offset;
-	
+
+    /** Path name of the file. */
+    char *path;
+
     /** User ID and group ID. */
     u16 userID, groupID;
 
@@ -115,9 +107,6 @@ typedef struct FileSystemMessage : public Message
     /** File Statistics. */
     FileStat *stat;
 
-    /** File descriptor. */
-    u16 fd;
-    
     /** Device major/minor numbers. */
     DeviceID deviceID;
 }

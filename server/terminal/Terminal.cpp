@@ -18,6 +18,7 @@
 #include <Types.h>
 #include <Macros.h>
 #include <VGA.h>
+#include <Runtime.h>
 #include "Terminal.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,6 +51,10 @@ Error Terminal::initialize()
 {
     teken_pos_t winsz;
 
+    // TODO: hack
+    close(0);
+    close(1);
+
     /*
      * Attempt to open input file.
      */
@@ -68,6 +73,16 @@ Error Terminal::initialize()
 		outputFile, strerror(errno));
 	exit(EXIT_FAILURE);
     }
+
+    // TODO: Hack the file descriptors table...
+    Vector<FileDescriptor> *files = getFiles();
+    (*files)[0].open = true;
+    strlcpy((*files)[0].path, inputFile, PATHLEN); /* keyboard0 */
+    (*files)[0].mount = 7;
+    (*files)[1].open = true;
+    strlcpy((*files)[1].path, outputFile, PATHLEN); /* vga0 */
+    (*files)[1].mount = 9;
+
     /* Fill in function pointers. */
     funcs.tf_bell    = (tf_bell_t *)    bell;
     funcs.tf_cursor  = (tf_cursor_t *)  cursor;

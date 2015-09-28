@@ -15,61 +15,75 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <API/IPCMessage.h>
-#include <API/ProcessCtl.h>
-#include <MemoryMessage.h>
-#include <ProcessID.h>
+#include <FreeNOS/API.h>
 #include "PageAllocator.h"
 
-PageAllocator::PageAllocator(Size size)
-    : start(ZERO), allocated(ZERO)
+PageAllocator::PageAllocator(Address base, Size size)
 {
-    MemoryMessage mem;
-
-    /* First reserve ~128MB virtual memory. */
-    mem.action = ReservePrivate;
-    mem.bytes  = 1024 * 1024 * 128;
-    mem.virtualAddress = 1024 * 1024 * 16;
-    mem.ipc(MEMSRV_PID, SendReceive, sizeof(mem));
-
-    /* Set heap pointer. */
-    start = mem.virtualAddress;
-
-    /* Allocate the given bytes. */
-    allocate(&size);
+    m_base      = base;
+    m_size      = size;
+    m_allocated = 0;
 }
 
 PageAllocator::PageAllocator(PageAllocator *p)
-    : start(p->start), allocated(p->allocated)
 {
+    m_base = p->m_base;
+    m_size = p->m_size;
+    m_allocated = p->m_allocated;
 }
 
-Address PageAllocator::allocate(Size *size)
+Address PageAllocator::base()
 {
-    MemoryMessage msg;
-    Address ret = start + allocated;
+    return m_base;
+}
 
-#warning TODO: perhaps align to page size???
+Size PageAllocator::size()
+{
+    return m_size;
+}
+
+Size PageAllocator::available()
+{
+    return m_size - m_allocated;
+}
+
+Allocator::Result PageAllocator::allocate(Size *size, Address *addr, Size align)
+{
+    Memory::Range range;
+    
+    // Set return address
+    *addr = m_base + m_allocated;
+
+    // TODO: sanity checks
     Size bytes  = *size > PAGEALLOC_MINIMUM ?
-		  *size : PAGEALLOC_MINIMUM;
+                  *size : PAGEALLOC_MINIMUM;
 
-    /* Fill in the message. */
-    msg.action = CreatePrivate;
-    msg.bytes  = bytes;
-    msg.access = Memory::Present | Memory::User | Memory::Readable | Memory::Writable | Memory::Reserved;
-    msg.virtualAddress  = (1024 * 1024 * 16) + allocated;
-    msg.physicalAddress = ZERO;
-    msg.ipc(MEMSRV_PID, SendReceive, sizeof(msg));
+    // Align to pagesize
+    bytes = aligned(bytes, PAGESIZE);
 
-    /* Update count. */
-    allocated += msg.bytes;
+    // Fill in the message. */
+    range.size   = bytes;
+    range.access = Memory::User | Memory::Readable | Memory::Writable;
+    range.virt   = m_base + m_allocated;
+    range.phys   = ZERO;
 
-    /* Success. */
-    *size = msg.bytes;
-    return ret;
+    // TODO: #warning do we need to pass the region here too?
+    //range.region = Memory::UserPrivate;
+    VMCtl(SELF, Map, &range);
+
+    // Clear the pages
+    MemoryBlock::set((void *) range.virt, 0, range.size);
+
+    // Update count
+    m_allocated += range.size; 
+
+    // Success
+    *size = range.size;
+    return Success;
 }
 
-void PageAllocator::release(Address addr)
+Allocator::Result PageAllocator::release(Address addr)
 {
-    // TODO
+    // TODO: let the heap shrink if possible
+    return InvalidAddress;
 }

@@ -27,7 +27,6 @@
 #include <Device.h>
 #include <Macros.h>
 #include <Types.h>
-#include <Error.h>
 #include <teken.h>
 
 /** 
