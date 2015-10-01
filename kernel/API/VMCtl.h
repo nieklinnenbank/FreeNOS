@@ -33,6 +33,7 @@ typedef enum MemoryOperation
 {
     Map = 0,
     UnMap,
+    Release,
     LookupVirtual,
     Access,
     RemoveMem,

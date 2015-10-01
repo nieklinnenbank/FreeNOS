@@ -84,6 +84,34 @@ IntelAPIC::Result IntelAPIC::startTimer(IntelPIT *pit)
     return Success;
 }
 
+IntelAPIC::Result IntelAPIC::waitTimer(u32 microseconds)
+{
+    // TODO: hack: busy wait fixed time.
+    for (Size i = 0; i < 10000000; i++)
+        microseconds += i;
+
+    if (!m_hertz)
+        return microseconds == 0 ? NotFound : IOError; // TODO: hack to prevent g++ to optimize the loop away
+
+    Size usecPerInt = 1000000 / m_hertz;
+    Size usecPerTick = usecPerInt / m_io.read(InitialCount);
+    u32 t1 = m_io.read(CurrentCount), t2;
+    u32 waited = 0;
+
+    while (waited < microseconds)
+    {
+        t2 = m_io.read(CurrentCount);
+
+        if (t2 < t1)
+        {
+            waited += (t1 - t2) * usecPerTick;
+            t1 = t2;
+        }
+        t1 = t2;
+    }
+    return Success;
+}
+
 IntelAPIC::Result IntelAPIC::startTimer(u32 initialCounter, uint hertz)
 {
     // Set hertz
@@ -102,7 +130,7 @@ IntelAPIC::Result IntelAPIC::initialize()
     if (m_io.map(IOBase) != IntelIO::Success)
         return IOError;
 
-    // TODO: detect the APIC with CPUID
+#warning TODO: detect the APIC with CPUID
     // if (not detected)
     //     return NotFound;
 
@@ -149,17 +177,33 @@ IntelAPIC::Result IntelAPIC::sendStartupIPI(uint cpuId, Address addr)
             APIC_DEST_ASSERT | APIC_DEST_DM_INIT);
     m_io.write(IntCommand1, cfg);
 
-    // Write APIC Destination
-    cfg  = m_io.read(IntCommand2);
-    cfg &= 0x00ffffff;
-    m_io.write(IntCommand2, cfg | APIC_DEST(cpuId));
+    // Wait 10 miliseconds
+    waitTimer(10000);
 
-    // Assert STARTUP
-    cfg  = m_io.read(IntCommand1);
-    cfg &= ~0xcdfff;
-    cfg |= (APIC_DEST_FIELD | APIC_DEST_DM_STARTUP |
-           (addr >> 12));
-    m_io.write(IntCommand1, cfg);
+    // Send two SIPI's
+    for (Size i = 0; i < 2; i++)
+    {
+        // Write APIC Destination
+        cfg  = m_io.read(IntCommand2);
+        cfg &= 0x00ffffff;
+        m_io.write(IntCommand2, cfg | APIC_DEST(cpuId));
+
+        // Assert STARTUP
+        cfg  = m_io.read(IntCommand1);
+        cfg &= ~0xcdfff;
+        cfg |= (APIC_DEST_FIELD | APIC_DEST_DM_STARTUP |
+               (addr >> 12));
+        m_io.write(IntCommand1, cfg);
+
+        // Wait 1 milisecond
+        // TODO: this is difficult in the current implementation, because
+        //       the *userspace* instance of this class does not have
+        //       m_hertz set.. better solution is that libarch provides a Timer
+        //       abstract class, and that class should provide a consistent interface
+        //       for (busy) waiting on timer events, triggering, etc, where it hides
+        //       if the call is done with a kernel trap or direct register write etc.
+        waitTimer(1000);
+    }
 
     // Startup interrupt delivered.
     return Success;

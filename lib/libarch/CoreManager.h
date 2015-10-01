@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -15,68 +15,63 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBARCH_IO_H
-#define __LIBARCH_IO_H
+#ifndef __LIBARCH_COREMANAGER_H
+#define __LIBARCH_COREMANAGER_H
 
 #include <Types.h>
-#include "Memory.h"
+#include <List.h>
+#include "CoreInfo.h"
 
 /**
- * Generic I/O functions.
+ * Generic Core Manager.
  */
-class IO
+class CoreManager
 {
+  private:
+
   public:
 
+    /**
+     * Result codes.
+     */
     enum Result
     {
         Success,
-        MapFailure,
-        OutOfMemory
+        IOError,
+        NotFound
     };
 
     /**
-     * Constructor.
+     * Constructor
      */
-    IO();
+    CoreManager();
 
     /**
-     * Get I/O base offset.
+     * Get list of core identities.
      *
-     * @return Base offset to add to each I/O address.
+     * @return List of core identities.
      */
-    uint getBase() const;
+    List<uint> & getCores();
 
     /**
-     * Set I/O base offset.
-     *
-     * @param base Offset to add to each I/O address.
-     */
-    void setBase(uint base);
-
-    /**
-     * Map I/O address space.
-     *
-     * @param phys Physical address for start of the range.
-     * @param size Size of the I/O address space.
-     * @return Result code.
-     */
-    Result map(Address phys, Size size = 4096);
-
-    /**
-     * Unmap I/O address space.
+     * Discover processors.
      *
      * @return Result code.
      */
-    Result unmap();
+    virtual Result discover() = 0;
+
+    /**
+     * Boot a processor.
+     *
+     * @param info CoreInfo object pointer.
+     * @return Result code.
+     */
+    virtual Result boot(CoreInfo *info) = 0;
 
   protected:
 
-    /** I/O base offset is added to each I/O address. */
-    uint m_base;
-
-    /** Memory range for performing I/O mappings. */
-    Memory::Range m_range;
+    /** List of core ids found. */
+    List<uint> m_cores;
 };
 
-#endif /* __LIBARCH_IO_H */
+#endif /* __LIBARCH_COREMANAGER_H */

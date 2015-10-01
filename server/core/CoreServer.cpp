@@ -49,6 +49,14 @@ CoreServer::CoreServer()
     m_kernelImage = ZERO;
     m_coreInfo = ZERO;
 
+#ifdef INTEL
+    m_cores = ZERO;
+    m_toMaster = ZERO;
+    m_fromMaster = ZERO;
+    m_toSlave = ZERO;
+    m_fromSlave = ZERO;
+#endif
+
     // Register IPC handlers
     addIPCHandler(GetCoreCount,  &CoreServer::getCoreCount);
     addIPCHandler(CreateProcess, &CoreServer::createProcess);
@@ -88,6 +96,7 @@ void CoreServer::createProcess(CoreMessage *msg)
 
         if (!ch)
         {
+            ERROR("invalid coreId=" << msg->coreId);
             msg->result = EBADF;
             return;
         }
@@ -101,7 +110,26 @@ void CoreServer::createProcess(CoreMessage *msg)
         VMCtl(msg->from, LookupVirtual, &range);
         msg->programCommand = (char *) range.phys;
 
-        ch->write(msg);
+        if (ch->write(msg) != Channel::Success)
+        {
+            ERROR("failed to write channel on core"<<msg->coreId);
+            msg->result = EBADF;
+            return;
+        }
+        else
+        {
+            NOTICE("creating program at phys " << (void *) msg->program << " on core" << msg->coreId);
+            ch = (MemoryChannel *) m_fromSlave->get(msg->coreId);
+            if (!ch)
+            {
+                ERROR("cannot find read channel for core" << msg->coreId);
+            }
+            else
+            {
+                ch->read(msg);
+                NOTICE("program created with result " << (int)msg->result << " at core" << msg->coreId);
+            }
+        }
     }
     else
     {
@@ -123,7 +151,10 @@ void CoreServer::getCoreCount(CoreMessage *msg)
     if (m_info.coreId == 0)
     {
 #ifdef INTEL
-        msg->coreCount = m_cores.getCores().count();
+        if (m_cores)
+            msg->coreCount = m_cores->getCores().count();
+        else
+            msg->coreCount = 1;
 #else
         msg->coreCount = 1;
 #endif
@@ -147,7 +178,7 @@ CoreServer::Result CoreServer::test()
     else
     {
         CoreMessage msg;
-        Size numCores = m_cores.getCores().count();
+        Size numCores = m_cores->getCores().count();
 
         for (Size i = 1; i < numCores; i++)
         {
@@ -161,6 +192,7 @@ CoreServer::Result CoreServer::test()
                 NOTICE("core" << i << " send a Ping");
             }
         }
+
     }
 #endif /* INTEL */
     return Success;
@@ -180,7 +212,10 @@ CoreServer::Result CoreServer::initialize()
     if ((r = discover()) != Success)
         return r;
 
-    return setupChannels();
+    if ((r = setupChannels()) != Success)
+        return r;
+
+    return bootAll();
 }
 
 CoreServer::Result CoreServer::loadKernel()
@@ -261,7 +296,7 @@ CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info,
 	    return MemoryError;
 
         // Unmap the target kernel's memory
-        if (VMCtl(SELF, UnMap, &range) != API::Success)
+        if (VMCtl(SELF, Release, &range) != API::Success)
         {
             return MemoryError;
         }
@@ -288,12 +323,12 @@ CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info,
         return MemoryError;
 
     // Unmap the BootImage
-    if (VMCtl(SELF, UnMap, &range) != API::Success)
+    if (VMCtl(SELF, Release, &range) != API::Success)
         return MemoryError;
 
 #ifdef INTEL
     // Signal the core to boot
-    if (m_cores.boot(info) != IntelMP::Success) {
+    if (m_mp.boot(info) != IntelMP::Success) {
         ERROR("failed to boot core" << coreId);
         return BootError;
     } else {
@@ -310,13 +345,31 @@ CoreServer::Result CoreServer::discover()
     SystemInformation sysInfo;
     Size memPerCore = 0;
 
-    if (m_cores.discover() != IntelMP::Success)
+    if (m_acpi.initialize() == IntelACPI::Success &&
+        m_acpi.discover() == IntelACPI::Success)
     {
-        ERROR("failed to discover cores");
+        NOTICE("using ACPI as CoreManager");
+        // TODO: hack. Must always call IntelMP::discover() for IntelMP::boot()
+        m_mp.discover();
+        m_cores = &m_acpi;
+    }
+    else if (m_mp.discover() == IntelMP::Success)
+    {
+        NOTICE("using MPTable as CoreManager");
+        m_cores = &m_mp;
+    }
+    else
+    {
+        ERROR("no CoreManager found (ACPI or MPTable)");
+        return NotFound;
+    }
+    List<uint> & cores = m_cores->getCores();
+    if (cores.count() == 0)
+    {
+        ERROR("no cores found");
         return NotFound;
     }
 
-    List<uint> & cores = m_cores.getCores();
     memPerCore = sysInfo.memorySize / cores.count();
     memPerCore /= MegaByte(4);
     memPerCore *= MegaByte(4);
@@ -350,11 +403,31 @@ CoreServer::Result CoreServer::discover()
             m_kernel->entry(&info->kernelEntry);
             info->timerCounter = sysInfo.timerCounter;
             strlcpy(info->kernelCommand, kernelPath, KERNEL_PATHLEN);
-
-            bootCore(coreId, info, m_regions);
         }
     }
 #endif
+    return Success;
+}
+
+CoreServer::Result CoreServer::bootAll()
+{
+    List<uint> & cores = m_cores->getCores();
+    if (cores.count() == 0)
+    {
+        ERROR("no cores found");
+        return NotFound;
+    }
+
+    // Boot each core
+    for (ListIterator<uint> i(cores); i.hasCurrent(); i++)
+    {
+        uint coreId = i.current();
+
+        if (coreId != 0)
+        {
+            bootCore(coreId, (CoreInfo *)m_coreInfo->get(coreId), m_regions);
+        }
+    }
     return Success;
 }
 
@@ -365,7 +438,7 @@ CoreServer::Result CoreServer::setupChannels()
 
     if (info.coreId == 0)
     {
-        Size numCores = m_cores.getCores().count();
+        Size numCores = m_cores->getCores().count();
 
         m_toSlave    = new Index<MemoryChannel>(numCores);
         m_fromSlave  = new Index<MemoryChannel>(numCores);

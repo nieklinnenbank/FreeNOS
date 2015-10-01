@@ -97,7 +97,7 @@ int MPI_Init(int *argc, char ***argv)
         // Allocate memory space on the local processor for the whole
         // UniChannel array, NxN communication with MPI.
         // Then pass the channel offset physical address as an argument -addr 0x.... to spawn()
-        memChannelBase.size = (PAGESIZE * 2) * (msg.coreCount * msg.coreCount * 2);
+        memChannelBase.size = (PAGESIZE * 2) * (msg.coreCount * msg.coreCount);
         memChannelBase.phys = 0;
         memChannelBase.virt = 0;
         memChannelBase.access = Memory::Readable | Memory::Writable | Memory::User;
@@ -123,6 +123,13 @@ int MPI_Init(int *argc, char ***argv)
             msg.programSize = st.st_size;
             msg.programCommand = cmd;
             IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
+
+            if (msg.result != ESUCCESS)
+            {
+                printf("%s: failed to create process on core%d\n",
+                        programName, i);
+                return MPI_ERR_SPAWN;
+            }
         }
     }
     else
@@ -168,9 +175,15 @@ int MPI_Init(int *argc, char ***argv)
         MemoryChannel *ch = new MemoryChannel();
         ch->setMode(MemoryChannel::Consumer);
         ch->setMessageSize(sizeof(MPIMessage));
-        ch->setData(MEMBASE(i) + (PAGESIZE * 2 * info.coreId));
-        ch->setFeedback(MEMBASE(i) + (PAGESIZE * 2 * info.coreId) + PAGESIZE);
+        ch->setData(MEMBASE(info.coreId) + (PAGESIZE * 2 * i));
+        ch->setFeedback(MEMBASE(info.coreId) + (PAGESIZE * 2 * i) + PAGESIZE);
         readChannel->insert(i, *ch);
+
+        if (info.coreId == 0)
+        printf("%s: read: core%d: data=%x feedback=%x base%d=%x\n", (*argv)[0], i, 
+            MEMBASE(info.coreId) + (PAGESIZE * 2 * i),
+            MEMBASE(info.coreId) + (PAGESIZE * 2 * i) + PAGESIZE,
+            i, MEMBASE(i));
     }
 
     // Fill write channels
@@ -179,9 +192,15 @@ int MPI_Init(int *argc, char ***argv)
         MemoryChannel *ch = new MemoryChannel();
         ch->setMode(MemoryChannel::Producer);
         ch->setMessageSize(sizeof(MPIMessage));
-        ch->setData(MEMBASE(info.coreId) + (PAGESIZE * 2 * i));
-        ch->setFeedback(MEMBASE(info.coreId) + (PAGESIZE * 2 * i) + PAGESIZE);
+        ch->setData(MEMBASE(i) + (PAGESIZE * 2 * info.coreId));
+        ch->setFeedback(MEMBASE(i) + (PAGESIZE * 2 * info.coreId) + PAGESIZE);
         writeChannel->insert(i, *ch);
+
+        if (info.coreId == 0)
+        printf("%s: write: core%d: data=%x feedback=%x base%d=%x\n", (*argv)[0], i, 
+            MEMBASE(i) + (PAGESIZE * 2 * info.coreId),
+            MEMBASE(i) + (PAGESIZE * 2 * info.coreId) + PAGESIZE,
+            i, MEMBASE(i));
     }
 
     return MPI_SUCCESS;

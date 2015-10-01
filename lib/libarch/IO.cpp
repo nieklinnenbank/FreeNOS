@@ -37,16 +37,14 @@ void IO::setBase(uint base)
 
 IO::Result IO::map(Address phys, Size size)
 {
-    Memory::Range range;
-
-    range.virt   = 0;
-    range.phys   = phys;
-    range.access = Memory::Readable | Memory::Writable | Memory::User;
-    range.size   = size;
+    m_range.virt   = 0;
+    m_range.phys   = phys;
+    m_range.access = Memory::Readable | Memory::Writable | Memory::User;
+    m_range.size   = size;
 
     if (!isKernel)
     {
-        if (VMCtl(SELF, Map, &range) != API::Success)
+        if (VMCtl(SELF, Map, &m_range) != API::Success)
             return MapFailure;
     }
     else
@@ -55,12 +53,31 @@ IO::Result IO::map(Address phys, Size size)
         if (!ctx)
             return MapFailure;
 
-        if (ctx->findFree(size, MemoryMap::KernelPrivate, &range.virt) != MemoryContext::Success)
+        if (ctx->findFree(size, MemoryMap::KernelPrivate, &m_range.virt) != MemoryContext::Success)
             return OutOfMemory;
 
-        if (ctx->map(range.virt, phys, range.access) != MemoryContext::Success)
+        if (ctx->map(m_range.virt, phys, m_range.access) != MemoryContext::Success)
             return MapFailure;
     }
-    m_base = range.virt;
+    m_base = m_range.virt;
+    return Success;
+}
+
+IO::Result IO::unmap()
+{
+    if (!isKernel)
+    {
+        if (VMCtl(SELF, UnMap, &m_range) != API::Success)
+            return MapFailure;
+    }
+    else
+    {
+        MemoryContext *ctx = MemoryContext::getCurrent();
+        if (!ctx)
+            return MapFailure;
+
+        if (ctx->unmapRange(&m_range) != MemoryContext::Success)
+            return MapFailure;
+    }
     return Success;
 }

@@ -39,6 +39,7 @@
 
 #ifdef INTEL
 #include <intel/IntelMP.h>
+#include <intel/IntelACPI.h>
 #endif /* INTEL */
 
 /**
@@ -83,6 +84,8 @@ class CoreServer : public IPCServer<CoreServer, CoreMessage>
 
     Result loadKernel();
 
+    Result bootAll();
+
     Result test();
 
     int runCore();
@@ -95,7 +98,9 @@ class CoreServer : public IPCServer<CoreServer, CoreMessage>
     void createProcess(CoreMessage *msg);
 
 #ifdef INTEL
-    IntelMP m_cores;
+    IntelMP m_mp;
+    IntelACPI m_acpi;
+    CoreManager *m_cores;
 #endif /* INTEL */
 
     ExecutableFormat *m_kernel;

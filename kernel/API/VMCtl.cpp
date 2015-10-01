@@ -54,6 +54,10 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range)
             break;
 
         case UnMap:
+            mem->unmapRange(range);
+            break;
+
+        case Release:
             mem->releaseRange(range);
             break;
 

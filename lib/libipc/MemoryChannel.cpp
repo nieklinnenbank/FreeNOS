@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <Log.h>
 #include <FreeNOS/System.h>
 #include "MemoryChannel.h"
 
@@ -80,7 +81,10 @@ MemoryChannel::Result MemoryChannel::write(void *buffer)
     m_feedback.read(0, sizeof(RingHead), &reader);
 
     if (((m_head.index + 1) % m_maximumMessages) == reader.index)
+    {
+        ERROR("m_head.index=" << m_head.index << " maximum=" << m_maximumMessages << " reader.index=" << reader.index);
         return ChannelFull;
+    }
 
     // write the message
     m_data.write((m_head.index+1) * m_messageSize, m_messageSize, buffer);

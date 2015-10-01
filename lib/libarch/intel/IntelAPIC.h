@@ -40,13 +40,15 @@ class IntelPIT;
  */
 class IntelAPIC : public IntController
 {
-  private:
+  public:
 
     /** APIC memory mapped I/O register base offset (physical address). */
     static const uint IOBase = 0xfee00000;
 
     /** APIC timer interrupt vector is fixed at 48 */
     static const uint TimerVector = 48;
+
+  private:
 
     /**
      * Hardware registers.
@@ -154,6 +156,14 @@ class IntelAPIC : public IntController
      * @return Result code.
      */
     Result startTimer(uint initialCounter, uint hertz);
+
+    /**
+     * Busy wait a number of microseconds.
+     *
+     * @param microseconds The number of microseconds to wait at minimum.
+     * @return Result code.
+     */
+    Result waitTimer(u32 microseconds);
 
     /**
      * Initialize the APIC.
