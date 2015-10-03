@@ -411,6 +411,7 @@ CoreServer::Result CoreServer::discover()
 
 CoreServer::Result CoreServer::bootAll()
 {
+#ifdef INTEL
     List<uint> & cores = m_cores->getCores();
     if (cores.count() == 0)
     {
@@ -428,6 +429,7 @@ CoreServer::Result CoreServer::bootAll()
             bootCore(coreId, (CoreInfo *)m_coreInfo->get(coreId), m_regions);
         }
     }
+#endif
     return Success;
 }
 
