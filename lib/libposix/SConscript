@@ -34,5 +34,6 @@ env.TargetLibrary('libposix', [ Glob('dirent/*.cpp'),
                                 Glob('stdio/*.cpp'),
 			        Glob('stdlib/*.cpp'),
 		    	        Glob('string/*.cpp'),
+                                Glob('math/*.cpp'),
 				Glob('*.cpp'),
                                 Glob('*.c') ])

@@ -54,3 +54,6 @@ env.HostProgram('IndexTest', 'IndexTest.cpp')
 
 env.TargetProgram('VectorTest', 'VectorTest.cpp')
 env.HostProgram('VectorTest', 'VectorTest.cpp')
+
+env.TargetProgram('MacrosTest', 'MacrosTest.cpp')
+env.HostProgram('MacrosTest', 'MacrosTest.cpp')
