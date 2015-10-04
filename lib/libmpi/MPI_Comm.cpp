@@ -19,6 +19,8 @@
 #include <CoreMessage.h>
 #include "mpi.h"
 
+extern Size coreCount;
+
 int MPI_Comm_rank(MPI_Comm comm,
                   int *rank)
 {
@@ -30,12 +32,6 @@ int MPI_Comm_rank(MPI_Comm comm,
 int MPI_Comm_size(MPI_Comm comm,
                   int *size)
 {
-    CoreMessage msg;
-    msg.action = GetCoreCount;
-    msg.from   = SELF;
-    msg.type   = IPCType;
-    IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
-
-    *size = msg.coreCount;
+    *size = coreCount;
     return MPI_SUCCESS;
 }

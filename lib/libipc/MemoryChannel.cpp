@@ -58,7 +58,7 @@ MemoryChannel::Result MemoryChannel::read(void *buffer)
     while (true)
     {
         m_data.read(0, sizeof(head), &head);
-    
+
         if (head.index != m_head.index)
             break;
     }

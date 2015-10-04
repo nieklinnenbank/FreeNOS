@@ -113,9 +113,16 @@ int MPI_Init(int *argc, char ***argv)
         // now create the slaves using coreservers.
         for (Size i = 1; i < coreCount; i++)
         {
-            char *cmd = new char[64];
-            snprintf(cmd, 64, "%s -a %x -c %d",
+            // TODO: check for cmd buffer size...
+            char *cmd = new char[512];
+            snprintf(cmd, 512, "%s -a %x -c %d",
                      programPath, memChannelBase.phys, coreCount);
+
+            for (Size j = 1; j < *argc; j++)
+            {
+                strcat(cmd, " ");
+                strcat(cmd, (*argv)[j]);
+            }
 
             msg.action = CreateProcess;
             msg.coreId = i;
@@ -156,11 +163,13 @@ int MPI_Init(int *argc, char ***argv)
                 coreCount = atoi((*argv)[i+1]);
                 i++;
             }
+            // Unknown MPI argument. Pass the rest to the user program.
             else
             {
-                printf("%s: unknown argument '%s'\n",
-                        programName, (*argv)[i]);
-                return MPI_ERR_ARG;
+                (*argc) -= (i-1);
+                (*argv)[i-1] = (*argv)[0];
+                (*argv) += (i-1);
+                break;
             }
         }
     }
