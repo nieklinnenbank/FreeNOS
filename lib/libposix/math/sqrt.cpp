@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * Copyright (C) 2010 Mahmoud Hesham El-Magdoub
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,18 +17,30 @@
 
 #include "math.h"
 
-double sqrt( const double fg)
+u32 sqrt(u32 number)
 {
-    double n = fg / 2.0;
-    double lstX = 0.0; 
+    u32 op  = number;
+    u32 res = 0;
+    u32 one = 1uL << 30; // The second-to-top bit is set: use 1u << 14 for uint16_t type; use 1uL<<30 for u32 type
 
-    if (fg <= 0)
+    if (number == 0)
         return 0;
 
-    while(n != lstX)  
+    // "one" starts at the highest power of four <= than the argument.
+    while (one > op)
     {
-        lstX = n;
-        n = (n + fg/n) / 2.0;
+        one >>= 2;
     }
-    return n;
+
+    while (one != 0)
+    {
+        if (op >= res + one)
+        {
+            op = op - (res + one);
+            res = res +  2 * one;
+        }
+        res >>= 1;
+        one >>= 2;
+    }
+    return res;
 }

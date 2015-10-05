@@ -73,17 +73,19 @@ MemoryChannel::Result MemoryChannel::read(void *buffer)
     return Success;
 }
 
+// TODO: optimization for performance: write multiple messages in one shot.
+
 MemoryChannel::Result MemoryChannel::write(void *buffer)
 {
     RingHead reader;
 
-    // Check for buffer space
-    m_feedback.read(0, sizeof(RingHead), &reader);
-
-    if (((m_head.index + 1) % m_maximumMessages) == reader.index)
+    // busy wait until buffer space is available
+    while (true)
     {
-        ERROR("m_head.index=" << m_head.index << " maximum=" << m_maximumMessages << " reader.index=" << reader.index);
-        return ChannelFull;
+        m_feedback.read(0, sizeof(RingHead), &reader);
+
+        if (((m_head.index + 1) % m_maximumMessages) != reader.index)
+            break;
     }
 
     // write the message

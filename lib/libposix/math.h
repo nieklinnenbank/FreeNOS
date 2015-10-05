@@ -43,7 +43,7 @@ extern C int abs(int number);
  * @param number The number to use for square root.
  * @return Square root of the given number.
  */
-extern C double sqrt(double number);
+extern C u32 sqrt(u32 number);
 
 /**
  * @}

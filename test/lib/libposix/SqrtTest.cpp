@@ -24,26 +24,17 @@
 
 TestCase(SqrtPositive)
 {
-    testAssert(sqrt(1) == 1.0);
-    testAssert(sqrt(16) == 4.0);
-    testAssert(sqrt(100) == 10.0);
-    testAssert(doubleEquals(sqrt(32), 5.65685, 0.00001));
-    testAssert(doubleEquals(sqrt(91), 9.53939, 0.00001));
-    testAssert(doubleEquals(sqrt(99999), 316.22618, 0.00001));
-    return OK;
-}
-
-TestCase(SqrtNegative)
-{
-    testAssert(sqrt(-1) == 0);
-    testAssert(sqrt(-1000) == 0);
-    testAssert(sqrt(-99999) == 0);
+    testAssert(sqrt(1) == 1);
+    testAssert(sqrt(16) == 4);
+    testAssert(sqrt(100) == 10);
+    testAssert(sqrt(32) == 5);
+    testAssert(sqrt(91) == 9);
+    testAssert(sqrt(99999) == 316);
     return OK;
 }
 
 TestCase(SqrtZero)
 {
     testAssert(sqrt(0) == 0);
-    testAssert(sqrt(-0) == 0);
     return OK;
 }

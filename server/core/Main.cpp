@@ -41,7 +41,7 @@ int main(int argc, char **argv)
     KernelLog log;
 #endif
 
-    log.setMinimumLogLevel(Log::Debug);
+    log.setMinimumLogLevel(Log::Notice);
     NOTICE("initializing on core0");
 
     CoreServer server;

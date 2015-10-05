@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <fcntl.h>
 #include <unistd.h>
 
@@ -59,7 +60,9 @@ CoreServer::CoreServer()
 
     // Register IPC handlers
     addIPCHandler(GetCoreCount,  &CoreServer::getCoreCount);
-    addIPCHandler(CreateProcess, &CoreServer::createProcess);
+
+    // TODO: hack: because of waitpid() we must send the reply manually before waitpid().
+    addIPCHandler(CreateProcess, &CoreServer::createProcess, false);
 }
 
 int CoreServer::runCore()
@@ -116,20 +119,20 @@ void CoreServer::createProcess(CoreMessage *msg)
             msg->result = EBADF;
             return;
         }
-        else
+        DEBUG("creating program at phys " << (void *) msg->program << " on core" << msg->coreId);
+
+        ch = (MemoryChannel *) m_fromSlave->get(msg->coreId);
+        if (!ch)
         {
-            NOTICE("creating program at phys " << (void *) msg->program << " on core" << msg->coreId);
-            ch = (MemoryChannel *) m_fromSlave->get(msg->coreId);
-            if (!ch)
-            {
-                ERROR("cannot find read channel for core" << msg->coreId);
-            }
-            else
-            {
-                ch->read(msg);
-                NOTICE("program created with result " << (int)msg->result << " at core" << msg->coreId);
-            }
+            ERROR("cannot find read channel for core" << msg->coreId);
+            msg->result = EBADF;
+            return;
         }
+        ch->read(msg);
+        DEBUG("program created with result " << (int)msg->result << " at core" << msg->coreId);
+
+        msg->result = ESUCCESS;
+        IPCMessage(msg->from, API::Send, msg, sizeof(*msg));
     }
     else
     {
@@ -141,9 +144,16 @@ void CoreServer::createProcess(CoreMessage *msg)
         range.size   = msg->programSize;
         VMCtl(SELF, Map, &range);
 
-        spawn(range.virt, msg->programSize, cmd);
+        pid_t pid = spawn(range.virt, msg->programSize, cmd);
+        int status;
+
+        // reply to master
+        msg->result = ESUCCESS;
+        m_toMaster->write(msg);
+
+        // TODO: temporary make coreserver waitpid() to save polling time
+        waitpid(pid, &status, 0);
     }
-    msg->result = ESUCCESS;
 }
 
 void CoreServer::getCoreCount(CoreMessage *msg)
