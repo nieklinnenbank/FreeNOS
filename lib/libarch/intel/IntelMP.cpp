@@ -28,6 +28,8 @@ IntelMP::IntelMP()
 
     m_bios.map(MPAreaAddr, MPAreaSize);
     m_lastMemory.map(info.memorySize - MegaByte(1), MegaByte(1));
+
+    // TODO: avoid this. just pass a initialize(bool hardwareReset = true/false) instead
     m_apic.getIO().map(IntelAPIC::IOBase, PAGESIZE);
 }
 
@@ -96,7 +98,7 @@ IntelMP::Result IntelMP::boot(CoreInfo *info)
     VMCopy(SELF, API::Write, (Address) info, MPInfoAddr, sizeof(*info));
 
     // Send inter-processor-interrupt to wakeup the processor
-    if (m_apic.sendStartupIPI(info->coreId, MPEntryAddr) != IntelAPIC::Success)
+    if (m_apic.sendStartupIPI(info->coreId, MPEntryAddr) != IntController::Success)
         return IOError;
 
     // Wait until the core raises the 'booted' flag in CoreInfo

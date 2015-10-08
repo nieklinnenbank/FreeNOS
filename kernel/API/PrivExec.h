@@ -31,10 +31,10 @@
  */
 typedef enum PrivOperation
 {
-    Idle     = 0,
-    Reboot   = 1,
-    Shutdown = 2,
-    WriteConsole = 3,
+    Idle         = 0,
+    Reboot       = 1,
+    Shutdown     = 2,
+    WriteConsole = 3
 }
 PrivOperation;
 

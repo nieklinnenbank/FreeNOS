@@ -51,7 +51,8 @@ Kernel::Kernel(CoreInfo *info)
     m_procs  = new ProcessManager(new Scheduler());
     m_api    = new API();
     m_coreInfo   = info;
-    m_intControl = 0;
+    m_intControl = ZERO;
+    m_timer      = ZERO;
 
     // Mark kernel memory used (first 4MB in phys memory)
     for (Size i = 0; i < info->kernel.size; i += PAGESIZE)
@@ -110,6 +111,11 @@ MemoryContext * Kernel::getMemoryContext()
 CoreInfo * Kernel::getCoreInfo()
 {
     return m_coreInfo;
+}
+
+Timer * Kernel::getTimer()
+{
+    return m_timer;
 }
 
 void Kernel::enableIRQ(u32 irq, bool enabled)

@@ -8,6 +8,8 @@
 #include <String.h>
 #include <unistd.h>
 
+#warning change to use sqrt() too, for accurate comparision with mpiprime.
+
 int main(int argc, char **argv)
 {
     Size i, j, num;

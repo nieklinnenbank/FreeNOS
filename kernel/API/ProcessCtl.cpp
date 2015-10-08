@@ -38,6 +38,7 @@ Error ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
     Process *proc = ZERO;
     ProcessInfo *info = (ProcessInfo *) addr;
     ProcessManager *procs = Kernel::instance->getProcessManager();
+    Timer *timer;
     Arch::MemoryMap map;
 
     DEBUG("#" << procs->current()->getID() << " " << action << " -> " << procID << " (" << addr << ")");
@@ -105,7 +106,19 @@ Error ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
         procs->current()->setState(Process::Waiting);
         procs->schedule();
         return procs->current()->getWait(); // contains the exit status of the other process
+
+    case InfoTimer:
+        if (!(timer = Kernel::instance->getTimer()))
+            return API::NotFound;
         
+        timer->getCurrent((Timer::Info *) addr); // TODO: check access...
+        break;
+    
+    case WaitTimer:
+        // TODO: set a Timer::Info field for the process. Then when scheduling, the process
+        // will only be allowed to run until after the Timer::Info time has arrived (for sleep).
+        break;
+
     case SetStack:
         proc->setUserStack(addr);
         break;

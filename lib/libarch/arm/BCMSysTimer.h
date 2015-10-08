@@ -20,6 +20,7 @@
 
 #include <Types.h>
 #include <Macros.h>
+#include <Timer.h>
 #include "ARMIO.h"
 
 #define SYSTIMER_BASE 0x3000
@@ -42,13 +43,29 @@
 /** BCM Sys Timer runs at 1Mhz */
 #define BCM_SYSTIMER_FREQ 1000000
 
-class BCMSysTimer
+/**
+ * Broadcom System-on-Chip system timer.
+ */
+class BCMSysTimer : public Timer
 {
   public:
 
-    void setInterval(u32 hertz);
+    /**
+     * Set timer frequency.
+     *
+     * @param hertz Frequency of the timer in hertz.
+     * @return Result code.
+     */
+    virtual Result setFrequency(Size hertz);
 
-    void next();
+    /**
+     * Process timer tick.
+     *
+     * Should be called on each Timer interrupt to
+     * keep the m_info variable synchronized with the actual hardware.
+     * Also clears the timer interrupt flag.
+     */
+    virtual Result tick();
 
   private:
 

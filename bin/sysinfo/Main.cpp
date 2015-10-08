@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,7 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/API.h>
 #include <CoreMessage.h>
+#include <Timer.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -24,18 +26,27 @@ int main(int argc, char **argv)
 {
     SystemInformation info;
     CoreMessage msg;
+    Timer::Info timer;
 
     msg.action = GetCoreCount;
     msg.type = IPCType;
     msg.from = SELF;
     IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
 
+    ProcessCtl(SELF, InfoTimer, (Address) &timer);
+
     printf("Memory Total:     %u KB\r\n"
            "Memory Available: %u KB\r\n"
-           "Processor Cores:  %u\r\n",
+           "Processor Cores:  %u\r\n"
+           "Timer:            %l ticks (%u hertz)\r\n"
+           "Uptime:           %u.%us\r\n",
             info.memorySize / 1024,
             info.memoryAvail / 1024,
-            msg.coreCount);
-    
+            msg.coreCount,
+            (u32)timer.ticks,
+            timer.frequency,
+            timer.frequency ? (u32)timer.ticks / timer.frequency : 0,
+            timer.frequency ? (u32)timer.ticks % timer.frequency : 0);
+
     return EXIT_SUCCESS;
 }

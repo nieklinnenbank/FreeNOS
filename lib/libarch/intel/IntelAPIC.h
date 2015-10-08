@@ -21,6 +21,7 @@
 #include <Types.h>
 #include <BitOperations.h>
 #include <IntController.h>
+#include <Timer.h>
 #include "IntelIO.h"
 
 /** Forward declarations */
@@ -38,7 +39,7 @@ class IntelPIT;
 /**
  * Intel Advanced Programmable Interrupt Controller (APIC)
  */
-class IntelAPIC : public IntController
+class IntelAPIC : public IntController, public Timer
 {
   public:
 
@@ -118,27 +119,26 @@ class IntelAPIC : public IntController
     IntelIO & getIO();
 
     /**
-     * Get timer interrupt number.
-     *
-     * The interrupt number for channel 0 is fixed to IRQ0.
-     *
-     * @return Interrupt number.
-     */
-    uint getTimerInterrupt();
-
-    /**
-     * Get timer interrupt frequency.
-     *
-     * @return Current interrupt frequency.
-     */
-    uint getTimerFrequency();
-
-    /**
      * Get timer initial counter.
      *
      * @return Initial timer counter.
      */
-    uint getTimerCounter();
+    uint getCounter();
+
+    /**
+     * Initialize the APIC.
+     *
+     * @return Result code.
+     */
+    virtual Timer::Result initialize();
+
+    /**
+     * Busy wait a number of microseconds.
+     *
+     * @param microseconds The number of microseconds to wait at minimum.
+     * @return Result code.
+     */
+    virtual Timer::Result wait(u32 microseconds);
 
     /**
      * Start the timer using PIT as reference timer.
@@ -146,7 +146,7 @@ class IntelAPIC : public IntController
      * @param pit PIT instance used to measure the APIC bus speed for clock calibration.
      * @return Result code.
      */
-    Result startTimer(IntelPIT *pit);
+    Timer::Result start(IntelPIT *pit);
 
     /**
      * Start the timer with initial counter.
@@ -155,22 +155,7 @@ class IntelAPIC : public IntController
      * @param hertz Hertz associated to the initial counter.
      * @return Result code.
      */
-    Result startTimer(uint initialCounter, uint hertz);
-
-    /**
-     * Busy wait a number of microseconds.
-     *
-     * @param microseconds The number of microseconds to wait at minimum.
-     * @return Result code.
-     */
-    Result waitTimer(u32 microseconds);
-
-    /**
-     * Initialize the APIC.
-     *
-     * @return Result code.
-     */
-    Result initialize();
+    Timer::Result start(uint initialCounter, uint hertz);
 
     /**
      * Enable hardware interrupt (IRQ).
@@ -178,7 +163,7 @@ class IntelAPIC : public IntController
      * @param irq Interrupt Request number.
      * @return Result code.
      */
-    virtual Result enable(uint irq);
+    virtual IntController::Result enable(uint irq);
 
     /**
      * Disable hardware interrupt (IRQ).
@@ -186,7 +171,7 @@ class IntelAPIC : public IntController
      * @param irq Interrupt Request number.
      * @return Result code.
      */
-    virtual Result disable(uint irq);
+    virtual IntController::Result disable(uint irq);
 
     /**
      * Clear hardware interrupt (IRQ).
@@ -198,7 +183,7 @@ class IntelAPIC : public IntController
      * @param irq Interrupt Request number to clear.
      * @return Result code.
      */
-    virtual Result clear(uint irq);
+    virtual IntController::Result clear(uint irq);
 
     /**
      * Send startup Intercore-Processor-Interrupt.
@@ -207,15 +192,12 @@ class IntelAPIC : public IntController
      * @param addr Start of execution address.
      * @return Result code.
      */
-    Result sendStartupIPI(uint cpuId, Address addr);
+    IntController::Result sendStartupIPI(uint cpuId, Address addr);
 
   private:
 
     /** I/O object */
     IntelIO m_io;
-
-    /** Interrupt frequency of the APIC timer */
-    uint m_hertz;
 };
 
 #endif /* __LIBARCH_INTEL_APIC_H */

@@ -41,7 +41,8 @@ ARMKernel::ARMKernel(ARMInterrupt *intr,
     intr->install(ARMInterrupt::FIQ, interrupt);
 
     // Enable clocks and irqs
-    m_timer.setInterval( 250 ); /* trigger timer interrupts at 250Hz (clock runs at 1Mhz) */
+    m_timer = &m_bcmTimer;
+    m_bcmTimer.setFrequency( 250 ); /* trigger timer interrupts at 250Hz (clock runs at 1Mhz) */
     m_intControl->enable(BCM_IRQ_SYSTIMERM1);
 
     // Set ARMCore modes
@@ -59,7 +60,7 @@ void ARMKernel::interrupt(CPUState state)
     // TODO: remove BCM2835 specific code
     if (intr->isTriggered(BCM_IRQ_SYSTIMERM1))
     {
-        kernel->m_timer.next();
+        kernel->m_timer->tick();
         kernel->getProcessManager()->schedule();
     }
     else

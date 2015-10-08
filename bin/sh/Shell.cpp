@@ -41,6 +41,10 @@ Shell::Shell()
     new StdioCommand();
     new WriteCommand();
     new HelpCommand();
+
+#warning add SleepCommand()
+#warning add TimeCommand()
+
 }
 
 int Shell::run()

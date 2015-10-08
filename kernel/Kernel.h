@@ -31,6 +31,7 @@
 class API;
 class SplitAllocator;
 class IntController;
+class Timer;
 struct CPUState;
 
 /**
@@ -154,6 +155,13 @@ class Kernel : public Singleton<Kernel>
     CoreInfo * getCoreInfo();
 
     /**
+     * Get Timer.
+     *
+     * @return Timer object pointer
+     */
+    Timer * getTimer();
+
+    /**
      * Execute the kernel.
      */
     int run();
@@ -218,6 +226,9 @@ class Kernel : public Singleton<Kernel>
 
     /** Interrupt Controller. */
     IntController *m_intControl;
+
+    /** Timer device. */
+    Timer *m_timer;
 };
 
 /**

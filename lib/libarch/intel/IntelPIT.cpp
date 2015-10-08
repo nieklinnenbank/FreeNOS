@@ -17,8 +17,9 @@
 
 #include "IntelPIT.h"
 
-IntelPIT::IntelPIT()
+IntelPIT::IntelPIT() : Timer()
 {
+    m_int = InterruptNumber;
 }
 
 uint IntelPIT::getCounter()
@@ -30,16 +31,6 @@ uint IntelPIT::getCounter()
     count |= m_io.inb(Channel0Data) << 8;
 
     return count;
-}
-
-uint IntelPIT::getInterruptNumber()
-{
-    return InterruptNumber;
-}
-
-uint IntelPIT::getFrequency()
-{
-    return m_freq;
 }
 
 IntelPIT::Result IntelPIT::setFrequency(uint hertz)
@@ -55,15 +46,15 @@ IntelPIT::Result IntelPIT::setFrequency(uint hertz)
     if (divisor <= 2 || divisor > 0xffff)
         return InvalidFrequency;
 
-    // Let the i8254 timer run continuously (square wave)
-    setControl(SquareWave | Channel0 | AccessLowHigh);
+    // Let the i8254 timer run continuously
+    setControl(RateGenerator | Channel0 | AccessLowHigh);
     m_io.outb(Channel0Data, divisor & 0xff);
     m_io.outb(Channel0Data, (divisor >> 8) & 0xff);
-    m_freq = hertz;
+    m_frequency = hertz;
     return Success;
 }
 
-IntelPIT::Result IntelPIT::wait()
+IntelPIT::Result IntelPIT::waitTrigger()
 {
     uint previous, current;
 
@@ -76,7 +67,7 @@ IntelPIT::Result IntelPIT::wait()
         current  = getCounter();
     }
     while (previous >= current);
-
+ 
     // Now at the trigger moment.
     return Success;
 }

@@ -135,7 +135,7 @@ class ARMKernel : public Kernel
 
     static void reserved(CPUState state);
 
-    BCMSysTimer m_timer;
+    BCMSysTimer m_bcmTimer;
 };
 
 #endif /* __ARM_KERNEL_H */
