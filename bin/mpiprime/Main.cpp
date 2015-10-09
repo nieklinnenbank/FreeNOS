@@ -5,9 +5,7 @@
 #include <mpi.h>
 #include <unistd.h>
 #include <String.h>
-
-//#include <sys/time.h>
-//#include "measure.h"
+#include <sys/time.h>
 
 // Start and end
 #define PERNODE(id, nids, base, n)  (((n) - (base)) / (nids))
@@ -16,31 +14,6 @@
 
 static int rank, total, length;
 static char name[64];
-
-void collect2(int n, unsigned *map)
-{
-    MPI_Status status;
-    int buf[10];
-
-    if (rank != 0)
-    {
-        for (int i = 0; i < 10; i++)
-            buf[i] = rank;
-
-        MPI_Send(&buf, 10, MPI_INT, 0, 0, MPI_COMM_WORLD);
-    }
-    else
-    {
-        for (int i = 1; i < total; i++)
-        {
-            MPI_Recv(&buf, 10, MPI_INT, i, 0, MPI_COMM_WORLD, &status); 
-
-            for (int j = 0; j < 10; j++)
-                printf("core%d buf[%d]=%d\n", i, j, buf[j]);
-        }
-    } 
-}
-
 
 void collect(int n, unsigned *map)
 {
@@ -96,10 +69,22 @@ void search_sequential(int k, int n, unsigned *map, int argc, char **argv)
 
 void search_parallel(int k, int n, unsigned *map, int argc, char **argv)
 {
+    struct timeval t1, t2;
+    struct timezone tz;
+    gettimeofday(&t1, &tz);
     int i, last, sqrt_of_n = sqrt(n);
 
     // Find all primes below sqrt(n) sequentially
     search_sequential(k, sqrt_of_n, map, argc, argv);
+
+    if (rank == 0)
+    {
+        gettimeofday(&t2, &tz);
+        printf("sequential: ");
+        printtimediff(&t1, &t2);
+        printf("\n");
+        gettimeofday(&t1, &tz);
+    }
 
     // Every worker calculates all primes k .. sqrt(n) sequentially
     // and uses the result to mark it's part of the map, concurrently
@@ -128,8 +113,25 @@ void search_parallel(int k, int n, unsigned *map, int argc, char **argv)
         // Look for the next prime
         k++;
     }
+    if (rank == 0)
+    {
+        gettimeofday(&t2, &tz);
+        printf("parallel: ");
+        printtimediff(&t1, &t2);
+        printf("\n");    
+    }
+
     // Collect results of all workers
+    gettimeofday(&t1, &tz);
     collect(n, map);
+
+    if (rank == 0)
+    {
+        gettimeofday(&t2, &tz);
+        printf("collect: ");
+        printtimediff(&t1, &t2);
+        printf("\n");
+    }
 }
 
 int main(int argc, char **argv)
@@ -137,13 +139,23 @@ int main(int argc, char **argv)
     int n, k, i;
     unsigned *map;
     String output;
-    //struct timeval t1, t2;
+    struct timeval t1, t2;
+    struct timezone tz;
 
     // Initialize MPI
+    gettimeofday(&t1, &tz);
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &total);
     MPI_Get_processor_name(name, &length);
+    gettimeofday(&t2, &tz);
+
+    if (rank == 0)
+    {
+        printf("MPI_Init: ");
+        printtimediff(&t1, &t2);
+        printf("\n");
+    }
 
     // Check arguments
     if (argc < 2)
@@ -151,6 +163,7 @@ int main(int argc, char **argv)
         printf("usage: %s <number>\n", argv[0]);
         return EXIT_FAILURE;
     }
+    gettimeofday(&t1, &tz);
     n = atoi(argv[1]);
 
     // Make sure n is divisible by the number of workers
@@ -167,19 +180,29 @@ int main(int argc, char **argv)
 
     // We start with 2
     k = 2;
+    gettimeofday(&t2, &tz);
 
-    // begin measuring
-    //measure_start(&t1, &t2);
+    if (rank == 0)
+    {
+        printf("Setup: ");
+        printtimediff(&t1, &t2);
+        printf("\n");
+    }
 
     // Search for primes until done
-    //search_sequential(k, n, map, argc, argv);
+    gettimeofday(&t1, &tz);
     search_parallel(k, n, map, argc, argv);
+    gettimeofday(&t2, &tz);
+    
+    printf("Search_parallel: ");
+    printtimediff(&t1, &t2);
+    printf("\n");
 
-    // end measuring
-    //measure_stop(&t1, &t2);
+    gettimeofday(&t1, &tz);
 
-    // Only the master reports the results
-    if (rank == 0)
+    // Only the master reports the results.
+    // TODO: output is VERY slow to console, because it is so large?
+    if (rank == 0 && argc >= 3 && strcmp(argv[2], "--stdout") == 0)
     {
         // Print the result
         for (i = 2; i < n; i++)
@@ -189,13 +212,14 @@ int main(int argc, char **argv)
         }
         output << "\n";
         write(1, *output, output.length());
-
-        // TODO: find the *largest* time among the workers
-        //measure_print(&t1, &t2);
     }
 
     // Free resources
     MPI_Finalize();
     free(map);
+    gettimeofday(&t2, &tz);
+    printf("Finalize: ");
+    printtimediff(&t1, &t2);
+    printf("\n");
     return EXIT_SUCCESS;
 }

@@ -53,6 +53,7 @@ int vsnprintf(char *buffer, unsigned int size, const char *fmt, va_list args)
 		/* Integer. */    
 	        case 'd':
 	        case 'u':
+#warning unsigned is the same as signed! goes wrong with 'time' usec output
 		    itoa(buf, 10, va_arg(args, int));
 		    ptr = buf;
 		    goto string;

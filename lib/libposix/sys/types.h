@@ -62,7 +62,7 @@ typedef sint blkcnt_t;
 typedef sint blksize_t;
 
 /** Used for time in seconds. */
-typedef ulong time_t;
+typedef u64 time_t;
 
 /**
  * @}

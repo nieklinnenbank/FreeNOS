@@ -22,6 +22,7 @@
 #include "StdioCommand.h"
 #include "WriteCommand.h"
 #include "HelpCommand.h"
+#include "TimeCommand.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,10 +42,7 @@ Shell::Shell()
     new StdioCommand();
     new WriteCommand();
     new HelpCommand();
-
-#warning add SleepCommand()
-#warning add TimeCommand()
-
+    new TimeCommand();
 }
 
 int Shell::run()
@@ -95,14 +93,14 @@ int Shell::execute(char *command)
     if (!(cmd = ShellCommand::byName(argv[0])))
     {
 	/* If not, try to execute it as a file directly. */
-	if ((pid = forkexec(argv[0], (const char **) argv)) >= 0)
+	if ((pid = forkexec(argv[0], (const char **) argv)) != -1)
 	{
 	    waitpid(pid, &status, 0);
 	    return status;
 	}
 	/* Try to find it on the livecd filesystem. (temporary hardcoded PATH) */
-	else if (snprintf(tmp, sizeof(tmp), "/bin/%s",  argv[0], argv[0]) &&
-	        (pid = forkexec(tmp, (const char **) argv)) >= 0)
+	else if (snprintf(tmp, sizeof(tmp), "/bin/%s", argv[0]) &&
+	        (pid = forkexec(tmp, (const char **) argv)) != -1)
 	{
 	    waitpid(pid, &status, 0);
 	    return status;

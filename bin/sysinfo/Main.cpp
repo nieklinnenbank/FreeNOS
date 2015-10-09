@@ -21,12 +21,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <sys/time.h>
 
 int main(int argc, char **argv)
 {
     SystemInformation info;
     CoreMessage msg;
     Timer::Info timer;
+    struct timeval tv;
+    struct timezone tz;
 
     msg.action = GetCoreCount;
     msg.type = IPCType;
@@ -34,19 +37,19 @@ int main(int argc, char **argv)
     IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
 
     ProcessCtl(SELF, InfoTimer, (Address) &timer);
+    gettimeofday(&tv, &tz);
 
     printf("Memory Total:     %u KB\r\n"
            "Memory Available: %u KB\r\n"
            "Processor Cores:  %u\r\n"
            "Timer:            %l ticks (%u hertz)\r\n"
-           "Uptime:           %u.%us\r\n",
+           "Uptime:           %l.%us\r\n",
             info.memorySize / 1024,
             info.memoryAvail / 1024,
             msg.coreCount,
-            (u32)timer.ticks,
+            (u32) timer.ticks,
             timer.frequency,
-            timer.frequency ? (u32)timer.ticks / timer.frequency : 0,
-            timer.frequency ? (u32)timer.ticks % timer.frequency : 0);
+            (u32) tv.tv_sec, tv.tv_usec);
 
     return EXIT_SUCCESS;
 }
