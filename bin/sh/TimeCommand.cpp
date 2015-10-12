@@ -65,7 +65,8 @@ int TimeCommand::execute(Size nparams, char **params)
     gettimeofday(&t2, &zone);
 
     // Print time measured
-    printf("\r\nTime: %l.%us\r\n",
-            (u32) t2.tv_sec - (u32) t1.tv_sec, t2.tv_usec - t1.tv_usec);
+    printf("\r\nTime: ");
+    printtimediff(&t1, &t2);
+    printf("\r\n");
     return 0;
 }

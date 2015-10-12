@@ -288,11 +288,24 @@ class String : public Sequence<char>
     String & upper();
 
     /**
-     * Assign the text-representation of the given long to the String.
+     * Set text-representation of a signed number.
      *
      * @param string Destination character string buffer or ZERO to fill internal String buffer.
      */
     Size set(long number, Number::Base base = Number::Dec, char *string = ZERO);
+
+    /**
+     * Set text-representation of an unsigned number.
+     *
+     * @param number Input number.
+     * @param base Numberal base type.
+     * @param string Destination character string buffer or ZERO to fill internal String buffer.
+     * @param sign Threat input number as signed.
+     */
+    Size setUnsigned(ulong number,
+                     Number::Base base = Number::Dec,
+                     char *string = ZERO,
+                     bool sign = false);
     
     /**
      * Assignment operator.
