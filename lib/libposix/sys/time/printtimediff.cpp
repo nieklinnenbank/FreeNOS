@@ -15,10 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
+#include <sys/types.h>
 #include <sys/time.h>
 #include <errno.h>
 #include <stdio.h>
+#include <Types.h>
 
 int printtimediff(struct timeval *t1, struct timeval *t2)
 {
