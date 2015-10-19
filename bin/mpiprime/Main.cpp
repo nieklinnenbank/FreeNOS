@@ -217,9 +217,13 @@ int main(int argc, char **argv)
     // Free resources
     MPI_Finalize();
     free(map);
-    gettimeofday(&t2, &tz);
-    printf("Finalize: ");
-    printtimediff(&t1, &t2);
-    printf("\n");
+
+    if (rank == 0)
+    {
+        gettimeofday(&t2, &tz);
+        printf("Finalize: ");
+        printtimediff(&t1, &t2);
+        printf("\n");
+    }
     return EXIT_SUCCESS;
 }

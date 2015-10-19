@@ -8,6 +8,7 @@
 #include <String.h>
 #include <unistd.h>
 #include <math.h>
+#include <errno.h>
 
 void search_sequential(int k, int n, unsigned *map, int argc, char **argv)
 {
