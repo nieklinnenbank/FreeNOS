@@ -49,6 +49,10 @@ String currentDirectory;
 
 void * __dso_handle = 0;
 
+extern C void __aeabi_unwind_cpp_pr0()
+{
+}
+
 extern C int __cxa_atexit(void (*func) (void *),
                           void * arg, void * dso_handle)
 {
