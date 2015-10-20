@@ -23,11 +23,6 @@ SECTIONS
 {
     . = 0x80000000;
 
-    /DISCARD/ :
-    {
-        *(.note.gnu.build-id)
-    }
-
     .text :
     {
 	*(.entry)
@@ -38,6 +33,7 @@ SECTIONS
 	*(.rodata)
 	*(.rodata.*)
 	*(.eh_frame)
+        *(.note.gnu.build-id)
 
 	. = ALIGN(4);
         CTOR_LIST = .;

@@ -21,11 +21,6 @@ OUTPUT_FORMAT("elf32-littlearm")
  
 SECTIONS
 {
-    /DISCARD/ :
-    {
-        *(.note.gnu.build-id)
-    }
-
     /* Starts at LOADER_ADDR. */
     . = 0x8000;
     __start = .;
@@ -50,6 +45,7 @@ SECTIONS
     .data :
     {
         *(.data)
+        *(.note.gnu.build-id)
 
         CTOR_LIST = .;
         KEEP (*(SORT(.ctors.*)))
