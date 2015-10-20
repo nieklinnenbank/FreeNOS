@@ -132,6 +132,7 @@ int main(int argc, char **argv)
     BootSegment *segments;
     FILE *fp;
     Size numSegments = 0, dataOffset = 0;
+    uint segCount = 0;
     
     /* Verify command-line arguments. */
     if (argc < 3)
@@ -185,21 +186,21 @@ int main(int argc, char **argv)
     /* Fill the segments table by looping symbols */
     for (Size i = 0; i < input.count(); i++)
     {
-        // TODO: warning this code assumes only one segment per BootSymbol!
         /* Loop the symbol segments. */
         for (Size j = 0; j < input[i]->numRegions; j++)
         {
             /* Fill in the segment. */
-            segments[i].virtualAddress = input[i]->regions[j].virt;
-            segments[i].size           = input[i]->regions[j].size;
-            segments[i].offset         = dataOffset;
+            segments[segCount].virtualAddress = input[i]->regions[j].virt;
+            segments[segCount].size           = input[i]->regions[j].size;
+            segments[segCount].offset         = dataOffset;
             
             // Increment total segments size
-            symbols[i].segmentsTotalSize += segments[i].size;
+            symbols[i].segmentsTotalSize += segments[segCount].size;
 
             /* Increment data pointer. Align on memory page boundary. */
             dataOffset += segments[i].size;
             dataOffset += PAGESIZE - (dataOffset % PAGESIZE);
+            segCount++;
         }
     }
     /* Open boot image for writing. */
