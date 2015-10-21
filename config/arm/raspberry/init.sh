@@ -10,6 +10,6 @@ stdio /dev/serial0 /dev/serial0
 #/server/filesystem/proc/server
 
 #
-# Interactive Shell.
+# Serial Console
 #
-/bin/sh
+/bin/login /dev/serial0 /dev/serial0
