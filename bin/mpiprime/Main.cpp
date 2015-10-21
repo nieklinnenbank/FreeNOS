@@ -160,7 +160,7 @@ int main(int argc, char **argv)
     // Check arguments
     if (argc < 2)
     {
-        printf("usage: %s <number>\n", argv[0]);
+        printf("usage: %s <number> [--stdout]\n", argv[0]);
         return EXIT_FAILURE;
     }
     gettimeofday(&t1, &tz);
