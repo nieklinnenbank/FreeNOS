@@ -16,35 +16,51 @@
  */
 
 #include <string.h>
-#include <ListIterator.h>
-#include "TestCase.h"
-#include "TestSuite.h"
-#include "TestRunner.h"
-#include "StdoutReporter.h"
+#include "TestReporter.h"
 
-TestRunner::TestRunner(int argc, char **argv)
+TestReporter::TestReporter(int argc, char **argv)
 {
     m_argc = argc;
     m_argv = argv;
+    m_ok   = 0;
+    m_fail = 0;
+    m_skip = 0;
     m_showStatistics = !(argc > 1 && strcmp(argv[1], "-n") == 0);
-    m_reporter = new StdoutReporter(argc, argv);
 }
 
-TestRunner::~TestRunner()
+uint TestReporter::getOk() const
 {
-    delete m_reporter;
+    return m_ok;
 }
 
-int TestRunner::run(void)
+uint TestReporter::getFailed() const
 {
-    for (ListIterator<TestInstance *> i(TestSuite::instance->getTests()); i.hasCurrent(); i++)
+    return m_fail;
+}
+
+uint TestReporter::getSkipped() const
+{
+    return m_skip;
+}
+
+void TestReporter::prepare(TestInstance & test)
+{
+    reportBefore(test);
+}
+
+void TestReporter::collect(TestResult & result)
+{
+    reportAfter(result);
+
+    switch (result)
     {
-        TestInstance *test = i.current();
-
-        m_reporter->prepare(*test);
-        TestResult result = test->run();
-        m_reporter->collect(result);
+        case OK:   m_ok++;   break;
+        case FAIL: m_fail++; break;
+        case SKIP: m_skip++; break;
     }
-    m_reporter->finish();
-    return m_reporter->getFailed();
+}
+
+void TestReporter::finish()
+{
+    reportFinish();
 }
