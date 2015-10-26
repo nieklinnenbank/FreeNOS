@@ -15,31 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBTEST_TESTRUNNER_H
-#define __LIBTEST_TESTRUNNER_H
+#include "LocalTest.h"
 
-#include "TestCase.h"
-
-class TestReporter;
-
-class TestRunner
+LocalTest::LocalTest(const char *name, TestFunction func)
+    : TestInstance(name)
 {
-  public:
+    m_func = func;
+}
 
-    TestRunner(int argc, char **argv);
-
-    virtual ~TestRunner();
-
-    TestReporter * getReporter();
-
-    int run(void);
-
-  protected:
-
-    int m_argc;
-    char **m_argv;
-    bool m_showStatistics;
-    TestReporter *m_reporter;
-};
-
-#endif /* __LIBTEST_TESTRUNNER_H */
+TestResult LocalTest::run(void)
+{
+    return m_func();
+}

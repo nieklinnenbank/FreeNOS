@@ -36,36 +36,12 @@
 #include <stdio.h>
 #include <List.h>
 #include <Macros.h>
-
-enum TestResult
-{
-    OK   = 0,
-    FAIL = 1,
-    SKIP = 2
-};
+#include "LocalTest.h"
 
 #define TestCase(name) \
     TestResult name (void); \
-    TestInstance instance_##name (QUOTE(name), name); \
+    LocalTest instance_##name (QUOTE(name), name); \
     TestResult name (void)
-
-typedef TestResult TestFunction(void);
-
-class TestInstance
-{
-  public:
-
-    TestInstance(const char *name, TestFunction func);
-
-    TestResult run();
-
-  private:
-
-    const char *m_name;
-
-    TestFunction *m_func;
-};
-
 
 /**
  * Test if the given expression is true and return NOK otherwise.

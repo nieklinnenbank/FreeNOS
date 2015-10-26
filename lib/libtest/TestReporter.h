@@ -49,6 +49,11 @@ class TestReporter
     uint getSkipped() const;
 
     /**
+     * Set reporting on/off.
+     */
+    void setReport(bool value);
+
+    /**
      * Prepare for next test.
      */
     virtual void prepare(TestInstance & test);
@@ -85,6 +90,9 @@ class TestReporter
 
     /** Argument values */
     char ** m_argv;
+
+    /** Report on/off */
+    bool m_report;
 
     /** Show final statistics. */
     bool m_showStatistics;

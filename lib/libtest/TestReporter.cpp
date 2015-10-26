@@ -25,6 +25,7 @@ TestReporter::TestReporter(int argc, char **argv)
     m_ok   = 0;
     m_fail = 0;
     m_skip = 0;
+    m_report = true;
     m_showStatistics = !(argc > 1 && strcmp(argv[1], "-n") == 0);
 }
 
@@ -43,14 +44,21 @@ uint TestReporter::getSkipped() const
     return m_skip;
 }
 
+void TestReporter::setReport(bool value)
+{
+    m_report = value;
+}
+
 void TestReporter::prepare(TestInstance & test)
 {
-    reportBefore(test);
+    if (m_report)
+        reportBefore(test);
 }
 
 void TestReporter::collect(TestResult & result)
 {
-    reportAfter(result);
+    if (m_report)
+        reportAfter(result);
 
     switch (result)
     {

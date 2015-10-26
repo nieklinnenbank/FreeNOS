@@ -35,6 +35,11 @@ TestRunner::~TestRunner()
     delete m_reporter;
 }
 
+TestReporter * TestRunner::getReporter()
+{
+    return m_reporter;
+}
+
 int TestRunner::run(void)
 {
     for (ListIterator<TestInstance *> i(TestSuite::instance->getTests()); i.hasCurrent(); i++)

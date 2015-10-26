@@ -15,31 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBTEST_TESTRUNNER_H
-#define __LIBTEST_TESTRUNNER_H
+#ifndef __LIBTEST_DIRECTORYSCANNER_H
+#define __LIBTEST_DIRECTORYSCANNER_H
 
-#include "TestCase.h"
-
-class TestReporter;
-
-class TestRunner
+class DirectoryScanner
 {
   public:
 
-    TestRunner(int argc, char **argv);
+    DirectoryScanner(int argc, char **argv);
 
-    virtual ~TestRunner();
+    int scan(const char *path);
 
-    TestReporter * getReporter();
-
-    int run(void);
-
-  protected:
+  private:
 
     int m_argc;
     char **m_argv;
-    bool m_showStatistics;
-    TestReporter *m_reporter;
 };
 
-#endif /* __LIBTEST_TESTRUNNER_H */
+#endif /* __LIBTEST_DIRECTORYSCANNER_H */

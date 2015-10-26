@@ -15,31 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBTEST_TESTRUNNER_H
-#define __LIBTEST_TESTRUNNER_H
+#include "TestSuite.h"
+#include "TestInstance.h"
 
-#include "TestCase.h"
-
-class TestReporter;
-
-class TestRunner
+TestInstance::TestInstance(const char *name)
+    : m_name(name, true)
 {
-  public:
-
-    TestRunner(int argc, char **argv);
-
-    virtual ~TestRunner();
-
-    TestReporter * getReporter();
-
-    int run(void);
-
-  protected:
-
-    int m_argc;
-    char **m_argv;
-    bool m_showStatistics;
-    TestReporter *m_reporter;
-};
-
-#endif /* __LIBTEST_TESTRUNNER_H */
+    if (!TestSuite::instance)
+    {
+        TestSuite::instance = new TestSuite();
+    }
+    TestSuite::instance->addTest(this);
+}

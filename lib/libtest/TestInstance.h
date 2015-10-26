@@ -15,31 +15,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBTEST_TESTRUNNER_H
-#define __LIBTEST_TESTRUNNER_H
+#ifndef __LIBTEST_TESTINSTANCE_H
+#define __LIBTEST_TESTINSTANCE_H
 
-#include "TestCase.h"
+#include <String.h>
 
-class TestReporter;
+enum TestResult
+{
+    OK   = 0,
+    FAIL = 1,
+    SKIP = 2
+};
 
-class TestRunner
+class TestInstance
 {
   public:
 
-    TestRunner(int argc, char **argv);
+    TestInstance(const char *name);
 
-    virtual ~TestRunner();
-
-    TestReporter * getReporter();
-
-    int run(void);
+    virtual TestResult run() = 0;
 
   protected:
 
-    int m_argc;
-    char **m_argv;
-    bool m_showStatistics;
-    TestReporter *m_reporter;
+    String m_name;
 };
 
-#endif /* __LIBTEST_TESTRUNNER_H */
+#endif /* __LIBTEST_TESTINSTANCE_H */

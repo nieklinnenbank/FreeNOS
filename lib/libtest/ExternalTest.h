@@ -15,22 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "TestSuite.h"
-#include "TestCase.h"
+#ifndef __LIBTEST_EXTERNALTEST_H
+#define __LIBTEST_EXTERNALTEST_H
 
-TestInstance::TestInstance(const char *name, TestFunction func)
+#include "TestInstance.h"
+
+class ExternalTest : public TestInstance
 {
-    m_name = name;
-    m_func = func;
+  public:
 
-    if (!TestSuite::instance)
-    {
-        TestSuite::instance = new TestSuite();
-    }
-    TestSuite::instance->addTest(this);
-}
+    ExternalTest(const char *name);
 
-TestResult TestInstance::run(void)
-{
-    return m_func();
-}
+    virtual TestResult run();
+};
+
+#endif /* __LIBTEST_EXTERNALTEST_H */

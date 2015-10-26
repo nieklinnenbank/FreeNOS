@@ -31,7 +31,7 @@ StdoutReporter::StdoutReporter(int argc, char **argv)
 
 void StdoutReporter::reportBefore(TestInstance & test)
 {
-    printf("%s: %s .. ", basename(m_argv[0]), test.m_name);
+    printf("%s%s: %s .. ", WHITE, basename(m_argv[0]), *test.m_name);
 }
 
 void StdoutReporter::reportAfter(TestResult & result)
