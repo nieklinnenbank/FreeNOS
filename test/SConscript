@@ -28,5 +28,10 @@ env.TargetProgram('run', ['Main.cpp'])
 env.HostProgram('run', ['Main.cpp'])
 
 if env['ARCH'] == 'host':
+
     env.Targets(test = env['BUILDROOT'] + '/test/run')
     env.Depends('test', 'run')
+
+    env.AutoTester(tap_test = env['BUILDROOT'] + '/test/run ' + env['BUILDROOT'] + '/test --tap')
+    env.Depends('tap_test', 'run')
+

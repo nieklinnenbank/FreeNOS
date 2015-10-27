@@ -44,9 +44,9 @@ def writeTap(testname, data, env):
     f.write(data)
     f.close()
 
-def runQemu(target, source, env):
+def runTester(target, source, env):
     """
-    Run the FreeNOS autotester /test/run under qemu and collect TAP results.
+    Run the FreeNOS autotester and collect TAP results.
     """
 
     # Needed to workaround SCons problem with the pickle module.
@@ -62,15 +62,15 @@ def runQemu(target, source, env):
     import pickle
     import cPickle
 
-    # Launch qemu process
-    proc = subprocess.Popen(shlex.split(env['QEMU']), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+    # Launch process
+    proc = subprocess.Popen(shlex.split(env['TESTCMD']), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
 
     # Launch a timeout process which will send a SIGTERM
     # to the process after a certain amount of time
     ch = multiprocessing.Process(target = timeoutChecker, args=(proc, 60 * 3))
     ch.start()
 
-    # Give input to login and start the autotester.
+    # Give input to the FreeNOS /bin/login and start the autotester.
     proc.stdin.write("root\n/test/run /test --tap\n")
 
     # Buffer TAP output
@@ -83,18 +83,17 @@ def runQemu(target, source, env):
 
         line = line.strip()
 
-        print "line: " + line
+        print line
 
-        if line == '# Finish /test/run':
+        if line.startswith('# Finish') and line.endswith('/test/run'):
             proc.terminate()
             ch.terminate()
             return
 
         elif "# Start" in line:
-            tap=line
+            tap=line + "\n"
 
         elif line.startswith("# Finish"):
-            print "Writing: " + line[9:]
             writeTap(line[9:], tap, env)
             tap=""
         else:
@@ -108,7 +107,7 @@ def runQemu(target, source, env):
 #
 # Run the FreeNOS autotester inside qemu
 #
-def QemuTest(env, **kw):
+def AutoTester(env, **kw):
 
     # Generate an environment, if not given.
     if not env:
@@ -116,14 +115,17 @@ def QemuTest(env, **kw):
 
     # Make sure to pass the whole environment to the command.
     env.Append(ENV = os.environ)
-    env.Append(QEMU = kw['qemu'])
-    env.AlwaysBuild(env.Alias('qemu_test', [], runQemu))
+
+    # Register SCons builder which always needs to run
+    for target,action in kw.items():
+        env.Append(TESTCMD = action)
+        env.AlwaysBuild(env.Alias(target, [], runTester))
 
 #
 # Add ourselves to the given environment.
 #
 def generate(env):
-    env.AddMethod(QemuTest)
+    env.AddMethod(AutoTester)
 
 #
 # We always exist.

@@ -57,4 +57,4 @@ env.Targets(qemu_debug_int = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT']
 #
 # Autotester in Qemu
 #
-env.QemuTest(qemu = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -m 256 -nographic')
+env.AutoTester(qemu_test = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -m 256 -nographic')
