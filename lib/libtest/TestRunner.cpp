@@ -21,13 +21,31 @@
 #include "TestSuite.h"
 #include "TestRunner.h"
 #include "StdoutReporter.h"
+#include "TAPReporter.h"
 
 TestRunner::TestRunner(int argc, char **argv)
 {
+    // Set member default values.
     m_argc = argc;
     m_argv = argv;
-    m_showStatistics = !(argc > 1 && strcmp(argv[1], "-n") == 0);
     m_reporter = new StdoutReporter(argc, argv);
+
+    // Check for command-line specified arguments.
+    for (int i = 0; i < argc; i++)
+    {
+        if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--tap") == 0)
+        {
+            if (m_reporter)
+                delete m_reporter;
+
+            m_reporter = new TAPReporter(argc, argv);
+            break;
+        }
+        else if (strcmp(argv[i], "-n") == 0)
+        {
+            m_reporter->setStatistics(false);
+        }
+    }
 }
 
 TestRunner::~TestRunner()
@@ -42,14 +60,20 @@ TestReporter * TestRunner::getReporter()
 
 int TestRunner::run(void)
 {
-    for (ListIterator<TestInstance *> i(TestSuite::instance->getTests()); i.hasCurrent(); i++)
+    // Prepare for testing.
+    List<TestInstance *> *tests = TestSuite::instance->getTests();
+    m_reporter->begin(*tests);
+
+    // Execute tests. Report per-test stats.
+    for (ListIterator<TestInstance *> i(tests); i.hasCurrent(); i++)
     {
         TestInstance *test = i.current();
 
         m_reporter->prepare(*test);
         TestResult result = test->run();
-        m_reporter->collect(result);
+        m_reporter->collect(*test, result);
     }
-    m_reporter->finish();
+    // Finish testing. Report final stats.
+    m_reporter->finish(*tests);
     return m_reporter->getFailed();
 }

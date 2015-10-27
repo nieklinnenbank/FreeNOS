@@ -33,6 +33,8 @@ class TestInstance
 
     TestInstance(const char *name);
 
+    const String & getName() const;
+
     virtual TestResult run() = 0;
 
   protected:

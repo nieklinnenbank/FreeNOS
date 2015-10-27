@@ -26,7 +26,11 @@ TestReporter::TestReporter(int argc, char **argv)
     m_fail = 0;
     m_skip = 0;
     m_report = true;
-    m_showStatistics = !(argc > 1 && strcmp(argv[1], "-n") == 0);
+    m_showStatistics = true;
+}
+
+TestReporter::~TestReporter()
+{
 }
 
 uint TestReporter::getOk() const
@@ -49,16 +53,21 @@ void TestReporter::setReport(bool value)
     m_report = value;
 }
 
+void TestReporter::setStatistics(bool value)
+{
+    m_showStatistics = value;
+}
+
 void TestReporter::prepare(TestInstance & test)
 {
     if (m_report)
         reportBefore(test);
 }
 
-void TestReporter::collect(TestResult & result)
+void TestReporter::collect(TestInstance & test, TestResult & result)
 {
     if (m_report)
-        reportAfter(result);
+        reportAfter(test, result);
 
     switch (result)
     {
@@ -68,7 +77,14 @@ void TestReporter::collect(TestResult & result)
     }
 }
 
-void TestReporter::finish()
+void TestReporter::begin(List<TestInstance *> & tests)
 {
-    reportFinish();
+    if (m_showStatistics)
+        reportBegin(tests);
+}
+
+void TestReporter::finish(List<TestInstance *> & tests)
+{
+    if (m_showStatistics)
+        reportFinish(tests);
 }

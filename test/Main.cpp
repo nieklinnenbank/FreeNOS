@@ -30,7 +30,8 @@ int main(int argc, char **argv)
     DirectoryScanner scanner(argc, argv);
     TestRunner runner(argc, argv);
     
-    // Grab command-line arguments, if any
+    // Grab command-line arguments, if any.
+    // First positional argument is the directory.
     if (argc > 1)
     {
         strncpy(path, argv[1], sizeof(path));
@@ -42,8 +43,15 @@ int main(int argc, char **argv)
         strncpy(path, dirname(tmp), sizeof(path));
         path[254] = 0;
     }
-    if (argc > 2)
-        iterations = atoi(argv[2]);
+    // Optional arguments.
+    for (int i = 1; i < argc; i++)
+    {
+        if ((strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--iterations") == 0) &&
+             i < argc - 1)
+        {
+            iterations = atoi(argv[i+1]);
+        }
+    }
 
     // Disable top-level reporting
     runner.getReporter()->setReport(false);

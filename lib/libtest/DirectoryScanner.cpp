@@ -62,7 +62,7 @@ int DirectoryScanner::scan(const char *path)
             // Regular file
             case DT_REG:
                 if (str.endsWith((const char *)"Test"))
-                    new ExternalTest(subPath);
+                    new ExternalTest(subPath, m_argc, m_argv);
                 break;
 
             default:

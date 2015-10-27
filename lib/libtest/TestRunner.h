@@ -38,7 +38,6 @@ class TestRunner
 
     int m_argc;
     char **m_argv;
-    bool m_showStatistics;
     TestReporter *m_reporter;
 };
 

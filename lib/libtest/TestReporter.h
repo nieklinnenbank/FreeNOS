@@ -34,6 +34,11 @@ class TestReporter
     TestReporter(int argc, char **argv);
 
     /**
+     * Destructor.
+     */
+    virtual ~TestReporter();
+
+    /**
      * Get OK count.
      */
     uint getOk() const;
@@ -54,6 +59,11 @@ class TestReporter
     void setReport(bool value);
 
     /**
+     * Set show statistics on/off.
+     */
+    void setStatistics(bool value);
+
+    /**
      * Prepare for next test.
      */
     virtual void prepare(TestInstance & test);
@@ -61,14 +71,24 @@ class TestReporter
     /**
      * Collect test statistics.
      */
-    virtual void collect(TestResult & result);
+    virtual void collect(TestInstance & test, TestResult & result);
+
+    /**
+     * Begin testing.
+     */
+    virtual void begin(List<TestInstance *> & tests);
 
     /**
      * Finish testing.
      */
-    virtual void finish();
+    virtual void finish(List<TestInstance *> & tests);
 
   protected:
+
+    /**
+     * Report start of testing.
+     */
+    virtual void reportBegin(List<TestInstance *> & tests) = 0;
 
     /**
      * Report start of a test.
@@ -78,12 +98,12 @@ class TestReporter
     /**
      * Report finish of a test.
      */
-    virtual void reportAfter(TestResult & result) = 0;
+    virtual void reportAfter(TestInstance & test, TestResult & result) = 0;
 
     /**
      * Report completion of all tests.
      */
-    virtual void reportFinish() = 0;
+    virtual void reportFinish(List<TestInstance *> & tests) = 0;
 
     /** Argument count */
     int m_argc;

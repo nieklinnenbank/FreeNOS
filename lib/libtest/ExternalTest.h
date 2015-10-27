@@ -24,9 +24,15 @@ class ExternalTest : public TestInstance
 {
   public:
 
-    ExternalTest(const char *name);
+    ExternalTest(const char *name, int argc, char **argv);
 
     virtual TestResult run();
+
+  private:
+
+    int m_argc;
+    char ** m_argv;
+
 };
 
 #endif /* __LIBTEST_EXTERNALTEST_H */

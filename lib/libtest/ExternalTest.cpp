@@ -25,30 +25,38 @@
 #include <sys/wait.h>
 #include "ExternalTest.h"
 
-ExternalTest::ExternalTest(const char *name)
+ExternalTest::ExternalTest(const char *name, int argc, char **argv)
     : TestInstance(name)
 {
     // TODO: perhaps argc/argv?
+    m_argc = argc;
+    m_argv = argv;
 }
 
 TestResult ExternalTest::run()
 {
     int status;
+    pid_t pid;
+    char **argv = new char * [m_argc + 2];
+
+    for (int i = 1; i < m_argc; i++)
+        argv[i] = m_argv[i];
+
+    argv[0]        = *m_name;
+    argv[m_argc]   = (char *) "-n";
+    argv[m_argc+1] = 0;
 
 #ifdef __HOST__
-    char tmp[255];
+    if ((pid = fork()) == 0)
+        execv(argv[0], argv);
 
-    snprintf(tmp, sizeof(tmp), "%s -n", *m_name);
-    status = system(tmp);
-
-    if (WIFEXITED(status))
-        status = WEXITSTATUS(status);
+    //status = system(tmp);
+    //if (WIFEXITED(status))
+    //    status = WEXITSTATUS(status);
 #else
-    const char *argv[3] = { *m_name, "-n", 0 };
-
-    pid_t pid = forkexec(*m_name, (const char **) argv);
-    waitpid(pid, &status, 0);
+    pid = forkexec(*m_name, (const char **) argv);
 #endif
+    waitpid(pid, &status, 0);
 
     return status == 0 ? OK : FAIL;
 }

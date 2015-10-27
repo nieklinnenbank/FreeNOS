@@ -15,22 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBTEST_STDOUTREPORTER_H
-#define __LIBTEST_STDOUTREPORTER_H
+#ifndef __LIBTEST_TAPREPORTER_H
+#define __LIBTEST_TAPREPORTER_H
 
 #include "TestReporter.h"
 
 /**
- * Output TestResults to standard output.
+ * Output TestResults in TAP format to stdout.
+ *
+ * @see https://testanything.org/tap-specification.html
  */
-class StdoutReporter : public TestReporter
+class TAPReporter : public TestReporter
 {
   public:
 
     /**
      * Constructor.
      */
-    StdoutReporter(int argc, char **argv);
+    TAPReporter(int argc, char **argv);
 
     /**
      * Report start of testing.
@@ -51,6 +53,11 @@ class StdoutReporter : public TestReporter
      * Report completion of all tests.
      */
     virtual void reportFinish(List<TestInstance *> & tests);
+
+  private:
+
+    /** Test counter. */
+    uint m_count;
 };
 
-#endif /* __LIBTEST_STDOUTREPORTER_H */
+#endif /* __LIBTEST_TAPREPORTER_H */

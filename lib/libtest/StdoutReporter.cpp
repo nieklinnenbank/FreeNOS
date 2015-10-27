@@ -29,12 +29,16 @@ StdoutReporter::StdoutReporter(int argc, char **argv)
 {
 }
 
+void StdoutReporter::reportBegin(List<TestInstance *> & tests)
+{
+}
+
 void StdoutReporter::reportBefore(TestInstance & test)
 {
     printf("%s%s: %s .. ", WHITE, basename(m_argv[0]), *test.m_name);
 }
 
-void StdoutReporter::reportAfter(TestResult & result)
+void StdoutReporter::reportAfter(TestInstance & test, TestResult & result)
 {
     switch (result)
     {
@@ -45,18 +49,15 @@ void StdoutReporter::reportAfter(TestResult & result)
     printf("%s", WHITE);
 }
 
-void StdoutReporter::reportFinish()
+void StdoutReporter::reportFinish(List<TestInstance *> & tests)
 {
-    if (m_showStatistics)
-    {
-        if (m_fail)
-            printf("%s: %sFAIL%s   ", basename(m_argv[0]), RED, WHITE);
-        else
-            printf("%s: %sOK%s   ", basename(m_argv[0]), GREEN, WHITE);
+    if (m_fail)
+        printf("%s: %sFAIL%s   ", basename(m_argv[0]), RED, WHITE);
+    else
+        printf("%s: %sOK%s   ", basename(m_argv[0]), GREEN, WHITE);
 
-        printf("(%d passed %d failed %d skipped %d total)\r\n",
-                m_ok, m_fail, m_skip, (m_ok + m_fail + m_skip));
-    }
+    printf("(%d passed %d failed %d skipped %d total)\r\n",
+            m_ok, m_fail, m_skip, (m_ok + m_fail + m_skip));
 
 #ifdef __HOST__
     fflush(stdout);
