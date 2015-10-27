@@ -108,8 +108,8 @@ host.Append(bin     = '${ROOTFS}/bin',
 	    server  = '${ROOTFS}/server',
             boot    = '${ROOTFS}/boot')
 
-target = host.Clone(tools    = ["default", "bootimage", "iso", "binary", "linn", "phony"],
-		    toolpath = ["support/scons"])
+target = host.Clone(tools    = ["default", "bootimage", "iso", "binary", "linn", "phony", "test"],
+                    toolpath = ["support/scons"])
 
 # Apply configuration
 config.initialize(target, host, ARGUMENTS)

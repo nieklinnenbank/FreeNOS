@@ -64,3 +64,7 @@ env.Targets(qemu_debug = 'qemu-system-arm -kernel ' + build_env['BUILDROOT'] +
 env.Targets(qemu_debugs = 'qemu-system-arm -kernel ' + build_env['BUILDROOT'] +
                           '/kernel/arm/raspberry/vmlinux -cpu arm1176 -M raspi -nographic -s -S -d int,cpu_reset ' +
                           '-initrd ' + build_env['BUILDROOT'] + '/boot.img')
+
+env.QemuTest(qemu = 'qemu-system-arm -kernel ' + build_env['BUILDROOT'] +
+                    '/kernel/arm/raspberry/vmlinux -cpu arm1176 -M raspi -nographic ' +
+                    '-initrd ' + build_env['BUILDROOT'] + '/boot.img')

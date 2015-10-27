@@ -28,7 +28,7 @@ TAPReporter::TAPReporter(int argc, char **argv)
 
 void TAPReporter::reportBegin(List<TestInstance *> & tests)
 {
-    printf("1..%d\r\n", tests.count());
+    printf("1..%d # Start %s\r\n", tests.count(), m_argv[0]);
 }
 
 void TAPReporter::reportBefore(TestInstance & test)
@@ -41,13 +41,15 @@ void TAPReporter::reportAfter(TestInstance & test, TestResult & result)
     {
         case TestResult::Success: printf("ok %d %s\r\n", m_count, *test.getName()); break;
         case TestResult::Failure: printf("not ok %d %s %s\r\n", m_count, *test.getName(), *result.getDescription()); break;
-        case TestResult::Skipped: printf("skip %d %s\r\n", m_count, *test.getName()); break;
+        case TestResult::Skipped: printf("ok %d %s # SKIP\r\n", m_count, *test.getName()); break;
     }
     m_count++;
 }
 
 void TAPReporter::reportFinish(List<TestInstance *> & tests)
 {
+    printf("# Finish %s\r\n", m_argv[0]);
+
 #ifdef __HOST__
     fflush(stdout);
 #endif /* __HOST__ */
