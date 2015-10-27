@@ -69,12 +69,14 @@ void TestReporter::collect(TestInstance & test, TestResult & result)
     if (m_report)
         reportAfter(test, result);
 
-    switch (result)
-    {
-        case OK:   m_ok++;   break;
-        case FAIL: m_fail++; break;
-        case SKIP: m_skip++; break;
-    }
+    if (result.isOK())
+        m_ok++;
+
+    if (result.isFailed())
+        m_fail++;
+
+    if (result.isSkipped())
+        m_skip++;
 }
 
 void TestReporter::begin(List<TestInstance *> & tests)

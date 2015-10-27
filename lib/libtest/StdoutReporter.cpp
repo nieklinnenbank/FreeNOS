@@ -40,11 +40,11 @@ void StdoutReporter::reportBefore(TestInstance & test)
 
 void StdoutReporter::reportAfter(TestInstance & test, TestResult & result)
 {
-    switch (result)
+    switch (result.getResult())
     {
-        case OK:   printf("%sOK\r\n", GREEN); break;
-        case FAIL: printf("%sFAIL\r\n", RED); break;
-        case SKIP: printf("%sSKIP\r\n", YELLOW); break;
+        case TestResult::Success: printf("%sOK\r\n", GREEN); break;
+        case TestResult::Failure: printf("%sFAIL\r\n%s\r\n", RED, *result.getDescription()); break;
+        case TestResult::Skipped: printf("%sSKIP\r\n", YELLOW); break;
     }
     printf("%s", WHITE);
 }

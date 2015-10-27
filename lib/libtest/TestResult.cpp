@@ -15,25 +15,34 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBTEST_TESTINSTANCE_H
-#define __LIBTEST_TESTINSTANCE_H
-
-#include <String.h>
 #include "TestResult.h"
 
-class TestInstance
+TestResult::TestResult(Result result, const char *description)
+    : m_result(result), m_description(description, true)
 {
-  public:
+}
 
-    TestInstance(const char *name);
+bool TestResult::isOK() const
+{
+    return m_result == Success;
+}
 
-    const String & getName() const;
+bool TestResult::isFailed() const
+{
+    return m_result == Failure;
+}
 
-    virtual TestResult run() = 0;
+bool TestResult::isSkipped() const
+{
+    return m_result == Skipped;
+}
 
-  protected:
+const TestResult::Result TestResult::getResult() const
+{
+    return m_result;
+}
 
-    String m_name;
-};
-
-#endif /* __LIBTEST_TESTINSTANCE_H */
+String & TestResult::getDescription()
+{
+    return m_description;
+}

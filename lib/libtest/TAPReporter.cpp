@@ -37,13 +37,11 @@ void TAPReporter::reportBefore(TestInstance & test)
 
 void TAPReporter::reportAfter(TestInstance & test, TestResult & result)
 {
-#warning TODO: how to get the assertion failure text in the test reporter output????
-
-    switch (result)
+    switch (result.getResult())
     {
-        case OK:   printf("ok %d %s\r\n", m_count, *test.getName()); break;
-        case FAIL: printf("not ok %d %s\r\n", m_count, *test.getName()); break;
-        case SKIP: printf("skip %d %s\r\n", m_count, *test.getName()); break;
+        case TestResult::Success: printf("ok %d %s\r\n", m_count, *test.getName()); break;
+        case TestResult::Failure: printf("not ok %d %s %s\r\n", m_count, *test.getName(), *result.getDescription()); break;
+        case TestResult::Skipped: printf("skip %d %s\r\n", m_count, *test.getName()); break;
     }
     m_count++;
 }
