@@ -53,3 +53,8 @@ env.Targets(qemu_serial    = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT']
 env.Targets(qemu_debug     = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -smp 4 -m 256 -curses -s -S')
 env.Targets(qemu_debugs    = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -smp 4 -m 256 -nographic -s -S')
 env.Targets(qemu_debug_int = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -smp 4 -m 256 -nographic -s -S -d int,cpu_reset')
+
+#
+# Autotester in Qemu
+#
+env.QemuTest(qemu = 'qemu-system-i386 -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -m 256 -nographic')
