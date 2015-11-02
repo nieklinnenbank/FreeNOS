@@ -60,11 +60,11 @@ class FileDescriptor
         return !(fd.mount == mount && strcmp(path, fd.path) == 0);
     }
 
-    /** Filesystem server on which this file was opened. */
+    /** Filesystem or device server on which this file was opened. */
     ProcessID mount;
 
-    /** Unique identifier, used by the underlying filesystem. */
-    // Address identifier;
+    /** Unique identifier, used by a device driver (minor device ID). */
+    Address identifier;
 
     /** Path to the file. */
     char path[PATHLEN];

@@ -20,36 +20,38 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <String.h>
 #include "WriteCommand.h"
 
 int WriteCommand::execute(Size nparams, char **params)
 {
     int fd;
-    char space = ' ', *newline = "\r\n";
-
-    /* Attempt to open the file first. */
+    String buf;
+    
+    // Attempt to open the file first
     if ((fd = open(params[0], O_WRONLY)) < 0)
     {
         printf("Failed to open '%s': %s\r\n",
                 params[0], strerror(errno));
         return errno;
     }
-    /* Write to the file. */
-    for (Size i = 0; i < nparams - 1; i++)
+    // Fill write buffer
+    for (Size i = 1; i < nparams; i++)
     {
-	/* Write the argument, and a whitespace. */
-	if (write(fd, params[i + 1], strlen(params[i + 1])) < 0 ||
-	    write(fd, &space, 1) < 0)
-	{
-	    printf("Failed to write '%s': %s\r\n",
-		    params[0], strerror(errno));
-	    return errno;
-	}	
+        buf << params[i];
+        buf << " ";
     }
-    /* Newline. */
-    write(fd, newline, 2);
-    
-    /* Close the file. */
+    // Append newline
+    buf << "\r\n";
+
+    // Write buffer to the file
+    if (write(fd, *buf, buf.length()) < 0)
+    {
+        printf("Failed to write '%s': %s\r\n",
+                params[0], strerror(errno));
+        return errno;
+    }
+    // Close the file
     close(fd);
     return 0;
 }

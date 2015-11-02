@@ -201,42 +201,36 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
      */    
     void ioHandler(FileSystemMessage *msg)
     {
-        Device *dev;
+        Device * const *dev = 0;
         bool result = false;
 
-        // TODO: we only support ONE device right now.
-        dev = devices.at(0);
-        msg->deviceID.minor = 0;
-
-        /* Do we serve this Device? */
-        if (dev)
-        {
-            switch (msg->action)
-            {
-                case ReadFile:
-                    result = performRead(msg);
-                    break;
-        
-                case WriteFile:
-                    result = performWrite(msg);
-                    break;
-        
-                default:
-                    break;
-            }
-            /*
-             * Did we complete the request? If not, enqueue it.
-             */
-            if (!result)
-            {
-                requests.append(new FileSystemMessage(*msg));
-            }
-        }
-        else
+        // Do we serve this Device?
+        if (!(dev = devices.get(msg->deviceID.minor)) &&
+            !(dev = devices.get(0)))
         {
             msg->result = ENODEV;
             msg->type   = IPCType;
             IPCMessage(msg->from, API::Send, msg, sizeof(*msg));
+        }
+        switch (msg->action)
+        {
+            case ReadFile:
+                result = performRead(msg);
+                break;
+        
+            case WriteFile:
+                result = performWrite(msg);
+                break;
+        
+            default:
+                break;
+        }
+        /*
+         * Did we complete the request? If not, enqueue it.
+         */
+        if (!result)
+        {
+            requests.append(new FileSystemMessage(*msg));
         }
     }
     

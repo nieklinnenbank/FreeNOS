@@ -35,11 +35,11 @@ void IO::setBase(uint base)
     m_base = base;
 }
 
-IO::Result IO::map(Address phys, Size size)
+IO::Result IO::map(Address phys, Size size, Memory::Access access)
 {
     m_range.virt   = 0;
     m_range.phys   = phys;
-    m_range.access = Memory::Readable | Memory::Writable | Memory::User;
+    m_range.access = access;
     m_range.size   = size;
 
     if (!isKernel)

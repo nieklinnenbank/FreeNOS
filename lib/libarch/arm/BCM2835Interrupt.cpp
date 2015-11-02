@@ -18,6 +18,8 @@
 #include "BCM2835Interrupt.h"
 #include "ARMIO.h"
 
+#warning Rename to BroadcomInterrupt
+
 BCM2835Interrupt::BCM2835Interrupt() : ARMInterrupt()
 {
     // disable all IRQ sources first, just to be "safe"

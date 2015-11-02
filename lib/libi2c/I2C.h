@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -15,71 +15,72 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBARCH_IO_H
-#define __LIBARCH_IO_H
+#ifndef __LIBI2C_I2C_H
+#define __LIBI2C_I2C_H
 
+#include <FreeNOS/System.h>
 #include <Types.h>
-#include "Memory.h"
 
 /**
- * Generic I/O functions.
+ * I2C controller abstract interface.
  */
-class IO
+class I2C
 {
   public:
 
+    /**
+     * Result codes.
+     */
     enum Result
     {
         Success,
-        MapFailure,
-        OutOfMemory
+        NotFound,
+        IOError,
+        RangeError
     };
 
     /**
-     * Constructor.
+     * Constructor
      */
-    IO();
+    I2C();
 
     /**
-     * Get I/O base offset.
+     * Initialize the Controller.
      *
-     * @return Base offset to add to each I/O address.
+     * @return Result code
      */
-    uint getBase() const;
+    virtual Result initialize() = 0;
 
     /**
-     * Set I/O base offset.
+     * Set Slave address.
      *
-     * @param base Offset to add to each I/O address.
-     */
-    void setBase(uint base);
-
-    /**
-     * Map I/O address space.
-     *
-     * @param phys Physical address for start of the range.
-     * @param size Size of the I/O address space.
-     * @param access Memory access flags
+     * @param addr The 7-bit address of the I2C slave device.
      * @return Result code.
      */
-    Result map(Address phys,
-               Size size = 4096,
-               Memory::Access access = Memory::Readable | Memory::Writable | Memory::User);
+    virtual Result setAddress(Address addr) = 0;
 
     /**
-     * Unmap I/O address space.
+     * Write data to slave.
      *
+     * @param buf Buffer containing bytes to write.
+     * @param size Number of bytes to write.
      * @return Result code.
      */
-    Result unmap();
+    virtual Result write(u8 *buf, Size size) = 0;
+
+    /**
+     * Read data from slave
+     *
+     * @param buf Buffer for storing bytes read.
+     * @param size Number of bytes to read.
+     * @return Result code.
+     */
+    virtual Result read(u8 *buf, Size size) = 0;
 
   protected:
 
-    /** I/O base offset is added to each I/O address. */
-    uint m_base;
-
-    /** Memory range for performing I/O mappings. */
-    Memory::Range m_range;
+    /** I/O instance */
+    Arch::IO m_io;
 };
 
-#endif /* __LIBARCH_IO_H */
+#endif /* __LIBI2C_I2C_H */

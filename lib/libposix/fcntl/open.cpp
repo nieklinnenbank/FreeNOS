@@ -58,9 +58,15 @@ int open(const char *path, int oflag, ...)
                     // Devices should be contacted directly, instead of the filesystem
                     // where we found the device file.
                     if (st.type == BlockDeviceFile || st.type == CharacterDeviceFile)
-                        (*fds)[i].mount = st.deviceID.major;
+                    {
+                        (*fds)[i].mount      = st.deviceID.major;
+                        (*fds)[i].identifier = st.deviceID.minor;
+                    }
                     else
+                    {
                         (*fds)[i].mount = mnt;
+                        (*fds)[i].identifier = 0;
+                    }
                     (*fds)[i].position = 0;
                     return i;
                 }

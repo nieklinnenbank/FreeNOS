@@ -10,38 +10,45 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "BCMSysTimer.h"
-#include "ARMIO.h"
+#include <Log.h>
+#include "DigitalPort.h"
 
-#warning Rename to BroadcomSysTimer
-
-BCMSysTimer::Result BCMSysTimer::setFrequency(Size hertz)
+DigitalPort::DigitalPort(I2C *i2c, uint port)
+    : Device()
 {
-    m_cycles = BCM_SYSTIMER_FREQ / hertz;
-    m_frequency = hertz;
-
-    // Use timer slot 1. Enable.
-    m_io.write(SYSTIMER_C1, m_io.read(SYSTIMER_CLO) + m_cycles);
-    m_io.write(SYSTIMER_CS, m_io.read(SYSTIMER_CS) | (1 << M1));
-
-    // Done
-    return Success;
+    m_i2c  = i2c;
+    m_port = port;
 }
 
-BCMSysTimer::Result BCMSysTimer::tick()
+Error DigitalPort::initialize()
 {
-    // Increment tick counter
-    m_info.ticks++;
+    return ESUCCESS;
+}
 
-    // Clear+acknowledge the timer interrupt
-    m_io.write(SYSTIMER_CS, m_io.read(SYSTIMER_CS) | (1 << M1));
-    m_io.write(SYSTIMER_C1, m_io.read(SYSTIMER_CLO) + m_cycles);
+Error DigitalPort::write(s8 *buffer, Size size, Size offset)
+{
+    u8 command[4];
+
+    for (Size i = 0; i < size; i++)
+    {
+        DEBUG("buffer[" << i << "] =" << buffer[i]);
+    }
+    DEBUG("port =" << m_port);
+
+    // Send a digitalWrite command to the GrovePi
+    // including the port number and digital value (HIGH/LOW)
+    command[0] = 2;
+    command[1] = m_port;
+    command[2] = buffer[0] != '0';
+    command[3] = 0;
+    m_i2c->setAddress(0x4);
+    m_i2c->write(command, sizeof(command));
 
     // Done
-    return Success;
+    return size;
 }
