@@ -37,6 +37,9 @@ BroadcomI2C::Result BroadcomI2C::initialize()
     // Set GPIO pins to ALT0 function for SDA, SCL pins
     m_gpio.setAltFunction(2, BroadcomGPIO::Function0);
     m_gpio.setAltFunction(3, BroadcomGPIO::Function0);
+
+    // Set a slow clock to attempt workaround the I2C bug in Broadcom 2835
+    setClockDivider(0x5dc * 2);
     NOTICE("I2C GPIO pins set");
     NOTICE("ClockDivider is " << m_io.read(ClockDivider));
     NOTICE("Status is " << m_io.read(Status));
@@ -49,6 +52,12 @@ BroadcomI2C::Result BroadcomI2C::setAddress(Address addr)
 {
     DEBUG("address is now " << addr);
     m_io.write(SlaveAddress, addr);
+    return Success;
+}
+
+BroadcomI2C::Result BroadcomI2C::setClockDivider(Size divider)
+{
+    m_io.write(ClockDivider, divider);
     return Success;
 }
 

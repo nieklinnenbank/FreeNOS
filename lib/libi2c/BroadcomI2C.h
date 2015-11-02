@@ -33,6 +33,9 @@
  *
  * @see BCM2835 ARM Peripherals.pdf
  * @see http://www.airspayce.com/mikem/bcm2835/
+ * @see https://github.com/raspberrypi/linux/issues/254
+ * @see https://www.raspberrypi.org/forums/viewtopic.php?f=44&t=13771&start=25
+ * @see http://www.advamation.com/knowhow/raspberrypi/rpi-i2c-bug.html
  */
 class BroadcomI2C : public I2C
 {
@@ -102,6 +105,14 @@ class BroadcomI2C : public I2C
      * @return Result code
      */
     virtual Result initialize();
+
+    /**
+     * Set clock divider.
+     *
+     * @param divider Clock divider to use.
+     * @return Result code.
+     */
+    virtual Result setClockDivider(Size divider);
 
     /**
      * Set Slave address.
