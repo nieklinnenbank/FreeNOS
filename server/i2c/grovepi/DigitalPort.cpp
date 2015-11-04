@@ -23,6 +23,7 @@ DigitalPort::DigitalPort(I2C *i2c, uint port)
 {
     m_i2c  = i2c;
     m_port = port;
+    m_identifier << "groveDigi" << port;
 }
 
 Error DigitalPort::initialize()

@@ -23,7 +23,7 @@
 
 int main(int argc, char **argv)
 {
-    DeviceServer server("ata", CharacterDeviceFile);
+    DeviceServer server(CharacterDeviceFile);
 
     /* 
      * Start serving requests. 
@@ -34,6 +34,7 @@ int main(int argc, char **argv)
 
 ATAController::ATAController()
 {
+    m_identifier << "ata0";
 }
 
 Error ATAController::initialize()

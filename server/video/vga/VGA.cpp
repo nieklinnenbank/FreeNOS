@@ -23,6 +23,7 @@
 
 VGA::VGA(Size w, Size h) : width(w), height(h)
 {
+    m_identifier << "vga0";
 }
 
 Error VGA::initialize()

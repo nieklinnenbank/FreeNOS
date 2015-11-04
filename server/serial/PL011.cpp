@@ -22,6 +22,7 @@
 PL011::PL011(u32 irq)
 {
     m_irq = irq;
+    m_identifier << "serial0";
 }
 
 Error PL011::initialize()

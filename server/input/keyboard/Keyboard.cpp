@@ -45,6 +45,7 @@ const char Keyboard::keymap[0x3a][2] =
 
 Keyboard::Keyboard() : shiftState(ZERO)
 {
+    m_identifier << "keyboard0";
 }
 
 Error Keyboard::initialize()

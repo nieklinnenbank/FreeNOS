@@ -26,6 +26,7 @@
 i8250::i8250(u16 b, u16 q)
     : base(b), irq(q)
 {
+    m_identifier << "serial0";
 }
 
 Error i8250::initialize()

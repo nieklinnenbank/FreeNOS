@@ -22,7 +22,7 @@
 
 int main(int argc, char **argv)
 {
-    DeviceServer server("tty", CharacterDeviceFile);
+    DeviceServer server(CharacterDeviceFile);
 
     /*
      * Start serving requests.

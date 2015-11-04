@@ -48,7 +48,7 @@ uarts[] =
 
 int main(int argc, char **argv)
 {
-    DeviceServer server("serial", CharacterDeviceFile);
+    DeviceServer server(CharacterDeviceFile);
 
     /* Open the logging facilities. */
     Log *log = new KernelLog();

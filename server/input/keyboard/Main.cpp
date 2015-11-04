@@ -23,15 +23,15 @@
 
 int main(int argc, char **argv)
 {
-    DeviceServer server("keyboard", CharacterDeviceFile);
+    DeviceServer server(CharacterDeviceFile);
 
     /* Create a new keyboard object. */
     Keyboard *kb = new Keyboard;
-	
+
     /* Register it with the DeviceServer. */
     server.add(kb);
     server.interrupt(kb, PS2_IRQ);
-	
+
     /*
      * Start processing requests.
      */

@@ -29,6 +29,16 @@ class Device
   public:
 
     /**
+     * Get unique device identifier.
+     *
+     * @return String object
+     */
+    virtual String & getIdentifier()
+    {
+        return m_identifier;
+    }
+
+    /**
      * @brief Perform device specific initialization.
      * @return Error result code.
      */
@@ -66,6 +76,11 @@ class Device
     {
         return ESUCCESS;
     }
+
+  protected:
+
+    /** Unique identifier for this Device. */
+    String m_identifier;
 };
 
 #endif /* __DEVICE_H */

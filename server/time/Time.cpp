@@ -27,6 +27,7 @@
 
 Time::Time()
 {
+    m_identifier << "time0";
 }
 
 Error Time::initialize()

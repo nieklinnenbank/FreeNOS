@@ -24,7 +24,7 @@
 
 int main(int argc, char **argv)
 {
-    DeviceServer server("time", CharacterDeviceFile);
+    DeviceServer server(CharacterDeviceFile);
     
     /*
      * Start serving requests

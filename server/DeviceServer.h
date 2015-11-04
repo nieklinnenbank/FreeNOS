@@ -54,15 +54,13 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
      * 
      * Responsible for registering IPC handlers.
      *
-     * @param prefix Used to to form the filename of the device files.
      * @param type FileType of the device files to create.
      * @param mode Access permissions on the device files.
      */    
-    DeviceServer(const char *prefix, FileType type, FileMode mode = OwnerRW)
+    DeviceServer(FileType type, FileMode mode = OwnerRW)
         : IPCServer<DeviceServer, FileSystemMessage>(this), devices(DEVICE_MAX)
     {
         /* Initialize local member variables. */
-        this->prefix = prefix;
         this->type   = type;
         this->mode   = mode;
         this->interrupts.fill(ZERO);
@@ -127,25 +125,17 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
             // Create device node files
             for (Size i = 0; i < devices.count(); i++)
             {
-                /* Attempt to create the device file. */
-                for (Size i = 0; i < 1000; i++)
-                {
-                    /* For a path using the supplied prefix. */         
-                    snprintf(path, sizeof(path), "/dev/%s%u",
-                         prefix, i);
+                // Attempt to create the device file. */
+                snprintf(path, sizeof(path), "/dev/%s",
+                         *devices[i]->getIdentifier());
 
-                    /*
-                     * Use our ProcessID to redirect FileSystemMessages to us.
-                     */
-                    id.major = pid;
-                    id.minor = i;
+                // Use our ProcessID to redirect FileSystemMessages to us.
+                id.major = pid;
+                id.minor = i;
         
-                    /* Create the special device file. */
-                    if (mknod(path, (type << FILEMODE_BITS) | mode, id) == 0)
-                    {
-                        break;
-                    }
-                }
+                // Create the special device file
+                if (mknod(path, (type << FILEMODE_BITS) | mode, id) != 0)
+                    ERROR("failed to create device at: " << path << ": " << errno);
             }
             return EXIT_SUCCESS;
         }
@@ -376,15 +366,6 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
      * @brief A List of pending I/O operations.
      */
     List<FileSystemMessage *> requests;
-    
-    /**
-     * @brief Prefix string used to create device files in /tmp.
-     *
-     * If prefix contains e.g. "foobar", then add() will
-     * attempt to create "/dev/foobar0". If that fails it tries
-     * "/dev/foobar1", "/dev/foobar2", and so on.
-     */
-    const char *prefix;
     
     /** The type of device file to create. */
     FileType type;

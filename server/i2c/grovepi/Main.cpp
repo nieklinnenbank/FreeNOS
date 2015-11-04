@@ -57,9 +57,7 @@ void setRGB(BroadcomI2C *i2c, uint r, uint g, uint b)
 
 int main(int argc, char **argv)
 {
-#warning modify Device to provide a name.
-#warning ensure that devices each have a fixed reliable name, based on e.g. its hardware address.
-    DeviceServer server("groveDigi", CharacterDeviceFile);
+    DeviceServer server(CharacterDeviceFile);
 
     // Setup logging
     Log *log = new KernelLog();

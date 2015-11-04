@@ -23,7 +23,7 @@
 
 int main(int argc, char **argv)
 {
-    DeviceServer server("vga", BlockDeviceFile);
+    DeviceServer server(BlockDeviceFile);
 
     /*
      * Start serving requests.
