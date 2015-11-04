@@ -23,37 +23,7 @@
 #include <KernelLog.h>
 #include "DigitalPort.h"
 #include "AnalogPort.h"
-
-#warning add to libposix with this dummy implementation.
-#define sleep(sec) for (int i = 0; i < 1000000; i++);
-
-void setRGB(BroadcomI2C *i2c, uint r, uint g, uint b)
-{
-    u8 command[2];
-    command[0] = 0;
-    command[1] = 0;
-    i2c->setAddress(0x62);
-    i2c->write(command, sizeof(command)); // 0,0
-
-    command[0] = 1;
-    i2c->write(command, sizeof(command)); // 1,0
-
-    command[0] = 0x8;
-    command[1] = 0xaa;
-    i2c->write(command, sizeof(command)); // 0x08,0xaa
-
-    command[0] = 4;
-    command[1] = r;
-    i2c->write(command, sizeof(command)); // 4,r
-
-    command[0] = 3;
-    command[1] = g;
-    i2c->write(command, sizeof(command)); // 3,g
-
-    command[0] = 2;
-    command[1] = b;
-    i2c->write(command, sizeof(command)); // 2,b
-}
+#include "LCDBar.h"
 
 int main(int argc, char **argv)
 {
@@ -61,7 +31,7 @@ int main(int argc, char **argv)
 
     // Setup logging
     Log *log = new KernelLog();
-    log->setMinimumLogLevel(Log::Debug);
+    log->setMinimumLogLevel(Log::Notice);
 
     // Initialize I2C controller
     BroadcomI2C *i2c = new BroadcomI2C();
@@ -80,35 +50,13 @@ int main(int argc, char **argv)
                 ERROR("failed to initialize I2C controller");
                 return EXIT_FAILURE;
         }
-        u8 command[4];
 
-        // Set RGB LED
-        setRGB(i2c, 0, 0, 255);
-        sleep(1);
+        // TODO: Provide /dev/i2c{0,1,2} and let the app set modes directly (TEMP fastest)
+        // or implement ioctl() support
+        // or /dev/grove/digi0/{mode | value | ...} with libfs / libdev (BEST)
 
-#if 0
-        // Send a version command to the GrovePi
-        command[0] = 8;
-        command[1] = 0;
-        command[2] = 0;
-        command[3] = 0;
-        i2c->setAddress(0x4);
-        i2c->write(command, sizeof(command));
-
-        // TODO: implement sleep
-        sleep(1);
-
-//        i2c->setAddress(0x4);
-//        i2c->read(command, 1);
-
-        i2c->setAddress(0x4);
-        i2c->read(command, sizeof(command));
-        
-        // Ask firmware version
-        NOTICE("GrovePi firmware: " << command[1] << "." << command[2] << "." << command[3]);
-#endif
-#if 1
         // Set Digipin 3 to input mode
+        u8 command[4];
         command[0] = 5;
         command[1] = 3;
         command[2] = 0;
@@ -124,12 +72,6 @@ int main(int argc, char **argv)
         command[3] = 0;
         i2c->setAddress(0x4);
         i2c->write(command, sizeof(command));
-
-        //sleep(1);
-        //i2c->setAddress(0x4);
-        //i2c->read(command, 1);
-        //NOTICE("digi2: " << command[0]);
-#endif
     }
 
     // Add devices
@@ -138,6 +80,8 @@ int main(int argc, char **argv)
 
     for (int j = 0; j < 3; j++)
         server.add(new AnalogPort(i2c, j));
+
+    server.add(new LCDBar(i2c));
 
     // Start serving requests
     return server.run(argc, argv);

@@ -20,6 +20,7 @@
 
 #include <Types.h>
 #include <errno.h>
+#include <String.h>
 
 /**
  * Abstract device class interface.

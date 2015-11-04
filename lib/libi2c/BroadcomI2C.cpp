@@ -40,16 +40,15 @@ BroadcomI2C::Result BroadcomI2C::initialize()
 
     // Detect I2C controller. In Qemu, the ClockDivider is always zero.
     if (m_io.read(ClockDivider) == 0)
-    {
-        
+    {        
         return NotFound;
     }
 
     // Set a slow clock to attempt workaround the I2C bug in Broadcom 2835
     setClockDivider(0x5dc * 3);
-    NOTICE("I2C GPIO pins set");
-    NOTICE("ClockDivider is " << m_io.read(ClockDivider));
-    NOTICE("Status is " << m_io.read(Status));
+    DEBUG("I2C GPIO pins set");
+    DEBUG("ClockDivider is " << m_io.read(ClockDivider));
+    DEBUG("Status is " << m_io.read(Status));
 
     // Done
     return Success;
