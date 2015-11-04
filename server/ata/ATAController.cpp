@@ -135,6 +135,11 @@ Error ATAController::read(s8 *buffer, Size size, Size offset)
     return result;
 }
 
+Error ATAController::write(s8 *buffer, Size size, Size offset)
+{
+    return ENOTSUP;
+}
+
 Error ATAController::interrupt(Size vector)
 {
     INFO("ATA interrupted on IRQ " << vector);

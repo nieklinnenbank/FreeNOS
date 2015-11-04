@@ -40,131 +40,131 @@
  */
 class Terminal : public Device
 {
-    public:
+  public:
 
-	/**
-	 * @brief Class constructor.
-	 *
-	 * @param inputFile Path to the (device) file to use as input source.
-	 * @param outputFile Path to the (device) file to use as
-	 *        an output source.
-	 * @param width Width of the Terminal.
-	 * @param height Height of the Terminal.
-	 */
-	Terminal(const char *inputFile  = "/dev/keyboard0",
-		 const char *outputFile = "/dev/vga0",
-		 Size width = 80, Size height = 25);
+    /**
+     * @brief Class constructor.
+     *
+     * @param inputFile Path to the (device) file to use as input source.
+     * @param outputFile Path to the (device) file to use as
+     *        an output source.
+     * @param width Width of the Terminal.
+     * @param height Height of the Terminal.
+     */
+    Terminal(const char *inputFile  = "/dev/keyboard0",
+             const char *outputFile = "/dev/vga0",
+             Size width = 80, Size height = 25);
 
-	/**
-	 * @brief Class destructor.
-	 */
-	~Terminal();
+    /**
+     * @brief Class destructor.
+     */
+    ~Terminal();
 
-	/**
-	 * @brief Retrieve the width of the Terminal.
-	 * @return Terminal width.
-	 */
-	Size getWidth();
-	
-	/**
-	 * @brief Retrieve the height of the Terminal.
-	 * @return Terminal height.
-	 */
-	Size getHeight();
-	
-	/**
-	 * @brief Retrieve file descriptor of the input source.
-	 * @return File descriptor number.
-	 */
-	int getInput();
-	
-	/**
-	 * @brief Retrieve file descriptor of the output source.
-	 * @return File descriptor number.
-	 */
-	int getOutput();
-	
-	/**
-	 * @brief Retrieve a pointer to the local buffer.
-	 * @return Pointer to the local buffer.
-	 */
-	u16 * getBuffer();
+    /**
+     * @brief Retrieve the width of the Terminal.
+     * @return Terminal width.
+     */
+    Size getWidth();
+    
+    /**
+     * @brief Retrieve the height of the Terminal.
+     * @return Terminal height.
+     */
+    Size getHeight();
+    
+    /**
+     * @brief Retrieve file descriptor of the input source.
+     * @return File descriptor number.
+     */
+    int getInput();
+    
+    /**
+     * @brief Retrieve file descriptor of the output source.
+     * @return File descriptor number.
+     */
+    int getOutput();
+    
+    /**
+     * @brief Retrieve a pointer to the local buffer.
+     * @return Pointer to the local buffer.
+     */
+    u16 * getBuffer();
 
-        /** 
-         * Saved byte and attribute value at cursor position. 
-         * @return Saved value. 
-         */
-        u16 * getCursorValue();
+    /** 
+     * Saved byte and attribute value at cursor position. 
+     * @return Saved value. 
+     */
+    u16 * getCursorValue();
 
-        /** 
-         * Hides the cursor from the VGA screen. 
-         */
-	void hideCursor();
+    /** 
+     * Hides the cursor from the VGA screen. 
+     */
+    void hideCursor();
 
-        /** 
-         * Sets the new position of the cursor. 
-         * @param pos New position coordinates. 
-         */
-	void setCursor(const teken_pos_t *pos);
+    /** 
+     * Sets the new position of the cursor. 
+     * @param pos New position coordinates. 
+     */
+    void setCursor(const teken_pos_t *pos);
 
-        /** 
-         * Show the VGA cursor. 
-	 */
-        void showCursor();
+    /** 
+     * Show the VGA cursor. 
+     */
+    void showCursor();
 
-	/**
-	 * @brief Initializes the Terminal.
-	 * @return Error result code.
-	 */
-	Error initialize();
+    /**
+     * @brief Initializes the Terminal.
+     * @return Error result code.
+     */
+    virtual Error initialize();
 
-	/**
-	 * Read bytes from the Terminal.
-	 * @param buffer Output buffer.
-	 * @param size Number of bytes to read.
-	 * @param offset Unused.
-	 * @return Number of bytes read or error code on failure.
-	 */
-	Error read(s8 *buffer, Size size, Size offset);
+    /**
+     * Read bytes from the Terminal.
+     * @param buffer Output buffer.
+     * @param size Number of bytes to read.
+     * @param offset Unused.
+     * @return Number of bytes read or error code on failure.
+     */
+    virtual Error read(s8 *buffer, Size size, Size offset);
 
-	/**
-	 * Write bytes to the Terminal (vga memory).
-	 * @param buffer Contains the bytes to write.
-	 * @param size Number of bytes to write.
-	 * @param offset Unused.
-	 * @return Number of bytes written or error code on failure.
-	 */
-	Error write(s8 *buffer, Size size, Size offset);
+    /**
+     * Write bytes to the Terminal (vga memory).
+     * @param buffer Contains the bytes to write.
+     * @param size Number of bytes to write.
+     * @param offset Unused.
+     * @return Number of bytes written or error code on failure.
+     */
+    virtual Error write(s8 *buffer, Size size, Size offset);
 
-    private:
+  private:
 
-	/** Terminal state. */
-	teken_t state;
+    /** Terminal state. */
+    teken_t state;
 
-	/** Terminal function handlers. */
-	teken_funcs_t funcs;
+    /** Terminal function handlers. */
+    teken_funcs_t funcs;
 
-	/** Buffer for local Terminal updates. */
-	u16 *buffer;
+    /** Buffer for local Terminal updates. */
+    u16 *buffer;
 
-	/** Saved cursor position. */
-	teken_pos_t cursorPos;
+    /** Saved cursor position. */
+    teken_pos_t cursorPos;
 
-	/** Saved value at cursor position. */
+    /** Saved value at cursor position. */
         u16 cursorValue;
 
-	/**
-	 * @brief Path to the input and output files.
-	 */
-	const char *inputFile, *outputFile;
-	
-	/**
-	 * @brief Width and height of the Terminal.
-	 */
-	const Size width, height;
-	
-	/** Input and output file descriptors. */
-	int input, output;
+    /**
+     * @brief Path to the input and output files.
+     */
+    const char *inputFile, *outputFile;
+    
+    /**
+     * @brief Width and height of the Terminal.
+     */
+    const Size width, height;
+    
+    /** Input and output file descriptors. */
+    int input, output;
 };
 
 /**
@@ -181,8 +181,8 @@ void bell(Terminal *term);
  * @param attr Attributes for this character.
  */
 void putchar(Terminal *term, const teken_pos_t *pos,
-	     teken_char_t ch, const teken_attr_t *attr);
-	
+         teken_char_t ch, const teken_attr_t *attr);
+    
 /**
  * Sets the Terminal cursor.
  * @param term Terminal object pointer.
@@ -198,7 +198,7 @@ void cursor(Terminal *term, const teken_pos_t *pos);
  * @param attr Attributes for this character.
  */
 void fill(Terminal *ctx, const teken_rect_t *rect,
-	  teken_char_t ch, const teken_attr_t *attr);
+      teken_char_t ch, const teken_attr_t *attr);
 
 /**
  * Copy bytes to the terminal.
@@ -207,7 +207,7 @@ void fill(Terminal *ctx, const teken_rect_t *rect,
  * @param pos Position to copy the rect to.
  */
 void copy(Terminal *ctx, const teken_rect_t *rect,
-	  const teken_pos_t *pos);
+      const teken_pos_t *pos);
 
 /**
  * Set terminal parameters.

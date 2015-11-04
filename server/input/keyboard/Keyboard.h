@@ -41,52 +41,52 @@
  */
 class Keyboard : public Device
 {
-    public:
+  public:
 
-        /**
-         * @brief Constructor function.
-         */
-	Keyboard();
+    /**
+     * @brief Constructor function.
+     */
+    Keyboard();
 
-	/**
-	 * @brief Initialize the PS2 Keyboard driver.
-	 * @return Error status code.
-	 */
-	Error initialize();
+    /**
+     * @brief Initialize the PS2 Keyboard driver.
+     * @return Error status code.
+     */
+    virtual Error initialize();
 
-	/**
-	 * @brief Executed when a key state has changed.
-	 * @param vector Interrupt vector.
-	 * @return Error status code.
-	 */
-	Error interrupt(Size vector);
+    /**
+     * @brief Executed when a key state has changed.
+     * @param vector Interrupt vector.
+     * @return Error status code.
+     */
+    virtual Error interrupt(Size vector);
 
-	/**
-	 * @brief Read a character from the keyboard.
-	 *
-	 * @param buffer Output buffer.
-	 * @param size Number of bytes to read.
-	 * @param offset Unused.
-	 * @return Number of bytes read or error code on failure.
-	 */
-	Error read(s8 *buffer, Size size, Size offset);
+    /**
+     * @brief Read a character from the keyboard.
+     *
+     * @param buffer Output buffer.
+     * @param size Number of bytes to read.
+     * @param offset Unused.
+     * @return Number of bytes read or error code on failure.
+     */
+    virtual Error read(s8 *buffer, Size size, Size offset);
 
-    private:
+  private:
 
-	/**
-	 * @brief Keyboard map table.
-	 */
-        static const char keymap[0x3a][2];
+    /**
+     * @brief Keyboard map table.
+     */
+    static const char keymap[0x3a][2];
 
-	/**
-	 * @brief State of the shift key.
-	 *
-	 * Non-zero if pressed, and ZERO otherwise.
-	 */
-	u8 shiftState;
-	
-	/** Do we have a byte ready? */
-	bool pending;
+    /**
+     * @brief State of the shift key.
+     *
+     * Non-zero if pressed, and ZERO otherwise.
+     */
+    u8 shiftState;
+
+    /** Do we have a byte ready? */
+    bool pending;
 };
 
 /**

@@ -15,11 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SERVER_I2C_GROVEPI_DIGITALPORT_H
-#define __SERVER_I2C_GROVEPI_DIGITALPORT_H
+#ifndef __SERVER_I2C_GROVEPI_ANALOGPORT_H
+#define __SERVER_I2C_GROVEPI_ANALOGPORT_H
 
 /**     
- * @defgroup groveDigi GrovePi Digital Port
+ * @defgroup groveDigi GrovePi Analog Port
  * @{     
  */
 
@@ -29,18 +29,18 @@
 #include <I2C.h>
 
 /**
- * @brief GrovePi Digital Port
+ * @brief GrovePi Analog Port
  *
  * @see https://github.com/DexterInd/GrovePi/blob/master/Firmware/Source/v1.2/grove_pi_v1_2_5/README.md
  */
-class DigitalPort : public Device
+class AnalogPort : public Device
 {
   public:
 
     /**
      * @brief Constructor function.
      */
-    DigitalPort(I2C *i2c, uint port);
+    AnalogPort(I2C *i2c, uint port);
 
     /**
      * @brief Initializes the time class.
@@ -58,22 +58,12 @@ class DigitalPort : public Device
      */
     virtual Error read(s8 *buffer, Size size, Size offset);
 
-    /** 
-     * @brief Set digital port value.
-     *
-     * @param buffer Buffer to save the read bytes.
-     * @param size Number of bytes to read.
-     * @param offset Offset in the file to read.
-     * @return Number of bytes on success and ZERO on failure. 
-     */
-    virtual Error write(s8 *buffer, Size size, Size offset);
-
   private:
 
     /** I2C controller */
     I2C *m_i2c;
 
-    /** Digital port number. */
+    /** Analog port number. */
     uint m_port;
 };
 

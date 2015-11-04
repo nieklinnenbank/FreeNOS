@@ -38,8 +38,15 @@ BroadcomI2C::Result BroadcomI2C::initialize()
     m_gpio.setAltFunction(2, BroadcomGPIO::Function0);
     m_gpio.setAltFunction(3, BroadcomGPIO::Function0);
 
+    // Detect I2C controller. In Qemu, the ClockDivider is always zero.
+    if (m_io.read(ClockDivider) == 0)
+    {
+        
+        return NotFound;
+    }
+
     // Set a slow clock to attempt workaround the I2C bug in Broadcom 2835
-    setClockDivider(0x5dc * 2);
+    setClockDivider(0x5dc * 3);
     NOTICE("I2C GPIO pins set");
     NOTICE("ClockDivider is " << m_io.read(ClockDivider));
     NOTICE("Status is " << m_io.read(Status));
@@ -99,6 +106,9 @@ BroadcomI2C::Result BroadcomI2C::write(u8 *buf, Size size)
         ERROR("ClockStretchTimeout error");
         return IOError;
     }
+    // TMP: flag done? This is not documented but used in libbcm
+    m_io.write(Control, m_io.read(Control) | 0x2);
+
     // Done
     return Success;
 }
@@ -113,19 +123,25 @@ BroadcomI2C::Result BroadcomI2C::read(u8 *buf, Size size)
     // Clear FIFO and Status
     m_io.write(Control, ClearFIFO);
     m_io.write(Status, ClockStretchTimeout | AcknowledgeError | TransferDone);
-
+    
     // Set data length
     m_io.write(DataLength, size);
 
     // Begin transfer
     m_io.write(Control, Enable | ReadMode | Transfer);
+    DEBUG("start read " << size << " bytes");
+    DEBUG("status: " << m_io.read(Status));
 
     // Wait until transfer done is set
-    while (!(m_io.read(Status) & TransferDone))
+    while (!(m_io.read(Status) & TransferDone));
+
+    // Read out the whole FIFO
+    while (m_io.read(Status) & RxFIFOHasData)
     {
-        while (m_io.read(Status) & RxFIFOHasData)
-            buf[count++] = m_io.read(FIFO);
+        buf[count++] = m_io.read(FIFO);
+        DEBUG("buf[" << count-1 << "]=" << buf[count-1]);
     }
+
     // Check status
     if (m_io.read(Status) & AcknowledgeError)
     {
@@ -137,6 +153,9 @@ BroadcomI2C::Result BroadcomI2C::read(u8 *buf, Size size)
         ERROR("ClockStretchTimeout error");
         return IOError;
     }
+    // TMP: flag done? This is not documented but used in libbcm
+    m_io.write(Control, m_io.read(Control) | 0x2);
+
     // Done
     return Success;
 }

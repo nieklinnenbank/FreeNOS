@@ -89,60 +89,60 @@ class VGA : public Device
 {
     public:
     
-	/**
-	 * @brief Class constructor function.
-	 * @param width Number of characters horizontally.
-	 * @param height Number of characters vertically.
-	 */
-	VGA(Size width = 80, Size height = 25);
+    /**
+     * @brief Class constructor function.
+     * @param width Number of characters horizontally.
+     * @param height Number of characters vertically.
+     */
+    VGA(Size width = 80, Size height = 25);
 
-	/**
-	 * @brief Initializes the VGA device.
-	 *
-	 * First this function maps the VGA video memory
-	 * into our address space. It clears the screen
-	 * and finally disables the VGA hardware cursor.
-	 *
-	 * @return Error status code.
-	 */
-	Error initialize();
+    /**
+     * @brief Initializes the VGA device.
+     *
+     * First this function maps the VGA video memory
+     * into our address space. It clears the screen
+     * and finally disables the VGA hardware cursor.
+     *
+     * @return Error status code.
+     */
+    virtual Error initialize();
 
-	/**
-	 * @brief Read from VGA video memory.
-	 *
-	 * This function copies bytes directly from VGA
-	 * video memory into the target buffer.
-	 *
-	 * @param buffer Output buffer.
-	 * @param size Number of bytes to copy into the buffer.
-	 * @param offset Offset in VGA video memory to read in bytes.
-	 * @return An error code describing the status of the operation.
-	 */
-	Error read(s8 *buffer, Size size, Size offset);
-	
-	/**
-	 * @brief Write to VGA video memory.
-	 *
-	 * This function copies bytes directly into VGA
-	 * video memory from the source buffer.
-	 *
-	 * @param buffer Input buffer.
-	 * @param size Number of bytes to copy from the buffer.
-	 * @param offset Offset in VGA video memory to write in bytes.
-	 * @return An error code describing the status of the operation.
-	 */
-	Error write(s8 *buffer, Size size, Size offset);
-	
-    private:
+    /**
+     * @brief Read from VGA video memory.
+     *
+     * This function copies bytes directly from VGA
+     * video memory into the target buffer.
+     *
+     * @param buffer Output buffer.
+     * @param size Number of bytes to copy into the buffer.
+     * @param offset Offset in VGA video memory to read in bytes.
+     * @return An error code describing the status of the operation.
+     */
+    virtual Error read(s8 *buffer, Size size, Size offset);
     
-	/** @brief VGA video memory address. */
-	u16 *vga;
-	
-	/** @brief Number of characters horizontally. */
-	Size width;
-	
-	/** @brief Number of characters vertically. */
-	Size height;
+    /**
+     * @brief Write to VGA video memory.
+     *
+     * This function copies bytes directly into VGA
+     * video memory from the source buffer.
+     *
+     * @param buffer Input buffer.
+     * @param size Number of bytes to copy from the buffer.
+     * @param offset Offset in VGA video memory to write in bytes.
+     * @return An error code describing the status of the operation.
+     */
+    virtual Error write(s8 *buffer, Size size, Size offset);
+    
+  private:
+    
+    /** @brief VGA video memory address. */
+    u16 *vga;
+    
+    /** @brief Number of characters horizontally. */
+    Size width;
+    
+    /** @brief Number of characters vertically. */
+    Size height;
 };
 
 /**

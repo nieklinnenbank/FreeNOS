@@ -7,7 +7,7 @@ stdio /dev/serial0 /dev/serial0
 #
 # System Servers and Drivers.
 #
-/server/i2c/grovepi/server
+# /server/i2c/grovepi/server
 
 #
 # Serial Console

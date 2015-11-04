@@ -22,67 +22,50 @@
 #include <errno.h>
 
 /**
- * Represents a device attached to the system.
+ * Abstract device class interface.
  */
 class Device
 {
-    public:
+  public:
 
-        /** 
-         * Constructor function. 
-         */
-	Device()
-	{
-	}
+    /**
+     * @brief Perform device specific initialization.
+     * @return Error result code.
+     */
+    virtual Error initialize() = 0;
 
-	/**
-	 * Class destructor.
-	 */
-	virtual ~Device()
-	{
-	}
+    /**
+     * Read bytes from the underlying device.
+     * @param buffer Buffer to store bytes to read.
+     * @param size Number of bytes to read.
+     * @param offset Offset in the device.
+     * @return Number of bytes on success and an error code on failure.
+     */
+    virtual Error read(s8 *buffer, Size size, Size offset)
+    {
+        return ENOTSUP;
+    }
 
-	/**
-	 * @brief Perform device specific initialization.
-	 * @return Error result code.
-	 */
-	virtual Error initialize()
-	{
-	    return ESUCCESS;
-	}
+    /**
+     * Write bytes to the underlying device.
+     * @param buffer Buffer containing bytes to write.
+     * @param size Number of bytes to write.
+     * @return Number of bytes on success and an error code on failure.
+     */
+    virtual Error write(s8 *buffer, Size size, Size offset)
+    {
+        return ENOTSUP;
+    }
 
-	/**
-	 * Read bytes from the underlying device.
-	 * @param buffer Buffer to store bytes to read.
-	 * @param size Number of bytes to read.
-	 * @param offset Offset in the device.
-	 * @return Number of bytes on success and an error code on failure.
-	 */
-	virtual Error read(s8 *buffer, Size size, Size offset)
-	{
-	    return ENOTSUP;
-	}
-
-	/**
-	 * Write bytes to the underlying device.
-	 * @param buffer Buffer containing bytes to write.
-	 * @param size Number of bytes to write.
-	 * @return Number of bytes on success and an error code on failure.
-	 */	
-	virtual Error write(s8 *buffer, Size size, Size offset)
-	{
-	    return ENOTSUP;
-	}
-	
-	/**
-	 * Called when an interrupt has been triggered for this device.
-	 * @param vector Vector number of the interrupt.
-	 * @return Error result code.
-	 */
-	virtual Error interrupt(Size vector)
-	{
-	    return ESUCCESS;
-	}
+    /**
+     * Called when an interrupt has been triggered for this device.
+     * @param vector Vector number of the interrupt.
+     * @return Error result code.
+     */
+    virtual Error interrupt(Size vector)
+    {
+        return ESUCCESS;
+    }
 };
 
 #endif /* __DEVICE_H */

@@ -67,7 +67,6 @@ class PL011 : public Device
 
   private:
 
-
     enum {
         // The GPIO registers base address.
         GPIO_BASE = 0x200000,

@@ -36,6 +36,7 @@
  * @see https://github.com/raspberrypi/linux/issues/254
  * @see https://www.raspberrypi.org/forums/viewtopic.php?f=44&t=13771&start=25
  * @see http://www.advamation.com/knowhow/raspberrypi/rpi-i2c-bug.html
+ * @see http://lxr.free-electrons.com/source/drivers/i2c/busses/i2c-bcm2835.c
  */
 class BroadcomI2C : public I2C
 {
@@ -70,8 +71,8 @@ class BroadcomI2C : public I2C
         RxIntr    = (1 << 10),
         TxIntr    = (1 << 9),
         Transfer  = (1 << 7),
-        ClearFIFO = (1 << 4) | (1 << 5),
-        ReadMode  = (1 << 1),
+        ClearFIFO = (1 << 5),
+        ReadMode  = (1),
         WriteMode = (0)
     };
 
