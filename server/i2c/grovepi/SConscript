@@ -22,4 +22,5 @@ env = build_env.Clone()
 if env['SYSTEM'] == 'raspberry':
     env.UseServers(['log', 'filesystem', 'core'])
     env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libarch', 'libexec', 'libi2c' ])
-    env.TargetProgram('server', [ Glob('*.cpp') ])
+    env.TargetProgram('server', [ 'AnalogPort.cpp', 'DigitalPort.cpp', 'Main.cpp', 'LCDBar.cpp' ])
+    env.TargetProgram('demo', [ 'Demo.cpp' ])
