@@ -234,6 +234,7 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
      * @see Device
      * @see Device::interrupt
      */
+#warning move this and performRead()/performWrite() to FileSystem. Then just use Device for the actual device files.
     void interruptHandler(InterruptMessage *msg)
     {
         List<Device *> *lst = interrupts.at(msg->vector);
@@ -288,7 +289,9 @@ class DeviceServer : public IPCServer<DeviceServer, FileSystemMessage>
     bool performRead(FileSystemMessage *msg)
     {
         Device *dev = devices[msg->deviceID.minor];
-    
+
+#warning not efficient. needs alloc every I/O operation
+
         /* Allocate a temporary buffer. */
         s8 *buffer = new s8[msg->size];
 

@@ -19,9 +19,9 @@ Import('build_env')
 
 env = build_env.Clone()
 env.UseServers(['log', 'filesystem', 'core' ])
-env.UseLibraries(['libstd'], 'host')
+env.UseLibraries(['libstd', 'libfs' ], 'host')
 env.HostProgram('create', [ 'LinnCreate.cpp' ])
 env.HostProgram('dump', [ 'LinnDump.cpp' ])
 
-env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libarch', 'libexec' ])
+env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libarch', 'libexec', 'libfs', 'libipc' ])
 env.TargetProgram('server', [ 'LinnDirectory.cpp', 'LinnFile.cpp', 'LinnFileSystem.cpp' ])

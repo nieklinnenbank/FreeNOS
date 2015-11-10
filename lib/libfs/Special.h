@@ -24,6 +24,8 @@
 #include "FileSystemMessage.h"
 #include <errno.h>
 
+#warning to be replaced by Device
+
 /**
  * Abstract special device which is represented as a File.
  */
