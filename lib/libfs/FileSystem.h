@@ -21,114 +21,48 @@
 #include <FreeNOS/API.h>
 #include <IPCServer.h>
 #include <Vector.h>
-#include <HashTable.h>
-#include <HashIterator.h>
-#include <Runtime.h>
 #include "Directory.h"
+#include "Device.h"
 #include "File.h"
+#include "FileCache.h"
 #include "FileSystemPath.h"
 #include "FileSystemMessage.h"
-#include "FileSystemMount.h"
-#include "FileDescriptor.h"
-#include <unistd.h>
-#include <stdlib.h>
-
-/**
- * Cached in-memory file.
- */
-typedef struct FileCache
-{
-    /**
-     * @brief Constructor function.
-     *
-     * @param f File to insert into the cache.
-     * @param name Entry name of the File in the parent, if any.
-     * @param p Our parent. ZERO if we have no parent.
-     */
-    FileCache(File *f, const char *n, FileCache *p)
-            : file(f), valid(true), parent(p)
-    {
-        name = n;
-
-        if (p && p != this)
-        {
-            p->entries.insert(name, this);
-        }
-    }
-    
-    /**
-     * Comparision operator.
-     * @param fc Instance to compare us with.
-     * @return True if equal, false otherwise.
-     */
-    bool operator == (FileCache *fc)
-    {
-        return file == fc->file;
-    }
-
-    /** File pointer. */
-    File *file;
-
-    /** Our name */
-    String name;
-    
-    /** Contains childs. */
-    HashTable<String, FileCache *> entries;
-
-    /** Is this entry still valid?. */
-    bool valid;
-    
-    /** Parent */
-    FileCache *parent;
-}
-FileCache;
 
 /**
  * Abstract filesystem class.
  */
 class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
 {
-    public:
+  public:
 
     /**
      * Constructor function.
+     *
      * @param p Path to which we are mounted.
      */
-    FileSystem(const char *path)
-        : IPCServer<FileSystem, FileSystemMessage>(this),
-          root(ZERO), mountPath(path)
-    {
-        /* Register message handlers. */
-        addIPCHandler(CreateFile, &FileSystem::pathHandler);
-        addIPCHandler(StatFile,   &FileSystem::pathHandler);
-        addIPCHandler(DeleteFile, &FileSystem::pathHandler);
-        addIPCHandler(ReadFile,   &FileSystem::pathHandler);
-        addIPCHandler(WriteFile,  &FileSystem::pathHandler);
-    }
+    FileSystem(const char *path);
     
     /**
      * Destructor function.
      */
-    virtual ~FileSystem()
-    {
-    }
+    virtual ~FileSystem();
+
+    /**
+     * Get root directory.
+     *
+     * @return Root directory pointer
+     */
+    Directory * getRoot();
 
     /**
      * @brief Mount the FileSystem.
      *
      * This function is responsible for mounting the
-     * FileSystem. This happends by creating a new entry
-     * in the FileSystemMounts table, which is a Shared object.
+     * FileSystem.
      *
-     * @param background Set to true to run as a background process (default).
      * @return True if mounted successfully, false otherwise.
      */
-    bool mount(bool background = true)
-    {
-        // TODO: forkexec() ourselves in the background first, if requested.
-        // TODO: Mount ourselves. Send a message to the coreserver for it.
-        return true;
-    }
+    Error mount();
 
     /**
      * @brief Create a new file.
@@ -136,10 +70,27 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
      * @param deviceID Optionally specifies the device identities to create.
      * @return Pointer to a new File on success or ZERO on failure.
      */
-    virtual File * createFile(FileType type, DeviceID deviceID)
-    {
-        return (File *) ZERO;
-    }
+    virtual File * createFile(FileType type, DeviceID deviceID);
+
+    /**
+     * Inserts a file into the in-memory filesystem tree.
+     *
+     * @param file File to insert.
+     * @param pathFormat Formatted full path to the file to insert.
+     * @param ... Argument list.
+     * @return Pointer to the newly created FileCache, or NULL on failure.
+     */
+    FileCache * insertFileCache(File *file, const char *pathFormat, ...);
+
+    /**
+     * Inserts a file into the in-memory filesystem tree.
+     *
+     * @param file File to insert.
+     * @param pathFormat Formatted full path to the file to insert.
+     * @param args Argument list.
+     * @return Pointer to the newly created FileCache, or NULL on failure.
+     */
+    FileCache * insertFileCache(File *file, const char *pathFormat, va_list args);
 
     /**
      * @brief Process an incoming filesystem request using a path.
@@ -152,89 +103,8 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
      * @see FileSystemMessage
      * @see FileSystemAction
      */
-    void pathHandler(FileSystemMessage *msg)
-    {
-        FileSystemPath path;
-        FileCache *cache = ZERO; 
-        File *file = ZERO;
-        Directory *parent;
-        IOBuffer io(msg);
-        char buf[PATHLEN];
-    
-        // Copy the file path
-        if ((msg->result = VMCopy(msg->from, API::Read, (Address) buf,
-                         (Address) msg->path, PATHLEN)) <= 0)
-        {
-            return;
-        }
-        path.parse(buf + strlen(mountPath));
+    void pathHandler(FileSystemMessage *msg);
 
-        // Do we have this file cached?
-        if ((cache = findFileCache(&path)) ||
-            (cache = lookupFile(&path)))
-        {
-            file = cache->file;
-        }
-        // File not found
-        else if (msg->action != CreateFile)
-        {
-            msg->result = ENOENT;
-            return;
-        }           
-        
-        // Perform I/O on the file
-        switch (msg->action)
-        {
-        case CreateFile:
-            if (cache)
-                msg->result = EEXIST;
-            else
-            {
-                /* Attempt to create the new file. */
-                if ((file = createFile(msg->filetype, msg->deviceID)))
-                {
-                    insertFileCache(file, "%s", **path.full());
-                
-                    /* Add directory entry to our parent. */
-                    if (path.parent())
-                    {
-                        parent = (Directory *) findFileCache(**path.parent())->file;
-                    }
-                    else
-                        parent = (Directory *) root->file;
-
-                    parent->insert(file->getType(), **path.full());
-                    msg->result = ESUCCESS;
-                }
-                else
-                    msg->result = EIO;
-            }
-            break;
-
-        case DeleteFile:
-            if (cache->entries.count() == 0)
-            {
-                clearFileCache(cache);
-                msg->result = ESUCCESS;
-            }
-            else
-                msg->result = ENOTEMPTY;
-            break;
-
-        case StatFile:
-            msg->result = file->status(msg);
-            break;
-
-        case ReadFile:
-            msg->result = file->read(&io, msg->size, msg->offset);
-            break;
-        
-        case WriteFile:
-            msg->result = file->write(&io, msg->size, msg->offset);
-            break;
-        }
-    }
-    
   protected:
 
     /**
@@ -249,12 +119,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
      * @see root
      * @see insertFileCache
      */
-    void setRoot(Directory *newRoot)
-    {
-        root = new FileCache(newRoot, "/", ZERO);
-        insertFileCache(newRoot, ".");
-        insertFileCache(newRoot, "..");
-    }
+    void setRoot(Directory *newRoot);
 
     /**
      * @brief Retrieve a File from storage.
@@ -267,196 +132,50 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
      * @param path A path to lookup from storage.
      * @return Pointer to a FileCache on success, ZERO otherwise.
      */
-    FileCache * lookupFile(FileSystemPath *path)
-    {
-        List<String *> *entries = path->split();
-        FileCache *c = ZERO;
-        File *file = ZERO;
-        Directory *dir;
-
-        /* Loop the entire path. */
-        for (ListIterator<String *> i(entries); i.hasCurrent(); i++)
-        {
-            /* Start at root? */
-            if (!c)
-            {
-                c = root;
-            }
-            /* Do we have this entry cached already? */
-            if (!c->entries.contains(*i.current()))
-            {
-                /* If this isn't a directory, we cannot perform a lookup. */
-                if (c->file->getType() != DirectoryFile)
-                {
-                    return ZERO;
-                }
-                dir = (Directory *) c->file;
-            
-                /* Fetch the file, if possible. */
-                if (!(file = dir->lookup(**i.current())))
-                {
-                    return ZERO;
-                }
-                /* Insert into the FileCache. */
-                c = new FileCache(file, **i.current(), c);
-            }
-            /* Move to the next entry. */
-            else
-                c = (FileCache *) c->entries.value(*i.current());
-        }
-        /* All done. */
-        return c;
-    }
-
-    /**
-     * Inserts a file into the in-memory filesystem tree.
-     * @param file File to insert.
-     * @param pathFormat Formatted full path to the file to insert.
-     * @param ... Argument list.
-     * @return Pointer to the newly created FileCache, or NULL on failure.
-     */
-    FileCache * insertFileCache(File *file, char *pathFormat, ...)
-    {
-        char pathStr[PATHLEN];
-        FileSystemPath path;
-        FileCache *parent = ZERO;
-        va_list args;
-        
-        /* Format the path first. */
-        va_start(args, pathFormat);
-        vsnprintf(pathStr, sizeof(pathStr), pathFormat, args);
-        va_end(args);
-        
-        /* Interpret the given path. */
-        path.parse(pathStr);
-        
-        /* Lookup our parent. */
-        if (!(path.parent()))
-        {
-            parent = root;
-        }
-        else if (!(parent = findFileCache(path.parent())))
-        {
-            return ZERO;
-        }
-        /* Create new cache. */
-        return new FileCache(file, **path.base(), parent);
-    }
+    FileCache * lookupFile(FileSystemPath *path);
 
     /**
      * Search the cache for an entry.
      * @param path Full path of the file to find.
      * @return Pointer to FileCache object on success, NULL on failure.
      */
-    FileCache * findFileCache(char *path)
-    {
-        FileSystemPath p(path);
-        return findFileCache(&p);
-    }
+    FileCache * findFileCache(char *path);
 
     /**
      * Search the cache for an entry.
      * @param path Full path of the file to find.
      * @return Pointer to FileCache object on success, NULL on failure.
      */
-    FileCache * findFileCache(String *path)
-    {
-        return path ? findFileCache(**path) : ZERO;
-    }
+    FileCache * findFileCache(String *path);
 
     /**
      * Search the cache for an entry.
      * @param path Full path of the file to find.
      * @return Pointer to FileCache object on success, NULL on failure.
      */
-    FileCache * findFileCache(FileSystemPath *p)
-    {
-        List<String *> *entries = p->split();
-        FileCache *c = root;
-
-        /* Root is treated special. */
-        if (!p->parent() && p->length() == 0)
-        {
-            return root;
-        }
-        /* Loop the entire path. */
-        for (ListIterator<String *> i(entries); i.hasCurrent(); i++)
-        {
-            if (!c->entries.contains(*i.current()))
-                return ZERO;
-
-            c = (FileCache *) c->entries.value(*i.current());
-        }
-        /* Perform cachehit? */
-        if (c)
-        {
-            cacheHit(c);
-        }
-        /* Return what we got. */
-        return c && c->valid ? c : ZERO;
-    }
+    FileCache * findFileCache(FileSystemPath *p);
 
     /**
      * Process a cache hit.
      * @param cache FileCache object which has just been referenced.
      * @return FileCache object pointer.
      */
-    virtual FileCache * cacheHit(FileCache *cache)
-    {
-        return cache;
-    }
+    virtual FileCache * cacheHit(FileCache *cache);
 
     /**
      * Cleans up the entire file cache (except opened file caches and root).
      * @param cache Input FileCache object. ZERO to clean up all from root.
      */
-    void clearFileCache(FileCache *cache = ZERO)
-    {
-        /* Start from root? */
-        if (!cache)
-        {
-            cache = root;
-        }
-        /* Mark invalid immediately. */
-        else
-            cache->valid = false;
-
-        /* Walk all our childs. */
-        for (HashIterator<String, FileCache *> i(cache->entries); i.hasCurrent(); i++)
-        {
-            /* Traverse subtree if it isn't invalidated yet. */
-            if (i.current()->valid)
-            {
-                clearFileCache(i.current());
-
-                /* May we remove reference to this entry? */
-                if (i.current()->file->getOpenCount() == 0)    
-                {
-                    i.remove();
-                }
-            }
-        }
-
-        /* Remove the entry itself, if empty. */
-        if (!cache->valid && cache->entries.count() == 0 &&
-             cache->file->getOpenCount() == 0)
-        {
-            /* Remove entry from parent */
-            if (cache->parent)
-            {
-                ((Directory *) cache->parent->file)->remove(*cache->name);
-                cache->parent->entries.remove(cache->name);
-            }
-            delete cache->file;
-            delete cache;
-        }
-    }
+    void clearFileCache(FileCache *cache = ZERO);
     
     /** Root entry of the filesystem tree. */
-    FileCache *root;
+    FileCache *m_root;
     
     /** Mount point. */
-    const char *mountPath;
+    const char *m_mountPath;
+
+    /** Contains ongoing requests */
+    List<FileSystemMessage *> *m_requests;
 };
 
-#endif /* __FILESYSTEM_FILESYSTEM_H */
+#endif /* __LIB_LIBFS_FILESYSTEM_H */

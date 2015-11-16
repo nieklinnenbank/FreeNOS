@@ -17,19 +17,28 @@
 
 #include "ShellCommand.h"
 
-HashTable<String, ShellCommand *> ShellCommand::commands;
-
-ShellCommand::ShellCommand(const char *n, Size p)
-    : name(n), minParams(p)
+ShellCommand::ShellCommand(const char *name, Size params)
 {
-    commands.insert(n, this);
+    m_name      = name;
+    m_minParams = params;
+    m_help      = "";
 }
 
 ShellCommand::~ShellCommand()
 {
 }
 
-ShellCommand * ShellCommand::byName(char *name)
+const char * ShellCommand::getName() const
 {
-    return commands.get(name) ? *commands.get(name) : ZERO;
+    return m_name;
+}
+
+const char * ShellCommand::getHelp() const
+{
+    return m_help;
+}
+
+Size ShellCommand::getMinimumParams() const
+{
+    return m_minParams;
 }

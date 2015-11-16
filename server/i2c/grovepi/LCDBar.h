@@ -75,7 +75,7 @@ class LCDBar : public Device
      * @param offset Offset in the file to read.
      * @return Number of bytes on success and ZERO on failure. 
      */
-    virtual Error write(s8 *buffer, Size size, Size offset);
+    virtual Error write(IOBuffer & buffer, Size size, Size offset);
 
   private:
 

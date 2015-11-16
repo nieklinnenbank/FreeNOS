@@ -23,6 +23,12 @@
 #include <String.h>
 #include "WriteCommand.h"
 
+WriteCommand::WriteCommand()
+    : ShellCommand("write", 2)
+{
+    m_help = "Write data to a file";
+}
+
 int WriteCommand::execute(Size nparams, char **params)
 {
     int fd;

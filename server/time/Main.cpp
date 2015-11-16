@@ -24,12 +24,13 @@
 
 int main(int argc, char **argv)
 {
-    DeviceServer server(CharacterDeviceFile);
-    
+    DeviceServer server("/dev/time");
+    server.initialize();    
+
     /*
      * Start serving requests
      */
     Time* t = new Time();
-    server.add(t);
-    return server.run(argc, argv);
+    server.registerDevice(t, "rtc0");
+    return server.run();
 }

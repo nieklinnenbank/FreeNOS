@@ -68,7 +68,7 @@ int main(int argc, char **argv)
 	    /* Execute each command. */
 	    for (ListIterator<String> i(lines); i.hasCurrent(); i++)
 	    {
-		sh.execute((char *) *i.current());
+		sh.executeInput((char *) *i.current());
 	    }
 	    /* Cleanup. */
 	    delete contents;

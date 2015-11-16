@@ -16,24 +16,26 @@
  */
 
 #include <FreeNOS/API.h>
+#include <stdlib.h>
 #include "TmpFileSystem.h"
 
 int main(int argc, char **argv)
 {
     SystemInformation info;
+    const char *path = "/mount";
 
     // Only run on core0
     if (info.coreId != 0)
         return EXIT_SUCCESS;
 
-    TmpFileSystem server("/dev");
+    if (argc > 1)
+        path = argv[1];
+
+    TmpFileSystem server(path);
     
     /*
      * Mount, then start serving requests.
      */
-    if (server.mount(false))
-    {
-        return server.run();
-    }
-    return EXIT_FAILURE;
+    server.mount();
+    return server.run();
 }

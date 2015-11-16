@@ -19,9 +19,10 @@
 #include "LCDBar.h"
 
 LCDBar::LCDBar(I2C *i2c)
+    : Device(CharacterDeviceFile)
 {
     m_i2c = i2c;
-    m_identifier << "groveLCD";
+    m_identifier << "lcd";
 }
 
 Error LCDBar::initialize()
@@ -29,10 +30,10 @@ Error LCDBar::initialize()
     return ESUCCESS;
 }
 
-Error LCDBar::write(s8 *buffer, Size size, Size offset)
+Error LCDBar::write(IOBuffer & buffer, Size size, Size offset)
 {
     setRGB(0, 255, 0);
-    setText((const char *) buffer, size);
+    setText((const char *) buffer.getBuffer(), size);
     return size;
 }
 

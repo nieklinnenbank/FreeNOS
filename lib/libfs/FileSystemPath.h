@@ -25,7 +25,7 @@
 #include <string.h>
 
 /** Maximum length of a filesystem path. */
-#define PATHLEN	64
+#define PATHLEN 64
 
 /** The default FileSystemPath separator. */
 #define DEFAULT_SEPARATOR '/'

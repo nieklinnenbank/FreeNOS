@@ -91,29 +91,28 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    // Re-open standard I/O
-    close(0);
-    close(1);
-
-    // Stdin
-    if (open(argv[1], O_RDONLY) == -1)
-        return EXIT_FAILURE;
-
-    // Stdout
-    if (open(argv[2], O_RDWR) == -1)
-        return EXIT_FAILURE;
-
-    // Continue in the background
-    if (argc != 4)
+    // Wait until the I/O files are available (busy loop)
+    while (true)
     {
-        const char *self_argv[] = { argv[0], argv[1], argv[2], "-run", 0 };
-        if (forkexec(argv[0], self_argv) == (pid_t) -1)
-        {
-            printf("%s: forkexec '%s' failed: %s\r\n", argv[0]);
-            return EXIT_FAILURE;
-        }
-        else
-            return EXIT_SUCCESS;
+        // Re-open standard I/O
+        close(0);
+        close(1);
+        close(2);
+
+        // Stdin
+        if (open(argv[1], O_RDONLY) == -1)
+            continue;
+
+        // Stdout
+        if (open(argv[2], O_RDWR) == -1)
+            continue;
+
+        // Stderr
+        if (open(argv[2], O_RDWR) == -1)
+            continue;
+
+        // Done
+        break;
     }
 
     // Loop forever with a login prompt

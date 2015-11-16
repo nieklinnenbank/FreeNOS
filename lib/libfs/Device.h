@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,68 +15,49 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __DEVICE_H
-#define __DEVICE_H
+#ifndef __LIB_LIBFS_DEVICE_H
+#define __LIB_LIBFS_DEVICE_H
 
-#include <Types.h>
-#include <errno.h>
-#include <String.h>
+#include "File.h"
 
 /**
  * Abstract device class interface.
  */
-class Device
+class Device : public File
 {
   public:
+
+    /**
+     * Constructor.
+     */
+    Device(FileType type);
+
+    /**
+     * Destructor.
+     */
+    virtual ~Device();
 
     /**
      * Get unique device identifier.
      *
      * @return String object
      */
-    virtual String & getIdentifier()
-    {
-        return m_identifier;
-    }
+    virtual String & getIdentifier();
 
     /**
      * @brief Perform device specific initialization.
+     *
      * @return Error result code.
      */
-    virtual Error initialize() = 0;
-
-    /**
-     * Read bytes from the underlying device.
-     * @param buffer Buffer to store bytes to read.
-     * @param size Number of bytes to read.
-     * @param offset Offset in the device.
-     * @return Number of bytes on success and an error code on failure.
-     */
-    virtual Error read(s8 *buffer, Size size, Size offset)
-    {
-        return ENOTSUP;
-    }
-
-    /**
-     * Write bytes to the underlying device.
-     * @param buffer Buffer containing bytes to write.
-     * @param size Number of bytes to write.
-     * @return Number of bytes on success and an error code on failure.
-     */
-    virtual Error write(s8 *buffer, Size size, Size offset)
-    {
-        return ENOTSUP;
-    }
+    virtual Error initialize();
 
     /**
      * Called when an interrupt has been triggered for this device.
+     *
      * @param vector Vector number of the interrupt.
      * @return Error result code.
      */
-    virtual Error interrupt(Size vector)
-    {
-        return ESUCCESS;
-    }
+    virtual Error interrupt(Size vector);
 
   protected:
 
@@ -84,4 +65,4 @@ class Device
     String m_identifier;
 };
 
-#endif /* __DEVICE_H */
+#endif /* __LIB_LIBFS_DEVICE_H */

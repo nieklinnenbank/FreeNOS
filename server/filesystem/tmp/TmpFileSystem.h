@@ -33,27 +33,25 @@
  */
 class TmpFileSystem : public FileSystem
 {
-    public:
+  public:
     
-	/**
-	 * Class constructor function.
-	 * @param path Path to which we are mounted.
-	 */
-	TmpFileSystem(const char *path);
+    /**
+     * Class constructor function.
+     * @param path Path to which we are mounted.
+     */
+    TmpFileSystem(const char *path);
 
-    private:
-	
-	/**
-	 * @brief Creates a new TmpFile.
-	 * @param path Full path to the file to create.
-	 * @param type Describes the file type to create.
-	 * @param deviceID Optionally specifies which device identities to use.
-	 * @return Pointer to a new File on success, or ZERO on failure.
-	 *
-	 * @see File
-	 * @see FileSystemPath
-	 */
-	File * createFile(FileType type, DeviceID deviceID);
+    /**
+     * @brief Creates a new TmpFile.
+     * @param path Full path to the file to create.
+     * @param type Describes the file type to create.
+     * @param deviceID Optionally specifies which device identities to use.
+     * @return Pointer to a new File on success, or ZERO on failure.
+     *
+     * @see File
+     * @see FileSystemPath
+     */
+    virtual File * createFile(FileType type, DeviceID deviceID);
 };
 
 /**

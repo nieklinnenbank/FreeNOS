@@ -27,7 +27,7 @@ int chdir(const char *filepath)
 {
     String *last = ZERO;
     List<String *> lst;
-    char cwd[PATHLEN], buf[PATHLEN], *path = ZERO;
+    char cwd[PATH_MAX], buf[PATH_MAX], *path = ZERO;
     FileSystemPath fspath;
     struct stat st;
 
@@ -43,7 +43,7 @@ int chdir(const char *filepath)
         return -1;
     }
     /* What's the current working dir? */
-    getcwd(cwd, PATHLEN);
+    getcwd(cwd, PATH_MAX);
     
     /* Relative or absolute? */
     if (filepath[0] != '/')

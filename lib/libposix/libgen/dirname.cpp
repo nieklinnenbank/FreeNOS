@@ -16,12 +16,12 @@
  */
 
 #include <string.h>
-#include <FileSystemPath.h>
+#include <limits.h>
 #include "libgen.h"
 
 char * dirname(char *path)
 {
-    static char buf[PATHLEN];
+    static char buf[PATH_MAX];
     char *str;
 
     if (path[0])
@@ -31,10 +31,10 @@ char * dirname(char *path)
             strlcpy(buf, path, (str-path) + 1);
         }
         else
-            strlcpy(buf, path, PATHLEN);
+            strlcpy(buf, path, PATH_MAX);
     }
     else
-        strlcpy(buf, ".", PATHLEN);
+        strlcpy(buf, ".", PATH_MAX);
     
     return buf;
 }

@@ -1,15 +1,16 @@
 #
 # Use serial port as console.
 #
-/server/serial/server
-stdio /dev/serial0 /dev/serial0
+/server/serial/server &
+stdio /dev/serial/serial0/io /dev/serial/serial0/io
 
 #
 # System Servers and Drivers.
 #
 # /server/i2c/grovepi/server
+/server/filesystem/tmp/server /tmp &
 
 #
 # Serial Console
 #
-/bin/login /dev/serial0 /dev/serial0
+/bin/login /dev/serial/serial0/io /dev/serial/serial0/io

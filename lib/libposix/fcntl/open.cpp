@@ -41,6 +41,14 @@ int open(const char *path, int oflag, ...)
     if (mnt)
     {
         IPCMessage(mnt, API::SendReceive, &msg, sizeof(msg));
+
+        // Refresh mounts and retry, in case the file did not exist
+        if (msg.result == ENOENT)
+        {
+            refreshMounts(0);
+            mnt = findMount(path);
+            IPCMessage(mnt, API::SendReceive, &msg, sizeof(msg));
+        }
     
         // Set errno
         errno = msg.result;
@@ -53,20 +61,9 @@ int open(const char *path, int oflag, ...)
                 if (!(*fds)[i].open)
                 {
                     (*fds)[i].open  = true;
-                    strlcpy((*fds)[i].path, path, PATHLEN);
-
-                    // Devices should be contacted directly, instead of the filesystem
-                    // where we found the device file.
-                    if (st.type == BlockDeviceFile || st.type == CharacterDeviceFile)
-                    {
-                        (*fds)[i].mount      = st.deviceID.major;
-                        (*fds)[i].identifier = st.deviceID.minor;
-                    }
-                    else
-                    {
-                        (*fds)[i].mount = mnt;
-                        (*fds)[i].identifier = 0;
-                    }
+                    strlcpy((*fds)[i].path, path, PATH_MAX);
+                    (*fds)[i].mount = mnt;
+                    (*fds)[i].identifier = 0;
                     (*fds)[i].position = 0;
                     return i;
                 }

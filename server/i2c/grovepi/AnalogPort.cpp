@@ -20,11 +20,11 @@
 #include "AnalogPort.h"
 
 AnalogPort::AnalogPort(I2C *i2c, uint port)
-    : Device()
+    : Device(CharacterDeviceFile)
 {
     m_i2c  = i2c;
     m_port = port;
-    m_identifier << "groveAnalog" << port;
+    m_identifier << "analog" << port;
 }
 
 Error AnalogPort::initialize()
@@ -32,9 +32,11 @@ Error AnalogPort::initialize()
     return ESUCCESS;
 }
 
-Error AnalogPort::read(s8 *buffer, Size size, Size offset)
+Error AnalogPort::read(IOBuffer & buffer, Size size, Size offset)
 {
     u8 command[4];
+    char tmp[16];
+    int n;
 
     if (offset >= 1)
         return 0;
@@ -52,5 +54,7 @@ Error AnalogPort::read(s8 *buffer, Size size, Size offset)
     m_i2c->read(command, 4);
 
     uint value = command[1] * 256 + command[2];
-    return snprintf((char *)buffer, sizeof(buffer), "%10d", value);
+    n = snprintf(tmp, sizeof(tmp), "%10d", value);
+    buffer.write(tmp, n);
+    return n;
 }

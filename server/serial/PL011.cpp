@@ -20,6 +20,7 @@
 #include "PL011.h"
 
 PL011::PL011(u32 irq)
+    : Device(CharacterDeviceFile)
 {
     m_irq = irq;
     m_identifier << "serial0";
@@ -93,7 +94,7 @@ Error PL011::interrupt(u32 vector)
     return ESUCCESS;
 }
 
-Error PL011::read(s8 *buffer, Size size, Size offset)
+Error PL011::read(IOBuffer & buffer, Size size, Size offset)
 {
     Size bytes = 0;
 
@@ -105,12 +106,15 @@ Error PL011::read(s8 *buffer, Size size, Size offset)
     // Read as much bytes as possible
     while (!(m_io.read(PL011_FR) & PL011_FR_RXFE) && bytes < size)
     {
-        buffer[bytes++] = m_io.read(PL011_DR);
+        //buffer[bytes++] = m_io.read(PL011_DR);
+        u8 byte = m_io.read(PL011_DR);
+        buffer.bufferedWrite(&byte, 1);
+        bytes++;
     }
-    return bytes ? (Error) bytes : EAGAIN;
+    return buffer.getCount() ? (Error) buffer.getCount() : EAGAIN;
 }
 
-Error PL011::write(s8 *buffer, Size size, Size offset)
+Error PL011::write(IOBuffer & buffer, Size size, Size offset)
 {
     Size bytes = 0;
 

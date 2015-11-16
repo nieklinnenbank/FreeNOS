@@ -276,16 +276,7 @@ class ATAController : public Device
      * @param offset Offset in the device. 
      * @return Number of bytes on success and an error code on failure. 
      */
-    virtual Error read(s8 *buffer, Size size, Size offset);
-
-    /** 
-     * Write bytes to a drive attached to the ATA controller.
-     * @param buffer Buffer containiner bytes to write.
-     * @param size Number of bytes to read. 
-     * @param offset Offset in the device. 
-     * @return Number of bytes on success and an error code on failure. 
-     */
-    virtual Error write(s8 *buffer, Size size, Size offset);
+    virtual Error read(IOBuffer & buffer, Size size, Size offset);
 
     /**
      * @brief Process ATA interrupts.

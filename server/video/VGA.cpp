@@ -21,7 +21,7 @@
 #include <errno.h>
 #include "VGA.h"
 
-VGA::VGA(Size w, Size h) : width(w), height(h)
+VGA::VGA(Size w, Size h) : Device(BlockDeviceFile), width(w), height(h)
 {
     m_identifier << "vga0";
 }
@@ -56,22 +56,22 @@ Error VGA::initialize()
     return ESUCCESS;
 }
 
-Error VGA::read(s8 *buffer, Size size, Size offset)
+Error VGA::read(IOBuffer & buffer, Size size, Size offset)
 {
     if (offset + size > width * height * sizeof(u16))
     {
         return EFAULT;
     }
-    memcpy(buffer, vga + (offset / sizeof(u16)), size);
+    buffer.write(vga + (offset / sizeof(u16)), size);
     return size;
 }
 
-Error VGA::write(s8 *buffer, Size size, Size offset)
+Error VGA::write(IOBuffer & buffer, Size size, Size offset)
 {
     if (offset + size > width * height * sizeof(u16))
     {
         return EFAULT;
     }
-    memcpy(vga + (offset / sizeof(u16)), buffer, size);    
+    memcpy(vga + (offset / sizeof(u16)), buffer.getBuffer(), size);    
     return size;
 }

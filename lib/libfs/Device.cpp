@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,25 +15,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FileType.h>
-#include <DeviceServer.h>
-#include "Keyboard.h"
-#include <stdlib.h>
-#include <unistd.h>
+#include "Device.h"
 
-int main(int argc, char **argv)
+Device::Device(FileType type)
+    : File(type)
 {
-    DeviceServer server(CharacterDeviceFile);
+}
 
-    /* Create a new keyboard object. */
-    Keyboard *kb = new Keyboard;
+Device::~Device()
+{
+}
 
-    /* Register it with the DeviceServer. */
-    server.add(kb);
-    server.interrupt(kb, PS2_IRQ);
+String & Device::getIdentifier()
+{
+    return m_identifier;
+}
 
-    /*
-     * Start processing requests.
-     */
-    return server.run(argc, argv);
+Error Device::initialize()
+{
+    return ESUCCESS;
+}
+
+Error Device::interrupt(Size vector)
+{
+#warning why success?
+    return ESUCCESS;
 }

@@ -54,7 +54,7 @@ class PL011 : public Device
      * @param offset Unused.
      * @return Number of bytes on success and ZERO on failure. 
      */
-    virtual Error read(s8 *buffer, Size size, Size offset);
+    virtual Error read(IOBuffer & buffer, Size size, Size offset);
 
     /** 
      * Write bytes to the device.
@@ -63,7 +63,7 @@ class PL011 : public Device
      * @param offset Unused.
      * @return Number of bytes on success and ZERO on failure. 
      */
-    virtual Error write(s8 *buffer, Size size, Size offset);
+    virtual Error write(IOBuffer & buffer, Size size, Size offset);
 
   private:
 

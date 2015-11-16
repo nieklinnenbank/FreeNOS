@@ -27,7 +27,9 @@
 
 int main(int argc, char **argv)
 {
-    DeviceServer server(CharacterDeviceFile);
+    char tmp[64];
+    DeviceServer server("/dev/grove");
+    server.initialize();
 
     // Setup logging
     Log *log = new KernelLog();
@@ -35,54 +37,51 @@ int main(int argc, char **argv)
 
     // Initialize I2C controller
     BroadcomI2C *i2c = new BroadcomI2C();
-    if (argc >= 2 && strcmp(argv[1], "-run") == 0)
+    switch (i2c->initialize())
     {
-        switch (i2c->initialize())
-        {
-            case BroadcomI2C::Success:
-                break;
+        case BroadcomI2C::Success:
+            break;
 
-            case BroadcomI2C::NotFound:
-                NOTICE("No I2C controller found");
-                return EXIT_SUCCESS;
+        case BroadcomI2C::NotFound:
+            NOTICE("No I2C controller found");
+            return EXIT_SUCCESS;
 
-            default:
-                ERROR("failed to initialize I2C controller");
-                return EXIT_FAILURE;
-        }
-
-        // TODO: Provide /dev/i2c{0,1,2} and let the app set modes directly (TEMP fastest)
-        // or implement ioctl() support
-        // or /dev/grove/digi0/{mode | value | ...} with libfs / libdev (BEST)
-
-        // Set Digipin 3 to input mode
-        u8 command[4];
-        command[0] = 5;
-        command[1] = 3;
-        command[2] = 0;
-        command[3] = 0;
-        i2c->setAddress(0x4);
-        i2c->write(command, sizeof(command));
-        sleep(1);
-
-        // Set Analog 0 to input mode
-        command[0] = 5;
-        command[1] = 0;
-        command[2] = 0;
-        command[3] = 0;
-        i2c->setAddress(0x4);
-        i2c->write(command, sizeof(command));
+        default:
+            ERROR("failed to initialize I2C controller");
+            return EXIT_FAILURE;
     }
+
+    // TODO: Provide /dev/i2c{0,1,2} and let the app set modes directly (TEMP fastest)
+    // or implement ioctl() support
+    // or /dev/grove/digi0/{mode | value | ...} with libfs / libdev (BEST)
+
+    // Set Digipin 3 to input mode
+    u8 command[4];
+    command[0] = 5;
+    command[1] = 3;
+    command[2] = 0;
+    command[3] = 0;
+    i2c->setAddress(0x4);
+    i2c->write(command, sizeof(command));
+    sleep(1);
+
+    // Set Analog 0 to input mode
+    command[0] = 5;
+    command[1] = 0;
+    command[2] = 0;
+    command[3] = 0;
+    i2c->setAddress(0x4);
+    i2c->write(command, sizeof(command));
 
     // Add devices
     for (int i = 0; i < 8; i++)
-        server.add(new DigitalPort(i2c, i+1));
+        server.registerDevice(new DigitalPort(i2c, i+1), "digital%d", i);
 
     for (int j = 0; j < 3; j++)
-        server.add(new AnalogPort(i2c, j));
+        server.registerDevice(new AnalogPort(i2c, j), "analog%d", j);
 
-    server.add(new LCDBar(i2c));
+    server.registerDevice(new LCDBar(i2c), "lcd");
 
     // Start serving requests
-    return server.run(argc, argv);
+    return server.run();
 }

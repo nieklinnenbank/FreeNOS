@@ -21,6 +21,8 @@
 #include <Types.h>
 #include <Macros.h>
 #include <String.h>
+#include <string.h>
+#include "limits.h"
 
 #define FILE_DESCRIPTOR_MAX 1024
 
@@ -44,7 +46,7 @@ class FileDescriptor
         mount    = fd.mount;
         position = fd.position;
         open     = fd.open;
-        strlcpy(path, fd.path, PATHLEN);
+        strlcpy(path, fd.path, PATH_MAX);
     }
 
     // TODO: please modify libstd's Array/Sequence, such that I do not
@@ -67,7 +69,7 @@ class FileDescriptor
     Address identifier;
 
     /** Path to the file. */
-    char path[PATHLEN];
+    char path[PATH_MAX];
 
     /** Current position indicator. */
     Size position;

@@ -69,7 +69,7 @@ class Keyboard : public Device
      * @param offset Unused.
      * @return Number of bytes read or error code on failure.
      */
-    virtual Error read(s8 *buffer, Size size, Size offset);
+    virtual Error read(IOBuffer & buffer, Size size, Size offset);
 
   private:
 

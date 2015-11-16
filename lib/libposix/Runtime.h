@@ -22,7 +22,7 @@
 #include <Types.h>
 #include <Vector.h>
 #include <String.h>
-#include <FileSystemMount.h>
+#include "FileSystemMount.h"
 #include "FileDescriptor.h"
 
 /**
@@ -51,6 +51,8 @@ ProcessID findMount(const char *path);
  * @return ProcessID of the FileSystemMount on success and ZERO otherwise.
  */
 ProcessID findMount(int fildes);
+
+void refreshMounts(const char *path);
 
 /**
  * Get FileDescriptors table.

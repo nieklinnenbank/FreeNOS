@@ -118,7 +118,7 @@ class VGA : public Device
      * @param offset Offset in VGA video memory to read in bytes.
      * @return An error code describing the status of the operation.
      */
-    virtual Error read(s8 *buffer, Size size, Size offset);
+    virtual Error read(IOBuffer & buffer, Size size, Size offset);
     
     /**
      * @brief Write to VGA video memory.
@@ -131,7 +131,7 @@ class VGA : public Device
      * @param offset Offset in VGA video memory to write in bytes.
      * @return An error code describing the status of the operation.
      */
-    virtual Error write(s8 *buffer, Size size, Size offset);
+    virtual Error write(IOBuffer & buffer, Size size, Size offset);
     
   private:
     

@@ -25,10 +25,10 @@
 
 int main(int argc, char **argv)
 {
-    int greenLed = open("/dev/groveDigi4", O_WRONLY);
-    int button   = open("/dev/groveDigi3", O_RDONLY);
-    int light    = open("/dev/groveAnalog0", O_RDONLY);
-    int lcd      = open("/dev/groveLCD", O_WRONLY);
+    int greenLed = open("/dev/grove/digital4", O_WRONLY);
+    int button   = open("/dev/grove/digital3", O_RDONLY);
+    int light    = open("/dev/grove/analog0", O_RDONLY);
+    int lcd      = open("/dev/grove/lcd", O_WRONLY);
     char buf[32], text[32];
 
     if (greenLed < 0 || button < 0 || light < 0 || lcd < 0)

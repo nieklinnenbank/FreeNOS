@@ -42,7 +42,7 @@ u8 tekenToVGA[] =
 
 Terminal::Terminal(const char *in, const char *out,
                    Size w, Size h)
-    : inputFile(in), outputFile(out), width(w), height(h)
+    : Device(CharacterDeviceFile), inputFile(in), outputFile(out), width(w), height(h)
 {
     m_identifier << "tty0";
     buffer = new u16[width * height];
@@ -53,13 +53,13 @@ Error Terminal::initialize()
     teken_pos_t winsz;
 
     // TODO: hack
-    close(0);
-    close(1);
+    ::close(0);
+    ::close(1);
 
     /*
      * Attempt to open input file.
      */
-    if ((input = open(inputFile, O_RDONLY)) < 0)
+    if ((input = ::open(inputFile, O_RDONLY)) < 0)
     {
 	printf("failed to open `%s': %s\r\n",
 		inputFile, strerror(errno));
@@ -68,21 +68,21 @@ Error Terminal::initialize()
     /*
      * Then open the output file.
      */
-    if ((output = open(outputFile, O_RDWR)) < 0)
+    if ((output = ::open(outputFile, O_RDWR)) < 0)
     {
 	printf("failed to open `%s': %s\r\n",
 		outputFile, strerror(errno));
 	exit(EXIT_FAILURE);
     }
 
-    // TODO: Hack the file descriptors table...
+#warning TODO: Hack the file descriptors table...
     Vector<FileDescriptor> *files = getFiles();
     (*files)[0].open = true;
     strlcpy((*files)[0].path, inputFile, PATHLEN); /* keyboard0 */
-    (*files)[0].mount = 7;
+    (*files)[0].mount = 6;
     (*files)[1].open = true;
     strlcpy((*files)[1].path, outputFile, PATHLEN); /* vga0 */
-    (*files)[1].mount = 9;
+    (*files)[1].mount = 7;
 
     /* Fill in function pointers. */
     funcs.tf_bell    = (tf_bell_t *)    bell;
@@ -105,8 +105,11 @@ Error Terminal::initialize()
     teken_set_winsize(&state, &winsz);
     
     /* Print banners. */
-    this->write((s8 *) BANNER, strlen(BANNER), ZERO);
-    this->write((s8 *) COPYRIGHT "\r\n", strlen(COPYRIGHT "\r\n"), ZERO);
+    FileSystemMessage msg;
+    msg.size = 512;
+    IOBuffer io(&msg);
+    io.bufferedWrite((void *)(BANNER COPYRIGHT "\r\n"), strlen(BANNER)+strlen(COPYRIGHT)+2);
+    write(io, io.getCount(), 0);
     
     /* Done! */
     return ESUCCESS;
@@ -115,8 +118,8 @@ Error Terminal::initialize()
 Terminal::~Terminal()
 {
     delete buffer;
-    close(input);
-    close(output);
+    ::close(input);
+    ::close(output);
 }
 
 Size Terminal::getWidth()
@@ -149,14 +152,21 @@ u16 * Terminal::getCursorValue()
     return &cursorValue;
 }
 
-Error Terminal::read(s8 *buffer, Size size, Size offset)
+Error Terminal::read(IOBuffer & buffer, Size size, Size offset)
 {
-    return ::read(input, buffer, size);
+    char tmp[255];
+    int n;
+
+    n = ::read(input, tmp, size < sizeof(tmp) ? size : sizeof(tmp));
+    if (n > 0)
+        buffer.write(tmp, n);
+
+    return n;
 }
 
-Error Terminal::write(s8 *buffer, Size size, Size offset)
+Error Terminal::write(IOBuffer & buffer, Size size, Size offset)
 {
-    char cr = '\r';
+    char cr = '\r', ch;
 
     /* Initialize buffer with the current screen first. */
     ::lseek(output, 0, SEEK_SET);
@@ -168,11 +178,12 @@ Error Terminal::write(s8 *buffer, Size size, Size offset)
      */
     for (Size i = 0; i < size; i++)
     {
-        if (*buffer == '\n')
+        if (buffer[i] == '\n')
         {
             teken_input(&state, &cr, 1);
         }
-        teken_input(&state, buffer++, 1);
+        ch = buffer[i];
+        teken_input(&state, &ch, 1);
     }
     /* Flush changes back to our output device. */
     ::lseek(output, 0, SEEK_SET);

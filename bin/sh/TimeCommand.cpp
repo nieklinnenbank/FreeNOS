@@ -26,11 +26,7 @@
 
 TimeCommand::TimeCommand() : ShellCommand("time", 1)
 {
-}
-
-const char * TimeCommand::help()
-{
-    return "Measure the execution time of a program";
+    m_help = "Measure the execution time of a program";
 }
 
 int TimeCommand::execute(Size nparams, char **params)

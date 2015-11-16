@@ -109,7 +109,7 @@ class Time : public Device
      * @param offset Offset in the file to read.
      * @return Number of bytes on success and ZERO on failure. 
      */
-    virtual Error read(s8 *buffer, Size size, Size offset);
+    virtual Error read(IOBuffer & buffer, Size size, Size offset);
 
   private:
     

@@ -2,23 +2,24 @@
 #
 # VGA/keyboard console
 #
-/server/input/keyboard/server
-/server/video/vga/server
-/server/terminal/server
-stdio /dev/tty0 /dev/tty0
+/server/ps2/server &
+/server/video/server &
+/server/terminal/server &
+stdio /console/tty0 /console/tty0
 
 #
 # System Servers and Drivers.
 #
-/server/time/server
-
-#
-# Login prompt
-#
-/bin/login /dev/tty0 /dev/tty0
+/server/time/server &
+/server/filesystem/tmp/server /tmp &
 
 #
 # Serial console
 #
-/server/serial/server
-/bin/login /dev/serial0 /dev/serial0
+/server/serial/server &
+/bin/login /dev/serial/serial0/io /dev/serial/serial0/io &
+
+#
+# Login prompt
+#
+/bin/login /console/tty0 /console/tty0

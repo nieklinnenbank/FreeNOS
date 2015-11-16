@@ -18,40 +18,28 @@
 #ifndef __SH_EXITCOMMAND
 #define __SH_EXITCOMMAND
 
-#include <Factory.h>
 #include <Types.h>
 #include "ShellCommand.h"
 
 /**
  * Exit the Shell.
  */
-class ExitCommand : public ShellCommand, public Factory<ExitCommand>
+class ExitCommand : public ShellCommand
 {
-    public:
+  public:
     
-	/**
-	 * Constructor function.
-	 */
-	ExitCommand() : ShellCommand("exit", 0)
-	{
-	}
-
-	/**
-	 * Get the help string for this command.
-	 * @return Pointer to character string describing what the command does.
-	 */
-	const char * help()
-	{
-	    return "Exit from the shell";
-	}
+    /**
+     * Constructor function.
+     */
+    ExitCommand();
     
-	/**
-	 * Executes the command.
-	 * @param nparams Number of parameters given.
-	 * @param params Array of parameters.
-	 * @return Error code or zero on success.
-	 */
-	int execute(Size nparams, char **params);
+    /**
+     * Executes the command.
+     * @param nparams Number of parameters given.
+     * @param params Array of parameters.
+     * @return Error code or zero on success.
+     */
+    virtual int execute(Size nparams, char **params);
 };
 
 #endif /* __SH_EXITCOMMAND */

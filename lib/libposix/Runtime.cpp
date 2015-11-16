@@ -30,6 +30,9 @@
 #include "string.h"
 #include "Runtime.h"
 #include "unistd.h"
+#include "libgen.h"
+#include "fcntl.h"
+#include "dirent.h"
 
 /** List of constructors. */
 extern void (*CTOR_LIST)();
@@ -131,11 +134,11 @@ void setupMappings()
 {
     // Fill the mounts table
     memset(mounts, 0, sizeof(FileSystemMount) * FILESYSTEM_MAXMOUNTS);
-    strlcpy(mounts[0].path, "/dev", PATHLEN);
-    strlcpy(mounts[1].path, "/", PATHLEN);
-    mounts[0].procID  = DEVSRV_PID;
+    strlcpy(mounts[0].path, "/mount", PATH_MAX);
+    strlcpy(mounts[1].path, "/", PATH_MAX);
+    mounts[0].procID  = MOUNTFS_PID;
     mounts[0].options = ZERO;
-    mounts[1].procID  = ROOTSRV_PID;
+    mounts[1].procID  = ROOTFS_PID;
     mounts[1].options = ZERO;
 
     // Set currentDirectory
@@ -183,7 +186,7 @@ ProcessID findMount(const char *path)
 {
     FileSystemMount *m = ZERO;
     Size length = 0, len;
-    char tmp[PATHLEN];
+    char tmp[PATH_MAX];
 
     /* Is the path relative? */
     if (path[0] != '/')
@@ -192,7 +195,7 @@ ProcessID findMount(const char *path)
         snprintf(tmp, sizeof(tmp), "%s/%s", tmp, path);
     }
     else
-        strlcpy(tmp, path, PATHLEN);
+        strlcpy(tmp, path, PATH_MAX);
         
     /* Find the longest match. */
     for (Size i = 0; i < FILESYSTEM_MAXMOUNTS; i++)
@@ -212,8 +215,75 @@ ProcessID findMount(const char *path)
             }
         }
     }
-    /* All done. */
+    // All done
     return m ? m->procID : ZERO;
+}
+
+void refreshMounts(const char *path)
+{
+    char tmp[PATH_MAX], number[16];
+    int fd;
+    struct dirent *dent;
+    DIR *d;
+    pid_t pid = getpid();
+
+    // Skip for rootfs and mountfs
+    if (pid == ROOTFS_PID || pid == MOUNTFS_PID)
+        return;
+
+    // Clear mounts table
+    if (!path)
+    {
+        path = "/mount";
+        MemoryBlock::set(&mounts[2], 0, sizeof(FileSystemMount) * (FILESYSTEM_MAXMOUNTS-2));
+    }
+
+    // Attempt to open the directory
+    if (!(d = opendir(path)))
+        return;
+
+    // walk the /mounts recursively and refill the mounts table (starting from index 2)
+    while ((dent = readdir(d)))
+    {
+        snprintf(tmp, sizeof(tmp), "/mount/%s", dent->d_name);
+
+        switch (dent->d_type)
+        {
+            case DT_DIR:
+                if (dent->d_name[0] != '.')
+                    refreshMounts(tmp);
+                break;
+
+            case DT_REG:
+                fd = open(tmp, O_RDONLY);
+                if (fd >= 0)
+                {
+                    MemoryBlock::set(number, 0, sizeof(number));
+
+                    if (read(fd, number, sizeof(number)) > 0)
+                    {
+                        pid_t pid = atoi(number);
+
+                        // Append to the mounts table
+                        for (Size i = 0; i < FILESYSTEM_MAXMOUNTS; i++)
+                        {
+                            if (!mounts[i].path[0])
+                            {
+                                mounts[i].procID = pid;
+                                strlcpy(mounts[i].path, tmp+6, PATH_MAX);
+                                break;
+                            }
+                        }
+                    }
+                    close(fd);
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+    closedir(d);
 }
 
 ProcessID findMount(int fildes)

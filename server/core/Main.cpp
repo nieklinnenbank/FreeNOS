@@ -33,9 +33,9 @@ int main(int argc, char **argv)
         close(1);
         close(2);
 
-        while (open("/dev/tty0", O_RDWR) == -1);
-        open("/dev/tty0", O_RDWR);
-        open("/dev/tty0", O_RDWR);
+        while (open("/console/tty0", O_RDWR) == -1);
+        open("/console/tty0", O_RDWR);
+        open("/console/tty0", O_RDWR);
     }
 #else
     KernelLog log;

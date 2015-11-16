@@ -23,11 +23,12 @@
 
 int main(int argc, char **argv)
 {
-    DeviceServer server(BlockDeviceFile);
+    DeviceServer server("/dev/video");
+    server.initialize();
 
     /*
      * Start serving requests.
      */    
-    server.add(new VGA);
-    return server.run(argc, argv);
+    server.registerDevice(new VGA, "vga0");
+    return server.run();
 }

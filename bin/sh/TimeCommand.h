@@ -18,14 +18,13 @@
 #ifndef __BIN_SH_TIMECOMMAND
 #define __BIN_SH_TIMECOMMAND
 
-#include <Factory.h>
 #include <Types.h>
 #include "ShellCommand.h"
 
 /**
  * Measure the execution time of a program.
  */
-class TimeCommand : public ShellCommand, public Factory<TimeCommand>
+class TimeCommand : public ShellCommand
 {
   public:
 
@@ -35,20 +34,13 @@ class TimeCommand : public ShellCommand, public Factory<TimeCommand>
     TimeCommand();
 
     /**
-     * Get the help string for this command.
-     *
-     * @return Pointer to character string describing what the command does.
-     */
-    const char * help();
-
-    /**
      * Executes the command.
      *
      * @param nparams Number of parameters given.
      * @param params Array of parameters.
      * @return Error code or zero on success.
      */
-    int execute(Size nparams, char **params);
+    virtual int execute(Size nparams, char **params);
 };
 
 #endif /* __BIN_SH_TIMECOMMAND */

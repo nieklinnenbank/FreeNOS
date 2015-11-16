@@ -15,39 +15,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SH_HELPCOMMAND
-#define __SH_HELPCOMMAND
+#ifndef __FILESYSTEM_FILE_SYSTEM_MOUNT_H
+#define __FILESYSTEM_FILE_SYSTEM_MOUNT_H
 
 #include <Types.h>
-#include "ShellCommand.h"
+#include "limits.h"
 
-class Shell;
+/** Maximum number of mounted filesystems. */
+#define FILESYSTEM_MAXMOUNTS 16
 
 /**
- * Prints the help info for all known ShellCommands.
+ * Represents a mounted filesystem.
  */
-class HelpCommand : public ShellCommand
+typedef struct FileSystemMount
 {
-  public:
+    /** Path of the mount. */
+    char path[PATH_MAX];
+    
+    /** Server which is responsible for the mount. */
+    ProcessID procID;
+    
+    /** Mount options. */
+    ulong options;
+}
+FileSystemMount;
 
-    /**
-     * Constructor.
-     */
-    HelpCommand(Shell *shell);
-
-    /**
-     * Executes the command.
-     *
-     * @param nparams Number of parameters given.
-     * @param params Array of parameters.
-     * @return Error code or zero on success.
-     */
-    virtual int execute(Size nparams, char **params);
-
-  private:
-
-    /** Shell object */
-    Shell *m_shell;
-};
-
-#endif /* __SH_HELPCOMMAND */
+#endif /* __FILESYSTEM_FILE_SYSTEM_MOUNT_H */

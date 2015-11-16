@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,143 +15,73 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __FILESYSTEM_PSEUDO_FILE_H
-#define __FILESYSTEM_PSEUDO_FILE_H
+#ifndef __LIB_LIBFS_PSEUDOFILE_H
+#define __LIB_LIBFS_PSEUDOFILE_H
 
 #include <Types.h>
 #include "File.h"
-#include "FileMode.h"
-#include "Directory.h"
 #include "IOBuffer.h"
-#include <stdio.h>
-#include <stdarg.h>
-#include <string.h>
 
 /**
  * @brief Pseudo files only exist in memory.
  */
 class PseudoFile : public File
 {
-    public:
+  public:
 
-	/**
-	 * @brief Empty constructor.
-	 */
-	PseudoFile()
-	{
-	    size   = ZERO;
-	    buffer = ZERO;
-	    access = OwnerRW;
-	}
+    /**
+     * Constructor.
+     */
+    PseudoFile();
 
-	/**
-	 * @brief Constructor function.
-	 * @param str Input string.
-	 */
-	PseudoFile(char *str)
-	{
-	    access = OwnerRW;
-	    size   = strlen(str);
-    	    buffer = new char[size + 1];
-            strlcpy(buffer, str, size + 1);
-	}
-	
-	/**
-	 * @brief Constructor with formatted input.
-	 * @param format Format string.
-	 * @param ... Argument list.
-	 */
-	PseudoFile(const char *format, ...)
-	{
-	    va_list args;
-	    
-	    /* Allocate buffer. */
-	    buffer = new char[512];
-	    
-	    /* Format the input. */
-	    va_start(args, format);
-	    size = vsnprintf(buffer, 512, format, args);
-	    va_end(args);
-	    
-	    /* Set permissions. */
-	    access = OwnerRW;
-	}
+    /**
+     * Constructor.
+     */
+    PseudoFile(const char *str);
 
-	/**
-	 * @brief Destructor function, which releases the buffer.
-	 */
-	~PseudoFile()
-	{
-	    delete buffer;
-	}
+    /**
+     * Constructor with formatted input.
+     *
+     * @param format Format string.
+     * @param ... Argument list.
+     */
+    PseudoFile(const char *format, ...);
 
-	/** 
-         * @brief Read bytes from the file. 
-	 *
-         * @param buffer Output buffer. 
-         * @param size Number of bytes to read, at maximum. 
-         * @param offset Offset inside the file to start reading. 
-         * @return Number of bytes read on success, Error on failure. 
-	 *
-	 * @see IOBuffer
-         */
-        Error read(IOBuffer *buffer, Size size, Size offset)
-	{
-	    /* Bounds checking. */
-	    if (offset >= this->size)
-	    {
-		return 0;
-            }
-	    else
-	    {
-		/* How much bytes to copy? */
-		Size bytes = this->size - offset > size ?
-		    				   size : this->size - offset;
+    /**
+     * Destructor.
+     */
+    ~PseudoFile();
 
-	        /* Copy the buffers. */
-		return buffer->write(this->buffer + offset, bytes);
-	    }
-	}
+    /** 
+     * @brief Read bytes from the file. 
+     *
+     * @param buffer Output buffer. 
+     * @param size Number of bytes to read, at maximum. 
+     * @param offset Offset inside the file to start reading. 
+     * @return Number of bytes read on success, Error on failure. 
+     *
+     * @see IOBuffer
+     */
+    virtual Error read(IOBuffer & buffer, Size size, Size offset);
 
-        /**
-         * Write bytes to the file.
-         * @param buffer Input/Output buffer to input bytes from.
-         * @param size Number of bytes to write, at maximum.
-         * @param offset Offset inside the file to start writing.
-         * @return Number of bytes written on success, Error on failure.
-         */
-        Error write(IOBuffer *buffer, Size size, Size offset)
-        {
-            /* Check for the buffer size. */
-            if (!this->buffer || this->size < (size + offset))
-            {
-                /* Allocate a new buffer and copy the old data */
-                char *new_buffer = new char[size+offset];
-                memset(new_buffer, 0, sizeof(size+offset));
+    /**
+     * Write bytes to the file.
+     *
+     * @param buffer Input/Output buffer to input bytes from.
+     * @param size Number of bytes to write, at maximum.
+     * @param offset Offset inside the file to start writing.
+     * @return Number of bytes written on success, Error on failure.
+     */
+    virtual Error write(IOBuffer & buffer, Size size, Size offset);
 
-                /* Inherit from the old buffer, if needed. */
-                if (this->buffer)
-                {
-                    memcpy(new_buffer, this->buffer, this->size);
-                    delete this->buffer;
-                }
-                /* Assign buffer */
-                this->buffer = new_buffer;
-                this->size = size+offset;
-            }
-            /* Copy the input data in the current buffer. */
-            buffer->read(this->buffer + offset, size);
-            return size;
-        }
+  private:
 
-    protected:
-
-	/** Buffer from which we read. */
-	char *buffer;
+    /** Buffer from which we read. */
+    char *m_buffer;
 };
 
 /**
  * @}
  */
 
-#endif /* __FILESYSTEM_PSEUDO_FILE_H */
+#endif /* __LIB_LIBFS_PSEUDOFILE_H */

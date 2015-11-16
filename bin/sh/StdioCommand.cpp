@@ -21,23 +21,22 @@
 
 StdioCommand::StdioCommand() : ShellCommand("stdio", 2)
 {
-}
-
-const char * StdioCommand::help()
-{
-    return "Change standard I/O of the shell";
+    m_help = "Change standard I/O of the shell";
 }
 
 int StdioCommand::execute(Size nparams, char **params)
 {
-    /* Reopen standard I/O. */
-    close(0);
-    close(1);
-    close(2);
+    while (true)
+    {
+        // Reopen standard I/O
+        close(0);
+        close(1);
+        close(2);
 
-    open(params[0], O_RDWR);
-    open(params[1], O_RDWR);
-    open(params[1], O_RDWR);
-
+        if (open(params[0], O_RDWR) >= 0 &&
+            open(params[1], O_RDWR) >= 0 &&
+            open(params[1], O_RDWR) >= 0)
+            break;
+    }
     return 0;
 }

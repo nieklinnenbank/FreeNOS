@@ -18,16 +18,15 @@
 #ifndef __SH_STDIOCOMMAND
 #define __SH_STDIOCOMMAND
 
-#include <Factory.h>
 #include <Types.h>
 #include "ShellCommand.h"
 
 /**
  * Change the standard Input/Output of the shell.
  */
-class StdioCommand : public ShellCommand, public Factory<StdioCommand>
+class StdioCommand : public ShellCommand
 {
-    public:
+  public:
 
     /**
      * Constructor function.
@@ -35,18 +34,12 @@ class StdioCommand : public ShellCommand, public Factory<StdioCommand>
     StdioCommand();
 
     /**
-     * Get the help string for this command.
-     * @return Pointer to character string describing what the command does.
-     */
-    const char * help();
-
-    /**
      * Executes the command.
      * @param nparams Number of parameters given.
      * @param params Array of parameters.
      * @return Error code or zero on success.
      */
-    int execute(Size nparams, char **params);
+    virtual int execute(Size nparams, char **params);
 };
 
 #endif /* __SH_STDIOCOMMAND */

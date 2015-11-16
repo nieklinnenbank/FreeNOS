@@ -43,7 +43,7 @@ const char Keyboard::keymap[0x3a][2] =
     /*38*/{0x0, 0x0}, {' ', ' '}
 };
 
-Keyboard::Keyboard() : shiftState(ZERO)
+Keyboard::Keyboard() : Device(CharacterDeviceFile), shiftState(ZERO)
 {
     m_identifier << "keyboard0";
 }
@@ -59,7 +59,7 @@ Error Keyboard::interrupt(Size vector)
     return ESUCCESS;
 }
 
-Error Keyboard::read(s8 *buffer, Size size, Size offset)
+Error Keyboard::read(IOBuffer & buffer, Size size, Size offset)
 {
     Error ret = EAGAIN;
 
@@ -83,7 +83,7 @@ Error Keyboard::read(s8 *buffer, Size size, Size offset)
 	          (keymap[keycode & 0x7f][shiftState]))
 	{
 	    /* Write to buffer. */
-	    buffer[0] = keymap[keycode & 0x7f][shiftState];
+	    buffer.write((void *) &keymap[keycode & 0x7f][shiftState], 1);
     	    ret = 1;
 	}
         /* Re-enable interrupt */

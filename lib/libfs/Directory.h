@@ -102,7 +102,7 @@ class Directory : public File
 	 * @see Storage
 	 * @see Dirent
 	 */
-        virtual Error read(IOBuffer *buffer, Size size, Size offset)
+        virtual Error read(IOBuffer & buffer, Size size, Size offset)
 	{
 	    Size bytes = 0;
 	
@@ -112,7 +112,7 @@ class Directory : public File
 		/* Can we read another entry? */
 		if (bytes + sizeof(Dirent) <= size)
 		{
-		    buffer->write(i.current(), sizeof(Dirent), bytes);
+		    buffer.write(i.current(), sizeof(Dirent), bytes);
 		    bytes += sizeof(Dirent);
 		}
 		else break;
@@ -175,7 +175,7 @@ class Directory : public File
 		strlcpy(d->name, path, DIRENT_LEN);
 	        d->type = type;
 	        entries.append(d);
-		size += sizeof(*d);
+		m_size += sizeof(*d);
 	    }
 	}
 
@@ -199,7 +199,7 @@ class Directory : public File
 		{
 		    delete i.current();
 		    i.remove();
-		    size -= sizeof(Dirent);
+		    m_size -= sizeof(Dirent);
 		    return;
 		}
 	    }

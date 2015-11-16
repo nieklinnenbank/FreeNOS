@@ -51,8 +51,8 @@ class Terminal : public Device
      * @param width Width of the Terminal.
      * @param height Height of the Terminal.
      */
-    Terminal(const char *inputFile  = "/dev/keyboard0",
-             const char *outputFile = "/dev/vga0",
+    Terminal(const char *inputFile  = "/dev/ps2/keyboard0",
+             const char *outputFile = "/dev/video/vga0",
              Size width = 80, Size height = 25);
 
     /**
@@ -125,7 +125,7 @@ class Terminal : public Device
      * @param offset Unused.
      * @return Number of bytes read or error code on failure.
      */
-    virtual Error read(s8 *buffer, Size size, Size offset);
+    virtual Error read(IOBuffer & buffer, Size size, Size offset);
 
     /**
      * Write bytes to the Terminal (vga memory).
@@ -134,7 +134,7 @@ class Terminal : public Device
      * @param offset Unused.
      * @return Number of bytes written or error code on failure.
      */
-    virtual Error write(s8 *buffer, Size size, Size offset);
+    virtual Error write(IOBuffer & buffer, Size size, Size offset);
 
   private:
 

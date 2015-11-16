@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __FILESYSTEM_FILE_H
-#define __FILESYSTEM_FILE_H
+#ifndef __LIB_LIBFS_FILE_H
+#define __LIB_LIBFS_FILE_H
 
 #include <FreeNOS/API.h>
 #include <Types.h>
@@ -32,139 +32,101 @@
  */
 class File
 {
-    public:
+  public:
     
-	/**
-	 * Constructor function.
-	 * @param t Type of file.
-	 * @param u User identity.
-	 * @param g Group identity.
-	 */
-	File(FileType t = RegularFile, UserID u = ZERO, GroupID g = ZERO)
-	    : type(t), access(OwnerRWX), size(ZERO),
-	      openCount(ZERO), uid(u), gid(g)
-	{
-	}
+    /**
+     * Constructor function.
+     *
+     * @param type Type of file.
+     * @param uid User identity.
+     * @param gid Group identity.
+     */
+    File(FileType type = RegularFile, UserID uid = ZERO, GroupID gid = ZERO);
 
-	/**
-	 * Destructor function.
-	 */
-	virtual ~File()
-	{
-	}
+    /**
+     * Destructor function.
+     */
+    virtual ~File();
 
-	/**
-	 * Retrieve our filetype.
-	 * @return FileType object.
-	 */
-	FileType getType()
-	{
-	    return type;
-	}
+    /**
+     * Retrieve our filetype.
+     * @return FileType object.
+     */
+    FileType getType();
 
-	/**
-	 * Get the number of times we are opened by a process.
-	 * @return Open count.
-	 * @see openCount
-	 */
-	Size getOpenCount()
-	{
-	    return openCount;
-	}
+    /**
+     * Get the number of times we are opened by a process.
+     * @return Open count.
+     * @see openCount
+     */
+    Size getOpenCount();
 
-	/**
-	 * Attempt to open a file.
-	 * @param msg Describes the open request.
-	 * @param pid Process Identity to serve us from. May be changed
-	 *            to redirect to other servers.
-	 * @param ident Identity to be filled in the FileDescriptor.
-	 * @return Error code status.
-	 */
-	virtual Error open(ProcessID *pid, Address *ident)
-	{
-	    openCount++;
-	    return ESUCCESS;
-	}
+    /**
+     * Attempt to open a file.
+     * @param msg Describes the open request.
+     * @param pid Process Identity to serve us from. May be changed
+     *            to redirect to other servers.
+     * @param ident Identity to be filled in the FileDescriptor.
+     * @return Error code status.
+     */
+    virtual Error open(ProcessID *pid, Address *ident);
 
-	/**
-	 * @brief Attempt to close a file.
-	 * @return Error code status.
-	 */
-	virtual Error close()
-	{
-	    openCount--;
-	    return ESUCCESS;
-	}
+    /**
+     * @brief Attempt to close a file.
+     *
+     * @return Error code status.
+     */
+    virtual Error close();
     
-	/**
-	 * @brief Read bytes from the file.
-	 * @param buffer Input/Output buffer to output bytes to.
-	 * @param size Number of bytes to read, at maximum.
-	 * @param offset Offset inside the file to start reading.
-	 * @return Number of bytes read on success, Error on failure.
-	 */
-	virtual Error read(IOBuffer *buffer, Size size, Size offset)
-	{
-	    return ENOTSUP;
-	}
+    /**
+     * @brief Read bytes from the file.
+     *
+     * @param buffer Input/Output buffer to output bytes to.
+     * @param size Number of bytes to read, at maximum.
+     * @param offset Offset inside the file to start reading.
+     * @return Number of bytes read on success, Error on failure.
+     */
+    virtual Error read(IOBuffer & buffer, Size size, Size offset);
 
-	/**
-	 * Write bytes to the file.
-	 * @param buffer Input/Output buffer to input bytes from.
-	 * @param size Number of bytes to write, at maximum.
-	 * @param offset Offset inside the file to start writing.
-	 * @return Number of bytes written on success, Error on failure.
-	 */
-	virtual Error write(IOBuffer *buffer, Size size, Size offset)
-	{
-	    return ENOTSUP;
-	}
+    /**
+     * Write bytes to the file.
+     *
+     * @param buffer Input/Output buffer to input bytes from.
+     * @param size Number of bytes to write, at maximum.
+     * @param offset Offset inside the file to start writing.
+     * @return Number of bytes written on success, Error on failure.
+     */
+    virtual Error write(IOBuffer & buffer, Size size, Size offset);
     
-	/**
-	 * Retrieve file statistics.
-	 * @param st Buffer to write statistics to.
-	 */
-	virtual Error status(FileSystemMessage *msg)
-	{
-	    FileStat st;
-	    Error e;
-	
-	    /* Fill in the status structure. */
-	    st.type     = type;
-	    st.access   = access;
-	    st.size     = size;
-	    st.userID   = uid;
-	    st.groupID  = gid;
-	    
-	    /* Copy to the remote process. */
-	    if ((e = VMCopy(msg->from, API::Write, (Address) &st,
-			   (Address) msg->stat, sizeof(st)) > 0))
-	    {
-		return ESUCCESS;
-	    }
-	    else
-		return e;
-	}
+    /**
+     * Retrieve file statistics.
+     *
+     * @param st Buffer to write statistics to.
+     */
+    virtual Error status(FileSystemMessage *msg);
     
-    protected:
+  protected:
 
-	/** Type of this file. */
-	FileType type;
-	
-	/** Access permissions. */
-	FileModes access;
-	
-	/** Size of the file, in bytes. */
-	Size size;
-	
-	/** Number of times the File has been opened by a process. */
-	Size openCount;
-	
-	/** Owner of the file. */
-	UserID uid;
-	
-	/** Group of the file. */
-	GroupID gid;
+    /** Type of this file. */
+    FileType m_type;
+
+    /** Access permissions. */
+    FileModes m_access;
+
+    /** Size of the file, in bytes. */
+    Size m_size;
+
+    /** Number of times the File has been opened by a process. */
+    Size m_openCount;
+
+    /** Owner of the file. */
+    UserID m_uid;
+
+    /** Group of the file. */
+    GroupID m_gid;
+
+    /** Device major/minor ID. */
+    DeviceID m_deviceId;
 };
 
-#endif /* __FILESYSTEM_FILE_H */
+#endif /* __LIB_LIBFS_FILE_H */

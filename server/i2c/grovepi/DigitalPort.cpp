@@ -19,11 +19,11 @@
 #include "DigitalPort.h"
 
 DigitalPort::DigitalPort(I2C *i2c, uint port)
-    : Device()
+    : Device(CharacterDeviceFile)
 {
     m_i2c  = i2c;
     m_port = port;
-    m_identifier << "groveDigi" << port;
+    m_identifier << "digital" << port;
 }
 
 Error DigitalPort::initialize()
@@ -31,9 +31,10 @@ Error DigitalPort::initialize()
     return ESUCCESS;
 }
 
-Error DigitalPort::read(s8 *buffer, Size size, Size offset)
+Error DigitalPort::read(IOBuffer & buffer, Size size, Size offset)
 {
     u8 command[4];
+    char result[2];
 
     if (offset >= 1)
         return 0;
@@ -50,13 +51,15 @@ Error DigitalPort::read(s8 *buffer, Size size, Size offset)
     m_i2c->write(command, sizeof(command));
     m_i2c->read(command, 1);
 
-    buffer[0] = '0' + command[0];
+    result[0] = '0' + command[0];
+    result[1] = 0;
+    buffer.write(result, 1);
 
     // Done
     return 1;
 }
 
-Error DigitalPort::write(s8 *buffer, Size size, Size offset)
+Error DigitalPort::write(IOBuffer & buffer, Size size, Size offset)
 {
     u8 command[4];
 

@@ -47,6 +47,8 @@ template <class Func> struct MessageHandler
  */
 template <class Base, class MsgType> class IPCServer
 {
+  protected:
+
     /** Member function pointer inside Base, to handle IPC messages. */
     typedef void (Base::*IPCHandlerFunction)(MsgType *);
     

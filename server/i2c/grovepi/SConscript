@@ -19,7 +19,7 @@ Import('build_env')
 
 env = build_env.Clone()
 
-if env['SYSTEM'] == 'raspberry':
+if env['ARCH'] == 'arm' and env['SYSTEM'] == 'raspberry':
     env.UseServers(['log', 'filesystem', 'core'])
     env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libarch', 'libexec', 'libi2c', 'libipc', 'libfs' ])
     env.TargetProgram('server', [ 'AnalogPort.cpp', 'DigitalPort.cpp', 'Main.cpp', 'LCDBar.cpp' ])

@@ -15,29 +15,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __FILESYSTEM_FILE_SYSTEM_MOUNT_H
-#define __FILESYSTEM_FILE_SYSTEM_MOUNT_H
+#include <FileType.h>
+#include <DeviceServer.h>
+#include "Keyboard.h"
+#include <stdlib.h>
+#include <unistd.h>
 
-#include "FileSystemPath.h"
-#include <Types.h>
-
-/** Maximum number of mounted filesystems. */
-#define FILESYSTEM_MAXMOUNTS 16
-
-/**
- * Represents a mounted filesystem.
- */
-typedef struct FileSystemMount
+int main(int argc, char **argv)
 {
-    /** Path of the mount. */
-    char path[PATHLEN];
-    
-    /** Server which is responsible for the mount. */
-    ProcessID procID;
-    
-    /** Mount options. */
-    ulong options;
-}
-FileSystemMount;
+    DeviceServer server("/dev/ps2");
+    server.initialize();
 
-#endif /* __FILESYSTEM_FILE_SYSTEM_MOUNT_H */
+    /* Create a new keyboard object. */
+    Keyboard *kb = new Keyboard;
+
+    /* Register it with the DeviceServer. */
+    server.registerDevice(kb, "keyboard0");
+    server.registerInterrupt(kb, PS2_IRQ);
+
+    /*
+     * Start processing requests.
+     */
+    return server.run();
+}
