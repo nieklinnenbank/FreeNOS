@@ -18,17 +18,8 @@
 Import('build_env')
 
 env = build_env.Clone()
-env.UseServers(['core'])
-env.UseLibraries(['liballoc', 'libstd'])
-env.Append(CPPPATH = [ '.' ])
+env.UseServers(['log', 'filesystem', 'core'])
+env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libarch', 'libexec', 'libipc', 'libfs', 'libusb' ])
 
-if env['ARCH'] == 'host':
-    src = []
-else:
-    src = [ Glob('*.cpp'),
-            Glob( env['ARCH'] + '/*.cpp'),
-            Glob( env['ARCH'] + '/*.S'),
-            Glob( env['ARCH'] + '/**/*.cpp'),
-            Glob( env['ARCH'] + '/**/*.S') ]
-
-env.Library('libarch', src)
+if env['ARCH'] == 'arm':
+    env.TargetProgram('server', [ Glob('*.cpp') ])

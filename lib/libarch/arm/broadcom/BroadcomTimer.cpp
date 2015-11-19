@@ -15,12 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "BCMSysTimer.h"
-#include "ARMIO.h"
+#include "BroadcomTimer.h"
 
-#warning Rename to BroadcomSysTimer
-
-BCMSysTimer::Result BCMSysTimer::setFrequency(Size hertz)
+BroadcomTimer::Result BroadcomTimer::setFrequency(Size hertz)
 {
     m_cycles = BCM_SYSTIMER_FREQ / hertz;
     m_frequency = hertz;
@@ -33,7 +30,7 @@ BCMSysTimer::Result BCMSysTimer::setFrequency(Size hertz)
     return Success;
 }
 
-BCMSysTimer::Result BCMSysTimer::tick()
+BroadcomTimer::Result BroadcomTimer::tick()
 {
     // Increment tick counter
     m_info.ticks++;

@@ -21,7 +21,7 @@
 #include <FreeNOS/API.h>
 #include <arm/ARMInterrupt.h>
 #include <arm/ARMConstant.h>
-#include <arm/BCM2835Interrupt.h>
+#include <arm/broadcom/BroadcomInterrupt.h>
 #include "ARMKernel.h"
 
 ARMKernel::ARMKernel(ARMInterrupt *intr,

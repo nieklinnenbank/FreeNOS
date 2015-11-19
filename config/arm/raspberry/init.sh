@@ -8,6 +8,7 @@ stdio /dev/serial/serial0/io /dev/serial/serial0/io
 # System Servers and Drivers.
 #
 # /server/i2c/grovepi/server
+/server/usb/controller/server &
 /server/filesystem/tmp/server /tmp &
 
 #

@@ -24,7 +24,7 @@
 
 #ifdef BCM2835
 #include "PL011.h"
-#include <arm/BCM2835Interrupt.h>
+#include <arm/broadcom/BroadcomInterrupt.h>
 #else
 #include "i8250.h"
 #endif

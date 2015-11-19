@@ -15,11 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBARCH_ARM_BCM2835INTERRUPT_H
-#define __LIBARCH_ARM_BCM2835INTERRUPT_H
+#ifndef __LIBARCH_ARM_BROADCOMINTERRUPT_H
+#define __LIBARCH_ARM_BROADCOMINTERRUPT_H
 
-#include "ARMInterrupt.h"
-#include "ARMIO.h"
+#include <arm/ARMInterrupt.h>
+#include <arm/ARMIO.h>
 
 #define INTERRUPT_BASE_ADDR        0xB000
 #define INTERRUPT_BASICPEND       (INTERRUPT_BASE_ADDR+0x200)
@@ -46,14 +46,14 @@
 /**
  * Raspberry Pi Interrupt Controller implementation
  */
-class BCM2835Interrupt : public ARMInterrupt
+class BroadcomInterrupt : public ARMInterrupt
 {
   public:
 
     /**
      * Constructor
      */
-    BCM2835Interrupt();
+    BroadcomInterrupt();
 
     /**
      * Enable an IRQ vector
@@ -81,4 +81,4 @@ class BCM2835Interrupt : public ARMInterrupt
     ARMIO m_io;
 };
 
-#endif /* LIBARCH_ARM_BCM2835INTERRUPT_H */
+#endif /* LIBARCH_ARM_BROADCOMINTERRUPT_H */

@@ -15,13 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBARCH_ARM_BCM_SYSTIMER_H
-#define __LIBARCH_ARM_BCM_SYSTIMER_H
+#ifndef __LIBARCH_ARM_BROADCOMTIMER_H
+#define __LIBARCH_ARM_BROADCOMTIMER_H
 
 #include <Types.h>
 #include <Macros.h>
 #include <Timer.h>
-#include "ARMIO.h"
+#include <arm/ARMIO.h>
 
 #define SYSTIMER_BASE 0x3000
 
@@ -46,7 +46,7 @@
 /**
  * Broadcom System-on-Chip system timer.
  */
-class BCMSysTimer : public Timer
+class BroadcomTimer : public Timer
 {
   public:
 
@@ -75,4 +75,4 @@ class BCMSysTimer : public Timer
     ARMIO m_io;
 };
 
-#endif /* __LIBARCH_ARM_BCM_SYSTIMER_H */
+#endif /* __LIBARCH_ARM_BROADCOMTIMER_H */

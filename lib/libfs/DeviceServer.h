@@ -50,7 +50,7 @@ class DeviceServer : public FileSystem
     /**
      * Initialize DeviceServer.
      */
-    Error initialize();
+    virtual Error initialize();
 
     /**
      * @brief Add a Device.

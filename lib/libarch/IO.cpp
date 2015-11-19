@@ -49,6 +49,8 @@ IO::Result IO::map(Address phys, Size size, Memory::Access access)
     }
     else
     {
+        m_range.access &= ~Memory::User;
+
         MemoryContext *ctx = MemoryContext::getCurrent();
         if (!ctx)
             return MapFailure;

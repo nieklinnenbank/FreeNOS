@@ -22,7 +22,7 @@
 #include <FreeNOS/Process.h>
 #include <Types.h>
 #include <arm/ARMTags.h>
-#include <arm/BCMSysTimer.h>
+#include <arm/broadcom/BroadcomTimer.h>
 
 /** Forward declaration */
 class ARMInterrupt;
@@ -135,7 +135,7 @@ class ARMKernel : public Kernel
 
     static void reserved(CPUState state);
 
-    BCMSysTimer m_bcmTimer;
+    BroadcomTimer m_bcmTimer;
 };
 
 #endif /* __ARM_KERNEL_H */

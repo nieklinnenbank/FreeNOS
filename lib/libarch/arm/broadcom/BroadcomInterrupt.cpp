@@ -15,19 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "BCM2835Interrupt.h"
-#include "ARMIO.h"
+#include "BroadcomInterrupt.h"
 
-#warning Rename to BroadcomInterrupt
-
-BCM2835Interrupt::BCM2835Interrupt() : ARMInterrupt()
+BroadcomInterrupt::BroadcomInterrupt() : ARMInterrupt()
 {
     // disable all IRQ sources first, just to be "safe"
     m_io.write(INTERRUPT_DISABLEIRQ1, 0xFFFFFFFF);
     m_io.write(INTERRUPT_DISABLEIRQ2, 0xFFFFFFFF);
 }
 
-BCM2835Interrupt::Result BCM2835Interrupt::enable(uint vector)
+BroadcomInterrupt::Result BroadcomInterrupt::enable(uint vector)
 {
     //enable the respective interrupt
     if(vector < 32)
@@ -49,7 +46,7 @@ BCM2835Interrupt::Result BCM2835Interrupt::enable(uint vector)
     return Success;
 }
 
-BCM2835Interrupt::Result BCM2835Interrupt::disable(uint vector)
+BroadcomInterrupt::Result BroadcomInterrupt::disable(uint vector)
 {
     //disable IRQs for this device before NULL-ing the vector. otherwise,
     //  we might interrupt with a NULL_VECT in the handler's address.
@@ -67,12 +64,12 @@ BCM2835Interrupt::Result BCM2835Interrupt::disable(uint vector)
     return Success;
 }
 
-BCM2835Interrupt::Result BCM2835Interrupt::clear(uint vector)
+BroadcomInterrupt::Result BroadcomInterrupt::clear(uint vector)
 {
     return Success;
 }
 
-bool BCM2835Interrupt::isTriggered(u32 vector)
+bool BroadcomInterrupt::isTriggered(u32 vector)
 {
     u32 pend1 = m_io.read(INTERRUPT_IRQPEND1);
     u32 pend2 = m_io.read(INTERRUPT_IRQPEND2);

@@ -20,7 +20,7 @@
 
 #include <FreeNOS/System.h>
 #include <Types.h>
-#include <arm/BroadcomGPIO.h>
+#include <arm/broadcom/BroadcomGPIO.h>
 #include "I2C.h"
 
 /**
