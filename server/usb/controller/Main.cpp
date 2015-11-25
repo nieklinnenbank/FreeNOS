@@ -21,7 +21,7 @@
 int main(int argc, char **argv)
 {
     KernelLog log;
-    log.setMinimumLogLevel(Log::Debug);
+    log.setMinimumLogLevel(Log::Notice);
 
     SynopsisUSB server("/usb");
     server.initialize();

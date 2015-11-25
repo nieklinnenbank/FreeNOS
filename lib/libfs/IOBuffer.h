@@ -49,6 +49,13 @@ class IOBuffer
     Size getCount() const;
 
     /**
+     * Get filesystem message.
+     *
+     * @return FileSystemMessage pointer.
+     */
+    const FileSystemMessage * getMessage() const;
+
+    /**
      * Get raw buffer.
      *
      * @return Buffer pointer.

@@ -38,13 +38,19 @@ class SynopsisUSB : public USBController
     /** Vendor Identity number for this device */
     static const uint DefaultVendorId = 0x4f54280a;
 
+    /** Interrupt number for the USB controller in BCM2835. */
+    static const uint InterruptNumber = 9;
+
+    /** Number of transfer channels supported by hardware. */
+    static const Size ChannelCount = 8;
+
     /**
      * Hardware registers.
      */
     enum Registers
     {
-        Control           = 0x000,
-        Interrupt         = 0x004,
+        OTGControl        = 0x000,
+        OTGInterrupt      = 0x004,
         AHBConfig         = 0x008,
         CoreConfig        = 0x00c,
         CoreReset         = 0x010,
@@ -81,6 +87,69 @@ class SynopsisUSB : public USBController
         Power             = 0xe00
     };
 
+    /**
+     * AHBConfig register flags.
+     */
+    enum AHBConfigFlags
+    {
+        InterruptEnable = (1 << 0),
+        AXIWait         = (1 << 4),
+        DMAEnable       = (1 << 5)
+    };
+
+    /**
+     * CoreInterrupt register flags.
+     */
+    enum CoreIntFlags
+    {
+        CoreIntChannel = (1 << 24), /**< Channel interrupt occurred. */
+        CoreIntPort    = (1 << 25)  /**< Host port status changed. */
+    };
+
+    /**
+     * HostPortControl register flags.
+     */
+    enum HostPortControlFlags
+    {
+        HostPortConnect        = (1 << 0),
+        HostPortConnectChanged = (1 << 1),
+        HostPortEnable         = (1 << 2),
+        HostPortEnableChanged  = (1 << 3),
+        HostPortCurrent        = (1 << 4),
+        HostPortCurrentChanged = (1 << 5),
+        HostPortReset          = (1 << 8),
+        HostPortPower          = (1 << 12)
+    };
+
+    /**
+     * Host Channel registers.
+     * Each of these registers is for a single channel only,
+     * starting at the HostChannel register as base offset (channel 0).
+     */
+    enum HostChannelRegs
+    {
+        Characteristics   = 0x00,
+        SplitControl      = 0x04,
+        ChannelInterrupt  = 0x08,
+        ChannelMask       = 0x0c,
+        ChannelTransfer   = 0x10,
+        ChannelDMA        = 0x14,
+        Reserved1         = 0x18,
+        Reserved2         = 0x1c,
+        HostChannelSize   = 0x20
+    };
+
+    /**
+     * Packet ID constants.
+     */
+    enum PacketId
+    {
+        Data0   = 0,
+        Data1   = 2,
+        Data2   = 1,
+        SetupId = 3
+    };
+
   public:
 
     /**
@@ -95,7 +164,41 @@ class SynopsisUSB : public USBController
      */
     virtual Error initialize();
 
+    /**
+     * Submit USB transfer.
+     *
+     * @return Result code
+     */
+    virtual Error transfer(const FileSystemMessage *msg,
+                           USBMessage *usb);
+
   private:
+
+    /**
+     * Start USB transfer.
+     */
+    void startTransfer(Size channelId,
+                       const FileSystemMessage *msg,
+                       USBMessage *usb);
+
+    /**
+     * Interrupt request handler.
+     *
+     * @param msg Incoming message from the kernel.
+     */
+    virtual void interruptHandler(InterruptMessage *msg);
+
+    /**
+     * Post-process channel interrupt.
+     *
+     * @param channelId Channel number.
+     */
+    void channelInterrupt(Size channelId);
+
+    /**
+     * Reset the Controller.
+     */
+    void softReset();
 
     /** Power Management. */
     BroadcomPower m_power;

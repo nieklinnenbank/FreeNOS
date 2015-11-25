@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- *
+ * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -15,21 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "USBTransferFile.h"
-#include "USBController.h"
+#include "FileSystemRequest.h"
 
-USBController::USBController(const char *path)
-    : DeviceServer(path)
+FileSystemRequest::FileSystemRequest(FileSystemMessage *msg)
 {
+    m_msg = msg;
+    m_ioBuffer = new IOBuffer(&m_msg);
 }
 
-Error USBController::initialize()
+FileSystemRequest::~FileSystemRequest()
 {
-    Error r = DeviceServer::initialize();
+    delete m_ioBuffer;
+}
 
-    if (r != ESUCCESS)
-        return r;
+FileSystemMessage * FileSystemRequest::getMessage()
+{
+    return &m_msg;
+}
 
-    registerFile(new USBTransferFile(this), "/transfer");    
-    return ESUCCESS;
+IOBuffer & FileSystemRequest::getBuffer()
+{
+    return *m_ioBuffer;
 }

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- *
+ * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -15,46 +15,46 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBUSB_USBCONTROLLER_H
-#define __LIBUSB_USBCONTROLLER_H
+#ifndef __FILESYSTEM_FILE_SYSTEM_REQUEST_H
+#define __FILESYSTEM_FILE_SYSTEM_REQUEST_H
 
-#include <FreeNOS/System.h>
-#include <Types.h>
-#include <DeviceServer.h>
-#include <FileSystemMessage.h>
-#include "USBMessage.h"
+#include "FileSystemMessage.h"
+#include "IOBuffer.h"
 
 /**
- * USB controller abstract interface.
+ * Encapsulates a pending FileSystemMessage.
  */
-class USBController : public DeviceServer
+class FileSystemRequest
 {
   public:
 
     /**
      * Constructor
      */
-    USBController(const char *path);
+    FileSystemRequest(FileSystemMessage *msg);
 
     /**
-     * Initialize the Controller.
-     *
-     * @return Result code
+     * Destructor
      */
-    virtual Error initialize();
+    virtual ~FileSystemRequest();
 
     /**
-     * Submit USB transfer.
-     *
-     * @return Result code
+     * Get message.
      */
-    virtual Error transfer(const FileSystemMessage *msg,
-                           USBMessage *usb) = 0;
+    FileSystemMessage * getMessage();
 
-  protected:
+    /**
+     * Get IOBuffer.
+     */
+    IOBuffer & getBuffer();
 
-    /** I/O instance */
-    Arch::IO m_io;
+  private:
+
+    /** Message that was received */
+    FileSystemMessage m_msg;
+
+    /** Wrapper for doing I/O on the FileSystemMessage buffer. */
+    IOBuffer *m_ioBuffer;
 };
 
-#endif /* __LIBUSB_USBCONTROLLER_H */
+#endif /* __FILESYSTEM_FILE_SYSTEM_REQUEST_H */

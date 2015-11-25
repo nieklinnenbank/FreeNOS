@@ -105,6 +105,7 @@ Error Terminal::initialize()
     teken_set_winsize(&state, &winsz);
     
     /* Print banners. */
+#warning fix this. should not be done like this.
     FileSystemMessage msg;
     msg.size = 512;
     IOBuffer io(&msg);

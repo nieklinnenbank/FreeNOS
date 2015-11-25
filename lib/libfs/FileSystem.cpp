@@ -32,7 +32,7 @@ FileSystem::FileSystem(const char *path)
     // Set members
     m_root      = 0;
     m_mountPath = path;
-    m_requests  = new List<FileSystemMessage *>();
+    m_requests  = new List<FileSystemRequest *>();
         
     // Register message handlers
     addIPCHandler(CreateFile, &FileSystem::pathHandler, false);
@@ -98,13 +98,59 @@ File * FileSystem::createFile(FileType type, DeviceID deviceID)
     return (File *) ZERO;
 }
 
+Error FileSystem::registerFile(File *file, const char *path, ...)
+{
+    va_list args;
+    Error r;
+
+    va_start(args, path);
+    r = registerFile(file, path, args);
+    va_end(args);
+
+    return r;
+}
+
+Error FileSystem::registerFile(File *file, const char *path, va_list args)
+{
+    char buf[PATHLEN];
+
+    // Add to the filesystem cache
+    vsnprintf(buf, sizeof(buf), path, args);
+    insertFileCache(file, path, args);
+
+    // Also add to the parent directory
+    FileSystemPath p((char *)buf);
+    Directory *parent;
+
+    if (p.parent())
+        parent = (Directory *) findFileCache(**p.parent())->file;
+    else
+        parent = (Directory *) m_root->file;
+
+    parent->insert(file->getType(), **p.base());
+    return ESUCCESS;
+}
+
 void FileSystem::pathHandler(FileSystemMessage *msg)
+{
+    // Copy the request
+    FileSystemRequest *req = new FileSystemRequest(msg);
+
+    // Process the request.
+    if (processRequest(req) == EAGAIN)
+        m_requests->append(req);
+    else
+        delete req;
+}
+
+Error FileSystem::processRequest(FileSystemRequest *req)
 {
     char buf[PATHLEN];
     FileSystemPath path;
     FileCache *cache = ZERO; 
     File *file = ZERO;
     Directory *parent;
+    FileSystemMessage *msg = req->getMessage();
     
     // Copy the file path
     if ((msg->result = VMCopy(msg->from, API::Read, (Address) buf,
@@ -113,7 +159,7 @@ void FileSystem::pathHandler(FileSystemMessage *msg)
         msg->result = EACCES;
         msg->type = IPCType;
         IPCMessage(msg->from, API::Send, msg, sizeof(*msg));
-        return;
+        return msg->result;
     }
 
     path.parse(buf + strlen(m_mountPath));
@@ -130,9 +176,9 @@ void FileSystem::pathHandler(FileSystemMessage *msg)
         msg->result = ENOENT;
         msg->type = IPCType;
         IPCMessage(msg->from, API::Send, msg, sizeof(*msg));
-        return;
+        return msg->result;
     }
-        
+
     // Perform I/O on the file
     switch (msg->action)
     {
@@ -179,18 +225,18 @@ void FileSystem::pathHandler(FileSystemMessage *msg)
 
         case ReadFile:
             {
-                IOBuffer io(msg);
-                msg->result = file->read(io, msg->size, msg->offset);
-                if (io.getCount())
-                    io.flush();
+                msg->result = file->read(req->getBuffer(), msg->size, msg->offset);
+                if (req->getBuffer().getCount())
+                    req->getBuffer().flush();
             }
             break;
         
         case WriteFile:
             {
-                IOBuffer io(msg);
-                io.bufferedRead();
-                msg->result = file->write(io, msg->size, msg->offset);
+                if (!req->getBuffer().getCount())
+                    req->getBuffer().bufferedRead();
+
+                msg->result = file->write(req->getBuffer(), msg->size, msg->offset);
             }
             break;
     }
@@ -201,8 +247,7 @@ void FileSystem::pathHandler(FileSystemMessage *msg)
         msg->type = IPCType;
         IPCMessage(msg->from, API::Send, msg, sizeof(*msg));
     }
-    else
-        m_requests->append(new FileSystemMessage(*msg));
+    return msg->result;
 }
 
 void FileSystem::setRoot(Directory *newRoot)

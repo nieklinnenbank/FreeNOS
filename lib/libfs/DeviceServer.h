@@ -78,7 +78,7 @@ class DeviceServer : public FileSystem
      */
     void registerInterrupt(Device *dev, Size vector);
 
-  private:
+  protected:
 
     /**
      * @brief Interrupt request handler.
@@ -90,7 +90,9 @@ class DeviceServer : public FileSystem
      * @see Device
      * @see Device::interrupt
      */
-    void interruptHandler(InterruptMessage *msg);
+    virtual void interruptHandler(InterruptMessage *msg);
+
+  private:
 
     /** Contains all Devices served by this DeviceServer. */
     Vector<Device *> m_devices;

@@ -127,6 +127,13 @@ inline bool doubleEquals(double a, double b, double epsilon)
     __attribute__((__used__))
 
 /**
+ * Ensures strict minimum memory requirements.
+ * This option effectively disabled extra padding by the compiler.
+ */
+#define PACKED \
+    __attribute__((__packed__))
+
+/**
  * Aligns a symbol at the given boundary.
  * @param n Boundary to align.
  */

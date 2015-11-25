@@ -22,7 +22,7 @@
 
 BroadcomPower::BroadcomPower()
 {
-    m_mask = 0;
+    m_mask = UART0;
 }
 
 BroadcomPower::Result BroadcomPower::initialize()

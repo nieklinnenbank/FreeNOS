@@ -27,6 +27,7 @@
 #include "FileCache.h"
 #include "FileSystemPath.h"
 #include "FileSystemMessage.h"
+#include "FileSystemRequest.h"
 
 /**
  * Abstract filesystem class.
@@ -63,6 +64,25 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
      * @return True if mounted successfully, false otherwise.
      */
     Error mount();
+
+    /**
+     * Register a new File.
+     *
+     * @param file File object pointer.
+     * @param path The path for the File.
+     * @return Error code.
+     */
+    Error registerFile(File *file, const char *path, ...);
+
+    /**
+     * Register a new File with variable arguments.
+     *
+     * @param file File object pointer.
+     * @param path The path for the File.
+     * @param args Variable argument list.
+     * @return Error code.
+     */
+    Error registerFile(File *file, const char *path, va_list args);
 
     /**
      * @brief Create a new file.
@@ -106,6 +126,14 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
     void pathHandler(FileSystemMessage *msg);
 
   protected:
+
+    /**
+     * Process a FileSystemRequest.
+     *
+     * @return EAGAIN if the request cannot be completed yet or
+     *         any other error code if processed.
+     */
+    Error processRequest(FileSystemRequest *req);
 
     /**
      * @brief Change the filesystem root directory.
@@ -175,7 +203,7 @@ class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
     const char *m_mountPath;
 
     /** Contains ongoing requests */
-    List<FileSystemMessage *> *m_requests;
+    List<FileSystemRequest *> *m_requests;
 };
 
 #endif /* __LIB_LIBFS_FILESYSTEM_H */

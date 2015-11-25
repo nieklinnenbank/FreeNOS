@@ -34,10 +34,10 @@ class BroadcomPower
      */
     enum Device
     {
-        SD,
-        UART0,
-        UART1,
-        USB
+        SD    = (1 << 0),
+        UART0 = (1 << 1),
+        UART1 = (1 << 2),
+        USB   = (1 << 3)
     };
 
     /**

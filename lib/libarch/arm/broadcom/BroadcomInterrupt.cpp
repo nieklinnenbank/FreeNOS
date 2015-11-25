@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <Log.h>
 #include "BroadcomInterrupt.h"
 
 BroadcomInterrupt::BroadcomInterrupt() : ARMInterrupt()
@@ -71,6 +72,12 @@ BroadcomInterrupt::Result BroadcomInterrupt::clear(uint vector)
 
 bool BroadcomInterrupt::isTriggered(u32 vector)
 {
+    u32 basic = m_io.read(INTERRUPT_BASICPEND);
+
+    switch (vector)
+    {
+        case 9: return (basic & (1 << 11));
+    }
     u32 pend1 = m_io.read(INTERRUPT_IRQPEND1);
     u32 pend2 = m_io.read(INTERRUPT_IRQPEND2);
 

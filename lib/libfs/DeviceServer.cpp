@@ -38,34 +38,17 @@ Error DeviceServer::initialize()
 
 void DeviceServer::registerDevice(Device *dev, const char *path, ...)
 {
-    char buf[PATHLEN];
     va_list args;
+
+    va_start(args, path);
+    FileSystem::registerFile(dev, path, args);
+    va_end(args);
 
     // Add to the list of Devices
     m_devices.insert(dev);
 
     // Initialize the device
     dev->initialize();
-
-    // Add to the filesystem cache
-    va_start(args, path);
-    vsnprintf(buf, sizeof(buf), path, args);
-    va_end(args);
-
-    va_start(args, path);
-    insertFileCache(dev, path, args);
-    va_end(args);
-
-    // Also add to the parent directory
-    FileSystemPath p((char *)buf);
-    Directory *parent;
-
-    if (p.parent())
-        parent = (Directory *) findFileCache(**p.parent())->file;
-    else
-        parent = (Directory *) m_root->file;
-
-    parent->insert(dev->getType(), **p.base());
 }
 
 void DeviceServer::registerInterrupt(Device *dev, Size vector)
@@ -99,15 +82,12 @@ void DeviceServer::interruptHandler(InterruptMessage *msg)
     }
 
     // Retry any pending requests, if any
-    List<FileSystemMessage *> *req = m_requests;
-    m_requests = new List<FileSystemMessage *>();
-
-    if (req)
+    for (ListIterator<FileSystemRequest *> i(m_requests); i.hasCurrent(); i++)
     {
-        for (ListIterator<FileSystemMessage *> i(req); i.hasCurrent(); i++)
+        if (processRequest(i.current()) != EAGAIN)
         {
-            pathHandler(i.current());
+            delete i.current();
+            i.remove();
         }
-        delete req;
     }
 }

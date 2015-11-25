@@ -63,12 +63,11 @@ void ARMKernel::interrupt(CPUState state)
         kernel->m_timer->tick();
         kernel->getProcessManager()->schedule();
     }
-    else
+    for (uint i = BCM_IRQ_SYSTIMERM1+1; i < 64; i++)
     {
-        for (uint i = 0; i < 64; i++)
+        if (intr->isTriggered(i))
         {
-            if (intr->isTriggered(i))
-                kernel->executeIntVector(i, &state);
+            kernel->executeIntVector(i, &state);
         }
     }
 }

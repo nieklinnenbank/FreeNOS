@@ -15,46 +15,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBUSB_USBCONTROLLER_H
-#define __LIBUSB_USBCONTROLLER_H
+#ifndef __LIBUSB_USBTRANSFERFILE_H
+#define __LIBUSB_USBTRANSFERFILE_H
 
-#include <FreeNOS/System.h>
-#include <Types.h>
-#include <DeviceServer.h>
-#include <FileSystemMessage.h>
-#include "USBMessage.h"
+#include <File.h>
+#include "USBController.h"
 
 /**
- * USB controller abstract interface.
+ * USB transfer file for USBController (/usb/transfer)
  */
-class USBController : public DeviceServer
+class USBTransferFile : public File
 {
   public:
 
     /**
      * Constructor
      */
-    USBController(const char *path);
+    USBTransferFile(USBController *controller);
 
     /**
-     * Initialize the Controller.
+     * Write bytes to the file.
      *
-     * @return Result code
+     * @param buffer Input/Output buffer to input bytes from.
+     * @param size Number of bytes to write, at maximum.
+     * @param offset Offset inside the file to start writing.
+     * @return Number of bytes written on success, Error on failure.
      */
-    virtual Error initialize();
+    virtual Error write(IOBuffer & buffer, Size size, Size offset);
 
-    /**
-     * Submit USB transfer.
-     *
-     * @return Result code
-     */
-    virtual Error transfer(const FileSystemMessage *msg,
-                           USBMessage *usb) = 0;
+  private:
 
-  protected:
-
-    /** I/O instance */
-    Arch::IO m_io;
+    /** Pointer to the USB controller for doing actual transfers */
+    USBController *m_controller;
 };
 
-#endif /* __LIBUSB_USBCONTROLLER_H */
+#endif /* __LIBUSB_USBTRANSFERFILE_H */

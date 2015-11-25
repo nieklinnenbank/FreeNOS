@@ -15,46 +15,59 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBUSB_USBCONTROLLER_H
-#define __LIBUSB_USBCONTROLLER_H
+#ifndef __LIBUSB_USBHUB_H
+#define __LIBUSB_USBHUB_H
 
-#include <FreeNOS/System.h>
 #include <Types.h>
-#include <DeviceServer.h>
-#include <FileSystemMessage.h>
-#include "USBMessage.h"
+#include "USBDevice.h"
 
 /**
- * USB controller abstract interface.
+ * USB Hub driver.
  */
-class USBController : public DeviceServer
+class USBHub : public USBDevice
 {
   public:
 
     /**
-     * Constructor
+     * USB Hub current status and changed status format.
      */
-    USBController(const char *path);
+    typedef struct Status
+    {
+        u16 current;
+        u16 changed;
+    }
+    Status;
 
     /**
-     * Initialize the Controller.
+     * USB Hub standard requests.
+     */
+    enum RequestType
+    {
+        GetStatus        = 0,
+        ClearFeature     = 1,
+        SetFeature       = 3,
+        GetDescriptor    = 6,
+        SetDescriptor    = 7,
+        ClearTTBuffer    = 8,
+        ResetTT          = 9,
+        GetTTState       = 10,
+        StopTT           = 11
+    };
+
+    /**
+     * Constructor
+     */
+    USBHub(const char *usbPath = "/usb");
+
+    /**
+     * Initialize the hub.
      *
      * @return Result code
      */
     virtual Error initialize();
 
-    /**
-     * Submit USB transfer.
-     *
-     * @return Result code
-     */
-    virtual Error transfer(const FileSystemMessage *msg,
-                           USBMessage *usb) = 0;
+  private:
 
-  protected:
-
-    /** I/O instance */
-    Arch::IO m_io;
 };
 
-#endif /* __LIBUSB_USBCONTROLLER_H */
+#endif /* __LIBUSB_USBHUB_H */

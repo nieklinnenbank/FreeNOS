@@ -1,0 +1,56 @@
+/*
+ * Copyright (C) 2015 Niek Linnenbank
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include <Log.h>
+#include "USBMessage.h"
+#include "USBTransferFile.h"
+#include "USBDescriptor.h"
+
+USBTransferFile::USBTransferFile(USBController *controller)
+    : File()
+{
+    m_access     = OwnerRW;
+    m_controller = controller;
+}
+
+Error USBTransferFile::write(IOBuffer & buffer, Size size, Size offset)
+{
+    DEBUG("");
+
+    USBMessage *usb = (USBMessage *) buffer.getBuffer();
+    const FileSystemMessage *msg = buffer.getMessage();
+
+    if (size != sizeof(USBMessage))
+        return EIO;
+
+    if (usb->size != sizeof(USBDescriptor::Device))
+        return EIO;
+
+    m_controller->transfer(msg, usb);
+
+    switch (usb->state)
+    {
+        case USBMessage::Success:
+        case USBMessage::Error:
+            buffer.write((void *)buffer.getBuffer(), sizeof(*usb));
+            return size;
+
+        default:
+            break;
+    }
+    return EAGAIN;
+}

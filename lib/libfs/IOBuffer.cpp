@@ -20,19 +20,30 @@
 IOBuffer::IOBuffer(const FileSystemMessage *msg)
     : m_message(msg)
 {
-    m_buffer = new u8[msg->size];
+    // TODO: hack because only read/write file actions need the buffer.
+    if (msg->action == ReadFile || msg->action == WriteFile)
+        m_buffer = new u8[msg->size];
+    else
+        m_buffer = 0;
+
     m_size   = msg->size;
     m_count  = 0;
 }
 
 IOBuffer::~IOBuffer()
 {
-    delete m_buffer;
+    if (m_buffer)
+        delete m_buffer;
 }
 
 Size IOBuffer::getCount() const
 {
     return m_count;
+}
+
+const FileSystemMessage * IOBuffer::getMessage() const
+{
+    return m_message;
 }
 
 const u8 * IOBuffer::getBuffer() const
@@ -42,12 +53,17 @@ const u8 * IOBuffer::getBuffer() const
 
 Error IOBuffer::bufferedRead()
 {
-    return read(m_buffer, m_message->size, 0);
+    m_count = read(m_buffer, m_message->size, 0);
+    return m_count;
 }
 
 Error IOBuffer::bufferedWrite(void *buffer, Size size)
 {
     Size i = 0;
+
+    // TODO: hack. see above.
+    if (!m_buffer)
+        m_buffer = new u8[m_message->size];
 
     for (i = 0; i < size && m_count < m_size; i++)
     {
