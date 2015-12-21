@@ -69,8 +69,6 @@ Error SynopsisController::initialize()
 
     // Soft-Reset
     softReset();
-    //DEBUG("software reset done");
-    NOTICE("software reset done");
 
     // Setup DMA
     m_io.write(RxFIFOSize, 1024);
@@ -83,8 +81,6 @@ Error SynopsisController::initialize()
     addIRQHandler(0, (IRQHandlerFunction) &SynopsisController::interruptHandler); // TODO: ARM does not have IRQ_REG() yet
     ProcessCtl(SELF, WatchIRQ, InterruptNumber);
     ProcessCtl(SELF, EnableIRQ, InterruptNumber);
-    //DEBUG("interrupt handler installed");
-    NOTICE("interrupt handler installed");
 
     // Clear all pending core interrupts
     m_io.write(CoreIntMask, 0);
@@ -95,9 +91,6 @@ Error SynopsisController::initialize()
 
     // Enable interrupts globally on the USB host controller.
     m_io.set(AHBConfig, InterruptEnable);
-    //DEBUG("interrupts enabled");
-    NOTICE("interrupts enabled");
-    sleep(60);
 
     // Power-on host port (virtual root hub)
     u32 val = m_io.read(HostPortControl);
@@ -105,9 +98,6 @@ Error SynopsisController::initialize()
              HostPortConnectChanged | HostPortCurrentChanged);
     val |= HostPortPower;
     m_io.write(HostPortControl, val);
-    //DEBUG("poweron host port");
-    //NOTICE("poweron host port");
-    sleep(60);
 
     // Begin host port reset (raise the reset signal)
     val = m_io.read(HostPortControl);
@@ -124,11 +114,6 @@ Error SynopsisController::initialize()
     val &= ~(HostPortReset | HostPortEnable | HostPortEnableChanged |
              HostPortConnectChanged | HostPortCurrentChanged);
     m_io.write(HostPortControl, val);
-
-    sleep(60);
-    DEBUG("host port reset done. root hub enabled");
-
-    hostPortChanged();
 
     // Initialize channels
     for (Size i = 0; i < ChannelCount; i++)
@@ -171,14 +156,14 @@ void SynopsisController::hostPortChanged()
     u32 portStatus = m_io.read(HostPortControl);
 
     NOTICE("connected = " << (int)(portStatus & HostPortConnect) <<
-          "connectedChanged = " << (int)(portStatus & HostPortConnectChanged) <<
-          "enabled = " << (int)(portStatus & HostPortEnable) <<
-          "enabledChanged = " << (int)(portStatus & HostPortEnableChanged) <<
-          "overcurrent = " << (int)(portStatus & HostPortCurrent) <<
-          "overcurrentChanged = " << (int)(portStatus & HostPortCurrentChanged) <<
-          "reset = " << (int)(portStatus & HostPortReset) << 
-          "power = " << (int)(portStatus & HostPortPower) <<
-          "speed = " << (int)(portStatus & HostPortSpeed));
+          " connectedChanged = " << (int)(portStatus & HostPortConnectChanged) <<
+          " enabled = " << (int)(portStatus & HostPortEnable) <<
+          " enabledChanged = " << (int)(portStatus & HostPortEnableChanged) <<
+          " overcurrent = " << (int)(portStatus & HostPortCurrent) <<
+          " overcurrentChanged = " << (int)(portStatus & HostPortCurrentChanged) <<
+          " reset = " << (int)(portStatus & HostPortReset) << 
+          " power = " << (int)(portStatus & HostPortPower) <<
+          " speed = " << (int)(portStatus & HostPortSpeed));
 
     // Clear host port interrupt flags
     portStatus &= ~(HostPortEnable | HostPortReset);
@@ -195,6 +180,11 @@ void SynopsisController::softReset()
 
     // Wait until cleared
     while (m_io.read(CoreReset) & 1);
+
+    // Wait for some time to give the hardware
+    // enough time to fully initialize. Without this wait,
+    // the hardware does not process transfers / interrupts properly.
+    sleep(60);
 }
 
 SynopsisChannel * SynopsisController::getChannel(const FileSystemMessage *msg,
