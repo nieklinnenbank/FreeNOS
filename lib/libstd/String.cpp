@@ -327,6 +327,31 @@ String String::substring(Size index, Size size)
     return str;
 }
 
+String & String::pad(Size length)
+{
+    Size idx = 0;
+
+    // Look for the last newline character
+    for (Size i = 0; i < m_count; i++)
+        if (m_string[i] == '\n')
+            idx = i;
+
+    // Last line length
+    Size curlen = m_count - (idx+1);
+
+    // Skip if the line is already the given length
+    if (length <= curlen)
+        return (*this);
+
+    if (reserve(m_count + length - curlen))
+    {
+        MemoryBlock::set(m_string + idx + curlen + 1, ' ', length-curlen);
+        m_count += length-curlen;
+        m_string[m_count] = ZERO;
+    }
+    return (*this);
+}
+
 String & String::trim()
 {
     Size from = 0, to = m_count - 1;

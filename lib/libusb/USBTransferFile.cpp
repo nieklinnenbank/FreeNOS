@@ -29,7 +29,7 @@ USBTransferFile::USBTransferFile(USBController *controller)
 
 Error USBTransferFile::write(IOBuffer & buffer, Size size, Size offset)
 {
-    DEBUG("");
+    //DEBUG("");
 
     USBMessage *usb = (USBMessage *) buffer.getBuffer();
     const FileSystemMessage *msg = buffer.getMessage();
@@ -37,20 +37,22 @@ Error USBTransferFile::write(IOBuffer & buffer, Size size, Size offset)
     if (size != sizeof(USBMessage))
         return EIO;
 
-    if (usb->size != sizeof(USBDescriptor::Device))
-        return EIO;
-
-    m_controller->transfer(msg, usb);
-
     switch (usb->state)
     {
+        case USBMessage::Setup:
+        case USBMessage::Data:
+        case USBMessage::Status:
+            return m_controller->transfer(msg, usb);
+
         case USBMessage::Success:
-        case USBMessage::Error:
             buffer.write((void *)buffer.getBuffer(), sizeof(*usb));
             return size;
+
+        case USBMessage::Failure:
+            return EIO;
 
         default:
             break;
     }
-    return EAGAIN;
+    return EIO;
 }

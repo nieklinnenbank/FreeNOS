@@ -265,7 +265,19 @@ class String : public Sequence<char>
      * @param base NumberBase to use. Default is decimal.
      */
     long toLong(Number::Base base = Number::Dec);
-        
+
+    /**
+     * Pad line with trailing whitespace.
+     *
+     * This function ensures the last line inside the String
+     * is at least the given length in characters, by appending
+     * extra whitespace at the end of the line.
+     *
+     * @param length Length of the String including whitespace pads
+     * @return Reference to the String
+     */
+    String & pad(Size length);
+
     /**
      * Remove leading and trailing whitespace from the String.
      *

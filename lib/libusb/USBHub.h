@@ -20,24 +20,13 @@
 
 #include <Types.h>
 #include "USBDevice.h"
+#include "USBDescriptor.h"
 
 /**
  * USB Hub driver.
  */
 class USBHub : public USBDevice
 {
-  public:
-
-    /**
-     * USB Hub current status and changed status format.
-     */
-    typedef struct Status
-    {
-        u16 current;
-        u16 changed;
-    }
-    Status;
-
     /**
      * USB Hub standard requests.
      */
@@ -55,9 +44,47 @@ class USBHub : public USBDevice
     };
 
     /**
+     * USB Hub current status and changed status format.
+     */
+    typedef struct Status
+    {
+        u16 current;
+        u16 changed;
+    }
+    Status;
+
+    /**
+     * USB Hub Port Features.
+     */
+    enum PortFeature
+    {
+        PortConnection       = 0,
+        PortEnable           = 1,
+        PortSuspend          = 2,
+        PortOverCurrent      = 3,
+        PortReset            = 4,
+        PortPower            = 8,
+        PortLowSpeed         = 9,
+        PortClearConnection  = 16,
+        PortClearEnable      = 17,
+        PortClearSuspsend    = 18,
+        PortClearOverCurrent = 19,
+        PortClearReset       = 20,
+        PortTest             = 21,
+        PortIndicator        = 22
+    };
+
+  public:
+
+    /**
      * Constructor
      */
-    USBHub(const char *usbPath = "/usb");
+    USBHub(u8 deviceId, const char *usbPath = "/usb");
+
+    /**
+     * Destructor
+     */
+    virtual ~USBHub();
 
     /**
      * Initialize the hub.
@@ -68,6 +95,18 @@ class USBHub : public USBDevice
 
   private:
 
+    /**
+     * Set feature on a HUB port.
+     */
+    Error setPortFeature(u8 port, PortFeature feature);
+
+    /**
+     * Attach device on port.
+     */
+    Error portAttach(u8 port);
+
+    /** Hub descriptor. */
+    USBDescriptor::Hub *m_hub;
 };
 
 #endif /* __LIBUSB_USBHUB_H */

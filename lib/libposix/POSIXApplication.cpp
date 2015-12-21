@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -15,19 +15,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <KernelLog.h>
-#include "SynopsisController.h"
+#include <FreeNOS/Config.h>
+#include "stdlib.h"
+#include "string.h"
+#include "unistd.h"
+#include "POSIXApplication.h"
 
-int main(int argc, char **argv)
+POSIXApplication::POSIXApplication(int argc, char **argv)
+    : Application(argc, argv)
 {
-    KernelLog log;
-    log.setMinimumLogLevel(Log::Notice);
+    m_version = VERSION;
+}
 
-    SynopsisController server("/usb");
-    server.initialize();
+POSIXApplication::~POSIXApplication()
+{
+}
 
-    /*
-     * Start serving requests
-     */
-    return server.run();
+POSIXApplication::Result POSIXApplication::output(const char *string)
+{
+    printf("%s", string);
+    return Success;
+}
+
+void POSIXApplication::exit(int code)
+{
+    ::exit(code);
 }

@@ -32,7 +32,7 @@ namespace USBDescriptor
         StringType        = 3,
         InterfaceType     = 4,
         EndpointType      = 5,
-        HubType           = 6
+        HubType           = 0x29
     };
 
     /**
@@ -101,6 +101,14 @@ namespace USBDescriptor
         u8  attributes;
         u16 maxPacketSize;
         u8  interval;
+
+        // TODO: please fix libstd, such that this is not needed anymore.
+        bool operator == (const struct Endpoint & ep) const {
+            return ep.descriptorType == descriptorType;
+        }
+        bool operator != (const struct Endpoint & ep) const {
+            return ep.descriptorType != descriptorType;
+        }
     }
     PACKED Endpoint;
 
@@ -115,7 +123,7 @@ namespace USBDescriptor
         u16 hubCharacteristics;
         u8  pwrOn2PwrGood;
         u8  hubContrCurrent;
-        u8  varData[];
+        u8  varData[64];
     }
     PACKED Hub;
 

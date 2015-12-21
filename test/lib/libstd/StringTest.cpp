@@ -359,6 +359,19 @@ TestCase(StringSub)
     return OK;
 }
 
+TestCase(StringPad)
+{
+    String s = "hello\nthis";
+
+    // Pad the last line to 10 characters
+    s.pad(10);
+
+    testString(s.m_string, "hello\nthis      ");
+    testAssert(s.m_count == 16);
+    testAssert(s.m_size == 17);
+    return OK;
+}
+
 TestCase(StringTrim)
 {
     String s = " \t  testing1234   \t ";

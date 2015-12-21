@@ -28,11 +28,11 @@
  */
 typedef struct USBMessage
 {
-    USBTransfer::DeviceSetup   setup;
-    USBTransfer::Direction     direction;
-    USBTransfer::Speed         speed;
-    USBTransfer::Type          type;
-    USBTransfer::RequestType   requestType;
+    USBTransfer::Setup       setup;
+    USBTransfer::Direction   direction;
+    USBTransfer::Speed       speed;
+    USBTransfer::Type        type;
+    USBTransfer::RequestType requestType;
 
     Address deviceId;    /**< USB device identifier number */
     Address endpointId;  /**< USB endpoint identifier number */
@@ -52,7 +52,7 @@ typedef struct USBMessage
         Data,
         Status,
         Success,
-        Error
+        Failure
     }
     state;
 }

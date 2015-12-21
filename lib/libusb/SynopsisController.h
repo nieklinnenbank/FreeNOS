@@ -20,15 +20,17 @@
 
 #include <FreeNOS/System.h>
 #include <Types.h>
+#include <Index.h>
 #include <arm/broadcom/BroadcomPower.h>
 #include "USBController.h"
+#include "SynopsisChannel.h"
 
 /**
  * Synopsis DesignWare USB Host Controller implementation.
  *
  * @see https://github.com/xinu-os/xinu/system/platforms/arm-rpi/usb_dwc_regs.h
  */
-class SynopsisUSB : public USBController
+class SynopsisController : public USBController
 {
   private:
 
@@ -102,8 +104,8 @@ class SynopsisUSB : public USBController
      */
     enum CoreIntFlags
     {
-        CoreIntChannel = (1 << 24), /**< Channel interrupt occurred. */
-        CoreIntPort    = (1 << 25)  /**< Host port status changed. */
+        CoreIntPort    = (1 << 24), /**< Host port status changed. */
+        CoreIntChannel = (1 << 25)  /**< Channel interrupt occurred. */
     };
 
     /**
@@ -118,25 +120,9 @@ class SynopsisUSB : public USBController
         HostPortCurrent        = (1 << 4),
         HostPortCurrentChanged = (1 << 5),
         HostPortReset          = (1 << 8),
-        HostPortPower          = (1 << 12)
-    };
-
-    /**
-     * Host Channel registers.
-     * Each of these registers is for a single channel only,
-     * starting at the HostChannel register as base offset (channel 0).
-     */
-    enum HostChannelRegs
-    {
-        Characteristics   = 0x00,
-        SplitControl      = 0x04,
-        ChannelInterrupt  = 0x08,
-        ChannelMask       = 0x0c,
-        ChannelTransfer   = 0x10,
-        ChannelDMA        = 0x14,
-        Reserved1         = 0x18,
-        Reserved2         = 0x1c,
-        HostChannelSize   = 0x20
+        HostPortPower          = (1 << 12),
+        /** 00: high speed 01: full speed 10: low speed */
+        HostPortSpeed          = (1 << 17) | (1 << 18),
     };
 
     /**
@@ -155,7 +141,7 @@ class SynopsisUSB : public USBController
     /**
      * Constructor
      */
-    SynopsisUSB(const char *path);
+    SynopsisController(const char *path);
 
     /**
      * Initialize the Controller.
@@ -175,11 +161,12 @@ class SynopsisUSB : public USBController
   private:
 
     /**
-     * Start USB transfer.
+     * Get a Channel.
+     *
+     * @return Channel object pointer or ZERO.
      */
-    void startTransfer(Size channelId,
-                       const FileSystemMessage *msg,
-                       USBMessage *usb);
+    SynopsisChannel * getChannel(const FileSystemMessage *msg,
+                                 USBMessage *usb);
 
     /**
      * Interrupt request handler.
@@ -189,11 +176,9 @@ class SynopsisUSB : public USBController
     virtual void interruptHandler(InterruptMessage *msg);
 
     /**
-     * Post-process channel interrupt.
-     *
-     * @param channelId Channel number.
+     * Called when the Host Port status changes.
      */
-    void channelInterrupt(Size channelId);
+    void hostPortChanged();
 
     /**
      * Reset the Controller.
@@ -202,6 +187,9 @@ class SynopsisUSB : public USBController
 
     /** Power Management. */
     BroadcomPower m_power;
+
+    /** Channels. */
+    Index<SynopsisChannel> m_channels;
 };
 
 #endif /* __LIBUSB_SYNOPSISUSB_H */

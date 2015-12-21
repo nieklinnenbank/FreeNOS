@@ -16,15 +16,17 @@
  */
 
 #include <KernelLog.h>
-#include "SynopsisController.h"
+#include <DeviceServer.h>
+#include <SMSC95xx.h>
 
 int main(int argc, char **argv)
 {
     KernelLog log;
     log.setMinimumLogLevel(Log::Notice);
 
-    SynopsisController server("/usb");
+    DeviceServer server("/network/smsc95xx"); // TODO: add serial code? something unique to this device.
     server.initialize();
+    server.registerDevice(new SMSC95xx(2), "ethernet");
 
     /*
      * Start serving requests

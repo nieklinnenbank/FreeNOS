@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -15,19 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <KernelLog.h>
-#include "SynopsisController.h"
+#include "NetSend.h"
 
 int main(int argc, char **argv)
 {
-    KernelLog log;
-    log.setMinimumLogLevel(Log::Notice);
-
-    SynopsisController server("/usb");
-    server.initialize();
-
-    /*
-     * Start serving requests
-     */
-    return server.run();
+    NetSend app(argc, argv);
+    return app.run();
 }

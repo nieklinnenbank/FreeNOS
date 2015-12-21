@@ -37,7 +37,8 @@ typedef enum MemoryOperation
     LookupVirtual,
     Access,
     RemoveMem,
-    AddMem
+    AddMem,
+    CacheClean
 }
 MemoryOperation;
 

@@ -138,6 +138,13 @@ inline u64 timestamp()
 		  "popfl\n" :: "g" (saved))
 
 /**
+ * Level One Cache full clean.
+ *
+ * Not yet implemented for Intel.
+ */
+#define cache1_clean_full()
+
+/**
  * @group Intel CPU Exceptions
  * @{
  */

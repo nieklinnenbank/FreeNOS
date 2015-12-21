@@ -152,6 +152,12 @@ inline void dsb()
 #define cache1_clean(page) \
     mcr(p15, 0, 1, c7, c10, ((u32) page));
 
+/**
+ * Level One Cache full data clean.
+ */
+#define cache1_clean_full() \
+    mcr(p15, 0, 0, c7, c10, 0)
+
 /** 
  * Contains all the CPU registers. 
  */

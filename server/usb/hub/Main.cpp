@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 
     DeviceServer server("/usbhub");
     server.initialize();
-    server.registerDevice(new USBHub(), "roothub");
+    server.registerDevice(new USBHub(1), "roothub");
 
     /*
      * Start serving requests

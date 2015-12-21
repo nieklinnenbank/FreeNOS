@@ -23,9 +23,20 @@
 
 extern C uint isKernel;
 
+#define swab16(x) ((u16)(                                   \
+        (((u16)(x) & (u16)0x00ffU) << 8) |                  \
+        (((u16)(x) & (u16)0xff00U) >> 8)))
+
+#define swab32(x) ((u32)(                                   \
+        (((u32)(x) & (u32)0x000000ffUL) << 24) |            \
+        (((u32)(x) & (u32)0x0000ff00UL) <<  8) |            \
+        (((u32)(x) & (u32)0x00ff0000UL) >>  8) |            \
+        (((u32)(x) & (u32)0xff000000UL) >> 24)))
+
 #ifdef CPU_BIG_ENDIAN
 
-#elif CPU_LITTLE_ENDIAN
+#else
+#ifdef CPU_LITTLE_ENDIAN
 
 #define FORCE
 
@@ -113,6 +124,7 @@ extern C uint isKernel;
  */
 #define be16_to_cpu(x) swab16((FORCE u16)(be16)(x))
 
+#endif
 #endif /* LITTLE_ENDIAN */
 
 /**

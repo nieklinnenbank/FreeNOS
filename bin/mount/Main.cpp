@@ -33,7 +33,7 @@ int main(int argc, char **argv)
     // TODO: ask the kernel for the process table instead. With ARGV_ADDR copies.
 
     // Print header
-    printf("PATH            FILESYSTEM\r\n");
+    printf("PATH                 FILESYSTEM\r\n");
 
     // Print out
     for (Size i = 0; i < FILESYSTEM_MAXMOUNTS; i++)
@@ -42,7 +42,7 @@ int main(int argc, char **argv)
         {
             // Get the command
             VMCopy(mounts[i].procID, API::Read, (Address) cmd, ARGV_ADDR, PAGESIZE);
-            printf("%15s %s\r\n", mounts[i].path, cmd);
+            printf("%20s %s\r\n", mounts[i].path, cmd);
         }
     }
     // Done

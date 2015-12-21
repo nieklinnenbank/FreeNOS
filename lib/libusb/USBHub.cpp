@@ -31,12 +31,21 @@
  */
 
 #include <Log.h>
+#include <unistd.h>
+#include <string.h>
 #include "USBHub.h"
 
-USBHub::USBHub(const char *usbPath)
-    : USBDevice(usbPath)
+USBHub::USBHub(u8 deviceId, const char *usbPath)
+    : USBDevice(deviceId, usbPath)
 {
     DEBUG("");
+
+    m_hub = new USBDescriptor::Hub;
+}
+
+USBHub::~USBHub()
+{
+    delete m_hub;
 }
 
 Error USBHub::initialize()
@@ -44,15 +53,115 @@ Error USBHub::initialize()
     Error r;
 
     if ((r = USBDevice::initialize()) != ESUCCESS)
+    {
+        ERROR("failed to initialize USB device for Hub");
         return r;
+    }
 
+    DEBUG("get hub descriptor");
+    r = controlMessage(GetDescriptor,
+                       USBTransfer::In,
+                       USBTransfer::Class,
+                       USBTransfer::Device,
+                       USBDescriptor::HubType << 8, 0,
+                       m_hub, sizeof(*m_hub));
+    if (r != ESUCCESS)
+    {
+        ERROR("failed to get Hub descriptor");
+        return r;
+    }
+
+    DEBUG("found " << m_hub->numPorts << " ports");
+    DEBUG("characteristics: " << m_hub->hubCharacteristics);
+
+    // TODO: each port gets USB device id of myself + (portnumber)
+    // if the device is a HUB, ask our PARENT for a new deviceId range.
+    // in case we are the root HUB, we can figure it out, since we started with the full 255 range.
+    // a HUB needs to manage its childs anyway, since in case the HUB is disconnected it must KILL each child too.
+    // thus if a child is terminated, the HUB can reclaim the deviceId range too.
+
+    DEBUG("power-on ports");
+    for (Size i = 1; i < m_hub->numPorts + 1u; i++)
+    {
+        if (setPortFeature(i, PortPower) != ESUCCESS)
+        {
+            ERROR("failed to power-on port: " << i);
+        }
+    }
+    // TODO: assume a device is attached on the first port for testing
+    if (portAttach(1) != ESUCCESS)
+    {
+        ERROR("failed to attach port 1");
+    }
+
+    /*
+     * Use an interrupt transfer to find out if a port-change happend:
+     *
+     * "Everything else the hub driver does happens asynchronously as a response to a status
+change request being completed. Every USB hub has exactly one interrupt IN endpoint
+called the status change endpoint. The hub responds on this endpoint whenever the
+status of the hub or one of the hub.s ports has changed. for example, when a USB
+device has been connected or disconnected from a port"
+     *
+     * on device attached:
+     * - reset port
+     * - enable port
+     * - then start a new device driver with the assigned usb device ID.
+     *   which will do the full USB init (get descriptors, set address, set config)
+     */
+
+    return ESUCCESS;
+}
+
+Error USBHub::setPortFeature(u8 port, USBHub::PortFeature feature)
+{
+    DEBUG("port =" << port << " feature=" << (int)feature);
+
+    return controlMessage(SetFeature,
+                          USBTransfer::Out,
+                          USBTransfer::Class,
+                          USBTransfer::Other,
+                          feature, port, 0, 0);
+}
+
+Error USBHub::portAttach(u8 port)
+{
     DEBUG("");
 
-    USBDescriptor::Device desc;
+    DEBUG("enable port");
+    setPortFeature(port, PortReset);
 
-    DEBUG("getting descriptor");
-    getDescriptor(&desc);
+    sleep(30);
 
-    DEBUG("got descriptor: vendorId=" << desc.vendorId << " productId=" << desc.productId);
+    // Get descriptor of the next device
+    u8 myId = m_id;
+    USBDescriptor::Device *desc = new USBDescriptor::Device;
+    m_id = 0;
+    if (getDeviceDescriptor(desc) != ESUCCESS)
+    {
+        ERROR("failed to get device descriptor at port 1");
+    }
+    else
+    {
+        DEBUG("device on port " << port << " is: vendorId=" << desc->vendorId <<
+                            " productId=" << desc->productId <<
+                             " class=" << desc->deviceClass <<
+                             " subclass=" << desc->deviceSubClass <<
+                             " manufacturer=" << desc->manufacturer << 
+                             " product=" << desc->product <<
+                             " descType=" << desc->descriptorType);
+    }
+    m_id = myId;
+
+    // TODO: hardcoded assumption: SMSC95xx is on port 1 (or 3?) (raspberry pi)
+    const char * argv[] = { "/server/network/smsc95xx/server", 0 };
+
+    if (forkexec(argv[0], argv) == -1)
+    {
+        ERROR("failed to start USB device driver: " << strerror(errno));
+        return EIO;
+    }
+    DEBUG("USB device driver started for port =" << port);
+
     return ESUCCESS;
 }

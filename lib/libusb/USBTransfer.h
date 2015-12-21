@@ -98,7 +98,7 @@ namespace USBTransfer
     /**
      * Specify receiver of the transfer.
      */
-    enum RequestRecipient
+    enum Recipient
     {
         Device    = 0,
         Interface = 1,
@@ -107,11 +107,11 @@ namespace USBTransfer
     };
 
     /**
-     * SETUP phase data for Device Request control transfers.
+     * SETUP phase data for control transfers.
      *
      * @see USB 2.0 Specification, Section 9.3, Table 9-2
      */
-    typedef struct DeviceSetup
+    typedef struct Setup
     {
         u8  requestType;
         u8  request;
@@ -119,7 +119,7 @@ namespace USBTransfer
         u16 index;
         u16 length;
     }
-    PACKED DeviceSetup;
+    PACKED Setup;
 
 };
 

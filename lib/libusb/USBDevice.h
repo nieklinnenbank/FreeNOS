@@ -21,6 +21,7 @@
 #include <FreeNOS/System.h>
 #include <Types.h>
 #include <Device.h>
+#include <Index.h>
 #include "USBTransfer.h"
 #include "USBDescriptor.h"
 #include "USBMessage.h"
@@ -35,7 +36,12 @@ class USBDevice : public Device
     /**
      * Constructor
      */
-    USBDevice(const char *usbPath = "/usb");
+    USBDevice(u8 deviceId, const char *usbPath = "/usb");
+
+    /**
+     * Destructor
+     */
+    virtual ~USBDevice();
 
     /**
      * Initialize the USBDevice.
@@ -49,24 +55,59 @@ class USBDevice : public Device
     /**
      * Get device descriptor.
      */
-    Error getDescriptor(USBDescriptor::Device *desc);
+    Error getDeviceDescriptor(USBDescriptor::Device *desc,
+                              Size size = sizeof(USBDescriptor::Device));
+
+    /**
+     * Get configuration descriptor.
+     */
+    Error getConfigDescriptor(USBDescriptor::Configuration *desc);
+
+    /**
+     * Get interface descriptor.
+     */
+    Error getInterfaceDescriptor(USBDescriptor::Interface *desc);
+
+    /**
+     * Get endpoint descriptor.
+     */
+    Error getEndpointDescriptor(u8 endpointId, USBDescriptor::Endpoint *desc);
+
+    /**
+     * Set device address.
+     */
+    Error setAddress(u8 address);
+
+    /**
+     * Activate a configuration.
+     */
+    Error setConfiguration(u8 configId);
 
     /**
      * Send a control message.
      */
-    Error controlMessage(const USBTransfer::DeviceRequest request,
+    Error controlMessage(u8 request,
                          const USBTransfer::Direction direction,
+                         const USBTransfer::RequestType type,
+                         const USBTransfer::Recipient recipient,
                          u16 value,
                          u16 index,
                          void *buffer,
                          Size size);
 
     /**
-     * Perform a USB transfer.
+     * Start a USB transfer.
      */
-    Error transfer(USBMessage & msg);
+    Error transfer(const USBTransfer::Type type,
+                   const USBTransfer::Direction direction,
+                   Address endpointId,
+                   void *buffer,
+                   Size size);
 
-  private:
+    /**
+     * Submit a USB transfer to the Host controller.
+     */
+    Error submit(USBMessage & msg);
 
     /** USB device identifier. */
     Address m_id;
@@ -79,6 +120,18 @@ class USBDevice : public Device
 
     /** USB bus path. */
     String m_busPath;
+
+    /** USB device descriptor */
+    USBDescriptor::Device *m_device;
+
+    /** USB configuration descriptor. */
+    USBDescriptor::Configuration *m_config;
+
+    /** USB interface descriptor. */
+    USBDescriptor::Interface *m_interface;
+
+    /** USB endpoint descriptors. */
+    Index<USBDescriptor::Endpoint> m_endpoints;
 };
 
 #endif /* __LIBUSB_USBDEVICE_H */
