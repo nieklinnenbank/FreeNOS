@@ -148,6 +148,10 @@ void SynopsisController::interruptHandler(InterruptMessage *msg)
                 m_channels[i].interrupt();
         }
     }
+    // Re-enable IRQ in the kernel
+    ProcessCtl(SELF, EnableIRQ, InterruptNumber);
+
+    // Post-process in libfs
     return DeviceServer::interruptHandler(msg);
 }
 

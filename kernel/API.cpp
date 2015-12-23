@@ -30,6 +30,7 @@ API::API()
     m_apis.insert(SystemInfoNumber, (Handler *) SystemInfoHandler);
     m_apis.insert(VMCopyNumber,     (Handler *) VMCopyHandler);
     m_apis.insert(VMCtlNumber,      (Handler *) VMCtlHandler);
+    m_apis.insert(VMShareNumber,    (Handler *) VMShareHandler);
     m_apis.insert(IOCtlNumber,      (Handler *) IOCtlHandler);
 }
 

@@ -115,6 +115,9 @@ Error ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
         break;
     
     case WaitTimer:
+        procs->current()->setSleepTimer((const Timer::Info *)addr); // TODO: check access...
+        procs->current()->setState(Process::Sleeping);
+        procs->schedule();
         // TODO: set a Timer::Info field for the process. Then when scheduling, the process
         // will only be allowed to run until after the Timer::Info time has arrived (for sleep).
         break;
@@ -140,6 +143,7 @@ Log & operator << (Log &log, ProcessOperation op)
         case EnableIRQ: log.append("EnableIRQ"); break;
         case InfoPID:   log.append("InfoPID"); break;
         case WaitPID:   log.append("WaitPID"); break;
+        case WaitTimer: log.append("WaitTimer"); break;
         case SetStack:  log.append("SetStack"); break;
         default:        log.append("???"); break;
     }

@@ -83,9 +83,6 @@ SynopsisChannel::Result SynopsisChannel::interrupt()
     m_io->write(m_base + ChannelMask, 0);
     m_io->write(m_base + ChannelInterrupt, 0);
 
-    // Re-enable interrupt in kernel
-    ProcessCtl(SELF, EnableIRQ, InterruptNumber);
-
     // Post-process interrupt
     switch (m_usb->state)
     {
@@ -212,7 +209,7 @@ SynopsisChannel::Result SynopsisChannel::transfer(const FileSystemMessage *msg,
     if (!packetCount)
         packetCount = 1;
 
-    //DEBUG("packets = " << packetCount);
+    DEBUG("packets = " << packetCount);
 
     // Program channel registers.
     m_io->write(m_base + Characteristics, (usb->endpointId << 11) |

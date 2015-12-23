@@ -48,7 +48,8 @@ class API
         SystemInfoNumber = 4,        
         VMCopyNumber     = 5,
         VMCtlNumber      = 6,
-        IOCtlNumber      = 7
+        VMShareNumber    = 7,
+        IOCtlNumber      = 8
     }
     Number;
 
@@ -122,6 +123,7 @@ Log & operator << (Log &log, API::Operation op);
 #include "API/SystemInfo.h"
 #include "API/VMCopy.h"
 #include "API/VMCtl.h"
+#include "API/VMShare.h"
 #include "API/IOCtl.h"
 #include "API/ProcessID.h"
 

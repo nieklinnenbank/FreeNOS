@@ -15,6 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/API.h>
+#include <Index.h>
+#include <MemoryBlock.h>
 #include "Process.h"
 
 Process::Process(ProcessID id, Address entry, bool privileged, const MemoryMap &map)
@@ -29,6 +32,7 @@ Process::Process(ProcessID id, Address entry, bool privileged, const MemoryMap &
     m_entry         = entry;
     m_privileged    = privileged;
     m_memoryContext = ZERO;
+    MemoryBlock::set(&m_sleepTimer, 0, sizeof(m_sleepTimer));
 }
     
 Process::~Process()
@@ -53,6 +57,16 @@ ProcessID Process::getWait() const
 Process::State Process::getState() const
 {
     return m_state;
+}
+
+Index<MemoryShare> & Process::getShares()
+{
+    return m_shares;
+}
+
+const Timer::Info & Process::getSleepTimer() const
+{
+    return m_sleepTimer;
 }
 
 Address Process::getPageDirectory() const
@@ -93,6 +107,11 @@ void Process::setParent(ProcessID id)
 void Process::setWait(ProcessID id)
 {
     m_waitId = id;
+}
+
+void Process::setSleepTimer(const Timer::Info *sleepTimer)
+{
+    MemoryBlock::copy(&m_sleepTimer, sleepTimer, sizeof(m_sleepTimer));
 }
 
 void Process::setPageDirectory(Address addr)

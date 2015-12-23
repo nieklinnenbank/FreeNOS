@@ -22,6 +22,8 @@
 #include <Macros.h>
 #include <List.h>
 #include <MemoryMap.h>
+#include <Timer.h>
+#include <Index.h>
 
 /** 
  * @defgroup kernel kernel (generic)
@@ -30,6 +32,7 @@
 
 /** @see IPCMessage.h. */
 struct Message;
+struct MemoryShare;
 class MemoryContext;
 
 /** Virtual memory address of the array of arguments for new processes. */
@@ -97,6 +100,18 @@ class Process
     ProcessID getWait() const;
 
     /**
+     * Get sleep timer.
+     * @return Sleep timer value.
+     */
+    const Timer::Info & getSleepTimer() const;
+
+    /**
+     * Get process shares index.
+     * @return Reference to memory shares index.
+     */
+    Index<struct MemoryShare> & getShares();
+
+    /**
      * Retrieves the current state.
      * @return Current status of the Process.
      */
@@ -151,6 +166,12 @@ class Process
      * Set Wait ID.
      */
     void setWait(ProcessID id);
+
+    /**
+     * Set sleep timer.
+     * @param sleeptimer New sleep timer value.
+     */
+    void setSleepTimer(const Timer::Info *sleeptimer);
 
     /**
      * Set page directory address.
@@ -243,6 +264,16 @@ class Process
 
     /** Base kernel stack (fixed) */
     Address m_kernelStackBase;
+
+    /**
+     * Sleep timer value.
+     * If non-zero, set the process in the Ready state
+     * when the System timer is greater than this value.
+     */
+    Timer::Info m_sleepTimer;
+
+    /** Contains virtual memory shares between this process and others. */
+    Index<struct MemoryShare> m_shares;
 };
 
 /**

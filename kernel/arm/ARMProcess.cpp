@@ -69,7 +69,7 @@ Process::Result ARMProcess::initialize()
     stack += 14;
 
     // loadCoreState0: fill user register state
-    stack[0] = (m_privileged ? SYS_MODE : USR_MODE) | FIQ_BIT | IRQ_BIT; /* user program status (CPSR) */
+    stack[0] = (m_privileged ? SYS_MODE : USR_MODE); /* user program status (CPSR) */
     stack++;
     stack[0] = m_userStack; /* user program SP */
     stack[1] = 0;           /* user program LR */
