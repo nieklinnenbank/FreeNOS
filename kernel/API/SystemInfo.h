@@ -18,7 +18,7 @@
 #ifndef __API_SYSTEMINFO_H
 #define __API_SYSTEMINFO_H
 
-#include <FreeNOS/API.h>
+#include <FreeNOS/System.h>
 #include <FreeNOS/Config.h>
 #include <FreeNOS/Kernel.h>
 

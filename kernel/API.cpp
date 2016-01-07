@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/System.h>
 #include <Log.h>
-#include "API.h"
 
 API::API()
 {
@@ -24,7 +24,6 @@ API::API()
 
     // Register generic API handlers
     m_apis.fill(ZERO);
-    m_apis.insert(IPCMessageNumber, (Handler *) IPCMessageHandler);
     m_apis.insert(PrivExecNumber,   (Handler *) PrivExecHandler);
     m_apis.insert(ProcessCtlNumber, (Handler *) ProcessCtlHandler);
     m_apis.insert(SystemInfoNumber, (Handler *) SystemInfoHandler);

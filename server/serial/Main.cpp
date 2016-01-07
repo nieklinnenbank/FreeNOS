@@ -52,7 +52,7 @@ int main(int argc, char **argv)
 
     /* Open the logging facilities. */
     Log *log = new KernelLog();
-    log->setMinimumLogLevel(Log::Info);
+    log->setMinimumLogLevel(Log::Notice);
 
 #ifdef BCM2835
     PL011 *dev = ZERO;

@@ -35,7 +35,8 @@ class Channel
         InvalidMode,
         InvalidSize,
         IOError,
-        ChannelFull
+        ChannelFull,
+        NotFound
     };
 
     /**
@@ -51,6 +52,11 @@ class Channel
      * Constructor.
      */
     Channel();
+
+    /**
+     * Destructor.
+     */
+    virtual ~Channel();
 
     /**
      * Get maximum message count.
@@ -73,7 +79,7 @@ class Channel
      * @param size New message size.
      * @return Result code.
      */
-    Result setMessageSize(Size size);
+    virtual Result setMessageSize(Size size);
 
     /**
      * Read a message.
@@ -90,6 +96,15 @@ class Channel
      * @return Result code.
      */
     virtual Result write(void *buffer) = 0;
+
+    /**
+     * Flush message buffers.
+     *
+     * Ensures that all messages are written through caches.
+     *
+     * @return Result code.
+     */
+    virtual Result flush() = 0;
 
   protected:
 

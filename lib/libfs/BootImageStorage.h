@@ -18,7 +18,7 @@
 #ifndef __FILESYSTEM_BOOTIMAGESTORAGE_H
 #define __FILESYSTEM_BOOTIMAGESTORAGE_H
 
-#include <FreeNOS/API.h>
+#include <FreeNOS/System.h>
 #include <Types.h>
 #include <BootImage.h>
 #include "Storage.h"

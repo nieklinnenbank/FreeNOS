@@ -77,10 +77,9 @@ MemoryContext::Result IntelPageDirectory::map(Address virt,
         MemoryBlock::set(alloc->toVirtual(addr), 0, sizeof(IntelPageTable));
 
         // Assign to the page directory
-        m_tables[ DIRENTRY(virt) ] = addr | PAGE_PRESENT | flags(access);
+        m_tables[ DIRENTRY(virt) ] = addr | PAGE_PRESENT | PAGE_WRITE | flags(access);
         table = getPageTable(virt, alloc);
     }
-    // TODO: (re)check for MemoryAccess ?
     return table->map(virt, phys, access);
 }
 

@@ -19,6 +19,7 @@
 #define __ARM_RASPBERRY_SYSTEM_H
 
 /** Raspberry Pi A/B/B+ have a Broadcom 2835 SoC */
+#define __SYSTEM
 #define ARM
 #define BCM2835
 
@@ -34,5 +35,7 @@
 #include <arm/ARMMap.h>
 #include <arm/ARMKernel.h>
 #include <arm/ARMProcess.h>
+
+#include <FreeNOS/API.h>
 
 #endif /* __ARM_RASPBERRY_SYSTEM_H */

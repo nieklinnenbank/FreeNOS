@@ -86,11 +86,11 @@ class DeviceServer : public FileSystem
      * Invokes the interrupt callback function of
      * each Device registered for the interrupt vector.
      *
-     * @param msg Incoming message from the kernel.
+     * @param vector Interrupt number
      * @see Device
      * @see Device::interrupt
      */
-    virtual void interruptHandler(InterruptMessage *msg);
+    virtual void interruptHandler(Size vector);
 
   private:
 

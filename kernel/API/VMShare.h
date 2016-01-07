@@ -18,7 +18,6 @@
 #ifndef __API_VMSHARE_H
 #define __API_VMSHARE_H
 
-#include <FreeNOS/API.h>
 #include <FreeNOS/System.h>
 
 /**  
@@ -26,43 +25,21 @@
  * @{  
  */
 
-typedef struct MemoryShare
-{
-    /** Remote process id for this share */
-    ProcessID pid;
-
-    /** CoreId for the other process */
-    Size coreId;
-
-    /** Physical memory address range. */
-    Memory::Range range;
-
-    bool operator == (const struct MemoryShare & sh) const
-    {
-        return true;
-    }
-    bool operator != (const struct MemoryShare & sh) const
-    {
-        return false;
-    }
-
-}
-MemoryShare;
-
 /**
  * Prototype for user applications. Creates and removes shared virtual memory mappings.
  *
  * @param op Determines which operation to perform.
  * @param pid Remote process.
  * @param parameter Parameter for the operation.
+ * @param size Size parameter for the operation.
  * @return Zero on success or error code on failure.
  */
-inline Error VMShare(ProcessID pid, API::Operation op, Address parameter)
+inline Error VMShare(ProcessID pid, API::Operation op, ProcessShares::MemoryShare *share)
 {
-    return trapKernel3(API::VMShareNumber, pid, op, parameter);
+    return trapKernel3(API::VMShareNumber, pid, op, (Address) share);
 }
 
-extern Error VMShareHandler(ProcessID pid, API::Operation op, Address parameter);
+extern Error VMShareHandler(ProcessID pid, API::Operation op, ProcessShares::MemoryShare *share);
 
 /**
  * @}

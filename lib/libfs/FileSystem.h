@@ -18,8 +18,8 @@
 #ifndef __FILESYSTEM_FILESYSTEM_H
 #define __FILESYSTEM_FILESYSTEM_H
 
-#include <FreeNOS/API.h>
-#include <IPCServer.h>
+#include <FreeNOS/System.h>
+#include <ChannelServer.h>
 #include <Vector.h>
 #include "Directory.h"
 #include "Device.h"
@@ -32,7 +32,7 @@
 /**
  * Abstract filesystem class.
  */
-class FileSystem : public IPCServer<FileSystem, FileSystemMessage>
+class FileSystem : public ChannelServer<FileSystem, FileSystemMessage>
 {
   public:
 

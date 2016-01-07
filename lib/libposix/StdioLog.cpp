@@ -6,7 +6,7 @@
  */
 
 #ifndef __HOST__
-#include <FreeNOS/API.h>
+#include <FreeNOS/System.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>

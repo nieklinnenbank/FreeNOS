@@ -18,6 +18,7 @@
 #ifndef __LIB_LIBFS_FILE_H
 #define __LIB_LIBFS_FILE_H
 
+#include <FreeNOS/System.h>
 #include <FreeNOS/API.h>
 #include <Types.h>
 #include "FileSystemMessage.h"

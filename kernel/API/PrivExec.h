@@ -18,7 +18,7 @@
 #ifndef __API_PRIVEXEC_H
 #define __API_PRIVEXEC_H
 
-#include <FreeNOS/API.h>
+#include <FreeNOS/System.h>
 
 /**  
  * @defgroup kernelapi kernel (API) 

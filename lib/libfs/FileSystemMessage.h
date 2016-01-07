@@ -18,8 +18,7 @@
 #ifndef __FILESYSTEM_FILE_SYSTEM_MESSAGE_H
 #define __FILESYSTEM_FILE_SYSTEM_MESSAGE_H
 
-#include <FreeNOS/API.h>
-#include <IPCServer.h>
+#include <FreeNOS/System.h>
 #include <Types.h>
 #include "FileType.h"
 #include "FileMode.h"
@@ -41,7 +40,7 @@ FileSystemAction;
 /**
  * FileSystem IPC message.
  */
-typedef struct FileSystemMessage : public Message
+typedef struct FileSystemMessage
 {
     /** 
      * Assignment operator. 
@@ -50,7 +49,6 @@ typedef struct FileSystemMessage : public Message
     void operator = (FileSystemMessage *m)
     {
         from        = m->from;
-        type        = m->type;
         action      = m->action;
         result      = m->result;
         buffer      = m->buffer;
@@ -73,9 +71,11 @@ typedef struct FileSystemMessage : public Message
     bool operator == (FileSystemMessage *m)
     {
         return this->from   == m->from &&
-               this->type   == m->type &&
                this->action == m->action;
     }
+
+    /** Source of the message */
+    ProcessID from;
 
     /** Action to perform. */
     FileSystemAction action;

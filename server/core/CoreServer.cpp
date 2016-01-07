@@ -15,11 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
 #include <FreeNOS/System.h>
 #include <ExecutableFormat.h>
 #include "CoreServer.h"
-#include "CoreMessage.h"
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -33,8 +31,10 @@
 
 const char * CoreServer::kernelPath = "/boot/kernel";
 
+#warning reimplement CoreServer such that it inherits from FileSystemServer to avoid FileSystemMessage!=CoreMessage conflict in ChannelClient
+
 CoreServer::CoreServer()
-    : IPCServer<CoreServer, CoreMessage>(this)
+    : ChannelServer<CoreServer, FileSystemMessage>(this)
 {
     /*
      * TODO:
@@ -59,15 +59,15 @@ CoreServer::CoreServer()
 #endif
 
     // Register IPC handlers
-    addIPCHandler(GetCoreCount,  &CoreServer::getCoreCount);
+    addIPCHandler(ReadFile,  &CoreServer::getCoreCount);
 
     // TODO: hack: because of waitpid() we must send the reply manually before waitpid().
-    addIPCHandler(CreateProcess, &CoreServer::createProcess, false);
+    addIPCHandler(CreateFile, &CoreServer::createProcess, false);
 }
 
 int CoreServer::runCore()
 {
-    CoreMessage msg;
+    FileSystemMessage msg;
 
     if (m_info.coreId == 0)
         return run();
@@ -75,98 +75,106 @@ int CoreServer::runCore()
     while (true)
     {
         // wait from a message of the master core
-        m_fromMaster->read(&msg);
+        // TODO: replace with ChannelClient::syncReceiveFrom
+        while (m_fromMaster->read(&msg) != Channel::Success);
 
-        if (ipcHandlers->at(msg.action))
+        if (m_ipcHandlers->at(msg.action))
         {
-            sendReply = ipcHandlers->at(msg.action)->sendReply;
-            (this->*(ipcHandlers->at(msg.action))->exec)(&msg);
+            m_sendReply = m_ipcHandlers->at(msg.action)->sendReply;
+            (this->*(m_ipcHandlers->at(msg.action))->exec)(&msg);
 
-            if (sendReply)
-                m_toMaster->write(&msg);
+            if (m_sendReply)
+            {
+                // TODO: same
+                while (m_toMaster->write(&msg) != Channel::Success);
+            }
         }
     }
 }
 
-void CoreServer::createProcess(CoreMessage *msg)
+void CoreServer::createProcess(FileSystemMessage *msg)
 {
     char cmd[128];
     Memory::Range range;
 
     if (m_info.coreId == 0)
     {
-        MemoryChannel *ch = (MemoryChannel *) m_toSlave->get(msg->coreId);
+        MemoryChannel *ch = (MemoryChannel *) m_toSlave->get(msg->size);
 
         if (!ch)
         {
-            ERROR("invalid coreId=" << msg->coreId);
+            ERROR("invalid coreId=" << msg->size);
             msg->result = EBADF;
             return;
         }
 
         // TODO:move in libmpi?
-        range.virt = msg->program;
+        range.virt = (Address) msg->buffer;
         VMCtl(msg->from, LookupVirtual, &range);
-        msg->program = range.phys;
+        msg->buffer = (char *) range.phys;
 
-        range.virt = (Address) msg->programCommand;
+        range.virt = (Address) msg->path;
         VMCtl(msg->from, LookupVirtual, &range);
-        msg->programCommand = (char *) range.phys;
+        msg->path = (char *) range.phys;
 
         if (ch->write(msg) != Channel::Success)
         {
-            ERROR("failed to write channel on core"<<msg->coreId);
+            ERROR("failed to write channel on core"<<msg->size);
             msg->result = EBADF;
             return;
         }
-        DEBUG("creating program at phys " << (void *) msg->program << " on core" << msg->coreId);
+        DEBUG("creating program at phys " << (void *) msg->buffer << " on core" << msg->size);
 
-        ch = (MemoryChannel *) m_fromSlave->get(msg->coreId);
+        ch = (MemoryChannel *) m_fromSlave->get(msg->size);
         if (!ch)
         {
-            ERROR("cannot find read channel for core" << msg->coreId);
+            ERROR("cannot find read channel for core" << msg->size);
             msg->result = EBADF;
             return;
         }
-        ch->read(msg);
-        DEBUG("program created with result " << (int)msg->result << " at core" << msg->coreId);
+        // TODO: replace with ChannelClient::syncReceiveFrom
+        while (ch->read(msg) != Channel::Success);
+        DEBUG("program created with result " << (int)msg->result << " at core" << msg->size);
 
         msg->result = ESUCCESS;
-        IPCMessage(msg->from, API::Send, msg, sizeof(*msg));
+        //IPCMessage(msg->from, API::Send, msg, sizeof(*msg));
+        ChannelClient::instance->syncSendTo(msg, msg->from);
     }
     else
     {
-        VMCopy(SELF, API::ReadPhys, (Address) cmd, (Address) msg->programCommand, sizeof(cmd));
+        VMCopy(SELF, API::ReadPhys, (Address) cmd, (Address) msg->path, sizeof(cmd));
 
-        range.phys   = msg->program;
+        range.phys   = (Address) msg->buffer;
         range.virt   = 0;
         range.access = Memory::Readable | Memory::User;
-        range.size   = msg->programSize;
+        range.size   = msg->offset;
         VMCtl(SELF, Map, &range);
 
-        pid_t pid = spawn(range.virt, msg->programSize, cmd);
+        pid_t pid = spawn(range.virt, msg->offset, cmd);
         int status;
 
         // reply to master
         msg->result = ESUCCESS;
-        m_toMaster->write(msg);
+        while (m_toMaster->write(msg) != Channel::Success);
 
         // TODO: temporary make coreserver waitpid() to save polling time
         waitpid(pid, &status, 0);
     }
 }
 
-void CoreServer::getCoreCount(CoreMessage *msg)
+void CoreServer::getCoreCount(FileSystemMessage *msg)
 {
+    DEBUG("");
+
     if (m_info.coreId == 0)
     {
 #ifdef INTEL
         if (m_cores)
-            msg->coreCount = m_cores->getCores().count();
+            msg->size = m_cores->getCores().count();
         else
-            msg->coreCount = 1;
+            msg->size = 1;
 #else
-        msg->coreCount = 1;
+        msg->size = 1;
 #endif
         msg->result = ESUCCESS;
     }
@@ -179,15 +187,15 @@ CoreServer::Result CoreServer::test()
 #ifdef INTEL
     if (m_info.coreId != 0)
     {
-        CoreMessage msg;
-        msg.action = Ping;
+        FileSystemMessage msg;
+        msg.action = StatFile;
         msg.path = (char *)0x12345678;
-        msg.coreId = m_info.coreId;
+        msg.size = m_info.coreId;
         m_toMaster->write(&msg);
     }
     else
     {
-        CoreMessage msg;
+        FileSystemMessage msg;
         Size numCores = m_cores->getCores().count();
 
         for (Size i = 1; i < numCores; i++)
@@ -196,8 +204,10 @@ CoreServer::Result CoreServer::test()
             if (!ch)
                 return IOError;
 
-            ch->read(&msg);
-            if (msg.action == Ping)
+            // TODO: replace with ChannelClient::syncReceiveFrom
+            while (ch->read(&msg) != Channel::Success);
+
+            if (msg.action == StatFile)
             {
                 NOTICE("core" << i << " send a Ping");
             }
@@ -410,6 +420,8 @@ CoreServer::Result CoreServer::discover()
             info->coreChannelAddress = info->bootImageAddress + info->bootImageSize;
             info->coreChannelAddress += PAGESIZE - (info->bootImageSize % PAGESIZE);
             info->coreChannelSize    = PAGESIZE * 4;
+            clearPages(info->coreChannelAddress, info->coreChannelSize);
+
             m_kernel->entry(&info->kernelEntry);
             info->timerCounter = sysInfo.timerCounter;
             strlcpy(info->kernelCommand, kernelPath, KERNEL_PATHLEN);
@@ -443,6 +455,22 @@ CoreServer::Result CoreServer::bootAll()
     return Success;
 }
 
+CoreServer::Result CoreServer::clearPages(Address addr, Size size)
+{
+    Memory::Range range;
+
+    range.phys = addr;
+    range.virt = ZERO;
+    range.size = size;
+    range.access = Memory::User | Memory::Readable | Memory::Writable;
+    VMCtl(SELF, Map, &range);
+
+    MemoryBlock::set((void *) range.virt, 0, size);
+
+    VMCtl(SELF, UnMap, &range);
+    return Success;
+}
+
 CoreServer::Result CoreServer::setupChannels()
 {
 #ifdef INTEL
@@ -460,16 +488,16 @@ CoreServer::Result CoreServer::setupChannels()
             MemoryChannel *ch = new MemoryChannel();
             CoreInfo *coreInfo = (CoreInfo *) m_coreInfo->get(i);
             ch->setMode(Channel::Producer);
-            ch->setMessageSize(sizeof(CoreMessage));
-            ch->setData(coreInfo->coreChannelAddress + (PAGESIZE * 2));
-            ch->setFeedback(coreInfo->coreChannelAddress + (PAGESIZE * 3));
+            ch->setMessageSize(sizeof(FileSystemMessage));
+            ch->setPhysical(coreInfo->coreChannelAddress + (PAGESIZE * 2),
+                            coreInfo->coreChannelAddress + (PAGESIZE * 3));
             m_toSlave->insert(i, *ch);
 
             ch = new MemoryChannel();
             ch->setMode(Channel::Consumer);
-            ch->setMessageSize(sizeof(CoreMessage));
-            ch->setData(coreInfo->coreChannelAddress);
-            ch->setFeedback(coreInfo->coreChannelAddress + PAGESIZE);
+            ch->setMessageSize(sizeof(FileSystemMessage));
+            ch->setPhysical(coreInfo->coreChannelAddress,
+                            coreInfo->coreChannelAddress + PAGESIZE);
             m_fromSlave->insert(i, *ch);
         }
     }
@@ -477,15 +505,15 @@ CoreServer::Result CoreServer::setupChannels()
     {
         m_toMaster = new MemoryChannel();
         m_toMaster->setMode(Channel::Producer);
-        m_toMaster->setMessageSize(sizeof(CoreMessage));
-        m_toMaster->setData(info.coreChannelAddress);
-        m_toMaster->setFeedback(info.coreChannelAddress + PAGESIZE);
+        m_toMaster->setMessageSize(sizeof(FileSystemMessage));
+        m_toMaster->setPhysical(info.coreChannelAddress,
+                                info.coreChannelAddress + PAGESIZE);
 
         m_fromMaster = new MemoryChannel();
         m_fromMaster->setMode(Channel::Consumer);
-        m_fromMaster->setMessageSize(sizeof(CoreMessage));
-        m_fromMaster->setData(info.coreChannelAddress + (PAGESIZE * 2));
-        m_fromMaster->setFeedback(info.coreChannelAddress + (PAGESIZE *3));
+        m_fromMaster->setMessageSize(sizeof(FileSystemMessage));
+        m_fromMaster->setPhysical(info.coreChannelAddress + (PAGESIZE * 2),
+                                  info.coreChannelAddress + (PAGESIZE * 3));
     }
 #endif /* INTEL */
     return Success;

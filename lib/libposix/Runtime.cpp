@@ -15,16 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
 #include <FreeNOS/System.h>
 #include <Types.h>
 #include <Macros.h>
 #include <Vector.h>
+#include <ChannelClient.h>
 #include <PageAllocator.h>
 #include <PoolAllocator.h>
 #include <FileSystemMount.h>
+#include <FileSystemMessage.h>
 #include <MemoryMap.h>
-#include <CoreMessage.h>
 #include "FileDescriptor.h"
 #include "stdlib.h"
 #include "string.h"
@@ -130,6 +130,12 @@ void setupHeap()
     Allocator::setDefault(pool);
 }
 
+void setupChannels()
+{
+    ChannelClient *client = new ChannelClient();
+    ChannelClient::instance->setRegistry(new ChannelRegistry());
+}
+
 void setupMappings()
 {
     // Fill the mounts table
@@ -168,18 +174,17 @@ void setupMappings()
         return;
 
     // Inherit file descriptors, current directory, and more.
-    CoreMessage msg;
-    msg.type   = IPCType;
+    FileSystemMessage msg;
     msg.from   = SELF;
 
-    // NOTE: we "abuse" the CoreMessage for ipc with our parent...
-    IPCMessage(ppid, API::Receive, &msg, sizeof(msg));
+    // NOTE: we "abuse" the FileSystemMessage for ipc with our parent...
+    ChannelClient::instance->syncReceiveFrom(&msg, ppid);
 
     // Copy the file descriptors
     VMCopy(ppid, API::Read, (Address) files.vector(), (Address) msg.path, files.size() * sizeof(FileDescriptor));
 
     // Dummy reply, to tell our parent we received the fds.... very inefficient.
-    IPCMessage(ppid, API::Send, &msg, sizeof(msg));
+    ChannelClient::instance->syncSendTo(&msg, ppid);
 }
 
 ProcessID findMount(const char *path)
@@ -320,6 +325,7 @@ extern C void SECTION(".entry") _entry()
     /* Setup the heap, C++ constructors and default mounts. */
     setupHeap();
     runConstructors();
+    setupChannels();
     setupMappings();
 
     /* Allocate buffer for arguments. */

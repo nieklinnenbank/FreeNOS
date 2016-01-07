@@ -25,7 +25,7 @@
 
 #include <FreeNOS/System.h>
 #include <FreeNOS/API.h>
-#include <IPCServer.h>
+#include <ChannelServer.h>
 #include <List.h>
 #include <ListIterator.h>
 #include <String.h>
@@ -34,8 +34,8 @@
 #include <Index.h>
 #include <ExecutableFormat.h>
 #include <MemoryChannel.h>
+#include <FileSystemMessage.h>
 #include <CoreInfo.h>
-#include "CoreMessage.h"
 
 #ifdef INTEL
 #include <intel/IntelMP.h>
@@ -48,7 +48,7 @@
  * Each core in a system will run its own instance of CoreServer.
  * CoreServers will communicate and collaborate together to implement functionality.
  */
-class CoreServer : public IPCServer<CoreServer, CoreMessage>
+class CoreServer : public ChannelServer<CoreServer, FileSystemMessage>
 {
   private:
 
@@ -94,8 +94,11 @@ class CoreServer : public IPCServer<CoreServer, CoreMessage>
 
     Result setupChannels();
 
-    void getCoreCount(CoreMessage *msg);
-    void createProcess(CoreMessage *msg);
+    Result clearPages(Address addr, Size size);
+
+    void getCoreCount(FileSystemMessage *msg);
+
+    void createProcess(FileSystemMessage *msg);
 
 #ifdef INTEL
     IntelMP m_mp;

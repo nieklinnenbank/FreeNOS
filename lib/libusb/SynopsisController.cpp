@@ -123,7 +123,7 @@ Error SynopsisController::initialize()
     return ESUCCESS;
 }
 
-void SynopsisController::interruptHandler(InterruptMessage *msg)
+void SynopsisController::interruptHandler(Size vector)
 {
     DEBUG("coreint =" << m_io.read(CoreInterrupt));
 
@@ -152,7 +152,7 @@ void SynopsisController::interruptHandler(InterruptMessage *msg)
     ProcessCtl(SELF, EnableIRQ, InterruptNumber);
 
     // Post-process in libfs
-    return DeviceServer::interruptHandler(msg);
+    return DeviceServer::interruptHandler(vector);
 }
 
 void SynopsisController::hostPortChanged()

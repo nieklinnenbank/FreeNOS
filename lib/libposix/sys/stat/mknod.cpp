@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
+#include <FreeNOS/System.h>
 #include <FileSystemMessage.h>
 #include <FileType.h>
 #include <FileMode.h>
@@ -34,18 +34,17 @@ int mknod(const char *path, mode_t mode, dev_t dev)
     msg.deviceID = dev;
     msg.filetype = (FileType) ((mode >> FILEMODE_BITS) & FILETYPE_MASK);
     msg.mode     = (FileModes) (mode & FILEMODE_MASK);
-    msg.type     = IPCType;
     
     /* Ask FileSystem to create the file for us. */
     if (mnt)
     {
-	IPCMessage(mnt, API::SendReceive, &msg, sizeof(msg));
-    
-	/* Set errno. */
-	errno = msg.result;
+        ChannelClient::instance->syncSendReceive(&msg, mnt);
+
+        // Set errno
+        errno = msg.result;
     }
     else
-	errno = ENOENT;
+        errno = ENOENT;
 
     /* Report result. */
     return msg.result == ESUCCESS ? 0 : -1;

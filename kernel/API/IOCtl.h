@@ -18,7 +18,6 @@
 #ifndef __API_IOCTL_H
 #define __API_IOCTL_H
 
-#include <FreeNOS/API.h>
 #include <FreeNOS/System.h>
 
 /**  

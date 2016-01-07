@@ -15,42 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
-#include <MemoryChannel.h>
-#include <FileSystemMessage.h>
-#include <Types.h>
-#include <Log.h>
 #include <KernelLog.h>
-#include <stdio.h>
+#include <stdlib.h>
 
 int main(int argc, char **argv)
 {
     KernelLog log;
     log.setMinimumLogLevel(Log::Debug);
 
-    // Sleep inifinite. We only return in case the process is
-    // woken up by an external (wakeup) interrupt.
-    DEBUG("WaitTimer");
-    Error r = ProcessCtl(SELF, WaitTimer, 0);
-    DEBUG("WaitTimer returned: " << (int)r);
-
-    // scan the VMShare table to find incoming/new MemoryChannel
-    MemoryShare share;
-    VMShare(SELF, API::Read, (Address) &share);
-    DEBUG("MemoryChannel at phys = " << (void *) share.range.phys << " and virt = " << (void *) share.range.virt);
-
-    // Assign memory channel
-    FileSystemMessage msg;
-    MemoryChannel chan;
-    chan.setMode(Channel::Consumer);
-    chan.setMessageSize(sizeof(msg));
-    chan.setData(share.range.phys/*virt*/);
-    chan.setFeedback(share.range.phys/*virt*/ + PAGESIZE);
-
-    // Receive message
-    DEBUG("receiving");
-    chan.read(&msg);
-    DEBUG("received message: " << (void *) msg.offset);
-    printf("ipctest-server: received message: %x\n", msg.offset);
+#if 0
+    ChannelServer server;
+    if (server.initialize() != ChannelServer::Success)
+    {
+        ERROR("failed to initialize");
+        return EXIT_FAILURE;
+    }
+    return server.run();
+#endif
     return 0;
 }

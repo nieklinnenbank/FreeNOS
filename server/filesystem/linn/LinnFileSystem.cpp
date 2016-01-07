@@ -37,7 +37,7 @@ int main(int argc, char **argv)
     if (info.coreId != 0)
         return EXIT_SUCCESS;
 
-    log.setMinimumLogLevel(Log::Debug);
+    log.setMinimumLogLevel(Log::Notice);
 
     // Mount the given file, or try to use the BootImage embedded rootfs
     if (argc > 3)

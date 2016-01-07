@@ -67,9 +67,9 @@ void DeviceServer::registerInterrupt(Device *dev, Size vector)
     addIRQHandler(vector, (IRQHandlerFunction) &DeviceServer::interruptHandler);
 }
 
-void DeviceServer::interruptHandler(InterruptMessage *msg)
+void DeviceServer::interruptHandler(Size vector)
 {
-    List<Device *> *lst = m_interrupts.at(msg->vector);
+    List<Device *> *lst = m_interrupts.at(vector);
 
     // Do we have any Devices with this interrupt vector?
     if (lst)
@@ -77,7 +77,7 @@ void DeviceServer::interruptHandler(InterruptMessage *msg)
         // Loop all Devices of interest. Invoke callback.
         for (ListIterator<Device *> i(lst); i.hasCurrent(); i++)
         {
-            i.current()->interrupt(msg->vector);
+            i.current()->interrupt(vector);
         }
     }
 

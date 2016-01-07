@@ -15,12 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
+#include <FreeNOS/System.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <FileSystemMessage.h>
 #include <MemoryChannel.h>
+#include <ChannelClient.h>
+#include <ChannelRegistry.h>
 
 char cmd[PAGESIZE];
 
@@ -54,52 +57,39 @@ int main(int argc, char **argv)
     }
     printf("%s: found ipctest server at PID %d\n", argv[0], pid);
 
-    // Call VMShare to create shared memory mapping for MemoryChannel.
-    Memory::Range range;
-    range.size = PAGESIZE * 4;
-    range.virt = 0;
-    range.phys = 0;
-    range.access = Memory::User | Memory::Readable | Memory::Writable | Memory::Uncached;
+    ChannelRegistry reg;
+    ChannelClient client;
+    client.setRegistry(&reg);
 
-    // Create shared memory mapping
-    Error r = VMShare(pid, API::Create, (Address) &range);
-    if (r != API::Success)
+    if (client.connect(pid) != ChannelClient::Success)
     {
-        printf("%s: VMShare() failed with result = %d\n", argv[0], r);
+        printf("%s: failed to connect to PID %d\n", argv[0], pid);
         return 1;
     }
-    printf("%s: mapped shared at: phys=%u virt=%u\n", argv[0], range.phys, range.virt);
-
-    //Address shares;
-    //VMShare(SELF, API::Read, (Address) &shares);
+    printf("%s: connected to PID %d\n", argv[0], pid);
 
     FileSystemMessage msg;
-    MemoryChannel send;
-    send.setMessageSize(sizeof(msg));
-    send.setMode(Channel::Producer);
-
-    if (send.setData(range.phys/*virt*/) != MemoryChannel::Success)
-    {
-        printf("%s: setData failed\n", argv[0]);
-        return 1;
-    }
-    send.setFeedback(range.phys/*virt*/ + PAGESIZE);
 
     printf("%s: wakeup ipctest server..\n", argv[0]);
     ProcessCtl(pid, Resume, 0);
 
-
     msg.offset = 0x12345678;
     printf("%s: writing message..\n", argv[0]);
-    send.write(&msg);
+    if (client.syncSendTo(&msg, pid) != ChannelClient::Success)
+    {
+        printf("%s: failed to send message to PID %d\n", argv[0], pid);
+        return 1;
+    }
     printf("%s: write finished\n", argv[0]);
+    printf("%s: receiving reply\n", argv[0]);
+    // TODO: make the wakeup a counter?
+    ProcessCtl(pid, Resume, 0);
 
-
-
-    // TODO: Wake up the ipctest server (interrupt) to ensure
-    // it sees the new shared mapping for the MemoryChannel.
-
-    // TODO: send message in the memory channel
-
+    if (client.syncReceiveFrom(&msg, pid) != ChannelClient::Success)
+    {
+        printf("%s: failed to receive message from PID %d\n", argv[0], pid);
+        return 1;
+    }
+    printf("%s: received reply with result = %d\n", argv[0], msg.result);
     return 0;
 }

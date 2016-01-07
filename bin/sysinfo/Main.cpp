@@ -15,9 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
-#include <CoreMessage.h>
+#include <FreeNOS/System.h>
+#include <FileSystemMessage.h>
 #include <Timer.h>
+#include <ChannelClient.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -26,15 +27,14 @@
 int main(int argc, char **argv)
 {
     SystemInformation info;
-    CoreMessage msg;
+    FileSystemMessage msg;
     Timer::Info timer;
     struct timeval tv;
     struct timezone tz;
 
-    msg.action = GetCoreCount;
-    msg.type = IPCType;
+    msg.action = ReadFile;
     msg.from = SELF;
-    IPCMessage(CORESRV_PID, API::SendReceive, &msg, sizeof(msg));
+    ChannelClient::instance->syncSendReceive(&msg, CORESRV_PID);
 
     ProcessCtl(SELF, InfoTimer, (Address) &timer);
     gettimeofday(&tv, &tz);
@@ -46,7 +46,7 @@ int main(int argc, char **argv)
            "Uptime:           %l.%us\r\n",
             info.memorySize / 1024,
             info.memoryAvail / 1024,
-            msg.coreCount,
+            msg.size,
             (u32) timer.ticks,
             timer.frequency,
             (u32) tv.tv_sec, tv.tv_usec);

@@ -18,6 +18,7 @@
 #ifndef __LIBIPC_MEMORYCHANNEL_H
 #define __LIBIPC_MEMORYCHANNEL_H
 
+#include <FreeNOS/System.h>
 #include <Types.h>
 #include "Channel.h"
 
@@ -50,22 +51,45 @@ class MemoryChannel : public Channel
     MemoryChannel();
 
     /**
-     * Set data page address.
-     *
-     * @param addr Physical memory address of the data page.
-     *             Read/Write for the producer, Read-only for the consumer.
-     * @return Result code.
+     * Destructor.
      */
-    Result setData(Address addr);
+    virtual ~MemoryChannel();
 
     /**
-     * Set feedback page address.
+     * Set memory pages by virtual address.
      *
-     * @param addr Physical memory address of the feedback page.
-     *             Read/Write for the consumer, Read-only for the producer.
+     * This function assumes that the given virtual addresses
+     * are already mapped into the associated address space.
+     *
+     * @param data Virtual memory address of the data page.
+     *             Read/Write for the producer, Read-only for the consumer.
+     * @param feedback Virtual memory address of the feedback page.
+     *        Read/write for the consumer, read-only for the producer.
      * @return Result code.
      */
-    Result setFeedback(Address addr);
+    Result setVirtual(Address data, Address feedback);
+
+    /**
+     * Set memory pages by physical address.
+     *
+     * This function maps the given physical addresses
+     * into the current address space using IO::map.
+     *
+     * @param data Physical memory address of the data page.
+     *             Read/Write for the producer, Read-only for the consumer.
+     * @param feedback Physical memory address of the feedback page.
+     *        Read/write for the consumer, read-only for the producer.
+     * @return Result code.
+     */
+    Result setPhysical(Address data, Address feedback);
+
+    /**
+     * Set message size.
+     *
+     * @param size New message size.
+     * @return Result code.
+     */
+    virtual Result setMessageSize(Size size);
 
     /**
      * Read a message.
@@ -82,6 +106,15 @@ class MemoryChannel : public Channel
      * @return Result code.
      */
     virtual Result write(void *buffer);
+
+    /**
+     * Flush message buffers.
+     *
+     * Ensures that all messages are written through caches.
+     *
+     * @return Result code.
+     */
+    virtual Result flush();
 
     bool operator == (const MemoryChannel & ch) const
     {
@@ -106,4 +139,3 @@ class MemoryChannel : public Channel
 };
 
 #endif /* __LIBIPC_MEMORYCHANNEL_H */
-

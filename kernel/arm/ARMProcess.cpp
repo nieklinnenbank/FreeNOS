@@ -74,8 +74,10 @@ Process::Result ARMProcess::initialize()
     stack[0] = m_userStack; /* user program SP */
     stack[1] = 0;           /* user program LR */
     stack+=15;
-    stack[0] = m_entry;       /* user program entry (PC) */
-    return Success;
+    stack[0] = m_entry;     /* user program entry (PC) */
+
+    // Finalize with generic initialization
+    return Process::initialize();
 }
 
 ARMProcess::~ARMProcess()

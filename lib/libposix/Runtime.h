@@ -22,6 +22,7 @@
 #include <Types.h>
 #include <Vector.h>
 #include <String.h>
+#include <ChannelClient.h>
 #include "FileSystemMount.h"
 #include "FileDescriptor.h"
 

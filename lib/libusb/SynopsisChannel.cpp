@@ -16,7 +16,6 @@
  */
 
 #include <FreeNOS/System.h>
-#include <FreeNOS/API.h>
 #include <errno.h>
 #include "SynopsisChannel.h"
 #include "USBDescriptor.h"

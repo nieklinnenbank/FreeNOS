@@ -18,6 +18,10 @@
 #ifndef __KERNEL_API_H
 #define __KERNEL_API_H
 
+#ifndef __SYSTEM
+#error Do not include FreeNOS/API.h directly, use FreeNOS/System.h instead
+#endif
+
 #include <Log.h>
 #include <Types.h>
 #include <Vector.h>
@@ -42,14 +46,13 @@ class API
      */
     typedef enum Number
     {
-        IPCMessageNumber = 1,
-        PrivExecNumber   = 2,
-        ProcessCtlNumber = 3,
-        SystemInfoNumber = 4,        
-        VMCopyNumber     = 5,
-        VMCtlNumber      = 6,
-        VMShareNumber    = 7,
-        IOCtlNumber      = 8
+        PrivExecNumber = 1,
+        ProcessCtlNumber,
+        SystemInfoNumber,
+        VMCopyNumber,
+        VMCtlNumber,
+        VMShareNumber,
+        IOCtlNumber
     }
     Number;
 
@@ -63,7 +66,9 @@ class API
         RangeError      = -2,
         NotFound        = -3,
         InvalidArgument = -4,
-        OutOfMemory     = -5
+        OutOfMemory     = -5,
+        IOError         = -6,
+        AlreadyExists   = -7
     }
     Error;
 
@@ -117,7 +122,6 @@ Log & operator << (Log &log, API::Operation op);
  * Include generic kernel API functions.
  */
 
-#include "API/IPCMessage.h"
 #include "API/PrivExec.h"
 #include "API/ProcessCtl.h"
 #include "API/SystemInfo.h"

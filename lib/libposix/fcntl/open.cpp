@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
+#include <FreeNOS/System.h>
 #include <FileSystemMessage.h>
 #include "Runtime.h"
 #include "errno.h"
@@ -35,19 +35,18 @@ int open(const char *path, int oflag, ...)
     msg.action = StatFile;
     msg.path   = (char *) path;
     msg.stat   = &st;
-    msg.type   = IPCType;
 
     // Ask the FileSystem for the file.
     if (mnt)
     {
-        IPCMessage(mnt, API::SendReceive, &msg, sizeof(msg));
+        ChannelClient::instance->syncSendReceive(&msg, mnt);
 
         // Refresh mounts and retry, in case the file did not exist
         if (msg.result == ENOENT)
         {
             refreshMounts(0);
             mnt = findMount(path);
-            IPCMessage(mnt, API::SendReceive, &msg, sizeof(msg));
+            ChannelClient::instance->syncSendReceive(&msg, mnt);
         }
     
         // Set errno

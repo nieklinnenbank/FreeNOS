@@ -18,5 +18,5 @@
 Import('build_env')
 
 env = build_env.Clone()
-env.UseLibraries(['libstd', 'libarch'])
+env.UseLibraries(['libstd', 'libarch', 'libfs'])
 env.TargetLibrary('libipc', [ Glob('*.cpp') ])

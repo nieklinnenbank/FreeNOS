@@ -42,7 +42,8 @@ int MPI_Recv(void *buf,
 
     for (int i = 0; i < count; i++)
     {
-        ch->read(&msg);
+        // TODO: replace with ChannelClient::syncReceiveFrom
+        while (ch->read(&msg) != Channel::Success);
         *(((int *) buf) + i) = msg.integer;
     }
     return MPI_SUCCESS;

@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
-#include <IPCServer.h>
+#include <FreeNOS/System.h>
 #include <Vector.h>
 #include <HashTable.h>
 #include <HashIterator.h>
@@ -27,7 +26,7 @@
 #include "FileSystem.h"
 
 FileSystem::FileSystem(const char *path)
-    : IPCServer<FileSystem, FileSystemMessage>(this)
+    : ChannelServer<FileSystem, FileSystemMessage>(this)
 {
     // Set members
     m_root      = 0;
@@ -157,10 +156,10 @@ Error FileSystem::processRequest(FileSystemRequest *req)
                     (Address) msg->path, PATHLEN)) <= 0)
     {
         msg->result = EACCES;
-        msg->type = IPCType;
-        IPCMessage(msg->from, API::Send, msg, sizeof(*msg));
+        m_registry->getProducer(msg->from)->write(msg);
         return msg->result;
     }
+    DEBUG(m_self << ": path = " << buf << " action = " << msg->action);
 
     path.parse(buf + strlen(m_mountPath));
 
@@ -173,9 +172,9 @@ Error FileSystem::processRequest(FileSystemRequest *req)
     // File not found
     else if (msg->action != CreateFile)
     {
+        DEBUG(m_self << ": not found");
         msg->result = ENOENT;
-        msg->type = IPCType;
-        IPCMessage(msg->from, API::Send, msg, sizeof(*msg));
+        m_registry->getProducer(msg->from)->write(msg);
         return msg->result;
     }
 
@@ -207,6 +206,7 @@ Error FileSystem::processRequest(FileSystemRequest *req)
                 else
                     msg->result = EIO;
             }
+            DEBUG(m_self << ": create = " << (int)msg->result);
             break;
 
         case DeleteFile:
@@ -217,10 +217,12 @@ Error FileSystem::processRequest(FileSystemRequest *req)
             }
             else
                 msg->result = ENOTEMPTY;
+            DEBUG(m_self << ": delete = " << (int)msg->result);
             break;
 
         case StatFile:
             msg->result = file->status(msg);
+            DEBUG(m_self << ": stat = " << (int)msg->result);
             break;
 
         case ReadFile:
@@ -229,6 +231,7 @@ Error FileSystem::processRequest(FileSystemRequest *req)
                 if (req->getBuffer().getCount())
                     req->getBuffer().flush();
             }
+            DEBUG(m_self << ": read = " << (int)msg->result);
             break;
         
         case WriteFile:
@@ -238,14 +241,14 @@ Error FileSystem::processRequest(FileSystemRequest *req)
 
                 msg->result = file->write(req->getBuffer(), msg->size, msg->offset);
             }
+            DEBUG(m_self << ": write = " << (int)msg->result);
             break;
     }
 
     // Only send reply if completed (not EAGAIN)
     if (msg->result != EAGAIN)
     {
-        msg->type = IPCType;
-        IPCMessage(msg->from, API::Send, msg, sizeof(*msg));
+        m_registry->getProducer(msg->from)->write(msg);
     }
     return msg->result;
 }

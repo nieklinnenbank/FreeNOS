@@ -18,7 +18,7 @@
 #ifndef __API_PROCESSCTL_H
 #define __API_PROCESSCTL_H
 
-#include <FreeNOS/API.h>
+#include <FreeNOS/System.h>
 #include <FreeNOS/Process.h>
 #include <Types.h>
 
@@ -43,7 +43,7 @@ typedef enum ProcessOperation
     InfoPID,
     WaitPID,
     InfoTimer,
-    WaitTimer,
+    EnterSleep,
     Schedule,
     Resume,
     SetStack

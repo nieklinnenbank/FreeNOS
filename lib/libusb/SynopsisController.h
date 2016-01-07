@@ -171,9 +171,9 @@ class SynopsisController : public USBController
     /**
      * Interrupt request handler.
      *
-     * @param msg Incoming message from the kernel.
+     * @param vector Interrupt vector
      */
-    virtual void interruptHandler(InterruptMessage *msg);
+    virtual void interruptHandler(Size vector);
 
     /**
      * Called when the Host Port status changes.
