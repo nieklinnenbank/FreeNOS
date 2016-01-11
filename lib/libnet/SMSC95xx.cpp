@@ -72,7 +72,56 @@ Error SMSC95xx::initialize()
 
 Error SMSC95xx::read(IOBuffer & buffer, Size size, Size offset)
 {
-    return ENOTSUP;
+    DEBUG("size = " << size);
+
+    // Check packet size
+    if (size > m_packetSize - ReceiveCommandSize)
+    {
+        ERROR("packet size too large: " << size);
+        return ERANGE;
+    }
+#warning TODO: implement this in a separate circular buffer which is always processed by the driver
+#warning and then copied to the user (via filter rules etc) when needed
+    DEBUG("begin receive transfer at endpoint addr: " << (m_endpoints[0].endpointAddress & 0xf) << " maxpacketsize: " << m_endpoints[0].maxPacketSize);
+
+    Size rxSize = SMSC9512_DEFAULT_HS_BURST_CAP_SIZE; //size + ReceiveCommandSize;
+    Size frameLength = 0;
+    u8 *data = m_packet;
+
+    Error r = transfer(USBTransfer::Bulk,
+             USBTransfer::In,
+             m_endpoints[0].endpointAddress & 0xf,
+             m_packet,
+             rxSize,
+             m_endpoints[0].maxPacketSize);
+
+    if (r != ESUCCESS)
+    {
+        ERROR("receive packet bulk in transfer failed");
+        return r;
+    }
+
+#warning How to represent multiple packets in one buffer? Perhaps pad each packet to PAGESIZE boundaries, or prefix with a libnet specific header?
+
+    // Extract packets and copy to the user
+    for (Size i = 0; i < rxSize; i += frameLength)
+    {
+        u32 receiveCmd = data[0] | data[1] << 8 | data[2] << 16 | data[3] << 24;
+        frameLength = (receiveCmd & RxCommandFrameLength) >> 16;
+
+        if (frameLength == 0)
+        {
+            ERROR("invalid zero framelength");
+            return EIO;
+        }
+        DEBUG("packet is " << frameLength << " bytes long");
+        buffer.write(data + ReceiveCommandSize, frameLength);
+        return frameLength;
+    }
+
+    // TODO: extract frame info. copy to the user
+    DEBUG("done with result: " << (int) r);
+    return r;
 }
 
 Error SMSC95xx::write(IOBuffer & buffer, Size size, Size offset)

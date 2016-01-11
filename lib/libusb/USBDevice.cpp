@@ -32,18 +32,15 @@ USBDevice::USBDevice(u8 deviceId, const char *busPath)
     m_transferFile = -1;
     m_device = new USBDescriptor::Device;
     m_config = new USBDescriptor::Configuration;
-    m_interface = new USBDescriptor::Interface;
 
     MemoryBlock::set(m_device, 0, sizeof(*m_device));
     MemoryBlock::set(m_config, 0, sizeof(*m_config));
-    MemoryBlock::set(m_interface, 0, sizeof(*m_interface));
 }
 
 USBDevice::~USBDevice()
 {
     delete m_device;
     delete m_config;
-    delete m_interface;
 }
 
 Error USBDevice::initialize()
@@ -98,6 +95,12 @@ Error USBDevice::initialize()
         ERROR("failed to get configuration descriptor");
         return EIO;
     }
+    // Check configuration length
+    if (m_config->totalLength < sizeof(USBDescriptor::Configuration))
+    {
+        ERROR("invalid size for configuration descriptor: " << m_config->totalLength);
+        return EIO;
+    }
 
     // Set address of the USB device.
     if (setAddress(actualId) != ESUCCESS)
@@ -116,6 +119,69 @@ Error USBDevice::initialize()
     // Retrieve the full configuration descriptor, which
     // includes other descriptors (interface and endpoints)
     // just after the configuration descriptor.
+    Address desc = (Address) new u8[m_config->totalLength];
+    if (!desc)
+    {
+        ERROR("failed to allocate descriptors buffer");
+        return EIO;
+    }
+    if (getConfigDescriptor((USBDescriptor::Configuration *) desc, m_config->totalLength) != ESUCCESS)
+    {
+        ERROR("failed to get full configuration descriptors");
+        return EIO;
+    }
+
+    // Parse all descriptors received
+    for (Size offset = 0; offset < m_config->totalLength;)
+    {
+        USBDescriptor::Configuration *conf = (USBDescriptor::Configuration *) (desc + offset);
+        switch (conf->descriptorType)
+        {
+            case USBDescriptor::DeviceType:
+                DEBUG("::Device at " << offset);
+                offset += conf->length;
+                break;
+
+            case USBDescriptor::ConfigurationType:
+                DEBUG("::Configuration at " << offset);
+                offset += conf->length;
+                break;
+
+            case USBDescriptor::InterfaceType: {
+                DEBUG("::Interface at " << offset);
+                USBDescriptor::Interface *iface = (USBDescriptor::Interface *) (desc + offset);
+                m_interfaces.insert(*iface);
+                offset += iface->length;
+                break;
+            }
+            case USBDescriptor::EndpointType: {
+                USBDescriptor::Endpoint *ep = (USBDescriptor::Endpoint *) (desc + offset);
+                DEBUG("::Endpoint at " << offset << " addr = " << (ep->endpointAddress & 0xf) <<
+                      " dir = " << (ep->endpointAddress >> 7) << " attr = " << ((ep->attributes) & 0x3));
+                m_endpoints.insert(*ep);
+                offset += ep->length;
+                break;
+            }
+            case USBDescriptor::StringType: {
+                DEBUG("::String at " << offset);
+                USBDescriptor::String *str = (USBDescriptor::String *) (desc + offset);
+                m_strings.insert(*str);
+                offset += str->length;
+                break;
+            }
+            case USBDescriptor::HubType: {
+                DEBUG("::Hub at " << offset);
+                offset += conf->length;
+                break;
+            }
+            default: {
+                DEBUG("unknown descriptor at " << offset);
+                offset += conf->length;
+                break;
+            }
+        }
+    }
+
 #if 0
     getInterfaceDescriptor(m_interface);
 
@@ -144,7 +210,7 @@ Error USBDevice::getDeviceDescriptor(USBDescriptor::Device *desc, Size size)
                           desc, size);
 }
 
-Error USBDevice::getConfigDescriptor(USBDescriptor::Configuration *desc)
+Error USBDevice::getConfigDescriptor(USBDescriptor::Configuration *desc, Size size)
 {
     DEBUG("");
 
@@ -153,7 +219,7 @@ Error USBDevice::getConfigDescriptor(USBDescriptor::Configuration *desc)
                           USBTransfer::Standard,
                           USBTransfer::Device,
                           USBDescriptor::ConfigurationType << 8, 0,
-                          desc, sizeof(*desc));
+                          desc, size);
 }
 
 Error USBDevice::getInterfaceDescriptor(USBDescriptor::Interface *desc)
@@ -259,7 +325,8 @@ Error USBDevice::transfer(const USBTransfer::Type type,
                           const USBTransfer::Direction direction,
                           Address endpointId,
                           void *buffer,
-                          Size size)
+                          Size size,
+                          Size maxPacketSize)
 {
     DEBUG("");
 
@@ -268,9 +335,14 @@ Error USBDevice::transfer(const USBTransfer::Type type,
     msg.speed         = m_speed;
     msg.type          = type;
     msg.state         = USBMessage::Status;
-    msg.maxPacketSize = !m_device->maxPacketSize ? 8 : m_device->maxPacketSize;
+
+    if (maxPacketSize)
+        msg.maxPacketSize = maxPacketSize;
+    else
+        msg.maxPacketSize = !m_device->maxPacketSize ? 8 : m_device->maxPacketSize;
+
     msg.deviceId      = m_id;
-    msg.endpointId    = endpointId;
+    msg.endpointId    = endpointId & 0xf;
     msg.size          = size;
 
     // Use the physical address of the buffer
@@ -290,7 +362,6 @@ Error USBDevice::submit(USBMessage & msg)
     DEBUG("");
 
     // TODO: make this more efficient by doing a "special" readwrite() call? with IPCMessage(..., API::SendReceive, ...)
-
     // Make an USB transfer by writing the USB transfer file
     if (::write(m_transferFile, &msg, sizeof(msg)) != sizeof(msg))
     {
@@ -300,6 +371,5 @@ Error USBDevice::submit(USBMessage & msg)
     // Note that the USB controller will also implicitely write the
     // result of the transfer to the USBMessage buffer.
     DEBUG("transfer completed. USBMessage.state =" << (int)msg.state);
-
     return ESUCCESS;
 }

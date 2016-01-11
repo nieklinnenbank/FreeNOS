@@ -181,6 +181,8 @@ ChannelClient::Result ChannelClient::syncReceiveFrom(void *buffer, ProcessID pid
     if (!ch)
         return NotFound;
 
+#warning use Sleep instead to avoid unneeded spinning
+
     while (ch->read(buffer) != Channel::Success)
         ProcessCtl(SELF, Schedule, 0);
 

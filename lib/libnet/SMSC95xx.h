@@ -125,6 +125,30 @@ class SMSC95xx : public USBDevice
     /** Transmit Command Word size. */
     static const Size TransmitCommandSize = 8;
 
+    /**
+     * Receive Command Words.
+     */
+    enum ReceiveCommand
+    {    
+        RxCommandFilterFail      = 0x40000000,
+        RxCommandFrameLength     = 0x3fff0000,
+        RxCommandErrorSummary    = 0x00008000,
+        RxCommandBroadcastFrame  = 0x00002000,
+        RxCommandLengthError     = 0x00001000,
+        RxCommandRuntFrame       = 0x00000800,
+        RxCommandMulticastFrame  = 0x00000400,
+        RxCommandFrameTooLong    = 0x00000080,
+        RxCommandFrameCollision  = 0x00000040,
+        RxCommandFrameType       = 0x00000020,
+        RxCommandReceiveWatchdog = 0x00000010,
+        RxCommandMIIError        = 0x00000008,
+        RxCommandDribbling       = 0x00000004,
+        RxCommandCRCError        = 0x00000002
+    };
+
+    /** Receive Command Word size. */
+    static const Size ReceiveCommandSize = 4;
+
   public:
 
     /**

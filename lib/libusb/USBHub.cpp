@@ -154,14 +154,20 @@ Error USBHub::portAttach(u8 port)
     m_id = myId;
 
     // TODO: hardcoded assumption: SMSC95xx is on port 1 (or 3?) (raspberry pi)
-    const char * argv[] = { "/server/network/smsc95xx/server", 0 };
-
-    if (forkexec(argv[0], argv) == -1)
+    if (desc->vendorId == 1060 && desc->productId == 60416)
     {
-        ERROR("failed to start USB device driver: " << strerror(errno));
-        return EIO;
-    }
-    DEBUG("USB device driver started for port =" << port);
+        const char * argv[] = { "/server/network/smsc95xx/server", 0 };
 
+        if (forkexec(argv[0], argv) == -1)
+        {
+            ERROR("failed to start USB device driver: " << strerror(errno));
+            return EIO;
+        }
+        DEBUG("USB device driver started for port =" << port);
+    }
+    else
+    {
+        ERROR("no SMSC95xx found on port 1");
+    }
     return ESUCCESS;
 }

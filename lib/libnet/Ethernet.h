@@ -26,6 +26,9 @@
  */
 namespace Ethernet
 {
+    /** Size of the CRC checksum (which is set after the payload) */
+    static const Size CRCSize = 4;
+
     /**
      * Ethernet network address
      */

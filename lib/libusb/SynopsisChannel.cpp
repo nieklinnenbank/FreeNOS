@@ -101,6 +101,14 @@ SynopsisChannel::Result SynopsisChannel::interrupt()
         case USBMessage::Status:
             m_usb->state = USBMessage::Success;
 
+            // Only for IN transfers update the size field
+            // which represents the actual number of bytes transferred.
+            if (m_usb->direction == USBTransfer::In)
+            {
+                m_usb->size -= (m_io->read(m_base + ChannelTransfer) & 0x7ffff);
+                DEBUG("got " << m_usb->size << " bytes from IN transfer");
+            }
+
             // Reset state
             m_state = Idle;
             m_usb   = ZERO;
@@ -208,7 +216,7 @@ SynopsisChannel::Result SynopsisChannel::transfer(const FileSystemMessage *msg,
     if (!packetCount)
         packetCount = 1;
 
-    DEBUG("packets = " << packetCount);
+    DEBUG("packets = " << packetCount << " maxpacketsize = " << usb->maxPacketSize);
 
     // Program channel registers.
     m_io->write(m_base + Characteristics, (usb->endpointId << 11) |

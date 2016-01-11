@@ -61,7 +61,8 @@ class USBDevice : public Device
     /**
      * Get configuration descriptor.
      */
-    Error getConfigDescriptor(USBDescriptor::Configuration *desc);
+    Error getConfigDescriptor(USBDescriptor::Configuration *desc,
+                              Size size = sizeof(USBDescriptor::Configuration));
 
     /**
      * Get interface descriptor.
@@ -102,7 +103,8 @@ class USBDevice : public Device
                    const USBTransfer::Direction direction,
                    Address endpointId,
                    void *buffer,
-                   Size size);
+                   Size size,
+                   Size maxPacketSize = 0);
 
     /**
      * Submit a USB transfer to the Host controller.
@@ -127,11 +129,14 @@ class USBDevice : public Device
     /** USB configuration descriptor. */
     USBDescriptor::Configuration *m_config;
 
-    /** USB interface descriptor. */
-    USBDescriptor::Interface *m_interface;
+    /** USB interface descriptors. */
+    Index<USBDescriptor::Interface> m_interfaces;
 
     /** USB endpoint descriptors. */
     Index<USBDescriptor::Endpoint> m_endpoints;
+
+    /** USB string descriptor */
+    Index<USBDescriptor::String> m_strings;
 };
 
 #endif /* __LIBUSB_USBDEVICE_H */

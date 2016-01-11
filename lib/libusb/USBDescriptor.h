@@ -87,6 +87,15 @@ namespace USBDescriptor
         u8 interfaceSubClass;
         u8 interfaceProtocol;
         u8 interface;
+
+        // TODO: please fix libstd, such that this is not needed anymore.
+        bool operator == (const struct Interface & ep) const {
+            return ep.descriptorType == descriptorType;
+        }
+        bool operator != (const struct Interface & ep) const {
+            return ep.descriptorType != descriptorType;
+        }
+
     }
     PACKED Interface;
 
@@ -97,7 +106,7 @@ namespace USBDescriptor
     {
         u8  length;
         u8  descriptorType;
-        u8  endpointAddress;
+        u8  endpointAddress; /** @note: low 7 bits are the address, followed by direction (1 bit) */
         u8  attributes;
         u16 maxPacketSize;
         u8  interval;
@@ -135,6 +144,15 @@ namespace USBDescriptor
         u8  length;
         u8  descriptorType;
         u16 string[];
+
+        // TODO: please fix libstd, such that this is not needed anymore.
+        bool operator == (const struct String & ep) const {
+            return ep.descriptorType == descriptorType;
+        }
+        bool operator != (const struct String & ep) const {
+            return ep.descriptorType != descriptorType;
+        }
+
     }
     PACKED String;
 };
