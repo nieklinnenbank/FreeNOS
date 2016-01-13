@@ -293,6 +293,8 @@ template <class Base, class MsgType> class ChannelServer
                         {
                             ERROR(m_self << ": failed to send reply message to PID: " << i.key());
                         }
+                        else
+                            ProcessCtl(i.key(), Resume, 0);
                     }
                 }
             }

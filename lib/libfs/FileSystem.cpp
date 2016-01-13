@@ -175,6 +175,8 @@ Error FileSystem::processRequest(FileSystemRequest *req)
         DEBUG(m_self << ": not found");
         msg->result = ENOENT;
         m_registry->getProducer(msg->from)->write(msg);
+#warning put this in ChannelClient somehow
+        ProcessCtl(msg->from, Resume, 0);
         return msg->result;
     }
 
@@ -249,6 +251,7 @@ Error FileSystem::processRequest(FileSystemRequest *req)
     if (msg->result != EAGAIN)
     {
         m_registry->getProducer(msg->from)->write(msg);
+        ProcessCtl(msg->from, Resume, 0);
     }
     return msg->result;
 }

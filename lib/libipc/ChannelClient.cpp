@@ -184,7 +184,7 @@ ChannelClient::Result ChannelClient::syncReceiveFrom(void *buffer, ProcessID pid
 #warning use Sleep instead to avoid unneeded spinning
 
     while (ch->read(buffer) != Channel::Success)
-        ProcessCtl(SELF, Schedule, 0);
+        ProcessCtl(SELF, EnterSleep, 0);
 
     return Success;
 }
