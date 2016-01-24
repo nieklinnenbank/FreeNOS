@@ -20,6 +20,7 @@
 #include <string.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <Runtime.h>
 
 int statFile(char *prog, char *file)
 {
@@ -78,6 +79,8 @@ int main(int argc, char **argv)
 		argv[0]);
 	return EXIT_FAILURE;
     }    
+    refreshMounts(0);
+
     /* Perform a stat for each file. */
     for (int i = 0; i < argc - 1; i++)
     {

@@ -18,6 +18,8 @@
 Import('build_env')
 
 env = build_env.Clone()
-env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libarch', 'libexec' ])
+env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libarch', 'libexec', 'libfs', 'libipc' ])
 env.UseServers(['log', 'filesystem', 'core', 'pci'])
-env.TargetProgram('server', [Glob('*.cpp')])
+
+if env['ARCH'] == 'intel':
+    env.TargetProgram('server', [Glob('*.cpp')])

@@ -19,7 +19,7 @@ Import('build_env')
 
 env = build_env.Clone()
 env.Append(CPPPATH = [ '.' ])
-env.UseLibraries(['liballoc', 'libstd', 'libarch', 'libexec'])
+env.UseLibraries(['liballoc', 'libstd', 'libarch', 'libexec', 'libipc', 'libfs' ])
 env.UseServers([ 'filesystem', 'core', '' ])
 env.TargetLibrary('libposix', [ Glob('dirent/*.cpp'),
 				Glob('fcntl/*.cpp'),
@@ -28,11 +28,13 @@ env.TargetLibrary('libposix', [ Glob('dirent/*.cpp'),
 			        Glob('sys/stat/*.cpp'),
 				Glob('sys/utsname/*.cpp'),
 			        Glob('sys/wait/*.cpp'),
+                                Glob('sys/time/*.cpp'),
 				Glob('syslog/*.cpp'),
 				Glob('time/*.cpp'),
 				Glob('unistd/*.cpp'),
                                 Glob('stdio/*.cpp'),
 			        Glob('stdlib/*.cpp'),
 		    	        Glob('string/*.cpp'),
+                                Glob('math/*.cpp'),
 				Glob('*.cpp'),
                                 Glob('*.c') ])

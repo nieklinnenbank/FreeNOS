@@ -28,69 +28,61 @@
  */
 class ShellCommand
 {
-    public:
+  public:
 
-	/**
-	 * Constructor function.
-	 * @param name Unique name of the command.
-	 * @param minParams Minimum number of parameters required by this command.
-	 */
-	ShellCommand(const char *name, Size minParams = 0);
+    /**
+     * Constructor.
+     *
+     * @param name Unique name of the command.
+     * @param minParams Minimum number of parameters required by this command.
+     */
+    ShellCommand(const char *name, Size minParams = 0);
 
-	/**
-	 * Destructor function.
-	 */
-	virtual ~ShellCommand();
+    /**
+     * Destructor.
+     */
+    virtual ~ShellCommand();
 
-	/**
-	 * Fetch the name of this command.
-	 * @return Character array pointer.
-	 */
-	const char * getName()
-	{
-	    return name;
-	}
+    /**
+     * Get command name.
+     *
+     * @return Command name
+     */
+    const char * getName() const;
 
-	/**
-	 * Get the minimum number of parameters required.
-	 * @return Minimum number of parameters required.
-	 */
-	Size getMinimumParams()
-	{
-	    return minParams;
-	}
+    /**
+     * Get command help.
+     *
+     * @return Command help
+     */
+    const char * getHelp() const;
 
-	/**
-	 * Get the help string for this command.
-	 * @return Pointer to character string describing what the command does.
-	 */
-	virtual const char * help() = 0;
+    /**
+     * Get the minimum number of parameters required.
+     *
+     * @return Minimum number of parameters required.
+     */
+    Size getMinimumParams() const;
 
-	/**
-	 * Executes the command.
-	 * @param nparams Number of parameters given.
-	 * @param params Array of parameters.
-	 * @return Error code or zero on success.
-	 */
-	virtual int execute(Size nparams, char **params) = 0;
+    /**
+     * Executes the command.
+     *
+     * @param nparams Number of parameters given.
+     * @param params Array of parameters.
+     * @return Error code or zero on success.
+     */
+    virtual int execute(Size nparams, char **params) = 0;
 
-	/**
-	 * Lookup a command via it's name.
-	 * @param name Unique name of the command to find.
-	 * @return Pointer to a ShellCommand object if found, ZERO otherwise.
-	 */
-	static ShellCommand * byName(char *name);
+  protected:
 
-    protected:
+    /** Unique name of the command. */
+    const char *m_name;
 
-	/** Unique name of the command. */
-	const char *name;
+    /** Command help text. */
+    const char *m_help;
     
-	/** Minimum number of parameters required. */
-	Size minParams;
-    
-	/** All known ShellCommands. */
-	static HashTable<String, ShellCommand *> commands;
+    /** Minimum number of parameters required. */
+    Size m_minParams;
 };
 
 #endif /* __SH_SHELLCOMMAND */

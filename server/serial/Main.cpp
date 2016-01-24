@@ -24,7 +24,7 @@
 
 #ifdef BCM2835
 #include "PL011.h"
-#include <arm/BCM2835Interrupt.h>
+#include <arm/broadcom/BroadcomInterrupt.h>
 #else
 #include "i8250.h"
 #endif
@@ -48,11 +48,11 @@ uarts[] =
 
 int main(int argc, char **argv)
 {
-    DeviceServer server("serial", CharacterDeviceFile);
+    DeviceServer server("/dev/serial");
 
     /* Open the logging facilities. */
     Log *log = new KernelLog();
-    log->setMinimumLogLevel(Log::Info);
+    log->setMinimumLogLevel(Log::Notice);
 
 #ifdef BCM2835
     PL011 *dev = ZERO;
@@ -63,11 +63,16 @@ int main(int argc, char **argv)
     dev = new i8250(uarts[0].port, uarts[0].irq);
 #endif /* BCM2835 */
 
-    server.add(dev);
-    server.interrupt(dev, uarts[0].irq);
+    server.initialize();
+
+    server.insertFileCache(new Directory, "/serial0");
+    server.getRoot()->insert(DirectoryFile, "serial0");
+
+    server.registerDevice(dev, "/serial0/io");
+    server.registerInterrupt(dev, uarts[0].irq);
 #ifdef BCM2835
     // hack for ARM: it does not have IRQ_REQ(), so just take 0 for all IRQs
-    server.interrupt(dev, 0);
+    server.registerInterrupt(dev, 0);
 #endif
 
     /* Perform log. */
@@ -110,5 +115,5 @@ int main(int argc, char **argv)
     /*
      * Start serving requests.
      */
-    return server.run(argc, argv);
+    return server.run();
 }

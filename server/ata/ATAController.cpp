@@ -23,17 +23,20 @@
 
 int main(int argc, char **argv)
 {
-    DeviceServer server("ata", CharacterDeviceFile);
+    DeviceServer server("/dev/ata");
+    server.initialize();
 
     /* 
      * Start serving requests. 
      */
-    server.add(new ATAController);
-    return server.run(argc, argv);
+    server.registerDevice(new ATAController, "ata0");
+    return server.run();
 }
 
 ATAController::ATAController()
+    : Device(BlockDeviceFile)
 {
+    m_identifier << "ata0";
 }
 
 Error ATAController::initialize()
@@ -88,7 +91,7 @@ Error ATAController::initialize()
     return ESUCCESS;
 }
 
-Error ATAController::read(s8 *buffer, Size size, Size offset)
+Error ATAController::read(IOBuffer & buffer, Size size, Size offset)
 {
     u8 sectors = CEIL(size, 512);
     u16 block[256];
@@ -126,7 +129,7 @@ Error ATAController::read(s8 *buffer, Size size, Size offset)
                      (size - result) : 512 - (offset % 512);
 
         /* Copy to buffer. */
-        memcpy(buffer + result, ((u8 *)block) + (offset % 512), bytes);
+        buffer.bufferedWrite(((u8 *)block) + (offset % 512), bytes);
     
         /* Update state. */
         result += bytes;

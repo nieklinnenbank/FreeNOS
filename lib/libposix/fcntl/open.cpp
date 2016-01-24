@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
+#include <FreeNOS/System.h>
 #include <FileSystemMessage.h>
 #include "Runtime.h"
 #include "errno.h"
@@ -35,12 +35,19 @@ int open(const char *path, int oflag, ...)
     msg.action = StatFile;
     msg.path   = (char *) path;
     msg.stat   = &st;
-    msg.type   = IPCType;
 
     // Ask the FileSystem for the file.
     if (mnt)
     {
-        IPCMessage(mnt, API::SendReceive, &msg, sizeof(msg));
+        ChannelClient::instance->syncSendReceive(&msg, mnt);
+
+        // Refresh mounts and retry, in case the file did not exist
+        if (msg.result == ENOENT)
+        {
+            refreshMounts(0);
+            mnt = findMount(path);
+            ChannelClient::instance->syncSendReceive(&msg, mnt);
+        }
     
         // Set errno
         errno = msg.result;
@@ -53,14 +60,9 @@ int open(const char *path, int oflag, ...)
                 if (!(*fds)[i].open)
                 {
                     (*fds)[i].open  = true;
-                    strlcpy((*fds)[i].path, path, PATHLEN);
-
-                    // Devices should be contacted directly, instead of the filesystem
-                    // where we found the device file.
-                    if (st.type == BlockDeviceFile || st.type == CharacterDeviceFile)
-                        (*fds)[i].mount = st.deviceID.major;
-                    else
-                        (*fds)[i].mount = mnt;
+                    strlcpy((*fds)[i].path, path, PATH_MAX);
+                    (*fds)[i].mount = mnt;
+                    (*fds)[i].identifier = 0;
                     (*fds)[i].position = 0;
                     return i;
                 }

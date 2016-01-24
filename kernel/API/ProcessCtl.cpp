@@ -15,22 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
+#include <FreeNOS/System.h>
 #include <FreeNOS/Kernel.h>
 #include <FreeNOS/Config.h>
 #include <FreeNOS/Process.h>
+#include <FreeNOS/ProcessEvent.h>
 #include <Log.h>
 #include "ProcessCtl.h"
 
 void interruptNotify(CPUState *st, Process *p)
 {
-    InterruptMessage *msg = new InterruptMessage;
-    msg->from   = KERNEL_PID;
-    msg->type   = IRQType;
-    msg->vector = IRQ_REG(st);
+    ProcessEvent event;
 
-    p->getMessages()->prepend(msg);
-    p->setState(Process::Ready);
+    event.type   = InterruptEvent;
+    event.number = IRQ_REG(st);
+
+    p->raiseEvent(&event);
 }
 
 Error ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
@@ -38,6 +38,7 @@ Error ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
     Process *proc = ZERO;
     ProcessInfo *info = (ProcessInfo *) addr;
     ProcessManager *procs = Kernel::instance->getProcessManager();
+    Timer *timer;
     Arch::MemoryMap map;
 
     DEBUG("#" << procs->current()->getID() << " " << action << " -> " << procID << " (" << addr << ")");
@@ -76,7 +77,8 @@ Error ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
         break;
 
     case Resume:
-        proc->setState(Process::Ready);
+        // increment wakeup counter and set process ready
+        proc->wakeup();
         break;
 
     case WatchIRQ:
@@ -105,7 +107,30 @@ Error ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
         procs->current()->setState(Process::Waiting);
         procs->schedule();
         return procs->current()->getWait(); // contains the exit status of the other process
+
+    case InfoTimer:
+        if (!(timer = Kernel::instance->getTimer()))
+            return API::NotFound;
         
+        timer->getCurrent((Timer::Info *) addr); // TODO: check access...
+        break;
+
+    /*    
+    case WaitTimer:
+        procs->current()->setSleepTimer((const Timer::Info *)addr); // TODO: check access...
+        procs->current()->setState(Process::Sleeping);
+        procs->schedule();
+        // TODO: set a Timer::Info field for the process. Then when scheduling, the process
+        // will only be allowed to run until after the Timer::Info time has arrived (for sleep).
+        break;
+     */
+
+    case EnterSleep:
+        // only sleeps the process if no pending wakeups
+        if (procs->current()->sleep() == Process::Success)
+            procs->schedule();
+        break;
+
     case SetStack:
         proc->setUserStack(addr);
         break;
@@ -127,6 +152,8 @@ Log & operator << (Log &log, ProcessOperation op)
         case EnableIRQ: log.append("EnableIRQ"); break;
         case InfoPID:   log.append("InfoPID"); break;
         case WaitPID:   log.append("WaitPID"); break;
+        //case WaitTimer: log.append("WaitTimer"); break;
+        case EnterSleep: log.append("EnterSleep"); break;
         case SetStack:  log.append("SetStack"); break;
         default:        log.append("???"); break;
     }

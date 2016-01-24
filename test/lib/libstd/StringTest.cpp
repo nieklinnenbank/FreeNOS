@@ -359,6 +359,19 @@ TestCase(StringSub)
     return OK;
 }
 
+TestCase(StringPad)
+{
+    String s = "hello\nthis";
+
+    // Pad the last line to 10 characters
+    s.pad(10);
+
+    testString(s.m_string, "hello\nthis      ");
+    testAssert(s.m_count == 16);
+    testAssert(s.m_size == 17);
+    return OK;
+}
+
 TestCase(StringTrim)
 {
     String s = " \t  testing1234   \t ";
@@ -470,7 +483,7 @@ TestCase(StringToLong)
     return OK;
 }
 
-TestCase(StringSetNumber)
+TestCase(StringSetSigned)
 {
     String s;
     char buf[128];
@@ -487,8 +500,43 @@ TestCase(StringSetNumber)
     testAssert(s.m_count == 6);
     testAssert(s.m_size == STRING_DEFAULT_SIZE);
 
+    // Negative decimal
+    testAssert(s.set(-678910) == 7);
+    testString(s.m_string, "-678910");
+    testAssert(s.m_count == 7);
+    testAssert(s.m_size == STRING_DEFAULT_SIZE);
+
+    // Negative hexadecimal
+    testAssert(s.set(-0xabcdef, Number::Hex) == 9);
+    testString(s.m_string, "-0xabcdef");
+    testAssert(s.m_count == 9);
+    testAssert(s.m_size == STRING_DEFAULT_SIZE);
+
     // External buffer
-    testAssert(s.set(12345, Number::Hex, buf) == 6);
+    testAssert(s.setUnsigned(12345, Number::Hex, buf) == 6);
+    testString(buf, "0x3039");
+    return OK;
+}
+
+TestCase(StringSetUnsigned)
+{
+    String s;
+    char buf[128];
+
+    // Decimal number
+    testAssert(s.setUnsigned(4294967286U) == 10);
+    testString(s.m_string, "4294967286");
+    testAssert(s.m_count == 10);
+    testAssert(s.m_size == STRING_DEFAULT_SIZE);
+
+    // Hexadecimal number
+    testAssert(s.setUnsigned(0xffaabbcc, Number::Hex) == 10);
+    testString(s.m_string, "0xffaabbcc");
+    testAssert(s.m_count == 10);
+    testAssert(s.m_size == STRING_DEFAULT_SIZE);
+
+    // External buffer
+    testAssert(s.setUnsigned(12345, Number::Hex, buf) == 6);
     testString(buf, "0x3039");
     return OK;
 }

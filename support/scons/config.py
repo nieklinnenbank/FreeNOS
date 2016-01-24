@@ -36,13 +36,40 @@ from autoconf import *
 # #ifdef MY_SETTING
 # #endif
 
-local_dict = {}
+class ConfDict(dict):
+
+    def __init__(self):
+        self.locked = False
+        self.cmdPrefix = ""
+
+    def lock(self, val, prefix = ""):
+        self.locked = val
+        self.cmdPrefix = prefix
+
+    #
+    # This function overrides assignment
+    # to ensure variables from the command line are taken
+    # instead of from the .conf files.
+    #
+    def __setitem__(self, name, value):
+        global cmd_items
+
+        if self.locked and (self.cmdPrefix + name) in cmd_items:
+            return
+        else:
+            return dict.__setitem__(self, name, value)
+
+local_dict = ConfDict()
+cmd_items  = None
 
 def initialize(target, host, params):
     """
     Initialize configuration subsystem.
     This will create a build.conf / build.host.conf if already existing.
     """
+    global cmd_items, local_dict
+    cmd_items = params
+
     if not os.path.exists('build.conf'):
 	shutil.copyfile('config/' + params.get('ARCH', 'intel') + '/'
 				  + params.get('SYSTEM', 'pc') + '/'
@@ -55,23 +82,22 @@ def initialize(target, host, params):
     for key in params:
 	if not key.startswith('HOST:'):
 	    set_value(local_dict, key, params[key])
+    local_dict.lock(True)
     apply_file('build.conf', target)
+
+    local_dict = ConfDict()
+    local_dict.lock(False, "HOST:")
 
     for key in params:
 	if key.startswith('HOST:'):
 	    set_value(local_dict, key[5:], params[key])
+
+    local_dict.lock(True, "HOST:")
     apply_file('build.host.conf', host)
 
     # Apply default variables
     set_default_variables(target)
     set_default_variables(host)
-
-    # Reapply commandline arguments. This overwrites anything from build*.conf
-    for key in params:
-	if key.startswith('HOST:'):
-	    set_value(host, key[5:], params[key])
-	else:
-	    set_value(target, key, params[key])
 
 def escape(obj):
     return str(obj).replace('"', '\\"')
@@ -185,13 +211,15 @@ def set_value(env, key, value):
     """
     Apply new value to a environment.
     """
-    if type(value) == bool or value in ('True', 'true', 'False', 'false'):
-	env[key] = bool(value)
+    if value in ('True', 'true'):
+        env[key] = True
+    elif value in ('False', 'false'):
+        env[key] = False
     else:
-	try:
-	    env[key] = int(value)
-	except:
-	    env[key] = value
+        try:
+            env[key] = int(value)
+        except:
+            env[key] = value
 
 def apply_file(conf_file, env):
     """
@@ -208,14 +236,13 @@ def apply_file(conf_file, env):
 	else:
 	    env[item] = result[item]
 
-    local_dict = {}
-
-
 def parse_file(conf_file):
     """
     Parses a configuration file.
     Returns a dictionary with the parsed values.
     """
+    global local_dict
+
     global_dict = { 'Include' : parse_file }
     config_file = eval_string(conf_file)
 
@@ -237,6 +264,8 @@ def eval_string(string, replace_dict = None):
     """
     Replace configuration item values in the given string or list.
     """
+    global local_dict
+
     if not replace_dict:
 	replace_dict = local_dict
 

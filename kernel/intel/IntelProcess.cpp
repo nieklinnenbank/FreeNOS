@@ -94,7 +94,9 @@ Process::Result IntelProcess::initialize()
     MemoryBlock::set(pusha, 0, sizeof(CPURegs));
     pusha->ebp  = m_kernelStackBase - sizeof(CPURegs);
     pusha->esp0 = pusha->ebp;
-    return Success;
+
+    // Finalize with generic initialization
+    return Process::initialize();
 }
 
 IntelProcess::~IntelProcess()

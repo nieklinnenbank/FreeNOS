@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
 #include <FreeNOS/System.h>
 #include <Macros.h>
 #include <Types.h>
@@ -26,7 +25,9 @@
 #include "Time.h"
 
 Time::Time()
+    : Device(CharacterDeviceFile)
 {
+    m_identifier << "time0";
 }
 
 Error Time::initialize()
@@ -34,9 +35,11 @@ Error Time::initialize()
     return ESUCCESS;
 }
 
-Error Time::read(s8 *buffer, Size size, Size offset)
+Error Time::read(IOBuffer & buffer, Size size, Size offset)
 {
     unsigned int year, month, day, hour, min, sec = 0, time;
+    char tmp[16];
+    int n;
 
     /* PHONY read */
     if(offset >= 10)
@@ -80,8 +83,9 @@ Error Time::read(s8 *buffer, Size size, Size offset)
     
     /* Format as an ASCII string. */
     time = mktime(year, month, day, hour, min, sec);
-    snprintf((char*)buffer, size, "%u", time);
-    
+    n = snprintf(tmp, size < sizeof(tmp) ? size : sizeof(tmp), "%u", time);
+    buffer.write(tmp, n);
+
     /* All done. */
     return (Error) size;
 }

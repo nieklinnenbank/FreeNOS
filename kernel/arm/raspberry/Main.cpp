@@ -21,14 +21,14 @@
 #include <FreeNOS/arm/ARMKernel.h>
 #include <Macros.h>
 #include <arm/ARMControl.h>
-#include <arm/BCM2835Interrupt.h>
-#include <arm/BCMSysTimer.h>
+#include <arm/broadcom/BroadcomInterrupt.h>
+#include <arm/broadcom/BroadcomTimer.h>
 #include "RaspiSerial.h"
 
 extern C int kernel_main(u32 r0, u32 r1, u32 r2)
 {
     Arch::MemoryMap mem;
-    BCM2835Interrupt irq;
+    BroadcomInterrupt irq;
     ARMTags tags(r2);
     Memory::Range initrd = tags.getInitRd2();
 

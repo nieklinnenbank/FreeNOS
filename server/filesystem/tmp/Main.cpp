@@ -15,25 +15,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
+#include <FreeNOS/System.h>
+#include <KernelLog.h>
+#include <stdlib.h>
 #include "TmpFileSystem.h"
 
 int main(int argc, char **argv)
 {
     SystemInformation info;
+    const char *path = "/mount";
 
     // Only run on core0
     if (info.coreId != 0)
         return EXIT_SUCCESS;
 
-    TmpFileSystem server("/dev");
+    KernelLog log;
+    log.setMinimumLogLevel(Log::Notice);
+
+    if (argc > 1)
+        path = argv[1];
+
+    TmpFileSystem server(path);
     
     /*
      * Mount, then start serving requests.
      */
-    if (server.mount(false))
-    {
-        return server.run();
-    }
-    return EXIT_FAILURE;
+    server.mount();
+    return server.run();
 }

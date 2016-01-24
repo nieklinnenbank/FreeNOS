@@ -123,6 +123,7 @@ inline ulong trapKernel5(ulong num, ulong arg1, ulong arg2, ulong arg3,
 #include <intel/IntelPIT.h>
 #include <intel/IntelPIC.h>
 #include <intel/IntelAPIC.h>
+#include <Timer.h>
 
 /**
  * We remap IRQ's to interrupt vectors 32-47.
@@ -181,9 +182,6 @@ class IntelKernel : public Kernel
 
     /** PIC instance */
     IntelPIC m_pic;
-
-    /** Timer interrupt number. */
-    uint m_timerInt;
 };
 
 /**

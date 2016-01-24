@@ -15,13 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/System.h>
 #include <Log.h>
 #include <SplitAllocator.h>
 #include <CoreInfo.h>
-#include <FreeNOS/API.h>
 #include <arm/ARMInterrupt.h>
 #include <arm/ARMConstant.h>
-#include <arm/BCM2835Interrupt.h>
+#include <arm/broadcom/BroadcomInterrupt.h>
 #include "ARMKernel.h"
 
 ARMKernel::ARMKernel(ARMInterrupt *intr,
@@ -41,7 +41,8 @@ ARMKernel::ARMKernel(ARMInterrupt *intr,
     intr->install(ARMInterrupt::FIQ, interrupt);
 
     // Enable clocks and irqs
-    m_timer.setInterval( 250 ); /* trigger timer interrupts at 250Hz (clock runs at 1Mhz) */
+    m_timer = &m_bcmTimer;
+    m_bcmTimer.setFrequency( 250 ); /* trigger timer interrupts at 250Hz (clock runs at 1Mhz) */
     m_intControl->enable(BCM_IRQ_SYSTIMERM1);
 
     // Set ARMCore modes
@@ -59,15 +60,14 @@ void ARMKernel::interrupt(CPUState state)
     // TODO: remove BCM2835 specific code
     if (intr->isTriggered(BCM_IRQ_SYSTIMERM1))
     {
-        kernel->m_timer.next();
+        kernel->m_timer->tick();
         kernel->getProcessManager()->schedule();
     }
-    else
+    for (uint i = BCM_IRQ_SYSTIMERM1+1; i < 64; i++)
     {
-        for (uint i = 0; i < 64; i++)
+        if (intr->isTriggered(i))
         {
-            if (intr->isTriggered(i))
-                kernel->executeIntVector(i, &state);
+            kernel->executeIntVector(i, &state);
         }
     }
 }

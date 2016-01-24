@@ -299,6 +299,14 @@ extern C int chdir(const char *path);
 extern C int unlink(const char *path);
 
 /**
+ * Sleep for the specified number of seconds.
+ *
+ * @param seconds Number of seconds to sleep
+ * @return Zero on success or number of seconds left when interrupted.
+ */
+extern C unsigned int sleep(unsigned int seconds);
+
+/**
  * @}
  */
 

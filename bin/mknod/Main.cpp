@@ -20,6 +20,7 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <Runtime.h>
 
 int main(int argc, char **argv)
 {
@@ -32,6 +33,8 @@ int main(int argc, char **argv)
 		argv[0]);
 	return EXIT_FAILURE;
     }
+    refreshMounts(0);
+
     /* Fill in major/minor numbers. */
     dev.major = atoi(argv[3]);
     dev.minor = atoi(argv[4]);

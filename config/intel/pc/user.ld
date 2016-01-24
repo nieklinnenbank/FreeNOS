@@ -23,46 +23,42 @@ SECTIONS
 {
     . = 0x80000000;
 
-    /DISCARD/ :
-    {
-        *(.note.gnu.build-id)
-    }
-
     .text :
     {
-	*(.entry)
-	*(.text)
-	*(*.text)
-	*(.gnu.linkonce.*)
-	*(.data)
-	*(.rodata)
-	*(.rodata.*)
-	*(.eh_frame)
+        *(.entry)
+        *(.text)
+        *(*.text)
+        *(.gnu.linkonce.*)
+        *(.data)
+        *(.rodata)
+        *(.rodata.*)
+        *(.eh_frame)
+        *(.note.gnu.build-id)
 
-	. = ALIGN(4);
+        . = ALIGN(4);
         CTOR_LIST = .;
-	KEEP (*(SORT(.ctors.*)))
-	KEEP (*(.ctors))
+        KEEP (*(SORT(.ctors.*)))
+        KEEP (*(.ctors))
         KEEP (*(.preinit_array))
         KEEP (*(.init_array.*))
         KEEP (*(.init_array))
-	LONG(0)
+        LONG(0)
         CTOR_END = .;
-	
+
         DTOR_LIST = .;
-	KEEP (*(SORT(.dtors.*)))
-	KEEP (*(.dtors))
+        KEEP (*(SORT(.dtors.*)))
+        KEEP (*(.dtors))
         KEEP (*(.dtors))
         KEEP (*(.fini_array.*))
         KEEP (*(.fini_array))
         LONG(0)
         DTOR_END = .;
-	. += 4;
-	
-	initStart = .;
-	KEEP (*(SORT(.init*)))
-	KEEP (*(.init*))
-	initEnd   = .;
+        . += 4;
+        
+        initStart = .;
+        KEEP (*(SORT(.init*)))
+        KEEP (*(.init*))
+        initEnd   = .;
         isKernel = .;
         LONG(0);
 

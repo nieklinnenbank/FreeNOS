@@ -22,6 +22,9 @@
 #include <Macros.h>
 #include <List.h>
 #include <MemoryMap.h>
+#include <Timer.h>
+#include <Index.h>
+#include "ProcessShares.h"
 
 /** 
  * @defgroup kernel kernel (generic)
@@ -31,6 +34,8 @@
 /** @see IPCMessage.h. */
 struct Message;
 class MemoryContext;
+class MemoryChannel;
+struct ProcessEvent;
 
 /** Virtual memory address of the array of arguments for new processes. */
 #define ARGV_ADDR  0x9ffff000
@@ -53,7 +58,8 @@ class Process
     {
         Success,
         MemoryMapError,
-        OutOfMemory
+        OutOfMemory,
+        WakeupPending
     };
 
     enum State
@@ -97,6 +103,18 @@ class Process
     ProcessID getWait() const;
 
     /**
+     * Get sleep timer.
+     * @return Sleep timer value.
+     */
+    const Timer::Info & getSleepTimer() const;
+
+    /**
+     * Get process shares.
+     * @return Reference to memory shares.
+     */
+    ProcessShares & getShares();
+
+    /**
      * Retrieves the current state.
      * @return Current status of the Process.
      */
@@ -130,6 +148,11 @@ class Process
     MemoryContext * getMemoryContext();
 
     /**
+     * Raise kernel event
+     */
+    Result raiseEvent(struct ProcessEvent *event);
+
+    /**
      * Get privilege.
      *
      * @return Privilege of the Process.
@@ -153,6 +176,12 @@ class Process
     void setWait(ProcessID id);
 
     /**
+     * Set sleep timer.
+     * @param sleeptimer New sleep timer value.
+     */
+    void setSleepTimer(const Timer::Info *sleeptimer);
+
+    /**
      * Set page directory address.
      *
      * @param addr New page directory address.
@@ -174,17 +203,25 @@ class Process
     void setKernelStack(Address addr);
 
     /**
-     * Retrieve the list of Messages for this Process.
-     * @return Pointer to the message queue.
-     */
-    List<Message *> * getMessages();
-
-    /**
      * Compare two processes.
      * @param p Process to compare with.
      * @return True if equal, false otherwise.
      */
     bool operator == (Process *proc);
+
+    /**
+     * Prevent process from sleeping.
+     *
+     * @return Result code
+     */
+    Result wakeup();
+
+    /**
+     * Stops the process for executing until woken up
+     *
+     * @return Result code
+     */
+    Result sleep();
 
     /**
      * Initialize the Process.
@@ -194,7 +231,7 @@ class Process
      *
      * @return Result code
      */
-    virtual Result initialize() = 0;
+    virtual Result initialize();
 
     /**
      * Allow the Process to run on the CPU.
@@ -229,9 +266,6 @@ class Process
     /** MMU memory context */
     MemoryContext *m_memoryContext;
 
-    /** Incoming messages. */
-    List<Message *> m_messages;
-
     /** Page directory. */
     Address m_pageDirectory;
 
@@ -243,6 +277,22 @@ class Process
 
     /** Base kernel stack (fixed) */
     Address m_kernelStackBase;
+
+    /** Number of wakeups received */
+    Size m_wakeups;
+
+    /**
+     * Sleep timer value.
+     * If non-zero, set the process in the Ready state
+     * when the System timer is greater than this value.
+     */
+    Timer::Info m_sleepTimer;
+
+    /** Contains virtual memory shares between this process and others. */
+    ProcessShares m_shares;
+
+    /** Channel for sending kernel events to the Process */
+    MemoryChannel *m_kernelChannel;
 };
 
 /**

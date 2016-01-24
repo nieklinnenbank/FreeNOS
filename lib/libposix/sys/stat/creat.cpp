@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
+#include <FreeNOS/System.h>
 #include <FileSystemMessage.h>
 #include <FileType.h>
 #include <FileMode.h>
@@ -33,18 +33,17 @@ int creat(const char *path, mode_t mode)
     msg.path     = (char *) path;
     msg.filetype = RegularFile;
     msg.mode     = (FileModes) (mode & FILEMODE_MASK);
-    msg.type     = IPCType;
 
     /* Ask FileSystem to create the file for us. */
     if (mnt)
     {
-	IPCMessage(mnt, API::SendReceive, &msg, sizeof(msg));
+        ChannelClient::instance->syncSendReceive(&msg, mnt);
 
-	/* Set errno. */
-	errno = msg.result;
+        // Set errno
+        errno = msg.result;
     }
     else
-	errno = ENOENT;
+        errno = ENOENT;
 
     /* Report result. */
     return msg.result == ESUCCESS ? 0 : -1;

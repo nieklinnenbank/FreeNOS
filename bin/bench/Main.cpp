@@ -16,7 +16,6 @@
  */
 
 #include <FreeNOS/System.h>
-#include <FreeNOS/API.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>

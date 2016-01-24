@@ -19,6 +19,7 @@
 #define __LIBARCH_IO_H
 
 #include <Types.h>
+#include "Memory.h"
 
 /**
  * Generic I/O functions.
@@ -58,14 +59,27 @@ class IO
      *
      * @param phys Physical address for start of the range.
      * @param size Size of the I/O address space.
+     * @param access Memory access flags
      * @return Result code.
      */
-    Result map(Address phys, Size size = 4096);
+    Result map(Address phys,
+               Size size = 4096,
+               Memory::Access access = Memory::Readable | Memory::Writable | Memory::User);
+
+    /**
+     * Unmap I/O address space.
+     *
+     * @return Result code.
+     */
+    Result unmap();
 
   protected:
 
     /** I/O base offset is added to each I/O address. */
     uint m_base;
+
+    /** Memory range for performing I/O mappings. */
+    Memory::Range m_range;
 };
 
 #endif /* __LIBARCH_IO_H */

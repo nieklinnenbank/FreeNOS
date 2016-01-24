@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
+#include <FreeNOS/System.h>
 #include <FileSystemMessage.h>
 #include "Runtime.h"
 #include <errno.h>
@@ -34,9 +34,9 @@ ssize_t read(int fildes, void *buf, size_t nbyte)
         msg.buffer = (char *) buf;
         msg.size   = nbyte;
         msg.offset = fd->position;
-        msg.type   = IPCType;
         msg.from   = SELF;
-        IPCMessage(fd->mount, API::SendReceive, &msg, sizeof(msg));
+        msg.deviceID.minor = fd->identifier;
+        ChannelClient::instance->syncSendReceive(&msg, fd->mount);
 
         // Did we read something?
         if (msg.result >= 0)

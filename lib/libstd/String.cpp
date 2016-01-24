@@ -327,6 +327,31 @@ String String::substring(Size index, Size size)
     return str;
 }
 
+String & String::pad(Size length)
+{
+    Size idx = 0;
+
+    // Look for the last newline character
+    for (Size i = 0; i < m_count; i++)
+        if (m_string[i] == '\n')
+            idx = i;
+
+    // Last line length
+    Size curlen = m_count - (idx+1);
+
+    // Skip if the line is already the given length
+    if (length <= curlen)
+        return (*this);
+
+    if (reserve(m_count + length - curlen))
+    {
+        MemoryBlock::set(m_string + idx + curlen + 1, ' ', length-curlen);
+        m_count += length-curlen;
+        m_string[m_count] = ZERO;
+    }
+    return (*this);
+}
+
 String & String::trim()
 {
     Size from = 0, to = m_count - 1;
@@ -508,6 +533,11 @@ long String::toLong(Number::Base base)
 
 Size String::set(long number, Number::Base base, char *string)
 {
+    return setUnsigned((ulong) number, base, string, true);
+}
+
+Size String::setUnsigned(ulong number, Number::Base base, char *string, bool sign)
+{
     char *p, *p1, *p2, *saved, tmp;
     unsigned long ud = number;
     int remainder, divisor = 10;
@@ -527,14 +557,15 @@ Size String::set(long number, Number::Base base, char *string)
         case Number::Hex: divisor = 16; break;
     };
 
-    // Negative decimal.
-    if (divisor == 10 && number < 0)
+    // Negative prefix.
+    if (sign && (long)number < 0)
     {
         *p++ = '-';
         ud = -number;
+        written++;
     }
-    // Hexadecimal.
-    else if (divisor == 16)
+    // Hexadecimal prefix.
+    if (divisor == 16)
     {
         *p++ = '0';
         *p++ = 'x';

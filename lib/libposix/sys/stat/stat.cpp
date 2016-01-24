@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
+#include <FreeNOS/System.h>
 #include <FileSystemMessage.h>
 #include "Runtime.h"
 #include <errno.h>
@@ -31,23 +31,22 @@ int stat(const char *path, struct stat *buf)
     msg.action = StatFile;
     msg.path   = (char *) path;
     msg.stat   = &st;
-    msg.type   = IPCType;
     
     /* Ask the FileSystem for the information. */
     if (mnt)
     {
-	IPCMessage(mnt, API::SendReceive, &msg, sizeof(msg));
+        ChannelClient::instance->syncSendReceive(&msg, mnt);
 
-        /* Copy information into buf. */
-	if (msg.result == ESUCCESS)
-	{
-	    buf->fromFileStat(&st);
-	}
-	/* Set errno. */
-	errno = msg.result;
+        // Copy information into buf
+        if (msg.result == ESUCCESS)
+        {
+            buf->fromFileStat(&st);
+        }
+        // Set errno
+        errno = msg.result;
     }
     else
-	errno = msg.result = ENOENT;
+        errno = msg.result = ENOENT;
     
     /* Success. */
     return msg.result == ESUCCESS ? 0 : -1;

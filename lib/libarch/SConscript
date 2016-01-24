@@ -27,6 +27,8 @@ if env['ARCH'] == 'host':
 else:
     src = [ Glob('*.cpp'),
             Glob( env['ARCH'] + '/*.cpp'),
-            Glob( env['ARCH'] + '/*.S') ]
+            Glob( env['ARCH'] + '/*.S'),
+            Glob( env['ARCH'] + '/**/*.cpp'),
+            Glob( env['ARCH'] + '/**/*.S') ]
 
 env.Library('libarch', src)

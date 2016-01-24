@@ -15,10 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
 #include <FreeNOS/System.h>
-#include <CoreMessage.h>
 #include <ExecutableFormat.h>
+#include <FileSystemMessage.h>
 #include <Types.h>
 #include <Runtime.h>
 #include <string.h>
@@ -29,7 +28,7 @@
 
 int forkexec(const char *path, const char *argv[])
 {
-    CoreMessage msg;
+    FileSystemMessage msg;
     ExecutableFormat *fmt;
     ExecutableFormat::Region regions[16];
     Memory::Range range;
@@ -132,10 +131,9 @@ int forkexec(const char *path, const char *argv[])
 
     // Send a pointer to our list of file descriptors to the child
     // TODO: ofcourse, insecure. To be fixed later.
-    msg.type      = IPCType;
-    msg.from      = SELF;
+    msg.from = SELF;
     msg.path = (char *) fds->vector();
-    IPCMessage(pid, API::SendReceive, &msg, sizeof(msg));
+    ChannelClient::instance->syncSendReceive(&msg, pid);
 
     // Done. Cleanup.
     delete arguments;

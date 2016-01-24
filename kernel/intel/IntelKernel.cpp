@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
 #include <FreeNOS/ProcessManager.h>
 #include <FreeNOS/System.h>
 #include <Macros.h>
@@ -82,7 +81,7 @@ IntelKernel::IntelKernel(CoreInfo *info)
         m_intControl = 0;
 
     // Try to configure the APIC.
-    if (m_apic.initialize() == IntelAPIC::Success)
+    if (m_apic.initialize() == Timer::Success)
     {
         NOTICE("Using APIC timer");
         // TODO: do we need to explicityly disable the PICs?
@@ -91,30 +90,30 @@ IntelKernel::IntelKernel(CoreInfo *info)
 
         // Enable APIC timer interrupt
         //enableIRQ(m_apic.getTimerInterrupt(), true);
-        hookIntVector(m_apic.getTimerInterrupt(), clocktick, 0);
+        hookIntVector(m_apic.getInterrupt(), clocktick, 0);
 
-        m_timerInt = m_apic.getTimerInterrupt();
+        m_timer = &m_apic;
 
         if (m_coreInfo->timerCounter == 0)
         {
-            m_apic.startTimer(&m_pit);
-            m_coreInfo->timerCounter = m_apic.getTimerCounter();
+            m_apic.start(&m_pit);
+            m_coreInfo->timerCounter = m_apic.getCounter();
         }
         else
-            m_apic.startTimer(m_coreInfo->timerCounter, m_pit.getFrequency());
+            m_apic.start(m_coreInfo->timerCounter, m_pit.getFrequency());
     }
     // Use PIT as system timer.
     else
     {
         NOTICE("Using PIT timer");
-        m_timerInt = m_pit.getInterruptNumber();
+        m_timer = &m_pit;
 
         // Install PIT interrupt vector handler
         hookIntVector(m_intControl->getBase() +
-                      m_pit.getInterruptNumber(), clocktick, 0);
+                      m_pit.getInterrupt(), clocktick, 0);
 
         // Enable PIT interrupt
-        enableIRQ(m_pit.getInterruptNumber(), true);
+        enableIRQ(m_pit.getInterrupt(), true);
     }
 
     // Initialize TSS Segment
@@ -178,13 +177,15 @@ void IntelKernel::trap(CPUState *state, ulong param)
 void IntelKernel::clocktick(CPUState *state, ulong param)
 {
     IntelKernel *kern = (IntelKernel *) Kernel::instance;
+    Size irq = kern->m_timer->getInterrupt();
 
 #warning not working for APIC timer, because the timer IRQ is out of range on the PIC
-    kern->enableIRQ(kern->m_timerInt, true);
+    kern->enableIRQ(irq, true);
 
 #warning TODO: tmp hack for APIC timer end-of-interrupt
-    if (kern->m_timerInt == kern->m_apic.getTimerInterrupt())
-        kern->m_apic.clear(kern->m_timerInt);
+    if (irq == kern->m_apic.getInterrupt())
+        kern->m_apic.clear(irq);
 
+    kern->m_timer->tick();
     kern->getProcessManager()->schedule();
 }

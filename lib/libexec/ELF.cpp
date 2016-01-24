@@ -59,8 +59,8 @@ ELF::Result ELF::regions(ELF::Region *regions, Size *count)
 {
     ELFSegment *segments;
     ELFHeader *header = (ELFHeader *) m_image;
-    Size max = *count, num = header->programHeaderEntryCount;
-    
+    Size max = *count, num = header->programHeaderEntryCount, c = 0;
+
     /* Must be of the same sizes. */
     if (!(header->programHeaderEntrySize == sizeof(ELFSegment) &&
           header->programHeaderEntryCount < 16))
@@ -78,24 +78,25 @@ ELF::Result ELF::regions(ELF::Region *regions, Size *count)
         if (segments[i].type != ELF_SEGMENT_LOAD)
             continue;
 
-        regions[i].virt   = segments[i].virtualAddress;
-        regions[i].size   = segments[i].memorySize;
-        regions[i].access = Memory::User | Memory::Readable | Memory::Writable;
-        regions[i].data   = new u8[segments[i].memorySize];
+        regions[c].virt   = segments[i].virtualAddress;
+        regions[c].size   = segments[i].memorySize;
+        regions[c].access = Memory::User | Memory::Readable | Memory::Writable;
+        regions[c].data   = new u8[segments[i].memorySize];
     
         /* Read segment contents from file. */
-        MemoryBlock::copy(regions[i].data, m_image + segments[i].offset,
+        MemoryBlock::copy(regions[c].data, m_image + segments[i].offset,
                           segments[i].fileSize);
 
         /* Nulify remaining space. */
         if (segments[i].memorySize > segments[i].fileSize)
         {
-            memset(regions[i].data + segments[i].fileSize, 0,
+            memset(regions[c].data + segments[i].fileSize, 0,
                    segments[i].memorySize - segments[i].fileSize);
         }
-        (*count) = (*count) + 1;
+        c++;
     }
     /* All done. */
+    (*count) = c;
     return Success;
 }
 

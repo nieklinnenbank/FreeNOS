@@ -22,6 +22,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <Runtime.h>
 
 int touch(char *prog, char *path)
 {
@@ -48,6 +49,8 @@ int main(int argc, char **argv)
 		argv[0]);
 	return EXIT_FAILURE;
     }
+    refreshMounts(0);
+
     /* Touch all given files. */
     for (int i = 0; i < argc - 1; i++)
     {

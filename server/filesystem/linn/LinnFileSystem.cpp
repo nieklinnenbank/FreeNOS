@@ -30,7 +30,6 @@ int main(int argc, char **argv)
 {
     KernelLog log;
     Storage *storage = ZERO;
-    bool background  = false;
     const char *path = "/";
     SystemInformation info;
 
@@ -38,14 +37,13 @@ int main(int argc, char **argv)
     if (info.coreId != 0)
         return EXIT_SUCCESS;
 
-    log.setMinimumLogLevel(Log::Debug);
+    log.setMinimumLogLevel(Log::Notice);
 
     // Mount the given file, or try to use the BootImage embedded rootfs
     if (argc > 3)
     {
         NOTICE("file storage: " << argv[1] << " at offset " << atoi(argv[2]));
         storage    = new FileStorage(argv[1], atoi(argv[2]));
-        background = true;
         path       = argv[3];
     }
     else
@@ -63,9 +61,8 @@ int main(int argc, char **argv)
     if (storage)
     {
         LinnFileSystem server(path, storage);
-
-        if (server.mount(background))
-            return server.run();
+        server.mount();
+        return server.run();
     }
     ERROR("no usable storage found");
     return EXIT_FAILURE;

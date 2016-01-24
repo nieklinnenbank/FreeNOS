@@ -25,7 +25,7 @@ for item in env['LINKUSER']:
 env.Append(LINKFLAGS = env['LINKKERN'])
 env.Append(CPPFLAGS = '-D__KERNEL__')
 
-env.UseLibraries(['liballoc', 'libstd', 'libarch'])
+env.UseLibraries(['liballoc', 'libstd', 'libarch', 'libipc'])
 env.UseServers(['core'])
 env.TargetProgram('kernel', [ Glob('*.S'),
                               Glob('*.cpp'),
@@ -57,6 +57,10 @@ env.Targets(qemu = 'qemu-system-arm -kernel ' + build_env['BUILDROOT'] +
                    '/kernel/arm/raspberry/vmlinux -cpu arm1176 -M raspi -nographic ' +
                    '-initrd ' + build_env['BUILDROOT'] + '/boot.img')
 
+env.Targets(qemu_usb = 'qemu-system-arm -kernel ' + build_env['BUILDROOT'] +
+                       '/kernel/arm/raspberry/vmlinux -cpu arm1176 -M raspi -nographic -usb -usbdevice disk:/tmp/disk.bin ' +
+                       '-initrd ' + build_env['BUILDROOT'] + '/boot.img')
+
 env.Targets(qemu_debug = 'qemu-system-arm -kernel ' + build_env['BUILDROOT'] +
                          '/kernel/arm/raspberry/vmlinux -cpu arm1176 -M raspi -nographic -s -S ' +
                          '-initrd ' + build_env['BUILDROOT'] + '/boot.img')
@@ -64,3 +68,7 @@ env.Targets(qemu_debug = 'qemu-system-arm -kernel ' + build_env['BUILDROOT'] +
 env.Targets(qemu_debugs = 'qemu-system-arm -kernel ' + build_env['BUILDROOT'] +
                           '/kernel/arm/raspberry/vmlinux -cpu arm1176 -M raspi -nographic -s -S -d int,cpu_reset ' +
                           '-initrd ' + build_env['BUILDROOT'] + '/boot.img')
+
+env.AutoTester(qemu_test = 'qemu-system-arm -kernel ' + build_env['BUILDROOT'] +
+                           '/kernel/arm/raspberry/vmlinux -cpu arm1176 -M raspi -nographic ' +
+                           '-initrd ' + build_env['BUILDROOT'] + '/boot.img')

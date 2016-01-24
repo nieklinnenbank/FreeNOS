@@ -23,6 +23,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <TerminalCodes.h>
+#include <Runtime.h>
 
 int main(int argc, char **argv)
 {
@@ -39,6 +40,8 @@ int main(int argc, char **argv)
     }
     else
 	getcwd(path, sizeof(path));
+
+    refreshMounts(0);
 
     /* Attempt to open the directory. */
     if (!(d = opendir(path)))

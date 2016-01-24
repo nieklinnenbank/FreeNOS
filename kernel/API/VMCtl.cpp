@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/System.h>
 #include <SplitAllocator.h>
 #include "VMCtl.h"
 #include "ProcessID.h"
@@ -54,7 +55,15 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range)
             break;
 
         case UnMap:
+            mem->unmapRange(range);
+            break;
+
+        case Release:
             mem->releaseRange(range);
+            break;
+
+        case CacheClean:
+            cache1_clean_full();
             break;
 
         case Access:

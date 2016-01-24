@@ -19,7 +19,7 @@ Import('build_env')
 
 env = build_env.Clone()
 env.Append(CPPDEFINES = { 'private' : 'public', 'protected' : 'public' })
-env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libtest', 'libexec', 'libarch' ])
+env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libtest', 'libexec', 'libarch', 'libipc' ])
 env.UseLibraries([ 'libtest', 'libstd', 'libarch' ], 'host')
 env.UseServers(['memory'])
 
@@ -54,3 +54,6 @@ env.HostProgram('IndexTest', 'IndexTest.cpp')
 
 env.TargetProgram('VectorTest', 'VectorTest.cpp')
 env.HostProgram('VectorTest', 'VectorTest.cpp')
+
+env.TargetProgram('MacrosTest', 'MacrosTest.cpp')
+env.HostProgram('MacrosTest', 'MacrosTest.cpp')

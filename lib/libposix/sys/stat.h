@@ -23,8 +23,8 @@
 #include <FileStat.h>
 #include <Macros.h>
 #include <errno.h>
+#include <time.h>
 #include "types.h"
-#include "time.h"
 
 /**                                                                                                                                                                                                     
  * @defgroup libposix libposix (POSIX.1-2008)

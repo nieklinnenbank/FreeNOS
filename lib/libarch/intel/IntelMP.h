@@ -28,6 +28,7 @@
 #include <BitOperations.h>
 #include <IntController.h>
 #include <CoreInfo.h>
+#include <CoreManager.h>
 #include "IntelIO.h"
 #include "IntelAPIC.h"
 
@@ -39,7 +40,7 @@ class IntelPIT;
 /**
  * Intel Multi-Processor Specification.
  */
-class IntelMP
+class IntelMP : public CoreManager
 {
   private:
 
@@ -56,10 +57,10 @@ class IntelMP
     static const Address MPInfoAddr = MPINFOADDR;
 
     /** BIOS memory area to search for MP tables */
-    static const Address MPAreaAddr = 0xf0000;
+    static const Address MPAreaAddr = 0x1000;
 
     /** BIOS memory area size to search for MP tables */
-    static const Size MPAreaSize = 0x10000;
+    static const Size MPAreaSize = 0x100000-0x1000;
 
     /**
      * Multiprocessor Floating Structure.
@@ -113,33 +114,16 @@ class IntelMP
   public:
 
     /**
-     * Result codes.
-     */
-    enum Result
-    {
-        Success,
-        IOError,
-        NotFound
-    };
-
-    /**
      * Constructor
      */
     IntelMP();
-
-    /**
-     * Get list of core identities.
-     *
-     * @return List of core identities.
-     */
-    List<uint> & getCores();
 
     /**
      * Discover processors.
      *
      * @return Result code.
      */
-    Result discover();
+    virtual Result discover();
 
     /**
      * Boot a processor.
@@ -147,7 +131,7 @@ class IntelMP
      * @param info CoreInfo object pointer.
      * @return Result code.
      */
-    Result boot(CoreInfo *info);
+    virtual Result boot(CoreInfo *info);
 
   private:
 
@@ -158,11 +142,18 @@ class IntelMP
      */
     MPEntry * parseEntry(MPEntry *entry);
 
-    /** List of core ids found. */
-    List<uint> m_cores;
+    /**
+     * Scan memory for a Multiprocessor Config structure.
+     *
+     * @return MPConfig object pointer on success or ZERO on failure.
+     */
+    MPConfig * scanMemory(Address addr);
 
-    /** I/O instance */
-    IntelIO m_io;
+    /** I/O instance for BIOS memory */
+    IntelIO m_bios;
+
+    /** I/O instance for the last 1MB of physical memory */
+    IntelIO m_lastMemory;
 
     /** APIC instance */
     IntelAPIC m_apic;

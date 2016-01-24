@@ -78,8 +78,28 @@
  * @return Ceiled number.
  */
 #define CEIL(number,divisor) \
-     (number) % (divisor) ?  \
-    ((number) / (divisor)) + 1 : (number) / (divisor)
+    ( (number) % (divisor) ?  \
+     ((number) / (divisor)) + 1 : (number) / (divisor))
+
+#ifdef __cplusplus
+
+/**
+ * Absolute value of a double.
+ */
+inline double doubleAbsolute(double number)
+{
+    return number < 0 ? -number : number;
+}
+
+/**
+ * Compare two doubles using a epsilon number as precision indicator.
+ */
+inline bool doubleEquals(double a, double b, double epsilon)
+{
+    return doubleAbsolute(a - b) < epsilon;
+}
+
+#endif /* __cplusplus */
 
 /** Calculates offsets in data structures. */
 #define offsetof(TYPE, MEMBER) \
@@ -105,6 +125,13 @@
  */
 #define USED \
     __attribute__((__used__))
+
+/**
+ * Ensures strict minimum memory requirements.
+ * This option effectively disabled extra padding by the compiler.
+ */
+#define PACKED \
+    __attribute__((__packed__))
 
 /**
  * Aligns a symbol at the given boundary.

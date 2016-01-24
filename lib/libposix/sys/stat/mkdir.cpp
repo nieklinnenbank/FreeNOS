@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
+#include <FreeNOS/System.h>
 #include <FileSystemMessage.h>
 #include "Runtime.h"
 #include <errno.h>
@@ -31,18 +31,17 @@ int mkdir(const char *path, mode_t mode)
     msg.path   = (char *) path;
     msg.mode   = mode;
     msg.filetype = DirectoryFile;
-    msg.type   = IPCType;
     
     /* Ask the FileSystem to create it. */
     if (mnt)
     {
-	IPCMessage(mnt, API::SendReceive, &msg, sizeof(msg));
+        ChannelClient::instance->syncSendReceive(&msg, mnt);
 
-	/* Set errno. */
-	errno = msg.result;
+        // Set errno
+        errno = msg.result;
     }
     else
-	errno = ENOENT;
+        errno = ENOENT;
     
     /* Success. */
     return msg.result == ESUCCESS ? 0 : -1;

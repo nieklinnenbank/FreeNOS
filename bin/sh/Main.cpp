@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
+#include <FreeNOS/System.h>
 #include "Shell.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -68,7 +68,7 @@ int main(int argc, char **argv)
 	    /* Execute each command. */
 	    for (ListIterator<String> i(lines); i.hasCurrent(); i++)
 	    {
-		sh.execute((char *) *i.current());
+		sh.executeInput((char *) *i.current());
 	    }
 	    /* Cleanup. */
 	    delete contents;

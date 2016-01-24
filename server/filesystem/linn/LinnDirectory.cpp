@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
+#include <FreeNOS/System.h>
 #include "LinnDirectory.h"
 #include "LinnFile.h"
 
@@ -23,11 +23,11 @@ LinnDirectory::LinnDirectory(LinnFileSystem *f,
 			     LinnInode *i)
     : fs(f), inode(i)
 {
-    size   = inode->size;
-    access = inode->mode;
+    m_size   = inode->size;
+    m_access = inode->mode;
 }
 
-Error LinnDirectory::read(IOBuffer *buffer, Size size, Size offset)
+Error LinnDirectory::read(IOBuffer & buffer, Size size, Size offset)
 {
     LinnSuperBlock *sb = fs->getSuperBlock();
     LinnDirectoryEntry dent;
@@ -69,7 +69,7 @@ Error LinnDirectory::read(IOBuffer *buffer, Size size, Size offset)
 	tmp.type = (FileType) dInode->type;
 
 	/* Copy to the buffer. */
-	if (( e = buffer->write(&tmp, sizeof(Dirent), bytes)) < 0)
+	if (( e = buffer.write(&tmp, sizeof(Dirent), bytes)) < 0)
 	{
 	    return e;
 	}

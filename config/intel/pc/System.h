@@ -18,18 +18,20 @@
 #ifndef __INTEL_NUC_SYSTEM_H
 #define __INTEL_NUC_SYSTEM_H
 
+#define INTEL
+#define PC
+#define __SYSTEM
+
 #include <intel/IntelConstant.h>
 #include <intel/IntelCore.h>
 #include <intel/IntelIO.h>
 #include <intel/IntelState.h>
 #include <intel/IntelPaging.h>
 #include <intel/IntelMap.h>
-
 #include <intel/IntelKernel.h>
 #include <intel/IntelProcess.h>
 #include <intel/IntelSerial.h>
 
-#define INTEL
-#define PC
+#include <FreeNOS/API.h>
 
 #endif /* __INTEL_NUC_SYSTEM_H */

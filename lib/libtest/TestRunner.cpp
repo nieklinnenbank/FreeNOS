@@ -15,55 +15,65 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <libgen.h>
 #include <ListIterator.h>
-#include <TerminalCodes.h>
 #include "TestCase.h"
 #include "TestSuite.h"
 #include "TestRunner.h"
+#include "StdoutReporter.h"
+#include "TAPReporter.h"
 
 TestRunner::TestRunner(int argc, char **argv)
 {
+    // Set member default values.
     m_argc = argc;
     m_argv = argv;
-    m_showStatistics = !(argc > 1 && strcmp(argv[1], "-n") == 0);
+    m_reporter = new StdoutReporter(argc, argv);
+
+    // Check for command-line specified arguments.
+    for (int i = 0; i < argc; i++)
+    {
+        if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--tap") == 0)
+        {
+            if (m_reporter)
+                delete m_reporter;
+
+            m_reporter = new TAPReporter(argc, argv);
+            break;
+        }
+        else if (strcmp(argv[i], "-n") == 0)
+        {
+            m_reporter->setStatistics(false);
+        }
+    }
+}
+
+TestRunner::~TestRunner()
+{
+    delete m_reporter;
+}
+
+TestReporter * TestRunner::getReporter()
+{
+    return m_reporter;
 }
 
 int TestRunner::run(void)
 {
-    int ok = 0, fail = 0, skip = 0;
+    // Prepare for testing.
+    List<TestInstance *> *tests = TestSuite::instance->getTests();
+    m_reporter->begin(*tests);
 
-    for (ListIterator<TestInstance *> i(TestSuite::instance->getTests()); i.hasCurrent(); i++)
+    // Execute tests. Report per-test stats.
+    for (ListIterator<TestInstance *> i(tests); i.hasCurrent(); i++)
     {
         TestInstance *test = i.current();
 
-        printf("%s: %s .. ", basename(m_argv[0]), test->m_name);
+        m_reporter->prepare(*test);
         TestResult result = test->run();
-
-        switch (result)
-        {
-            case OK:   printf("%sOK\r\n", GREEN);   ok++;   break;
-            case FAIL: printf("%sFAIL\r\n", RED); fail++; break;
-            case SKIP: printf("%sSKIP\r\n", YELLOW); skip++; break;
-        }
-        printf("%s", WHITE);
+        m_reporter->collect(*test, result);
     }
-
-    if (m_showStatistics)
-    {
-        if (fail)
-            printf("%s: %sFAIL%s   ", basename(m_argv[0]), RED, WHITE);
-        else
-            printf("%s: %sOK%s   ", basename(m_argv[0]), GREEN, WHITE);
-
-        printf("(%d passed %d failed %d skipped %d total)\r\n",
-                ok, fail, skip, (ok+fail+skip));
-    }
-#ifdef __HOST__
-    fflush(stdout);
-#endif /* __HOST__ */
-    return fail;
+    // Finish testing. Report final stats.
+    m_reporter->finish(*tests);
+    return m_reporter->getFailed();
 }

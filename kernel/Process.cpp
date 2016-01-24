@@ -15,10 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/System.h>
+#include <FreeNOS/API.h>
+#include <Index.h>
+#include <MemoryBlock.h>
+#include <MemoryChannel.h>
+#include <SplitAllocator.h>
 #include "Process.h"
+#include "ProcessEvent.h"
 
 Process::Process(ProcessID id, Address entry, bool privileged, const MemoryMap &map)
-    : m_id(id), m_map(map)
+    : m_id(id), m_map(map), m_shares(id)
 {
     m_state         = Stopped;
     m_kernelStack   = 0;
@@ -26,13 +33,17 @@ Process::Process(ProcessID id, Address entry, bool privileged, const MemoryMap &
     m_pageDirectory = 0;
     m_parent        = 0;
     m_waitId        = 0;
+    m_wakeups       = 0;
     m_entry         = entry;
     m_privileged    = privileged;
     m_memoryContext = ZERO;
+    m_kernelChannel = new MemoryChannel;
+    MemoryBlock::set(&m_sleepTimer, 0, sizeof(m_sleepTimer));
 }
     
 Process::~Process()
 {
+    delete m_kernelChannel;
 }
 
 ProcessID Process::getID() const
@@ -53,6 +64,16 @@ ProcessID Process::getWait() const
 Process::State Process::getState() const
 {
     return m_state;
+}
+
+ProcessShares & Process::getShares()
+{
+    return m_shares;
+}
+
+const Timer::Info & Process::getSleepTimer() const
+{
+    return m_sleepTimer;
 }
 
 Address Process::getPageDirectory() const
@@ -95,6 +116,11 @@ void Process::setWait(ProcessID id)
     m_waitId = id;
 }
 
+void Process::setSleepTimer(const Timer::Info *sleepTimer)
+{
+    MemoryBlock::copy(&m_sleepTimer, sleepTimer, sizeof(m_sleepTimer));
+}
+
 void Process::setPageDirectory(Address addr)
 {
     m_pageDirectory = addr;
@@ -110,9 +136,75 @@ void Process::setKernelStack(Address addr)
     m_kernelStack = addr;
 }
 
-List<Message *> * Process::getMessages()
+Process::Result Process::raiseEvent(ProcessEvent *event)
 {
-    return &m_messages;
+    // Write the message. Be sure to flush the caches because
+    // the kernel has mapped the channel pages separately in low memory.
+    m_kernelChannel->write(event);
+    m_kernelChannel->flush();
+
+    // Wakeup the Process, if needed
+    return wakeup();
+}
+
+Process::Result Process::initialize()
+{
+    Memory::Range range;
+    Address paddr, vaddr;
+
+    // Allocate two pages for the kernel event channel
+    if (Kernel::instance->getAllocator()->allocateLow(PAGESIZE*2, &paddr) != Allocator::Success)
+        return OutOfMemory;
+
+    // Translate to virtual address in kernel low memory
+    vaddr = (Address) Kernel::instance->getAllocator()->toVirtual(paddr);
+    MemoryBlock::set((void *)vaddr, 0, PAGESIZE*2);
+    cache1_clean(vaddr);
+    cache1_clean(vaddr + PAGESIZE);
+
+    // Map data and feedback pages in userspace
+    range.phys   = paddr;
+    range.access = Memory::User | Memory::Readable | Memory::Uncached;
+    range.size   = PAGESIZE * 2;
+    m_memoryContext->findFree(range.size, MemoryMap::UserPrivate, &range.virt);
+    m_memoryContext->mapRange(&range);
+
+    // Remap the feedback page with write permissions
+    m_memoryContext->unmap(range.virt + PAGESIZE);
+    m_memoryContext->map(range.virt + PAGESIZE,
+                         range.phys + PAGESIZE, Memory::User | Memory::Readable | Memory::Writable);    
+
+    // Create shares entry
+    m_shares.setMemoryContext(m_memoryContext);
+    m_shares.createShare(KERNEL_PID, Kernel::instance->getCoreInfo()->coreId, 0, range.virt, range.size);
+
+    // Setup the kernel event channel
+    m_kernelChannel->setMode(Channel::Producer);
+    m_kernelChannel->setMessageSize(sizeof(ProcessEvent));
+    m_kernelChannel->setVirtual(vaddr, vaddr + PAGESIZE);
+
+    return Success;
+}
+
+Process::Result Process::wakeup()
+{
+    m_wakeups++;
+
+    if (m_state != Running)
+        m_state = Ready;
+
+    return Success;
+}
+
+Process::Result Process::sleep()
+{
+    if (!m_wakeups)
+    {
+        m_state = Sleeping;
+        return Success;
+    }
+    m_wakeups = 0;
+    return WakeupPending;
 }
 
 bool Process::operator==(Process *proc)

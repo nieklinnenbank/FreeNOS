@@ -20,12 +20,13 @@
 
 #include <Types.h>
 #include <BitOperations.h>
+#include <Timer.h>
 #include "IntelIO.h"
 
 /**
  * Intel 8254 Programmable Interrupt Timer (PIT).
  */
-class IntelPIT
+class IntelPIT : public Timer
 {
   private:
 
@@ -52,34 +53,16 @@ class IntelPIT
         Channel0      = 0,
         LatchedRead   = 0,
         AccessLowHigh = (3 << 4),
-        SquareWave    = (3 << 1)
+        SquareWave    = (3 << 1),
+        RateGenerator = (2 << 1),
     };
 
   public:
 
     /**
-     * Result codes.
-     */
-    enum Result
-    {
-        Success,
-        NotFound,
-        InvalidFrequency
-    };
-
-    /**
      * Constructor
      */
     IntelPIT();
-
-    /**
-     * Get interrupt number.
-     *
-     * The interrupt number for channel 0 is fixed to IRQ0.
-     *
-     * @return Interrupt number.
-     */
-    uint getInterruptNumber();
 
     /**
      * Get current timer counter.
@@ -95,13 +78,6 @@ class IntelPIT
     uint getCounter();
 
     /**
-     * Get interrupt frequency.
-     *
-     * @return Current interrupt frequency.
-     */
-    uint getFrequency();
-
-    /**
      * Set interrupt frequency.
      *
      * This function configures the PIT
@@ -112,14 +88,14 @@ class IntelPIT
      * @param hertz Number of interrupt triggers per second (in hertz)
      * @return Result code.
      */
-    Result setFrequency(uint hertz);
+    virtual Result setFrequency(Size hertz);
 
     /**
-     * Wait until trigger.
+     * Busy wait for one trigger period.
      *
      * @return Result code.
      */
-    Result wait();
+    Result waitTrigger();
 
   private:
 
@@ -130,9 +106,6 @@ class IntelPIT
      * @return Result code.
      */
     Result setControl(ControlFlags flags);
-
-    /** Interrupt frequency of the PIT in hertz. */
-    uint m_freq;
 
     /** I/O instance */
     IntelIO m_io;

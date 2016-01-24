@@ -20,19 +20,25 @@
 
 #include "TestCase.h"
 
+class TestReporter;
+
 class TestRunner
 {
   public:
 
     TestRunner(int argc, char **argv);
 
+    virtual ~TestRunner();
+
+    TestReporter * getReporter();
+
     int run(void);
 
-  private:
+  protected:
 
     int m_argc;
     char **m_argv;
-    bool m_showStatistics;
+    TestReporter *m_reporter;
 };
 
 #endif /* __LIBTEST_TESTRUNNER_H */

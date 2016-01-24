@@ -256,36 +256,36 @@ ATADrive;
  */
 class ATAController : public Device
 {
-    public:
+  public:
 
     /**
      * @brief Constructor function.
-         */
+     */
     ATAController();
 
     /**
      * @brief Configures the ATA controller.
      * @return Error result code.
      */    
-    Error initialize();
+    virtual Error initialize();
 
-        /** 
-         * Read bytes from a drive attached to the ATA controller.
-         * @param buffer Buffer to store bytes to read. 
-         * @param size Number of bytes to read. 
-         * @param offset Offset in the device. 
-         * @return Number of bytes on success and an error code on failure. 
-         */
-    Error read(s8 *buffer, Size size, Size offset);
-    
+    /** 
+     * Read bytes from a drive attached to the ATA controller.
+     * @param buffer Buffer to store bytes to read. 
+     * @param size Number of bytes to read. 
+     * @param offset Offset in the device. 
+     * @return Number of bytes on success and an error code on failure. 
+     */
+    virtual Error read(IOBuffer & buffer, Size size, Size offset);
+
     /**
      * @brief Process ATA interrupts.
      * @param vector Interrupt number.
      * @return Error result code.
      */
-    Error interrupt(Size vector);        
+    virtual Error interrupt(Size vector);        
     
-    private:
+  private:
     
     /**
      * @brief Polls the Regular Status register.

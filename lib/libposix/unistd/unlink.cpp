@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
+#include <FreeNOS/System.h>
 #include <FileSystemMessage.h>
 #include <errno.h>
 #include "Runtime.h"
@@ -31,15 +31,14 @@ int unlink(const char *path)
     {
         msg.action = DeleteFile;
         msg.path   = (char *) path;
-        msg.type   = IPCType;
         msg.from   = SELF;
-        IPCMessage(mnt, API::SendReceive, &msg, sizeof(msg));
+        ChannelClient::instance->syncSendReceive(&msg, mnt);
 
         /* Set error number. */
         errno = msg.result;
     }
     else
-	errno = ENOENT;
+        errno = ENOENT;
     
     /* Done. */
     return errno == ESUCCESS ? 0 : (off_t) -1;

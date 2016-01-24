@@ -60,7 +60,7 @@
 #define CMOS_YEARS_OFFS         2000
 
 /** @brief Offset in CMOS for the status A register. */
-#define RTC_STATUS_A		10
+#define RTC_STATUS_A        10
 
 /** @brief Offset in CMOS for the status B register. */
 #define RTC_STATUS_B            11
@@ -91,47 +91,47 @@ class Time : public Device
 {
     public:
 
-	/**
-	 * @brief Constructor function.
-	 */
-        Time();
+    /**
+     * @brief Constructor function.
+     */
+    Time();
 
-	/**
-	 * @brief Initializes the time class.
-	 * @return Error status code.
-	 */
-	Error initialize();
+    /**
+     * @brief Initializes the time class.
+     * @return Error status code.
+     */
+    virtual Error initialize();
 
-	/** 
-	 * @brief Read the system time.
-	 * @param buffer Buffer to save the read bytes.
-	 * @param size Number of bytes to read.
-	 * @param offset Offset in the file to read.
-	 * @return Number of bytes on success and ZERO on failure. 
-	 */
-	Error read(s8 *buffer, Size size, Size offset);
+    /** 
+     * @brief Read the system time.
+     * @param buffer Buffer to save the read bytes.
+     * @param size Number of bytes to read.
+     * @param offset Offset in the file to read.
+     * @return Number of bytes on success and ZERO on failure. 
+     */
+    virtual Error read(IOBuffer & buffer, Size size, Size offset);
 
-    private:
+  private:
     
-        /**
-         * @brief Returns the value stored at the given address
-         *        from the CMOS.
-	 * 
-         * @param addr The address to read from the CMOS
-         * @return The value at the given address.
-	 *
-	 * @note I almost copied this code completely from the linux source
-         *       from the file arch/x86/kernel/rtc.h so you should also
-         *       take a look over there how they do it.
-         */
-        unsigned char readCMOS(unsigned char addr);
+    /**
+     * @brief Returns the value stored at the given address
+     *        from the CMOS.
+     * 
+     * @param addr The address to read from the CMOS
+     * @return The value at the given address.
+     *
+     * @note I almost copied this code completely from the linux source
+     *       from the file arch/x86/kernel/rtc.h so you should also
+     *       take a look over there how they do it.
+     */
+    unsigned char readCMOS(unsigned char addr);
 
-	/**
-	 * @brief Convert from binary coded decimal to binary form.
-	 * @param val The value to convert.
-	 * @return A binary integer.
-	 */        
-        unsigned bcd2bin(unsigned char val);
+    /**
+     * @brief Convert from binary coded decimal to binary form.
+     * @param val The value to convert.
+     * @return A binary integer.
+     */        
+    unsigned bcd2bin(unsigned char val);
 };
 
 /**

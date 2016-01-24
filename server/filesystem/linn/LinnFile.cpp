@@ -15,22 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
+#include <FreeNOS/System.h>
 #include "LinnFile.h"
 #include <string.h>
 
 LinnFile::LinnFile(LinnFileSystem *f, LinnInode *i)
     : fs(f), inode(i)
 {
-    size   = inode->size;
-    access = inode->mode;
+    m_size   = inode->size;
+    m_access = inode->mode;
 }
 
 LinnFile::~LinnFile()
 {
 }
 
-Error LinnFile::read(IOBuffer *buffer, Size size, Size offset)
+Error LinnFile::read(IOBuffer & buffer, Size size, Size offset)
 {
     LinnSuperBlock *sb;
     Size bytes = 0, blockNr = 0;
@@ -38,6 +38,8 @@ Error LinnFile::read(IOBuffer *buffer, Size size, Size offset)
     u8 *block;
     Size total = 0;
     Error e;
+
+#warning very inefficient. blocks are not cached from storage and thrown away each time.
 
     /* Initialize variables. */
     sb     = fs->getSuperBlock();
@@ -78,7 +80,7 @@ Error LinnFile::read(IOBuffer *buffer, Size size, Size offset)
 	    bytes = size - total;
 	}
         /* Copy into the buffer. */
-	if ((e = buffer->write(block + copyOffset, bytes, total)) < 0)
+	if ((e = buffer.write(block + copyOffset, bytes, total)) < 0)
 	{
 	    delete block;
 	    return e;

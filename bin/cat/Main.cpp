@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <Runtime.h>
 
 int cat(char *prog, char *file)
 {
@@ -76,6 +77,8 @@ int main(int argc, char **argv)
 		argv[0]);
 	return EXIT_FAILURE;
     }
+    refreshMounts(0);
+
     /* Cat all given files. */
     for (int i = 0; i < argc - 1; i++)
     {

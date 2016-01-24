@@ -24,6 +24,10 @@ Channel::Channel()
     m_maximumMessages = 0;
 }
 
+Channel::~Channel()
+{
+}
+
 Size Channel::getMaximumMessages()
 {
     return m_maximumMessages;

@@ -25,7 +25,7 @@ def linnfs_generate(target, source, env):
     """
     rootfs_path = env.Dir(env['ROOTFS']).srcnode().path
 
-    os.system("build/host/server/filesystem/linn/create " + str(target[0]) + " -s -n 16384 -d " + rootfs_path)
+    os.system("build/host/server/filesystem/linn/create '" + str(target[0]) + "' -s -n 16384 -d '" + rootfs_path + "'")
 
 #
 # Prints out a user friendly command-line string.

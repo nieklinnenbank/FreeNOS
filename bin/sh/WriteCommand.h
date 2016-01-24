@@ -18,40 +18,29 @@
 #ifndef __SH_WRITECOMMAND
 #define __SH_WRITECOMMAND
 
-#include <Factory.h>
 #include <Types.h>
 #include "ShellCommand.h"
 
 /**
  * Write data to a file.
  */
-class WriteCommand : public ShellCommand, public Factory<WriteCommand>
+class WriteCommand : public ShellCommand
 {
-    public:
+  public:
     
-	/**
-	 * Constructor function.
-	 */
-	WriteCommand() : ShellCommand("write", 2)
-	{
-	}
-
-	/**
-	 * Get the help string for this command.
-	 * @return Pointer to character string describing what the command does.
-	 */
-	const char * help()
-	{
-	    return "Write data to a file";
-	}
+    /**
+     * Constructor function.
+     */
+    WriteCommand();
     
-	/**
-	 * Executes the command.
-	 * @param nparams Number of parameters given.
-	 * @param params Array of parameters.
-	 * @return Error code or zero on success.
-	 */
-	int execute(Size nparams, char **params);
+    /**
+     * Executes the command.
+     *
+     * @param nparams Number of parameters given.
+     * @param params Array of parameters.
+     * @return Error code or zero on success.
+     */
+    virtual int execute(Size nparams, char **params);
 };
 
 #endif /* __SH_WRITECOMMAND */

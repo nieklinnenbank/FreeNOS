@@ -123,7 +123,7 @@ MemoryContext::Result ARMSecondTable::translate(Address virt, Address *phys)
     if (!(m_pages[ TABENTRY(virt) ] & PAGE2_PRESENT))
         return MemoryContext::InvalidAddress;
 
-    *phys = m_pages[ TABENTRY(virt) ] & PAGEMASK;
+    *phys = (m_pages[ TABENTRY(virt) ] & PAGEMASK) + (virt & ~PAGEMASK) ;
     return MemoryContext::Success;
 }
 

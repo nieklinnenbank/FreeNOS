@@ -29,47 +29,75 @@
  */
 class Shell
 {
-    public:
+  public:
 
-        /**
-         * Constructor
-         */
-        Shell();
+    /**
+     * Constructor
+     */
+    Shell();
 
-	/**
-	 * Executes the Shell by entering an infinite loop.
-	 * @return Never.
-	 */
-	int run();
+    /**
+     * Get shell command.
+     *
+     * @param name ShellCommand name.
+     * @return ShellCommand object pointer.
+     */
+    ShellCommand * getCommand(const char *name);
 
-	/**
-	 * Executes the given command.
-	 * @param cmdline Command to execute.
-	 * @return Exit status of the command.
-	 */
-	int execute(char *cmdline);
+    /**
+     * Get all shell commands.
+     *
+     * @return HashTable with ShellCommands
+     */
+    HashTable<String, ShellCommand *> & getCommands();
 
-    private:
+    /**
+     * Register a new ShellCommand.
+     *
+     * @param command ShellCommand object pointer.
+     */
+    void registerCommand(ShellCommand *command);
+
+    /**
+     * Executes the Shell by entering an infinite loop.
+     * @return Never.
+     */
+    int run();
+
+    /**
+     * Executes the given input.
+     *
+     * @param cmdline Input to execute.
+     * @return Exit status of the command.
+     */
+    int executeInput(char *cmdline);
+
+  private:
     
-	/**
-	 * Fetch a command from standard input.
-	 * @return Pointer to a command.
-	 */
-	char * getCommand();
-    
-	/**
-	 * Output a prompt.
-	 */
-	void prompt();
+    /**
+     * Fetch a command text from standard input.
+     * @return Pointer to a command text.
+     */
+    char * getInput();
 
-	/**
-	 * Parses an input string into separate pieces.
-	 * @param cmdline Command input string.
-	 * @param argv Argument list buffer.
-	 * @param maxArgv Maximum number of entries in argv.
-	 * @return Number of parsed arguments.
-	 */	
-	Size parse(char *cmdline, char **argv, Size maxArgv);
+
+    /**
+     * Output a prompt.
+     */
+    void prompt();
+
+    /**
+     * Parses an input string into separate pieces.
+     * @param cmdline Command input string.
+     * @param argv Argument list buffer.
+     * @param maxArgv Maximum number of entries in argv.
+     * @param background True if process must run in the background.
+     * @return Number of parsed arguments.
+     */
+    Size parse(char *cmdline, char **argv, Size maxArgv, bool *background);
+
+    /** All known ShellCommands. */
+    HashTable<String, ShellCommand *> m_commands;
 };
 
 #endif /* __SH_SHELL */

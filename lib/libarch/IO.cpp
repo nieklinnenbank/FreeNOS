@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
+#include <FreeNOS/System.h>
 #include "MemoryContext.h"
 #include "Core.h"
 #include "IO.h"
@@ -35,18 +35,41 @@ void IO::setBase(uint base)
     m_base = base;
 }
 
-IO::Result IO::map(Address phys, Size size)
+IO::Result IO::map(Address phys, Size size, Memory::Access access)
 {
-    Memory::Range range;
-
-    range.virt   = 0;
-    range.phys   = phys;
-    range.access = Memory::Readable | Memory::Writable | Memory::User;
-    range.size   = size;
+    m_range.virt   = 0;
+    m_range.phys   = phys;
+    m_range.access = access;
+    m_range.size   = size;
 
     if (!isKernel)
     {
-        if (VMCtl(SELF, Map, &range) != API::Success)
+        if (VMCtl(SELF, Map, &m_range) != API::Success)
+            return MapFailure;
+    }
+    else
+    {
+        m_range.access &= ~Memory::User;
+
+        MemoryContext *ctx = MemoryContext::getCurrent();
+        if (!ctx)
+            return MapFailure;
+
+        if (ctx->findFree(size, MemoryMap::KernelPrivate, &m_range.virt) != MemoryContext::Success)
+            return OutOfMemory;
+
+        if (ctx->map(m_range.virt, phys, m_range.access) != MemoryContext::Success)
+            return MapFailure;
+    }
+    m_base = m_range.virt;
+    return Success;
+}
+
+IO::Result IO::unmap()
+{
+    if (!isKernel)
+    {
+        if (VMCtl(SELF, UnMap, &m_range) != API::Success)
             return MapFailure;
     }
     else
@@ -55,12 +78,8 @@ IO::Result IO::map(Address phys, Size size)
         if (!ctx)
             return MapFailure;
 
-        if (ctx->findFree(size, MemoryMap::KernelPrivate, &range.virt) != MemoryContext::Success)
-            return OutOfMemory;
-
-        if (ctx->map(range.virt, phys, range.access) != MemoryContext::Success)
+        if (ctx->unmapRange(&m_range) != MemoryContext::Success)
             return MapFailure;
     }
-    m_base = range.virt;
     return Success;
 }

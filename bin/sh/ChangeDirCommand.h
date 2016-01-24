@@ -18,40 +18,28 @@
 #ifndef __SH_CHANGE_DIR_COMMAND
 #define __SH_CHANGE_DIR_COMMAND
 
-#include <Factory.h>
 #include <Types.h>
 #include "ShellCommand.h"
 
 /**
  * Change the current working directory.
  */
-class ChangeDirCommand : public ShellCommand, public Factory<ChangeDirCommand>
+class ChangeDirCommand : public ShellCommand
 {
-    public:
+  public:
     
-	/**
-	 * Constructor function.
-	 */
-	ChangeDirCommand() : ShellCommand("cd", 1)
-	{
-	}
+    /**
+     * Constructor function.
+     */
+    ChangeDirCommand();
 
-	/**
-	 * Get the help string for this command.
-	 * @return Pointer to character string describing what the command does.
-	 */
-	const char * help()
-	{
-	    return "Change the current working directory";
-	}
-    
-	/**
-	 * Executes the command.
-	 * @param nparams Number of parameters given.
-	 * @param params Array of parameters.
-	 * @return Error code or zero on success.
-	 */
-	int execute(Size nparams, char **params);
+    /**
+     * Executes the command.
+     * @param nparams Number of parameters given.
+     * @param params Array of parameters.
+     * @return Error code or zero on success.
+     */
+    virtual int execute(Size nparams, char **params);
 };
 
 #endif /* __SH_CHANGE_DIR_COMMAND */

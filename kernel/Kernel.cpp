@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/System.h>
 #include <Log.h>
 #include <ListIterator.h>
 #include <SplitAllocator.h>
@@ -28,7 +29,6 @@
 #include "Process.h"
 #include "ProcessManager.h"
 #include "Scheduler.h"
-#include "API.h"
 
 Kernel::Kernel(CoreInfo *info)
     : Singleton<Kernel>(this), m_interrupts(256)
@@ -51,7 +51,8 @@ Kernel::Kernel(CoreInfo *info)
     m_procs  = new ProcessManager(new Scheduler());
     m_api    = new API();
     m_coreInfo   = info;
-    m_intControl = 0;
+    m_intControl = ZERO;
+    m_timer      = ZERO;
 
     // Mark kernel memory used (first 4MB in phys memory)
     for (Size i = 0; i < info->kernel.size; i += PAGESIZE)
@@ -110,6 +111,11 @@ MemoryContext * Kernel::getMemoryContext()
 CoreInfo * Kernel::getCoreInfo()
 {
     return m_coreInfo;
+}
+
+Timer * Kernel::getTimer()
+{
+    return m_timer;
 }
 
 void Kernel::enableIRQ(u32 irq, bool enabled)

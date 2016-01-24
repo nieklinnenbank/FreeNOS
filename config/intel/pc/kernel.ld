@@ -27,65 +27,61 @@ SECTIONS
     . = 0x00100000;
     kernelStart = .;
 
-    /DISCARD/ :
-    {
-        *(.note.gnu.build-id)
-    }
-
     .text virt : AT(phys)
     {
-	code = .;
-	*(.boot)
-	*(.text)
-	*(*.text)
-	*(.gnu.linkonce.*)
-	*(.rodata)
-	*(.rodata.*)
-	*(.eh_frame)
-	. = ALIGN(4096);
+        code = .;
+        *(.boot)
+        *(.text)
+        *(*.text)
+        *(.gnu.linkonce.*)
+        *(.rodata)
+        *(.rodata.*)
+        *(.eh_frame)
+        . = ALIGN(4096);
     }
 
     .data : AT (phys + (data - code))
     {
-	data = .;
-	*(.data)
+        data = .;
+        *(.data)
+        *(.note.gnu.build-id)
 
         CTOR_LIST = .;
-	KEEP (*(SORT(.ctors.*)))
-	KEEP (*(.ctors))
+        KEEP (*(SORT(.ctors.*)))
+        KEEP (*(.ctors))
         KEEP (*(.preinit_array))
         KEEP (*(.init_array.*))
         KEEP (*(.init_array))
-	LONG(0)
+        LONG(0)
         CTOR_END = .;
 
         DTOR_LIST = .;
-	KEEP (*(SORT(.dtors.*)))
-	KEEP (*(.dtors))
+        KEEP (*(SORT(.dtors.*)))
+        KEEP (*(.dtors))
         KEEP (*(.fini_array.*))
         KEEP (*(.fini_array))
         LONG(0)
         DTOR_END = .;
-	. += 4;
+        . += 4;
 
-	initStart = .;
-	KEEP (*(SORT(.init*)))
-	initEnd   = .;
+        initStart = .;
+        KEEP (*(SORT(.init*)))
+        initEnd   = .;
         isKernel = .;
         LONG(1);
-	. = ALIGN(4096);
+        . = ALIGN(4096);
     }
 
     .bss : AT(phys + (bss - code))
     {
-	bss = .;
-	*(.bss)
-	*(.bss.*)
-	*(COMMON)
+        bss = .;
+        *(.bss)
+        *(.bss.*)
+        *(COMMON)
 
         . += 4;
-	kernelEnd = .;
+        kernelEnd = .;
 
-	. = 0x00400000;
+        . = 0x00400000;
     }
 }

@@ -15,31 +15,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/API.h>
+#include <FreeNOS/System.h>
 #include <Log.h>
 #include "IntelConstant.h"
 #include "IntelMP.h"
 #include "IntelBoot.h"
 
 IntelMP::IntelMP()
+    : CoreManager()
 {
-    m_io.map(MPAreaAddr, MPAreaSize);
+    SystemInformation info;
+
+    m_bios.map(MPAreaAddr, MPAreaSize);
+    m_lastMemory.map(info.memorySize - MegaByte(1), MegaByte(1));
+
+    // TODO: avoid this. just pass a initialize(bool hardwareReset = true/false) instead
+    m_apic.getIO().map(IntelAPIC::IOBase, PAGESIZE);
 }
 
-List<uint> & IntelMP::getCores()
+IntelMP::MPConfig * IntelMP::scanMemory(Address addr)
 {
-    return m_cores;
-}
-
-IntelMP::Result IntelMP::discover()
-{
-    MPConfig *mpc = 0;
-    MPEntry *entry;
     MPFloat *mpf;
-    Address addr = m_io.getBase();
-
-    // Clear previous discoveries
-    m_cores.clear();
 
     // Look for the Multiprocessor configuration
     for (uint i = 0; i < MPAreaSize - sizeof(Address); i += sizeof(Address))
@@ -47,29 +43,41 @@ IntelMP::Result IntelMP::discover()
         mpf = (MPFloat *)(addr + i);
 
         if (mpf->signature == MPFloatSignature)
-        {
-            mpc = (MPConfig *) (mpf->configAddr - MPAreaAddr + addr);
-            break;
-        }
+            return (MPConfig *) (mpf->configAddr - MPAreaAddr + addr);
     }
-    // MPTables not found
+    return ZERO;
+}
+
+IntelMP::Result IntelMP::discover()
+{
+    MPConfig *mpc = 0;
+    MPEntry *entry;
+
+    // Clear previous discoveries
+    m_cores.clear();
+
+    // Try to find MPTable in the BIOS memory.
+    mpc = scanMemory(m_bios.getBase());
+
+    // Retry in the last 1MB of physical memory if not found.
     if (!mpc)
     {
-        ERROR("MP header not found");
-        return NotFound;
+        mpc = scanMemory(m_lastMemory.getBase());
+        if (!mpc)
+        {
+            ERROR("MP header not found");
+            return NotFound;
+        }
     }
 
     // Found config
-    DEBUG("MP header found at " << mpc);
+    DEBUG("MP header found at " << (void *) mpc);
     DEBUG("Local APIC at " << (void *) mpc->apicAddr);
     entry = (MPEntry *)(mpc + 1);
 
     // Search for multiprocessor entries
     for (uint i = 0; i < mpc->count; i++)
         entry = parseEntry(entry);
-
-    // Remap APIC in virtual memory
-    m_apic.getIO().map(mpc->apicAddr, PAGESIZE);
 
     return Success;
 }
@@ -90,7 +98,7 @@ IntelMP::Result IntelMP::boot(CoreInfo *info)
     VMCopy(SELF, API::Write, (Address) info, MPInfoAddr, sizeof(*info));
 
     // Send inter-processor-interrupt to wakeup the processor
-    if (m_apic.sendStartupIPI(info->coreId, MPEntryAddr) != IntelAPIC::Success)
+    if (m_apic.sendStartupIPI(info->coreId, MPEntryAddr) != IntController::Success)
         return IOError;
 
     // Wait until the core raises the 'booted' flag in CoreInfo
