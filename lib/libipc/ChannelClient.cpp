@@ -56,7 +56,6 @@ ChannelClient::Result ChannelClient::connect(ProcessID pid)
     MemoryChannel *cons = new MemoryChannel;
     if (!cons)
     {
-        ERROR("failed to allocate consumer MemoryChannel object");
         return OutOfMemory;
     }
     cons->setMessageSize(sizeof(FileSystemMessage));
@@ -66,7 +65,6 @@ ChannelClient::Result ChannelClient::connect(ProcessID pid)
     MemoryChannel *prod = new MemoryChannel;
     if (!prod)
     {
-        ERROR("failed to allocate producer MemoryChannel object");
         delete cons;
         return OutOfMemory;
     }
@@ -89,23 +87,18 @@ ChannelClient::Result ChannelClient::connect(ProcessID pid)
     {
         case API::Success:
         {
-            DEBUG("mapped new shared at phys=" << (void *) share.range.phys <<
-                  " virt=" << (void *) share.range.virt);
             prodAddr = share.range.virt;
             consAddr = share.range.virt + (PAGESIZE * 2);
             break;
         }
         case API::AlreadyExists:
         {
-            DEBUG("using already shared at phys=" << (void *) share.range.phys <<
-                  " virt=" << (void *) share.range.virt);
             prodAddr = share.range.virt + (PAGESIZE * 2);
             consAddr = share.range.virt;
             break;
         }
         default:
         {
-            ERROR("failed to create shared memory mapping for new channel");
             return IOError;
         }
     }
@@ -113,7 +106,6 @@ ChannelClient::Result ChannelClient::connect(ProcessID pid)
     // Setup producer memory address
     if (prod->setVirtual(prodAddr, prodAddr + PAGESIZE) != MemoryChannel::Success)
     {
-        ERROR("failed to set producer virtual memory address");
         delete prod;
         delete cons;
         return IOError;
@@ -122,7 +114,6 @@ ChannelClient::Result ChannelClient::connect(ProcessID pid)
     // Setup consumer memory address
     if (cons->setVirtual(consAddr, consAddr + PAGESIZE) != MemoryChannel::Success)
     {
-        ERROR("failed to set consumer virtual memory address");
         delete prod;
         delete cons;
         return IOError;
@@ -146,6 +137,76 @@ ChannelClient::Result ChannelClient::receiveAny(void *buffer, ProcessID *pid)
     }
     return NotFound;
 }
+
+ChannelClient::Result ChannelClient::sendRequest(ProcessID pid,
+                                                 void *buffer,
+                                                 CallbackFunction *callback)
+{
+    Request *req = 0;
+    Size identifier = 0;
+    Channel *ch  = findProducer(pid);
+    if (!ch)
+        return NotFound;
+
+    // Find request object
+    for (Size i = 0; i < m_requests.count(); i++)
+    {
+        req = (Request *) m_requests.get(i);
+        if (!req->active)
+        {
+            identifier = i;
+            break;
+        }
+    }
+    // Allocate new request object if none available
+    if (!req || req->active)
+    {
+        req = new Request;
+        req->message = new FileSystemMessage;
+        identifier   = m_requests.insert(*req);
+    }
+    // Fill request object
+    MemoryBlock::copy(req->message, buffer, ch->getMessageSize());
+    req->pid = pid;
+    req->message->identifier = identifier;
+    req->message->type = ChannelMessage::Request;
+    req->callback = callback;
+    req->active = true;
+
+    DEBUG("sending request with id = " << req->message->identifier << " to PID " << pid);
+
+    // Try to send the message
+    if (ch->write(req->message) != Channel::Success)
+    {
+        req->active = false;
+        return IOError;
+    }
+    // Wakeup the receiver
+    ProcessCtl(pid, Resume, 0);
+    return Success;
+}
+
+ChannelClient::Result ChannelClient::processResponse(ProcessID pid,
+                                                     ChannelMessage *msg)
+{
+    Size count = m_requests.count();
+
+    for (Size i = 0; i < count; i++)
+    {
+        Request *req = (Request *) m_requests.get(i);
+
+        if (req->active &&
+            req->pid == pid &&
+            req->message->identifier == msg->identifier)
+        {
+            req->callback->execute(msg);
+            req->active = false;
+            return Success;
+        }
+    }
+    return NotFound;
+}
+
 
 Channel * ChannelClient::findConsumer(ProcessID pid)
 {
@@ -181,7 +242,7 @@ ChannelClient::Result ChannelClient::syncReceiveFrom(void *buffer, ProcessID pid
     if (!ch)
         return NotFound;
 
-#warning use Sleep instead to avoid unneeded spinning
+#warning TODO: for inter-core communication, the wakeup call becomes an IPI!
 
     while (ch->read(buffer) != Channel::Success)
         ProcessCtl(SELF, EnterSleep, 0);

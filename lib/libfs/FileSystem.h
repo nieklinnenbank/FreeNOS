@@ -49,6 +49,13 @@ class FileSystem : public ChannelServer<FileSystem, FileSystemMessage>
     virtual ~FileSystem();
 
     /**
+     * Get mount path
+     *
+     * @return Mount path of the filesystem
+     */
+    const char * getMountPath() const;
+
+    /**
      * Get root directory.
      *
      * @return Root directory pointer
@@ -124,6 +131,20 @@ class FileSystem : public ChannelServer<FileSystem, FileSystemMessage>
      * @see FileSystemAction
      */
     void pathHandler(FileSystemMessage *msg);
+
+    /**
+     * Called when a sleep timeout is expired
+     *
+     * This function does a retry on all FileSystemRequests
+     */
+    virtual void timeout();
+
+    /**
+     * Retry any pending requests
+     *
+     * @return True if retry is needed again, false if all requests processed
+     */
+    bool retryRequests();
 
   protected:
 

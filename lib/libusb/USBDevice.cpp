@@ -21,6 +21,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
+#include <Runtime.h>
+#include <FileDescriptor.h>
 #include "USBDevice.h"
 #include "USBDescriptor.h"
 
@@ -32,6 +34,9 @@ USBDevice::USBDevice(u8 deviceId, const char *busPath)
     m_transferFile = -1;
     m_device = new USBDescriptor::Device;
     m_config = new USBDescriptor::Configuration;
+
+    for (Size i = 0; i < m_endpointsPacketId.size(); i++)
+        m_endpointsPacketId.insert(i, 0);
 
     MemoryBlock::set(m_device, 0, sizeof(*m_device));
     MemoryBlock::set(m_config, 0, sizeof(*m_config));
@@ -355,6 +360,77 @@ Error USBDevice::transfer(const USBTransfer::Type type,
 
     // Perform control message transfer
     return submit(msg);
+}
+
+Error USBDevice::beginTransfer(
+    const USBTransfer::Type type,
+    const USBTransfer::Direction direction,
+    Address endpointId,
+    void *buffer,
+    Size size,
+    Size maxPacketSize,
+    CallbackFunction *callback)
+{
+    DEBUG("");
+
+    // TODO: make a Pool for this to avoid runtime allocations
+    USBMessage *msg = new USBMessage;
+    msg->direction     = direction;
+    msg->speed         = m_speed;
+    msg->type          = type;
+    msg->state         = USBMessage::Status;
+
+    if (maxPacketSize)
+        msg->maxPacketSize = maxPacketSize;
+    else
+        msg->maxPacketSize = !m_device->maxPacketSize ? 8 : m_device->maxPacketSize;
+
+    msg->deviceId      = m_id;
+    msg->endpointId    = endpointId & 0xf;
+    msg->size          = size;
+    msg->packetId      = m_endpointsPacketId.at(msg->endpointId);
+
+    // Use the physical address of the buffer
+    // TODO: for security this is not good. The USBDevice
+    // can supply a malicious physical address, even inside the kernel.
+    Memory::Range range;
+    range.virt = (Address) buffer;
+    VMCtl(SELF, LookupVirtual, &range);
+    msg->buffer = range.phys;
+
+    // TODO: move this kind of code in libfs (filesystem client) and reuse in libposix's write() too.
+    FileSystemMessage fs;
+    FileDescriptor *fd = (FileDescriptor *) getFiles()->get(m_transferFile);
+
+    // Write the file
+    if (fd)
+    {
+        fs.type   = ChannelMessage::Request;
+        fs.action = WriteFile;
+        fs.path   = fd->path;
+        fs.buffer = (char *) msg;
+        fs.size   = sizeof(*msg);
+        fs.offset = (Size) buffer; // TODO: abuse the offset field to remember virtual input buffer address
+        fs.from   = SELF;
+        fs.deviceID.minor = fd->identifier;
+        if (ChannelClient::instance->sendRequest(fd->mount, &fs, callback) == ChannelClient::Success)
+            return ESUCCESS;
+    }
+    return EIO;
+}
+
+Error USBDevice::finishTransfer(FileSystemMessage *msg)
+{
+    DEBUG("");
+
+    // Update the packet id for non-control transfers
+    USBMessage *usb = (USBMessage *) msg->buffer;
+    if (usb->type != USBTransfer::Control)
+        m_endpointsPacketId.insert(usb->endpointId, usb->packetId);
+
+    // Release buffer
+    delete msg->buffer;
+    return ESUCCESS;
 }
 
 Error USBDevice::submit(USBMessage & msg)

@@ -39,6 +39,7 @@ typedef struct USBMessage
     Address hubAddress;  /**< USB hub address */
     Address portAddress; /**< USB port address */
     Size maxPacketSize;  /**< Maximum packet size */
+    u8 packetId;         /**< PacketId to use for non-control transfers */
 
     Address buffer;     /**< I/O buffer for sending/receiving payload data */
     Size size;          /**< Number of bytes to transfer. */

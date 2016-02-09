@@ -31,8 +31,6 @@
 
 const char * CoreServer::kernelPath = "/boot/kernel";
 
-#warning reimplement CoreServer such that it inherits from FileSystemServer to avoid FileSystemMessage!=CoreMessage conflict in ChannelClient
-
 CoreServer::CoreServer()
     : ChannelServer<CoreServer, FileSystemMessage>(this)
 {
@@ -188,6 +186,7 @@ CoreServer::Result CoreServer::test()
     if (m_info.coreId != 0)
     {
         FileSystemMessage msg;
+        msg.type   = ChannelMessage::Request;
         msg.action = StatFile;
         msg.path = (char *)0x12345678;
         msg.size = m_info.coreId;
@@ -519,3 +518,7 @@ CoreServer::Result CoreServer::setupChannels()
     return Success;
 }
 
+bool CoreServer::retryRequests()
+{
+    return false;
+}

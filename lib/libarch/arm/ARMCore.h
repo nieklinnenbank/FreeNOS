@@ -69,14 +69,14 @@
 /**
  * Reboot the system (by sending the a reset signal on the keyboard I/O port)
  */
-#define reboot()
+#define cpu_reboot()
 
 /**
  * Shutdown the machine via ACPI.
  * @note We do not have ACPI yet. Shutdown now has a bit naive implementation.
  * @see http://forum.osdev.org/viewtopic.php?t=16990
  */
-#define shutdown()
+#define cpu_shutdown()
 
 /**  
  * Puts the CPU in a lower power consuming state. 

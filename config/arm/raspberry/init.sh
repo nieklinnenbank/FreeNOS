@@ -11,6 +11,7 @@ stdio /dev/serial/serial0/io /dev/serial/serial0/io
 /server/usb/controller/server &
 /server/usb/hub/server &
 /server/filesystem/tmp/server /tmp &
+/server/network/loopback/server &
 
 #
 # Serial Console

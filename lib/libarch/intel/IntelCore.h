@@ -48,7 +48,7 @@ inline u64 timestamp()
 /**
  * Reboot the system (by sending the a reset signal on the keyboard I/O port)
  */
-#define reboot() \
+#define cpu_reboot() \
 ({ \
     IntelIO io; \
     io.outb(0x64, 0xfe); \
@@ -60,7 +60,7 @@ inline u64 timestamp()
  * @note We do not have ACPI yet. Shutdown now has a bit naive implementation.
  * @see http://forum.osdev.org/viewtopic.php?t=16990
  */
-#define shutdown() \
+#define cpu_shutdown() \
 ({ \
     IntelIO io; \
     io.outw(0xB004, 0x0 | 0x2000); \

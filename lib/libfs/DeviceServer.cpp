@@ -70,6 +70,7 @@ void DeviceServer::registerInterrupt(Device *dev, Size vector)
 void DeviceServer::interruptHandler(Size vector)
 {
     List<Device *> *lst = m_interrupts.at(vector);
+    Error ret;
 
     // Do we have any Devices with this interrupt vector?
     if (lst)
@@ -80,14 +81,6 @@ void DeviceServer::interruptHandler(Size vector)
             i.current()->interrupt(vector);
         }
     }
-
-    // Retry any pending requests, if any
-    for (ListIterator<FileSystemRequest *> i(m_requests); i.hasCurrent(); i++)
-    {
-        if (processRequest(i.current()) != EAGAIN)
-        {
-            delete i.current();
-            i.remove();
-        }
-    }
+    // Keep retrying any pending requests, if any
+    while (retryRequests());
 }

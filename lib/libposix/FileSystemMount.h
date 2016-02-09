@@ -21,6 +21,8 @@
 #include <Types.h>
 #include "limits.h"
 
+// TODO: move this to libfs
+
 /** Maximum number of mounted filesystems. */
 #define FILESYSTEM_MAXMOUNTS 16
 

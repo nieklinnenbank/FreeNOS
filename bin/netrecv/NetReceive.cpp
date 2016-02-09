@@ -70,13 +70,13 @@ NetReceive::Result NetReceive::initialize()
          it.hasCurrent(); it++)
     {
         printf("key = '%s' value = '%s'\n",
-                *it.key(), it.current()->getName());
+                *it.key(), *it.current()->getName());
     }
         
     for (Size i = 0; i < m_arguments.getPositionals().count(); i++)
     {
-        printf("pos[%d]: %s = %s\n", i, m_arguments.getPositionals()[i]->getName(),
-                                        m_arguments.getPositionals()[i]->getValue());
+        printf("pos[%d]: %s = %s\n", i, *m_arguments.getPositionals()[i]->getName(),
+                                        *m_arguments.getPositionals()[i]->getValue());
     }
 
     //const String *dev = m_arguments.get("device");
@@ -104,7 +104,8 @@ NetReceive::Result NetReceive::receiveArp()
 
     while (true)
     {
-        receivePacket(packet, sizeof(packet));
+        if (receivePacket(packet, sizeof(packet)) != Success)
+            continue;
 
         Ethernet::Header *ether = (Ethernet::Header *) packet;
         ARP::Header *arp = (ARP::Header *) (ether+1);
@@ -117,18 +118,18 @@ NetReceive::Result NetReceive::receiveArp()
                     arp->hardwareLength,
                     arp->protocolLength,
                     be16_to_cpu(arp->operation));
-            printf("ARP: mac src=%x", arp->etherSource.addr[0]);
+            printf("ARP: mac src=%x", arp->etherSender.addr[0]);
 
             for (int i = 1; i < 6; i++)
-                printf(":%x", arp->etherSource.addr[i]);
+                printf(":%x", arp->etherSender.addr[i]);
 
-            printf(" mac dest=%x", arp->etherDestination.addr[0]);
+            printf(" mac dest=%x", arp->etherTarget.addr[0]);
             for (int i = 1; i < 6; i++)
-                printf(":%x", arp->etherSource.addr[i]);
+                printf(":%x", arp->etherTarget.addr[i]);
             
             printf("\n");
 
-            printf("ARP: ip src=%x ip dst=%x\n", be32_to_cpu(arp->ipSource), be32_to_cpu(arp->ipDestination));
+            printf("ARP: ip src=%x ip dst=%x\n", be32_to_cpu(arp->ipSender), be32_to_cpu(arp->ipTarget));
             return Success;
         }
         else
@@ -143,7 +144,7 @@ NetReceive::Result NetReceive::receivePacket(u8 *packet, Size size)
     DEBUG("");
 
     // Receive on physical device
-    const char *device = m_arguments.getPositionals()[0]->getValue();
+    const char *device = *m_arguments.getPositionals()[0]->getValue();
     int fd = open(device, O_RDWR);
     int result;
 
@@ -158,7 +159,7 @@ NetReceive::Result NetReceive::receivePacket(u8 *packet, Size size)
     {
         printf("failed to receive packet on device '%s': %s\n",
                 device, strerror(errno));
-        exit(EXIT_FAILURE);
+        return IOError;
     }
     printf("received %d bytes\n", result);
 
@@ -167,5 +168,6 @@ NetReceive::Result NetReceive::receivePacket(u8 *packet, Size size)
     printf("\n");
 
     // Done
+    close(fd);
     return Success;
 }

@@ -130,6 +130,15 @@ void setupHeap()
     Allocator::setDefault(pool);
 }
 
+void setupRandomizer()
+{
+    ProcessID pid = getpid();
+    Timer::Info timer;
+    ProcessCtl(SELF, InfoTimer, (Address) &timer);
+
+    ::srandom(pid + timer.ticks);
+}
+
 void setupChannels()
 {
     ChannelClient *client = new ChannelClient();
@@ -327,6 +336,7 @@ extern C void SECTION(".entry") _entry()
     runConstructors();
     setupChannels();
     setupMappings();
+    setupRandomizer();
 
     /* Allocate buffer for arguments. */
     argc = 0;

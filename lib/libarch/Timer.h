@@ -129,6 +129,14 @@ class Timer
      */
     virtual Result wait(u32 microseconds);
 
+    /**
+     * Check if a timer value is expired
+     *
+     * @param info Timer info value to compare
+     * @return True if expired, false otherwise
+     */
+    bool isExpired(const Info *info);
+
   protected:
 
     /** The current Timer information. */

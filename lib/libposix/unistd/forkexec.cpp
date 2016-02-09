@@ -132,6 +132,7 @@ int forkexec(const char *path, const char *argv[])
     // Send a pointer to our list of file descriptors to the child
     // TODO: ofcourse, insecure. To be fixed later.
     msg.from = SELF;
+    msg.type = ChannelMessage::Request;
     msg.path = (char *) fds->vector();
     ChannelClient::instance->syncSendReceive(&msg, pid);
 

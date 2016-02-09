@@ -22,6 +22,8 @@
 #include <Types.h>
 #include <Device.h>
 #include <Index.h>
+#include <Array.h>
+#include <Callback.h>
 #include "USBTransfer.h"
 #include "USBDescriptor.h"
 #include "USBMessage.h"
@@ -97,7 +99,7 @@ class USBDevice : public Device
                          Size size);
 
     /**
-     * Start a USB transfer.
+     * Start a synchronous USB transfer.
      */
     Error transfer(const USBTransfer::Type type,
                    const USBTransfer::Direction direction,
@@ -105,6 +107,22 @@ class USBDevice : public Device
                    void *buffer,
                    Size size,
                    Size maxPacketSize = 0);
+
+    /**
+     * Start an asynchronous USB transfer
+     */
+    Error beginTransfer(const USBTransfer::Type type,
+                        const USBTransfer::Direction direction,
+                        Address endpointId,
+                        void *buffer,
+                        Size size,
+                        Size maxPacketSize = 0,
+                        CallbackFunction *callback = 0);
+
+    /**
+     * Complete asynchronous USB transfer
+     */
+    Error finishTransfer(FileSystemMessage *msg);
 
     /**
      * Submit a USB transfer to the Host controller.
@@ -137,6 +155,14 @@ class USBDevice : public Device
 
     /** USB string descriptor */
     Index<USBDescriptor::String> m_strings;
+
+    /**
+     * Contains endpoint to saved packet id mapping.
+     *
+     * Some host controllers require the endpoint to save
+     * the next packet identifier (Data0, Data1) for non-control transfers.
+     */
+    Array<u8, 128> m_endpointsPacketId;
 };
 
 #endif /* __LIBUSB_USBDEVICE_H */

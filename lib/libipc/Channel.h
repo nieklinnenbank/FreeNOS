@@ -59,11 +59,18 @@ class Channel
     virtual ~Channel();
 
     /**
+     * Get message size
+     *
+     * @return Message size
+     */
+    const Size getMessageSize() const;
+
+    /**
      * Get maximum message count.
      *
      * @return Maximum message count.
      */
-    Size getMaximumMessages();
+    const Size getMaximumMessages() const;
 
     /**
      * Set mode.

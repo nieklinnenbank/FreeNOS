@@ -24,7 +24,7 @@ Argument::Argument(const char *name)
     m_count = 0;
 }
 
-char Argument::getIdentifier()
+char Argument::getIdentifier() const
 {
     return m_id;
 }
@@ -34,19 +34,19 @@ Size Argument::getCount() const
     return m_count;
 }
 
-const char * Argument::getName()
+const String & Argument::getName() const
 {
-    return *m_name;
+    return m_name;
 }
 
-const char * Argument::getDescription()
+const String & Argument::getDescription() const
 {
-    return *m_description;
+    return m_description;
 }
 
-const char * Argument::getValue()
+const String & Argument::getValue() const
 {
-    return *m_value;
+    return m_value;
 }
 
 void Argument::setIdentifier(char id)

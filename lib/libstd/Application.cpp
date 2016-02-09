@@ -24,6 +24,7 @@ Application::Application(int argc, char **argv)
     m_parser.registerFlag('h', "help", "show program help");
     m_parser.registerFlag('v', "version", "show program version");
     m_parser.registerFlag('l', "log-level", "change log level");
+    m_parser.registerFlag('d', "debug", "set log level to debug");
 }
 
 Application::~Application()
@@ -51,7 +52,10 @@ int Application::run()
 
     //if (m_arguments.get("log-level"))
     //    Log::setMinimalLogLevel(...)
-    
+
+    if (m_arguments.get("debug") && Log::instance)
+        Log::instance->setMinimumLogLevel(Log::Debug);
+
     if (initialize() != Success)
         return ExitFailure;
 

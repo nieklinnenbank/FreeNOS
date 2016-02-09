@@ -26,6 +26,8 @@
 
 #define FILE_DESCRIPTOR_MAX 1024
 
+// TODO: move this to libfs
+
 /**
  * Abstracts a file which is opened by a user process.
  */

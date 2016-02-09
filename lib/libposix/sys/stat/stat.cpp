@@ -28,6 +28,7 @@ int stat(const char *path, struct stat *buf)
     ProcessID mnt = findMount(path);
 
     /* Fill message. */
+    msg.type   = ChannelMessage::Request;
     msg.action = StatFile;
     msg.path   = (char *) path;
     msg.stat   = &st;

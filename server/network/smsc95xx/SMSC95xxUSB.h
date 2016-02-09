@@ -15,15 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBNET_SMSC95XX_H
-#define __LIBNET_SMSC95XX_H
+#ifndef __LIBNET_SMSC95XXUSB_H
+#define __LIBNET_SMSC95XXUSB_H
 
 #include <USBDevice.h>
+#include <Ethernet.h>
+#include <NetworkQueue.h>
+
+class NetworkServer;
+class SMSC95xx;
 
 /**
  * SMSC95xx USB-based Ethernet controller.
  */
-class SMSC95xx : public USBDevice
+class SMSC95xxUSB : public USBDevice
 {
   private:
 
@@ -122,9 +127,6 @@ class SMSC95xx : public USBDevice
         TxCommandBLength     = 0x000007FF
     };
 
-    /** Transmit Command Word size. */
-    static const Size TransmitCommandSize = 8;
-
     /**
      * Receive Command Words.
      */
@@ -146,24 +148,26 @@ class SMSC95xx : public USBDevice
         RxCommandCRCError        = 0x00000002
     };
 
-    /** Receive Command Word size. */
-    static const Size ReceiveCommandSize = 4;
-
   public:
 
-    /**
-     * Represents a MAC Ethernet address.
-     */
-    typedef struct MACAddress
-    {
-        u8 addr[6];
-    }
-    MACAddress;
+    /** Transmit Command Word size. */
+    static const Size TransmitCommandSize = 8;
+
+    /** Receive Command Word size. */
+    static const Size ReceiveCommandSize = 4;
 
     /**
      * Constructor
      */
-    SMSC95xx(u8 deviceId, const char *usbPath = "/usb");
+    SMSC95xxUSB(u8 deviceId,
+                const char *usbPath,
+                NetworkServer *server,
+                SMSC95xx *smsc);
+
+    /**
+     * Destructor
+     */
+    virtual ~SMSC95xxUSB();
 
     /**
      * Initialize the controller.
@@ -173,36 +177,29 @@ class SMSC95xx : public USBDevice
     virtual Error initialize();
 
     /**
-     * @brief Read bytes from the file.
+     * Transmit one network packet
      *
-     * @param buffer Input/Output buffer to output bytes to.
-     * @param size Number of bytes to read, at maximum.
-     * @param offset Offset inside the file to start reading.
-     * @return Number of bytes read on success, Error on failure.
+     * @param pkt Network packet buffer
      */
-    virtual Error read(IOBuffer & buffer, Size size, Size offset);
-
-    /**
-     * Write bytes to ethernet.
-     *
-     * @param buffer Input/Output buffer to input bytes from.
-     * @param size Number of bytes to write, at maximum.
-     * @param offset Offset inside the file to start writing.
-     * @return Number of bytes written on success, Error on failure.
-     */
-    virtual Error write(IOBuffer & buffer, Size size, Size offset);
+    virtual Error transmit(NetworkQueue::Packet *pkt);
 
   private:
+
+    void readStart();
+    void readFinished(FileSystemMessage *message);
+
+    void writeStart();
+    void writeFinished(FileSystemMessage *message);
 
     /**
      * Get MAC address.
      */
-    Error getMACAddress(MACAddress *address);
+    Error getMACAddress(Ethernet::Address *address);
 
     /**
      * Set MAC address.
      */
-    Error setMACAddress(MACAddress address);
+    Error setMACAddress(Ethernet::Address address);
 
     /**
      * Read a SMSC95xx register.
@@ -214,14 +211,20 @@ class SMSC95xx : public USBDevice
      */
     void write(Register reg, u32 value);
 
-    /** Packet buffer */
-    u8 *m_packet;
-
-    /** Packet buffer size */
-    Size m_packetSize;
-
     /** Word aligned temporary value */
     u32 *m_value;
+
+    /** Callback object for readFinished() */
+    Callback<SMSC95xxUSB, FileSystemMessage> *m_readFinished;
+
+    /** Callback object for writeFinished() */
+    Callback<SMSC95xxUSB, FileSystemMessage> *m_writeFinished;
+
+    Size m_packetSize;
+    NetworkServer *m_server;
+    SMSC95xx *m_smsc;
+    NetworkQueue::Packet *m_rxPacket;
+    NetworkQueue::Packet *m_txPacket;
 };
 
-#endif /* __LIBNET_SMSC95XX_H */
+#endif /* __LIBNET_SMSC95XXUSB_H */

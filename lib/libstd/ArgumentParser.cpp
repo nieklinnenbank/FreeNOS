@@ -152,7 +152,7 @@ ArgumentParser::Result ArgumentParser::parse(int argc,
             if (m_positionals[pos]->getCount() == 0)
                 arg = new Argument(*part1);
             else
-                arg = new Argument(m_positionals[pos++]->getName());
+                arg = new Argument(*m_positionals[pos++]->getName());
 
             arg->setValue(*parts.last());
             output.addPositional(arg);
