@@ -90,7 +90,7 @@ class Log : public Singleton<Log>
     /**
      * Destructor
      */
-    ~Log();
+    virtual ~Log();
 
     /**
      * Get the minimum logging level.
