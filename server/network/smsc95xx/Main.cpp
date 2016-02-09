@@ -22,7 +22,7 @@
 int main(int argc, char **argv)
 {
     KernelLog log;
-    log.setMinimumLogLevel(Log::Debug);
+    log.setMinimumLogLevel(Log::Notice);
 
     NetworkServer server("/network/smsc95xx"); // TODO: add serial code? something unique to this device.
 

@@ -130,6 +130,7 @@ NetPing::Result NetPing::arpPing(const char *dev,
         ERROR("failed to convert to IPV4 address: " << host);
         return IOError;
     }
+    printf("Sending ARP request to %s\n", host);
 
     // Send ARP request
     if (::write(sock, &ipAddr, sizeof(ipAddr)) < 0)

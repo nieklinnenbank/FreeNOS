@@ -26,7 +26,7 @@ int main(int argc, char **argv)
      * there may also be a call to DEBUG() or ERROR().
      */
     KernelLog log;
-    log.setMinimumLogLevel(Log::Debug);
+    log.setMinimumLogLevel(Log::Notice);
 
     NetPing app(argc, argv);
     return app.run();
