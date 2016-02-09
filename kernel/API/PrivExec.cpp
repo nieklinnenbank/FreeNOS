@@ -34,11 +34,11 @@ Error PrivExecHandler(PrivOperation op, Address addr)
             idle();
     
     case Reboot:
-        reboot();
+        cpu_reboot();
         while (true) ;
         
     case Shutdown:
-        shutdown();
+        cpu_shutdown();
         return API::Success;
 
     case WriteConsole:

@@ -44,6 +44,13 @@ class ProcessManager
     virtual ~ProcessManager();
 
     /**
+     * Get scheduler object
+     *
+     * @return Scheduler object instance
+     */
+    Scheduler * getScheduler();
+
+    /**
      * Create and add a new Process.
      */
     Process * create(Address entry, const MemoryMap &map);

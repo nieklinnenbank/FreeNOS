@@ -33,7 +33,10 @@ void interruptNotify(CPUState *st, Process *p)
     p->raiseEvent(&event);
 }
 
-Error ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
+Error ProcessCtlHandler(ProcessID procID,
+                        ProcessOperation action,
+                        Address addr,
+                        Address output)
 {
     Process *proc = ZERO;
     ProcessInfo *info = (ProcessInfo *) addr;
@@ -127,8 +130,11 @@ Error ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
 
     case EnterSleep:
         // only sleeps the process if no pending wakeups
-        if (procs->current()->sleep() == Process::Success)
+        if (procs->current()->sleep((Timer::Info *)addr) == Process::Success)
             procs->schedule();
+
+        if (output && ((timer = Kernel::instance->getTimer())))
+            timer->getCurrent((Timer::Info *) output); // TODO: check access...
         break;
 
     case SetStack:

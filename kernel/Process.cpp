@@ -71,9 +71,9 @@ ProcessShares & Process::getShares()
     return m_shares;
 }
 
-const Timer::Info & Process::getSleepTimer() const
+const Timer::Info * Process::getSleepTimer() const
 {
-    return m_sleepTimer;
+    return &m_sleepTimer;
 }
 
 Address Process::getPageDirectory() const
@@ -193,14 +193,19 @@ Process::Result Process::wakeup()
     if (m_state != Running)
         m_state = Ready;
 
+    MemoryBlock::set(&m_sleepTimer, 0, sizeof(m_sleepTimer));
     return Success;
 }
 
-Process::Result Process::sleep()
+Process::Result Process::sleep(Timer::Info *timer)
 {
     if (!m_wakeups)
     {
         m_state = Sleeping;
+        
+        if (timer)
+            MemoryBlock::copy(&m_sleepTimer, timer, sizeof(m_sleepTimer));
+
         return Success;
     }
     m_wakeups = 0;

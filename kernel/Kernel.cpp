@@ -252,6 +252,7 @@ int Kernel::run()
     loadBootImage();
 
     // Start the scheduler
+    m_procs->getScheduler()->setTimer(m_timer);
     m_procs->schedule();
 
     // Never actually returns.
