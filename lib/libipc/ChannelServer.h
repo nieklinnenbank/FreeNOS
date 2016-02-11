@@ -316,7 +316,7 @@ template <class Base, class MsgType> class ChannelServer
             DEBUG(m_self << ": trying to receive from PID " << i.key());
 
             // TODO: warning: we do only one read. there may be more messages in one channel
-            if (ch->read(&msg) == Channel::Success)
+            while (ch->read(&msg) == Channel::Success)
             {
                 DEBUG(m_self << ": received message");
                 msg.from = i.key();
