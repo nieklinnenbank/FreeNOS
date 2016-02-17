@@ -29,6 +29,7 @@ MemoryMap::MemoryMap(const MemoryMap &map)
     setRange(UserHeap,      map.m_regions[UserHeap]);
     setRange(UserStack,     map.m_regions[UserStack]);
     setRange(UserPrivate,   map.m_regions[UserPrivate]);
+    setRange(UserShare,     map.m_regions[UserShare]);
 }
 
 Memory::Range MemoryMap::range(MemoryMap::Region region)

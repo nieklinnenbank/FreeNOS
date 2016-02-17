@@ -82,11 +82,6 @@ Process::Result ARMProcess::initialize()
 
 ARMProcess::~ARMProcess()
 {
-    // TODO: release() on m_kernelStack
-    m_memoryContext->releaseRegion(MemoryMap::UserData);
-    m_memoryContext->releaseRegion(MemoryMap::UserHeap);
-    m_memoryContext->releaseRegion(MemoryMap::UserStack);
-    m_memoryContext->releaseRegion(MemoryMap::UserPrivate);
 }
 
 void ARMProcess::execute(Process *previous)

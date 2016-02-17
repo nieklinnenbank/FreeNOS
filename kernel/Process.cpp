@@ -44,6 +44,15 @@ Process::Process(ProcessID id, Address entry, bool privileged, const MemoryMap &
 Process::~Process()
 {
     delete m_kernelChannel;
+
+    if (m_memoryContext)
+    {
+        m_memoryContext->releaseRegion(MemoryMap::UserData);
+        m_memoryContext->releaseRegion(MemoryMap::UserHeap);
+        m_memoryContext->releaseRegion(MemoryMap::UserStack);
+        m_memoryContext->releaseRegion(MemoryMap::UserPrivate);
+        delete m_memoryContext;
+    }
 }
 
 ProcessID Process::getID() const
@@ -166,6 +175,7 @@ Process::Result Process::initialize()
     range.phys   = paddr;
     range.access = Memory::User | Memory::Readable | Memory::Uncached;
     range.size   = PAGESIZE * 2;
+#warning TODO: need to have a separate Shared region, which is ONLY released after BOTH processes did a release
     m_memoryContext->findFree(range.size, MemoryMap::UserPrivate, &range.virt);
     m_memoryContext->mapRange(&range);
 

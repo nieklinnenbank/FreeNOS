@@ -54,6 +54,9 @@ class ProcessShares
         /** Physical memory address range. */
         Memory::Range range;
 
+        /** True if the share is attached (used by both processes) */
+        bool attached;
+
         bool operator == (const struct MemoryShare & sh) const
         {
             return true;
@@ -135,7 +138,24 @@ class ProcessShares
      */
     Result readShare(MemoryShare *share);
 
+    /**
+     * Remove all shares for the given ProcessID
+     *
+     * @param pid ProcessID to remove all shares for
+     * @return Result code
+     */
+    Result removeShares(ProcessID pid);
+
   private:
+
+    /**
+     * Release one memory share
+     *
+     * @param share MemoryShare object pointer
+     * @param idx Index position of the object
+     * @return Result code
+     */
+    Result releaseShare(MemoryShare *share, Size idx);
 
     /** ProcessID associated to these shares */
     ProcessID m_pid;

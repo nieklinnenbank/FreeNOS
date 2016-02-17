@@ -39,4 +39,7 @@ IntelMap::IntelMap()
 
     m_regions[UserPrivate].virt   = 0xa0000000;
     m_regions[UserPrivate].size   = MegaByte(256);
+
+    m_regions[UserShare].virt     = 0xd0000000;
+    m_regions[UserShare].size     = MegaByte(256);
 }

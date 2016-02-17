@@ -41,12 +41,17 @@ ProcessShares::~ProcessShares()
 
     // Make a list of unique process IDs which
     // have a share with this Process
-    Size count = m_shares.count();
-    for (Size i = 0; i < count; i++)
+    Size size = m_shares.size();
+    for (Size i = 0; i < size; i++)
     {
-        const MemoryShare *sh = m_shares.get(i);
-        if (sh && !pids.contains(sh->pid))
-            pids.append(sh->pid);
+        MemoryShare *sh = (MemoryShare *) m_shares.get(i);
+        if (sh)
+        {
+            if (!pids.contains(sh->pid))
+                pids.append(sh->pid);
+
+            releaseShare(sh, i);
+        }
     }
 
     // Raise process terminated events
@@ -155,9 +160,10 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
     localShare->range.phys = paddr;
     localShare->range.size = share->range.size;
     localShare->range.access = Memory::User | share->range.access;
+    localShare->attached   = true;
 
     // Map in the local process
-    if (localMem->findFree(localShare->range.size, MemoryMap::UserPrivate, &localShare->range.virt) != MemoryContext::Success ||
+    if (localMem->findFree(localShare->range.size, MemoryMap::UserShare, &localShare->range.virt) != MemoryContext::Success ||
         localMem->mapRange(&localShare->range) != MemoryContext::Success)
     {
         delete localShare;
@@ -171,9 +177,10 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
     remoteShare->range.phys   = localShare->range.phys;
     remoteShare->range.size   = localShare->range.size;
     remoteShare->range.access = localShare->range.access;
+    remoteShare->attached     = true;
 
     // Map in the remote process
-    if (remoteMem->findFree(remoteShare->range.size, MemoryMap::UserPrivate, &remoteShare->range.virt) != MemoryContext::Success ||
+    if (remoteMem->findFree(remoteShare->range.size, MemoryMap::UserShare, &remoteShare->range.virt) != MemoryContext::Success ||
         remoteMem->mapRange(&remoteShare->range) != MemoryContext::Success)
     {
         delete localShare;
@@ -198,12 +205,82 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
     return Success;
 }
 
+ProcessShares::Result ProcessShares::removeShares(ProcessID pid)
+{
+    // TODO: remove all shares for the given pid
+    // TODO: in case the share exists in the remote share AND in our share,
+    //       just remove it here, mark it detached in the remote share.
+    // TODO: in case the share exists only in our side (detached), unmap and release all memory
+    // TODO: call this function from VMShare() and from IPCServer (when a ProcessTerminated message comes in)
+    Size size = m_shares.size();
+    MemoryShare *s = 0;
+
+    for (Size i = 0; i < size; i++)
+    {
+        if ((s = (MemoryShare *) m_shares.get(i)) != ZERO)
+        {
+            if (s->pid != pid)
+                continue;
+
+            releaseShare(s, i);
+        }
+    }
+    return Success;
+}
+
+ProcessShares::Result ProcessShares::releaseShare(MemoryShare *s, Size idx)
+{
+    // Only release physical memory if both processes have detached.
+    // Note that in case all memory shares for a certain ProcessID have
+    // been detached but not yet released, and due to a very unlikely race
+    // condition (ProcessID reuse) a new memory share was just created (before old ones were released)
+    // the new memory share would also be detached here, resulting in a memory
+    // share with is detached in this process but attached and useless in the
+    // other process.
+    if (s->attached)
+    {
+        Process *proc = Kernel::instance->getProcessManager()->get(s->pid);
+        if (proc)
+        {
+            ProcessShares & shares = proc->getShares();
+            Size size = shares.m_shares.size();
+
+            // Mark all process shares detached in the other process
+            for (Size i = 0; i < size; i++)
+            {
+                MemoryShare *otherShare = (MemoryShare *) shares.m_shares.get(i);
+                if (otherShare && otherShare->pid == m_pid
+                               && otherShare->coreId == s->coreId)
+                {
+                    otherShare->attached = false;
+                }
+            }
+        }
+    }
+    else
+    {
+        // Only release physical memory pages if the other
+        // process already detached earlier
+        Allocator *alloc = Kernel::instance->getAllocator();
+
+        for (Size i = 0; i < s->range.size; i += PAGESIZE)
+            alloc->release(s->range.phys + i);
+    }
+    // Unmap the share
+    m_memory->unmapRange(&s->range);
+
+    // Remove share from our administration
+    m_shares.remove(idx);
+    delete s;
+    return Success;
+}
+
 ProcessShares::Result ProcessShares::readShare(MemoryShare *share)
 {
-    Size count     = m_shares.count();
+    Size size = m_shares.size();
     const MemoryShare *s = 0;
 
-    for (Size i = 0; i < count; i++)
+    for (Size i = 0; i < size; i++)
     {
         if ((s = m_shares.get(i)) != ZERO)
         {

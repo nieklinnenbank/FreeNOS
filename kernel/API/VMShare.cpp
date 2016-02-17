@@ -36,7 +36,7 @@ Error VMShareHandler(ProcessID procID, API::Operation op, ProcessShares::MemoryS
         else
             proc = procs->current();
     }
-    else if (!(proc = procs->get(procID)))
+    else if (!(proc = procs->get(procID)) && op != API::Delete)
     {
         return API::NotFound;
     }
@@ -58,6 +58,11 @@ Error VMShareHandler(ProcessID procID, API::Operation op, ProcessShares::MemoryS
             {
                 ret = API::IOError;
             }
+            break;
+
+        case API::Delete:
+            if (procs->current()->getShares().removeShares(procID) != ProcessShares::Success)
+                ret = API::IOError;
             break;
 
         default:

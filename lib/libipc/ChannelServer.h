@@ -98,6 +98,7 @@ template <class Base, class MsgType> class ChannelServer
         share.pid    = KERNEL_PID;
         share.coreId = info.coreId;
         share.tagId  = 0;
+
         if (VMShare(SELF, API::Read, &share) != API::Success)
         {
             ERROR("failed to get kernel event channel");
@@ -270,6 +271,7 @@ template <class Base, class MsgType> class ChannelServer
                 case ShareRemoved:
                     DEBUG(m_self << ": share removed");
                     break;
+
                 case InterruptEvent:
                 {
                     DEBUG(m_self << ": interrupt: " << event.number);
@@ -289,7 +291,8 @@ template <class Base, class MsgType> class ChannelServer
                     // TODO: Do any implementation defined cleanup for this PID
                     // m_instance->unregisterProcess(event.number)
 
-                    // TODO: cleanup the VMShare area now for that process
+                    // cleanup the VMShare area now for that process
+                    VMShare(event.number, API::Delete, ZERO);
                     break;
                 }
                 default:
@@ -315,7 +318,7 @@ template <class Base, class MsgType> class ChannelServer
             Channel *ch = i.current();
             DEBUG(m_self << ": trying to receive from PID " << i.key());
 
-            // TODO: warning: we do only one read. there may be more messages in one channel
+            // Read all messages in the consumer channel
             while (ch->read(&msg) == Channel::Success)
             {
                 DEBUG(m_self << ": received message");

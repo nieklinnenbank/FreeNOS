@@ -92,26 +92,36 @@ MemoryContext::Result MemoryContext::unmapRange(Memory::Range *range)
 
 MemoryContext::Result MemoryContext::release(Address virt)
 {
-#warning implement release
-    return Success;
+    Address phys;
+    Result result = lookup(virt, &phys);
+
+    if (result == Success)
+        m_alloc->release(phys);
+
+    return result;
 }
 
 MemoryContext::Result MemoryContext::releaseRegion(MemoryMap::Region region)
 {
-#warning implement region release
-    return Success;
+    Memory::Range range = m_map->range(region);
+    return releaseRange(&range);
 }
 
 MemoryContext::Result MemoryContext::releaseRange(Memory::Range *range)
 {
+    Result result;
     Address phys;
 
+    // Release inside the range page-by-page. Note that this
+    // code is not very efficient without optimizations turned on (-O2).
     for (Size i = 0; i < range->size; i += PAGESIZE)
     {
-        if (lookup(range->virt + i, &phys) == Success)
-            m_alloc->release(phys);
+        if ((result = lookup(range->virt + i, &phys)) != Success)
+            break;
+
+        m_alloc->release(phys);
     }
-    return Success;
+    return result;
 }
 
 MemoryContext::Result MemoryContext::findFree(Size size, MemoryMap::Region region, Address *virt)
