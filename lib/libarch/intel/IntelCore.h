@@ -138,20 +138,6 @@ inline u64 timestamp()
 		  "popfl\n" :: "g" (saved))
 
 /**
- * Level One Cache clean by page.
- *
- * @param page Virtual memory address to clean.
- */
-#define cache1_clean(page)
-
-/**
- * Level One Cache full clean.
- *
- * Not implemented for Intel.
- */
-#define cache1_clean_full()
-
-/**
  * @group Intel CPU Exceptions
  * @{
  */

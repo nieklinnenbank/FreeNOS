@@ -39,16 +39,16 @@ env.TargetProgram('kernel', [ Glob('*.S'),
 # Provide binary kernel image to overwrite kernel.img on the Raspbian SD card.
 #
 env.Command('kernel.img', 'kernel', env['CROSS_COMPILE'] + 'objcopy -O binary ' +
-            env['BUILDROOT'] + '/kernel/arm/raspberry/kernel ' +
-            env['BUILDROOT'] + '/kernel/arm/raspberry/kernel.img')
+            env['BUILDROOT'] + '/kernel/arm/' + env['SYSTEM'] + '/kernel ' +
+            env['BUILDROOT'] + '/kernel/arm/' + env['SYSTEM'] + '/kernel.img')
 
 #
 # Trick QEMU into thinking we provide a Linux kernel, such that it will
 # pass ATAGS bootloader information (similar to Multiboot for intel)
 #
 env.Command('vmlinux', 'kernel', 'cp ' +
-            env['BUILDROOT'] + '/kernel/arm/raspberry/kernel ' +
-            env['BUILDROOT'] + '/kernel/arm/raspberry/vmlinux')
+            env['BUILDROOT'] + '/kernel/arm/' + env['SYSTEM'] + '/kernel ' +
+            env['BUILDROOT'] + '/kernel/arm/' + env['SYSTEM'] + '/vmlinux')
 
 #
 # Qemu targets
@@ -64,6 +64,15 @@ env.Targets(qemu_usb = 'qemu-system-arm -kernel ' + build_env['BUILDROOT'] +
 env.Targets(qemu_debug = 'qemu-system-arm -kernel ' + build_env['BUILDROOT'] +
                          '/kernel/arm/raspberry/vmlinux -cpu arm1176 -M raspi -nographic -s -S ' +
                          '-initrd ' + build_env['BUILDROOT'] + '/boot.img')
+
+env.Targets(qemu_debug2 = 'qemu-system-arm2 -kernel ' + build_env['BUILDROOT'] +
+                         '/kernel/arm/raspberry2/vmlinux -M raspi2 -nographic -s -S -cpu cortex-a8 ' +
+                         '-initrd ' + build_env['BUILDROOT'] + '/boot.img')
+
+env.Targets(qemu2 = 'qemu-system-arm2 -kernel ' + build_env['BUILDROOT'] +
+                    '/kernel/arm/raspberry2/vmlinux -M raspi2 -nographic -cpu cortex-a8 ' +
+                    '-initrd ' + build_env['BUILDROOT'] + '/boot.img')
+
 
 env.Targets(qemu_debugs = 'qemu-system-arm -kernel ' + build_env['BUILDROOT'] +
                           '/kernel/arm/raspberry/vmlinux -cpu arm1176 -M raspi -nographic -s -S -d int,cpu_reset ' +

@@ -15,24 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __INTEL_PC_SYSTEM_H
-#define __INTEL_PC_SYSTEM_H
+#include "Cache.h"
 
-#define INTEL
-#define PC
-#define __SYSTEM
+Cache::Result Cache::cleanData(Address addr)
+{
+    return cleanAddress(Data, addr);
+}
 
-#include <intel/IntelConstant.h>
-#include <intel/IntelCore.h>
-#include <intel/IntelCache.h>
-#include <intel/IntelIO.h>
-#include <intel/IntelState.h>
-#include <intel/IntelPaging.h>
-#include <intel/IntelMap.h>
-#include <intel/IntelKernel.h>
-#include <intel/IntelProcess.h>
-#include <intel/IntelSerial.h>
-
-#include <FreeNOS/API.h>
-
-#endif /* __INTEL_PC_SYSTEM_H */
+Cache::Result Cache::cleanData(void *ptr)
+{
+    return cleanAddress(Data, (Address) ptr);
+}

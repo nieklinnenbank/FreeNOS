@@ -15,24 +15,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __INTEL_PC_SYSTEM_H
-#define __INTEL_PC_SYSTEM_H
+#ifndef __ARM_RASPBERRY_SYSTEM_H
+#define __ARM_RASPBERRY_SYSTEM_H
 
-#define INTEL
-#define PC
+/** Raspberry Pi 2 have a Broadcom 2836 SoC */
 #define __SYSTEM
+#define ARM
+#define ARMV7
+#define BCM2835 // TODO: remove!
+#define BCM2836
 
-#include <intel/IntelConstant.h>
-#include <intel/IntelCore.h>
-#include <intel/IntelCache.h>
-#include <intel/IntelIO.h>
-#include <intel/IntelState.h>
-#include <intel/IntelPaging.h>
-#include <intel/IntelMap.h>
-#include <intel/IntelKernel.h>
-#include <intel/IntelProcess.h>
-#include <intel/IntelSerial.h>
+/** Default IO base on the Broadcom 2836 */
+#define IO_BASE 0x3F000000
+#define IO_SIZE (1024*1024*128)
+
+#include <arm/ARMConstant.h>
+#include <arm/ARMCore.h>
+#include <arm/ARMCacheV7.h>
+#include <arm/ARMIO.h>
+#include <arm/ARMState.h>
+#include <arm/ARMPaging.h>
+#include <arm/ARMMap.h>
+#include <arm/ARMKernel.h>
+#include <arm/ARMProcess.h>
 
 #include <FreeNOS/API.h>
 
-#endif /* __INTEL_PC_SYSTEM_H */
+#endif /* __ARM_RASPBERRY_SYSTEM_H */

@@ -18,6 +18,7 @@
 #ifndef __LIBARCH_ARM_FIRSTTABLE_H
 #define __LIBARCH_ARM_FIRSTTABLE_H
 
+#include <FreeNOS/System.h>
 #include <Types.h>
 #include <MemoryContext.h>
 #include "ARMSecondTable.h"

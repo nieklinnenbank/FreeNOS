@@ -325,6 +325,7 @@ extern C void SECTION(".entry") _entry()
     int ret, argc;
     char *arguments;
     char **argv;
+    SystemInformation info;
 
     /* Clear BSS */
     extern Address __bss_start, __bss_end;

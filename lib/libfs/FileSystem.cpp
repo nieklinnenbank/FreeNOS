@@ -161,6 +161,8 @@ Error FileSystem::processRequest(FileSystemRequest *req)
     if ((msg->result = VMCopy(msg->from, API::Read, (Address) buf,
                     (Address) msg->path, PATHLEN)) <= 0)
     {
+        ERROR("path missing: result = " << (int)msg->result << " from = " << msg->from <<
+              " addr = " << (uint)msg->path << " action = " << (int) msg->action << " stat = " << (int) msg->stat);
         msg->type = ChannelMessage::Response;
         msg->result = EACCES;
         m_registry->getProducer(msg->from)->write(msg);

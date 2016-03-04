@@ -37,6 +37,9 @@ class ARMControl
 {
   public:
 
+    /**
+     * System Control Registers
+     */
     enum Register
     {
         MainID = 0,
@@ -73,7 +76,11 @@ class ARMControl
         BranchPrediction  = (1 << 11),
         AlignmentCorrect  = (1 << 22),
         AlignmentFaults   = (1 << 1),
+#ifdef ARMV6
         BigEndian         = (1 << 7)
+#else
+        BigEndian         = (1 << 25)
+#endif
     };
 
     /**
@@ -81,7 +88,8 @@ class ARMControl
      */
     enum AuxControlFlags
     {
-        DisablePageColoring = (1 << 6)
+        DisablePageColoring = (1 << 6),
+        SMPBit              = (1 << 6)
     };
 
     /**

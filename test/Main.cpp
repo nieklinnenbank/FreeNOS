@@ -55,9 +55,14 @@ int main(int argc, char **argv)
 
     // Disable top-level reporting
     runner.getReporter()->setReport(false);
+    printf("%s: running tests in '%s'\n", argv[0], path);
 
     // Discover tests
-    scanner.scan(path);
+    if (scanner.scan(path) != EXIT_SUCCESS)
+    {
+        printf("%s: failed to discover tests\n", argv[0]);
+        return EXIT_FAILURE;
+    }
 
     // Run tests
     for (int i = 0; i < iterations; i++)

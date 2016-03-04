@@ -22,6 +22,8 @@ Error PrivExecHandler(PrivOperation op, Address addr)
 {
     ProcessManager *procs = Kernel::instance->getProcessManager();
 
+    DEBUG("");
+
     switch (op)
     {
     case Idle:
@@ -29,7 +31,6 @@ Error PrivExecHandler(PrivOperation op, Address addr)
         procs->setIdle(procs->current());
         irq_enable();
 
-#warning ARM does not implement idle() yet!        
         while (true)
             idle();
     

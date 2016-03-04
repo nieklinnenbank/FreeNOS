@@ -27,6 +27,8 @@ Error VMShareHandler(ProcessID procID, API::Operation op, ProcessShares::MemoryS
     ProcessManager *procs = Kernel::instance->getProcessManager();
     Process *proc = ZERO;
     Error ret = API::Success;
+
+    DEBUG("");
     
     // Find the given process
     if (procID == SELF)

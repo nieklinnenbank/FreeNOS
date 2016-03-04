@@ -123,6 +123,7 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
     MemoryContext *localMem  = m_memory;
     MemoryContext *remoteMem = instance.getMemoryContext();
     Address paddr, vaddr;
+    Arch::Cache cache;
 
     if (share->range.size == 0)
         return InvalidArgument;
@@ -151,7 +152,7 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
     vaddr = (Address) Kernel::instance->getAllocator()->toVirtual(paddr);
     MemoryBlock::set((void *)vaddr, 0, share->range.size);
     for (Size i = 0; i < share->range.size; i+=PAGESIZE)
-        cache1_clean(vaddr + i);
+        cache.cleanData(vaddr + i);
 
     // Fill the local share object
     localShare->pid        = instance.getProcessID();
@@ -196,7 +197,8 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
     // raise event on the remote process
     Process *proc = Kernel::instance->getProcessManager()->get(instance.getProcessID());
     ProcessEvent event;
-    event.type = ShareCreated;
+    event.type   = ShareCreated;
+    event.number = m_pid;
     MemoryBlock::copy(&event.share, remoteShare, sizeof(*remoteShare));
     proc->raiseEvent(&event);
 

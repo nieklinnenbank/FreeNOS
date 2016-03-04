@@ -27,6 +27,8 @@ Error VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
     Address paddr, vaddr;
     Size bytes = 0, pageOff, total = 0;
 
+    DEBUG("");
+
     // Find the corresponding Process
     if (procID == SELF)
         proc = procs->current();

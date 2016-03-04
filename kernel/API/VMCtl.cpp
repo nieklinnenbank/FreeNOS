@@ -25,6 +25,8 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range)
     ProcessManager *procs = Kernel::instance->getProcessManager();
     Process *proc = ZERO;
     Error ret = API::Success;
+
+    DEBUG("");
     
     // Find the given process
     if (procID == SELF)
@@ -62,10 +64,11 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range)
             mem->releaseRange(range);
             break;
 
-        case CacheClean:
-            cache1_clean_full();
+        case CacheClean: {
+            Arch::Cache cache;
+            cache.cleanInvalidate(Cache::Data);
             break;
-
+        }
         case Access:
             ret = (API::Error) mem->access(range->virt, &range->access);
             break;

@@ -79,7 +79,7 @@ ChannelClient::Result ChannelClient::connect(ProcessID pid)
     share.range.size = PAGESIZE * 4;
     share.range.virt = 0;
     share.range.phys = 0;
-    share.range.access = Memory::User | Memory::Readable | Memory::Writable | Memory::Uncached;
+    share.range.access = Memory::User | Memory::Readable | Memory::Writable;
 
     // Create shared memory mapping
     Error r = VMShare(pid, API::Create, &share);
@@ -242,8 +242,7 @@ ChannelClient::Result ChannelClient::syncReceiveFrom(void *buffer, ProcessID pid
     if (!ch)
         return NotFound;
 
-#warning TODO: for inter-core communication, the wakeup call becomes an IPI!
-
+    // TODO: for inter-core communication, the wakeup call becomes an IPI!
     while (ch->read(buffer) != Channel::Success)
         ProcessCtl(SELF, EnterSleep, 0);
 

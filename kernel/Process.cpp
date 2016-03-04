@@ -160,6 +160,7 @@ Process::Result Process::initialize()
 {
     Memory::Range range;
     Address paddr, vaddr;
+    Arch::Cache cache;
 
     // Allocate two pages for the kernel event channel
     if (Kernel::instance->getAllocator()->allocateLow(PAGESIZE*2, &paddr) != Allocator::Success)
@@ -168,21 +169,20 @@ Process::Result Process::initialize()
     // Translate to virtual address in kernel low memory
     vaddr = (Address) Kernel::instance->getAllocator()->toVirtual(paddr);
     MemoryBlock::set((void *)vaddr, 0, PAGESIZE*2);
-    cache1_clean(vaddr);
-    cache1_clean(vaddr + PAGESIZE);
+    cache.cleanData(vaddr);
+    cache.cleanData(vaddr + PAGESIZE);
 
     // Map data and feedback pages in userspace
     range.phys   = paddr;
-    range.access = Memory::User | Memory::Readable | Memory::Uncached;
+    range.access = Memory::User | Memory::Readable;
     range.size   = PAGESIZE * 2;
-#warning TODO: need to have a separate Shared region, which is ONLY released after BOTH processes did a release
     m_memoryContext->findFree(range.size, MemoryMap::UserPrivate, &range.virt);
     m_memoryContext->mapRange(&range);
 
     // Remap the feedback page with write permissions
     m_memoryContext->unmap(range.virt + PAGESIZE);
     m_memoryContext->map(range.virt + PAGESIZE,
-                         range.phys + PAGESIZE, Memory::User | Memory::Readable | Memory::Writable);    
+                         range.phys + PAGESIZE, Memory::User | Memory::Readable | Memory::Writable);
 
     // Create shares entry
     m_shares.setMemoryContext(m_memoryContext);

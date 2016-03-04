@@ -42,8 +42,26 @@
 #define ABT_MODE    23
 #define UND_MODE    27
 #define SYS_MODE    31
-#define IRQ_BIT    (1 << 7)
-#define FIQ_BIT    (1 << 6)
+#define HYP_MODE    0x1a
+#define MODE_MASK   0x1f
+#define IRQ_BIT         (1 << 7)
+#define FIQ_BIT         (1 << 6)
+#define ASYNC_ABORT_BIT (1 << 8)
+
+/**
+ * @}
+ */
+
+/**
+ * ARM Model-Specific Instructions
+ * @{
+ */
+
+/** msr ELR_hyp, lr */
+#define ELR  .long 0xe12ef30e
+
+/** eret */
+#define ERET .long 0xe160006e
 
 /**
  * @}

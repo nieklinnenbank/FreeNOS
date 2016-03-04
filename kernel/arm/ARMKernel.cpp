@@ -47,9 +47,12 @@ ARMKernel::ARMKernel(ARMInterrupt *intr,
 
     // Set ARMCore modes
     ARMControl ctrl;
-    ctrl.unset(ARMControl::AlignmentCorrect);
     ctrl.set(ARMControl::AlignmentFaults);
+
+#ifdef ARMV6
+    ctrl.unset(ARMControl::AlignmentCorrect);
     ctrl.unset(ARMControl::BigEndian);
+#endif
 }
 
 void ARMKernel::interrupt(CPUState state)

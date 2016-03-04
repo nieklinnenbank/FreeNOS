@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Niek Linnenbank
+ * Copyright (C) 2016 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,24 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __INTEL_PC_SYSTEM_H
-#define __INTEL_PC_SYSTEM_H
+#include "IntelCache.h"
 
-#define INTEL
-#define PC
-#define __SYSTEM
+IntelCache::Result IntelCache::invalidate(IntelCache::Type type)
+{
+    return Success;
+}
 
-#include <intel/IntelConstant.h>
-#include <intel/IntelCore.h>
-#include <intel/IntelCache.h>
-#include <intel/IntelIO.h>
-#include <intel/IntelState.h>
-#include <intel/IntelPaging.h>
-#include <intel/IntelMap.h>
-#include <intel/IntelKernel.h>
-#include <intel/IntelProcess.h>
-#include <intel/IntelSerial.h>
+IntelCache::Result IntelCache::cleanInvalidate(IntelCache::Type type)
+{
+    return Success;
+}
 
-#include <FreeNOS/API.h>
+IntelCache::Result IntelCache::cleanInvalidateAddress(Type type, Address addr)
+{
+    return Success;
+}
 
-#endif /* __INTEL_PC_SYSTEM_H */
+IntelCache::Result IntelCache::cleanAddress(IntelCache::Type type, Address addr)
+{
+    return Success;
+}

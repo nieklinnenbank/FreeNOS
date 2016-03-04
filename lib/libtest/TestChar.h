@@ -111,14 +111,17 @@ template<> char * TestChar<char *>::random(Size count)
 
 template<> char * TestChar<char *>::unique(Size count)
 {
-    TestInt<uint> sizes(m_max, m_min);
+    TestInt<uint> sizes(m_min, m_max);
     TestInt<uint> chars(32, 126); /* ' ' till '~' */
     Size len = m_min;
-    char buf[len], *value = ZERO;
+    char buf[m_max+1], *value = ZERO;
 
     // Generate minimum length prefix string.
-    for (Size i = 0; i < len; i++)
+    for (Size i = 0; i < m_max; i++)
         buf[i] = (char) chars.random();
+
+    // Null terminator
+    buf[m_max] = 0;
 
     // Generate 'count' unique strings using the prefix.
     for (Size i = len; i < m_max && count; i++)
