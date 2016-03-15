@@ -141,7 +141,7 @@ Error IPV4::getTransmitPacket(NetworkQueue::Packet **pkt,
     hdr->versionIHL     = (sizeof(Header) / sizeof(u32)) | (4 << 4);
     hdr->typeOfService  = 0;
     hdr->length         = cpu_to_be16(size + sizeof(Header));
-    hdr->identification = cpu_to_be16(m_id++);
+    hdr->identification = cpu_to_be16(m_id);
     hdr->fragmentOffset = cpu_to_be16(0x4000); // dont fragment flag
     hdr->timeToLive     = 64;
     hdr->protocol       = type;
@@ -150,6 +150,7 @@ Error IPV4::getTransmitPacket(NetworkQueue::Packet **pkt,
     hdr->checksum       = 0;
     hdr->checksum       = checksum(hdr, sizeof(Header));
     (*pkt)->size += sizeof(Header);
+    m_id++;
 
     // Success
     return ESUCCESS;

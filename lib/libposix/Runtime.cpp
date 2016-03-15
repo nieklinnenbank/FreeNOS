@@ -142,6 +142,8 @@ void setupRandomizer()
 void setupChannels()
 {
     ChannelClient *client = new ChannelClient();
+    (void) client;
+
     ChannelClient::instance->setRegistry(new ChannelRegistry());
 }
 

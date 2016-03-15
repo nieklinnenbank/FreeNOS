@@ -62,7 +62,6 @@ Allocator::Result SplitAllocator::allocate(Address addr)
 
 Allocator::Result SplitAllocator::allocateLow(Size size, Address *addr, Size align)
 {
-#warning Size parameter should return the actual size on output too. Like the default allocate()
     return m_alloc->allocate(&size, addr, align, 0);
 }
 

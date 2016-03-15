@@ -41,7 +41,8 @@ class ArgumentParser
     {
         Success,
         InvalidArgument,
-        NotFound
+        NotFound,
+        AlreadyExists
     };
 
     /**

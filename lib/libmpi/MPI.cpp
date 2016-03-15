@@ -122,7 +122,7 @@ int MPI_Init(int *argc, char ***argv)
             snprintf(cmd, 512, "%s -a %x -c %d",
                      programPath, memChannelBase.phys, coreCount);
 
-            for (Size j = 1; j < *argc; j++)
+            for (int j = 1; j < *argc; j++)
             {
                 strcat(cmd, " ");
                 strcat(cmd, (*argv)[j]);

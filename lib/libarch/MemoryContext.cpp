@@ -40,7 +40,6 @@ MemoryContext::Result MemoryContext::mapRange(Memory::Range *range)
 {
     Result r = Success;
 
-#warning should make the allocation responsibility by the caller?
     // Allocate physical pages, if needed.
     if (!range->phys)
         m_alloc->allocate(&range->size, &range->phys);
@@ -65,7 +64,6 @@ MemoryContext::Result MemoryContext::mapRegion(MemoryMap::Region region,
                                                Size size,
                                                Memory::Access access)
 {
-#warning Unused function!
     Memory::Range range;
     Result r;
 
@@ -129,7 +127,7 @@ MemoryContext::Result MemoryContext::findFree(Size size, MemoryMap::Region regio
     Memory::Range r = m_map->range(region);
     Size currentSize = 0;
     Address addr = r.virt, currentAddr = r.virt, tmp;
-    
+
     while (addr < r.virt+r.size && currentSize < size)
     {
         // TODO: check for success instead. error codes may change.

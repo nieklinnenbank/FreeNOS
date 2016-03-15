@@ -107,7 +107,6 @@ Error ICMP::sendPacket(IPV4::Address ip, ICMP::Header *header)
 {
     DEBUG("");
 
-    Ethernet::Address ethAddr;
     NetworkQueue::Packet *pkt;
     Error r;
 

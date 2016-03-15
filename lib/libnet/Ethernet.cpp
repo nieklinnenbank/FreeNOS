@@ -115,7 +115,7 @@ Error Ethernet::process(NetworkQueue::Packet *pkt, Size offset)
                 return m_ipv4->process(pkt, offset + sizeof(Ethernet::Header));
 
         default:
-            DEBUG("dropped unknown ethernet type: " << (void *) ether->type);
+            DEBUG("dropped unknown ethernet type: " << (int) ether->type);
             break;
     }
     return EINVAL;

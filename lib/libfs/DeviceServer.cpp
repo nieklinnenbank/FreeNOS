@@ -70,7 +70,6 @@ void DeviceServer::registerInterrupt(Device *dev, Size vector)
 void DeviceServer::interruptHandler(Size vector)
 {
     List<Device *> *lst = m_interrupts.at(vector);
-    Error ret;
 
     // Do we have any Devices with this interrupt vector?
     if (lst)

@@ -101,7 +101,12 @@ ArgumentParser::Result ArgumentParser::registerPositional(const char *name,
                                                           const char *description,
                                                           Size count)
 {
-#warning TODO: check that only the last positional can have count==0
+    // Check that only the last positional can have count zero.
+    if (m_positionals.count() &&
+        m_positionals.at(m_positionals.count() - 1)->getCount() == 0)
+    {
+        return AlreadyExists;
+    }
     Argument *arg = new Argument(name);
     arg->setDescription(description);
     arg->setCount(count);

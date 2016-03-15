@@ -84,8 +84,7 @@ class SplitAllocator : public Allocator
     /**
      * Allocate from lower memory.
      *
-     * @param size Amount of memory in bytes to allocate on input. 
-     *             On output, the amount of memory in bytes actually allocated.
+     * @param size Amount of memory in bytes to allocate.
      * @param addr Output parameter which contains the address
      *             allocated on success.
      * @param align Alignment of the required memory or use ZERO for default.
@@ -96,8 +95,7 @@ class SplitAllocator : public Allocator
     /**
      * Allocate from high memory.
      *
-     * @param size Amount of memory in bytes to allocate on input. 
-     *             On output, the amount of memory in bytes actually allocated.
+     * @param size Amount of memory in bytes to allocate.
      * @param addr Output parameter which contains the address
      *             allocated on success.
      * @param align Alignment of the required memory or use ZERO for default.

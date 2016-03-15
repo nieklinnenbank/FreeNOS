@@ -21,6 +21,4 @@ env = build_env.Clone()
 env.UseServers(['log', 'filesystem', 'core'])
 env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libarch',
                    'libexec', 'libipc', 'libfs', 'libusb', 'libnet' ])
-
-if env['ARCH'] == 'arm':
-    env.TargetProgram('server', [ Glob('*.cpp') ])
+env.TargetProgram('server', [ Glob('*.cpp') ])
