@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
- * 
+ * Copyright (C) 2009 Niek Linnenbank, 2016 Alvaro Stagg [alvarostagg@openmailbox.org]
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -131,23 +131,23 @@ extern C int strcpy(char *dest, const char *src);
 extern C int strncpy(char *dest, const char *src, size_t sz);
 
 /**
- * Copy src to string dst of size siz. At most siz-1 characters 
+ * Copy src to string dst of size siz. At most siz-1 characters
  * will be copied.  Always NUL terminates (unless siz == 0).
  * @note This function is copied from OpenBSD-4.3
  * @param dst Destination string
  * @param src Source string
  * @param siz size_t of dst buffer
- * @return strlen(src); if retval >= siz, truncation occurred. 
+ * @return strlen(src); if retval >= siz, truncation occurred.
  */
 extern C size_t strlcpy(char *dst, const char *src, size_t siz);
 
 /**
  * @brief Concatenate two strings.
- * 
+ *
  * The strcat() function shall append a copy of the string pointed to
  * by s2 (including the terminating NUL character) to the end of the
  * string pointed to by s1.
- * 
+ *
  * @param dest Destination string.
  * @param src Source string.
  * @return The strcat() function shall return s1; no return value is
@@ -164,7 +164,7 @@ extern C char * strcat(char *dest, const char *src);
  * byte of s2 overwrites the NUL character at the end of s1. A terminating
  * NUL character is always appended to the result. If copying takes place
  * between objects that overlap, the behavior is undefined.
- * 
+ *
  * @param dest Destination string.
  * @param src Source string.
  * @param n Number of character to concatenate.
@@ -211,6 +211,16 @@ extern C char * strchr(const char *s, int c);
  */
 extern C char * strrchr(const char *s, int c);
 
+/**
+ * @param ptr   Pointer to the block of memory where the search is performed.
+ * @param value Value to be located. The value is passed as an int, but the
+ *              function performs a byte per byte search using the unsigned char
+ *              conversion of this value.
+ * @param num   Number of bytes to be analyzed. size_t is an unsigned integral type.
+ * @return A pointer to the first occurrence of value in the block of memory pointed
+ *         by ptr. If the value is not found, the function returns a null pointer.
+ */
+extern C void * memchr(const void *ptr, int value, size_t num);
 /**
  * @}
  */

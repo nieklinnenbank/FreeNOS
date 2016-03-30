@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2009 Niek Linnenbank, 2015 Dan Rulos, 2016 Alvaro Stagg [alvarostagg@openmailbox.org]
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,81 +16,204 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <errno.h>
 #include <fcntl.h>
-#include <Runtime.h>
+#include <unistd.h>
+#include <sys/stat.h>
 
-int cat(char *prog, char *file)
-{
-    char buf[1025];
-    int fd, e;
+#define VERSION "v0.5.8"
 
-    /* Clear buffer. */
-    memset(buf, 0, sizeof(buf));
+static int hflag, vflag, ret = 0;
+static int flags[8];
 
-    /* Attempt to open the file first. */
-    if ((fd = open(file, O_RDONLY)) < 0)
-    {
-        printf("%s: failed to open '%s': %s\r\n",
-                prog, file, strerror(errno));
-        return EXIT_FAILURE;
-    }
-    /* Read contents. */
-    while (1)
-    {
-	e = read(fd, buf, sizeof(buf) - 1);
-	switch (e)
-        {
-	    /* Error occurred. */
-	    case -1:
-		printf("%s: failed to read '%s': %s\r\n",
-		        prog, file, strerror(errno));
-		close(fd);
-	        return EXIT_FAILURE;
-    
-	    /* End of file. */
-	    case 0:
-		close(fd);
-		return EXIT_SUCCESS;
-	
-	    /* Print out results. */
-	    default:
-		buf[e] = 0;
-		printf("%s", buf);
-	        break;
-	}
-    }
-    return EXIT_FAILURE;
-}
+static void usage(void);
+static void version(void);
+static void cat(char *argv[], int argc, int flags[8]);
+static void read(const char *fileName, int flags[8]);
+static const char *fileName;
+
+int get_file_size(const char *fileName);
 
 int main(int argc, char **argv)
 {
-    int ret = EXIT_SUCCESS, result;
-
-    /* Verify command-line arguments. */
     if (argc < 2)
     {
-	printf("usage: %s FILE1 FILE2 ...\r\n",
-		argv[0]);
-	return EXIT_FAILURE;
+        printf("Uso: %s [OPCIÓN]... [FICHERO]...\n", argv[0]);
+        return 1;
     }
-    refreshMounts(0);
 
-    /* Cat all given files. */
-    for (int i = 0; i < argc - 1; i++)
+    for (int i = 0; i <= 8; i++)
+    	flags[i] = 0;
+
+    for (int i = 1; i < argc; i++)
     {
-	/* Perform cat. */
-	result = cat(argv[0], argv[i + 1]);
-	
-	/* Update exit code if needed. */
-	if (result > ret)
+    	if (strcmp(argv[i], "--help") == 0)
+    	{
+    		hflag = 1;
+    		usage();
+		break;
+    	}
+    	else if ((strcmp(argv[i], "--version") == 0))
+    	{
+    		vflag = 1;
+    		version();
+    		break;
+    	}
+    	else if ((strcmp(argv[i], "-n") == 0) || (strcmp(argv[i], "--number") == 0))
+		flags[0] = 1;
+	else if ((strcmp(argv[i], "-E") == 0) || (strcmp(argv[i], "--show-ends") == 0) || (strcmp(argv[i], "-e") == 0))
+		flags[1] = 1;
+	else if ((strcmp(argv[i], "-t") == 0) || (strcmp(argv[i], "-T") == 0) || (strcmp(argv[i], "--show-tabs") == 0))
+		flags[2] = 1;
+	else if ((strcmp(argv[i], "-b") == 0) || (strcmp(argv[i], "--number-nonblank") == 0))
 	{
-	    ret = result;
+		flags[0] = 0;
+		flags[3] = 1;
 	}
     }
-    /* Done. */
+
+    if (hflag || vflag)
+    	return ret;
+    else
+    	cat(argv, argc, flags);
+
     return ret;
+}
+
+static void usage(void)
+{
+	printf("Modo de empleo: cat [OPCIÓN]... [FICHERO]...\n\n");
+
+	printf("  -b, --number-nonblank    No enumera las lineas en blanco, remplaza -n.\n");
+	printf("  -e                       Lo mismo que -E.\n");
+	printf("  -E, --show-ends          Muestra un $ al final de cada linea.\n");
+	printf("  -n, --number             Enumera cada linea.\n");
+	printf("  -t                       Lo mismo que -T.\n");
+	printf("  -T, --show-tabs          Muestra los caracteres de tabulación como ^I\n");
+	printf("      --help               Muestra esta ayuda y finaliza.\n");
+	printf("      --version            Informa de la versión y finaliza.\n\n");
+
+	printf("AmayaOS Coreutils %s (C) 2016 AmayaOS Team & Others\n", VERSION);
+	printf("Licencia GNU GPL v3 <http://www.gnu.org/licenses/>.\n");
+	printf("Reportar errores a traves de http://bugs.amayaos.com o amaya@amayaos.com\n");
+}
+
+static void version(void)
+{
+	printf("cat (AmayaOS CoreUtils) %s\n", VERSION);
+	printf("Copyright © 2016 AmayaOS, Inc.\n");
+	printf("Licencia GPLv3+: GPL de GNU versión 3 o posterior\n");
+	printf("<http://gnu.org/licenses/gpl.html>.\n");
+	printf("Esto es software libre: usted es libre de cambiarlo y redistribuirlo.\n");
+	printf("No hay NINGUNA GARANTÍA, hasta donde permite la ley.\n\n");
+
+	printf("Escrito por Dan Rulos y Alvaro Stagg.\n");
+}
+
+static void cat(char *argv[], int argc, int flags[8])
+{
+	int fd;
+
+	for (int i = 1; i < argc; i++)
+	{
+		if ((fd = open(argv[i], O_RDONLY)) < 0)
+			continue;
+		else
+		{
+			fileName = argv[i];
+			break;
+		}
+	}
+
+	if (fd < 0)
+	{
+		printf("%s: No existe el fichero o el directorio.\n", argv[0]);
+		ret = 1;
+	}
+	else
+	{
+		read(fileName, flags);
+		close(fd);
+	}
+}
+
+static void read(const char *fileName, int flags[8])
+{
+	FILE *fp = fopen(fileName, "r");
+	int lines = 0;
+
+	if (fp == NULL)
+	{
+		printf("cat: %s: No existe el fichero o el directorio.\n", fileName);
+		ret = 1;
+	}
+	else
+	{
+		char cnt[get_file_size(fileName)];
+		int n_bytes = fread(cnt, 1, sizeof(cnt), fp);
+
+		if (flags[0] == 1 || (flags[3] == 1 && cnt[0] != '\n'))
+		{
+			lines++;
+			printf("     %d  ", lines);
+		}
+
+		unsigned int i = 0;
+
+		for (i = 0; i < n_bytes - 1; i++)
+		{
+			printf("%c", cnt[i]);
+
+			if (flags[0] == 1)
+			{
+				if (cnt[i] == '\n')
+				{
+					lines++;
+					printf("     %d  ", lines);
+				}
+			}
+			
+			if (flags[1] == 1)
+			{
+				if (cnt[i + 1] == '\n')
+					printf("$");
+			}
+
+			if (flags[2] == 1)
+			{
+				if (cnt[i] == '\t')
+				{
+					printf("^I");
+					continue;
+				}
+			}
+
+			if (flags[3] == 1)
+			{
+				if (cnt[i] == '\n')
+				{
+					if (cnt[i + 1] == '\n')
+						continue;
+					else
+					{
+						lines++;
+						printf("     %d  ", lines);
+					}
+				}
+			}
+		}
+
+		/* Imprime el último caracter perdido */
+		printf("%c\n", cnt[i]);
+	}
+}
+
+int get_file_size(const char *fileName)
+{
+	struct stat st;
+
+	if (stat(fileName, &st) < 0)
+		return -1;
+	else
+		return st.st_size;
 }
