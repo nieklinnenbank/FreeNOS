@@ -80,14 +80,6 @@ void DeviceServer::interruptHandler(Size vector)
             i.current()->interrupt(vector);
         }
     }
-
-    // Retry any pending requests, if any
-    for (ListIterator<FileSystemRequest *> i(m_requests); i.hasCurrent(); i++)
-    {
-        if (processRequest(i.current()) != EAGAIN)
-        {
-            delete i.current();
-            i.remove();
-        }
-    }
+    // Keep retrying any pending requests, if any
+    while (retryRequests());
 }

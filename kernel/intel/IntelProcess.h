@@ -26,6 +26,11 @@
  */
 class IntelProcess : public Process
 {
+  private:
+
+    /** Size of the kernel stack */
+    static const Size KernelStackSize = PAGESIZE;
+
   public:
 
     /**

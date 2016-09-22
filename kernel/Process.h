@@ -106,7 +106,7 @@ class Process
      * Get sleep timer.
      * @return Sleep timer value.
      */
-    const Timer::Info & getSleepTimer() const;
+    const Timer::Info * getSleepTimer() const;
 
     /**
      * Get process shares.
@@ -219,9 +219,10 @@ class Process
     /**
      * Stops the process for executing until woken up
      *
+     * @param timer Timer on which the process must be woken up (if expired), or ZERO for no limit
      * @return Result code
      */
-    Result sleep();
+    Result sleep(Timer::Info *timer = 0);
 
     /**
      * Initialize the Process.

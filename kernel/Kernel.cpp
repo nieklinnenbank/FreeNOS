@@ -181,6 +181,7 @@ Kernel::Result Kernel::loadBootImage()
 
         return Success;
     }
+    ERROR("invalid boot image signature");
     return InvalidBootImage;
 }
 
@@ -209,7 +210,6 @@ Kernel::Result Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Siz
         FATAL("failed to create boot program: " << program->name);
         return ProcessError;
     }
-
     proc->setState(Process::Ready);
 
     // Obtain process memory
@@ -228,7 +228,6 @@ Kernel::Result Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Siz
                      Memory::Executable);
         }
     }
-    
     // Map program arguments into the process
     // TODO: move into the high memory???
     m_alloc->allocateLow(args_size, &args);
@@ -252,6 +251,7 @@ int Kernel::run()
     loadBootImage();
 
     // Start the scheduler
+    m_procs->getScheduler()->setTimer(m_timer);
     m_procs->schedule();
 
     // Never actually returns.

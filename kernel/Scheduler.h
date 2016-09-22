@@ -23,6 +23,8 @@
 #include <Macros.h>
 #include "Process.h"
 
+class Timer;
+
 /**
  * @defgroup kernel kernel (generic)
  * @{
@@ -36,19 +38,30 @@ class Scheduler
 
   public:
 
-        /**
-         * Constructor function.
-         */
-        Scheduler();
+    /**
+     * Constructor function.
+     */
+    Scheduler();
 
-        /**
-         * Select the next process to run.
-         */
-        virtual Process * select(Vector<Process *> *procs, Process *idle);
+    /**
+     * Set timer to use
+     *
+     * @param timer Timer instance
+     */
+    void setTimer(Timer *timer);
+
+    /**
+     * Select the next process to run.
+     */
+    virtual Process * select(Vector<Process *> *procs, Process *idle);
 
   private:
 
+    /** Contains last used index for scheduling */
     Size m_index;
+
+    /** Points to the Timer to use for sleep timeouts */
+    Timer *m_timer;
 };
 
 /**

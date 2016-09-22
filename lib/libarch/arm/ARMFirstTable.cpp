@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/System.h>
 #include <SplitAllocator.h>
 #include <MemoryBlock.h>
 #include "ARMCore.h"
@@ -77,7 +78,11 @@
 #define PAGE1_NOEXEC    (1 << 4)
 
 /* Read-only flag */
+#ifdef ARMV7
+#define PAGE1_APX       (1 << 15)
+#else
 #define PAGE1_APX       (1 << 9)
+#endif
 
 /* User access permissions flag */
 #define PAGE1_AP_USER   (1 << 11)
@@ -115,6 +120,7 @@ MemoryContext::Result ARMFirstTable::map(Address virt,
 {
     ARMSecondTable *table = getSecondTable(virt, alloc);
     Address addr;
+    Arch::Cache cache;
 
     // Input addresses must be aligned on pagesize boundary
     if ((phys & ~PAGEMASK) || (virt & ~PAGEMASK))
@@ -136,7 +142,7 @@ MemoryContext::Result ARMFirstTable::map(Address virt,
 
         // Assign to the page directory. Do not assign permission flags (only for direct sections).
         m_tables[ DIRENTRY(virt) ] = addr | PAGE1_TABLE;
-        cache1_clean(&m_tables[DIRENTRY(virt)]);
+        cache.cleanData(&m_tables[DIRENTRY(virt)]);
         table = getSecondTable(virt, alloc);
     }
     // TODO: (re)check for MemoryAccess ?
@@ -146,6 +152,8 @@ MemoryContext::Result ARMFirstTable::map(Address virt,
 MemoryContext::Result ARMFirstTable::mapLarge(Memory::Range range,
                                               SplitAllocator *alloc)
 {
+    Arch::Cache cache;
+
     if (range.size & 0xfffff)
         return MemoryContext::InvalidSize;
 
@@ -158,7 +166,7 @@ MemoryContext::Result ARMFirstTable::mapLarge(Memory::Range range,
             return MemoryContext::AlreadyExists;
 
         m_tables[ DIRENTRY(range.virt + i) ] = (range.phys + i) | PAGE1_SECTION | flags(range.access);
-        cache1_clean(&m_tables[DIRENTRY(range.virt + i)]);
+        cache.cleanData(&m_tables[DIRENTRY(range.virt + i)]);
     }
     return MemoryContext::Success;
 }
@@ -166,12 +174,14 @@ MemoryContext::Result ARMFirstTable::mapLarge(Memory::Range range,
 MemoryContext::Result ARMFirstTable::unmap(Address virt, SplitAllocator *alloc)
 {
     ARMSecondTable *table = getSecondTable(virt, alloc);
+    Arch::Cache cache;
+
     if (!table)
     {
         if (m_tables[DIRENTRY(virt)] & PAGE1_SECTION)
         {
             m_tables[DIRENTRY(virt)] = PAGE1_NONE;
-            cache1_clean(&m_tables[DIRENTRY(virt)]);
+            cache.cleanData(&m_tables[DIRENTRY(virt)]);
             return MemoryContext::Success;
         }
         else

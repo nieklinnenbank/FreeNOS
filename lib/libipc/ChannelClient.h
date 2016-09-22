@@ -19,14 +19,41 @@
 #define __LIBIPC_CHANNELCLIENT_H
 
 #include <Singleton.h>
+#include <Callback.h>
+#include <Index.h>
 #include "ChannelRegistry.h"
 #include "Channel.h"
+#include "ChannelMessage.h"
 
 /**
  * Client for using Channels.
  */
 class ChannelClient : public Singleton<ChannelClient>
 {
+  private:
+
+    /**
+     * Holds an outgoing request
+     */
+    typedef struct Request
+    {
+        bool active;
+        ProcessID pid;
+        ChannelMessage *message;
+        CallbackFunction *callback;
+
+        const bool operator == (const struct Request & req) const
+        {
+            return req.message == message && req.callback == callback;
+        }
+
+        const bool operator != (const struct Request & req) const
+        {
+            return req.message != message || req.callback != callback;
+        }
+    }
+    Request;
+
   public:
 
     /**
@@ -95,6 +122,29 @@ class ChannelClient : public Singleton<ChannelClient>
     virtual Result receiveAny(void *buffer, ProcessID *pid);
 
     /**
+     * Send asynchronous request message
+     *
+     * The client assigns an internal request identifier
+     * for the message and ensures that the callback will be
+     * called when a response messages is received.
+     *
+     * @param pid ProcessID to send the message to
+     * @param 
+     */
+    virtual Result sendRequest(ProcessID pid,
+                               void *buffer,
+                               CallbackFunction *callback);
+
+    /**
+     * Process a response message
+     *
+     * @param pid ProcessID from which we receive the message
+     * @param msg Message which is received
+     */
+    virtual Result processResponse(ProcessID pid,
+                                   ChannelMessage *msg);
+
+    /**
      * Synchronous receive from one process.
      *
      * @param buffer Message buffer for output
@@ -141,6 +191,9 @@ class ChannelClient : public Singleton<ChannelClient>
 
     /** Contains registered channels */
     ChannelRegistry *m_registry;
+
+    /** Contains ongoing requests */
+    Index<Request> m_requests;
 };
 
 #endif /* __LIBIPC_CHANNELCLIENT_H */

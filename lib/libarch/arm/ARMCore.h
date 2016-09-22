@@ -45,7 +45,7 @@
 #define mrc(coproc, opcode1, opcode2, reg, subReg) \
 ({ \
     ulong r; \
-    asm volatile("mrc " QUOTE(coproc) ", " QUOTE(opcode1) ", %0, " QUOTE(reg) ", " QUOTE(subReg) ", " QUOTE(opcode2) "\n" : "=r"(r) : ); \
+    asm volatile("mrc " QUOTE(coproc) ", " QUOTE(opcode1) ", %0, " QUOTE(reg) ", " QUOTE(subReg) ", " QUOTE(opcode2) "\n" : "=r"(r) :: "memory"); \
     r; \
 })
 
@@ -57,7 +57,7 @@
 #define mcr(coproc, opcode1, opcode2, reg, subReg, value) \
 ({ \
     u32 val = (value); \
-    asm volatile("mcr " QUOTE(coproc) ", " QUOTE(opcode1) ", %0, " QUOTE(reg) ", " QUOTE(subReg) ", " QUOTE(opcode2) "\n" : : "r"(val)); \
+    asm volatile("mcr " QUOTE(coproc) ", " QUOTE(opcode1) ", %0, " QUOTE(reg) ", " QUOTE(subReg) ", " QUOTE(opcode2) "\n" : : "r"(val) : "memory"); \
 })
 
 /**
@@ -69,19 +69,20 @@
 /**
  * Reboot the system (by sending the a reset signal on the keyboard I/O port)
  */
-#define reboot()
+#define cpu_reboot()
 
 /**
  * Shutdown the machine via ACPI.
  * @note We do not have ACPI yet. Shutdown now has a bit naive implementation.
  * @see http://forum.osdev.org/viewtopic.php?t=16990
  */
-#define shutdown()
+#define cpu_shutdown()
 
 /**  
  * Puts the CPU in a lower power consuming state. 
  */
-#define idle()
+#define idle() \
+    asm volatile ("wfi")
 
 /**
  * Explicitely enable interrupts.
@@ -110,53 +111,85 @@
  */
 #define irq_restore(saved)
 
+#ifdef ARMV6
 #define tlb_flush_all() \
 ({ \
     ARMControl ctrl; \
-    ctrl.write(ARMControl::InstructionTLBClear, 0); \
-    ctrl.write(ARMControl::DataTLBClear, 0); \
     ctrl.write(ARMControl::UnifiedTLBClear, 0); \
 })
+#else
+inline void tlb_flush_all()
+{
+    asm volatile ("mcr p15, 0, %0, c8, c7, 0" :: "r"(0) : "memory");
+}
+
+#endif
 
 #define tlb_invalidate(page) \
 ({ \
-    mcr(p15, 0, 1, c8, c5, (page)); \
-    mcr(p15, 0, 1, c8, c6, (page)); \
     mcr(p15, 0, 1, c8, c7, (page)); \
 })
 
 /**
  * Data Memory Barrier
+ *
+ * Ensures that all memory transactions are complete when
+ * the next instruction runs. If the next instruction is not
+ * a memory instruction, it is allowed to run out of order.
+ * The DMB provides slightly looser memory barrier than DSB on ARM.
  */
 inline void dmb()
 {
-    asm volatile("mov r0, #0\n"
-                 "mcr p15, 0, r0, c7, c10, 5\n");
+    asm volatile ("mcr p15, 0, %0, c7, c10, 5" : : "r" (0));
 }
 
 /**
  * Data Synchronisation Barrier.
+ *
+ * Enforces a strict memory barrier which ensures all memory transactions
+ * are completed when the next instruction begins. The DSB is the
+ * most strict memory barrier available on ARM.
+ *
  * @see ARM1176JZF-S Technical Reference Manual, page 342, Data Synchronization Barrier
  */
 inline void dsb()
 {
-    asm volatile("mov r0, #0\n"
-                 "mcr p15, 0, r0, c7, c10, 4\n");
+#ifdef ARMV7
+    asm volatile ("dsb" ::: "memory");
+#else
+    asm volatile ("mcr p15, 0, %0, c7, c10, 4" : : "r" (0));
+#endif
 }
 
 /**
- * Level One Cache clean by page.
- *
- * @param page Virtual memory address to clean.
+ * Flush Prefetch Buffer.
  */
-#define cache1_clean(page) \
-    mcr(p15, 0, 1, c7, c10, ((u32) page));
+inline void flushPrefetchBuffer()
+{
+#ifdef ARMV6
+    asm volatile ("mcr p15, 0, %0, c7, c5, 4" : : "r" (0) : "memory");
+#endif
+}
 
 /**
- * Level One Cache full data clean.
+ * Flush branch prediction
  */
-#define cache1_clean_full() \
-    mcr(p15, 0, 0, c7, c10, 0)
+inline void flushBranchPrediction()
+{
+    asm volatile ("mcr p15, 0, %0, c7, c5, 6" : : "r" (0) : "memory");
+}
+
+/**
+ * Instruction Synchronisation Barrier (ARMv7 and above)
+ */
+inline void isb()
+{
+#ifdef ARMV7
+    asm volatile ("isb" ::: "memory");
+#else
+    asm volatile ("mcr p15, 0, %0, c7, c5, 4" : : "r" (0) : "memory");
+#endif
+}
 
 /** 
  * Contains all the CPU registers. 

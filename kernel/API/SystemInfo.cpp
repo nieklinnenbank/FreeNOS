@@ -26,6 +26,8 @@ Error SystemInfoHandler(SystemInformation *info)
     SplitAllocator *memory = Kernel::instance->getAllocator();
     CoreInfo *core = Kernel::instance->getCoreInfo();
 
+    DEBUG("");
+
     // TODO: Verify memory access
 
     // Fill in our current information

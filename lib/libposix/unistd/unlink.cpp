@@ -29,6 +29,7 @@ int unlink(const char *path)
     /* Ask for the unlink. */
     if (mnt)
     {
+        msg.type   = ChannelMessage::Request;
         msg.action = DeleteFile;
         msg.path   = (char *) path;
         msg.from   = SELF;

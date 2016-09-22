@@ -22,6 +22,7 @@
 #include "ARMCore.h"
 #include "ARMControl.h"
 #include "ARMPaging.h"
+#include "ARMFirstTable.h"
 
 ARMPaging::ARMPaging(MemoryMap *map, SplitAllocator *alloc)
     : MemoryContext(map, alloc)
@@ -60,6 +61,94 @@ ARMPaging::~ARMPaging()
     // TODO: release physical memory for this context?
 }
 
+#ifdef ARMV6
+MemoryContext::Result ARMPaging::enableMMU()
+{
+    ARMControl ctrl;
+
+    // Program first level table. Enable L2 cache for page walking.
+    ctrl.write(ARMControl::TranslationTable0, ((u32) m_firstTableAddr | 1));
+    ctrl.write(ARMControl::TranslationTable1,    0);
+    ctrl.write(ARMControl::TranslationTableCtrl, 0);
+
+    // Set Control flags
+    ctrl.set(ARMControl::DomainClient);
+    ctrl.set(ARMControl::DisablePageColoring);
+    ctrl.set(ARMControl::AccessPermissions);
+    ctrl.set(ARMControl::ExtendedPaging);
+    ctrl.unset(ARMControl::BranchPrediction);
+
+    // Flush TLB's and caches
+    tlb_flush_all();
+    m_cache.cleanInvalidate(Cache::Unified);
+
+    // Disable caches.
+    ctrl.unset(ARMControl::InstructionCache);
+    ctrl.unset(ARMControl::DataCache);
+
+    // Enable the MMU. This re-enables instruction and data cache too.
+    ctrl.set(ARMControl::MMUEnabled);
+    NOTICE("MMUEnabled = " << (ctrl.read(ARMControl::SystemControl) & ARMControl::MMUEnabled));
+    tlb_flush_all();
+
+    // Reactivate both caches and branch prediction
+    ctrl.set(ARMControl::InstructionCache);
+    ctrl.set(ARMControl::DataCache);
+    ctrl.set(ARMControl::BranchPrediction);
+
+    return Success;
+}
+#elif defined(ARMV7)
+
+MemoryContext::Result ARMPaging::enableMMU()
+{
+    ARMControl ctrl;
+
+    // Flush TLB's
+    tlb_flush_all();
+    dsb();
+    isb();
+
+    // Enable branch prediction
+    ctrl.set(ARMControl::BranchPrediction);
+
+    // Program first level table
+    ctrl.write(ARMControl::TranslationTable0, (((u32) m_firstTableAddr) | 
+        (1 << 3) | /* outer write-back, write-allocate */
+        (1 << 6)   /* inner write-back, write-allocate */
+    ));
+    ctrl.write(ARMControl::TranslationTable1,    0);
+    ctrl.write(ARMControl::TranslationTableCtrl, 0);
+    dsb();
+    isb();
+
+    // Set as client for all domains
+    ctrl.write(ARMControl::DomainControl, 0x55555555);
+
+    // Enable the MMU.
+    u32 nControl = ctrl.read(ARMControl::SystemControl);
+
+    // Raise all caching, MMU and branch prediction flags.
+    nControl |= (1 << 11) | (1 << 2) | (1 << 12) | (1 << 0) | (1 << 5);
+
+    // Write back to set.
+    ctrl.write(ARMControl::SystemControl, nControl);
+    isb();
+
+    NOTICE("MMUEnabled = " << (ctrl.read(ARMControl::SystemControl) & ARMControl::MMUEnabled));
+
+    // Need to enable alignment faults separately of the MMU,
+    // otherwise QEMU will hard reset the CPU
+    ctrl.set(ARMControl::AlignmentFaults);
+
+    // Flush all
+    tlb_flush_all();
+    dsb();
+    isb();
+    return Success;
+}
+#endif
+
 MemoryContext::Result ARMPaging::activate()
 {
     ARMControl ctrl;
@@ -67,67 +156,29 @@ MemoryContext::Result ARMPaging::activate()
     // Do we need to (re)enable the MMU?
     if (!(ctrl.read(ARMControl::SystemControl) & ARMControl::MMUEnabled))
     {
-        // Program first level table. Enable L2 cache for page walking.
-        ctrl.write(ARMControl::TranslationTable0, ((u32) m_firstTableAddr | 1));
-        ctrl.write(ARMControl::TranslationTable1,    0);
-        ctrl.write(ARMControl::TranslationTableCtrl, 0);
-
-        // Set Control flags
-        ctrl.set(ARMControl::DomainClient);
-        ctrl.set(ARMControl::ExtendedPaging);
-        ctrl.set(ARMControl::DisablePageColoring);
-        ctrl.set(ARMControl::AccessPermissions);
-        ctrl.unset(ARMControl::BranchPrediction);
-
-        // Flush TLB's (if any).
-        tlb_flush_all();
-
-        // Clean and invalidate both caches.
-        // This writes back all data to RAM and empties the cache completely.
-        ctrl.write(ARMControl::DataCacheClean, 0);
-        ctrl.write(ARMControl::CacheClear, 0); // TODO: needed?
-        ctrl.write(ARMControl::InstructionCacheClear, 0);
-        ctrl.write(ARMControl::FlushPrefetchBuffer, 0);
-        dsb();
-
-        // Disable both caches.
-        ctrl.unset(ARMControl::InstructionCache);
-        ctrl.unset(ARMControl::DataCache);
-        dsb();
-
-        // Enable the MMU. This re-enables instruction and data cache too.
-        // ctrl.set(ARMControl::MMUEnabled | ARMControl::InstructionCache | ARMControl::DataCache);
-        // invalidate data cache and flush prefetch buffer
-        //  asm volatile ("mcr p15, 0, %0, c7, c5,  4" :: "r" (0) : "memory");
-        //asm volatile ("mcr p15, 0, %0, c7, c6,  0" :: "r" (0) : "memory");
-        //
-        // enable MMU, L1 cache and instruction cache, L2 cache, write buffer,
-        //   branch prediction and extended page table on
-        //unsigned mode;
-        //asm volatile ("mrc p15,0,%0,c1,c0,0" : "=r" (mode));
-        //mode |= 0x0480180D;
-        //asm volatile ("mcr p15,0,%0,c1,c0,0" :: "r" (mode) : "memory");
-        ctrl.set(ARMControl::MMUEnabled);
-        NOTICE("MMUEnabled = " << (ctrl.read(ARMControl::SystemControl) & ARMControl::MMUEnabled));
-        tlb_flush_all();
-
-        // Reactivate both caches and branch prediction
-        ctrl.set(ARMControl::InstructionCache);
-        ctrl.set(ARMControl::DataCache);
-        ctrl.set(ARMControl::BranchPrediction);
+        enableMMU();
     }
     // MMU already enabled, we only need to change first level table and flush caches.
     else
     {
+#ifdef ARMV6
         mcr(p15, 0, 0, c7, c5,  0);    // flush entire instruction cache
         mcr(p15, 0, 0, c7, c10, 0);    // flush entire data cache
         mcr(p15, 0, 0, c7, c7,  0);    // flush entire cache 
         mcr(p15, 0, 5, c7, c10, 0);    // data memory barrier 
         mcr(p15, 0, 4, c7, c10, 0);    // memory sync barrier 
-        mcr(p15, 0, 0, c2, c0,  (m_firstTableAddr | 1)); // switch first page table. Enable L1 cache for page walking.
-        mcr(p15, 0, 0, c8, c5,  0);    // flush instruction TLB 
-        mcr(p15, 0, 0, c8, c6,  0);    // flush data TLB 
-        mcr(p15, 0, 0, c8, c7,  0);    // flush unified TLB 
+#endif
+        // Switch first page table and re-enable L1 caching
+        ctrl.write(ARMControl::TranslationTable0, (((u32) m_firstTableAddr) | 
+            (1 << 3) | /* outer write-back, write-allocate */
+            (1 << 6)   /* inner write-back, write-allocate */
+        ));
+
+        // Flush TLB caches
+        tlb_flush_all();
+
+        // Synchronize execution stream
+        isb();
     }
     // Done. Update currently active context pointer
     m_current = this;
@@ -136,31 +187,33 @@ MemoryContext::Result ARMPaging::activate()
 
 MemoryContext::Result ARMPaging::map(Address virt, Address phys, Memory::Access acc)
 {
-    // On ARM, we invalidate the TLB entry, such that the MMU can insert a new TLB after the remap.
-    // TODO: make conditional? (only if the context is currently activated)
-    tlb_invalidate(virt);
-
     // Modify page tables
     Result r = m_firstTable->map(virt, phys, acc, m_alloc);
 
-    ARMControl ctrl;
-    ctrl.write(ARMControl::DataCacheClean, 0);
-    tlb_flush_all();
+    // Flush the TLB to refresh the mapping
+    if (m_current == this)
+        tlb_invalidate(virt);
+
+    // Synchronize execution stream.
+    isb();
     return r;
 }
 
 MemoryContext::Result ARMPaging::unmap(Address virt)
 {
-    // On ARM, we invalidate the TLB entry, such that the MMU can insert a new TLB after the remap.
-    // TODO: make conditional? (only if the context is currently activated)
-    tlb_invalidate(virt);
+    // Clean the given data page in cache
+    if (m_current == this)
+        m_cache.cleanInvalidateAddress(Cache::Data, virt);
 
     // Modify page tables
     Result r = m_firstTable->unmap(virt, m_alloc);
 
-    ARMControl ctrl;
-    ctrl.write(ARMControl::DataCacheClean, 0);
-    tlb_flush_all();
+    // Flush TLB to refresh the mapping
+    if (m_current == this)
+        tlb_invalidate(virt);
+
+    // Synchronize execution stream
+    isb();
     return r;
 }
 

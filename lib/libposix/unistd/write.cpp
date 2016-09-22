@@ -29,11 +29,12 @@ ssize_t write(int fildes, const void *buf, size_t nbyte)
     // Write the file
     if (fd)
     {
+        msg.type   = ChannelMessage::Request;
         msg.action = WriteFile;
         msg.path   = fd->path;
         msg.buffer = (char *) buf;
         msg.size   = nbyte;
-        msg.offset = ZERO;
+        msg.offset = ZERO; // TODO: should be fd->offset?
         msg.from   = SELF;
         msg.deviceID.minor = fd->identifier;
         ChannelClient::instance->syncSendReceive(&msg, fd->mount);

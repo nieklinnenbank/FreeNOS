@@ -356,6 +356,11 @@ class String : public Sequence<char>
     String & operator << (const char *str);
 
     /**
+     * Append String to another String.
+     */
+    String & operator << (const String & str);
+
+    /**
      * Append the given number as text to the String.
      */
     String & operator << (long number);

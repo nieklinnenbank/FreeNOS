@@ -475,7 +475,7 @@ TestCase(StringToLong)
     String s = "12345";
     testAssert(s.toLong() == 12345);
 
-    String s1 = "0x1234";
+    String s1 = "1234";
     testAssert(s1.toLong(Number::Hex) == 4660);
 
     String s2 = "test";
@@ -495,9 +495,9 @@ TestCase(StringSetSigned)
     testAssert(s.m_size == STRING_DEFAULT_SIZE);
 
     // Hexadecimal number
-    testAssert(s.set(12345, Number::Hex) == 6);
-    testString(s.m_string, "0x3039");
-    testAssert(s.m_count == 6);
+    testAssert(s.set(12345, Number::Hex) == 4);
+    testString(s.m_string, "3039");
+    testAssert(s.m_count == 4);
     testAssert(s.m_size == STRING_DEFAULT_SIZE);
 
     // Negative decimal
@@ -507,14 +507,14 @@ TestCase(StringSetSigned)
     testAssert(s.m_size == STRING_DEFAULT_SIZE);
 
     // Negative hexadecimal
-    testAssert(s.set(-0xabcdef, Number::Hex) == 9);
-    testString(s.m_string, "-0xabcdef");
-    testAssert(s.m_count == 9);
+    testAssert(s.set(-0xabcdef, Number::Hex) == 7);
+    testString(s.m_string, "-abcdef");
+    testAssert(s.m_count == 7);
     testAssert(s.m_size == STRING_DEFAULT_SIZE);
 
     // External buffer
-    testAssert(s.setUnsigned(12345, Number::Hex, buf) == 6);
-    testString(buf, "0x3039");
+    testAssert(s.setUnsigned(12345, Number::Hex, buf) == 4);
+    testString(buf, "3039");
     return OK;
 }
 
@@ -530,14 +530,14 @@ TestCase(StringSetUnsigned)
     testAssert(s.m_size == STRING_DEFAULT_SIZE);
 
     // Hexadecimal number
-    testAssert(s.setUnsigned(0xffaabbcc, Number::Hex) == 10);
-    testString(s.m_string, "0xffaabbcc");
-    testAssert(s.m_count == 10);
+    testAssert(s.setUnsigned(0xffaabbcc, Number::Hex) == 8);
+    testString(s.m_string, "ffaabbcc");
+    testAssert(s.m_count == 8);
     testAssert(s.m_size == STRING_DEFAULT_SIZE);
 
     // External buffer
-    testAssert(s.setUnsigned(12345, Number::Hex, buf) == 6);
-    testString(buf, "0x3039");
+    testAssert(s.setUnsigned(12345, Number::Hex, buf) == 4);
+    testString(buf, "3039");
     return OK;
 }
 
@@ -561,6 +561,6 @@ TestCase(StringShiftNumberBase)
 
     // Format using decimal and hexadecimal
     s << 123 << " = " << Number::Hex << 123;
-    testString(s.m_string, "123 = 0x7b");
+    testString(s.m_string, "123 = 7b");
     return OK;
 }

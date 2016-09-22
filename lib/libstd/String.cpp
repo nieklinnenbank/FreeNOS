@@ -564,13 +564,6 @@ Size String::setUnsigned(ulong number, Number::Base base, char *string, bool sig
         ud = -number;
         written++;
     }
-    // Hexadecimal prefix.
-    if (divisor == 16)
-    {
-        *p++ = '0';
-        *p++ = 'x';
-        written += 2;
-    }
     saved = p;
 
     // Divide ud by the divisor, until ud == 0
@@ -659,6 +652,12 @@ String & String::operator << (const char *str)
         m_count += len;
         m_string[m_count] = ZERO;
     }
+    return (*this);
+}
+
+String & String::operator << (const String & str)
+{
+    this->operator << (str.m_string);
     return (*this);
 }
 

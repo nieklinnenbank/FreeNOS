@@ -272,8 +272,11 @@
 /** Cross-device link. */
 #define EXDEV		-81
 
+/** Triggers a restart of all filesystem requests */
+#define ERESTART        (1 << 17)
+
 /** Last defined error value (do not use). */
-#define ELAST		EXDEV
+#define ELAST		ERESTART
 
 
 /**

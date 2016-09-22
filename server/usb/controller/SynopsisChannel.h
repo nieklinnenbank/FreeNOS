@@ -207,9 +207,6 @@ class SynopsisChannel
 
     /** Channel state. */
     State m_state;
-
-    /** Next packet Id */
-    PacketId m_nextPacketId;
 };
 
 #endif /* __LIBUSB_SYNOPSISCHANNEL_H */

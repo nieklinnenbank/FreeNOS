@@ -40,7 +40,6 @@ MemoryContext::Result MemoryContext::mapRange(Memory::Range *range)
 {
     Result r = Success;
 
-#warning should make the allocation responsibility by the caller?
     // Allocate physical pages, if needed.
     if (!range->phys)
         m_alloc->allocate(&range->size, &range->phys);
@@ -65,7 +64,6 @@ MemoryContext::Result MemoryContext::mapRegion(MemoryMap::Region region,
                                                Size size,
                                                Memory::Access access)
 {
-#warning Unused function!
     Memory::Range range;
     Result r;
 
@@ -92,26 +90,36 @@ MemoryContext::Result MemoryContext::unmapRange(Memory::Range *range)
 
 MemoryContext::Result MemoryContext::release(Address virt)
 {
-#warning implement release
-    return Success;
+    Address phys;
+    Result result = lookup(virt, &phys);
+
+    if (result == Success)
+        m_alloc->release(phys);
+
+    return result;
 }
 
 MemoryContext::Result MemoryContext::releaseRegion(MemoryMap::Region region)
 {
-#warning implement region release
-    return Success;
+    Memory::Range range = m_map->range(region);
+    return releaseRange(&range);
 }
 
 MemoryContext::Result MemoryContext::releaseRange(Memory::Range *range)
 {
+    Result result;
     Address phys;
 
+    // Release inside the range page-by-page. Note that this
+    // code is not very efficient without optimizations turned on (-O2).
     for (Size i = 0; i < range->size; i += PAGESIZE)
     {
-        if (lookup(range->virt + i, &phys) == Success)
-            m_alloc->release(phys);
+        if ((result = lookup(range->virt + i, &phys)) != Success)
+            break;
+
+        m_alloc->release(phys);
     }
-    return Success;
+    return result;
 }
 
 MemoryContext::Result MemoryContext::findFree(Size size, MemoryMap::Region region, Address *virt)
@@ -119,7 +127,7 @@ MemoryContext::Result MemoryContext::findFree(Size size, MemoryMap::Region regio
     Memory::Range r = m_map->range(region);
     Size currentSize = 0;
     Address addr = r.virt, currentAddr = r.virt, tmp;
-    
+
     while (addr < r.virt+r.size && currentSize < size)
     {
         // TODO: check for success instead. error codes may change.

@@ -28,7 +28,12 @@ Channel::~Channel()
 {
 }
 
-Size Channel::getMaximumMessages()
+const Size Channel::getMessageSize() const
+{
+    return m_messageSize;
+}
+
+const Size Channel::getMaximumMessages() const
 {
     return m_maximumMessages;
 }

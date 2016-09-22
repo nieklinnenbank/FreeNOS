@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __INTEL_NUC_SYSTEM_H
-#define __INTEL_NUC_SYSTEM_H
+#ifndef __INTEL_PC_SYSTEM_H
+#define __INTEL_PC_SYSTEM_H
 
 #define INTEL
 #define PC
@@ -24,6 +24,7 @@
 
 #include <intel/IntelConstant.h>
 #include <intel/IntelCore.h>
+#include <intel/IntelCache.h>
 #include <intel/IntelIO.h>
 #include <intel/IntelState.h>
 #include <intel/IntelPaging.h>
@@ -34,4 +35,4 @@
 
 #include <FreeNOS/API.h>
 
-#endif /* __INTEL_NUC_SYSTEM_H */
+#endif /* __INTEL_PC_SYSTEM_H */

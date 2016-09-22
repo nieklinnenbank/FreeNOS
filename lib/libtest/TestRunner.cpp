@@ -68,6 +68,8 @@ int TestRunner::run(void)
     for (ListIterator<TestInstance *> i(tests); i.hasCurrent(); i++)
     {
         TestInstance *test = i.current();
+        if (!test)
+            break;
 
         m_reporter->prepare(*test);
         TestResult result = test->run();

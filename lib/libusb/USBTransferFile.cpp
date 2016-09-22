@@ -35,7 +35,10 @@ Error USBTransferFile::write(IOBuffer & buffer, Size size, Size offset)
     const FileSystemMessage *msg = buffer.getMessage();
 
     if (size != sizeof(USBMessage))
+    {
+        ERROR("invalid size " << size << " != sizeof(USBMessage)");
         return EIO;
+    }
 
     switch (usb->state)
     {
@@ -52,6 +55,7 @@ Error USBTransferFile::write(IOBuffer & buffer, Size size, Size offset)
             return EIO;
 
         default:
+            ERROR("invalid unknown USBMessage state: " << (int) usb->state);
             break;
     }
     return EIO;

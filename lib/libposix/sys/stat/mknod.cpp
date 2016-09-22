@@ -29,6 +29,7 @@ int mknod(const char *path, mode_t mode, dev_t dev)
     ProcessID mnt = findMount(path);
     
     /* Fill in the message. */
+    msg.type     = ChannelMessage::Request;
     msg.action   = CreateFile;
     msg.path     = (char *) path;
     msg.deviceID = dev;

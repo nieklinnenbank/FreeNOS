@@ -189,6 +189,7 @@ IntController::Result IntelAPIC::sendStartupIPI(uint cpuId, Address addr)
         m_io.write(IntCommand1, cfg);
 
         // Wait 1 milisecond
+#warning FIX this.
         // TODO: this is difficult in the current implementation, because
         //       the *userspace* instance of this class does not have
         //       m_frequency set.. better solution is that libarch provides a Timer

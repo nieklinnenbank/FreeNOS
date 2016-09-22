@@ -130,9 +130,20 @@ void setupHeap()
     Allocator::setDefault(pool);
 }
 
+void setupRandomizer()
+{
+    ProcessID pid = getpid();
+    Timer::Info timer;
+    ProcessCtl(SELF, InfoTimer, (Address) &timer);
+
+    ::srandom(pid + timer.ticks);
+}
+
 void setupChannels()
 {
     ChannelClient *client = new ChannelClient();
+    (void) client;
+
     ChannelClient::instance->setRegistry(new ChannelRegistry());
 }
 
@@ -316,6 +327,7 @@ extern C void SECTION(".entry") _entry()
     int ret, argc;
     char *arguments;
     char **argv;
+    SystemInformation info;
 
     /* Clear BSS */
     extern Address __bss_start, __bss_end;
@@ -327,6 +339,7 @@ extern C void SECTION(".entry") _entry()
     runConstructors();
     setupChannels();
     setupMappings();
+    setupRandomizer();
 
     /* Allocate buffer for arguments. */
     argc = 0;

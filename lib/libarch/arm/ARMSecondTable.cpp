@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/System.h>
 #include "ARMCore.h"
 #include "ARMConstant.h"
 #include "ARMSecondTable.h"
@@ -101,20 +102,24 @@ MemoryContext::Result ARMSecondTable::map(Address virt,
                                           Address phys,
                                           Memory::Access access)
 {
+    Arch::Cache cache;
+
     // Check if the address is already mapped
     if (m_pages[ TABENTRY(virt) ] & PAGE2_PRESENT)
         return MemoryContext::AlreadyExists;
 
     // Insert mapping
     m_pages[ TABENTRY(virt) ] = phys | PAGE2_PRESENT | flags(access);
-    cache1_clean(&m_pages[TABENTRY(virt)]);
+    cache.cleanData(&m_pages[TABENTRY(virt)]);
     return MemoryContext::Success;
 }
 
 MemoryContext::Result ARMSecondTable::unmap(Address virt)
 {
+    Arch::Cache cache;
+
     m_pages[ TABENTRY(virt) ] = PAGE2_NONE;
-    cache1_clean(&m_pages[TABENTRY(virt)]);
+    cache.cleanData(&m_pages[TABENTRY(virt)]);
     return MemoryContext::Success;
 }
 

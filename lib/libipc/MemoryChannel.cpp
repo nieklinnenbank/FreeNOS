@@ -110,7 +110,8 @@ MemoryChannel::Result MemoryChannel::flush()
         return IOError;
 
     // Clean both pages from the cache
-    cache1_clean(m_data.getBase());
-    cache1_clean(m_feedback.getBase());
+    Arch::Cache cache;
+    cache.cleanData(m_data.getBase());
+    cache.cleanData(m_feedback.getBase());
     return Success;
 }

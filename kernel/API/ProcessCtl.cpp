@@ -33,7 +33,10 @@ void interruptNotify(CPUState *st, Process *p)
     p->raiseEvent(&event);
 }
 
-Error ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
+Error ProcessCtlHandler(ProcessID procID,
+                        ProcessOperation action,
+                        Address addr,
+                        Address output)
 {
     Process *proc = ZERO;
     ProcessInfo *info = (ProcessInfo *) addr;
@@ -127,8 +130,11 @@ Error ProcessCtlHandler(ProcessID procID, ProcessOperation action, Address addr)
 
     case EnterSleep:
         // only sleeps the process if no pending wakeups
-        if (procs->current()->sleep() == Process::Success)
+        if (procs->current()->sleep((Timer::Info *)addr) == Process::Success)
             procs->schedule();
+
+        if (output && ((timer = Kernel::instance->getTimer())))
+            timer->getCurrent((Timer::Info *) output); // TODO: check access...
         break;
 
     case SetStack:
@@ -146,14 +152,15 @@ Log & operator << (Log &log, ProcessOperation op)
         case KillPID:   log.append("KillPID"); break;
         case GetPID:    log.append("GetPID"); break;
         case GetParent: log.append("GetParent"); break;
-        case Schedule:  log.append("Schedule"); break;
-        case Resume:    log.append("Resume"); break;
         case WatchIRQ:  log.append("WatchIRQ"); break;
         case EnableIRQ: log.append("EnableIRQ"); break;
+        case DisableIRQ:log.append("DisableIRQ"); break;
         case InfoPID:   log.append("InfoPID"); break;
         case WaitPID:   log.append("WaitPID"); break;
-        //case WaitTimer: log.append("WaitTimer"); break;
+        case InfoTimer: log.append("InfoTimer"); break;
         case EnterSleep: log.append("EnterSleep"); break;
+        case Schedule:  log.append("Schedule"); break;
+        case Resume:    log.append("Resume"); break;
         case SetStack:  log.append("SetStack"); break;
         default:        log.append("???"); break;
     }

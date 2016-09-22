@@ -50,7 +50,7 @@ class PseudoFile : public File
     /**
      * Destructor.
      */
-    ~PseudoFile();
+    virtual ~PseudoFile();
 
     /** 
      * @brief Read bytes from the file. 

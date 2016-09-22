@@ -20,6 +20,7 @@
 
 #include <FreeNOS/System.h>
 #include <Types.h>
+#include "ChannelMessage.h"
 #include "FileType.h"
 #include "FileMode.h"
 #include "FileStat.h"
@@ -40,7 +41,7 @@ FileSystemAction;
 /**
  * FileSystem IPC message.
  */
-typedef struct FileSystemMessage
+typedef struct FileSystemMessage : public ChannelMessage
 {
     /** 
      * Assignment operator. 
@@ -48,6 +49,8 @@ typedef struct FileSystemMessage
      */
     void operator = (FileSystemMessage *m)
     {
+        type        = m->type;
+        identifier  = m->identifier;
         from        = m->from;
         action      = m->action;
         result      = m->result;

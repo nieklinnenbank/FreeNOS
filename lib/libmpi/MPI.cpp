@@ -50,6 +50,7 @@ int MPI_Init(int *argc, char ***argv)
     // If we are master (node 0):
     if (info.coreId == 0)
     {
+        msg.type   = ChannelMessage::Request;
         msg.action = ReadFile;
         msg.from = SELF;
         ChannelClient::instance->syncSendReceive(&msg, CORESRV_PID);
@@ -121,12 +122,13 @@ int MPI_Init(int *argc, char ***argv)
             snprintf(cmd, 512, "%s -a %x -c %d",
                      programPath, memChannelBase.phys, coreCount);
 
-            for (Size j = 1; j < *argc; j++)
+            for (int j = 1; j < *argc; j++)
             {
                 strcat(cmd, " ");
                 strcat(cmd, (*argv)[j]);
             }
 
+            msg.type   = ChannelMessage::Request;
             msg.action = CreateFile;
             msg.size   = i;
             msg.buffer = (char *) programBuffer;

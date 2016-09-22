@@ -73,13 +73,13 @@ NetSend::Result NetSend::initialize()
          it.hasCurrent(); it++)
     {
         printf("key = '%s' value = '%s'\n",
-                *it.key(), it.current()->getName());
+                *it.key(), *it.current()->getName());
     }
         
     for (Size i = 0; i < m_arguments.getPositionals().count(); i++)
     {
-        printf("pos[%d]: %s = %s\n", i, m_arguments.getPositionals()[i]->getName(),
-                                        m_arguments.getPositionals()[i]->getValue());
+        printf("pos[%d]: %s = %s\n", i, *m_arguments.getPositionals()[i]->getName(),
+                                        *m_arguments.getPositionals()[i]->getValue());
     }
 
     //const String *dev = m_arguments.get("device");
@@ -129,13 +129,13 @@ NetSend::Result NetSend::arpRequest(IPV4::Address ipAddr,
     arp->protocolLength = sizeof(IPV4::Address);
     arp->operation      = cpu_to_be16(ARP::Request);
 
-    MemoryBlock::copy(&arp->etherSource, &ether->source, sizeof(Ethernet::Address));
-    arp->ipSource = 0xffffffff;
-    MemoryBlock::copy(&arp->etherDestination, &ether->destination, sizeof(Ethernet::Address));
-    arp->ipDestination = cpu_to_be32(ipAddr);;
+    MemoryBlock::copy(&arp->etherSender, &ether->source, sizeof(Ethernet::Address));
+    arp->ipSender = 0xffffffff;
+    MemoryBlock::copy(&arp->etherTarget, &ether->destination, sizeof(Ethernet::Address));
+    arp->ipTarget = cpu_to_be32(ipAddr);;
 
     // Transmit on physical device
-    const char *device = m_arguments.getPositionals()[0]->getValue();
+    const char *device = *m_arguments.getPositionals()[0]->getValue();
     int fd = open(device, O_RDWR);
     if (fd < 0)
     {
@@ -143,13 +143,14 @@ NetSend::Result NetSend::arpRequest(IPV4::Address ipAddr,
         exit(EXIT_FAILURE);
     }
     printf("sending on device: %s\n", device);
-    if (write(fd, packet, sizeof(packet)) != sizeof(packet))
+    Error r = write(fd, packet, sizeof(packet));
+    if (r < 0)
     {
         printf("failed to send packet on device '%s': %s\n",
                 device, strerror(errno));
         exit(EXIT_FAILURE);
     }
-    printf("send %d bytes\n", sizeof(packet));
+    printf("send %d bytes\n", r);
 #endif
     // Done
     return Success;

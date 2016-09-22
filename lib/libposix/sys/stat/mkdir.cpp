@@ -27,6 +27,7 @@ int mkdir(const char *path, mode_t mode)
     ProcessID mnt = findMount(path);
 
     /* Fill message. */
+    msg.type   = ChannelMessage::Request;
     msg.action = CreateFile;
     msg.path   = (char *) path;
     msg.mode   = mode;

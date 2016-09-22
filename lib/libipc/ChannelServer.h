@@ -22,6 +22,7 @@
 #include <FreeNOS/ProcessEvent.h>
 #include <FreeNOS/ProcessShares.h>
 #include <HashIterator.h>
+#include <Timer.h>
 #include "MemoryChannel.h"
 #include "ChannelClient.h"
 #include "ChannelRegistry.h"
@@ -97,6 +98,7 @@ template <class Base, class MsgType> class ChannelServer
         share.pid    = KERNEL_PID;
         share.coreId = info.coreId;
         share.tagId  = 0;
+
         if (VMShare(SELF, API::Read, &share) != API::Success)
         {
             ERROR("failed to get kernel event channel");
@@ -140,11 +142,27 @@ template <class Base, class MsgType> class ChannelServer
             // Process user messages
             readChannels();
 
-            // Sleep inifinite. We only return in case the process is
+            // Retry requests until all served (EAGAIN or return value)
+            retryRequests();
+
+            // Sleep with timeout or return in case the process is
             // woken up by an external (wakeup) interrupt.
             DEBUG("EnterSleep");
-            Error r = ProcessCtl(SELF, EnterSleep, 0);
+            Address expiry = 0;
+
+            if (m_expiry.frequency)
+                expiry = (Address) &m_expiry;
+
+            Error r = ProcessCtl(SELF, EnterSleep, expiry, (Address) &m_time);
             DEBUG("EnterSleep returned: " << (int)r);
+
+            // TODO: Reset sleep timeout. Put it in Timer(::Info) class.
+            // TODO: or let the kernel return whether the timeout was reached.
+            if (m_expiry.frequency && m_expiry.ticks < m_time.ticks)
+            {
+                m_expiry.frequency = 0;
+                timeout();
+            }
         }
         // Satify compiler
         return 0;
@@ -169,6 +187,29 @@ template <class Base, class MsgType> class ChannelServer
     void addIRQHandler(Size slot, IRQHandlerFunction h)
     {
         m_irqHandlers->insert(slot, new MessageHandler<IRQHandlerFunction>(h, false));
+    }
+
+    /**
+     * Called when sleep timeout is reached
+     */
+    virtual void timeout()
+    {
+        DEBUG("");
+    }
+
+    /**
+     * Set a sleep timeout
+     *
+     * @param msec Milliseconds to sleep (approximately)
+     */
+    void setTimeout(uint msec)
+    {
+        DEBUG("msec = " << msec);
+
+        // TODO: Note that this gives only imprecise timing
+        Size msecPerTick = 1000 / m_time.frequency;
+        m_expiry.frequency = m_time.frequency;
+        m_expiry.ticks     = m_time.ticks + ((msec / msecPerTick) + 1);
     }
 
   private:
@@ -230,6 +271,7 @@ template <class Base, class MsgType> class ChannelServer
                 case ShareRemoved:
                     DEBUG(m_self << ": share removed");
                     break;
+
                 case InterruptEvent:
                 {
                     DEBUG(m_self << ": interrupt: " << event.number);
@@ -246,7 +288,11 @@ template <class Base, class MsgType> class ChannelServer
                     m_registry->unregisterConsumer(event.number);
                     m_registry->unregisterProducer(event.number);
     
-                    // TODO: cleanup the VMShare area now
+                    // TODO: Do any implementation defined cleanup for this PID
+                    // m_instance->unregisterProcess(event.number)
+
+                    // cleanup the VMShare area now for that process
+                    VMShare(event.number, API::Delete, ZERO);
                     break;
                 }
                 default:
@@ -271,12 +317,24 @@ template <class Base, class MsgType> class ChannelServer
         {
             Channel *ch = i.current();
             DEBUG(m_self << ": trying to receive from PID " << i.key());
-            if (ch->read(&msg) == Channel::Success)
+
+            // Read all messages in the consumer channel
+            while (ch->read(&msg) == Channel::Success)
             {
                 DEBUG(m_self << ": received message");
                 msg.from = i.key();
 
-                if (m_ipcHandlers->at(msg.action))
+                // Is the message a response from earlier client request?
+                if (msg.type == ChannelMessage::Response)
+                {
+                    if (m_client->processResponse(msg.from, &msg) != ChannelClient::Success)
+                    {
+                        ERROR(m_self << ": failed to process client response from PID " <<
+                               msg.from << " with identifier " << msg.identifier);
+                    }
+                }
+                // Message is a request to us
+                else if (m_ipcHandlers->at(msg.action))
                 {
                     m_sendReply = m_ipcHandlers->at(msg.action)->sendReply;
                     (m_instance->*(m_ipcHandlers->at(msg.action))->exec) (&msg);
@@ -300,6 +358,14 @@ template <class Base, class MsgType> class ChannelServer
             }
         }
         return Success;
+    }
+
+    /**
+     * Keep retrying requests until all served
+     */
+    void retryRequests()
+    {
+        while (m_instance->retryRequests());
     }
 
   protected:
@@ -327,6 +393,14 @@ template <class Base, class MsgType> class ChannelServer
 
     /** ProcessID of ourselves */
     ProcessID m_self;
+
+    /** System timer value */
+    Timer::Info m_time;
+
+  private:
+
+    /** System timer expiration value */
+    Timer::Info m_expiry;
 };
 
 #endif /* __LIBIPC_CHANNELSERVER_H */

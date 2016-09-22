@@ -56,6 +56,14 @@ class ArgumentContainer
     virtual ~ArgumentContainer();
 
     /**
+     * Get argument by name
+     *
+     * @param name Name of the argument
+     * @return String object pointer if found or ZERO if not found
+     */
+    const char * get(const char *name) const;
+
+    /**
      * Get positional arguments.
      *
      * @return Vector object reference

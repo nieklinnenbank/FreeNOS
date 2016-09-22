@@ -78,7 +78,7 @@ int forkexec(const char *path, const char *argv[])
     // this process can read the libexec data once, and then let coreserver create a process for it.
 
     // Map program regions into virtual memory of the new process
-    for (int i = 0; i < numRegions; i++)
+    for (Size i = 0; i < numRegions; i++)
     {
         // Copy executable memory from this region
         range.virt   = regions[i].virt;
@@ -132,6 +132,7 @@ int forkexec(const char *path, const char *argv[])
     // Send a pointer to our list of file descriptors to the child
     // TODO: ofcourse, insecure. To be fixed later.
     msg.from = SELF;
+    msg.type = ChannelMessage::Request;
     msg.path = (char *) fds->vector();
     ChannelClient::instance->syncSendReceive(&msg, pid);
 

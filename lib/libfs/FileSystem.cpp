@@ -47,6 +47,11 @@ FileSystem::~FileSystem()
         delete m_requests;
 }
 
+const char * FileSystem::getMountPath() const
+{
+    return m_mountPath;
+}
+
 Directory * FileSystem::getRoot()
 {
     return (Directory *) m_root->file;
@@ -150,11 +155,15 @@ Error FileSystem::processRequest(FileSystemRequest *req)
     File *file = ZERO;
     Directory *parent;
     FileSystemMessage *msg = req->getMessage();
+    Error ret;
     
     // Copy the file path
     if ((msg->result = VMCopy(msg->from, API::Read, (Address) buf,
                     (Address) msg->path, PATHLEN)) <= 0)
     {
+        ERROR("path missing: result = " << (int)msg->result << " from = " << msg->from <<
+              " addr = " << (uint)msg->path << " action = " << (int) msg->action << " stat = " << (int) msg->stat);
+        msg->type = ChannelMessage::Response;
         msg->result = EACCES;
         m_registry->getProducer(msg->from)->write(msg);
         return msg->result;
@@ -173,6 +182,7 @@ Error FileSystem::processRequest(FileSystemRequest *req)
     else if (msg->action != CreateFile)
     {
         DEBUG(m_self << ": not found");
+        msg->type = ChannelMessage::Response;
         msg->result = ENOENT;
         m_registry->getProducer(msg->from)->write(msg);
 #warning put this in ChannelClient somehow
@@ -246,14 +256,50 @@ Error FileSystem::processRequest(FileSystemRequest *req)
             DEBUG(m_self << ": write = " << (int)msg->result);
             break;
     }
+    ret = msg->result;
+//    msg->result &= 0xffffff; // (msg->result & ~ERESTART);
 
     // Only send reply if completed (not EAGAIN)
     if (msg->result != EAGAIN)
     {
+        msg->type = ChannelMessage::Response;
         m_registry->getProducer(msg->from)->write(msg);
         ProcessCtl(msg->from, Resume, 0);
     }
-    return msg->result;
+    return ret;
+}
+
+void FileSystem::timeout()
+{
+    DEBUG("");
+
+    while (retryRequests());
+}
+
+bool FileSystem::retryRequests()
+{
+    DEBUG("");
+    bool restartNeeded = false;
+
+    for (ListIterator<FileSystemRequest *> i(m_requests); i.hasCurrent(); i++)
+    {
+        Error ret = processRequest(i.current());
+        if (ret != EAGAIN)
+        {
+            delete i.current();
+            i.remove();
+            restartNeeded = true;
+        }
+        /*Error set = ret < 0 ? -ret : ret;
+        
+        if (set & (ERESTART))
+        {
+            DEBUG("ERESTART set: " << (int)ret << " : " << (int)set);
+            restartNeeded = true;
+        }*/
+    }
+    DEBUG("done");
+    return restartNeeded;
 }
 
 void FileSystem::setRoot(Directory *newRoot)

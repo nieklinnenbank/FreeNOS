@@ -27,6 +27,17 @@
 
 extern C int kernel_main(u32 r0, u32 r1, u32 r2)
 {
+    // Invalidate all caches now
+    Arch::Cache cache;
+    cache.invalidate(Cache::Unified);
+
+#ifdef ARMV7
+    // Raise the SMP bit for ARMv7
+    ARMControl ctrl;
+    ctrl.set(ARMControl::SMPBit);
+#endif
+
+    // Retrieve boot image from ATAGS
     Arch::MemoryMap mem;
     BroadcomInterrupt irq;
     ARMTags tags(r2);
@@ -53,13 +64,6 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
 
     // Create the kernel
     ARMKernel kernel(&irq, &coreInfo);
-
-    // Print some info
-    DEBUG("ATAGS = " << r2);
-    ARMControl ctrl;
-    DEBUG("MainID = " << ctrl.read(ARMControl::MainID));
-    ctrl.write(ARMControl::UserProcID, 11223344);
-    DEBUG("UserProcID = " << ctrl.read(ARMControl::UserProcID));
 
     // Run the kernel
     return kernel.run();

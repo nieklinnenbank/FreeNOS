@@ -35,6 +35,11 @@ ProcessManager::~ProcessManager()
 {
 }
 
+Scheduler * ProcessManager::getScheduler()
+{
+    return m_scheduler;
+}
+
 Process * ProcessManager::create(Address entry, const MemoryMap &map)
 {
     Process *proc = new Arch::Process(m_procs.count(), entry, false, map);

@@ -90,6 +90,8 @@ class CoreServer : public ChannelServer<CoreServer, FileSystemMessage>
 
     int runCore();
 
+    bool retryRequests();
+
   private:
 
     Result setupChannels();

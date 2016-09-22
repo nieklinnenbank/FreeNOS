@@ -21,10 +21,10 @@
 #include <Types.h>
 #include "MemoryContext.h"
 #include "MemoryMap.h"
-#include "ARMFirstTable.h"
 
 /** Forward declaration */
 class SplitAllocator;
+class ARMFirstTable;
 
 /**
  * ARM virtual memory implementation.
@@ -94,11 +94,21 @@ class ARMPaging : public MemoryContext
 
   private:
 
+    /**
+     * Enable the MMU
+     *
+     * @return Result code
+     */
+    Result enableMMU();
+
     /** Pointer to the first level page table. */
     ARMFirstTable *m_firstTable;
 
     /** Physical address of the first level page table. */
     Address m_firstTableAddr;
+
+    /** Caching implementation */
+    Arch::Cache m_cache;
 };
 
 namespace Arch

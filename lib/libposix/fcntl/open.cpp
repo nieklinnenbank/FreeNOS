@@ -32,6 +32,7 @@ int open(const char *path, int oflag, ...)
     FileStat st;
     
     // Fill message
+    msg.type   = ChannelMessage::Request;
     msg.action = StatFile;
     msg.path   = (char *) path;
     msg.stat   = &st;
@@ -46,6 +47,7 @@ int open(const char *path, int oflag, ...)
         {
             refreshMounts(0);
             mnt = findMount(path);
+            msg.type = ChannelMessage::Request;
             ChannelClient::instance->syncSendReceive(&msg, mnt);
         }
     

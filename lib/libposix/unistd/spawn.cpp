@@ -55,7 +55,7 @@ int spawn(Address program, Size programSize, const char *command)
     // this process can read the libexec data once, and then let coreserver create a process for it.
 
     // Map program regions into virtual memory of the new process
-    for (int i = 0; i < numRegions; i++)
+    for (Size i = 0; i < numRegions; i++)
     {
         // Copy executable memory from this region
         range.virt   = regions[i].virt;

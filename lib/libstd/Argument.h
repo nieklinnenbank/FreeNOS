@@ -27,13 +27,13 @@ class Argument
 
     Argument(const char *name);
 
-    char getIdentifier();
+    char getIdentifier() const;
 
-    const char * getName();
+    const String & getName() const;
 
-    const char * getDescription();
+    const String & getDescription() const;
 
-    const char * getValue();
+    const String & getValue() const;
 
     Size getCount() const;
 

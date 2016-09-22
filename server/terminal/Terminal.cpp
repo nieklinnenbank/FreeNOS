@@ -107,6 +107,7 @@ Error Terminal::initialize()
     /* Print banners. */
 #warning fix this. should not be done like this.
     FileSystemMessage msg;
+    msg.type = ChannelMessage::Request;
     msg.size = 512;
     IOBuffer io(&msg);
     io.bufferedWrite((void *)(BANNER COPYRIGHT "\r\n"), strlen(BANNER)+strlen(COPYRIGHT)+2);

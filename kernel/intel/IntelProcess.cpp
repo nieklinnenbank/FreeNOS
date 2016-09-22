@@ -101,11 +101,8 @@ Process::Result IntelProcess::initialize()
 
 IntelProcess::~IntelProcess()
 {
-    // TODO: release() on m_kernelStack
-    m_memoryContext->releaseRegion(MemoryMap::UserData);
-    m_memoryContext->releaseRegion(MemoryMap::UserHeap);
-    m_memoryContext->releaseRegion(MemoryMap::UserStack);
-    m_memoryContext->releaseRegion(MemoryMap::UserPrivate);
+    // Release the kernel stack memory page
+    Kernel::instance->getAllocator()->release(m_kernelStackBase - KernelStackSize);
 }
 
 void IntelProcess::execute(Process *previous)

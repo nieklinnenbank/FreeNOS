@@ -19,6 +19,7 @@
 #include <FileSystemMessage.h>
 #include "Runtime.h"
 #include <errno.h>
+#include <Log.h>
 #include "sys/stat.h"
 
 int stat(const char *path, struct stat *buf)
@@ -28,10 +29,13 @@ int stat(const char *path, struct stat *buf)
     ProcessID mnt = findMount(path);
 
     /* Fill message. */
+    msg.type   = ChannelMessage::Request;
     msg.action = StatFile;
     msg.path   = (char *) path;
     msg.stat   = &st;
-    
+
+    DEBUG("path = " << (uint) msg.path << " stat = " << (uint) msg.stat);
+
     /* Ask the FileSystem for the information. */
     if (mnt)
     {

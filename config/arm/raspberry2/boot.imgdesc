@@ -1,0 +1,6 @@
+./server/core/server
+./server/filesystem/tmp/server
+./server/filesystem/linn/server
+./server/idle/server
+./bin/init/init
+./rootfs.linn

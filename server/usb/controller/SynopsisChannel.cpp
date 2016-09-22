@@ -28,7 +28,6 @@ SynopsisChannel::SynopsisChannel(Size id, Arch::IO *io)
     m_state = Idle;
     m_usb   = 0;
     m_msg   = 0;
-    m_nextPacketId = Data0;
 }
 
 Size SynopsisChannel::getId() const
@@ -58,7 +57,7 @@ SynopsisChannel::Result SynopsisChannel::interrupt()
 {
     u32 val  = m_io->read(m_base + ChannelInterrupt);
 
-    DEBUG("id =" << m_id << " intr = " << val);
+    DEBUG("chanid =" << m_id << " intr = " << val);
 
     // Print interrupt flags
 #if 0
@@ -108,6 +107,8 @@ SynopsisChannel::Result SynopsisChannel::interrupt()
                 m_usb->size -= (m_io->read(m_base + ChannelTransfer) & 0x7ffff);
                 DEBUG("got " << m_usb->size << " bytes from IN transfer");
             }
+            // Save the next packet id;
+            m_usb->packetId = (u8) ((m_io->read(m_base + ChannelTransfer) >> 29) & 0x3);
 
             // Reset state
             m_state = Idle;
@@ -123,8 +124,6 @@ SynopsisChannel::Result SynopsisChannel::interrupt()
             ERROR("unexpected interrupt");
             break;
     }
-    // Save the next packet id;
-    m_nextPacketId = (PacketId) ((m_io->read(m_base + ChannelTransfer) >> 29) & 0x3);
 
     // Done
     return Success;
@@ -208,7 +207,10 @@ SynopsisChannel::Result SynopsisChannel::transfer(const FileSystemMessage *msg,
         size = m_usb->size;
         data = m_usb->buffer;
         dir  = m_usb->direction;
-        packetId = m_nextPacketId;
+
+        // The packet id is is associated with the endpoint. For non-control
+        // transfers the next packet id is saved from the previous transfer.
+        packetId = (PacketId) m_usb->packetId; //nextPacketId; //(PacketId) ((m_io->read(m_base + ChannelTransfer) >> 29) & 0x3);
     }
 
     // Calculate packet count
@@ -216,7 +218,7 @@ SynopsisChannel::Result SynopsisChannel::transfer(const FileSystemMessage *msg,
     if (!packetCount)
         packetCount = 1;
 
-    DEBUG("packets = " << packetCount << " maxpacketsize = " << usb->maxPacketSize);
+    DEBUG("chanid = " << m_id << " packets = " << packetCount << " maxpacketsize = " << usb->maxPacketSize << " dir = " << (int)dir << " pid = " << (int)packetId);
 
     // Program channel registers.
     m_io->write(m_base + Characteristics, (usb->endpointId << 11) |

@@ -78,8 +78,6 @@ class DeviceServer : public FileSystem
      */
     void registerInterrupt(Device *dev, Size vector);
 
-  protected:
-
     /**
      * @brief Interrupt request handler.
      *

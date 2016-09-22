@@ -44,6 +44,15 @@ Process::Process(ProcessID id, Address entry, bool privileged, const MemoryMap &
 Process::~Process()
 {
     delete m_kernelChannel;
+
+    if (m_memoryContext)
+    {
+        m_memoryContext->releaseRegion(MemoryMap::UserData);
+        m_memoryContext->releaseRegion(MemoryMap::UserHeap);
+        m_memoryContext->releaseRegion(MemoryMap::UserStack);
+        m_memoryContext->releaseRegion(MemoryMap::UserPrivate);
+        delete m_memoryContext;
+    }
 }
 
 ProcessID Process::getID() const
@@ -71,9 +80,9 @@ ProcessShares & Process::getShares()
     return m_shares;
 }
 
-const Timer::Info & Process::getSleepTimer() const
+const Timer::Info * Process::getSleepTimer() const
 {
-    return m_sleepTimer;
+    return &m_sleepTimer;
 }
 
 Address Process::getPageDirectory() const
@@ -151,6 +160,7 @@ Process::Result Process::initialize()
 {
     Memory::Range range;
     Address paddr, vaddr;
+    Arch::Cache cache;
 
     // Allocate two pages for the kernel event channel
     if (Kernel::instance->getAllocator()->allocateLow(PAGESIZE*2, &paddr) != Allocator::Success)
@@ -159,12 +169,12 @@ Process::Result Process::initialize()
     // Translate to virtual address in kernel low memory
     vaddr = (Address) Kernel::instance->getAllocator()->toVirtual(paddr);
     MemoryBlock::set((void *)vaddr, 0, PAGESIZE*2);
-    cache1_clean(vaddr);
-    cache1_clean(vaddr + PAGESIZE);
+    cache.cleanData(vaddr);
+    cache.cleanData(vaddr + PAGESIZE);
 
     // Map data and feedback pages in userspace
     range.phys   = paddr;
-    range.access = Memory::User | Memory::Readable | Memory::Uncached;
+    range.access = Memory::User | Memory::Readable;
     range.size   = PAGESIZE * 2;
     m_memoryContext->findFree(range.size, MemoryMap::UserPrivate, &range.virt);
     m_memoryContext->mapRange(&range);
@@ -172,7 +182,7 @@ Process::Result Process::initialize()
     // Remap the feedback page with write permissions
     m_memoryContext->unmap(range.virt + PAGESIZE);
     m_memoryContext->map(range.virt + PAGESIZE,
-                         range.phys + PAGESIZE, Memory::User | Memory::Readable | Memory::Writable);    
+                         range.phys + PAGESIZE, Memory::User | Memory::Readable | Memory::Writable);
 
     // Create shares entry
     m_shares.setMemoryContext(m_memoryContext);
@@ -193,14 +203,19 @@ Process::Result Process::wakeup()
     if (m_state != Running)
         m_state = Ready;
 
+    MemoryBlock::set(&m_sleepTimer, 0, sizeof(m_sleepTimer));
     return Success;
 }
 
-Process::Result Process::sleep()
+Process::Result Process::sleep(Timer::Info *timer)
 {
     if (!m_wakeups)
     {
         m_state = Sleeping;
+        
+        if (timer)
+            MemoryBlock::copy(&m_sleepTimer, timer, sizeof(m_sleepTimer));
+
         return Success;
     }
     m_wakeups = 0;

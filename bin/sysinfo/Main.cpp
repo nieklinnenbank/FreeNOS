@@ -32,6 +32,7 @@ int main(int argc, char **argv)
     struct timeval tv;
     struct timezone tz;
 
+    msg.type   = ChannelMessage::Request;
     msg.action = ReadFile;
     msg.from = SELF;
     ChannelClient::instance->syncSendReceive(&msg, CORESRV_PID);
