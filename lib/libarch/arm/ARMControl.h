@@ -43,6 +43,7 @@ class ARMControl
     enum Register
     {
         MainID = 0,
+        CoreID,
         SystemControl,
         AuxControl,
         DomainControl,

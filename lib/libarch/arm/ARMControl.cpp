@@ -31,6 +31,7 @@ u32 ARMControl::read(Register reg)
     switch (reg)
     {
         case MainID:               return mrc(p15, 0, 0, c0,  c0);
+        case CoreID:               return mrc(p15, 0, 5, c0,  c0);
         case SystemControl:        return mrc(p15, 0, 0, c1,  c0);
         case AuxControl:           return mrc(p15, 0, 1, c1,  c0);
         case TranslationTable0:    return mrc(p15, 0, 0, c2,  c0);
