@@ -206,7 +206,7 @@ bool String::startsWith(const char *prefix) const
 
     return true;
 }
-        
+
 bool String::endsWith(String & suffix) const
 {
     return endsWith(suffix.m_string);
@@ -391,7 +391,7 @@ String & String::lower()
 
     return (*this);
 }
-        
+
 String & String::upper()
 {
     // Make sure the string is allocated
@@ -661,10 +661,26 @@ String & String::operator << (const String & str)
     return (*this);
 }
 
-String & String::operator << (long number)
+String & String::operator << (int number)
 {
     if (reserve(m_count + 16))
         m_count += set(number, m_base, m_string + m_count);
+
+    return (*this);
+}
+
+String & String::operator << (unsigned int number)
+{
+    if (reserve(m_count + 16))
+        m_count += setUnsigned(number, m_base, m_string + m_count);
+
+    return (*this);
+}
+
+String & String::operator << (void *ptr)
+{
+    if (reserve(m_count + 16))
+        m_count += setUnsigned((unsigned long) ptr, Number::Hex, m_string + m_count);
 
     return (*this);
 }

@@ -32,6 +32,9 @@
  */
 class String : public Sequence<char>
 {
+  using Sequence<char>::compareTo;
+  using Sequence<char>::equals;
+
   public:
 
     /**
@@ -361,9 +364,19 @@ class String : public Sequence<char>
     String & operator << (const String & str);
 
     /**
-     * Append the given number as text to the String.
+     * Append the given signed number as text to the String.
      */
-    String & operator << (long number);
+    String & operator << (int number);
+
+    /**
+     * Append the given unsigned number as text to the String.
+     */
+    String & operator << (unsigned int number);
+
+    /**
+     * Append the pointer as hexidecimal unsigned number to the String.
+     */
+    String & operator << (void *pointer);
 
     /**
      * Change the default number format representation.

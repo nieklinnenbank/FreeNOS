@@ -79,7 +79,7 @@ Log & operator << (Log &log, unsigned long number)
 Log & operator << (Log &log, void *ptr)
 {
     String s;
-    s << Number::Hex << (long ) ptr;
+    s << Number::Hex << ptr;
     log.append(*s);
     return log;
 }
