@@ -27,6 +27,7 @@ extern C int recvfrom(int sockfd, void *buf, size_t len, int flags,
 {
 
     char packet[2048];
+
     NetworkClient::SocketInfo info;
 
     if (len > sizeof(packet) - addrlen)
@@ -36,9 +37,12 @@ extern C int recvfrom(int sockfd, void *buf, size_t len, int flags,
     if (r < 0)
         return r;
 
-    // TODO: inefficient. and move to NetworkClient.
+    // TODO: let struct sockaddr instead be a typedef for NetworkClient::SocketInfo
+    memcpy(&info, packet, sizeof(info));
     addr->addr = info.address;
     addr->port = info.port;
+
+    // TODO: inefficient. and move to NetworkClient.
     memcpy(buf, packet + sizeof(info), r - sizeof(info));
     return r - sizeof(info);
 }

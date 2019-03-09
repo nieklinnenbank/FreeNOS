@@ -78,7 +78,7 @@ void Directory::insert(FileType type, const char *name, ...)
     }
 }
 
-#warning libfs should not depend on libposix (e.g. strcmp) but use libstd instead
+// TODO: libfs should not depend on libposix (e.g. strcmp) but use libstd instead
 
 void Directory::remove(const char *name)
 {

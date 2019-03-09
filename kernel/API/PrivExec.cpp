@@ -18,7 +18,7 @@
 #include <Log.h>
 #include "PrivExec.h"
 
-Error PrivExecHandler(PrivOperation op, Address addr)
+API::Result PrivExecHandler(PrivOperation op, Address addr)
 {
     ProcessManager *procs = Kernel::instance->getProcessManager();
 

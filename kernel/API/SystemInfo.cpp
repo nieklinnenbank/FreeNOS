@@ -21,7 +21,7 @@
 #include <SplitAllocator.h>
 #include <CoreInfo.h>
 
-Error SystemInfoHandler(SystemInformation *info)
+API::Result SystemInfoHandler(SystemInformation *info)
 {
     SplitAllocator *memory = Kernel::instance->getAllocator();
     CoreInfo *core = Kernel::instance->getCoreInfo();

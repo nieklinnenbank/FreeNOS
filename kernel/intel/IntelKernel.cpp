@@ -85,7 +85,7 @@ IntelKernel::IntelKernel(CoreInfo *info)
     {
         NOTICE("Using APIC timer");
         // TODO: do we need to explicityly disable the PICs?
-#warning the APIC is not used as IntController yet
+        // TODO: #warning the APIC is not used as IntController yet
         // m_intControl = &m_apic;
 
         // Enable APIC timer interrupt
@@ -179,10 +179,10 @@ void IntelKernel::clocktick(CPUState *state, ulong param)
     IntelKernel *kern = (IntelKernel *) Kernel::instance;
     Size irq = kern->m_timer->getInterrupt();
 
-#warning not working for APIC timer, because the timer IRQ is out of range on the PIC
+    // TODO: #warning not working for APIC timer, because the timer IRQ is out of range on the PIC
     kern->enableIRQ(irq, true);
 
-#warning TODO: tmp hack for APIC timer end-of-interrupt
+    // TODO: #warning TODO: tmp hack for APIC timer end-of-interrupt
     if (irq == kern->m_apic.getInterrupt())
         kern->m_apic.clear(irq);
 

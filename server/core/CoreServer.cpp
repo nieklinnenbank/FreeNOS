@@ -131,7 +131,8 @@ void CoreServer::createProcess(FileSystemMessage *msg)
             return;
         }
         // TODO: replace with ChannelClient::syncReceiveFrom
-        while (ch->read(msg) != Channel::Success);
+        while (ch->read(msg) != Channel::Success)
+		;
         DEBUG("program created with result " << (int)msg->result << " at core" << msg->size);
 
         msg->result = ESUCCESS;
@@ -279,7 +280,7 @@ CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info,
             info->memory.size << " available=" << sysInfo.memoryAvail);
 
     // Claim the core's memory
-    if (VMCtl(SELF, RemoveMem, &info->memory) != API::Success)
+    if (VMCtl(SELF, ReserveMem, &info->memory) != API::Success)
     {
         ERROR("failed to reserve memory for core" << coreId <<
               " at " << (void *)info->memory.phys);
@@ -290,7 +291,7 @@ CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info,
           << info->memory.size / 1024 / 1024 << "MB");
 
     // Map the kernel
-    for (int i = 0; i < m_numRegions; i++)
+    for (Size i = 0; i < m_numRegions; i++)
     {
         Memory::Range range;
         range.phys = info->memory.phys + regions[i].virt;
@@ -307,11 +308,12 @@ CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info,
             return OutOfMemory;
         }
         // Copy the kernel to the target core's memory
-#warning VMCopy should just return API::Result, not a Size
-	Error r = VMCopy(SELF, API::Write, (Address) regions[i].data,
-                                 range.virt,
-                                 regions[i].size);
-	if (r != regions[i].size)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-compare"
+        API::Result r = VMCopy(SELF, API::Write, (Address) regions[i].data,
+                               range.virt,
+                               regions[i].size);
+	if ((Size)r != regions[i].size)
 	    return MemoryError;
 
         // Unmap the target kernel's memory

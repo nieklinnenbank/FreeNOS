@@ -20,14 +20,14 @@
 #include "VMCtl.h"
 #include "ProcessID.h"
 
-Error VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range)
+API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range)
 {
     ProcessManager *procs = Kernel::instance->getProcessManager();
     Process *proc = ZERO;
     Error ret = API::Success;
 
     DEBUG("");
-    
+
     // Find the given process
     if (procID == SELF)
         proc = procs->current();
@@ -69,12 +69,17 @@ Error VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range)
             cache.cleanInvalidate(Cache::Data);
             break;
         }
-        case Access:
-            ret = (API::Error) mem->access(range->virt, &range->access);
+        case Access: {
+            MemoryContext::Result mr = mem->access(range->virt, &range->access);
+            if (mr == MemoryContext::Success)
+                ret = API::Success;
+            else
+                ret = (API::Result) mr;
             break;
+        }
 
-        case RemoveMem:
-#warning TODO: claiming memory should be atomic single shot call.
+        case ReserveMem:
+            // TODO: #warning TODO: claiming memory should be atomic single shot call.
             for (uint i = 0; i < range->size; i+=PAGESIZE)
             {
                 if (Kernel::instance->getAllocator()->allocate(range->phys + i) != Allocator::Success)

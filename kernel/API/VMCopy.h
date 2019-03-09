@@ -32,15 +32,15 @@
  * @param ours Virtual address of the buffer of this process.
  * @param theirs Virtual address of the remote process' buffer.
  * @param sz Amount of memory to copy.
- * @return Total number of bytes copied on success and error code on failure.
+ * @return Total number of bytes copied on success and API::ErrorCode on failure.
  */
-inline Error VMCopy(ProcessID proc, API::Operation how, Address ours,
-                         Address theirs, Size sz)
+inline API::Result VMCopy(ProcessID proc, API::Operation how, Address ours,
+                          Address theirs, Size sz)
 {
     return trapKernel5(API::VMCopyNumber, proc, how, ours, theirs, sz);
 }
 
-extern Error VMCopyHandler(ProcessID proc, API::Operation how, Address ours, Address theirs, Size sz);
+extern API::Result VMCopyHandler(ProcessID proc, API::Operation how, Address ours, Address theirs, Size sz);
 
 /**
  * @}

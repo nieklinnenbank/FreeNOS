@@ -19,8 +19,8 @@
 #include <SplitAllocator.h>
 #include "VMCopy.h"
 
-Error VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
-                    Address theirs, Size sz)
+API::Result VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
+                          Address theirs, Size sz)
 {
     ProcessManager *procs = Kernel::instance->getProcessManager();
     Process *proc;

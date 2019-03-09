@@ -38,6 +38,5 @@ Error Device::initialize()
 
 Error Device::interrupt(Size vector)
 {
-#warning why success?
     return ESUCCESS;
 }

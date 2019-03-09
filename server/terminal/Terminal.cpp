@@ -75,7 +75,7 @@ Error Terminal::initialize()
 	exit(EXIT_FAILURE);
     }
 
-#warning TODO: Hack the file descriptors table...
+    // TODO: #warning TODO: Hack the file descriptors table...
     Vector<FileDescriptor> *files = getFiles();
     (*files)[0].open = true;
     strlcpy((*files)[0].path, inputFile, PATHLEN); /* keyboard0 */
@@ -105,7 +105,7 @@ Error Terminal::initialize()
     teken_set_winsize(&state, &winsz);
     
     /* Print banners. */
-#warning fix this. should not be done like this.
+    // TODO: #warning fix this. should not be done like this.
     FileSystemMessage msg;
     msg.type = ChannelMessage::Request;
     msg.size = 512;

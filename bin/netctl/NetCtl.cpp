@@ -57,8 +57,6 @@ NetCtl::Result NetCtl::exec()
     // Get a list of mounts
     refreshMounts(0);
     FileSystemMount *mounts = ::getMounts();
-    FileSystemMount *match = 0;
-    Size matchLen = 0;
 
     // Find closest matching device
     for (Size i = 0; i < FILESYSTEM_MAXMOUNTS; i++)

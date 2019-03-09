@@ -59,7 +59,7 @@ class API
     /**
      * Enumeration of generic kernel API error codes.
      */
-    typedef enum Error
+    typedef enum ErrorCode
     {
         Success         =  0,
         AccessViolation = -1,
@@ -72,11 +72,14 @@ class API
     }
     Error;
 
+    /** Represents the result of an system call handler */
+    typedef ::Error Result;
+
     /**
      * Function which handles an kernel API (system call) request.
      * @return Status code of the APIHandler execution.
      */
-    typedef ::Error Handler(ulong, ulong, ulong, ulong, ulong);
+    typedef Result Handler(ulong, ulong, ulong, ulong, ulong);
 
     /**
      * Various actions which may be performed inside an APIHandler.
@@ -102,12 +105,12 @@ class API
     /**
      * Execute a generic API function.
      */
-    ::Error invoke(Number number,
-                   ulong arg1,
-                   ulong arg2,
-                   ulong arg3,
-                   ulong arg4,
-                   ulong arg5);
+    Result invoke(Number number,
+                  ulong arg1,
+                  ulong arg2,
+                  ulong arg3,
+                  ulong arg4,
+                  ulong arg5);
 
   private:
 

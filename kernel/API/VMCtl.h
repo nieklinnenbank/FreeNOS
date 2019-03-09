@@ -35,7 +35,7 @@ typedef enum MemoryOperation
     Release,
     LookupVirtual,
     Access,
-    RemoveMem,
+    ReserveMem,
     AddMem,
     CacheClean
 }
@@ -46,15 +46,15 @@ MemoryOperation;
  * @param procID Remote process.
  * @param op Determines which operation to perform.
  * @param range Describes the memory pages to operate on.
- * @return Zero on success or error code on failure.
+ * @return API::Success on success and other API::ErrorCode on failure.
  */
-inline Error VMCtl(ProcessID procID, MemoryOperation op,
-                   Memory::Range *range = ZERO)
+inline API::Result VMCtl(ProcessID procID, MemoryOperation op,
+                         Memory::Range *range = ZERO)
 {
     return trapKernel3(API::VMCtlNumber, procID, op, (Address) range);
 }
 
-extern Error VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range);
+extern API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range);
 
 /**
  * @}

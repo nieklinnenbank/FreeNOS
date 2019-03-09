@@ -27,18 +27,15 @@
  * @{  
  */
 
-/**
- * Forward declaration.
- * @see SystemInformation
- */
 struct SystemInformation;
-class BitAllocator;
 
 /**
  * Prototype for user applications. Retrieves system information.
- * @param buf Target buffer.
+ *
+ * @param info Pointer to SystemInformation output buffer.
+ * @return API::Success on success and other API::ErrorCode on failure.
  */
-inline Error SystemInfo(SystemInformation *info)
+inline API::Result SystemInfo(SystemInformation *info)
 {
     return trapKernel1(API::SystemInfoNumber, (Address) info);
 }
@@ -46,7 +43,7 @@ inline Error SystemInfo(SystemInformation *info)
 /**
  * Kernel prototype.
  */
-extern Error SystemInfoHandler(SystemInformation *info);
+extern API::Result SystemInfoHandler(SystemInformation *info);
 
 /**
  * System information structure.
@@ -87,6 +84,7 @@ typedef struct SystemInformation
     uint timerCounter;
 }
 SystemInformation;
+
 
 /**
  * @}

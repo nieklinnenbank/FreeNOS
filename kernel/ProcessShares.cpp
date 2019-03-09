@@ -22,8 +22,6 @@
 #include <SplitAllocator.h>
 #include "ProcessEvent.h"
 
-#warning merge with Process please
-
 ProcessShares::ProcessShares(ProcessID pid)
 {
     m_pid    = pid;

@@ -33,10 +33,10 @@ void interruptNotify(CPUState *st, Process *p)
     p->raiseEvent(&event);
 }
 
-Error ProcessCtlHandler(ProcessID procID,
-                        ProcessOperation action,
-                        Address addr,
-                        Address output)
+API::Result ProcessCtlHandler(ProcessID procID,
+                              ProcessOperation action,
+                              Address addr,
+                              Address output)
 {
     Process *proc = ZERO;
     ProcessInfo *info = (ProcessInfo *) addr;

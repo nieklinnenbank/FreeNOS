@@ -58,7 +58,7 @@ Error ICMP::process(NetworkQueue::Packet *pkt, Size offset)
     switch (hdr->type)
     {
         case EchoRequest: {
-#warning TODO: also include the data payload (for linux)
+            // TODO: TODO: also include the data payload (for linux)
             DEBUG("request");
             hdr->type     = EchoReply;
             hdr->checksum = 0;

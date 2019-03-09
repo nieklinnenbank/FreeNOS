@@ -17,7 +17,7 @@
 
 #include "NetworkQueue.h"
 
-#warning perhaps reimplement this is a Queue in libstd, to avoid iterating the Index, which is a bit less efficient
+// TODO: #warning perhaps reimplement this is a Queue in libstd, to avoid iterating the Index, which is a bit less efficient
 
 NetworkQueue::NetworkQueue(Size packetSize, Size headerSize, Size queueSize)
 {

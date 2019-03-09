@@ -106,7 +106,7 @@ int spawn(Address program, Size programSize, const char *command)
     if ((VMCopy(pid, API::Write, (Address) arguments,
                (Address) ARGV_ADDR, PAGESIZE)) < 0)
     {
-        delete arguments;
+        delete[] arguments;
         errno = EFAULT;
         return -1;
     }
@@ -115,6 +115,6 @@ int spawn(Address program, Size programSize, const char *command)
     ProcessCtl(pid, Resume);
 
     // Done. Cleanup.
-    delete arguments;
+    delete[] arguments;
     return pid;
 }

@@ -47,7 +47,7 @@ inline u8 ReadByte(Address addr)
     return (u8) trapKernel3(API::IOCtlNumber, IOByteRead, addr, 0);
 }
 
-inline Error WriteByte(Address addr, u8 value)
+inline API::Result WriteByte(Address addr, u8 value)
 {
     return trapKernel3(API::IOCtlNumber, IOByteWrite, addr, value);
 }
@@ -57,12 +57,12 @@ inline u16 ReadWord(Address addr)
     return (u16) trapKernel3(API::IOCtlNumber, IOWordRead, addr, 0);
 }
 
-inline Error WriteWord(Address addr, u16 value)
+inline API::Result WriteWord(Address addr, u16 value)
 {
     return trapKernel3(API::IOCtlNumber, IOWordWrite, addr, value);
 }
 
-inline Error WriteLong(Address addr, ulong value)
+inline API::Result WriteLong(Address addr, ulong value)
 {
     return trapKernel3(API::IOCtlNumber, IOLongWrite, addr, value);
 }

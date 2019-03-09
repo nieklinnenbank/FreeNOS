@@ -86,9 +86,9 @@ Log & operator << (Log &log, ProcessOperation op);
  * @param addr Input argument address, used for program entry point for Spawn,
  *             ProcessInfo pointer for Info.
  * @param output Output argument address (optional).
- * @return Zero on success and error code on failure.
+ * @return API::Success on success and other API::ErrorCode on failure.
  */
-inline Error ProcessCtl(ProcessID proc, ProcessOperation op, Address addr = 0, Address output = 0)
+inline API::Result ProcessCtl(ProcessID proc, ProcessOperation op, Address addr = 0, Address output = 0)
 {
     return trapKernel4(API::ProcessCtlNumber, proc, op, addr, output);
 }
@@ -96,7 +96,7 @@ inline Error ProcessCtl(ProcessID proc, ProcessOperation op, Address addr = 0, A
 /**
  * Kernel handler prototype.
  */
-extern Error ProcessCtlHandler(ProcessID proc, ProcessOperation op, Address addr, Address output);
+extern API::Result ProcessCtlHandler(ProcessID proc, ProcessOperation op, Address addr, Address output);
 
 /**
  * @}

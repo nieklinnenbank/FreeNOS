@@ -41,6 +41,8 @@ class IntelPIT;
  */
 class IntelAPIC : public IntController, public Timer
 {
+  using Timer::start;
+
   public:
 
     /** APIC memory mapped I/O register base offset (physical address). */

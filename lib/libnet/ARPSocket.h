@@ -87,9 +87,6 @@ class ARPSocket : public NetworkSocket
 
     /** Ethernet address for reply. */
     Ethernet::Address m_ethAddr;
-
-    /** Set if ethernet address was received */
-    bool m_ethFound;
 };
 
 #endif /* __LIBNET_ARPSOCKET_H */

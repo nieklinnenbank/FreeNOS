@@ -169,8 +169,8 @@ void setupMappings()
 
         files.insert(fd);
     }
-#warning Solve this, by passing the file descriptor, procinfo, etc as a parameter to entry(), constructed by the kernel
-#warning If there was a parent, it would have passed the file descriptor table, argc/argv, memorymap, etc as an argument to ProcessCtl()
+    // TODO: Solve this, by passing the file descriptor, procinfo, etc as a parameter to entry(), constructed by the kernel
+    //       If there was a parent, it would have passed the file descriptor table, argc/argv, memorymap, etc as an argument to ProcessCtl()
 
     // TODO: perhaps we can "bundle" the GetMounts() and ReadProcess() calls, so that
     // we do not need to send IPC message twice in this part (for mounts and getppid())

@@ -17,7 +17,7 @@
 
 #include "File.h"
 
-#warning redesign libfs to NOT depend on libposix. Remove errno etc. use enum Result.
+// TODO: #warning redesign libfs to NOT depend on libposix. Remove errno etc. use enum Result.
 
 File::File(FileType type, UserID uid, GroupID gid)
 {

@@ -39,7 +39,7 @@ Error LinnFile::read(IOBuffer & buffer, Size size, Size offset)
     Size total = 0;
     Error e;
 
-#warning very inefficient. blocks are not cached from storage and thrown away each time.
+    // TODO: #warning very inefficient. blocks are not cached from storage and thrown away each time.
 
     /* Initialize variables. */
     sb     = fs->getSuperBlock();

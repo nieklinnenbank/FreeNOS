@@ -185,7 +185,7 @@ Error FileSystem::processRequest(FileSystemRequest *req)
         msg->type = ChannelMessage::Response;
         msg->result = ENOENT;
         m_registry->getProducer(msg->from)->write(msg);
-#warning put this in ChannelClient somehow
+        // TODO: #warning put this in ChannelClient somehow
         ProcessCtl(msg->from, Resume, 0);
         return msg->result;
     }

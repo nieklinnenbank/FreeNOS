@@ -22,6 +22,9 @@
 #include <Macros.h>
 #include <Types.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnew-returns-null"
+
 /**
  * @defgroup liballoc liballoc
  * @{

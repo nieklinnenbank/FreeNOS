@@ -40,10 +40,11 @@ PrivOperation;
 
 /**
  * Prototype for user applications. Performs various privileged operations.
+ *
  * @param op The operation to perform.
- * @return Zero on success and error code on failure.
+ * @return API::Success on success and other API::ErrorCode on failure.
  */
-inline Error PrivExec(PrivOperation op, Address param = 0)
+inline API::Result PrivExec(PrivOperation op, Address param = 0)
 {
     return trapKernel2(API::PrivExecNumber, op, param);
 }
@@ -51,7 +52,7 @@ inline Error PrivExec(PrivOperation op, Address param = 0)
 /**
  * Prototype for kernel handler.
  */
-extern Error PrivExecHandler(PrivOperation op, Address param);
+extern API::Result PrivExecHandler(PrivOperation op, Address param);
 
 /**
  * @}

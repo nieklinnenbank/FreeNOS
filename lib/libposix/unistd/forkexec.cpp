@@ -121,7 +121,7 @@ int forkexec(const char *path, const char *argv[])
     if ((VMCopy(pid, API::Write, (Address) arguments,
                (Address) ARGV_ADDR, PAGESIZE)) < 0)
     {
-        delete arguments;
+        delete[] arguments;
         errno = EFAULT;
         return -1;
     }
@@ -137,6 +137,6 @@ int forkexec(const char *path, const char *argv[])
     ChannelClient::instance->syncSendReceive(&msg, pid);
 
     // Done. Cleanup.
-    delete arguments;
+    delete[] arguments;
     return pid;
 }

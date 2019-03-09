@@ -33,15 +33,16 @@ API::API()
     m_apis.insert(IOCtlNumber,      (Handler *) IOCtlHandler);
 }
 
-Error API::invoke(Number number,
-                  ulong arg1,
-                  ulong arg2,
-                  ulong arg3,
-                  ulong arg4,
-                  ulong arg5)
+API::Result API::invoke(Number number,
+                        ulong arg1,
+                        ulong arg2,
+                        ulong arg3,
+                        ulong arg4,
+                        ulong arg5)
 {
     Handler **handler = (Handler **) m_apis.get(number);
 
+    // TODO: make more efficient using a struct? (and avoid using -Wno-cast-function-type)
     if (handler)
         return (*handler)(arg1, arg2, arg3, arg4, arg5);
     else

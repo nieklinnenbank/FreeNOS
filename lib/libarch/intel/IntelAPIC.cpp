@@ -20,7 +20,7 @@
 #include "IntelPIT.h"
 #include "IntelAPIC.h"
 
-#warning Split IntelAPIC in two classes: the interrupt part and timer part. IntelAPICTimer, IntelAPIC
+// TODO: Split IntelAPIC in two classes: the interrupt part and timer part. IntelAPICTimer, IntelAPIC
 
 IntelAPIC::IntelAPIC() : IntController()
 {
@@ -123,7 +123,7 @@ Timer::Result IntelAPIC::initialize()
     if (m_io.map(IOBase) != IntelIO::Success)
         return Timer::IOError;
 
-#warning TODO: detect the APIC with CPUID
+    // TODO: detect the APIC with CPUID
     // if (not detected)
     //     return NotFound;
 
@@ -189,7 +189,6 @@ IntController::Result IntelAPIC::sendStartupIPI(uint cpuId, Address addr)
         m_io.write(IntCommand1, cfg);
 
         // Wait 1 milisecond
-#warning FIX this.
         // TODO: this is difficult in the current implementation, because
         //       the *userspace* instance of this class does not have
         //       m_frequency set.. better solution is that libarch provides a Timer

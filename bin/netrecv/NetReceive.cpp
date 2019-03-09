@@ -83,9 +83,6 @@ NetReceive::Result NetReceive::initialize()
     //if (dev)
     //    DEBUG("sending on device: " << **dev);
 
-    IPV4::Address ipAddr = (192 << 24) | (168 << 16) | (1 << 8) | (123);
-    Ethernet::Address etherAddr;
-
     receiveArp();
 
     return Success;

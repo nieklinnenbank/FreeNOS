@@ -30,7 +30,7 @@ i8250::i8250(u16 b, u16 q)
 
 Error i8250::initialize()
 {
-#warning double IRQ claim. already done by registerInterrupt() in Main.cpp?
+    // TODO: #warning double IRQ claim. already done by registerInterrupt() in Main.cpp?
     /* Aquire I/O port and IRQ line permissions. */
     ProcessCtl(SELF, WatchIRQ, irq);
     ProcessCtl(SELF, EnableIRQ, irq);

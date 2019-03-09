@@ -18,7 +18,7 @@
 #include <FreeNOS/System.h>
 #include "IOCtl.h"
 
-Error IOCtlHandler(IOOperation op, Address addr, ulong value)
+API::Result IOCtlHandler(IOOperation op, Address addr, ulong value)
 {
     Arch::IO io;
 

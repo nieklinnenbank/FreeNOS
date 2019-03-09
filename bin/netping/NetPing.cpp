@@ -73,7 +73,6 @@ NetPing::Result NetPing::initialize()
     const char *dev  = m_arguments.get("DEVICE");
     const char *host = m_arguments.get("HOST");
     const char *icmp = m_arguments.get("icmp");
-    const char *arp  = m_arguments.get("arp");
 
     if (dev)
         DEBUG("sending on device: " << dev);
@@ -107,8 +106,7 @@ NetPing::Result NetPing::arpPing(const char *dev,
     NetworkClient client(dev);
     Ethernet::Address ethAddr;
     IPV4::Address ipAddr;
-    Size bytes;
-    int sock, r;
+    int sock;
 
     // Initialize networking client
     if (client.initialize() != NetworkClient::Success)
@@ -162,9 +160,7 @@ NetPing::Result NetPing::icmpPing(const char *dev, const char *host)
     DEBUG("");
 
     NetworkClient client(dev);
-    Ethernet::Address ethAddr;
     int sock;
-    Size bytes;
 
     // Initialize networking client
     if (client.initialize() != NetworkClient::Success)

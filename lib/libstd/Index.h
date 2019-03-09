@@ -31,6 +31,10 @@
  */
 template <class T> class Index : public Sequence<T>
 {
+  using Sequence<T>::remove;
+  using Sequence<T>::contains;
+  using Sequence<T>::compareTo;
+
   public:
 
     /**
