@@ -35,7 +35,7 @@ IntelMap::IntelMap()
     m_regions[UserHeap].size      = MegaByte(256);
 
     m_regions[UserStack].virt     = 0xc0000000;
-    m_regions[UserStack].size     = KiloByte(4);
+    m_regions[UserStack].size     = KiloByte(16);
 
     m_regions[UserPrivate].virt   = 0xa0000000;
     m_regions[UserPrivate].size   = MegaByte(256);
