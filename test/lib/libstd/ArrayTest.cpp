@@ -100,7 +100,6 @@ TestCase(ArrayPutSeq)
     TestInt<int> ints(INT_MIN, INT_MAX);
     Array<int, 256> a;
 
-
     // Clear the array
     a.fill(0);
 
@@ -130,7 +129,7 @@ TestCase(ArrayPutSeq)
 TestCase(ArrayPutRandom)
 {
     TestInt<int> ints(INT_MIN, INT_MAX);
-    TestInt<uint> sizes(64, 256);
+    TestInt<uint> sizes(32, 128);
     TestInt<uint> indexes(0, 255);
     Array<int, 256> a;
     uint count = sizes.random();
