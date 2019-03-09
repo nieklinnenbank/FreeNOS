@@ -543,6 +543,7 @@ Size String::setUnsigned(ulong number, Number::Base base, char *string, bool sig
     int remainder, divisor = 10;
     Size written = 0;
 
+    // TODO: no actual bounds checking in this function
     // If needed, make sure enough allocated space is available.
     if (!string)
         reserve(STRING_DEFAULT_SIZE - 1);
@@ -563,6 +564,13 @@ Size String::setUnsigned(ulong number, Number::Base base, char *string, bool sig
         *p++ = '-';
         ud = -number;
         written++;
+    }
+    // Add '0x' prefix for hexadecimal numbers
+    if (base == Number::Hex)
+    {
+        *p++ = '0';
+        *p++ = 'x';
+        written += 2;
     }
     saved = p;
 
