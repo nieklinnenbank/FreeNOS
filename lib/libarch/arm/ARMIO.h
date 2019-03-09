@@ -146,7 +146,7 @@ class ARMIO : public IO
      */
     inline void set(Address addr, u32 data)
     {
-        u32 current = read(addr);
+        volatile u32 current = read(addr);
         current |= data;
         write(addr, current);
     }
@@ -159,7 +159,7 @@ class ARMIO : public IO
      */
     inline void unset(Address addr, u32 data)
     {
-        u32 current = read(addr);
+        volatile u32 current = read(addr);
         current &= ~(data);
         write(addr, current);
     }

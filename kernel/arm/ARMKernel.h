@@ -37,7 +37,8 @@ inline ulong trapKernel1(ulong api, ulong arg1)
     ulong ret;
     asm volatile ("swi #0\n"
                   "mov %[ret], r0\n"
-                : [ret]"=r"(ret));
+                : [ret]"=r"(ret)
+                :: "memory");
     return ret;
 }
 
@@ -49,7 +50,8 @@ inline ulong trapKernel2(ulong api, ulong arg1, ulong arg2)
     ulong ret;
     asm volatile ("swi #0\n"
                   "mov %[ret], r0\n"
-                : [ret]"=r"(ret));
+                : [ret]"=r"(ret)
+                :: "memory");
     return ret;
 }
 
@@ -63,7 +65,8 @@ inline ulong trapKernel3(ulong api, ulong arg1, ulong arg2, ulong arg3)
     ulong ret;
     asm volatile ("swi #0\n"
                   "mov %[ret], r0\n"
-                : [ret]"=r"(ret));
+                : [ret]"=r"(ret)
+                :: "memory");
     return ret;
 }
 
@@ -80,7 +83,8 @@ inline ulong trapKernel4(ulong api, ulong arg1, ulong arg2, ulong arg3,
                   "swi #0\n"
                   "mov %[ret], r0\n"
                 : [ret]"=r"(ret)
-                : [arg4]"m"(arg4));
+                : [arg4]"m"(arg4)
+                : "memory");
     return ret;
 }
 
@@ -99,7 +103,8 @@ inline ulong trapKernel5(ulong api, ulong arg1, ulong arg2, ulong arg3,
                   "mov %[ret], r0\n"
                 : [ret]"=r"(ret)
                 : [arg4]"m"(arg4),
-                  [arg5]"m"(arg5));
+                  [arg5]"m"(arg5)
+                : "memory");
     return ret;
 }
 

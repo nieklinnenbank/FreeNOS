@@ -76,7 +76,7 @@ class IO
   protected:
 
     /** I/O base offset is added to each I/O address. */
-    uint m_base;
+    volatile uint m_base;
 
     /** Memory range for performing I/O mappings. */
     Memory::Range m_range;
