@@ -50,6 +50,9 @@ typedef struct CoreInfo
     Address coreChannelAddress;
     Size coreChannelSize;
 
+    Address heapAddress;
+    Size heapSize;
+
     /** Arch-specific timer counter */
     uint timerCounter;
 

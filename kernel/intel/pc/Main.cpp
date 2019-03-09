@@ -28,8 +28,9 @@ extern C int kernel_main(CoreInfo *info)
 {
     // Initialize heap at 3MB offset
     // TODO: fix this
-    Kernel::heap( MegaByte(3),
-                  MegaByte(1) );
+    coreInfo.heapAddress = MegaByte(3);
+    coreInfo.heapSize = MegaByte(1);
+    Kernel::heap(coreInfo.heapAddress, coreInfo.heapSize);
 
     // Start kernel debug serial console
     // TODO: can I re-use the user-land driver here somehow????

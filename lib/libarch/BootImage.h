@@ -43,6 +43,9 @@ typedef struct BootImage
     
     /** Checksum used to verify integrity. */
     // TODO
+
+    /** Total size of the boot image in bytes */
+    u32 bootImageSize;
     
     /** Offset of the symbol table. */
     u32 symbolTableOffset;

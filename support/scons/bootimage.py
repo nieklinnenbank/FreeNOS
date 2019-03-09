@@ -53,14 +53,12 @@ def boot_image_emitter(target, source, env):
 def boot_image_func(target, source, env):
 
     # Invoke the mkimage utility to generate a boot image.
-    image_out, ext  = os.path.splitext(str(target[0]))
     d = os.getcwd()
 
     os.chdir(env['BUILDROOT'])
     os.system("'" + d + "/" + build.host['BUILDROOT'] + "/bin/img/img' '" +
                     d + "/" + str(source[0]) + "' '" +
-                    d + "/" + image_out + "'")
-    os.system("gzip -c '" + d + "/" + image_out + "' > '" + d + "/" + image_out + ".gz'")
+                    d + "/" + str(target[0]) + "'")
     os.chdir(d)
 
 def boot_image_str(target, source, env):

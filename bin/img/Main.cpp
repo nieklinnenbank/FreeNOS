@@ -131,7 +131,7 @@ int main(int argc, char **argv)
     BootSymbol *symbols;
     BootSegment *segments;
     FILE *fp;
-    Size numSegments = 0, dataOffset = 0;
+    Size numSegments = 0, dataOffset = 0, lastDataOffset = 0;
     uint segCount = 0;
     
     /* Verify command-line arguments. */
@@ -199,10 +199,14 @@ int main(int argc, char **argv)
 
             /* Increment data pointer. Align on memory page boundary. */
             dataOffset += segments[i].size;
+            lastDataOffset = dataOffset;
             dataOffset += PAGESIZE - (dataOffset % PAGESIZE);
             segCount++;
         }
     }
+    /* Fill in the bootImageSize field */
+    image.bootImageSize = lastDataOffset;
+
     /* Open boot image for writing. */
     if ((fp = fopen(argv[2], "w")) == NULL)
     {

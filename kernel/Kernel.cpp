@@ -62,6 +62,10 @@ Kernel::Kernel(CoreInfo *info)
     for (Size i = 0; i < m_coreInfo->bootImageSize; i += PAGESIZE)
         m_alloc->allocate(m_coreInfo->bootImageAddress + i);
 
+    // Mark heap memory used
+    for (Size i = 0; i < m_coreInfo->heapSize; i += PAGESIZE)
+        m_alloc->allocate(m_coreInfo->heapAddress + i);
+
     // Reserve CoreChannel memory
     for (Size i = 0; i < m_coreInfo->coreChannelSize; i += PAGESIZE)
         m_alloc->allocate(m_coreInfo->coreChannelAddress + i);
@@ -170,6 +174,9 @@ Kernel::Result Kernel::loadBootImage()
 {
     BootImage *image = (BootImage *) (m_alloc->toVirtual(m_coreInfo->bootImageAddress));
 
+    NOTICE("bootimage: " << (void *) image <<
+           " (" << (unsigned) m_coreInfo->bootImageSize << " bytes)");
+
     // Verify this is a correct BootImage
     if (image->magic[0] == BOOTIMAGE_MAGIC0 &&
         image->magic[1] == BOOTIMAGE_MAGIC1 &&
@@ -181,7 +188,7 @@ Kernel::Result Kernel::loadBootImage()
 
         return Success;
     }
-    ERROR("invalid boot image signature");
+    ERROR("invalid boot image signature: " << (unsigned) image->magic[0] << ", " << (unsigned) image->magic[1]);
     return InvalidBootImage;
 }
 

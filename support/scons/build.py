@@ -57,7 +57,8 @@ def HostProgram(env, target, source):
 def TargetProgram(env, target, source, install_dir = None):
     if env['ARCH'] != 'host':
 	env.Program(target, source)
-	env.TargetInstall(target, install_dir)
+        if install_dir is not False:
+	    env.TargetInstall(target, install_dir)
 
 def TargetLibrary(env, lib, source):
     if env['ARCH'] != 'host':
@@ -73,7 +74,7 @@ def TargetInstall(env, source, target = None):
     if env['ARCH'] != 'host':
 	SCons.Tool.install.install_action.strfunction = CopyStrFunc
 
-	if not target:
+	if target is None:
 	    target = '${ROOTFS}/' + Dir('.').srcnode().path
 
 	env.Install(target, source)
@@ -108,7 +109,7 @@ host.Append(bin     = '${ROOTFS}/bin',
 	    server  = '${ROOTFS}/server',
             boot    = '${ROOTFS}/boot')
 
-target = host.Clone(tools    = ["default", "bootimage", "iso", "binary", "linn", "phony", "test"],
+target = host.Clone(tools    = ["default", "bootimage", "iso", "binary", "linn", "phony", "test", "compress"],
                     toolpath = ["support/scons"])
 
 # Apply configuration
