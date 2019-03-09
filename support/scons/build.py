@@ -132,3 +132,5 @@ if not target['VERBOSE']:
 if not GetOption('clean'):
     CheckCCFlags(target)
     CheckCXXFlags(target)
+    CheckCCFlags(host)
+    CheckCXXFlags(host)
