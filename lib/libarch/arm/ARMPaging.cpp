@@ -167,6 +167,8 @@ MemoryContext::Result ARMPaging::activate()
         mcr(p15, 0, 0, c7, c7,  0);    // flush entire cache 
         mcr(p15, 0, 5, c7, c10, 0);    // data memory barrier 
         mcr(p15, 0, 4, c7, c10, 0);    // memory sync barrier 
+#else
+        m_cache.cleanInvalidate(Cache::Unified);
 #endif
         // Switch first page table and re-enable L1 caching
         ctrl.write(ARMControl::TranslationTable0, (((u32) m_firstTableAddr) | 
