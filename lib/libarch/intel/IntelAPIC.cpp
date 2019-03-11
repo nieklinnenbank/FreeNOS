@@ -20,6 +20,9 @@
 #include "IntelPIT.h"
 #include "IntelAPIC.h"
 
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
+
 // TODO: Split IntelAPIC in two classes: the interrupt part and timer part. IntelAPICTimer, IntelAPIC
 
 IntelAPIC::IntelAPIC() : IntController()
