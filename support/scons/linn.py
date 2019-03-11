@@ -23,9 +23,14 @@ def linnfs_generate(target, source, env):
     """
     Generate an LinnFS filesystem image.
     """
+
+    for f in source:
+        if os.access(str(f), os.X_OK):
+            os.system(env['CROSS_COMPILE'] + 'strip ' + str(f))
+
     rootfs_path = env.Dir(env['ROOTFS']).srcnode().path
 
-    os.system("build/host/server/filesystem/linn/create '" + str(target[0]) + "' -s -n 16384 -d '" + rootfs_path + "'")
+    os.system("build/host/server/filesystem/linn/create '" + str(target[0]) + "' -n 16384 -d '" + rootfs_path + "'")
 
 #
 # Prints out a user friendly command-line string.

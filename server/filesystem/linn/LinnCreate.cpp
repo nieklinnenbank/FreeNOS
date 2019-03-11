@@ -47,7 +47,6 @@ LinnCreate::LinnCreate()
     super     = ZERO;
     input     = ZERO;
     verbose   = false;
-    strip     = false;
 }
 
 LinnInode * LinnCreate::createInode(le32 inodeNum, FileType type,
@@ -141,54 +140,6 @@ le32 LinnCreate::createInode(char *inputFile, struct stat *st)
     return in;
 }
 
-bool LinnCreate::openFile(char *inputFile, struct stat *st, int *fd)
-{
-    int tmp, bytes, total = 0;
-    char buf[1024];
-
-    /* Open the local file. */
-    if ((*fd = open(inputFile, O_RDONLY)) < 0)
-    {
-	printf("%s: failed to fopen() `%s': %s\n",
-		prog, inputFile, strerror(errno));
-	exit(EXIT_FAILURE);
-    }
-    /* Attempt to strip(1) the file. */
-    if (strip && S_ISREG(st->st_mode) && st->st_mode & S_IXUSR)
-    {
-	strncpy(inputFile, "execXXXXXX", 11);
-    
-	/* Open temporary file. */
-	if ((tmp = mkstemp(inputFile)) == -1)
-	{
-	    printf("%s: failed to mkstemp() for `%s': %s\n",
-		    prog, inputFile, strerror(errno));
-	    exit(EXIT_FAILURE);
-	}
-	/* Copy contents. */
-	while ((bytes = read(*fd, buf, sizeof(buf))) > 0)
-	{
-	    write(tmp, buf, bytes);
-	    total += bytes;
-	}
-	/* Switch file descriptor. */
-	close(*fd);
-	close(tmp);
-
-	/* Now attempt to strip it. */
-	snprintf(buf, sizeof(buf), "strip %s", inputFile);
-	system(buf);
-	
-	/* Reopen. */
-	*fd = open(inputFile, O_RDONLY);
-	
-	/* Update file information. */
-	st->st_size = total;
-	return true;
-    }
-    return false;
-}
-
 void LinnCreate::insertIndirect(le32 *ptr, le32 blockNumber,
 				le32 blockValue, Size depth)
 {
@@ -225,11 +176,14 @@ void LinnCreate::insertFile(char *inputFile, LinnInode *inode,
 {
     int fd, bytes;
     le32 blockNr;
-    bool stripped;
-    char *tmpPath = strdup(inputFile);
 
-    /* Get file handle. */
-    stripped = openFile(tmpPath, st, &fd);
+    /* Open the local file. */
+    if ((fd = open(inputFile, O_RDONLY)) < 0)
+    {
+	printf("%s: failed to fopen() `%s': %s\n",
+		prog, inputFile, strerror(errno));
+	exit(EXIT_FAILURE);
+    }
 
     /* Read blocks from the file. */
     while (true)
@@ -292,7 +246,6 @@ void LinnCreate::insertFile(char *inputFile, LinnInode *inode,
     }
     /* Cleanup. */
     close(fd);
-    if (stripped) unlink(tmpPath);
 }
 
 void LinnCreate::insertEntry(le32 dirInode, le32 entryInode,
@@ -544,11 +497,6 @@ void LinnCreate::setVerbose(bool newVerbose)
     this->verbose = newVerbose;
 }
 
-void LinnCreate::setStrip(bool newStrip)
-{
-    this->strip = newStrip;
-}
-
 int main(int argc, char **argv)
 {
     LinnCreate fs;
@@ -566,7 +514,6 @@ int main(int argc, char **argv)
 	       " -v           Output verbose messages.\r\n"
 	       " -d DIRECTORY Insert files from the given directory into the image\r\n"
 	       " -e PATTERN   Exclude matching files from the created filesystem\r\n"
-	       " -s           Use strip(1) on executable input files.\r\n"
 	       " -b SIZE      Specifies the blocksize in bytes.\r\n"
 	       " -n COUNT     Specifies the maximum number of blocks.\r\n"
 	       " -i COUNT     Specifies the number of inodes to allocate.\r\n",
@@ -596,11 +543,6 @@ int main(int argc, char **argv)
 	{
 	    fs.setInput(argv[i + 3]);
 	    i++;
-	}
-	/* Strip executable files. */
-	else if (!strcmp(argv[i + 2], "-s"))
-	{
-	    fs.setStrip(true);
 	}
 	/* Block size. */
 	else if (!strcmp(argv[i + 2], "-b") && i < argc - 3)

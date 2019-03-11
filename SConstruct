@@ -67,6 +67,7 @@ SConscript(host['BUILDROOT'] + '/test/SConscript')
 #
 # Boot Image
 #
+# TODO: dependencies missing for boot image???
 target.BootImage('#${BUILDROOT}/boot.img', '#config/' + target['ARCH'] + '/' + target['SYSTEM'] + '/boot.imgdesc')
 target.Gzip('#${BUILDROOT}/boot.img.gz', '#${BUILDROOT}/boot.img')
 
