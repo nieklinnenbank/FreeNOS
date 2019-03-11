@@ -108,6 +108,9 @@ host.Append(bin     = '${ROOTFS}/bin',
 	    etc     = '${ROOTFS}/etc',
 	    server  = '${ROOTFS}/server',
             boot    = '${ROOTFS}/boot')
+host.Append(QEMU    = 'qemu-system')
+host.Append(QEMUCMD = '${QEMU} ${QEMUFLAGS}')
+host.Append(QEMUFLAGS = '')
 
 target = host.Clone(tools    = ["default", "bootimage", "iso", "binary", "linn", "phony", "test", "compress"],
                     toolpath = ["support/scons"])
