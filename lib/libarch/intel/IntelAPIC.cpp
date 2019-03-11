@@ -20,6 +20,7 @@
 #include "IntelPIT.h"
 #include "IntelAPIC.h"
 
+#pragma clang optimize off
 #pragma GCC push_options
 #pragma GCC optimize ("O0")
 
