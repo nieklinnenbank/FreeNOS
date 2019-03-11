@@ -136,17 +136,17 @@ void IntelCore::logRegister(const char *name, u32 reg)
     ERROR(*s);
 }
 
-u32 IntelCore::readCR2()
+volatile u32 IntelCore::readCR2()
 {
-    u32 cr2;
+    volatile u32 cr2;
     asm volatile("mov %%cr2, %%eax\n"
                  "mov %%eax, %0\n" : "=r" (cr2));
     return cr2;
 }
 
-u32 IntelCore::readCR3()
+volatile u32 IntelCore::readCR3()
 {
-    u32 cr3;
+    volatile u32 cr3;
     asm volatile("mov %%cr3, %%eax\n"
                  "mov %%eax, %0\n" : "=r" (cr3));
     return cr3;

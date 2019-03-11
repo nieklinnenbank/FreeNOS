@@ -321,12 +321,12 @@ class IntelCore : public Core
     /**
      * Read the CR2 register.
      */
-    u32 readCR2();
+    volatile u32 readCR2();
 
     /**
      * Read the CR3 register.
      */
-    u32 readCR3();
+    volatile u32 readCR3();
 
     /**
      * Write the CR3 register
