@@ -19,6 +19,10 @@
 #include <String.h>
 #include "IntelCore.h"
 
+#pragma clang optimize off
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
+
 void IntelCore::logException(CPUState *state)
 {
     String s;
