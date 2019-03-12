@@ -137,7 +137,7 @@ char * Shell::getInput()
     Size total = 0;
 
     /* Read a line. */
-    while (total < sizeof(line))
+    while (total < sizeof(line) - 1)
     {
         /* Read a character. */
 	read(0, line + total, 1);
