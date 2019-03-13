@@ -62,8 +62,13 @@ Error PL011::initialize()
 
     // Divider = 3000000/(16 * 115200) = 1.627 = ~1.
     // Fractional part register = (.627 * 64) + 0.5 = 40.6 = ~40.
+#ifdef BCM2836
+    m_io.write(PL011_IBRD, 26);
+    m_io.write(PL011_FBRD, 3);
+#else
     m_io.write(PL011_IBRD, 1);
     m_io.write(PL011_FBRD, 40);
+#endif /* BCM2836 */
 
     // Disable FIFO, use 8 bit data transmission, 1 stop bit, no parity
     m_io.write(PL011_LCRH, PL011_LCRH_WLEN_8BIT);

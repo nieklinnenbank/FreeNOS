@@ -23,7 +23,6 @@
 #include <arm/ARMControl.h>
 #include <arm/broadcom/BroadcomInterrupt.h>
 #include <arm/broadcom/BroadcomTimer.h>
-#include <arm/broadcom/Broadcom2836.h>
 #include "RaspiSerial.h"
 
 extern Address __bootimg;
@@ -33,6 +32,7 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
     ARMControl ctrl;
 
 #ifdef BCM2836
+    // Prevent additional processors from booting further
     Size coreId = ctrl.read(ARMControl::CoreID) & 0x3;
     if (coreId != 0)
     {
@@ -41,7 +41,7 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
             idle();
         }
     }
-#endif
+#endif /* BCM2836 */
 
     // Invalidate all caches now
     Arch::Cache cache;
@@ -52,7 +52,7 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
     ctrl.set(ARMControl::SMPBit);
 #endif
 
-    // Retrieve boot image from ATAGS
+    // Create local objects needed for the kernel
     Arch::MemoryMap mem;
     BroadcomInterrupt irq;
     BootImage *bootimage = (BootImage *) &__bootimg;
@@ -61,11 +61,14 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
     MemoryBlock::set(&coreInfo, 0, sizeof(CoreInfo));
     coreInfo.bootImageAddress = (Address) (bootimage);
     coreInfo.bootImageSize    = bootimage->bootImageSize;
-
     coreInfo.kernel.phys      = 0;
     coreInfo.kernel.size      = MegaByte(4);
     coreInfo.memory.phys      = 0;
+#ifdef BCM2836
+    coreInfo.memory.size      = MegaByte(1024);
+#else
     coreInfo.memory.size      = MegaByte(512);
+#endif /* BCM2836 */
 
     // Initialize heap at the end of the kernel (and after embedded boot image)
     coreInfo.heapAddress = coreInfo.bootImageAddress + coreInfo.bootImageSize;

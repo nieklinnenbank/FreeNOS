@@ -28,6 +28,8 @@ ARMKernel::ARMKernel(ARMInterrupt *intr,
                      CoreInfo *info)
     : Kernel(info)
 {
+    ARMControl ctrl;
+
     NOTICE("");
 
     // Setup interrupt callbacks
@@ -40,13 +42,34 @@ ARMKernel::ARMKernel(ARMInterrupt *intr,
     intr->install(ARMInterrupt::IRQ, interrupt);
     intr->install(ARMInterrupt::FIQ, interrupt);
 
-    // Enable clocks and irqs
-    m_timer = &m_bcmTimer;
-    m_bcmTimer.setFrequency( 250 ); /* trigger timer interrupts at 250Hz (clock runs at 1Mhz) */
-    m_intControl->enable(BCM_IRQ_SYSTIMERM1);
+    // Configure clocks and irqs. For BCM2836, only use the generic ARM timer
+    // when running under Qemu. Unfortunately, Qemu dropped support for the
+    // broadcom timer in recent versions. On hardware, use the broadcom timer.
+#ifdef BCM2836
+    u32 system_frequency = ctrl.read(ARMControl::SystemFrequency);
+    NOTICE("sysfreq = " << system_frequency);
+    if (system_frequency == 62500000)
+    {
+        // Use ARM generic timer
+        m_timer = &m_armTimer;
+        m_timerIrq = GTIMER_PHYS_1_IRQ;
+        m_armTimer.setFrequency(100);
+
+        // Setup IRQ routing
+        m_bcm.setCoreTimerIrq(info->coreId, Broadcom2836::PhysicalTimer1, true);
+    }
+#endif /* BCM2836 */
+
+    /* Default to broadcom timer and interrupt handling */
+    if (m_timer == NULL)
+    {
+        m_timer = &m_bcmTimer;
+        m_timerIrq = BCM_IRQ_SYSTIMERM1;
+        m_bcmTimer.setFrequency( 250 ); /* trigger timer interrupts at 250Hz (clock runs at 1Mhz) */
+        m_intControl->enable(BCM_IRQ_SYSTIMERM1);
+    }
 
     // Set ARMCore modes
-    ARMControl ctrl;
     ctrl.set(ARMControl::AlignmentFaults);
 
 #ifdef ARMV6
@@ -59,14 +82,26 @@ void ARMKernel::interrupt(CPUState state)
 {
     ARMKernel *kernel = (ARMKernel *) Kernel::instance;
     ARMInterrupt *intr = (ARMInterrupt *) kernel->m_intControl;
+    bool tick;
 
-    // TODO: remove BCM2835 specific code
-    if (intr->isTriggered(BCM_IRQ_SYSTIMERM1))
+#ifdef BCM2836
+    if (kernel->m_timer == &kernel->m_armTimer)
+    {
+        tick = kernel->m_bcm.getCoreTimerIrqStatus(kernel->m_coreInfo->coreId, Broadcom2836::PhysicalTimer1);
+    }
+    else
+#endif /* BCM2836 */
+    {
+        tick = intr->isTriggered(BCM_IRQ_SYSTIMERM1);
+    }
+
+    if (tick)
     {
         kernel->m_timer->tick();
         kernel->getProcessManager()->schedule();
     }
-    for (uint i = BCM_IRQ_SYSTIMERM1+1; i < 64; i++)
+
+    for (uint i = kernel->m_timerIrq + 1; i < 64; i++)
     {
         if (intr->isTriggered(i))
         {

@@ -24,6 +24,11 @@
 #include <arm/ARMTags.h>
 #include <arm/broadcom/BroadcomTimer.h>
 
+#ifdef BCM2836
+#include <arm/broadcom/Broadcom2836.h>
+#include <arm/ARMTimer.h>
+#endif /* BCM2836 */
+
 /** Forward declaration */
 class ARMInterrupt;
 
@@ -140,7 +145,13 @@ class ARMKernel : public Kernel
 
     static void reserved(CPUState state);
 
+#ifdef BCM2836
+    Broadcom2836 m_bcm;
+    ARMTimer m_armTimer;
+#endif /* BCM2836 */
+
     BroadcomTimer m_bcmTimer;
+    u8 m_timerIrq;
 };
 
 #endif /* __ARM_KERNEL_H */

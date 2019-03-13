@@ -43,6 +43,7 @@ u32 ARMControl::read(Register reg)
         case InstructionFaultStatus:  return mrc(p15, 0, 1, c5, c0);
         case DataFaultAddress:        return mrc(p15, 0, 0, c6, c0);
         case DataFaultStatus:         return mrc(p15, 0, 0, c5, c0);
+        case SystemFrequency:         return mrc(p15, 0, 0, c14, c0);
         default: break;
     }
     return 0;

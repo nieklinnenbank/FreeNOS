@@ -61,7 +61,8 @@ class ARMControl
         InstructionFaultAddress,
         InstructionFaultStatus,
         DataFaultAddress,
-        DataFaultStatus
+        DataFaultStatus,
+        SystemFrequency
     };
 
     /**

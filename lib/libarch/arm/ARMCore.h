@@ -61,6 +61,29 @@
 })
 
 /**
+ * 64-bit move to ARM from CoProcessor (MRC).
+ *
+ * Read 64-bit data from a CoProcessor connected to the ARM.
+ */
+#define mrrc(coproc, opcode1, CRm) \
+({ \
+    u64 r; \
+    asm volatile("mrrc " QUOTE(coproc) ", " QUOTE(opcode1) ", %Q0, %R0, " QUOTE(CRm) "\n" : "=r"(r) :: "memory"); \
+    r; \
+})
+
+/**
+ * 64-bit move to CoProcessor from ARM (MCR).
+ *
+ * Write 64-bit data to CoProcessor connected to the ARM.
+ */
+#define mcrr(coproc, opcode1, CRm, value) \
+({ \
+    u64 val = (value); \
+    asm volatile("mcrr " QUOTE(coproc) ", " QUOTE(opcode1) ", %Q0, %R0, " QUOTE(CRm) "\n" : : "r"(val) : "memory"); \
+})
+
+/**
  * Reads the CPU's timestamp counter.
  * @return 64-bit integer.
  */
