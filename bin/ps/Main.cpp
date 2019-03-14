@@ -37,6 +37,8 @@ char cmd[PAGESIZE];
 int main(int argc, char **argv)
 {
     ProcessInfo info;
+    Arch::MemoryMap map;
+    Memory::Range range = map.range(MemoryMap::UserArgs);
 
     // TODO: ask the kernel for the whole process table in one shot.
 
@@ -52,7 +54,7 @@ int main(int argc, char **argv)
         if (ProcessCtl(i, InfoPID, (Address) &info) != API::NotFound)
         {
             // Get the command
-            VMCopy(i, API::Read, (Address) cmd, ARGV_ADDR, PAGESIZE);
+            VMCopy(i, API::Read, (Address) cmd, range.virt, PAGESIZE);
 
             // Output a line
             printf("%3d %7d %4d %5d %10s %32s\r\n",
@@ -61,5 +63,6 @@ int main(int argc, char **argv)
                     states[info.state], cmd);
         }
     }
+    // TODO: print in one shot?
     return EXIT_SUCCESS;
 }

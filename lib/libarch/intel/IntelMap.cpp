@@ -22,11 +22,11 @@ IntelMap::IntelMap()
 {
     MemoryBlock::set(m_regions, 0, sizeof(m_regions));
 
-    m_regions[KernelData].virt      = 0;
-    m_regions[KernelData].size      = GigaByte(1) - MegaByte(128);
+    m_regions[KernelData].virt    = 0;
+    m_regions[KernelData].size    = GigaByte(1) - MegaByte(128);
 
-    m_regions[KernelPrivate].virt   = GigaByte(1) - MegaByte(128);
-    m_regions[KernelPrivate].size   = MegaByte(128);
+    m_regions[KernelPrivate].virt = GigaByte(1) - MegaByte(128);
+    m_regions[KernelPrivate].size = MegaByte(128);
 
     m_regions[UserData].virt      = 0x80000000;
     m_regions[UserData].size      = MegaByte(256);
@@ -42,4 +42,7 @@ IntelMap::IntelMap()
 
     m_regions[UserShare].virt     = 0xd0000000;
     m_regions[UserShare].size     = MegaByte(256);
+
+    m_regions[UserArgs].virt      = 0xe0000000;
+    m_regions[UserArgs].size      = KiloByte(128);
 }

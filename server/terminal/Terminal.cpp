@@ -76,13 +76,13 @@ Error Terminal::initialize()
     }
 
     // TODO: #warning TODO: Hack the file descriptors table...
-    Vector<FileDescriptor> *files = getFiles();
-    (*files)[0].open = true;
-    strlcpy((*files)[0].path, inputFile, PATHLEN); /* keyboard0 */
-    (*files)[0].mount = 6;
-    (*files)[1].open = true;
-    strlcpy((*files)[1].path, outputFile, PATHLEN); /* vga0 */
-    (*files)[1].mount = 7;
+    FileDescriptor *files = getFiles();
+    files[0].open = true;
+    strlcpy(files[0].path, inputFile, PATHLEN); /* keyboard0 */
+    files[0].mount = 6;
+    files[1].open = true;
+    strlcpy(files[1].path, outputFile, PATHLEN); /* vga0 */
+    files[1].mount = 7;
 
     /* Fill in function pointers. */
     funcs.tf_bell    = (tf_bell_t *)    bell;

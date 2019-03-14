@@ -17,7 +17,6 @@
 
 #include <FreeNOS/System.h>
 #include <ExecutableFormat.h>
-#include <FileSystemMessage.h>
 #include <Types.h>
 #include <Runtime.h>
 #include <string.h>
@@ -28,15 +27,14 @@
 
 int forkexec(const char *path, const char *argv[])
 {
-    FileSystemMessage msg;
     ExecutableFormat *fmt;
     ExecutableFormat::Region regions[16];
     Memory::Range range;
+    Arch::MemoryMap map;
     uint count = 0;
     pid_t pid = 0;
     Size numRegions = 16;
     int fd;
-    Vector<FileDescriptor> *fds = getFiles();
     struct stat st;
     u8 *image;
     Address entry;
@@ -101,9 +99,9 @@ int forkexec(const char *path, const char *argv[])
                regions[i].virt, regions[i].size);
     }
     /* Create mapping for command-line arguments. */
-    range.virt  = ARGV_ADDR;
-    range.phys  = ZERO;
-    range.size  = PAGESIZE;
+    range = map.range(MemoryMap::UserArgs);
+    range.phys = ZERO;
+    range.access = Memory::User | Memory::Readable | Memory::Writable;
     VMCtl(pid, Map, &range);
 
     // Allocate arguments
@@ -118,23 +116,25 @@ int forkexec(const char *path, const char *argv[])
     }
 
     // Copy argc/argv into the new process
-    if ((VMCopy(pid, API::Write, (Address) arguments,
-               (Address) ARGV_ADDR, PAGESIZE)) < 0)
+    if ((VMCopy(pid, API::Write, (Address) arguments, range.virt, PAGESIZE)) < 0)
     {
         delete[] arguments;
         errno = EFAULT;
+        ProcessCtl(pid, KillPID);
         return -1;
     }
 
+    // Copy fds into the new process.
+    if ((VMCopy(pid, API::Write, (Address) getFiles(),
+                range.virt + PAGESIZE, range.size - PAGESIZE)) < 0)
+    {
+        delete[] arguments;
+        errno = EFAULT;
+        ProcessCtl(pid, KillPID);
+        return -1;
+    }
     // Let the Child begin execution
     ProcessCtl(pid, Resume);
-
-    // Send a pointer to our list of file descriptors to the child
-    // TODO: ofcourse, insecure. To be fixed later.
-    msg.from = SELF;
-    msg.type = ChannelMessage::Request;
-    msg.path = (char *) fds->vector();
-    ChannelClient::instance->syncSendReceive(&msg, pid);
 
     // Done. Cleanup.
     delete[] arguments;

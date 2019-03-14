@@ -37,16 +37,6 @@ class MemoryContext;
 class MemoryChannel;
 struct ProcessEvent;
 
-/** Virtual memory address of the array of arguments for new processes. */
-#define ARGV_ADDR  0x9ffff000
-
-/** Maximum size of each argument. */
-// TODO: ARGV_ADDR fixed address here is wrong. Put it in Arch::Memory::range(). Or perhaps put it on the stack?
-#define ARGV_SIZE  128
-
-/** Number of arguments at maximum. */
-#define ARGV_COUNT (PAGESIZE / ARGV_SIZE)
-
 /**
  * Represents a process which may run on the host.
  */

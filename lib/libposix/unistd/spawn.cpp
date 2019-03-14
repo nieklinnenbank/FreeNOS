@@ -27,6 +27,7 @@ int spawn(Address program, Size programSize, const char *command)
 {
     ExecutableFormat *fmt;
     ExecutableFormat::Region regions[16];
+    Arch::MemoryMap map;
     Memory::Range range;
     uint count = 0;
     pid_t pid = 0;
@@ -78,9 +79,9 @@ int spawn(Address program, Size programSize, const char *command)
                regions[i].virt, regions[i].size);
     }
     /* Create mapping for command-line arguments. */
-    range.virt  = ARGV_ADDR;
-    range.phys  = ZERO;
-    range.size  = PAGESIZE;
+    range = map.range(MemoryMap::UserArgs);
+    range.phys = ZERO;
+    range.access = Memory::User | Memory::Readable | Memory::Writable;
     VMCtl(pid, Map, &range);
 
     // Allocate arguments
@@ -103,11 +104,11 @@ int spawn(Address program, Size programSize, const char *command)
     strlcpy(arguments + (ARGV_SIZE * count), arg, command-arg+1);
 
     // Copy argc/argv into the new process
-    if ((VMCopy(pid, API::Write, (Address) arguments,
-               (Address) ARGV_ADDR, PAGESIZE)) < 0)
+    if ((VMCopy(pid, API::Write, (Address) arguments, range.virt, PAGESIZE)) < 0)
     {
         delete[] arguments;
         errno = EFAULT;
+        ProcessCtl(pid, KillPID);
         return -1;
     }
 

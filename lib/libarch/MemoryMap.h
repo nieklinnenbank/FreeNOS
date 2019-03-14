@@ -20,7 +20,7 @@
 
 #include "Memory.h"
 
-#define MEMORYMAP_MAX_REGIONS 7
+#define MEMORYMAP_MAX_REGIONS 8
 
 /**
  * Describes virtual memory map layout
@@ -48,6 +48,7 @@ class MemoryMap
         UserStack,     /**<< User stack */
         UserPrivate,   /**<< User private dynamic memory mappings */
         UserShare,     /**<< User shared dynamic memory mappings */
+        UserArgs       /**<< Used for copying program arguments and file descriptors */
     }
     Region;
 

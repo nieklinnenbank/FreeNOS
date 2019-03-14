@@ -20,7 +20,7 @@
 
 #include <Macros.h>
 #include <Types.h>
-#include <Vector.h>
+#include <Array.h>
 #include <String.h>
 #include <ChannelClient.h>
 #include "FileSystemMount.h"
@@ -30,6 +30,12 @@
  * @defgroup libposix libposix (POSIX.1-2008) 
  * @{ 
  */
+
+/** Maximum size of each argument. */
+#define ARGV_SIZE  128
+
+/** Number of arguments at maximum. */
+#define ARGV_COUNT (PAGESIZE / ARGV_SIZE)
 
 /**
  * C(++) program entry point.
@@ -56,9 +62,9 @@ ProcessID findMount(int fildes);
 void refreshMounts(const char *path);
 
 /**
- * Get FileDescriptors table.
+ * Get File Descriptors table.
  */
-Vector<FileDescriptor> * getFiles();
+FileDescriptor * getFiles();
 
 /**
  * Get mounts table.

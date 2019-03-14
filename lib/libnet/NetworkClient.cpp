@@ -131,8 +131,8 @@ NetworkClient::Result NetworkClient::writeSocketInfo(
         return IOError;
 
     // Update the file descriptor path
-    Vector<FileDescriptor> *fds = getFiles();
-    MemoryBlock::copy((*fds)[sock].path, buf, sizeof(buf));
+    FileDescriptor *fd = &getFiles()[sock];
+    MemoryBlock::copy(fd->path, buf, sizeof(buf));
 
     // Write address+port+action info to the socket
     SocketInfo info;

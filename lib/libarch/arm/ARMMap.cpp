@@ -47,4 +47,7 @@ ARMMap::ARMMap()
 
     m_regions[UserShare].virt     = 0xd0000000;
     m_regions[UserShare].size     = MegaByte(256);
+
+    m_regions[UserArgs].virt      = 0xe0000000;
+    m_regions[UserArgs].size      = KiloByte(128);
 }

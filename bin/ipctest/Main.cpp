@@ -31,6 +31,8 @@ int main(int argc, char **argv)
 {
     ProcessID pid = 0;
     ProcessInfo info;
+    Arch::MemoryMap map;
+    Memory::Range range = map.range(MemoryMap::UserArgs);
 
     // Find the PID of ipctest server
     // Loop processes
@@ -40,7 +42,7 @@ int main(int argc, char **argv)
         if (ProcessCtl(i, InfoPID, (Address) &info) != API::NotFound)
         {
             // Get the command
-            VMCopy(i, API::Read, (Address) cmd, ARGV_ADDR, PAGESIZE);
+            VMCopy(i, API::Read, (Address) cmd, range.virt, PAGESIZE);
 
             if (strcmp(cmd, "/server/ipctest/server") == 0)
             {

@@ -18,7 +18,7 @@
 #include <FreeNOS/System.h>
 #include <Types.h>
 #include <Macros.h>
-#include <Vector.h>
+#include <Array.h>
 #include <ChannelClient.h>
 #include <PageAllocator.h>
 #include <PoolAllocator.h>
@@ -41,11 +41,10 @@ extern void (*CTOR_LIST)();
 extern void (*DTOR_LIST)();
 
 /** FileSystem mounts table */
-FileSystemMount mounts[FILESYSTEM_MAXMOUNTS];
+static FileSystemMount mounts[FILESYSTEM_MAXMOUNTS];
 
-/** Vector of FileDescriptors. */
-// TODO: inefficient for memory usage. Replace this with an Index (array of data pointers).
-Vector<FileDescriptor> files;
+/** Table with FileDescriptors. */
+static FileDescriptor *files = (FileDescriptor *) NULL;
 
 /** Current Directory String */
 String currentDirectory;
@@ -161,41 +160,17 @@ void setupMappings()
     // Set currentDirectory
     currentDirectory = "/";
 
-    // Load FileDescriptors.
-    for (Size i = 0; i < FILE_DESCRIPTOR_MAX; i++)
+    // Setup file descriptors table pointer
+    Arch::MemoryMap map;
+    Memory::Range argRange = map.range(MemoryMap::UserArgs);
+    files = (FileDescriptor *) (argRange.virt + PAGESIZE);
+
+    // Inherit file descriptors table from parent (if any).
+    // Without a parent, just clear the file descriptors
+    if (getppid() == 0)
     {
-        FileDescriptor fd;
-        fd.open = false;
-
-        files.insert(fd);
+        memset(files, 0, argRange.size - PAGESIZE);
     }
-    // TODO: Solve this, by passing the file descriptor, procinfo, etc as a parameter to entry(), constructed by the kernel
-    //       If there was a parent, it would have passed the file descriptor table, argc/argv, memorymap, etc as an argument to ProcessCtl()
-
-    // TODO: perhaps we can "bundle" the GetMounts() and ReadProcess() calls, so that
-    // we do not need to send IPC message twice in this part (for mounts and getppid())
-
-    // TODO: this is inefficient. It should take only one IPC request to retrieve these things from our parent. Or better, avoid it.
-
-    // Get our parent ID
-    ProcessID ppid = getppid();
-
-    // Skip processes with no parent (e.g. from the BootImage)
-    if (!ppid)
-        return;
-
-    // Inherit file descriptors, current directory, and more.
-    FileSystemMessage msg;
-    msg.from   = SELF;
-
-    // NOTE: we "abuse" the FileSystemMessage for ipc with our parent...
-    ChannelClient::instance->syncReceiveFrom(&msg, ppid);
-
-    // Copy the file descriptors
-    VMCopy(ppid, API::Read, (Address) files.vector(), (Address) msg.path, files.size() * sizeof(FileDescriptor));
-
-    // Dummy reply, to tell our parent we received the fds.... very inefficient.
-    ChannelClient::instance->syncSendTo(&msg, ppid);
 }
 
 ProcessID findMount(const char *path)
@@ -304,7 +279,10 @@ void refreshMounts(const char *path)
 
 ProcessID findMount(int fildes)
 {
-    return files.get(fildes) ? files.get(fildes)->mount : ZERO;
+    if (files != NULL)
+        return files[fildes].open ? files[fildes].mount : ZERO;
+    else
+        return ZERO;
 }
 
 FileSystemMount * getMounts()
@@ -312,9 +290,9 @@ FileSystemMount * getMounts()
     return mounts;
 }
 
-Vector<FileDescriptor> * getFiles()
+FileDescriptor * getFiles(void)
 {
-    return &files;
+    return files;
 }
 
 String * getCurrentDirectory()
@@ -328,6 +306,7 @@ extern C void SECTION(".entry") _entry()
     char *arguments;
     char **argv;
     SystemInformation info;
+    Arch::MemoryMap map;
 
     /* Clear BSS */
     extern Address __bss_start, __bss_end;
@@ -344,7 +323,7 @@ extern C void SECTION(".entry") _entry()
     /* Allocate buffer for arguments. */
     argc = 0;
     argv = (char **) new char[ARGV_COUNT];
-    arguments = (char *) ARGV_ADDR;
+    arguments = (char *) map.range(MemoryMap::UserArgs).virt;
 
     /* Fill in arguments list. */
     while (argc < ARGV_COUNT && *arguments)

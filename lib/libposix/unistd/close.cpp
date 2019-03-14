@@ -23,14 +23,20 @@
 
 int close(int fildes)
 {
-    Vector<FileDescriptor> *fds = getFiles();
-    FileDescriptor *fd = ZERO;
+    FileDescriptor *files = getFiles();
 
-    if ((fd = (FileDescriptor *) fds->get(fildes)) == ZERO || !fd->open)
+    if (fildes >= FILE_DESCRIPTOR_MAX || fildes < 0)
+    {
+        errno = ERANGE;
+        return -1;
+    }
+
+    if (!files[fildes].open)
     {
         errno = ENOENT;
         return -1;
     }
-    fd->open = false;
+
+    files[fildes].open = false;
     return 0;
 }

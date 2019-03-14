@@ -29,6 +29,8 @@ int main(int argc, char **argv)
 {
     refreshMounts(0);
     FileSystemMount *mounts = getMounts();
+    Arch::MemoryMap map;
+    Memory::Range range = map.range(MemoryMap::UserArgs);
 
     // TODO: ask the kernel for the process table instead. With ARGV_ADDR copies.
 
@@ -41,10 +43,11 @@ int main(int argc, char **argv)
         if (mounts[i].path[0])
         {
             // Get the command
-            VMCopy(mounts[i].procID, API::Read, (Address) cmd, ARGV_ADDR, PAGESIZE);
+            VMCopy(mounts[i].procID, API::Read, (Address) cmd, range.virt, PAGESIZE);
             printf("%20s %s\r\n", mounts[i].path, cmd);
         }
     }
+    // TODO: print in one shot instead?
     // Done
     return EXIT_SUCCESS;
 }

@@ -194,13 +194,13 @@ Kernel::Result Kernel::loadBootImage()
 
 Kernel::Result Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Size index)
 {
-    Address imageVAddr = (Address) image, args;
-    Size args_size = ARGV_SIZE;
+    Address imageVAddr = (Address) image;
     BootSymbol *program;
     BootSegment *segment;
     Process *proc;
     char *vaddr;
     Arch::MemoryMap map;
+    Memory::Range argRange = map.range(MemoryMap::UserArgs);
 
     // Point to the program and segments table
     program = &((BootSymbol *) (imageVAddr + image->symbolTableOffset))[index];
@@ -236,14 +236,14 @@ Kernel::Result Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Siz
         }
     }
     // Map program arguments into the process
-    // TODO: move into the high memory???
-    m_alloc->allocateLow(args_size, &args);
-    mem->map(ARGV_ADDR, args, Memory::User | Memory::Readable | Memory::Writable);
+    argRange.access = Memory::User | Memory::Readable | Memory::Writable;
+    m_alloc->allocateLow(argRange.size, &argRange.phys);
+    mem->mapRange(&argRange);
 
     // Copy program arguments
-    vaddr = (char *) m_alloc->toVirtual(args);
+    vaddr = (char *) m_alloc->toVirtual(argRange.phys);
     MemoryBlock::set(vaddr, 0, PAGESIZE);
-    MemoryBlock::copy(vaddr, program->name, ARGV_SIZE);
+    MemoryBlock::copy(vaddr, program->name, BOOTIMAGE_NAMELEN);
 
     // Done
     NOTICE("loaded: " << program->name);

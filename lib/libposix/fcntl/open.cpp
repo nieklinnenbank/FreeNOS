@@ -26,11 +26,9 @@ int open(const char *path, int oflag, ...)
 {
     FileSystemMessage msg;
     ProcessID mnt = findMount(path);
-
-    // TODO: perhaps we need the 'Index' class now, in libstd.
-    Vector<FileDescriptor> *fds = getFiles();
+    FileDescriptor *files = getFiles();
     FileStat st;
-    
+
     // Fill message
     msg.type   = ChannelMessage::Request;
     msg.action = StatFile;
@@ -38,7 +36,7 @@ int open(const char *path, int oflag, ...)
     msg.stat   = &st;
 
     // Ask the FileSystem for the file.
-    if (mnt)
+    if (mnt && files != NULL)
     {
         ChannelClient::instance->syncSendReceive(&msg, mnt);
 
@@ -57,15 +55,15 @@ int open(const char *path, int oflag, ...)
         if (msg.result == ESUCCESS)
         {
             // Insert into file descriptor table
-            for (Size i = 0; i < fds->size(); i++)
+            for (Size i = 0; i < FILE_DESCRIPTOR_MAX; i++)
             {
-                if (!(*fds)[i].open)
+                if (!files[i].open)
                 {
-                    (*fds)[i].open  = true;
-                    strlcpy((*fds)[i].path, path, PATH_MAX);
-                    (*fds)[i].mount = mnt;
-                    (*fds)[i].identifier = 0;
-                    (*fds)[i].position = 0;
+                    files[i].open  = true;
+                    files[i].mount = mnt;
+                    files[i].identifier = 0;
+                    files[i].position = 0;
+                    strlcpy(files[i].path, path, PATH_MAX);
                     return i;
                 }
             }

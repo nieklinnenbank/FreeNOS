@@ -31,7 +31,7 @@ Process::Process(ProcessID id, Address entry, bool privileged, const MemoryMap &
     m_kernelStack   = 0;
     m_userStack     = 0;
     m_pageDirectory = 0;
-    m_parent        = 0;
+    m_parent        = 0; // TODO: wrong? should be -1 or NONE instead?
     m_waitId        = 0;
     m_wakeups       = 0;
     m_entry         = entry;
@@ -51,6 +51,7 @@ Process::~Process()
         m_memoryContext->releaseRegion(MemoryMap::UserHeap);
         m_memoryContext->releaseRegion(MemoryMap::UserStack);
         m_memoryContext->releaseRegion(MemoryMap::UserPrivate);
+        m_memoryContext->releaseRegion(MemoryMap::UserArgs);
         delete m_memoryContext;
     }
 }

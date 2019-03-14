@@ -21,10 +21,16 @@
 
 off_t lseek(int fildes, off_t offset, int whence)
 {
-    FileDescriptor *fd = (FileDescriptor *) getFiles()->get(fildes);
+    FileDescriptor *files = getFiles();
+
+    if (fildes >= FILE_DESCRIPTOR_MAX || fildes < 0)
+    {
+        errno = ERANGE;
+        return -1;
+    }
 
     // Do we have this file descriptor?
-    if (!fd)
+    if (!files[fildes].open)
     {
         errno = ENOENT;
         return -1;
@@ -34,7 +40,7 @@ off_t lseek(int fildes, off_t offset, int whence)
     // TODO: check for file size too
 
     // Update the file pointer
-    fd->position = offset;
+    files[fildes].position = offset;
 
     // Done
     return 0;

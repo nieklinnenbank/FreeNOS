@@ -268,10 +268,6 @@ template <class Base, class MsgType> class ChannelServer
                     accept(event.share.pid, event.share.range);
                     break;
                 }
-                case ShareRemoved:
-                    DEBUG(m_self << ": share removed");
-                    break;
-
                 case InterruptEvent:
                 {
                     DEBUG(m_self << ": interrupt: " << event.number);

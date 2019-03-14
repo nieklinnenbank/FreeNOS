@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -15,38 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __KERNEL_PROCESSEVENT_H
-#define __KERNEL_PROCESSEVENT_H
+#include "SPI.h"
 
-#include <Types.h>
-#include <Macros.h>
-#include "ProcessShares.h"
-
-/** 
- * @defgroup kernel kernel (generic)
- * @{ 
- */
-
-enum ProcessEventType
+SPI::SPI()
 {
-    InterruptEvent,
-    ShareCreated,
-    ProcessTerminated
-};
-
-/**
- * Represents a process which may run on the host.
- */
-typedef struct ProcessEvent
-{
-    ProcessEventType type;
-    Size number;
-    ProcessShares::MemoryShare share;
 }
-ProcessEvent;
-
-/**
- * @}
- */
-
-#endif /* __KERNEL_PROCESSEVENT_H */

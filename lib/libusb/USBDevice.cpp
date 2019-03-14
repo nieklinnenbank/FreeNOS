@@ -400,11 +400,12 @@ Error USBDevice::beginTransfer(
 
     // TODO: move this kind of code in libfs (filesystem client) and reuse in libposix's write() too.
     FileSystemMessage fs;
-    FileDescriptor *fd = (FileDescriptor *) getFiles()->get(m_transferFile);
+    FileDescriptor *files = getFiles();
 
     // Write the file
-    if (fd)
+    if (m_transferFile > 0 && m_transferFile < FILE_DESCRIPTOR_MAX && files[m_transferFile].open)
     {
+        FileDescriptor *fd = &files[m_transferFile];
         fs.type   = ChannelMessage::Request;
         fs.action = WriteFile;
         fs.path   = fd->path;
