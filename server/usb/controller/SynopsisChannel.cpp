@@ -60,12 +60,6 @@ SynopsisChannel::Result SynopsisChannel::interrupt()
     DEBUG("chanid =" << m_id << " intr = " << val);
 
     // Print interrupt flags
-#if 0
-    if (val & TransferCompleted)  DEBUG("completed");
-    if (val & ChannelHalted)      DEBUG("halted");
-    if (val & ACKResponse)        DEBUG("ACK");
-#endif
-
     if (val & StallResponse)    { ERROR("stalled");        m_usb->state = USBMessage::Failure; }
     if (val & NAKResponse)      { ERROR("no acknowledge"); m_usb->state = USBMessage::Failure; }
     if (val & NYETResponse)     { ERROR("NYET");           m_usb->state = USBMessage::Failure; }

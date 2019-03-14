@@ -91,9 +91,7 @@ Error SMSC95xxUSB::initialize()
 
 void SMSC95xxUSB::readStart()
 {
-    ProcessID pid    = getFiles()->get(m_transferFile)->mount;
-    Size rxSize      = m_packetSize; //SMSC9512_DEFAULT_HS_BURST_CAP_SIZE; //size + ReceiveCommandSize;
-    Size frameLength = 0;
+    Size rxSize = m_packetSize;
 
     DEBUG("");
 
@@ -184,7 +182,7 @@ void SMSC95xxUSB::writeStart()
     VMCtl(SELF, CacheClean, 0);
 
     // Start bulk transfer
-    Error err = beginTransfer(
+    beginTransfer(
         USBTransfer::Bulk,
         USBTransfer::Out,
         m_endpoints[1].endpointAddress & 0xf,
