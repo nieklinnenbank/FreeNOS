@@ -30,17 +30,6 @@ int chdir(const char *filepath)
     FileSystemPath fspath;
     struct stat st;
 
-    /* First stat the file. */
-    if (stat(filepath, &st) != 0)
-    {
-        return -1;
-    }
-    /* Must be a directory. */
-    if (!S_ISDIR(st.st_mode))
-    {
-        errno = ENOTDIR;
-        return -1;
-    }
     /* What's the current working dir? */
     getcwd(cwd, PATH_MAX);
     
@@ -74,13 +63,27 @@ int chdir(const char *filepath)
     }
     else
         path = (char *) filepath;
-    
+
     /* Fall back to slash? */
     if (!path[0])
     {
         strcpy(buf, "/");
         path = buf;
     }
+
+    /* Stat the file. */
+    if (stat(path, &st) != 0)
+    {
+        return -1;
+    }
+
+    /* Must be a directory. */
+    if (!S_ISDIR(st.st_mode))
+    {
+        errno = ENOTDIR;
+        return -1;
+    }
+
     // Set current directory
     (*getCurrentDirectory()) = path;
 
