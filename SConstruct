@@ -36,7 +36,7 @@ VariantDir(target['BUILDROOT'] + '/test', '#test', duplicate = 0)
 VariantDir(target['BUILDROOT'] + '/kernel', '#kernel', duplicate = 0)
 
 # Install files to the target RootFS
-target.TargetInstall('VERSION')
+target.TargetInstall('VERSION', target['etc'])
 target.TargetInstall('build.conf', target['etc'])
 target.TargetInstall('build.host.conf', target['etc'])
 target.TargetInstall(target['BUILDROOT'] + '/include/Config.h', target['etc'])
