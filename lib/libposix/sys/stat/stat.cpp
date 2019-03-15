@@ -20,6 +20,7 @@
 #include "Runtime.h"
 #include <errno.h>
 #include <Log.h>
+#include "unistd.h"
 #include "sys/stat.h"
 
 int stat(const char *path, struct stat *buf)
@@ -27,11 +28,24 @@ int stat(const char *path, struct stat *buf)
     FileSystemMessage msg;
     FileStat st;
     ProcessID mnt = findMount(path);
+    char fullpath[PATH_MAX];
+
+    /* Relative or absolute? */
+    if (path[0] != '/')
+    {
+        char cwd[PATH_MAX];
+
+        /* What's the current working dir? */
+        getcwd(cwd, PATH_MAX);
+        snprintf(fullpath, sizeof(fullpath), "%s/%s", cwd, path);
+    }
+    else
+        strlcpy(fullpath, path, sizeof(fullpath));
 
     /* Fill message. */
     msg.type   = ChannelMessage::Request;
     msg.action = StatFile;
-    msg.path   = (char *) path;
+    msg.path   = fullpath;
     msg.stat   = &st;
 
     DEBUG("path = " << (uint) msg.path << " stat = " << (uint) msg.stat);
