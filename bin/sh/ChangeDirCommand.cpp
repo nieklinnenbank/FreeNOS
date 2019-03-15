@@ -16,6 +16,9 @@
  */
 
 #include "ChangeDirCommand.h"
+#include <stdlib.h>
+#include <errno.h>
+#include <string.h>
 #include <unistd.h>
 
 ChangeDirCommand::ChangeDirCommand()
@@ -26,5 +29,10 @@ ChangeDirCommand::ChangeDirCommand()
 
 int ChangeDirCommand::execute(Size nparams, char **params)
 {
-    return chdir(params[0]);
+    if (chdir(params[0]) != 0)
+    {
+        printf("%s: failed to change directory to '%s': %s\n", getName(), params[0], strerror(errno));
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
 }
