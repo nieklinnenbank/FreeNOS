@@ -104,8 +104,8 @@ int forkexec(const char *path, const char *argv[])
     range.access = Memory::User | Memory::Readable | Memory::Writable;
     VMCtl(pid, Map, &range);
 
-    // Allocate arguments
-    char *arguments = new char[PAGESIZE];
+    // Allocate arguments and current working directory
+    char *arguments = new char[PAGESIZE*2];
     memset(arguments, 0, PAGESIZE);
 
     // Fill in arguments
@@ -114,9 +114,11 @@ int forkexec(const char *path, const char *argv[])
         strlcpy(arguments + (ARGV_SIZE * count), argv[count], ARGV_SIZE);
         count++;
     }
+    // Fill in the current working directory
+    strlcpy(arguments + PAGESIZE, **(getCurrentDirectory()), PATH_MAX);
 
     // Copy argc/argv into the new process
-    if ((VMCopy(pid, API::Write, (Address) arguments, range.virt, PAGESIZE)) < 0)
+    if ((VMCopy(pid, API::Write, (Address) arguments, range.virt, PAGESIZE * 2)) < 0)
     {
         delete[] arguments;
         errno = EFAULT;
@@ -126,7 +128,7 @@ int forkexec(const char *path, const char *argv[])
 
     // Copy fds into the new process.
     if ((VMCopy(pid, API::Write, (Address) getFiles(),
-                range.virt + PAGESIZE, range.size - PAGESIZE)) < 0)
+                range.virt + (PAGESIZE * 2), range.size - (PAGESIZE * 2))) < 0)
     {
         delete[] arguments;
         errno = EFAULT;

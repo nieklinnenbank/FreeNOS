@@ -20,6 +20,7 @@
 #include "Runtime.h"
 #include "errno.h"
 #include "fcntl.h"
+#include "unistd.h"
 #include "sys/stat.h"
 
 int open(const char *path, int oflag, ...)
@@ -28,11 +29,24 @@ int open(const char *path, int oflag, ...)
     ProcessID mnt = findMount(path);
     FileDescriptor *files = getFiles();
     FileStat st;
+    char fullpath[PATH_MAX];
+
+    /* Relative or absolute? */
+    if (path[0] != '/')
+    {
+        char cwd[PATH_MAX];
+
+        /* What's the current working dir? */
+        getcwd(cwd, PATH_MAX);
+        snprintf(fullpath, sizeof(fullpath), "%s/%s", cwd, path);
+    }
+    else
+        strlcpy(fullpath, path, sizeof(fullpath));
 
     // Fill message
     msg.type   = ChannelMessage::Request;
     msg.action = StatFile;
-    msg.path   = (char *) path;
+    msg.path   = fullpath;
     msg.stat   = &st;
 
     // Ask the FileSystem for the file.
@@ -63,7 +77,7 @@ int open(const char *path, int oflag, ...)
                     files[i].mount = mnt;
                     files[i].identifier = 0;
                     files[i].position = 0;
-                    strlcpy(files[i].path, path, PATH_MAX);
+                    strlcpy(files[i].path, fullpath, PATH_MAX);
                     return i;
                 }
             }

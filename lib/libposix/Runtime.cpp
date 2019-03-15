@@ -47,7 +47,7 @@ static FileSystemMount mounts[FILESYSTEM_MAXMOUNTS];
 static FileDescriptor *files = (FileDescriptor *) NULL;
 
 /** Current Directory String */
-String currentDirectory;
+String *currentDirectory = (String *) NULL;
 
 void * __dso_handle = 0;
 
@@ -157,19 +157,23 @@ void setupMappings()
     mounts[1].procID  = ROOTFS_PID;
     mounts[1].options = ZERO;
 
-    // Set currentDirectory
-    currentDirectory = "/";
-
-    // Setup file descriptors table pointer
+    // Map user program arguments
     Arch::MemoryMap map;
     Memory::Range argRange = map.range(MemoryMap::UserArgs);
-    files = (FileDescriptor *) (argRange.virt + PAGESIZE);
+
+    // First page is the argc+argv (skip here)
+    // Second page is the current working directory
+    currentDirectory = new String((char *) argRange.virt + PAGESIZE, false);
+
+    // Third page and above contain the file descriptors table
+    files = (FileDescriptor *) (argRange.virt + (PAGESIZE * 2));
 
     // Inherit file descriptors table from parent (if any).
     // Without a parent, just clear the file descriptors
     if (getppid() == 0)
     {
-        memset(files, 0, argRange.size - PAGESIZE);
+        memset(files, 0, argRange.size - (PAGESIZE * 2));
+        (*currentDirectory) = "/";
     }
 }
 
@@ -297,7 +301,7 @@ FileDescriptor * getFiles(void)
 
 String * getCurrentDirectory()
 {
-    return &currentDirectory;
+    return currentDirectory;
 }
 
 extern C void SECTION(".entry") _entry() 

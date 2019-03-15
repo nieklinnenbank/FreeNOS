@@ -85,9 +85,9 @@ int spawn(Address program, Size programSize, const char *command)
     VMCtl(pid, Map, &range);
 
     // Allocate arguments
-    char *arguments = new char[PAGESIZE];
+    char *arguments = new char[PAGESIZE * 2];
     char *arg = (char *)command;
-    memset(arguments, 0, PAGESIZE);
+    memset(arguments, 0, PAGESIZE * 2);
 
     // Fill in arguments
     while (*command && count < PAGESIZE / ARGV_SIZE)
@@ -104,7 +104,7 @@ int spawn(Address program, Size programSize, const char *command)
     strlcpy(arguments + (ARGV_SIZE * count), arg, command-arg+1);
 
     // Copy argc/argv into the new process
-    if ((VMCopy(pid, API::Write, (Address) arguments, range.virt, PAGESIZE)) < 0)
+    if ((VMCopy(pid, API::Write, (Address) arguments, range.virt, PAGESIZE * 2)) < 0)
     {
         delete[] arguments;
         errno = EFAULT;
