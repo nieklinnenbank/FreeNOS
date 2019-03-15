@@ -21,12 +21,29 @@
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 #include <Runtime.h>
 
 int cat(char *prog, char *file)
 {
     char buf[1025];
     int fd, e;
+    struct stat st;
+
+    /* Stat the file. */
+    if (stat(file, &st) != 0)
+    {
+        printf("%s: failed to stat '%s': %s\r\n",
+                prog, file, strerror(errno));    
+        return EXIT_FAILURE;
+    }
+
+    /* Must be a regular file. */
+    if (!S_ISREG(st.st_mode))
+    {
+        printf("%s: not a file: '%s'\r\n", prog, file);
+        return EXIT_FAILURE;
+    }
 
     /* Clear buffer. */
     memset(buf, 0, sizeof(buf));
