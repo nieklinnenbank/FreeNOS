@@ -128,12 +128,13 @@ Error PL011::write(IOBuffer & buffer, Size size, Size offset)
     if (mis & PL011_MIS_TXMIS)
         m_io.write(PL011_ICR, PL011_ICR_TXIC);
 
-#warning if FR_TXFE sets while buffer isnt empty, we need to wait for the TX IRQ, which we disabled!
-
     // Write as much bytes as possible
-    while ((m_io.read(PL011_FR) & PL011_FR_TXFE) && bytes < size)
+    while (bytes < size)
     {
-        m_io.write(PL011_DR, buffer[bytes++]);
+        if (m_io.read(PL011_FR) & PL011_FR_TXFE)
+        {
+            m_io.write(PL011_DR, buffer[bytes++]);
+        }
     }
     return bytes ? (Error) bytes : EAGAIN;
 }
