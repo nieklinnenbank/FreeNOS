@@ -31,58 +31,56 @@ int main(int argc, char **argv)
     struct dirent *dent;
     struct stat st;
     char path[255], tmp[255];
+    String out;
 
     /* Grab command-line arguments, if any */
     if (argc > 1)
     {
-	strncpy(path, argv[1], sizeof(path));
-	path[sizeof(path) - 1] = 0;
+        strncpy(path, argv[1], sizeof(path));
+        path[sizeof(path) - 1] = 0;
     }
     else
-	getcwd(path, sizeof(path));
+        getcwd(path, sizeof(path));
 
     refreshMounts(0);
 
     /* Attempt to open the directory. */
     if (!(d = opendir(path)))
     {
-	printf("%s: failed to open '%s': %s\r\n",
-		argv[0], path, strerror(errno));
-	return EXIT_FAILURE;
+        printf("%s: failed to open '%s': %s\r\n",
+                argv[0], path, strerror(errno));
+        return EXIT_FAILURE;
     }
     /* Read directory. */
     while ((dent = readdir(d)))
     {
-	/* Coloring. */
-	switch (dent->d_type)
-	{
-	    case DT_DIR:
-		printf("%s", BLUE);
-		break;
-	
-	    case DT_BLK:
-	    case DT_CHR:
-		printf("%s", YELLOW);
-		break;
-	
-	    case DT_REG:
-	    default:
-	    
-		/* Construct full path. */
-		snprintf(tmp, sizeof(tmp),
-			 "%s/%s", path, dent->d_name);
-		
-		/* Is the file executable? */
-		if (stat(tmp, &st) != -1 && st.st_mode & 0100)
-		{
-		    printf("%s", GREEN);
-		}
-		else
-		    printf("%s", WHITE);
-	}
-	printf("%s ", dent->d_name);
+        /* Coloring. */
+        switch (dent->d_type)
+        {
+            case DT_DIR:
+                out << BLUE;
+                break;
+
+            case DT_BLK:
+            case DT_CHR:
+                out << YELLOW;
+                break;
+            case DT_REG:
+            default:
+                /* Construct full path. */
+                snprintf(tmp, sizeof(tmp),
+                        "%s/%s", path, dent->d_name);
+
+                /* Is the file executable? */
+                if (stat(tmp, &st) != -1 && st.st_mode & 0100)
+                    out << GREEN;
+                else
+                    out << WHITE;
+        }
+        out << dent->d_name << " ";
     }
-    printf("\r\n");
+    out << "\r\n";
+    write(1, *out, out.length());
 
     /* Close it. */
     closedir(d);

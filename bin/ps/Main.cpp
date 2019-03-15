@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <errno.h>
 
 char * states[] =
@@ -39,12 +40,13 @@ int main(int argc, char **argv)
     ProcessInfo info;
     Arch::MemoryMap map;
     Memory::Range range = map.range(MemoryMap::UserArgs);
+    String out;
+    char line[256];
 
     // TODO: ask the kernel for the whole process table in one shot.
 
     // Print header
-    printf("ID  PARENT  USER GROUP STATUS     CMD\r\n");
-
+    out << "ID  PARENT  USER GROUP STATUS     CMD\r\n";
     memset(&cmd, 0, sizeof(cmd));
 
     // Loop processes
@@ -57,12 +59,13 @@ int main(int argc, char **argv)
             VMCopy(i, API::Read, (Address) cmd, range.virt, PAGESIZE);
 
             // Output a line
-            printf("%3d %7d %4d %5d %10s %32s\r\n",
-                    i,
-                    info.parent, 0, 0,
-                    states[info.state], cmd);
+            snprintf(line, sizeof(line),
+                    "%3d %7d %4d %5d %10s %32s\r\n",
+                     i, info.parent, 0, 0, states[info.state], cmd);
+            out << line;
         }
     }
-    // TODO: print in one shot?
+    // Output the table
+    write(1, *out, out.length());
     return EXIT_SUCCESS;
 }
