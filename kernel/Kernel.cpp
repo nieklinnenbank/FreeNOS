@@ -242,7 +242,7 @@ Kernel::Result Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Siz
 
     // Copy program arguments
     vaddr = (char *) m_alloc->toVirtual(argRange.phys);
-    MemoryBlock::set(vaddr, 0, PAGESIZE);
+    MemoryBlock::set(vaddr, 0, argRange.size);
     MemoryBlock::copy(vaddr, program->name, BOOTIMAGE_NAMELEN);
 
     // Done
