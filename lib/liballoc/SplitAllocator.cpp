@@ -49,10 +49,10 @@ Allocator::Result SplitAllocator::allocate(Size *size, Address *addr, Size align
 {
     Allocator::Result r;
 
-    if ((r = allocateHigh(*size, addr, align)) == Success)
+    if ((r = allocateLow(*size, addr, align)) == Success)
         return r;
     else
-        return allocateLow(*size, addr, align);
+        return allocateHigh(*size, addr, align);
 }
 
 Allocator::Result SplitAllocator::allocate(Address addr)
