@@ -67,13 +67,11 @@ int forkexec(const char *path, const char *argv[])
 
     // Create new process
     pid = ProcessCtl(ANY, Spawn, entry);
-
-    // TODO: check the result of ProcessCtl()
-
-    // TODO: make this much more efficient. perhaps let libexec write directly to the target buffer.
-    // at least Map & copy in one shot.
-    // TODO: move the memory administration updates to coreserver instead.
-    // this process can read the libexec data once, and then let coreserver create a process for it.
+    if (pid == (pid_t) -1)
+    {
+        errno = EIO;
+        return -1;
+    }
 
     // Map program regions into virtual memory of the new process
     for (Size i = 0; i < numRegions; i++)
@@ -90,7 +88,6 @@ int forkexec(const char *path, const char *argv[])
         // Create mapping first
         if (VMCtl(pid, Map, &range) != 0)
         {
-            // TODO: convert from API::Error to errno.
             errno = EFAULT;
             return -1;
         }
