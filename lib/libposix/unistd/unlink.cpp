@@ -25,13 +25,26 @@ int unlink(const char *path)
 {
     FileSystemMessage msg;
     ProcessID mnt = findMount(path);
-    
+    char fullpath[PATH_MAX];
+
+    /* Relative or absolute? */
+    if (path[0] != '/')
+    {
+        char cwd[PATH_MAX];
+
+        /* What's the current working dir? */
+        getcwd(cwd, PATH_MAX);
+        snprintf(fullpath, sizeof(fullpath), "%s/%s", cwd, path);
+    }
+    else
+        strlcpy(fullpath, path, sizeof(fullpath));
+
     /* Ask for the unlink. */
     if (mnt)
     {
         msg.type   = ChannelMessage::Request;
         msg.action = DeleteFile;
-        msg.path   = (char *) path;
+        msg.path   = fullpath;
         msg.from   = SELF;
         ChannelClient::instance->syncSendReceive(&msg, mnt);
 
