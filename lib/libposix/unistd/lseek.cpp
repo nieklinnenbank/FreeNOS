@@ -36,9 +36,6 @@ off_t lseek(int fildes, off_t offset, int whence)
         return -1;
     }
 
-    // TODO: use the whence parameter
-    // TODO: check for file size too
-
     // Update the file pointer
     files[fildes].position = offset;
 

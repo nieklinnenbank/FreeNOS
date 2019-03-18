@@ -101,13 +101,7 @@ void setupHeap()
     PoolAllocator *pool;
     Address heapAddr;
     Size parentSize;
-
-    // TODO: inefficient. needs another kernel call. Make forkexec() have zero kernel calls and/or IPC until main() for
-    // maximum efficiency.
-    // TODO: ProcessCtl(SELF, InfoPID, &info);
-    // map = info.map....
     Arch::MemoryMap map;
-
     PageAllocator alloc( map.range(MemoryMap::UserHeap).virt,
                          map.range(MemoryMap::UserHeap).size );
 

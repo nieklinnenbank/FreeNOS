@@ -31,7 +31,6 @@ extern C int sendto(int sockfd, const void *buf, size_t len, int flags,
     if (len > sizeof(packet) - addrlen)
         return ERANGE;
 
-    // TODO: inefficient. and move to NetworkClient.
     info.address = addr->addr;
     info.port = addr->port;
 
