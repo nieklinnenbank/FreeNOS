@@ -60,6 +60,10 @@ def TargetProgram(env, target, source, install_dir = None):
         if install_dir is not False:
 	    env.TargetInstall(target, install_dir)
 
+def TargetHostProgram(env, target, source, install_dir = None):
+    HostProgram(env, target, source)
+    TargetProgram(env, target, source, install_dir)
+
 def TargetLibrary(env, lib, source):
     if env['ARCH'] != 'host':
 	env.Library(lib, source)
@@ -98,6 +102,7 @@ host = Environment(tools    = ["default", "phony", "test"],
 		   toolpath = ["support/scons"])
 host.AddMethod(HostProgram, "HostProgram")
 host.AddMethod(TargetProgram, "TargetProgram")
+host.AddMethod(TargetHostProgram, "TargetHostProgram")
 host.AddMethod(TargetLibrary, "TargetLibrary")
 host.AddMethod(UseLibraries, "UseLibraries")
 host.AddMethod(UseServers, "UseServers")

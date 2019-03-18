@@ -24,8 +24,7 @@ env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libexec', 'libarch', 'libt
 env.UseLibraries([ 'libtest', 'libstd' ], 'host')
 env.UseServers([ 'terminal', 'filesystem' ])
 
-env.TargetProgram('run', ['Main.cpp'])
-env.HostProgram('run', ['Main.cpp'])
+env.TargetHostProgram('run', ['Main.cpp'])
 
 if env['ARCH'] == 'host':
 
