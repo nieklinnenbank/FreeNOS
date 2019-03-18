@@ -257,16 +257,20 @@ Error FileSystem::processRequest(FileSystemRequest *req)
             break;
     }
     ret = msg->result;
-//    msg->result &= 0xffffff; // (msg->result & ~ERESTART);
 
     // Only send reply if completed (not EAGAIN)
     if (msg->result != EAGAIN)
     {
-        msg->type = ChannelMessage::Response;
-        m_registry->getProducer(msg->from)->write(msg);
-        ProcessCtl(msg->from, Resume, 0);
+        sendResponse(msg);
     }
     return ret;
+}
+
+void FileSystem::sendResponse(FileSystemMessage *msg)
+{
+    msg->type = ChannelMessage::Response;
+    m_registry->getProducer(msg->from)->write(msg);
+    ProcessCtl(msg->from, Resume, 0);
 }
 
 void FileSystem::timeout()

@@ -119,7 +119,12 @@ LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
     /* Read out the root directory. */
     rootInode = getInode(LINN_INODE_ROOT);
     setRoot(new LinnDirectory(this, rootInode));
-    
+
+    /* Filesystem writes are not supported */
+    addIPCHandler(CreateFile, (IPCHandlerFunction) &LinnFileSystem::notSupportedHandler, false);
+    addIPCHandler(DeleteFile, (IPCHandlerFunction) &LinnFileSystem::notSupportedHandler, false);
+    addIPCHandler(WriteFile,  (IPCHandlerFunction) &LinnFileSystem::notSupportedHandler, false);
+
     /* Done. */
     NOTICE("mounted at " << p);
 }
@@ -236,4 +241,10 @@ u64 LinnFileSystem::getOffset(LinnInode *inode, u32 blk)
     /* All done. */
     delete block;
     return offset;
+}
+
+void LinnFileSystem::notSupportedHandler(FileSystemMessage *msg)
+{
+    msg->result = ENOTSUP;
+    sendResponse(msg);
 }

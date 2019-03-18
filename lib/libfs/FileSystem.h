@@ -157,6 +157,13 @@ class FileSystem : public ChannelServer<FileSystem, FileSystemMessage>
     Error processRequest(FileSystemRequest *req);
 
     /**
+     * Send response for a FileSystemMessage
+     *
+     * @param msg The FileSystemMessage to send response for
+     */
+    void sendResponse(FileSystemMessage *msg);
+
+    /**
      * @brief Change the filesystem root directory.
      *
      * This function set the root member to the given

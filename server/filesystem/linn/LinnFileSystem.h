@@ -133,6 +133,13 @@ class LinnFileSystem : public FileSystem
 
     private:
 
+        /**
+         * Callback handler for unsupported operations
+         *
+         * @param msg FileSystemMessage pointer
+         */
+        void notSupportedHandler(FileSystemMessage *msg);
+
 	/** Provides storage. */
 	Storage *storage;
 	
