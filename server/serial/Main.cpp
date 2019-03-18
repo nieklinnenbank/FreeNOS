@@ -20,7 +20,6 @@
 #include <DeviceServer.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <syslog.h>
 
 #ifdef BCM2835
 #include "PL011.h"

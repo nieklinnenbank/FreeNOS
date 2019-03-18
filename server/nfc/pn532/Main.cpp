@@ -17,7 +17,6 @@
 
 #include <stdlib.h>
 #include <unistd.h>
-#include <syslog.h>
 #include <BroadcomSPI.h>
 #include <KernelLog.h>
 #include <DeviceServer.h>

@@ -20,7 +20,6 @@
 IOBuffer::IOBuffer(const FileSystemMessage *msg)
     : m_message(msg)
 {
-    // TODO: hack because only read/write file actions need the buffer.
     if (msg->action == ReadFile || msg->action == WriteFile)
         m_buffer = new u8[msg->size];
     else
@@ -61,7 +60,6 @@ Error IOBuffer::bufferedWrite(void *buffer, Size size)
 {
     Size i = 0;
 
-    // TODO: hack. see above.
     if (!m_buffer)
         m_buffer = new u8[m_message->size];
 

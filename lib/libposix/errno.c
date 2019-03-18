@@ -20,9 +20,6 @@
 
 int errno USED = 0;
 
-// TODO: in C++ there is no such thing as named initializer constructs.
-// replace this with something better.
-
 char * error_map[] USED =
 {
     [-ESUCCESS]		= "Success",

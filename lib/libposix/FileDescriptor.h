@@ -26,8 +26,6 @@
 
 #define FILE_DESCRIPTOR_MAX 1024
 
-// TODO: move this to libfs
-
 /**
  * Abstracts a file which is opened by a user process.
  */
@@ -50,9 +48,6 @@ class FileDescriptor
         open     = fd.open;
         strlcpy(path, fd.path, PATH_MAX);
     }
-
-    // TODO: please modify libstd's Array/Sequence, such that I do not
-    // need to implement these. I prefer to just specify a struct.
 
     bool operator == (const FileDescriptor & fd) const
     {

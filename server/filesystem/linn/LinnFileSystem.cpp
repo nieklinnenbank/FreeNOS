@@ -24,7 +24,6 @@
 #include "LinnFile.h"
 #include "LinnDirectory.h"
 #include <stdlib.h>
-#include <syslog.h>
 
 int main(int argc, char **argv)
 {

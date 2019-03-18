@@ -78,8 +78,6 @@ void Directory::insert(FileType type, const char *name, ...)
     }
 }
 
-// TODO: libfs should not depend on libposix (e.g. strcmp) but use libstd instead
-
 void Directory::remove(const char *name)
 {
     for (ListIterator<Dirent *> i(&entries); i.hasCurrent(); i++)

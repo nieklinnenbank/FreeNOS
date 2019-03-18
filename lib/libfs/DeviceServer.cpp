@@ -34,8 +34,6 @@ Error DeviceServer::initialize()
     return ESUCCESS;
 }
 
-// TODO: avoid using format strings. Replace with String.
-
 void DeviceServer::registerDevice(Device *dev, const char *path, ...)
 {
     va_list args;

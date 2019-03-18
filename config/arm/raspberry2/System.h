@@ -22,7 +22,7 @@
 #define __SYSTEM
 #define ARM
 #define ARMV7
-#define BCM2835 // TODO: remove!
+#define BCM2835
 #define BCM2836
 
 /** Default IO base on the Broadcom 2836 */

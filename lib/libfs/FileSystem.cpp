@@ -81,9 +81,6 @@ Error FileSystem::mount()
         String *s = i.current();
         p << "/" << **s;
 
-        // TODO: avoid libposix dependency on mkdir().
-        // TODO: implement client interface functions in libfs for doing things like mkdir() open() read() write() etc
-        // TODO: then use those client interface functions in libposix, and here too.
         if (i.hasNext())
             mkdir(*p, S_IWUSR | S_IRUSR);
     }
@@ -185,7 +182,6 @@ Error FileSystem::processRequest(FileSystemRequest *req)
         msg->type = ChannelMessage::Response;
         msg->result = ENOENT;
         m_registry->getProducer(msg->from)->write(msg);
-        // TODO: #warning put this in ChannelClient somehow
         ProcessCtl(msg->from, Resume, 0);
         return msg->result;
     }

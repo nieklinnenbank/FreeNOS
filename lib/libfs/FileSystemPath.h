@@ -38,8 +38,6 @@
 #define EOL(s,x) \
     ((x) == (s) + length - 1)
 
-// TODO: rewrite this whole class using String.
-
 /**
  * Simple filesystem path parser.
  */
