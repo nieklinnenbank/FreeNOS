@@ -38,8 +38,8 @@ int cat(char *prog, char *file)
         return EXIT_FAILURE;
     }
 
-    /* Must be a regular file. */
-    if (!S_ISREG(st.st_mode))
+    /* Must be a regular file or device. */
+    if (!S_ISREG(st.st_mode) && !S_ISCHR(st.st_mode))
     {
         printf("%s: not a file: '%s'\r\n", prog, file);
         return EXIT_FAILURE;
