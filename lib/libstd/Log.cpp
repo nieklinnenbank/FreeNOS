@@ -63,7 +63,6 @@ Log & operator << (Log &log, int number)
 
 Log & operator << (Log &log, unsigned number)
 {
-// TODO: #warning: string does not have unsigned conversions yet
     String s = number;
     log.append(*s);
     return log;

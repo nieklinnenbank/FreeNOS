@@ -34,7 +34,7 @@ Error PL011::initialize()
         != IO::Success)
         return EINVAL;
 
-    // TODO: hack. disable IRQ_REG() == 0...
+    // Disable receiving interrupts
     ProcessCtl(SELF, DisableIRQ, 0);
 
     // Disable PL011.
@@ -75,7 +75,7 @@ Error PL011::initialize()
 
     // Enable Rx/Tx interrupts
     m_io.write(PL011_IMSC,
-         PL011_IMSC_RXIM); // | PL011_IMSC_TXIM);
+         PL011_IMSC_RXIM);
 
     // Enable PL011, receive & transfer part of UART.
     m_io.write(PL011_CR, (1 << 0) | (1 << 8) | (1 << 9));

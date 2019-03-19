@@ -32,8 +32,6 @@ int main(int argc, char **argv)
     Arch::MemoryMap map;
     Memory::Range range = map.range(MemoryMap::UserArgs);
 
-    // TODO: ask the kernel for the process table instead. With ARGV_ADDR copies.
-
     // Print header
     printf("PATH                 FILESYSTEM\r\n");
 
@@ -47,7 +45,6 @@ int main(int argc, char **argv)
             printf("%20s %s\r\n", mounts[i].path, cmd);
         }
     }
-    // TODO: print in one shot instead?
     // Done
     return EXIT_SUCCESS;
 }

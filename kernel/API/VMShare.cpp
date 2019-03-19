@@ -23,7 +23,6 @@
 
 API::Result VMShareHandler(ProcessID procID, API::Operation op, ProcessShares::MemoryShare *share)
 {
-    // TODO: use the share.range.physicalAddress as identifier? its unique.
     ProcessManager *procs = Kernel::instance->getProcessManager();
     Process *proc = ZERO;
     Error ret = API::Success;

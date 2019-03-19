@@ -35,7 +35,6 @@ API::Result VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
     else if (!(proc = procs->get(procID)))
         return API::NotFound;
 
-    // TODO: Verify memory addresses
     MemoryContext *local  = procs->current()->getMemoryContext();
     MemoryContext *remote = proc->getMemoryContext();
 

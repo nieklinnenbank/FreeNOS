@@ -79,7 +79,7 @@ Error SynopsisController::initialize()
 
     // Enable the USB controller interrupt on the ARM's interrupt controller
     addIRQHandler(InterruptNumber, (IRQHandlerFunction) &SynopsisController::interruptHandler);
-    addIRQHandler(0, (IRQHandlerFunction) &SynopsisController::interruptHandler); // TODO: ARM does not have IRQ_REG() yet
+    addIRQHandler(0, (IRQHandlerFunction) &SynopsisController::interruptHandler);
     ProcessCtl(SELF, WatchIRQ, InterruptNumber);
     ProcessCtl(SELF, EnableIRQ, InterruptNumber);
 
@@ -107,7 +107,7 @@ Error SynopsisController::initialize()
     val |=  HostPortReset;
     m_io.write(HostPortControl, val);
 
-#warning TODO: implement real sleep() now. We need it here.
+    // TODO: implement real sleep() now. We need it here.
     sleep(60);
 
     // Finish host port reset (lower the reset signal)

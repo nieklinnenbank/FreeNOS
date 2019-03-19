@@ -242,7 +242,6 @@ ChannelClient::Result ChannelClient::syncReceiveFrom(void *buffer, ProcessID pid
     if (!ch)
         return NotFound;
 
-    // TODO: for inter-core communication, the wakeup call becomes an IPI!
     while (ch->read(buffer) != Channel::Success)
         ProcessCtl(SELF, EnterSleep, 0);
 

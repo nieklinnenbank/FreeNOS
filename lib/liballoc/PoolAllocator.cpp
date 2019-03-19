@@ -104,7 +104,6 @@ MemoryPool * PoolAllocator::newPool(Size index, Size cnt)
 
 Allocator::Result PoolAllocator::release(Address addr)
 {
-    // TODO: very slow! requires a full scan of the heap in the worst case.
     for (Size i = POOL_MIN_POWER - 1; i < POOL_MAX_POWER; i++)
     {
         for (MemoryPool *p = m_pools[i]; p; p = p->next)

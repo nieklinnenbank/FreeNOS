@@ -345,7 +345,5 @@ extern TSS kernelTss;
 /** Kernel page directory. */
 extern Address kernelPageDir[];
 
-// TODO: #warning Move the IRQ/IDT code from IntelBoot.S to libarch, in the IntelCore implementation.
-
 #endif /* __KERNEL__ */
 #endif /* __LIBARCH_INTEL_CPU_H */

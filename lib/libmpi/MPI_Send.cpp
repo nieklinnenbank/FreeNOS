@@ -43,8 +43,8 @@ int MPI_Send(const void *buf,
     {
         msg.integer = *(((int *) buf) + i);
 
-        // TODO: replace with ChannelClient::syncSendTo
-        while (ch->write(&msg) != Channel::Success);
+        while (ch->write(&msg) != Channel::Success)
+            ;
     }
     return MPI_SUCCESS;
 }

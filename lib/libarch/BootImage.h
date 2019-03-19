@@ -40,9 +40,6 @@ typedef struct BootImage
     
     /** Version of the boot image layout. */
     u8  layoutRevision;
-    
-    /** Checksum used to verify integrity. */
-    // TODO
 
     /** Total size of the boot image in bytes */
     u32 bootImageSize;

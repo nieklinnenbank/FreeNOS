@@ -50,10 +50,6 @@ int main(int argc, char **argv)
             return EXIT_FAILURE;
     }
 
-    // TODO: Provide /dev/i2c{0,1,2} and let the app set modes directly (TEMP fastest)
-    // or implement ioctl() support
-    // or /dev/grove/digi0/{mode | value | ...} with libfs / libdev (BEST)
-
     // Set Digipin 3 to input mode
     u8 command[4];
     command[0] = 5;

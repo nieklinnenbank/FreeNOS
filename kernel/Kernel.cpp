@@ -40,7 +40,7 @@ Kernel::Kernel(CoreInfo *info)
         Log::instance->append(COPYRIGHT "\r\n");
     }
 
-    // TODO: compute lower & higher memory for this core.
+    // Compute lower & higher memory
     Memory::Range highMem;
     Arch::MemoryMap map;
     MemoryBlock::set(&highMem, 0, sizeof(highMem));

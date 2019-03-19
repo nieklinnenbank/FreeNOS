@@ -25,7 +25,6 @@
 IntelProcess::IntelProcess(ProcessID id, Address entry, bool privileged, const MemoryMap &map)
     : Process(id, entry, privileged, map)
 {
-    // TODO: set some members
 }
 
 Process::Result IntelProcess::initialize()
@@ -111,7 +110,6 @@ void IntelProcess::execute(Process *previous)
 
     // Reload Task State Register (with kernel stack for interrupts)
     kernelTss.esp0 = m_kernelStackBase;
-    //ltr(KERNEL_TSS_SEL);
 
     // Activate the memory context of this process
     m_memoryContext->activate();    

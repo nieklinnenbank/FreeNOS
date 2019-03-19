@@ -31,9 +31,6 @@ class ARMIO : public IO
      */
     ARMIO();
 
-    // TODO: it is not needed to use dmb() before and after _every_ I/O operation.
-    // TODO: update the drivers to use dmb() instead.
-
     /**
      * Read a byte from a port.
      * @param port The I/O port to read from.

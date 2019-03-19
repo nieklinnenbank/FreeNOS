@@ -36,7 +36,7 @@ API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *ra
         return API::NotFound;
     }
 
-    // TODO: capability checking.
+    // Retrieve memory context
     MemoryContext *mem = proc->getMemoryContext();
 
     // Perform operation
@@ -79,7 +79,6 @@ API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *ra
         }
 
         case ReserveMem:
-            // TODO: #warning TODO: claiming memory should be atomic single shot call.
             for (uint i = 0; i < range->size; i+=PAGESIZE)
             {
                 if (Kernel::instance->getAllocator()->allocate(range->phys + i) != Allocator::Success)

@@ -24,7 +24,12 @@
 #pragma GCC push_options
 #pragma GCC optimize ("O0")
 
-// TODO: Split IntelAPIC in two classes: the interrupt part and timer part. IntelAPICTimer, IntelAPIC
+#define APIC_DEST(x) ((x) << 24)
+#define APIC_DEST_FIELD         0x00000
+#define APIC_DEST_LEVELTRIG     0x08000
+#define APIC_DEST_ASSERT        0x04000
+#define APIC_DEST_DM_INIT       0x00500
+#define APIC_DEST_DM_STARTUP    0x00600
 
 IntelAPIC::IntelAPIC() : IntController()
 {
@@ -126,10 +131,6 @@ Timer::Result IntelAPIC::initialize()
     // Map the registers into the address space
     if (m_io.map(IOBase) != IntelIO::Success)
         return Timer::IOError;
-
-    // TODO: detect the APIC with CPUID
-    // if (not detected)
-    //     return NotFound;
 
     // Initialize and disable the timer
     m_io.write(DivideConfig, Divide16);

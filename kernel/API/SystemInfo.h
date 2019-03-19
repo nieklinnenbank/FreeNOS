@@ -48,7 +48,6 @@ extern API::Result SystemInfoHandler(SystemInformation *info);
 /**
  * System information structure.
  */
-// TODO: replace this with CoreInfo.
 typedef struct SystemInformation
 {
     /**

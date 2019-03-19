@@ -71,7 +71,6 @@ Timer::Result Timer::tick()
 
 Timer::Result Timer::wait(u32 microseconds)
 {
-    // TODO: use getCurrent() to busy wait
     return Success;
 }
 
@@ -80,6 +79,5 @@ bool Timer::isExpired(const Timer::Info *info)
     if (!info->frequency)
         return false;
 
-    // TODO: take integer overflow into account!
     return m_info.ticks > info->ticks;
 }

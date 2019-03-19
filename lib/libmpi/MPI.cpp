@@ -30,6 +30,7 @@
 #include <errno.h>
 #include "mpi.h"
 
+#define MPI_PROG_CMDLEN 512
 #define MEMBASE(id) (memChannelBase.phys + (coreCount * PAGESIZE * 2 * (id)))
 
 Size coreCount = 0;
@@ -117,9 +118,8 @@ int MPI_Init(int *argc, char ***argv)
         // now create the slaves using coreservers.
         for (Size i = 1; i < coreCount; i++)
         {
-            // TODO: check for cmd buffer size...
-            char *cmd = new char[512];
-            snprintf(cmd, 512, "%s -a %x -c %d",
+            char *cmd = new char[MPI_PROG_CMDLEN];
+            snprintf(cmd, MPI_PROG_CMDLEN, "%s -a %x -c %d",
                      programPath, memChannelBase.phys, coreCount);
 
             for (int j = 1; j < *argc; j++)

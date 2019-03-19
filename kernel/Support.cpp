@@ -20,8 +20,6 @@
 #include "Support.h"
 #include "Kernel.h"
 
-// TODO: #warning FIX asserts plz
-
 extern C void constructors()
 {
     for (void (**ctor)() = &CTOR_LIST; *ctor; ctor++)

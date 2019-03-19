@@ -19,8 +19,6 @@
 #include <Log.h>
 #include "ProcessManager.h"
 
-// TODO: replace Vector with an Index..
-
 ProcessManager::ProcessManager(Scheduler *scheduler)
     : m_procs(MAX_PROCS)
 {
@@ -55,7 +53,6 @@ Process * ProcessManager::create(Address entry, const MemoryMap &map)
 
 Process * ProcessManager::get(ProcessID id)
 {
-    // TODO: replace with an Index to make this more easy.
     Process **p = (Process **) m_procs.get(id);
     return p ? *p : ZERO;
 }

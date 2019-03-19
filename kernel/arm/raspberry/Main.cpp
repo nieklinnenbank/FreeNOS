@@ -77,7 +77,7 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
     coreInfo.heapSize = MegaByte(1);
     Kernel::heap(coreInfo.heapAddress, coreInfo.heapSize);
 
-    // TODO: put this in the boot.S, or maybe hide it in the support library? maybe a _run_main() or something.
+    // Run all constructors first
     constructors();
 
     // Open the serial console as default Log

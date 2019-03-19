@@ -87,7 +87,6 @@ void IntelCore::logException(CPUState *state)
 
         case INTEL_PAGEFAULT:
             ERROR("Page Fault Exception");
-            // TODO: modify Log() to accept a String.
             s << "Error " << state->error << " at " << Number::Hex << readCR2();
             ERROR(*s);
             break;

@@ -114,7 +114,6 @@ MemoryContext::Result IntelPageDirectory::access(Address virt, Memory::Access *a
     if (!table)
         return MemoryContext::InvalidAddress;
     else
-    // TODO: we also need to look at the page directory flags? (not only of the tables)
         return table->access(virt, access);
 }
 

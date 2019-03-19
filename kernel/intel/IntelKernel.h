@@ -128,7 +128,6 @@ inline ulong trapKernel5(ulong num, ulong arg1, ulong arg2, ulong arg3,
 /**
  * We remap IRQ's to interrupt vectors 32-47.
  */
-// TODO: needed by ProcessCtl.cpp. Should avoid this.
 #define IRQ(vector) \
     (vector) + 32
 

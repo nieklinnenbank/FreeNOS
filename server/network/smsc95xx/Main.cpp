@@ -24,7 +24,7 @@ int main(int argc, char **argv)
     KernelLog log;
     log.setMinimumLogLevel(Log::Notice);
 
-    NetworkServer server("/network/smsc95xx"); // TODO: add serial code? something unique to this device.
+    NetworkServer server("/network/smsc95xx");
 
     server.initialize();
     server.registerDevice(new SMSC95xx(2, "/usb", &server), "io");

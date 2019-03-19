@@ -43,8 +43,6 @@ int main(int argc, char **argv)
     String out;
     char line[256];
 
-    // TODO: ask the kernel for the whole process table in one shot.
-
     // Print header
     out << "ID  PARENT  USER GROUP STATUS     CMD\r\n";
     memset(&cmd, 0, sizeof(cmd));

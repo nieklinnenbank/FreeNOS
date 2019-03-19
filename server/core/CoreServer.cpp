@@ -34,15 +34,6 @@ const char * CoreServer::kernelPath = "/boot/kernel";
 CoreServer::CoreServer()
     : ChannelServer<CoreServer, FileSystemMessage>(this)
 {
-    /*
-     * TODO:
-     * discover other CPUs with libarch APIC. Determine the memory
-     * splitup. Claim the memory for that CPU. Fill the boot struct with various argument
-     * inside the cpu1 memory so that IntelBoot.S can find its base.
-     * start new kernel with /boot/kernel (or any other kernel, depending on configuration)
-     * introduce a IntelGeometry, which uses APIC. CoreServer uses the Arch::Geometry to discover CPUs here.
-     * once CPU1 is up & running, we can implement libmpi! :-)
-     */
     m_numRegions = 0;
     m_kernel = ZERO;
     m_kernelImage = ZERO;
@@ -59,7 +50,7 @@ CoreServer::CoreServer()
     // Register IPC handlers
     addIPCHandler(ReadFile,  &CoreServer::getCoreCount);
 
-    // TODO: hack: because of waitpid() we must send the reply manually before waitpid().
+    // Because of waitpid() we must send the reply manually before waitpid().
     addIPCHandler(CreateFile, &CoreServer::createProcess, false);
 }
 
@@ -73,7 +64,6 @@ int CoreServer::runCore()
     while (true)
     {
         // wait from a message of the master core
-        // TODO: replace with ChannelClient::syncReceiveFrom
         while (m_fromMaster->read(&msg) != Channel::Success);
 
         if (m_ipcHandlers->at(msg.action))
@@ -83,8 +73,8 @@ int CoreServer::runCore()
 
             if (m_sendReply)
             {
-                // TODO: same
-                while (m_toMaster->write(&msg) != Channel::Success);
+                while (m_toMaster->write(&msg) != Channel::Success)
+                    ;
             }
         }
     }
@@ -106,7 +96,6 @@ void CoreServer::createProcess(FileSystemMessage *msg)
             return;
         }
 
-        // TODO:move in libmpi?
         range.virt = (Address) msg->buffer;
         VMCtl(msg->from, LookupVirtual, &range);
         msg->buffer = (char *) range.phys;
@@ -130,13 +119,11 @@ void CoreServer::createProcess(FileSystemMessage *msg)
             msg->result = EBADF;
             return;
         }
-        // TODO: replace with ChannelClient::syncReceiveFrom
         while (ch->read(msg) != Channel::Success)
-		;
+            ;
         DEBUG("program created with result " << (int)msg->result << " at core" << msg->size);
 
         msg->result = ESUCCESS;
-        //IPCMessage(msg->from, API::Send, msg, sizeof(*msg));
         ChannelClient::instance->syncSendTo(msg, msg->from);
     }
     else
@@ -152,11 +139,12 @@ void CoreServer::createProcess(FileSystemMessage *msg)
         pid_t pid = spawn(range.virt, msg->offset, cmd);
         int status;
 
-        // reply to master
+        // reply to master before calling waitpid()
         msg->result = ESUCCESS;
-        while (m_toMaster->write(msg) != Channel::Success);
+        while (m_toMaster->write(msg) != Channel::Success)
+            ;
 
-        // TODO: temporary make coreserver waitpid() to save polling time
+        // Wait until the spawned process completes
         waitpid(pid, &status, 0);
     }
 }
@@ -204,8 +192,8 @@ CoreServer::Result CoreServer::test()
             if (!ch)
                 return IOError;
 
-            // TODO: replace with ChannelClient::syncReceiveFrom
-            while (ch->read(&msg) != Channel::Success);
+            while (ch->read(&msg) != Channel::Success)
+                ;
 
             if (msg.action == StatFile)
             {
@@ -303,8 +291,6 @@ CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info,
         // Map the target kernel's memory for regions[i].size
         if (VMCtl(SELF, Map, &range) != 0)
         {
-            // TODO: convert from API::Error to errno.
-            //errno = EFAULT;
             return OutOfMemory;
         }
         // Copy the kernel to the target core's memory
@@ -370,7 +356,6 @@ CoreServer::Result CoreServer::discover()
         m_acpi.discover() == IntelACPI::Success)
     {
         NOTICE("using ACPI as CoreManager");
-        // TODO: hack. Must always call IntelMP::discover() for IntelMP::boot()
         m_mp.discover();
         m_cores = &m_acpi;
     }

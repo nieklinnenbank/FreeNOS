@@ -73,14 +73,9 @@ Error USBHub::initialize()
 
     DEBUG("found " << m_hub->numPorts << " ports");
     DEBUG("characteristics: " << m_hub->hubCharacteristics);
-
-    // TODO: each port gets USB device id of myself + (portnumber)
-    // if the device is a HUB, ask our PARENT for a new deviceId range.
-    // in case we are the root HUB, we can figure it out, since we started with the full 255 range.
-    // a HUB needs to manage its childs anyway, since in case the HUB is disconnected it must KILL each child too.
-    // thus if a child is terminated, the HUB can reclaim the deviceId range too.
-
     DEBUG("power-on ports");
+
+    // Power-on all ports
     for (Size i = 1; i < m_hub->numPorts + 1u; i++)
     {
         if (setPortFeature(i, PortPower) != ESUCCESS)
@@ -88,28 +83,11 @@ Error USBHub::initialize()
             ERROR("failed to power-on port: " << i);
         }
     }
-    // TODO: assume a device is attached on the first port for testing
+    // Assume a device is attached on the first port
     if (portAttach(1) != ESUCCESS)
     {
         ERROR("failed to attach port 1");
     }
-
-    /*
-     * Use an interrupt transfer to find out if a port-change happend:
-     *
-     * "Everything else the hub driver does happens asynchronously as a response to a status
-change request being completed. Every USB hub has exactly one interrupt IN endpoint
-called the status change endpoint. The hub responds on this endpoint whenever the
-status of the hub or one of the hub.s ports has changed. for example, when a USB
-device has been connected or disconnected from a port"
-     *
-     * on device attached:
-     * - reset port
-     * - enable port
-     * - then start a new device driver with the assigned usb device ID.
-     *   which will do the full USB init (get descriptors, set address, set config)
-     */
-
     return ESUCCESS;
 }
 

@@ -35,9 +35,6 @@ int main(int argc, char **argv)
     Log *log = new KernelLog();
     log->setMinimumLogLevel(Log::Notice);
 
-    /*
-     * TODO: give up all privileges.
-     */
     NOTICE("Starting init script: " << av[1]);
 
     // Execute the run commands file

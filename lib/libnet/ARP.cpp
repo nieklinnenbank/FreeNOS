@@ -112,8 +112,6 @@ Error ARP::sendRequest(IPV4::Address address)
     if (!entry)
         return EHOSTUNREACH;
 
-    // TODO: take the time into account too
-
     // Update the cache entry administration
     entry->valid = false;
     entry->retryCount++;

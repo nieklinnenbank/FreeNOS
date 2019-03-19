@@ -49,7 +49,7 @@ namespace USBDescriptor
         u8  maxPacketSize;
         u16 vendorId;
         u16 productId;
-        u16 bcdDevice; // TODO: what is this?
+        u16 bcdDevice;
         u8  manufacturer;
         u8  product;
         u8  serialNumber;
@@ -88,7 +88,6 @@ namespace USBDescriptor
         u8 interfaceProtocol;
         u8 interface;
 
-        // TODO: please fix libstd, such that this is not needed anymore.
         bool operator == (const struct Interface & ep) const {
             return ep.descriptorType == descriptorType;
         }
@@ -111,7 +110,6 @@ namespace USBDescriptor
         u16 maxPacketSize;
         u8  interval;
 
-        // TODO: please fix libstd, such that this is not needed anymore.
         bool operator == (const struct Endpoint & ep) const {
             return ep.descriptorType == descriptorType;
         }
@@ -145,7 +143,6 @@ namespace USBDescriptor
         u8  descriptorType;
         u16 string[];
 
-        // TODO: please fix libstd, such that this is not needed anymore.
         bool operator == (const struct String & ep) const {
             return ep.descriptorType == descriptorType;
         }

@@ -23,6 +23,7 @@ int main(int argc, char **argv)
     KernelLog log;
     log.setMinimumLogLevel(Log::Debug);
 
+    // TODO: fix this or remove ipctest
 #if 0
     ChannelServer server;
     if (server.initialize() != ChannelServer::Success)

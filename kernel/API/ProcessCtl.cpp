@@ -46,8 +46,6 @@ API::Result ProcessCtlHandler(ProcessID procID,
 
     DEBUG("#" << procs->current()->getID() << " " << action << " -> " << procID << " (" << addr << ")");
 
-    // TODO: Verify memory address
-
     // Does the target process exist?
     if(action != GetPID && action != Spawn)
     {
@@ -115,7 +113,7 @@ API::Result ProcessCtlHandler(ProcessID procID,
         if (!(timer = Kernel::instance->getTimer()))
             return API::NotFound;
         
-        timer->getCurrent((Timer::Info *) addr); // TODO: check access...
+        timer->getCurrent((Timer::Info *) addr);
         break;
 
     /*    
@@ -134,7 +132,7 @@ API::Result ProcessCtlHandler(ProcessID procID,
             procs->schedule();
 
         if (output && ((timer = Kernel::instance->getTimer())))
-            timer->getCurrent((Timer::Info *) output); // TODO: check access...
+            timer->getCurrent((Timer::Info *) output);
         break;
 
     case SetStack:

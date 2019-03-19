@@ -26,7 +26,7 @@
 
 ARMKernel::ARMKernel(ARMInterrupt *intr,
                      CoreInfo *info)
-    : Kernel(info)
+    : Kernel(info), m_bcm(info->coreId)
 {
     ARMControl ctrl;
 
@@ -56,7 +56,7 @@ ARMKernel::ARMKernel(ARMInterrupt *intr,
         m_armTimer.setFrequency(100);
 
         // Setup IRQ routing
-        m_bcm.setCoreTimerIrq(info->coreId, Broadcom2836::PhysicalTimer1, true);
+        m_bcm.setCoreTimerIrq(Broadcom2836::PhysicalTimer1, true);
     }
 #endif /* BCM2836 */
 
@@ -87,7 +87,7 @@ void ARMKernel::interrupt(CPUState state)
 #ifdef BCM2836
     if (kernel->m_timer == &kernel->m_armTimer)
     {
-        tick = kernel->m_bcm.getCoreTimerIrqStatus(kernel->m_coreInfo->coreId, Broadcom2836::PhysicalTimer1);
+        tick = kernel->m_bcm.getCoreTimerIrqStatus(Broadcom2836::PhysicalTimer1);
     }
     else
 #endif /* BCM2836 */

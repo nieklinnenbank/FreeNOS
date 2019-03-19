@@ -133,19 +133,17 @@ MemoryContext::Result ARMFirstTable::map(Address virt,
         if (m_tables[ DIRENTRY(virt) ] & PAGE1_SECTION)
             return MemoryContext::AlreadyExists;
 
-        // TODO: Wasting some of the 4KB page, because a page table is only 1KB for ARM.
         // Allocate a new page table
         if (alloc->allocateLow(sizeof(ARMSecondTable), &addr) != Allocator::Success)
             return MemoryContext::OutOfMemory;
 
-        MemoryBlock::set(alloc->toVirtual(addr), 0, PAGESIZE); //sizeof(ARMSecondTable));
+        MemoryBlock::set(alloc->toVirtual(addr), 0, PAGESIZE);
 
         // Assign to the page directory. Do not assign permission flags (only for direct sections).
         m_tables[ DIRENTRY(virt) ] = addr | PAGE1_TABLE;
         cache.cleanData(&m_tables[DIRENTRY(virt)]);
         table = getSecondTable(virt, alloc);
     }
-    // TODO: (re)check for MemoryAccess ?
     return table->map(virt, phys, access);
 }
 
@@ -206,7 +204,6 @@ MemoryContext::Result ARMFirstTable::access(Address virt, Memory::Access *access
     if (!table)
         return MemoryContext::InvalidAddress;
     else
-    // TODO: we also need to look at the page directory flags? (not only of the tables)
         return table->access(virt, access);
 }
 

@@ -48,7 +48,6 @@ class IntController
      *
      * @param state State of the CPU on the moment the interrupt occurred.
      */
-    // TODO: this does not belong here???
     typedef void Handler(struct CPUState state);
 
     /**
@@ -64,7 +63,6 @@ class IntController
      *
      * @return Interrupt number base offset.
      */
-    // TODO: remove this function when IntController can serve hooks
     uint getBase();
 
     /**

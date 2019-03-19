@@ -28,14 +28,6 @@
 class MemoryContext;
 class IntelPIT;
 
-// TODO (needed for SMP startup). Move inside class as members.
-#define APIC_DEST(x) ((x) << 24)
-#define APIC_DEST_FIELD         0x00000
-#define APIC_DEST_LEVELTRIG     0x08000
-#define APIC_DEST_ASSERT        0x04000
-#define APIC_DEST_DM_INIT       0x00500
-#define APIC_DEST_DM_STARTUP    0x00600
-
 /**
  * Intel Advanced Programmable Interrupt Controller (APIC)
  */

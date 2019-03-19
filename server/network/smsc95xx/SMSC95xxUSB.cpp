@@ -23,6 +23,9 @@
 #include "SMSC95xx.h"
 #include "SMSC95xxUSB.h"
 
+#define SMSC9512_HS_USB_PKT_SIZE 512
+#define SMSC9512_DEFAULT_HS_BURST_CAP_SIZE (16 * 1024 + 5 * SMSC9512_HS_USB_PKT_SIZE)
+
 SMSC95xxUSB::SMSC95xxUSB(u8 deviceId,
                          const char *usbPath,
                          NetworkServer *server,
@@ -73,8 +76,6 @@ Error SMSC95xxUSB::initialize()
     a.addr[5] = 0x55;
     setMACAddress(a);
 
-#define SMSC9512_HS_USB_PKT_SIZE 512
-#define SMSC9512_DEFAULT_HS_BURST_CAP_SIZE (16 * 1024 + 5 * SMSC9512_HS_USB_PKT_SIZE)
 
     // Enable RX/TX bits on hardware
     write(HardwareConfig, read(HardwareConfig) | MultipleEther | BulkIn | BCE);
@@ -127,9 +128,8 @@ void SMSC95xxUSB::readFinished(FileSystemMessage *message)
     }
 
     // Extract packet
-    // USBMessage *usb = (USBMessage *) message->buffer;
-    // TODO: Offset field contains virtual address of input data buffer
-    u8 *data = (u8 *) message->offset; //usb->buffer;
+    // Offset field contains virtual address of input data buffer
+    u8 *data = (u8 *) message->offset;
     u32 receiveCmd = data[0] | data[1] << 8 | data[2] << 16 | data[3] << 24;
     Size frameLength = (receiveCmd & RxCommandFrameLength) >> 16;
 
@@ -148,10 +148,6 @@ void SMSC95xxUSB::readFinished(FileSystemMessage *message)
         // Release the packet buffer
         m_smsc->getReceiveQueue()->release(m_rxPacket);
         m_rxPacket = 0;
-
-        // TODO: this should not be done like this
-        // Trigger retry of all FileSystemRequests here.
-        // m_server->interruptHandler(0);
     }
 
     // Release USB transfer
@@ -209,10 +205,6 @@ void SMSC95xxUSB::writeFinished(FileSystemMessage *message)
 
     // Release USB transfer
     finishTransfer(message);
-
-    // TODO: this should not be done like this
-    // Trigger retry of all FileSystemRequests here.
-    // m_server->interruptHandler(0);
 
     // Continue with the next packet(s)
     writeStart();

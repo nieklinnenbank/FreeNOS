@@ -27,20 +27,18 @@
 extern C int kernel_main(CoreInfo *info)
 {
     // Initialize heap at 3MB offset
-    // TODO: fix this
     coreInfo.heapAddress = MegaByte(3);
-    coreInfo.heapSize = MegaByte(1);
+    coreInfo.heapSize    = MegaByte(1);
     Kernel::heap(coreInfo.heapAddress, coreInfo.heapSize);
 
     // Start kernel debug serial console
-    // TODO: can I re-use the user-land driver here somehow????
     if (info->coreId == 0)
     {
         IntelSerial *serial = new IntelSerial(0x3f8);
         serial->setMinimumLogLevel(Log::Notice);
     }
 
-    // TODO: put this in the boot.S, or maybe hide it in the support library? maybe a _run_main() or something.
+    // Run all constructors first
     constructors();
 
     // Create and run the kernel

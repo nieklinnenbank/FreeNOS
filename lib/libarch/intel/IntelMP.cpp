@@ -29,7 +29,6 @@ IntelMP::IntelMP()
     m_bios.map(MPAreaAddr, MPAreaSize);
     m_lastMemory.map(info.memorySize - MegaByte(1), MegaByte(1));
 
-    // TODO: avoid this. just pass a initialize(bool hardwareReset = true/false) instead
     m_apic.getIO().map(IntelAPIC::IOBase, PAGESIZE);
 }
 
@@ -87,11 +86,7 @@ IntelMP::Result IntelMP::boot(CoreInfo *info)
     DEBUG("booting core" << info->coreId << " at " <<
             (void *) info->memory.phys << " with kernel: " << info->kernelCommand);
 
-    // TODO: load the kernel, reserve memory, etc
-    // TODO: upper layer should have loaded the kernel in memory already.
-
     // Copy 16-bit realmode startup code
-    // TODO: place this in the kernel binary somewhere instead?
     VMCopy(SELF, API::Write, (Address) bootEntry16, MPEntryAddr, PAGESIZE);
 
     // Copy the CoreInfo structure
@@ -102,7 +97,6 @@ IntelMP::Result IntelMP::boot(CoreInfo *info)
         return IOError;
 
     // Wait until the core raises the 'booted' flag in CoreInfo
-    // TODO: set somekind of limit to wait???
     while (1)
     {
         CoreInfo check;

@@ -543,11 +543,10 @@ Size String::setUnsigned(ulong number, Number::Base base, char *string, bool sig
     int remainder, divisor = 10;
     Size written = 0;
 
-    // TODO: no actual bounds checking in this function
     // If needed, make sure enough allocated space is available.
     if (!string)
         reserve(STRING_DEFAULT_SIZE - 1);
-    
+
     // Set target buffer
     p = string ? string : m_string;
 

@@ -80,8 +80,6 @@ MemoryChannel::Result MemoryChannel::read(void *buffer)
     return Success;
 }
 
-// TODO: optimization for performance: write multiple messages in one shot.
-
 MemoryChannel::Result MemoryChannel::write(void *buffer)
 {
     RingHead reader;

@@ -52,29 +52,7 @@ MemoryContext::Result MemoryContext::mapRange(Memory::Range *range)
                      range->access)) != Success)
             break;
     }
-
-    if (r != Success)
-    {
-        // TODO: unset the physical pages...
-    }
     return r;
-}
-
-MemoryContext::Result MemoryContext::mapRegion(MemoryMap::Region region,
-                                               Size size,
-                                               Memory::Access access)
-{
-    Memory::Range range;
-    Result r;
-
-    if ((r = findFree(size, region, &range.virt)) != Success)
-        return r;
-
-    range.phys   = ZERO;
-    range.size   = size;
-    range.access = access;
-
-    return mapRange(&range);
 }
 
 MemoryContext::Result MemoryContext::unmapRange(Memory::Range *range)
@@ -130,7 +108,6 @@ MemoryContext::Result MemoryContext::findFree(Size size, MemoryMap::Region regio
 
     while (addr < r.virt+r.size && currentSize < size)
     {
-        // TODO: check for success instead. error codes may change.
         if (lookup(addr, &tmp) == InvalidAddress)
         {
             currentSize += PAGESIZE;

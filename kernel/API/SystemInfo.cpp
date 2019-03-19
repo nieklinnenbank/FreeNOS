@@ -28,8 +28,6 @@ API::Result SystemInfoHandler(SystemInformation *info)
 
     DEBUG("");
 
-    // TODO: Verify memory access
-
     // Fill in our current information
     info->version          = VERSIONCODE;
     info->memorySize       = memory->size();

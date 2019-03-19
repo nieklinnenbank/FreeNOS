@@ -66,7 +66,7 @@ class Broadcom2836
     /**
      * Constructor
      */
-    Broadcom2836();
+    Broadcom2836(Size coreId);
 
     /**
      * Initialize the Controller.
@@ -78,23 +78,24 @@ class Broadcom2836
     /**
      * Set Core Timer interrupt
      *
-     * @param coreId Core number
      * @param timer Timer to set
      * @param enable True to enable the timer interrupt
      * @return Result code
      */
-    Result setCoreTimerIrq(Size coreId, Timer timer, bool enable);
+    Result setCoreTimerIrq(Timer timer, bool enable);
 
     /**
      * Get core timer interrupt status
      *
-     * @param coreId Core number
      * @param timer Timer to check for interrupt status
      * @return True if timer IRQ is raised, false otherwise.
      */
-    bool getCoreTimerIrqStatus(Size coreId, Timer timer);
+    bool getCoreTimerIrqStatus(Timer timer);
 
   private:
+
+    /** Core identifier */
+    Size m_coreId;
 
     /** I/O instance */
     ARMIO m_io;

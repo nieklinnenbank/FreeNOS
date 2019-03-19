@@ -24,7 +24,6 @@
 ARMProcess::ARMProcess(ProcessID id, Address entry, bool privileged, const MemoryMap &map)
     : Process(id, entry, privileged, map)
 {
-    // TODO: set some members
 }
 
 Process::Result ARMProcess::initialize()

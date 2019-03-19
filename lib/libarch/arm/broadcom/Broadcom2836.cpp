@@ -17,11 +17,9 @@
 
 #include "Broadcom2836.h"
 
-// TODO: pass coreId as parameter instead?
-// TODO: missing const keywords here...
-
-Broadcom2836::Broadcom2836()
+Broadcom2836::Broadcom2836(Size coreId)
 {
+    m_coreId = coreId;
     m_io.setBase(IOBase);
 }
 
@@ -30,11 +28,10 @@ Broadcom2836::Result Broadcom2836::initialize()
     return Success;
 }
 
-Broadcom2836::Result Broadcom2836::setCoreTimerIrq(Size coreId,
-                                                   Broadcom2836::Timer timer,
+Broadcom2836::Result Broadcom2836::setCoreTimerIrq(Broadcom2836::Timer timer,
                                                    bool enable)
 {
-    u32 reg = CoreTimerRegister + (coreId * sizeof(u32));
+    u32 reg = CoreTimerRegister + (m_coreId * sizeof(u32));
 
     switch (timer)
     {
@@ -52,10 +49,10 @@ Broadcom2836::Result Broadcom2836::setCoreTimerIrq(Size coreId,
     return NotFound;
 }
 
-bool Broadcom2836::getCoreTimerIrqStatus(Size coreId, Broadcom2836::Timer timer)
+bool Broadcom2836::getCoreTimerIrqStatus(Broadcom2836::Timer timer)
 {
     if (timer == PhysicalTimer1)
-        return (m_io.read(CoreIrqRegister + (coreId * sizeof(u32))) & (1 << 0)) > 0;
+        return (m_io.read(CoreIrqRegister + (m_coreId * sizeof(u32))) & (1 << 0)) > 0;
     else
         return false;
 }

@@ -58,7 +58,6 @@ ARMPaging::ARMPaging(MemoryMap *map, SplitAllocator *alloc)
 
 ARMPaging::~ARMPaging()
 {
-    // TODO: release physical memory for this context?
 }
 
 #ifdef ARMV6

@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// TODO: it may be possible to implement power management using a /power DeviceServer.
-
 #include <Log.h>
 #include "BroadcomPower.h"
 

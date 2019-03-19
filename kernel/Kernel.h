@@ -41,9 +41,6 @@ struct CPUState;
  * @param param Optional parameter for the handler. 
  */
 
-// TODO: move this to libarch's IntController? The IntController
-// could take care of invocing a certain ISR when interrupt is raised.
-
 typedef void InterruptHandler(struct CPUState *state, ulong param);
     
 /**

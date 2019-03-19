@@ -35,7 +35,6 @@ NetworkClient::~NetworkClient()
 
 NetworkClient::Result NetworkClient::initialize()
 {
-    // TODO: move this functionality to libfs's FileSystemClient
     // Get a list of mounts
     refreshMounts(0);
     FileSystemMount *mounts = ::getMounts();

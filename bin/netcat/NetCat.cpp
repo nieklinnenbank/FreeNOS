@@ -128,7 +128,6 @@ NetCat::Result NetCat::printLine()
     return Success;
 }
 
-// TODO: replace with fgets() or something from libfs
 NetCat::Result NetCat::readLine()
 {
     DEBUG("");

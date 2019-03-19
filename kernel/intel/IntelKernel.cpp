@@ -72,8 +72,6 @@ IntelKernel::IntelKernel(CoreInfo *info)
         m_pit.setFrequency(250);
 
         // Configure the master and slave PICs
-        // TODO: the IntelKernel should also have a method ::initialize(),
-        //       such that it can capture the result of these functions.
         m_pic.initialize();
         m_intControl = &m_pic;
     }
@@ -84,12 +82,8 @@ IntelKernel::IntelKernel(CoreInfo *info)
     if (m_apic.initialize() == Timer::Success)
     {
         NOTICE("Using APIC timer");
-        // TODO: do we need to explicityly disable the PICs?
-        // TODO: #warning the APIC is not used as IntController yet
-        // m_intControl = &m_apic;
 
         // Enable APIC timer interrupt
-        //enableIRQ(m_apic.getTimerInterrupt(), true);
         hookIntVector(m_apic.getInterrupt(), clocktick, 0);
 
         m_timer = &m_apic;
@@ -136,7 +130,6 @@ IntelKernel::IntelKernel(CoreInfo *info)
     ltr(KERNEL_TSS_SEL);
 }
 
-// TODO: this is a generic function?
 void IntelKernel::exception(CPUState *state, ulong param)
 {
     IntelCore core;
@@ -179,10 +172,9 @@ void IntelKernel::clocktick(CPUState *state, ulong param)
     IntelKernel *kern = (IntelKernel *) Kernel::instance;
     Size irq = kern->m_timer->getInterrupt();
 
-    // TODO: #warning not working for APIC timer, because the timer IRQ is out of range on the PIC
     kern->enableIRQ(irq, true);
 
-    // TODO: #warning TODO: tmp hack for APIC timer end-of-interrupt
+    // Ensure the APIC timer gets end-of-interrupt
     if (irq == kern->m_apic.getInterrupt())
         kern->m_apic.clear(irq);
 

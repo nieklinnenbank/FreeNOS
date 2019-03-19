@@ -137,7 +137,6 @@ NetPing::Result NetPing::arpPing(const char *dev,
         return IOError;
     }
     // Receive ARP reply, if any
-    // TODO: set a timeout on this call
     if (::read(sock, &ethAddr, sizeof(ethAddr)) < 0)
     {
         ERROR("failed to receive ARP response: " << strerror(errno));

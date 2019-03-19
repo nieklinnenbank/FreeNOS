@@ -50,11 +50,10 @@ Size PageAllocator::available()
 Allocator::Result PageAllocator::allocate(Size *size, Address *addr, Size align)
 {
     Memory::Range range;
-    
+
     // Set return address
     *addr = m_base + m_allocated;
 
-    // TODO: sanity checks
     Size bytes  = *size > PAGEALLOC_MINIMUM ?
                   *size : PAGEALLOC_MINIMUM;
 
@@ -66,9 +65,6 @@ Allocator::Result PageAllocator::allocate(Size *size, Address *addr, Size align)
     range.access = Memory::User | Memory::Readable | Memory::Writable;
     range.virt   = m_base + m_allocated;
     range.phys   = ZERO;
-
-    // TODO: #warning do we need to pass the region here too?
-    //range.region = Memory::UserPrivate;
     VMCtl(SELF, Map, &range);
 
     // Clear the pages
@@ -84,6 +80,5 @@ Allocator::Result PageAllocator::allocate(Size *size, Address *addr, Size align)
 
 Allocator::Result PageAllocator::release(Address addr)
 {
-    // TODO: let the heap shrink if possible
     return InvalidAddress;
 }

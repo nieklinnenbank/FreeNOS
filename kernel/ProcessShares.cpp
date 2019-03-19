@@ -186,8 +186,6 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
         delete remoteShare;
         return OutOfMemory;
     }
-    // TODO: for MemoryChannel: update access permissions, ro/rw for data/feedback
-
     // insert into shares list
     m_shares.insert(*localShare);
     instance.m_shares.insert(*remoteShare);
@@ -207,11 +205,6 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
 
 ProcessShares::Result ProcessShares::removeShares(ProcessID pid)
 {
-    // TODO: remove all shares for the given pid
-    // TODO: in case the share exists in the remote share AND in our share,
-    //       just remove it here, mark it detached in the remote share.
-    // TODO: in case the share exists only in our side (detached), unmap and release all memory
-    // TODO: call this function from VMShare() and from IPCServer (when a ProcessTerminated message comes in)
     Size size = m_shares.size();
     MemoryShare *s = 0;
 

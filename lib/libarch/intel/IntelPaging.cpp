@@ -71,13 +71,10 @@ IntelPaging::IntelPaging(MemoryMap *map, Address pageDirectory, SplitAllocator *
 
 IntelPaging::~IntelPaging()
 {
-    // TODO: release physical memory for this context?
 }
 
 MemoryContext::Result IntelPaging::activate()
 {
-    // TODO: perhaps activate paging here, and perform kernel mapping (move it from IntelBoot.S)
-    // That way it is also more similar to the ARM implementation.
     IntelCore core;
     core.writeCR3(m_pageDirectoryAddr);
     m_current = this;

@@ -81,7 +81,6 @@ template <class Base, class MsgType> class ChannelServer
     ChannelServer(Base *inst, Size num = 32)
         : m_sendReply(true), m_instance(inst)
     {
-        // TODO: debug
         m_self = ProcessCtl(SELF, GetPID, 0);
 
         m_client   = ChannelClient::instance;
@@ -156,8 +155,7 @@ template <class Base, class MsgType> class ChannelServer
             Error r = ProcessCtl(SELF, EnterSleep, expiry, (Address) &m_time);
             DEBUG("EnterSleep returned: " << (int)r);
 
-            // TODO: Reset sleep timeout. Put it in Timer(::Info) class.
-            // TODO: or let the kernel return whether the timeout was reached.
+            // Check for sleep timeout
             if (m_expiry.frequency && m_expiry.ticks < m_time.ticks)
             {
                 m_expiry.frequency = 0;
@@ -206,7 +204,6 @@ template <class Base, class MsgType> class ChannelServer
     {
         DEBUG("msec = " << msec);
 
-        // TODO: Note that this gives only imprecise timing
         Size msecPerTick = 1000 / m_time.frequency;
         m_expiry.frequency = m_time.frequency;
         m_expiry.ticks     = m_time.ticks + ((msec / msecPerTick) + 1);
@@ -259,7 +256,7 @@ template <class Base, class MsgType> class ChannelServer
         while (m_kernelEvent.read(&event) == Channel::Success)
         {
             DEBUG(m_self << ": got kernel event: " << (int) event.type);
-    
+
             switch (event.type)
             {
                 case ShareCreated:
@@ -283,9 +280,6 @@ template <class Base, class MsgType> class ChannelServer
                     DEBUG(m_self << ": process terminated: PID " << event.number);
                     m_registry->unregisterConsumer(event.number);
                     m_registry->unregisterProducer(event.number);
-    
-                    // TODO: Do any implementation defined cleanup for this PID
-                    // m_instance->unregisterProcess(event.number)
 
                     // cleanup the VMShare area now for that process
                     VMShare(event.number, API::Delete, ZERO);

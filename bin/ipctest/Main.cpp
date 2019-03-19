@@ -84,7 +84,7 @@ int main(int argc, char **argv)
     }
     printf("%s: write finished\n", argv[0]);
     printf("%s: receiving reply\n", argv[0]);
-    // TODO: make the wakeup a counter?
+
     ProcessCtl(pid, Resume, 0);
 
     if (client.syncReceiveFrom(&msg, pid) != ChannelClient::Success)

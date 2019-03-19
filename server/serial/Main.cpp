@@ -70,7 +70,7 @@ int main(int argc, char **argv)
     server.registerDevice(dev, "/serial0/io");
     server.registerInterrupt(dev, uarts[0].irq);
 #ifdef BCM2835
-    // hack for ARM: it does not have IRQ_REQ(), so just take 0 for all IRQs
+    /* For ARM: it does not have IRQ_REQ(), so just take 0 for all IRQs */
     server.registerInterrupt(dev, 0);
 #endif
 

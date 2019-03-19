@@ -141,8 +141,6 @@ class Log : public Singleton<Log>
  * @{
  */
 
-// TODO: #warning move inside the Log class plz.
-
 Log & operator << (Log &log, const char *str);
 
 Log & operator << (Log &log, int number);

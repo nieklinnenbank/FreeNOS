@@ -44,7 +44,6 @@ IntelACPI::Result IntelACPI::initialize()
             break;
         }
     }
-    // TODO: validate checksum
     // Check if the ACPI tables are found
     if (!rsd1)
         return NotFound;

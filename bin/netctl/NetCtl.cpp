@@ -34,7 +34,6 @@ NetCtl::NetCtl(int argc, char **argv)
     : POSIXApplication(argc, argv)
 {
     m_parser.setDescription("control network devices");
-    //m_parser.registerPositional("DEVICE", "device name of network adapter");
     m_parser.registerPositional("ARGS", "optional key=value arguments", 0);
 }
 
@@ -53,7 +52,6 @@ NetCtl::Result NetCtl::exec()
     DEBUG("");
 
     // Make a list of network devices
-    // TODO: move this functionality to libfs's FileSystemClient
     // Get a list of mounts
     refreshMounts(0);
     FileSystemMount *mounts = ::getMounts();
@@ -79,10 +77,6 @@ NetCtl::Result NetCtl::showDevice(const char *deviceName)
     ether << "/network/" << deviceName << "/ethernet/address";
     ipv4  << "/network/" << deviceName << "/ipv4/address";
     out   << deviceName << " ipv4 ";
-
-    // TODO: let the libfs provide some nicer abstractions for quickly reading a String
-    // from a file, maybe thru FileSystemClient or FileReader
-    //
 
     // read the ipv4/address file
     int fd = open(*ipv4, O_RDONLY);

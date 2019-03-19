@@ -85,7 +85,7 @@ class SynopsisController : public USBController
         HostChannelMask   = 0x418,
         HostFrameList     = 0x41c,
         HostPortControl   = 0x440,
-        HostChannel       = 0x500, /* TODO: this is an array of channel registers.. */
+        HostChannel       = 0x500,
         Power             = 0xe00
     };
 

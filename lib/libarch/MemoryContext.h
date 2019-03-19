@@ -121,21 +121,6 @@ class MemoryContext
     virtual Result mapRange(Memory::Range *range);
 
     /**
-     * Map virtual memory in a region.
-     *
-     * This function will allocate a certain amount
-     * of pages in the physical memory allocator and map
-     * them in unused virtual memory inside the given region.
-     *
-     * @param region Memory region to map in.
-     * @param size Number of bytes to map in the region.
-     * @return Result code
-     */
-    // TODO: should regions also define its (maximum) access permissions?
-    // TODO: this function is unused!!! why????
-    virtual Result mapRegion(MemoryMap::Region region, Size size, Memory::Access access);
-
-    /**
      * Unmaps a range of virtual memory.
      *
      * @param range Range object describing the range of virtual addresses.

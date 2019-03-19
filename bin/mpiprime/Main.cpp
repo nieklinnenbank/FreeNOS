@@ -201,7 +201,6 @@ int main(int argc, char **argv)
     gettimeofday(&t1, &tz);
 
     // Only the master reports the results.
-    // TODO: output is VERY slow to console, because it is so large?
     if (rank == 0 && argc >= 3 && strcmp(argv[2], "--stdout") == 0)
     {
         // Print the result
