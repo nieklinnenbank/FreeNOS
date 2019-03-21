@@ -71,7 +71,7 @@ int vsnprintf(char *buffer, unsigned int size, const char *fmt, va_list args)
         
                 /* Hexadecimal. */
                 case 'x':
-                    itoa(buf, 16, va_arg(args, int));
+                    s.setUnsigned(va_arg(args, unsigned), Number::Hex, buf);
                     ptr = buf;
                     goto string;
         
