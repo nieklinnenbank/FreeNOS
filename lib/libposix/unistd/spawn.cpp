@@ -36,22 +36,38 @@ int spawn(Address program, Size programSize, const char *command)
 
     // Attempt to read executable format
     if (ExecutableFormat::find((u8 *) program, programSize, &fmt) != ExecutableFormat::Success)
+    {
+        errno = ENOEXEC;
         return -1;
+    }
 
-    // Retrieve memory regions
-    if (fmt->regions(regions, &numRegions) != ExecutableFormat::Success)
-        return -1;
-
+    // Find entry point
     if (fmt->entry(&entry) != ExecutableFormat::Success)
+    {
+        delete fmt;
+        errno = ENOEXEC;
         return -1;
+    }
 
     // Create new process
     pid = ProcessCtl(ANY, Spawn, entry);
     if (pid == (pid_t) -1)
     {
+        delete fmt;
         errno = EIO;
         return -1;
     }
+
+    // Retrieve memory regions
+    if (fmt->regions(regions, &numRegions) != ExecutableFormat::Success)
+    {
+        delete fmt;
+        errno = ENOEXEC;
+        return -1;
+    }
+    // Release buffers
+    delete fmt;
+
     // Map program regions into virtual memory of the new process
     for (Size i = 0; i < numRegions; i++)
     {
@@ -73,6 +89,9 @@ int spawn(Address program, Size programSize, const char *command)
         // Copy bytes
         VMCopy(pid, API::Write, (Address) regions[i].data,
                regions[i].virt, regions[i].size);
+
+        // Release data buffer
+        delete regions[i].data;
     }
     /* Create mapping for command-line arguments. */
     range = map.range(MemoryMap::UserArgs);
