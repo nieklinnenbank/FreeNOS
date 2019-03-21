@@ -116,18 +116,15 @@ API::Result ProcessCtlHandler(ProcessID procID,
         timer->getCurrent((Timer::Info *) addr);
         break;
 
-    /*    
     case WaitTimer:
-        procs->current()->setSleepTimer((const Timer::Info *)addr); // TODO: check access...
+        // Process is only allowed to continue execution after the sleep timer expires
+        procs->current()->setSleepTimer((const Timer::Info *)addr);
         procs->current()->setState(Process::Sleeping);
         procs->schedule();
-        // TODO: set a Timer::Info field for the process. Then when scheduling, the process
-        // will only be allowed to run until after the Timer::Info time has arrived (for sleep).
         break;
-     */
 
     case EnterSleep:
-        // only sleeps the process if no pending wakeups
+        // Only sleeps the process if no pending wakeups
         if (procs->current()->sleep((Timer::Info *)addr) == Process::Success)
             procs->schedule();
 
