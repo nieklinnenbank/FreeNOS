@@ -52,7 +52,7 @@ Error Terminal::initialize()
 {
     teken_pos_t winsz;
 
-    // TODO: hack
+    /* Close standard I/O */
     ::close(0);
     ::close(1);
 
@@ -75,15 +75,6 @@ Error Terminal::initialize()
 	exit(EXIT_FAILURE);
     }
 
-    // TODO: #warning TODO: Hack the file descriptors table...
-    FileDescriptor *files = getFiles();
-    files[0].open = true;
-    strlcpy(files[0].path, inputFile, PATHLEN); /* keyboard0 */
-    files[0].mount = 6;
-    files[1].open = true;
-    strlcpy(files[1].path, outputFile, PATHLEN); /* vga0 */
-    files[1].mount = 7;
-
     /* Fill in function pointers. */
     funcs.tf_bell    = (tf_bell_t *)    bell;
     funcs.tf_cursor  = (tf_cursor_t *)  cursor;
@@ -105,7 +96,6 @@ Error Terminal::initialize()
     teken_set_winsize(&state, &winsz);
     
     /* Print banners. */
-    // TODO: #warning fix this. should not be done like this.
     FileSystemMessage msg;
     msg.type = ChannelMessage::Request;
     msg.size = 512;
