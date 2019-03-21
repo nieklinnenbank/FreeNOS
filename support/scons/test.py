@@ -62,8 +62,11 @@ def runTester(target, source, env):
     import pickle
     import cPickle
 
+    cmd = str(env['TESTCMD'])
+    cmd = env.subst(cmd)
+
     # Launch process
-    proc = subprocess.Popen(shlex.split(env['TESTCMD']), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+    proc = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
 
     # Launch a timeout process which will send a SIGTERM
     # to the process after a certain amount of time
@@ -118,7 +121,7 @@ def AutoTester(env, **kw):
 
     # Register SCons builder which always needs to run
     for target,action in kw.items():
-        env.Append(TESTCMD = action)
+        env.Append(TESTCMD = str(action))
         env.AlwaysBuild(env.Alias(target, [], runTester))
 
 #
