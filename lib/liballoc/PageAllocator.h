@@ -46,13 +46,6 @@ class PageAllocator : public Allocator
     PageAllocator(Address start, Size size);
 
     /**
-     * Copy constructor.
-     *
-     * @param p PageAllocator instance pointer.
-     */
-    PageAllocator(PageAllocator *p);
-
-    /**
      * Get base address.
      *
      * Returns the first address of the allocated memory region.

@@ -97,30 +97,26 @@ void runDestructors()
 
 void setupHeap()
 {
-    Allocator *parent;
-    PoolAllocator *pool;
-    Address heapAddr;
-    Size parentSize;
+    PageAllocator *pageAlloc;
+    PoolAllocator *poolAlloc;
     Arch::MemoryMap map;
-    PageAllocator alloc( map.range(MemoryMap::UserHeap).virt,
-                         map.range(MemoryMap::UserHeap).size );
+    Memory::Range heap = map.range(MemoryMap::UserHeap);
 
-    // Pre-allocate 4 pages
-    Size sz = PAGESIZE * 4;
-    Address addr;
-    alloc.allocate(&sz, &addr);
+    // Allocate one page to store the allocators themselves
+    Memory::Range range;
+    range.size   = PAGESIZE;
+    range.access = Memory::User | Memory::Readable | Memory::Writable;
+    range.virt   = heap.virt;
+    range.phys   = ZERO;
+    VMCtl(SELF, Map, &range);
 
     // Allocate instance copy on vm pages itself
-    heapAddr   = alloc.base();
-    parent     = new (heapAddr) PageAllocator(&alloc);
-    parentSize = sizeof(PageAllocator);
+    pageAlloc = new (heap.virt) PageAllocator(heap.virt, heap.size);
+    poolAlloc = new (heap.virt + sizeof(PageAllocator)) PoolAllocator();
+    poolAlloc->setParent(pageAlloc);
 
-    // Make a pool
-    pool = new (heapAddr + parentSize) PoolAllocator();
-    pool->setParent(parent);
-    
     // Set default allocator
-    Allocator::setDefault(pool);
+    Allocator::setDefault(poolAlloc);
 }
 
 void setupRandomizer()

@@ -22,14 +22,7 @@ PageAllocator::PageAllocator(Address base, Size size)
 {
     m_base      = base;
     m_size      = size;
-    m_allocated = 0;
-}
-
-PageAllocator::PageAllocator(PageAllocator *p)
-{
-    m_base = p->m_base;
-    m_size = p->m_size;
-    m_allocated = p->m_allocated;
+    m_allocated = PAGESIZE;
 }
 
 Address PageAllocator::base()
