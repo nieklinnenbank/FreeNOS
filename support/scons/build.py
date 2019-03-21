@@ -119,9 +119,14 @@ host.Append(QEMUFLAGS = '')
 
 target = host.Clone(tools    = ["default", "bootimage", "iso", "binary", "linn", "phony", "test", "compress"],
                     toolpath = ["support/scons"])
+ 
+# Configuration build variables may come from, in order of priority:
+#   Command-line arguments, OS environment or .conf file
+args = os.environ.copy()
+args.update(ARGUMENTS)
 
 # Apply configuration
-config.initialize(target, host, ARGUMENTS)
+config.initialize(target, host, args)
 config.write_header(target)
 config.write_header(host)
 

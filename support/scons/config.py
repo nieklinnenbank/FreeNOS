@@ -15,26 +15,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import os
 import os.path
 import shutil
 import datetime
 import platform
 from SCons.Script import *
 from autoconf import *
-
-# Then a command:
-# scons defconfig SUBCONF=raspberry_model_bplus ARCH=arm SYSTEM=rpi
-# which copies raspberry_model_bplus.conf to build.conf
-# scons defconfig ARCH=arm SYSTEM=rpi
-# which copies config/arm/rpi/build.conf to build.conf
-#
-# Or if only for the host environment:
-# scons HOST:CC=gcc-4.4 HOST:CCFLAGS='-Wall'
-#
-# Any driver or server can then just do:
-# #include <FreeNOS/Config.h>
-# #ifdef MY_SETTING
-# #endif
 
 class ConfDict(dict):
 
@@ -46,12 +33,12 @@ class ConfDict(dict):
         self.locked = val
         self.cmdPrefix = prefix
 
-    #
-    # This function overrides assignment
-    # to ensure variables from the command line are taken
-    # instead of from the .conf files.
-    #
     def __setitem__(self, name, value):
+        """
+        This function overrides variable assignment
+        Ensures variables from the command line are taken first
+        instead of from the .conf files.
+        """
         global cmd_items
 
         if self.locked and (self.cmdPrefix + name) in cmd_items:
@@ -82,6 +69,7 @@ def initialize(target, host, params):
     for key in params:
 	if not key.startswith('HOST:'):
 	    set_value(local_dict, key, params[key])
+
     local_dict.lock(True)
     apply_file('build.conf', target)
 
@@ -100,7 +88,7 @@ def initialize(target, host, params):
     set_default_variables(host)
 
 def escape(obj):
-    return str(obj).replace('"', '\\"')
+    return str(obj).replace('"', '\\"').strip()
 
 def write_header(env, filename = None):
 
