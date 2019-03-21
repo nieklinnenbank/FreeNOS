@@ -141,24 +141,27 @@ char * Shell::getInput()
     {
         /* Read a character. */
 	read(0, line + total, 1);
-	
+
 	/* Process character. */
 	switch (line[total])
 	{
+            /* Enter */
 	    case '\r':
 	    case '\n':
 	    	printf("\r\n");
 		line[total] = ZERO;
 		return line;
 
+            /* Backspace */
 	    case '\b':
+            case 0x7F:
 		if (total > 0)
 		{
 		    total--;
 		    printf("\b \b");
 		}
 		break;
-	    
+
 	    default:
 		printf("%c", line[total]);
 		total++;
