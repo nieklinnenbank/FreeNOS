@@ -127,14 +127,24 @@ config.write_header(host)
 
 # Enables verbose compilation command output.
 if not target['VERBOSE']:
-    target['CXXCOMSTR']    = host['CXXCOMSTR']    = "  CXX  $TARGET"
-    target['CCCOMSTR']     = host['CCCOMSTR']     = "  CC   $TARGET"
-    target['ASCOMSTR']     = host['ASCOMSTR']     = "  AS   $TARGET"
-    target['ASPPCOMSTR']   = host['ASPPCOMSTR']   = "  AS   $TARGET"
-    target['ARCOMSTR']     = host['ARCOMSTR']     = "  AR   $TARGET"
-    target['RANLIBCOMSTR'] = host['RANLIBCOMSTR'] = "  LIB  $TARGET"
-    target['LINKCOMSTR']   = host['LINKCOMSTR']   = "  LD   $TARGET"
-    target['COPYSTR']      = host['COPYSTR']      = "  COPY $SOURCE => $TARGET"
+    target['CXXCOMSTR']    = "  CXX  $TARGET"
+    target['CCCOMSTR']     = "  CC   $TARGET"
+    target['ASCOMSTR']     = "  AS   $TARGET"
+    target['ASPPCOMSTR']   = "  AS   $TARGET"
+    target['ARCOMSTR']     = "  AR   $TARGET"
+    target['RANLIBCOMSTR'] = "  LIB  $TARGET"
+    target['LINKCOMSTR']   = "  LD   $TARGET"
+    target['COPYSTR']      = "  COPY $SOURCE => $TARGET"
+
+if not host['VERBOSE']:
+    host['CXXCOMSTR']    = "  HOSTCXX  $TARGET"
+    host['CCCOMSTR']     = "  HOSTCC   $TARGET"
+    host['ASCOMSTR']     = "  HOSTAS   $TARGET"
+    host['ASPPCOMSTR']   = "  HOSTAS   $TARGET"
+    host['ARCOMSTR']     = "  HOSTAR   $TARGET"
+    host['RANLIBCOMSTR'] = "  HOSTLIB  $TARGET"
+    host['LINKCOMSTR']   = "  HOSTLD   $TARGET"
+    host['COPYSTR']      = "  COPY $SOURCE => $TARGET"
 
 # Verify the configured CFLAGS.
 if not GetOption('clean'):
