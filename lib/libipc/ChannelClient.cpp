@@ -47,7 +47,7 @@ ChannelClient::Result ChannelClient::initialize()
     return Success;
 }
 
-ChannelClient::Result ChannelClient::connect(ProcessID pid)
+ChannelClient::Result ChannelClient::connect(ProcessID pid, Size messageSize)
 {
     Address prodAddr, consAddr;
     SystemInformation info;
@@ -58,7 +58,7 @@ ChannelClient::Result ChannelClient::connect(ProcessID pid)
     {
         return OutOfMemory;
     }
-    cons->setMessageSize(sizeof(FileSystemMessage));
+    cons->setMessageSize(messageSize);
     cons->setMode(Channel::Consumer);
 
     // Allocate producer
@@ -68,7 +68,7 @@ ChannelClient::Result ChannelClient::connect(ProcessID pid)
         delete cons;
         return OutOfMemory;
     }
-    prod->setMessageSize(sizeof(FileSystemMessage));
+    prod->setMessageSize(messageSize);
     prod->setMode(Channel::Producer);
 
     // Call VMShare to create shared memory mapping for MemoryChannel.
@@ -162,7 +162,7 @@ ChannelClient::Result ChannelClient::sendRequest(ProcessID pid,
     if (!req || req->active)
     {
         req = new Request;
-        req->message = new FileSystemMessage;
+        req->message = (ChannelMessage *) new u8[ch->getMessageSize()];
         identifier   = m_requests.insert(*req);
     }
     // Fill request object

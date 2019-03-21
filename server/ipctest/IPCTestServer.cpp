@@ -15,15 +15,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <KernelLog.h>
-#include <stdlib.h>
 #include "IPCTestServer.h"
 
-int main(int argc, char **argv)
+IPCTestServer::IPCTestServer()
+    : ChannelServer<IPCTestServer, IPCTestMessage>(this)
 {
-    KernelLog log;
-    log.setMinimumLogLevel(Log::Notice);
+    NOTICE("");
 
-    IPCTestServer server;
-    return server.run();
+    // Register message handlers
+    addIPCHandler(TestActionA, &IPCTestServer::testActionAHandler);
+    addIPCHandler(TestActionB, &IPCTestServer::testActionBHandler);
+}
+
+IPCTestServer::~IPCTestServer()
+{
+}
+
+void IPCTestServer::testActionAHandler(IPCTestMessage *msg)
+{
+    NOTICE("data: " << (void *) msg->data);
+    msg->data = 0xaaaaaaaa;
+}
+
+void IPCTestServer::testActionBHandler(IPCTestMessage *msg)
+{
+    NOTICE("data: " << (void *) msg->data);
+    msg->data = 0xbbbbbbbb;
 }

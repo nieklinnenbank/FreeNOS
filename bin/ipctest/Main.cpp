@@ -20,10 +20,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <FileSystemMessage.h>
+#include <IPCTestMessage.h>
 #include <MemoryChannel.h>
 #include <ChannelClient.h>
-#include <ChannelRegistry.h>
+
+#define IPCTESTSERVER_CMD "/server/ipctest/server"
 
 char cmd[PAGESIZE];
 
@@ -32,10 +33,11 @@ int main(int argc, char **argv)
     ProcessID pid = 0;
     ProcessInfo info;
     Arch::MemoryMap map;
+    IPCTestMessage msg;
+    ChannelClient::Result r;
     Memory::Range range = map.range(MemoryMap::UserArgs);
 
-    // Find the PID of ipctest server
-    // Loop processes
+    /* Find the PID of ipctest server. Loop processes */
     for (uint i = 0; i < MAX_PROCS; i++)
     {
         // Request kernel's process information
@@ -44,54 +46,53 @@ int main(int argc, char **argv)
             // Get the command
             VMCopy(i, API::Read, (Address) cmd, range.virt, PAGESIZE);
 
-            if (strcmp(cmd, "/server/ipctest/server") == 0)
+            if (strncmp(cmd, IPCTESTSERVER_CMD, strlen(IPCTESTSERVER_CMD)) == 0)
             {
                 pid = i;
                 break;
             }
         }
     }
-
+    /* Did we find the IPCTestServer process? */
     if (!pid)
     {
         printf("%s: failed to find PID for ipctest server\n", argv[0]);
-        return 1;
+        return EXIT_FAILURE;
     }
     printf("%s: found ipctest server at PID %d\n", argv[0], pid);
 
-    ChannelRegistry reg;
-    ChannelClient client;
-    client.setRegistry(&reg);
-
-    if (client.connect(pid) != ChannelClient::Success)
+    /* Connect first, to ensure message size matches */
+    if ((r = ChannelClient::instance->connect(pid, sizeof(msg))) != ChannelClient::Success)
     {
-        printf("%s: failed to connect to PID %d\n", argv[0], pid);
-        return 1;
+        printf("%s: failed to connect to ipctest server: error %d\n",
+                argv[0], (int) r);
+        return EXIT_FAILURE;
     }
-    printf("%s: connected to PID %d\n", argv[0], pid);
 
-    FileSystemMessage msg;
+    /* Prepare message */
+    msg.action = TestActionB;
+    msg.data   = 0x12345678;
+    printf("%s: sending message with data = %x\n", argv[0], msg.data);
 
-    printf("%s: wakeup ipctest server..\n", argv[0]);
-    ProcessCtl(pid, Resume, 0);
-
-    msg.offset = 0x12345678;
-    printf("%s: writing message..\n", argv[0]);
-    if (client.syncSendTo(&msg, pid) != ChannelClient::Success)
+    /* Send message */
+    if ((r = ChannelClient::instance->syncSendTo(&msg, pid)) != ChannelClient::Success)
     {
-        printf("%s: failed to send message to PID %d\n", argv[0], pid);
-        return 1;
+        printf("%s: failed to send message to PID %d: error %d\n",
+                argv[0], pid, (int) r);
+        return EXIT_FAILURE;
     }
-    printf("%s: write finished\n", argv[0]);
+    printf("%s: send finished\n", argv[0]);
     printf("%s: receiving reply\n", argv[0]);
 
-    ProcessCtl(pid, Resume, 0);
-
-    if (client.syncReceiveFrom(&msg, pid) != ChannelClient::Success)
+    /* Receive reply from server */
+    if ((r = ChannelClient::instance->syncReceiveFrom(&msg, pid)) != ChannelClient::Success)
     {
-        printf("%s: failed to receive message from PID %d\n", argv[0], pid);
-        return 1;
+        printf("%s: failed to receive message from PID %d: error %d\n",
+                argv[0], pid, (int) r);
+        return EXIT_FAILURE;
     }
-    printf("%s: received reply with result = %d\n", argv[0], msg.result);
-    return 0;
+
+    /* Done */
+    printf("%s: reply received with data = %x\n", argv[0], msg.data);
+    return EXIT_SUCCESS;
 }

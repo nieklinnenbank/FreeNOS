@@ -24,6 +24,7 @@
 #include "ChannelRegistry.h"
 #include "Channel.h"
 #include "ChannelMessage.h"
+#include <FileSystemMessage.h>
 
 /**
  * Client for using Channels.
@@ -108,9 +109,10 @@ class ChannelClient : public Singleton<ChannelClient>
      * to the given process and registers it with the ChannelRegistry.
      *
      * @param pid ProcessID for the process to connect to.
+     * @param msgSize Default message size to use.
      * @return Result code
      */
-    virtual Result connect(ProcessID pid);
+    virtual Result connect(ProcessID pid, Size msgSize = sizeof(FileSystemMessage));
 
     /**
      * Try to receive message from any channel.

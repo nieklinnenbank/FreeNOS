@@ -142,7 +142,7 @@ template <class Base, class MsgType> class ChannelServer
             readChannels();
 
             // Retry requests until all served (EAGAIN or return value)
-            retryRequests();
+            retryAllRequests();
 
             // Sleep with timeout or return in case the process is
             // woken up by an external (wakeup) interrupt.
@@ -193,6 +193,16 @@ template <class Base, class MsgType> class ChannelServer
     virtual void timeout()
     {
         DEBUG("");
+    }
+
+    /**
+     * Retry any pending requests
+     *
+     * @return True if retry is needed again, false if all requests processed
+     */
+    virtual bool retryRequests()
+    {
+        return false;
     }
 
     /**
@@ -353,9 +363,10 @@ template <class Base, class MsgType> class ChannelServer
     /**
      * Keep retrying requests until all served
      */
-    void retryRequests()
+    void retryAllRequests()
     {
-        while (m_instance->retryRequests());
+        while (m_instance->retryRequests())
+            ;
     }
 
   protected:
