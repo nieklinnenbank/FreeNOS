@@ -303,7 +303,7 @@ CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info,
 	    return MemoryError;
 
         // Unmap the target kernel's memory
-        if (VMCtl(SELF, Release, &range) != API::Success)
+        if (VMCtl(SELF, UnMap, &range) != API::Success)
         {
             return MemoryError;
         }
@@ -330,7 +330,7 @@ CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info,
         return MemoryError;
 
     // Unmap the BootImage
-    if (VMCtl(SELF, Release, &range) != API::Success)
+    if (VMCtl(SELF, UnMap, &range) != API::Success)
         return MemoryError;
 
 #ifdef INTEL
