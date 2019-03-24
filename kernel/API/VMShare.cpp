@@ -37,7 +37,7 @@ API::Result VMShareHandler(ProcessID procID, API::Operation op, ProcessShares::M
         else
             proc = procs->current();
     }
-    else if (!(proc = procs->get(procID)) && op != API::Delete)
+    else if (op != API::Delete && !(proc = procs->get(procID)))
     {
         return API::NotFound;
     }
