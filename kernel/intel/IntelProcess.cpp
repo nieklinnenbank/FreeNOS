@@ -54,7 +54,7 @@ Process::Result IntelProcess::initialize()
     setUserStack(range.virt + range.size - MEMALIGN);
 
     // Kernel stack (low memory).
-    stackSize = PAGESIZE;
+    stackSize = KernelStackSize;
     if (Kernel::instance->getAllocator()->allocateLow(stackSize, &stackAddr) != Allocator::Success)
         return OutOfMemory;
 
