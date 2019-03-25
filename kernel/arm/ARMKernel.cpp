@@ -26,7 +26,10 @@
 
 ARMKernel::ARMKernel(ARMInterrupt *intr,
                      CoreInfo *info)
-    : Kernel(info), m_bcm(info->coreId)
+    : Kernel(info)
+#ifdef BCM2836
+    , m_bcm(info->coreId)
+#endif /* BMC2836 */
 {
     ARMControl ctrl;
 
