@@ -79,3 +79,8 @@ void * SplitAllocator::toVirtual(Address phys)
 {
     return (void *) (phys - m_low.phys);
 }
+
+void * SplitAllocator::toPhysical(Address virt)
+{
+    return (void *) (virt + m_low.phys);
+}

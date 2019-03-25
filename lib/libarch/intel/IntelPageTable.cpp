@@ -33,6 +33,8 @@
 #define TABENTRY(vaddr) \
     (((vaddr) >> PAGESHIFT) & 0x3ff)
 
+// TODO: convert to inline class
+
 MemoryContext::Result IntelPageTable::map(Address virt,
                                           Address phys,
                                           Memory::Access access)

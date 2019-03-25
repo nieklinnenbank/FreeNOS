@@ -36,6 +36,7 @@
 #define DIRENTRY(vaddr) \
     ((vaddr) >> DIRSHIFT)
 
+// TODO: make inline
 IntelPageTable * IntelPageDirectory::getPageTable(Address virt, SplitAllocator *alloc)
 {
     u32 entry = m_tables[ DIRENTRY(virt) ];
@@ -125,4 +126,32 @@ u32 IntelPageDirectory::flags(Memory::Access access)
     if (access & Memory::User)     f |= PAGE_USER;
 
     return f;
+}
+
+MemoryContext::Result IntelPageDirectory::releaseRange(Memory::Range range, SplitAllocator *alloc, bool tablesOnly)
+{
+    Address phys;
+
+    // Walk the page directory within the specified range
+    for (Size i = 0; i < range.size; i += MegaByte(4))
+    {
+        IntelPageTable *table = getPageTable(range.virt + i, alloc);
+        if (table)
+        {
+            // Release mapped pages
+            if (!tablesOnly)
+            {
+                for (Size j = 0; j < MegaByte(4); j += PAGESIZE)
+                {
+                    if (table->translate(range.virt + i + j, &phys) == MemoryContext::Success)
+                    {
+                        alloc->release(phys);
+                    }
+                }
+            }
+            // Release page table
+            alloc->release(m_tables[ DIRENTRY(range.virt + i) ] & PAGEMASK);
+        }
+    }
+    return MemoryContext::Success;
 }

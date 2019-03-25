@@ -101,7 +101,8 @@ Process::Result IntelProcess::initialize()
 IntelProcess::~IntelProcess()
 {
     // Release the kernel stack memory page
-    Kernel::instance->getAllocator()->release(m_kernelStackBase - KernelStackSize);
+    SplitAllocator *alloc = Kernel::instance->getAllocator();
+    alloc->release((Address)alloc->toPhysical(m_kernelStackBase) - KernelStackSize);
 }
 
 void IntelProcess::execute(Process *previous)

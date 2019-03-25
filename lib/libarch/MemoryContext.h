@@ -142,7 +142,7 @@ class MemoryContext
      * @param range Range object describing the range of physical pages to release.
      * @return Result code
      */
-    virtual Result releaseRange(Memory::Range *range);
+    virtual Result releaseRange(Memory::Range *range, bool tablesOnly = false) = 0;
 
     /**
      * Release memory region.
@@ -153,7 +153,7 @@ class MemoryContext
      * @param region Memory region to release
      * @return Result code
      */
-    virtual Result releaseRegion(MemoryMap::Region region);
+    virtual Result releaseRegion(MemoryMap::Region region, bool tablesOnly = false) = 0;
 
     /**
      * Find unused memory.

@@ -51,13 +51,13 @@ Process::Result ARMProcess::initialize()
     setUserStack(range.virt + range.size - MEMALIGN8);
 
     // Kernel stack (low memory).
-    Size stackSize = PAGESIZE;
+    Size stackSize = KernelStackSize;
     if (Kernel::instance->getAllocator()->allocateLow(stackSize, &stackAddr) != Allocator::Success)
         return OutOfMemory;
 
+    m_kernelStackBase = stackAddr;
     stackAddr = (Address) Kernel::instance->getAllocator()->toVirtual(stackAddr);
-    m_kernelStackBase = stackAddr + stackSize;
-    setKernelStack(m_kernelStackBase - framesize - MEMALIGN8);
+    setKernelStack(stackAddr + stackSize - framesize - MEMALIGN8);
     Address *stack = (Address *) m_kernelStack;
 
     // Zero kernel stack
@@ -81,6 +81,8 @@ Process::Result ARMProcess::initialize()
 
 ARMProcess::~ARMProcess()
 {
+    // TODO: kernel stack size seems way too big
+    // Kernel::instance->getAllocator()->release(m_kernelStackBase);
 }
 
 void ARMProcess::execute(Process *previous)

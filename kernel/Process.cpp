@@ -52,6 +52,7 @@ Process::~Process()
         m_memoryContext->releaseRegion(MemoryMap::UserStack);
         m_memoryContext->releaseRegion(MemoryMap::UserPrivate);
         m_memoryContext->releaseRegion(MemoryMap::UserArgs);
+        m_memoryContext->releaseRegion(MemoryMap::UserShare, true);
         delete m_memoryContext;
     }
 }

@@ -83,6 +83,15 @@ class IntelPageDirectory
                                  Memory::Access *access,
                                  SplitAllocator *alloc);
 
+    /**
+     * Release range of memory.
+     *
+     * @param range Memory range input
+     * @param alloc Memory allocator to release memory from
+     * @param tablesOnly Set to true to only release page tables and not mapped pages.
+     */
+    MemoryContext::Result releaseRange(Memory::Range range, SplitAllocator *alloc, bool tablesOnly);
+
   private:
 
     IntelPageTable * getPageTable(Address virt, SplitAllocator *alloc);

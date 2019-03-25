@@ -58,6 +58,7 @@ ARMPaging::ARMPaging(MemoryMap *map, SplitAllocator *alloc)
 
 ARMPaging::~ARMPaging()
 {
+    m_alloc->release(m_firstTableAddr);
 }
 
 #ifdef ARMV6
@@ -226,4 +227,14 @@ MemoryContext::Result ARMPaging::lookup(Address virt, Address *phys)
 MemoryContext::Result ARMPaging::access(Address virt, Memory::Access *access)
 {
     return m_firstTable->access(virt, access, m_alloc);
+}
+
+MemoryContext::Result ARMPaging::releaseRegion(MemoryMap::Region region, bool tablesOnly)
+{
+    return m_firstTable->releaseRange(m_map->range(region), m_alloc, tablesOnly);
+}
+
+MemoryContext::Result ARMPaging::releaseRange(Memory::Range *range, bool tablesOnly)
+{
+    return m_firstTable->releaseRange(*range, m_alloc, tablesOnly);
 }

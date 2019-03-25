@@ -106,6 +106,22 @@ class IntelPaging : public MemoryContext
      */
     virtual Result access(Address addr, Memory::Access *access);
 
+    /**
+     * Release region of memory.
+     *
+     * @param region Memory region input
+     * @param tablesOnly Set to true to only release page tables and not mapped pages.
+     */
+    virtual Result releaseRegion(MemoryMap::Region region, bool tablesOnly);
+
+    /**
+     * Release range of memory.
+     *
+     * @param range Memory range input
+     * @param tablesOnly Set to true to only release page tables and not mapped pages.
+     */
+    virtual Result releaseRange(Memory::Range *range, bool tablesOnly);
+
   private:
 
     /** Pointer to page directory in kernel's virtual memory. */
@@ -113,6 +129,9 @@ class IntelPaging : public MemoryContext
 
     /** Physical address of the page directory */
     Address m_pageDirectoryAddr;
+
+    /** Set to true if page directory was allocated by this class */
+    bool m_pageDirectoryAllocated;
 };
 
 namespace Arch

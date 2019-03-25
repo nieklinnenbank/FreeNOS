@@ -223,3 +223,32 @@ u32 ARMFirstTable::flags(Memory::Access access)
 
     return f;
 }
+
+MemoryContext::Result ARMFirstTable::releaseRange(Memory::Range range, SplitAllocator *alloc, bool tablesOnly)
+{
+    Address phys;
+
+    // Walk the page directory within the specified range
+    for (Size i = 0; i < range.size; i += MegaByte(1))
+    {
+        ARMSecondTable *table = getSecondTable(range.virt + i, alloc);
+        if (table)
+        {
+            // Release mapped pages
+            if (!tablesOnly)
+            {
+                for (Size j = 0; j < MegaByte(1); j += PAGESIZE)
+                {
+                    if (table->translate(range.virt + i + j, &phys) == MemoryContext::Success)
+                    {
+                        alloc->release(phys);
+                    }
+                }
+            }
+            // Release page table
+            alloc->release(m_tables[ DIRENTRY(range.virt + i) ] & PAGEMASK);
+            // TODO: m_tables[ DIRENTRY(range.virt + i) ] = PAGE1_NONE;
+        }
+    }
+    return MemoryContext::Success;
+}

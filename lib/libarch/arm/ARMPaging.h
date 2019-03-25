@@ -92,6 +92,22 @@ class ARMPaging : public MemoryContext
      */
     virtual Result access(Address addr, Memory::Access *access);
 
+    /**
+     * Release region of memory.
+     *
+     * @param region Memory region input
+     * @param tablesOnly Set to true to only release page tables and not mapped pages.
+     */
+    virtual Result releaseRegion(MemoryMap::Region region, bool tablesOnly);
+
+    /**
+     * Release range of memory.
+     *
+     * @param range Memory range input
+     * @param tablesOnly Set to true to only release page tables and not mapped pages.
+     */
+    virtual Result releaseRange(Memory::Range *range, bool tablesOnly);
+
   private:
 
     /**

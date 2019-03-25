@@ -29,7 +29,7 @@
 //
 
 IntelPaging::IntelPaging(MemoryMap *map, SplitAllocator *alloc)
-    : MemoryContext(map, alloc)
+    : MemoryContext(map, alloc), m_pageDirectoryAllocated(false)
 {
     IntelCore core;
 
@@ -37,6 +37,7 @@ IntelPaging::IntelPaging(MemoryMap *map, SplitAllocator *alloc)
     if (alloc->allocateLow(sizeof(IntelPageDirectory),
                           &m_pageDirectoryAddr) == Allocator::Success)
     {
+        m_pageDirectoryAllocated = true;
         m_pageDirectory = (IntelPageDirectory *) alloc->toVirtual(m_pageDirectoryAddr);
 
         // Initialize the page directory
@@ -67,10 +68,15 @@ IntelPaging::IntelPaging(MemoryMap *map, Address pageDirectory, SplitAllocator *
 {
     m_pageDirectory     = (IntelPageDirectory *) alloc->toVirtual(pageDirectory);
     m_pageDirectoryAddr = pageDirectory;
+    m_pageDirectoryAllocated = false;
 }
 
 IntelPaging::~IntelPaging()
 {
+    if (m_pageDirectoryAllocated)
+    {
+        m_alloc->release(m_pageDirectoryAddr);
+    }
 }
 
 MemoryContext::Result IntelPaging::activate()
@@ -111,4 +117,14 @@ MemoryContext::Result IntelPaging::lookup(Address virt, Address *phys)
 MemoryContext::Result IntelPaging::access(Address virt, Memory::Access *access)
 {
     return m_pageDirectory->access(virt, access, m_alloc);
+}
+
+MemoryContext::Result IntelPaging::releaseRegion(MemoryMap::Region region, bool tablesOnly)
+{
+    return m_pageDirectory->releaseRange(m_map->range(region), m_alloc, tablesOnly);
+}
+
+MemoryContext::Result IntelPaging::releaseRange(Memory::Range *range, bool tablesOnly)
+{
+    return m_pageDirectory->releaseRange(*range, m_alloc, tablesOnly);
 }

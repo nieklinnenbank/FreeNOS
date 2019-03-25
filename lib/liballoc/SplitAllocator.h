@@ -118,6 +118,11 @@ class SplitAllocator : public Allocator
      */
     void * toVirtual(Address phys);
 
+    /**
+     * Convert lower virtual address back to system level physical address.
+     */
+    void * toPhysical(Address virt);
+
   private:
 
     /** Physical memory allocator. */

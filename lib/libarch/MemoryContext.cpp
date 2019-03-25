@@ -77,29 +77,6 @@ MemoryContext::Result MemoryContext::release(Address virt)
     return result;
 }
 
-MemoryContext::Result MemoryContext::releaseRegion(MemoryMap::Region region)
-{
-    Memory::Range range = m_map->range(region);
-    return releaseRange(&range);
-}
-
-MemoryContext::Result MemoryContext::releaseRange(Memory::Range *range)
-{
-    Result result;
-    Address phys;
-
-    // Release inside the range page-by-page. Note that this
-    // code is not very efficient without optimizations turned on (-O2).
-    for (Size i = 0; i < range->size; i += PAGESIZE)
-    {
-        if ((result = lookup(range->virt + i, &phys)) != Success)
-            break;
-
-        m_alloc->release(phys);
-    }
-    return result;
-}
-
 MemoryContext::Result MemoryContext::findFree(Size size, MemoryMap::Region region, Address *virt)
 {
     Memory::Range r = m_map->range(region);
