@@ -54,8 +54,6 @@ void ARMTimer::setPL1Control(u32 value)
 
 ARMTimer::Result ARMTimer::setFrequency(Size hertz)
 {
-    u32 sysfreq = getSystemFrequency();
-
     m_frequency = hertz;
     tick();
     return Success;
