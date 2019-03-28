@@ -29,6 +29,9 @@ class POSIXApplication : public Application
 
     /**
      * Class constructor.
+     *
+     * @param argc Argument count
+     * @param argv Argument values
      */
     POSIXApplication(int argc, char **argv);
 
@@ -46,13 +49,6 @@ class POSIXApplication : public Application
      * @return Result code.
      */
     virtual Result output(const char *string);
-
-    /**
-     * Terminate program.
-     *
-     * @param code Termination code.
-     */
-    virtual void exit(int code);
 };
 
 #endif /* __LIBPOSIX_POSIXAPPLICATION_H */

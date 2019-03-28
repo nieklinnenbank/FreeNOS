@@ -52,6 +52,9 @@ class Application
 
     /**
      * Class constructor.
+     *
+     * @param argc Argument count
+     * @param argv Argument values
      */
     Application(int argc, char **argv);
 
@@ -74,7 +77,7 @@ class Application
      *
      * @return Result code
      */
-    virtual Result initialize() = 0;
+    virtual Result initialize();
 
     /**
      * Execute the application event loop.
@@ -92,11 +95,13 @@ class Application
     virtual Result output(const char *string) = 0;
 
     /**
-     * Terminate program.
+     * Print string to output.
      *
-     * @param code Termination code.
+     * @param string Reference to string to output.
+     *
+     * @return Result code.
      */
-    virtual void exit(int code) = 0;
+    virtual Result output(String & string);
 
     /**
      * Print usage and terminate.

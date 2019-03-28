@@ -36,8 +36,3 @@ POSIXApplication::Result POSIXApplication::output(const char *string)
     printf("%s", string);
     return Success;
 }
-
-void POSIXApplication::exit(int code)
-{
-    ::exit(code);
-}

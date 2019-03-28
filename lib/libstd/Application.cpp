@@ -23,7 +23,7 @@ Application::Application(int argc, char **argv)
     m_argv = argv;
     m_parser.registerFlag('h', "help", "show program help");
     m_parser.registerFlag('v', "version", "show program version");
-    m_parser.registerFlag('l', "log-level", "change log level");
+    // TODO: m_parser.registerFlag('l', "log-level", "change log level");
     m_parser.registerFlag('d', "debug", "set log level to debug");
 }
 
@@ -31,26 +31,43 @@ Application::~Application()
 {
 }
 
+Application::Result Application::initialize()
+{
+    return Success;
+}
+
 int Application::run()
 {
     if (m_argc < 1)
+    {
         usage();
+        return ExitFailure;
+    }
     else
         m_parser.setName(m_argv[0]);
 
     if (m_parser.parse(m_argc, m_argv, m_arguments) != ArgumentParser::Success)
+    {
         usage();
+        return ExitFailure;
+    }
 
     // If the help argument is given, show the usage
-    //if (m_arguments.get("help"))
-    //    usage();
+    if (m_arguments.get("help"))
+    {
+        usage();
+        return ExitFailure;
+    }
 
     // If the version argument is given, show version
-    //if (m_arguments.get("version"))
-    //    output(m_version)
-    //    exit(EXIT_SUCCESS)
+    if (m_arguments.get("version"))
+    {
+        output(m_version);
+        output("\n");
+        return ExitSuccess;
+    }
 
-    //if (m_arguments.get("log-level"))
+    // TODO: if (m_arguments.get("log-level"))
     //    Log::setMinimalLogLevel(...)
 
     if (m_arguments.get("debug") && Log::instance)
@@ -68,6 +85,10 @@ int Application::run()
 void Application::usage()
 {
     String & s = m_parser.getUsage();
-    output(*s);
-    exit(ExitFailure);
+    output(s);
+}
+
+Application::Result Application::output(String & string)
+{
+    return output(*string);
 }
