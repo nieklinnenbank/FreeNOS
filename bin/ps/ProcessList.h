@@ -15,16 +15,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Log.h>
-#include <KernelLog.h>
-#include "ProcessList.h"
+#ifndef __BIN_PS_PROCESSLIST_H
+#define __BIN_PS_PROCESSLIST_H
 
-int main(int argc, char **argv)
+#include <POSIXApplication.h>
+
+/**
+ * Output the system process list.
+ */
+class ProcessList : public POSIXApplication
 {
-    // TODO:
-    KernelLog log;
-    log.setMinimumLogLevel(Log::Notice);
+  private:
 
-    ProcessList app(argc, argv);
-    return app.run();
-}
+    /** Array of process state strings */
+    static const char *ProcessStates[];
+
+  public:
+
+    /**
+     * Constructor
+     *
+     * @param argc Argument count
+     * @param argv Argument values
+     */
+    ProcessList(int argc, char **argv);
+
+    /**
+     * Execute the application.
+     *
+     * @return Result code
+     */
+    virtual Result exec();
+};
+
+#endif /* __BIN_PS_PROCESSLIST_H */
