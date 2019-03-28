@@ -149,7 +149,7 @@ ArgumentParser::Result ArgumentParser::parse(int argc,
             output.addFlag(arg);
         }
         // Positional argument
-        else
+        else if (m_positionals.count() > 0)
         {
             if (pos > m_positionals.count() - 1)
                 return InvalidArgument;
@@ -162,6 +162,7 @@ ArgumentParser::Result ArgumentParser::parse(int argc,
             arg->setValue(*parts.last());
             output.addPositional(arg);
         }
+        else return InvalidArgument;
     }
     // Check that all required arguments are set
     for (i = 0; i < m_positionals.count(); i++)
