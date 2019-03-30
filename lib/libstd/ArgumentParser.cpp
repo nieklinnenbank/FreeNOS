@@ -16,6 +16,7 @@
  */
 
 #include "ArgumentParser.h"
+#include "ConstHashIterator.h"
 
 ArgumentParser::ArgumentParser()
 {
@@ -38,42 +39,41 @@ ArgumentParser::~ArgumentParser()
         delete m_positionals[i];
 }
 
-String & ArgumentParser::getUsage()
+String ArgumentParser::getUsage() const
 {
-    // Clear current usage
-    m_usage = "";
+    String usage;
 
     // Build the syntax line
-    m_usage << "usage: " << *m_name << " [OPTIONS] ";
+    usage << "usage: " << *m_name << " [OPTIONS] ";
 
     // Append positional arguments to syntax line
     for (Size i = 0; i < m_positionals.count(); i++)
     {
         if (m_positionals[i]->getCount() == 0)
-            m_usage << "[" << m_positionals[i]->getName() << "] ";
+            usage << "[" << m_positionals[i]->getName() << "] ";
         else
-            m_usage << m_positionals[i]->getName() << " ";
+            usage << m_positionals[i]->getName() << " ";
     }
     // Append description
-    m_usage << "\r\n\r\n" << *m_description << "\r\n\r\n  Positional Arguments:\r\n\r\n";
+    usage << "\r\n\r\n" << *m_description << "\r\n\r\n  Positional Arguments:\r\n\r\n";
 
     // Make list of positional arguments
     for (Size i = 0; i < m_positionals.count(); i++)
     {
-        (m_usage << "   " << m_positionals[i]->getName()).pad(16) <<
-                    "   " << m_positionals[i]->getDescription()   << "\r\n";
+        (usage << "   " << m_positionals[i]->getName()).pad(16) <<
+                  "   " << m_positionals[i]->getDescription()   << "\r\n";
     }
 
     // Make list of flag arguments
-    m_usage << "\r\n  Optional Arguments:\r\n\r\n";
+    usage << "\r\n  Optional Arguments:\r\n\r\n";
 
-    for (HashIterator<String, Argument *> it(m_flags);
+    for (ConstHashIterator<String, Argument *> it(m_flags);
          it.hasCurrent(); it++)
     {
-        (m_usage << "   --" << it.current()->getName()).pad(16) <<
+        (usage << "   --" << it.current()->getName()).pad(16) <<
                     "   " << it.current()->getDescription()   << "\r\n";
     }
-    return m_usage;
+    return usage;
 }
 
 void ArgumentParser::setName(const char *name)
@@ -81,9 +81,9 @@ void ArgumentParser::setName(const char *name)
     m_name = name;
 }
 
-void ArgumentParser::setDescription(const char *desc)
+void ArgumentParser::setDescription(const String & description)
 {
-    m_description = desc;
+    m_description = description;
 }
 
 ArgumentParser::Result ArgumentParser::registerFlag(char id,

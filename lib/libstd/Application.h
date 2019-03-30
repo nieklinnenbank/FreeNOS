@@ -92,7 +92,7 @@ class Application
      * @param string Text to print to program output.
      * @return Result code.
      */
-    virtual Result output(const char *string) = 0;
+    virtual Result output(const char *string) const = 0;
 
     /**
      * Print string to output.
@@ -101,14 +101,37 @@ class Application
      *
      * @return Result code.
      */
-    virtual Result output(String & string);
+    virtual Result output(String & string) const;
+
+  protected:
+
+    /**
+     * Get program arguments parser.
+     *
+     * @return Program arguments parser.
+     */
+    ArgumentParser & parser();
+
+    /**
+     * Get program arguments.
+     */
+    const ArgumentContainer & arguments() const;
+
+    /**
+     * Set program version.
+     *
+     * @param version Program version string
+     */
+    void setVersion(const String & version);
+
+  private:
 
     /**
      * Print usage and terminate.
      */
-    void usage();
+    void usage() const;
 
-  protected:
+  private:
 
     /** Program argument parser object */
     ArgumentParser m_parser;
@@ -124,6 +147,7 @@ class Application
 
     /** Program version */
     String m_version;
+
 };
 
 #endif /* __LIBSTD_APPLICATION_H */

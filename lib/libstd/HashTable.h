@@ -336,6 +336,14 @@ template <class K, class V> class HashTable : public Associative<K,V>
         return (V &) at(key);
     }
 
+    /**
+     * Constant index operator.
+     */
+    const V & operator[](const K & key) const
+    {
+        return (const V &) at(key);
+    }
+
   private:
 
     /** Internal table. */

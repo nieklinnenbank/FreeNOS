@@ -68,14 +68,14 @@ class ArgumentContainer
      *
      * @return Vector object reference
      */
-    Vector<Argument *> & getPositionals();
+    const Vector<Argument *> & getPositionals() const;
 
     /**
      * Get flag arguments.
      *
      * @return HashTable object reference
      */
-    HashTable<String, Argument *> & getFlags();
+    const HashTable<String, Argument *> & getFlags() const;
 
     /**
      * Add positional argument.

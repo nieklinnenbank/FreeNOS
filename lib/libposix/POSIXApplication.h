@@ -48,7 +48,7 @@ class POSIXApplication : public Application
      * @param string Text to print to program output.
      * @return Result code.
      */
-    virtual Result output(const char *string);
+    virtual Result output(const char *string) const;
 };
 
 #endif /* __LIBPOSIX_POSIXAPPLICATION_H */

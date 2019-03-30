@@ -23,7 +23,6 @@ Application::Application(int argc, char **argv)
     m_argv = argv;
     m_parser.registerFlag('h', "help", "show program help");
     m_parser.registerFlag('v', "version", "show program version");
-    // TODO: m_parser.registerFlag('l', "log-level", "change log level");
     m_parser.registerFlag('d', "debug", "set log level to debug");
 }
 
@@ -67,9 +66,6 @@ int Application::run()
         return ExitSuccess;
     }
 
-    // TODO: if (m_arguments.get("log-level"))
-    //    Log::setMinimalLogLevel(...)
-
     if (m_arguments.get("debug") && Log::instance)
         Log::instance->setMinimumLogLevel(Log::Debug);
 
@@ -82,13 +78,28 @@ int Application::run()
         return ExitFailure;
 }
 
-void Application::usage()
+void Application::usage() const
 {
-    String & s = m_parser.getUsage();
+    String s = m_parser.getUsage();
     output(s);
 }
 
-Application::Result Application::output(String & string)
+Application::Result Application::output(String & string) const
 {
     return output(*string);
+}
+
+ArgumentParser & Application::parser()
+{
+    return m_parser;
+}
+
+const ArgumentContainer & Application::arguments() const
+{
+    return m_arguments;
+}
+
+void Application::setVersion(const String & version)
+{
+    m_version = version;
 }

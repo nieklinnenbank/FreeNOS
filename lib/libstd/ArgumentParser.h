@@ -22,7 +22,6 @@
 #include "Macros.h"
 #include "String.h"
 #include "HashTable.h"
-#include "HashIterator.h"
 #include "Vector.h"
 #include "Argument.h"
 #include "ArgumentContainer.h"
@@ -60,7 +59,7 @@ class ArgumentParser
      *
      * @return Program usage string reference.
      */
-    String & getUsage();
+    String getUsage() const;
 
     /**
      * Set program name.
@@ -74,7 +73,7 @@ class ArgumentParser
      *
      * @param desc Program description string.
      */
-    void setDescription(const char *desc);
+    void setDescription(const String & desciption);
 
     /**
      * Register a flag Argument
@@ -103,6 +102,7 @@ class ArgumentParser
      * @param argc Input argument count.
      * @param argv Input argument values.
      * @param output Filled with parsed arguments on output.
+     *
      * @return Result code.
      */
     Result parse(int argc,
@@ -122,9 +122,6 @@ class ArgumentParser
 
     /** Program description */
     String m_description;
-
-    /** Program usage */
-    String m_usage;
 };
 
 #endif /* __LIBSTD_ARGUMENTPARSER_H */
