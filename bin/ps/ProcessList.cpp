@@ -58,6 +58,8 @@ ProcessList::Result ProcessList::exec()
         // Request kernel's process information
         if (ProcessCtl(i, InfoPID, (Address) &info) != API::NotFound)
         {
+            DEBUG("PID " << i << " state = " << info.state);
+
             // Get the command
             VMCopy(i, API::Read, (Address) cmd, range.virt, PATH_MAX);
 
