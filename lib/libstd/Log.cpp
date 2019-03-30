@@ -10,7 +10,7 @@
 
 Log::Log() : Singleton<Log>(this)
 {
-    setMinimumLogLevel(Debug);
+    setMinimumLogLevel(Notice);
 }
 
 Log::~Log()
