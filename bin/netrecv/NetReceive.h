@@ -40,11 +40,6 @@ class NetReceive : public POSIXApplication
     virtual ~NetReceive();
 
     /**
-     * Initialize the application.
-     */
-    virtual Result initialize();
-
-    /**
      * Execute the application event loop.
      */
     virtual Result exec();

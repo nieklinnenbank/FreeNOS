@@ -40,11 +40,6 @@ class NetPing : public POSIXApplication
     virtual ~NetPing();
 
     /**
-     * Initialize the application.
-     */
-    virtual Result initialize();
-
-    /**
      * Execute the application event loop.
      */
     virtual Result exec();

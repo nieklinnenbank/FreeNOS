@@ -38,6 +38,7 @@ const char * ProcessList::ProcessStates[] =
 ProcessList::ProcessList(int argc, char **argv)
     : POSIXApplication(argc, argv)
 {
+    parser().setDescription("Output system process list");
 }
 
 ProcessList::Result ProcessList::exec()

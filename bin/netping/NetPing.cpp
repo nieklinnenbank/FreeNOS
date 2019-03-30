@@ -51,50 +51,39 @@
 
 NetPing::NetPing(int argc, char **argv)
     : POSIXApplication(argc, argv)
+    , m_socket(0)
 {
-    m_socket = 0;
-
-    m_parser.setDescription("send network pings");
-    m_parser.registerPositional("DEVICE", "device name of network adapter");
-    m_parser.registerPositional("HOST", "host address to ping");
-    m_parser.registerPositional("ARGS", "optional key=value arguments", 0);
-    m_parser.registerFlag('a', "arp", "send ARP pings");
-    m_parser.registerFlag('i', "icmp", "send ICMP pings");
+    parser().setDescription("send network pings");
+    parser().registerPositional("DEVICE", "device name of network adapter");
+    parser().registerPositional("HOST", "host address to ping");
+    parser().registerFlag('a', "arp", "send ARP pings");
+    parser().registerFlag('i', "icmp", "send ICMP pings");
 }
 
 NetPing::~NetPing()
 {
 }
 
-NetPing::Result NetPing::initialize()
+NetPing::Result NetPing::exec()
 {
     DEBUG("");
 
-    const char *dev  = m_arguments.get("DEVICE");
-    const char *host = m_arguments.get("HOST");
-    const char *icmp = m_arguments.get("icmp");
+    const char *dev  = arguments().get("DEVICE");
+    const char *host = arguments().get("HOST");
+    const char *icmp = arguments().get("icmp");
 
-    if (dev)
-        DEBUG("sending on device: " << dev);
+    DEBUG("sending on device: " << dev);
 
     if (icmp)
     {
         DEBUG("sending ICMP packets");
         icmpPing(dev, host);
     }
-    else if (dev && host)
+    else
     {
         DEBUG("sending ARP packets");
         arpPing(dev, host);
     }
-    else usage();
-
-    return Success;
-}
-
-NetPing::Result NetPing::exec()
-{
-    DEBUG("");
     return Success;
 }
 

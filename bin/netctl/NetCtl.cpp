@@ -33,8 +33,8 @@
 NetCtl::NetCtl(int argc, char **argv)
     : POSIXApplication(argc, argv)
 {
-    m_parser.setDescription("control network devices");
-    m_parser.registerPositional("ARGS", "optional key=value arguments", 0);
+    parser().setDescription("control network devices");
+    parser().registerPositional("ARGS", "optional key=value arguments", 0);
 }
 
 NetCtl::~NetCtl()

@@ -40,11 +40,6 @@ class NetSend : public POSIXApplication
     virtual ~NetSend();
 
     /**
-     * Initialize the application.
-     */
-    virtual Result initialize();
-
-    /**
      * Execute the application event loop.
      */
     virtual Result exec();

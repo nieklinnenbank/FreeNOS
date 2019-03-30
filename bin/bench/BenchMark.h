@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Niek Linnenbank
+ * Copyright (C) 2009 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,12 +15,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <StdioLog.h>
-#include "NetCtl.h"
+#ifndef __BIN_BENCH_BENCHMARK_H
+#define __BIN_BENCH_BENCHMARK_H
 
-int main(int argc, char **argv)
+#include <POSIXApplication.h>
+
+/**
+ * Perform system benchmarking tests.
+ */
+class BenchMark : public POSIXApplication
 {
-    StdioLog log;
-    NetCtl app(argc, argv);
-    return app.run();
-}
+  public:
+
+    /**
+     * Constructor
+     *
+     * @param argc Argument count
+     * @param argv Argument values
+     */
+    BenchMark(int argc, char **argv);
+
+    /**
+     * Execute the application.
+     *
+     * @return Result code
+     */
+    virtual Result exec();
+};
+
+#endif /* __BIN_BENCH_BENCHMARK_H */
