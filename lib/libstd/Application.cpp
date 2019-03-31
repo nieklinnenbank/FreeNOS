@@ -37,6 +37,7 @@ Application::Result Application::initialize()
 
 int Application::run()
 {
+    // Set application name
     if (m_argc < 1)
     {
         usage();
@@ -45,6 +46,7 @@ int Application::run()
     else
         m_parser.setName(m_argv[0]);
 
+    // Parse commandline arguments
     if (m_parser.parse(m_argc, m_argv, m_arguments) != ArgumentParser::Success)
     {
         usage();
@@ -66,12 +68,18 @@ int Application::run()
         return ExitSuccess;
     }
 
+    // Enable debug logging if specified
     if (m_arguments.get("debug") && Log::instance)
         Log::instance->setMinimumLogLevel(Log::Debug);
 
-    if (initialize() != Success)
+    // Initialize the application first
+    Result r = initialize();
+    if (r == ShowUsage)
+        usage();
+    if (r != Success)
         return ExitFailure;
 
+    // Run the application
     if (exec() == Success)
         return ExitSuccess;
     else
@@ -90,6 +98,11 @@ Application::Result Application::output(String & string) const
 }
 
 ArgumentParser & Application::parser()
+{
+    return m_parser;
+}
+
+const ArgumentParser & Application::parser() const
 {
     return m_parser;
 }

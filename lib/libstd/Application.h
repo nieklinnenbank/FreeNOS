@@ -47,7 +47,8 @@ class Application
         Success,
         NotFound,
         IOError,
-        InvalidArgument
+        InvalidArgument,
+        ShowUsage
     };
 
     /**
@@ -111,6 +112,13 @@ class Application
      * @return Program arguments parser.
      */
     ArgumentParser & parser();
+
+    /**
+     * Get constant program arguments parser.
+     *
+     * @return Program arguments parser.
+     */
+    const ArgumentParser & parser() const;
 
     /**
      * Get program arguments.
