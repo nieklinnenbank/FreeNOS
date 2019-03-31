@@ -50,12 +50,15 @@ String ArgumentParser::getUsage() const
     for (Size i = 0; i < m_positionals.count(); i++)
     {
         if (m_positionals[i]->getCount() == 0)
-            usage << "[" << m_positionals[i]->getName() << "] ";
+            usage << "[" << m_positionals[i]->getName() << "..] ";
         else
             usage << m_positionals[i]->getName() << " ";
     }
     // Append description
-    usage << "\r\n\r\n" << *m_description << "\r\n\r\n  Positional Arguments:\r\n\r\n";
+    usage << "\r\n\r\n" << *m_description << "\r\n\r\n";
+
+    if (m_positionals.count() > 0)
+        usage << "  Positional Arguments:\r\n\r\n";
 
     // Make list of positional arguments
     for (Size i = 0; i < m_positionals.count(); i++)
@@ -65,7 +68,8 @@ String ArgumentParser::getUsage() const
     }
 
     // Make list of flag arguments
-    usage << "\r\n  Optional Arguments:\r\n\r\n";
+    if (m_flags.count() > 0)
+        usage << "\r\n  Optional Arguments:\r\n\r\n";
 
     for (ConstHashIterator<String, Argument *> it(m_flags);
          it.hasCurrent(); it++)
@@ -74,6 +78,11 @@ String ArgumentParser::getUsage() const
                     "   " << it.current()->getDescription()   << "\r\n";
     }
     return usage;
+}
+
+const String & ArgumentParser::name() const
+{
+    return m_name;
 }
 
 void ArgumentParser::setName(const char *name)

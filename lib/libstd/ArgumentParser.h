@@ -62,6 +62,13 @@ class ArgumentParser
     String getUsage() const;
 
     /**
+     * Retrieve program name.
+     *
+     * @return Program name
+     */
+    const String & name() const;
+
+    /**
      * Set program name.
      *
      * @param name Program name string.
@@ -91,7 +98,7 @@ class ArgumentParser
      */
     Result registerPositional(const char *name,
                               const char *description,
-                              Size count=1);
+                              Size count = 1);
 
     /**
      * Parse input arguments.
