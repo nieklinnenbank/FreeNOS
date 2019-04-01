@@ -29,6 +29,10 @@ BenchMark::BenchMark(int argc, char **argv)
     parser().setDescription("Perform system benchmark tests");
 }
 
+BenchMark::~BenchMark()
+{
+}
+
 BenchMark::Result BenchMark::exec()
 {
     u64 t1 = 0, t2 = 0;

@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
- * 
+ * Copyright (C) 2015 Niek Linnenbank
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -15,28 +15,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __IMG_BOOTENTRY_H
-#define __IMG_BOOTENTRY_H
+#ifndef __BIN_MOUNT_MOUNT_H
+#define __BIN_MOUNT_MOUNT_H
 
-#include <ExecutableFormat.h>
-
-/** Maximum memory regions. */
-#define MAX_REGIONS	16
+#include <POSIXApplication.h>
 
 /**
- * Executable for use inside a BootImage.
+ * Mount filesystems on the system.
  */
-typedef struct BootEntry
+class Mount : public POSIXApplication
 {
-    /** BootSymbol definition */
-    BootSymbol symbol;
+  public:
 
-    /** Memory regions for this symbol */
-    ExecutableFormat::Region regions[MAX_REGIONS];
-    
-    /** Number of memory regions. */
-    Size numRegions;
-}
-BootEntry;
+    /**
+     * Constructor
+     *
+     * @param argc Argument count
+     * @param argv Argument values
+     */
+    Mount(int argc, char **argv);
 
-#endif /* __IMG_BOOTENTRY_H */
+    /**
+     * Destructor
+     */
+    virtual ~Mount();
+
+    /**
+     * Execute the application.
+     *
+     * @return Result code
+     */
+    virtual Result exec();
+};
+
+#endif /* __BIN_MOUNT_MOUNT_H */

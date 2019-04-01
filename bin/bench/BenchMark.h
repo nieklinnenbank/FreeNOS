@@ -36,6 +36,11 @@ class BenchMark : public POSIXApplication
     BenchMark(int argc, char **argv);
 
     /**
+     * Destructor
+     */
+    virtual ~BenchMark();
+
+    /**
      * Execute the application.
      *
      * @return Result code

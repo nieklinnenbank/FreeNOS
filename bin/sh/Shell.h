@@ -15,26 +15,39 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SH_SHELL
-#define __SH_SHELL
+#ifndef __BIN_SH_SHELL
+#define __BIN_SH_SHELL
 
 #include <Types.h>
+#include <POSIXApplication.h>
 #include "ShellCommand.h"
 
-/** Maximum number of supported command arguments. */
-#define MAX_ARGV 16
-
 /**
- * Very basic command shell.
+ * System command shell interpreter
  */
-class Shell
+class Shell : public POSIXApplication
 {
   public:
 
     /**
      * Constructor
+     *
+     * @param argc Argument count
+     * @param argv Argument values
      */
-    Shell();
+    Shell(int argc, char **argv);
+
+    /**
+     * Destructor
+     */
+    virtual ~Shell();
+
+    /**
+     * Execute the application.
+     *
+     * @return Result code
+     */
+    virtual Result exec();
 
     /**
      * Get shell command.
@@ -58,11 +71,14 @@ class Shell
      */
     void registerCommand(ShellCommand *command);
 
+  private:
+
     /**
      * Executes the Shell by entering an infinite loop.
-     * @return Never.
+     *
+     * @return Result code
      */
-    int run();
+    Result runInteractive();
 
     /**
      * Executes the given input.
@@ -71,8 +87,6 @@ class Shell
      * @return Exit status of the command.
      */
     int executeInput(char *cmdline);
-
-  private:
     
     /**
      * Fetch a command text from standard input.
@@ -96,8 +110,10 @@ class Shell
      */
     Size parse(char *cmdline, char **argv, Size maxArgv, bool *background);
 
+  private:
+
     /** All known ShellCommands. */
     HashTable<String, ShellCommand *> m_commands;
 };
 
-#endif /* __SH_SHELL */
+#endif /* __BIN_SH_SHELL */

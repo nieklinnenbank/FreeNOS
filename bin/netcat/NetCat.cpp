@@ -164,6 +164,7 @@ NetCat::Result NetCat::readLine()
                 break;
         }
     }
+
     // Done
     m_lineBuf[m_lineLen++] = '\r';
     m_lineBuf[m_lineLen++] = '\n';
