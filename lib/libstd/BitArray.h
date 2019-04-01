@@ -53,7 +53,7 @@ class BitArray
     /**
      * Class destructor.
      */
-    ~BitArray();
+    virtual ~BitArray();
 
     /**
      * Returns the maximum size of this Container.

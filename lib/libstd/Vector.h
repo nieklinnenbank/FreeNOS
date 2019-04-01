@@ -69,7 +69,7 @@ template <class T> class Vector : public Sequence<T>
     /**
      * Destructor.
      */
-    ~Vector()
+    virtual ~Vector()
     {
         delete[] m_array;
     }

@@ -81,7 +81,7 @@ template <class T> class List : public Sequence<T>
     /**
      * Class destructor.
      */
-    ~List()
+    virtual ~List()
     {
         Node *node = m_head;
 

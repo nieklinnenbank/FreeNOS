@@ -53,7 +53,7 @@ template <class T> class Index : public Sequence<T>
     /**
      * Destructor.
      */
-    ~Index()
+    virtual ~Index()
     {
         delete[] m_array;
     }
