@@ -27,6 +27,8 @@ class Argument
 
     Argument(const char *name);
 
+    Argument(const String & name);
+
     char getIdentifier() const;
 
     const String & getName() const;
