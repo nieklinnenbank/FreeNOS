@@ -69,8 +69,10 @@ class ProcessManager
 
     /**
      * Schedule next process to run.
+     *
+     * @return Pointer to newly scheduled Process or NULL if unchanged
      */
-    void schedule(Process *proc = ZERO);
+    Process * schedule(Process *proc = ZERO);
 
     /**
      * Set the idle process.

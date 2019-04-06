@@ -89,7 +89,7 @@ void ProcessManager::remove(Process *proc, uint exitStatus)
     delete proc;
 }
 
-void ProcessManager::schedule(Process *proc)
+Process * ProcessManager::schedule(Process *proc)
 {
     /* If needed, let the scheduler select a new process */
     if (!proc)
@@ -117,7 +117,9 @@ void ProcessManager::schedule(Process *proc)
 
         proc->setState(Process::Running);
         proc->execute(m_previous);
+        return m_current;
     }
+    return (Process *) NULL;
 }
 
 Process * ProcessManager::current()
