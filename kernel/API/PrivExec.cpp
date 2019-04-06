@@ -20,24 +20,26 @@
 
 API::Result PrivExecHandler(PrivOperation op, Address addr)
 {
-    ProcessManager *procs = Kernel::instance->getProcessManager();
-
     DEBUG("");
 
     switch (op)
     {
-    case Idle:
-        
+    case Idle: {
+        ProcessManager *procs = Kernel::instance->getProcessManager();
         procs->setIdle(procs->current());
+#ifdef INTEL
         irq_enable();
 
         while (true)
             idle();
-    
+#endif /* INTEL */
+        }
+        return API::Success;
+
     case Reboot:
         cpu_reboot();
         while (true) ;
-        
+
     case Shutdown:
         cpu_shutdown();
         return API::Success;

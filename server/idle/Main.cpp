@@ -19,5 +19,10 @@
 
 int main(int argc, char **argv)
 {
-    return PrivExec(Idle);
+    PrivExec(Idle);
+
+    while (true)
+    {
+        idle();
+    }
 }
