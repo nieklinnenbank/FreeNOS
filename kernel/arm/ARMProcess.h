@@ -45,6 +45,20 @@ class ARMProcess : public Process
     virtual ~ARMProcess();
 
     /**
+     * Overwrite the saved CPU registers for this task
+     *
+     * @param cpuState Pointer to newly saved CPU registers
+     */
+    void setCpuState(const CPUState *cpuState);
+
+    /**
+     * Retrieve saved CPU state.
+     *
+     * @return Saved CPUState for this task.
+     */
+    const CPUState * cpuState() const;
+
+    /**
      * Initialize the Process.
      *
      * Allocates various (architecture specific) resources,
@@ -61,6 +75,8 @@ class ARMProcess : public Process
 
   private:
 
+    /** Contains all the CPU registers for this task */
+    CPUState m_cpuState;
 };
 
 

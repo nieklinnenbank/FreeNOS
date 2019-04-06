@@ -29,8 +29,6 @@ ARMProcess::ARMProcess(ProcessID id, Address entry, bool privileged, const Memor
 Process::Result ARMProcess::initialize()
 {
     Memory::Range range;
-    Size framesize = (14+17)*sizeof(u32);
-    Address stackAddr;
 
     // Create MMU context
     m_memoryContext = new ARMPaging(
@@ -50,30 +48,11 @@ Process::Result ARMProcess::initialize()
         return MemoryMapError;
     setUserStack(range.virt + range.size - MEMALIGN8);
 
-    // Kernel stack (low memory).
-    Size stackSize = KernelStackSize;
-    if (Kernel::instance->getAllocator()->allocateLow(stackSize, &stackAddr) != Allocator::Success)
-        return OutOfMemory;
-
-    m_kernelStackBase = stackAddr;
-    stackAddr = (Address) Kernel::instance->getAllocator()->toVirtual(stackAddr);
-    setKernelStack(stackAddr + stackSize - framesize - MEMALIGN8);
-    Address *stack = (Address *) m_kernelStack;
-
-    // Zero kernel stack
-    MemoryBlock::set((void *) stackAddr, 0, stackSize);
-
-    // restoreState: fill kernel register state
-    stack[0] = (Address) loadCoreState0; /* restoreState: pop {lr} */
-    stack += 14;
-
-    // loadCoreState0: fill user register state
-    stack[0] = (m_privileged ? SYS_MODE : USR_MODE); /* user program status (CPSR) */
-    stack++;
-    stack[0] = m_userStack; /* user program SP */
-    stack[1] = 0;           /* user program LR */
-    stack+=15;
-    stack[0] = m_entry;     /* user program entry (PC) */
+    // Fill usermode program registers
+    MemoryBlock::set(&m_cpuState, 0, sizeof(m_cpuState));
+    m_cpuState.sp = m_userStack;  /* user stack pointer */
+    m_cpuState.pc = m_entry;      /* user program counter */
+    m_cpuState.cpsr = (m_privileged ? SYS_MODE : USR_MODE); /* current program status (CPSR) */
 
     // Finalize with generic initialization
     return Process::initialize();
@@ -81,23 +60,38 @@ Process::Result ARMProcess::initialize()
 
 ARMProcess::~ARMProcess()
 {
-    // TODO: kernel stack size seems way too big
-    // Kernel::instance->getAllocator()->release(m_kernelStackBase);
 }
+
+const CPUState * ARMProcess::cpuState() const
+{
+    return &m_cpuState;
+}
+
+void ARMProcess::setCpuState(const CPUState *cpuState)
+{
+    MemoryBlock::copy(&m_cpuState, cpuState, sizeof(*cpuState));
+}
+
+static bool firstProcess = true;
+extern u8 svcStack[PAGESIZE];
 
 void ARMProcess::execute(Process *previous)
 {
-    ARMProcess *p = (ARMProcess *) previous;
-
-    // No need to assign the process kernel stack somewhere (compared to TSS.esp0 for Intel).
-    // ARM cores have banked registers for each ARM mode. Once the stack
-    // register is set in the current ARM mode (supervisor), it will be saved
-    // in the banked (copied) stack register. When user code interrupts, the
-    // banked register will be applied for the stack automatically.
-
     // Activate the memory context of this process
     m_memoryContext->activate();
 
-    switchCoreState( p ? &p->m_kernelStack : ZERO,
-                     m_kernelStack );
+    // First process starts from loadCoreState0
+    if (firstProcess)
+    {
+        firstProcess = false;
+
+        CPUState *ptr = ((CPUState *) (svcStack)) - 1;
+        MemoryBlock::copy(ptr, &m_cpuState, sizeof(*ptr));
+
+        /* Switch to the actual SVC stack and switch to usermode */
+        asm volatile ("ldr sp, =svcStack\n"
+                      "sub sp, sp, %0\n"
+                      "ldr r0, =loadCoreState0\n"
+                      "bx r0\n" : : "i" (sizeof(m_cpuState) - sizeof(m_cpuState.padding)) );
+    }
 }

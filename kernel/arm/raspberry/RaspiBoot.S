@@ -24,7 +24,7 @@
 .section ".text.boot"
  
 /* Make _start global. */
-.globl _start
+.globl _start, svcStack
  
 /*
  * Entry point for the kernel.
@@ -76,8 +76,9 @@ _start:
     msr cpsr_c, #(SYS_MODE | IRQ_BIT | FIQ_BIT) /* System mode */
     mov sp, #0x8000
 
-    /* continue kernel in SVC mode */
+    /* continue kernel in SVC mode, temporary stack */
     msr cpsr_c, #(SVC_MODE | IRQ_BIT | FIQ_BIT) /* SVC mode */
+    ldr sp, =tmpStack
 
     /* Clear out bss. */
     ldr r4, =__bss_start
@@ -117,3 +118,6 @@ abtStack:
 
 .fill STACKSIZE, 1, 0
 undStack:
+
+.fill STACKSIZE, 1, 0
+tmpStack:

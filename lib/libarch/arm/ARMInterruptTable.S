@@ -115,8 +115,9 @@ callHandler 5
 movs pc, lr
 
 ex_irq:
+sub lr, lr, #4
 callHandler 6
-subs pc, r14, #4
+movs pc, lr
 
 ex_fiq:
 callHandler 7

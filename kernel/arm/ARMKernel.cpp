@@ -85,7 +85,10 @@ void ARMKernel::interrupt(CPUState state)
 {
     ARMKernel *kernel = (ARMKernel *) Kernel::instance;
     ARMInterrupt *intr = (ARMInterrupt *) kernel->m_intControl;
+    ARMProcess *proc = (ARMProcess *) Kernel::instance->getProcessManager()->current(), *next;
     bool tick;
+
+    DEBUG("procId = " << proc->getID());
 
 #ifdef BCM2836
     if (kernel->m_timer == &kernel->m_armTimer)
@@ -101,7 +104,12 @@ void ARMKernel::interrupt(CPUState state)
     if (tick)
     {
         kernel->m_timer->tick();
-        kernel->getProcessManager()->schedule();
+        next = (ARMProcess *)kernel->getProcessManager()->schedule();
+        if (next)
+        {
+            proc->setCpuState(&state);
+            MemoryBlock::copy(&state, next->cpuState(), sizeof(state));
+        }
     }
 
     for (uint i = kernel->m_timerIrq + 1; i < 64; i++)
@@ -111,6 +119,7 @@ void ARMKernel::interrupt(CPUState state)
             kernel->executeIntVector(i, &state);
         }
     }
+
 }
 
 void ARMKernel::undefinedInstruction(CPUState state)
@@ -148,9 +157,14 @@ void ARMKernel::reserved(CPUState state)
 
 void ARMKernel::trap(CPUState state)
 {
-    //DEBUG("procId = " << Kernel::instance->getProcessManager()->current()->getID() << " api = " << state.r0);
+    ProcessManager *mgr = Kernel::instance->getProcessManager();
+    ARMProcess *proc = (ARMProcess *) mgr->current(), *proc2;
+    ProcessID procId = proc->getID();
 
-    state.r0 = Kernel::instance->getAPI()->invoke(
+    DEBUG("procId = " << procId << " api = " << state.r0);
+
+    // Execute the kernel call
+    u32 r = Kernel::instance->getAPI()->invoke(
         (API::Number) state.r0,
                       state.r1,
                       state.r2,
@@ -158,4 +172,21 @@ void ARMKernel::trap(CPUState state)
                       state.r4,
                       state.r5
     );
+
+    // Did we change process?
+    proc2 = (ARMProcess *) mgr->current();
+    DEBUG("result = " << r << " scheduled = " << (bool)(proc != proc2));
+
+    if (proc != proc2)
+    {
+        // Only if the previous process still exists (not killed in API)
+        if (mgr->get(procId) != NULL)
+        {
+            state.r0 = 0;  // TODO: HACK: always return 0 if process was rescheduled in the API call
+            proc->setCpuState(&state);
+        }
+        MemoryBlock::copy(&state, proc2->cpuState(), sizeof(state));
+    }
+    else
+        state.r0 = r;
 }
