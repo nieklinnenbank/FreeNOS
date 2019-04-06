@@ -35,10 +35,10 @@ class Timer
      */
     typedef struct Info
     {
-        u64 ticks;
+        u32 ticks;
         Size frequency;
     }
-    Info;
+    ALIGN(8) Info;
 
     /**
      * Result codes.
@@ -135,7 +135,7 @@ class Timer
      * @param info Timer info value to compare
      * @return True if expired, false otherwise
      */
-    bool isExpired(const Info *info);
+    bool isExpired(const Info & info) const;
 
   protected:
 

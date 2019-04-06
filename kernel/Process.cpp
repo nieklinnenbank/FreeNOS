@@ -82,9 +82,9 @@ ProcessShares & Process::getShares()
     return m_shares;
 }
 
-const Timer::Info * Process::getSleepTimer() const
+const Timer::Info & Process::getSleepTimer() const
 {
-    return &m_sleepTimer;
+    return m_sleepTimer;
 }
 
 Address Process::getPageDirectory() const

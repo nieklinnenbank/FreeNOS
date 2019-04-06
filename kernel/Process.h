@@ -96,7 +96,7 @@ class Process
      * Get sleep timer.
      * @return Sleep timer value.
      */
-    const Timer::Info * getSleepTimer() const;
+    const Timer::Info & getSleepTimer() const;
 
     /**
      * Get process shares.

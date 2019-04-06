@@ -74,10 +74,10 @@ Timer::Result Timer::wait(u32 microseconds)
     return Success;
 }
 
-bool Timer::isExpired(const Timer::Info *info)
+bool Timer::isExpired(const Timer::Info & info) const
 {
-    if (!info->frequency)
+    if (!info.frequency)
         return false;
 
-    return m_info.ticks > info->ticks;
+    return m_info.ticks > info.ticks;
 }
