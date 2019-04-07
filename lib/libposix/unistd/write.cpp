@@ -45,7 +45,7 @@ ssize_t write(int fildes, const void *buf, size_t nbyte)
     msg.path   = files[fildes].path;
     msg.buffer = (char *) buf;
     msg.size   = nbyte;
-    msg.offset = ZERO; // TODO: should be fd->offset?
+    msg.offset = files[fildes].position;
     msg.from   = SELF;
     msg.deviceID.minor = files[fildes].identifier;
     ChannelClient::instance->syncSendReceive(&msg, files[fildes].mount);
