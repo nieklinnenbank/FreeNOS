@@ -156,10 +156,17 @@ template <class Base, class MsgType> class ChannelServer
             DEBUG("EnterSleep returned: " << (int)r);
 
             // Check for sleep timeout
-            if (m_expiry.frequency && m_expiry.ticks < m_time.ticks)
+            if (m_expiry.frequency)
             {
-                m_expiry.frequency = 0;
-                timeout();
+                if (ProcessCtl(SELF, InfoTimer, (Address) &m_time) != API::Success)
+                {
+                    ERROR("failed to retrieve system timer");
+                }
+                else if (m_expiry.ticks < m_time.ticks)
+                {
+                    m_expiry.frequency = 0;
+                    timeout();
+                }
             }
         }
         // Satify compiler
@@ -213,6 +220,12 @@ template <class Base, class MsgType> class ChannelServer
     void setTimeout(uint msec)
     {
         DEBUG("msec = " << msec);
+
+        if (ProcessCtl(SELF, InfoTimer, (Address) &m_time) != API::Success)
+        {
+            ERROR("failed to retrieve system timer info");
+            return;
+        }
 
         Size msecPerTick = 1000 / m_time.frequency;
         m_expiry.frequency = m_time.frequency;

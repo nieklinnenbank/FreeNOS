@@ -127,9 +127,6 @@ API::Result ProcessCtlHandler(ProcessID procID,
         // Only sleeps the process if no pending wakeups
         if (procs->current()->sleep((Timer::Info *)addr) == Process::Success)
             procs->schedule();
-
-        if (output && ((timer = Kernel::instance->getTimer())))
-            timer->getCurrent((Timer::Info *) output);
         break;
 
     case SetStack:
