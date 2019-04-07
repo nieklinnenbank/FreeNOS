@@ -18,6 +18,7 @@
 #include <KernelLog.h>
 #include <DeviceServer.h>
 #include <USBHub.h>
+#include <unistd.h>
 
 int main(int argc, char **argv)
 {

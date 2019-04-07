@@ -109,7 +109,7 @@ Error USBHub::portAttach(u8 port)
     DEBUG("enable port");
     setPortFeature(port, PortReset);
 
-    sleep(30);
+    sleep(3);
 
     // Get descriptor of the next device
     u8 myId = m_id;
@@ -121,7 +121,7 @@ Error USBHub::portAttach(u8 port)
     }
     else
     {
-        DEBUG("device on port " << port << " is: vendorId=" << desc->vendorId <<
+        NOTICE("device on port " << port << " is: vendorId=" << desc->vendorId <<
                             " productId=" << desc->productId <<
                              " class=" << desc->deviceClass <<
                              " subclass=" << desc->deviceSubClass <<
@@ -131,7 +131,7 @@ Error USBHub::portAttach(u8 port)
     }
     m_id = myId;
 
-    // TODO: hardcoded assumption: SMSC95xx is on port 1 (or 3?) (raspberry pi)
+    // Hardcoded assumption: SMSC95xx is on port 1 (or 3?) (raspberry pi)
     if (desc->vendorId == 1060 && desc->productId == 60416)
     {
         const char * argv[] = { "/server/network/smsc95xx/server", 0 };
