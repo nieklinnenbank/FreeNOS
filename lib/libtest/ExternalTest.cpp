@@ -52,6 +52,7 @@ TestResult ExternalTest::run()
     pid = forkexec(*m_name, (const char **) argv);
 #endif
     waitpid(pid, &status, 0);
+    delete[] argv;
 
     return status == 0 ? OK : FAIL;
 }
