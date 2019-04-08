@@ -103,7 +103,6 @@ def write_header(env, filename = None):
             except Exception as e:
                 pass
 
-            # TODO: violates the BUILDROOT
             try:
                 os.makedirs('build/host/include')
                 os.symlink('.', 'build/host/include/FreeNOS')

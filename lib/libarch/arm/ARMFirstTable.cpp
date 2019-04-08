@@ -247,7 +247,6 @@ MemoryContext::Result ARMFirstTable::releaseRange(Memory::Range range, SplitAllo
             }
             // Release page table
             alloc->release(m_tables[ DIRENTRY(range.virt + i) ] & PAGEMASK);
-            // TODO: m_tables[ DIRENTRY(range.virt + i) ] = PAGE1_NONE;
         }
     }
     return MemoryContext::Success;

@@ -36,7 +36,6 @@
 #define DIRENTRY(vaddr) \
     ((vaddr) >> DIRSHIFT)
 
-// TODO: make inline
 IntelPageTable * IntelPageDirectory::getPageTable(Address virt, SplitAllocator *alloc)
 {
     u32 entry = m_tables[ DIRENTRY(virt) ];

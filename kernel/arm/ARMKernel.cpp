@@ -182,7 +182,7 @@ void ARMKernel::trap(CPUState state)
         // Only if the previous process still exists (not killed in API)
         if (mgr->get(procId) != NULL)
         {
-            state.r0 = 0;  // TODO: HACK: always return 0 if process was rescheduled in the API call
+            state.r0 = 0;
             proc->setCpuState(&state);
         }
         MemoryBlock::copy(&state, proc2->cpuState(), sizeof(state));
