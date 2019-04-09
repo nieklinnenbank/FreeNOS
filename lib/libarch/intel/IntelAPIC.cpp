@@ -17,6 +17,8 @@
 
 #include <Log.h>
 #include <MemoryContext.h>
+#include <Core.h>
+#include <FreeNOS/System.h>
 #include "IntelPIT.h"
 #include "IntelAPIC.h"
 
@@ -88,28 +90,44 @@ Timer::Result IntelAPIC::start(IntelPIT *pit)
 
 Timer::Result IntelAPIC::wait(u32 microseconds)
 {
-    // TODO: hack: busy wait fixed time.
-    for (Size i = 0; i < 10000000; i++)
-        microseconds += i;
-
-    if (!m_frequency)
-        return microseconds == 0 ? Timer::NotFound : Timer::IOError; // TODO: hack to prevent g++ to optimize the loop away
-
-    Size usecPerInt = 1000000 / m_frequency;
-    Size usecPerTick = usecPerInt / m_io.read(InitialCount);
-    u32 t1 = m_io.read(CurrentCount), t2;
-    u32 waited = 0;
-
-    while (waited < microseconds)
+    if (!isKernel)
     {
-        t2 = m_io.read(CurrentCount);
+        Timer::Info info;
 
-        if (t2 < t1)
+        // Get current kernel timer ticks
+        if (ProcessCtl(SELF, InfoTimer, (Address) &info) != API::Success)
+            return Timer::IOError;
+
+        // Frequency must be set
+        if (!info.frequency)
+            return Timer::IOError;
+
+        // Set time to wait (very rough approximation)
+        u32 msecPerTick = 1000.0 / info.frequency;
+        u32 msecToWait = microseconds / 1000;
+        info.ticks += (msecToWait / msecPerTick) + 1;
+
+        // Wait until the timer expires
+        if (ProcessCtl(SELF, WaitTimer, (Address) &info) != API::Success)
+            return Timer::IOError;
+    }
+    else
+    {
+        Size usecPerInt = 1000000 / m_frequency;
+        Size usecPerTick = usecPerInt / m_io.read(InitialCount);
+        u32 t1 = m_io.read(CurrentCount), t2;
+        u32 waited = 0;
+
+        while (waited < microseconds)
         {
-            waited += (t1 - t2) * usecPerTick;
+            t2 = m_io.read(CurrentCount);
+            if (t2 < t1)
+            {
+                waited += (t1 - t2) * usecPerTick;
+                t1 = t2;
+            }
             t1 = t2;
         }
-        t1 = t2;
     }
     return Timer::Success;
 }
@@ -194,12 +212,6 @@ IntController::Result IntelAPIC::sendStartupIPI(uint cpuId, Address addr)
         m_io.write(IntCommand1, cfg);
 
         // Wait 1 milisecond
-        // TODO: this is difficult in the current implementation, because
-        //       the *userspace* instance of this class does not have
-        //       m_frequency set.. better solution is that libarch provides a Timer
-        //       abstract class, and that class should provide a consistent interface
-        //       for (busy) waiting on timer events, triggering, etc, where it hides
-        //       if the call is done with a kernel trap or direct register write etc.
         wait(1000);
     }
 
