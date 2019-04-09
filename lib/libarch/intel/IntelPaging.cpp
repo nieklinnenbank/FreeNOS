@@ -91,8 +91,8 @@ MemoryContext::Result IntelPaging::map(Address virt, Address phys, Memory::Acces
 {
     MemoryContext::Result r = m_pageDirectory->map(virt, phys, acc, m_alloc);
 
-    // TODO: make TLB flushing conditional? (only if the context is currently activated)
-    if (r == Success)
+    // Flush TLB entry
+    if (r == Success && m_current == this)
         tlb_flush(virt);
 
     return r;
@@ -102,8 +102,8 @@ MemoryContext::Result IntelPaging::unmap(Address virt)
 {
     MemoryContext::Result r = m_pageDirectory->unmap(virt, m_alloc);
 
-    // TODO: make TLB flushing conditional? (only if the context is currently activated)
-    if (r == Success)
+    // Flush TLB entry
+    if (r == Success && m_current == this)
         tlb_flush(virt);
 
     return r;
