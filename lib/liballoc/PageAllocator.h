@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,13 +22,10 @@
 #include <Types.h>
 #include "Allocator.h"
 
-/** 
- * @defgroup liballoc liballoc 
- * @{ 
+/**
+ * @defgroup liballoc liballoc
+ * @{
  */
-
-/** Minimum size required to allocate. */
-#define PAGEALLOC_MINIMUM (PAGESIZE * 2)
 
 /**
  * Allocates virtual memory using the memory server.
@@ -52,21 +49,21 @@ class PageAllocator : public Allocator
      *
      * @return Start address.
      */
-    Address base();
+    Address base() const;
 
     /**
      * Get memory size.
      *
      * @return Size of memory owned by the Allocator.
      */
-    virtual Size size();
+    virtual Size size() const;
 
     /**
      * Get memory available.
      *
      * @return Size of memory available by the Allocator.
      */
-    virtual Size available();
+    virtual Size available() const;
 
     /**
      * Allocate memory.
@@ -94,7 +91,7 @@ class PageAllocator : public Allocator
 
     /** Start of the allocated memory region. */
     Address m_base;
-    
+
     /** Maximum size to allocate */
     Size m_size;
 

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,24 +18,28 @@
 #include <FreeNOS/System.h>
 #include "PageAllocator.h"
 
+/** Minimum size required to allocate. */
+#define PAGEALLOC_MINIMUM (PAGESIZE * 2)
+
 PageAllocator::PageAllocator(Address base, Size size)
+    : Allocator()
+    , m_base(base)
+    , m_size(size)
+    , m_allocated(PAGESIZE)
 {
-    m_base      = base;
-    m_size      = size;
-    m_allocated = PAGESIZE;
 }
 
-Address PageAllocator::base()
+Address PageAllocator::base() const
 {
     return m_base;
 }
 
-Size PageAllocator::size()
+Size PageAllocator::size() const
 {
     return m_size;
 }
 
-Size PageAllocator::available()
+Size PageAllocator::available() const
 {
     return m_size - m_allocated;
 }
@@ -53,7 +57,7 @@ Allocator::Result PageAllocator::allocate(Size *size, Address *addr, Size align)
     // Align to pagesize
     bytes = aligned(bytes, PAGESIZE);
 
-    // Fill in the message. */
+    // Fill in the message
     range.size   = bytes;
     range.access = Memory::User | Memory::Readable | Memory::Writable;
     range.virt   = m_base + m_allocated;

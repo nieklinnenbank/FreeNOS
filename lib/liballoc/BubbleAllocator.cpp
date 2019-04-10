@@ -19,18 +19,19 @@
 #include "BubbleAllocator.h"
 
 BubbleAllocator::BubbleAllocator(Address start, Size size)
+    : Allocator()
+    , m_start((u8 *) start)
+    , m_current((u8 *) start)
+    , m_size(size)
 {
-    m_start   = (u8 *) start;
-    m_current = (u8 *) start;
-    m_size    = size;
 }
 
-Size BubbleAllocator::size()
+Size BubbleAllocator::size() const
 {
     return m_size;
 }
 
-Size BubbleAllocator::available()
+Size BubbleAllocator::available() const
 {
     return m_size - (m_current - m_start);
 }

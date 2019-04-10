@@ -20,14 +20,13 @@
 
 SplitAllocator::SplitAllocator(Memory::Range low, Memory::Range high)
     : Allocator()
-
+    , m_low(low)
+    , m_high(high)
 {
     Memory::Range mem = low;
     mem.size += high.size;
 
     m_alloc = new BitAllocator(mem, PAGESIZE);
-    m_low  = low;
-    m_high = high;
 }
 
 SplitAllocator::~SplitAllocator()
@@ -35,12 +34,12 @@ SplitAllocator::~SplitAllocator()
     delete m_alloc;
 }
 
-Size SplitAllocator::size()
+Size SplitAllocator::size() const
 {
     return m_alloc->size();
 }
 
-Size SplitAllocator::available()
+Size SplitAllocator::available() const
 {
     return m_alloc->available();
 }
@@ -75,12 +74,12 @@ Allocator::Result SplitAllocator::release(Address addr)
     return m_alloc->release(addr);
 }
 
-void * SplitAllocator::toVirtual(Address phys)
+void * SplitAllocator::toVirtual(Address phys) const
 {
     return (void *) (phys - m_low.phys);
 }
 
-void * SplitAllocator::toPhysical(Address virt)
+void * SplitAllocator::toPhysical(Address virt) const
 {
     return (void *) (virt + m_low.phys);
 }

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,9 +22,9 @@
 #include "Allocator.h"
 #include "BitAllocator.h"
 
-/** 
- * @defgroup liballoc liballoc 
- * @{ 
+/**
+ * @defgroup liballoc liballoc
+ * @{
  */
 
 /**
@@ -52,14 +52,14 @@ class SplitAllocator : public Allocator
      *
      * @return Size of memory owned by the Allocator.
      */
-    virtual Size size();
+    virtual Size size() const;
 
     /**
      * Get memory available.
      *
      * @return Size of memory available by the Allocator.
      */
-    virtual Size available();
+    virtual Size available() const;
 
     /**
      * Allocate memory.
@@ -69,6 +69,7 @@ class SplitAllocator : public Allocator
      * @param addr Output parameter which contains the address
      *             allocated on success.
      * @param align Alignment of the required memory or use ZERO for default.
+     *
      * @return Result code
      */
     virtual Result allocate(Size *size, Address *addr, Size align = ZERO);
@@ -77,6 +78,7 @@ class SplitAllocator : public Allocator
      * Allocate address.
      *
      * @param addr Allocate a specific address.
+     *
      * @return Result value.
      */
     Result allocate(Address addr);
@@ -88,6 +90,7 @@ class SplitAllocator : public Allocator
      * @param addr Output parameter which contains the address
      *             allocated on success.
      * @param align Alignment of the required memory or use ZERO for default.
+     *
      * @return Result code
      */
     virtual Result allocateLow(Size size, Address *addr, Size align = ZERO);
@@ -99,6 +102,7 @@ class SplitAllocator : public Allocator
      * @param addr Output parameter which contains the address
      *             allocated on success.
      * @param align Alignment of the required memory or use ZERO for default.
+     *
      * @return Result code
      */
     virtual Result allocateHigh(Size size, Address *addr, Size align = ZERO);
@@ -107,6 +111,7 @@ class SplitAllocator : public Allocator
      * Release memory.
      *
      * @param addr Points to memory previously returned by allocate().
+     *
      * @return Result value.
      *
      * @see allocate
@@ -116,12 +121,12 @@ class SplitAllocator : public Allocator
     /**
      * Convert the given physical address to lower virtual accessible address.
      */
-    void * toVirtual(Address phys);
+    void * toVirtual(Address phys) const;
 
     /**
      * Convert lower virtual address back to system level physical address.
      */
-    void * toPhysical(Address virt);
+    void * toPhysical(Address virt) const;
 
   private:
 

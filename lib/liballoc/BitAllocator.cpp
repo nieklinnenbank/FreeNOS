@@ -18,28 +18,29 @@
 #include "BitAllocator.h"
 
 BitAllocator::BitAllocator(Memory::Range range, Size chunkSize)
-    : Allocator(), m_array(range.size / chunkSize)
+    : Allocator()
+    , m_array(range.size / chunkSize)
+    , m_base(range.phys)
+    , m_chunkSize(chunkSize)
 {
-    m_base      = range.phys;
-    m_chunkSize = chunkSize;
 }
 
-Size BitAllocator::chunkSize()
+Size BitAllocator::chunkSize() const
 {
     return m_chunkSize;
 }
 
-Size BitAllocator::size()
+Size BitAllocator::size() const
 {
     return m_array.size() * m_chunkSize;
 }
 
-Size BitAllocator::available()
+Size BitAllocator::available() const
 {
     return m_array.count(false) * m_chunkSize;
 }
 
-Address BitAllocator::base()
+Address BitAllocator::base() const
 {
     return m_base;
 }
@@ -92,7 +93,7 @@ Allocator::Result BitAllocator::allocate(Address addr)
     return Success;
 }
 
-bool BitAllocator::isAllocated(Address addr)
+bool BitAllocator::isAllocated(Address addr) const
 {
     if (addr < m_base)
         return false;

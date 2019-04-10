@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -23,9 +23,9 @@
 #include <Memory.h>
 #include "Allocator.h"
 
-/** 
+/**
  * @defgroup kernel kernel (generic)
- * @{ 
+ * @{
  */
 
 /**
@@ -52,26 +52,26 @@ class BitAllocator : public Allocator
      *
      * @return Chunk size.
      */
-    Size chunkSize();
+    Size chunkSize() const;
 
     /**
      * Get total size.
      *
      * @return Total size.
      */
-    virtual Size size();
+    virtual Size size() const;
 
     /**
      * Get available memory.
      *
      * @return Available memory.
      */
-    virtual Size available();
+    virtual Size available() const;
 
     /**
      * Get base memory address.
      */
-    Address base();
+    Address base() const;
 
     /**
      * Get allocation BitArray.
@@ -88,6 +88,7 @@ class BitAllocator : public Allocator
      * @param align Alignment of the required memory or use
      *              ZERO for chunksize. Must be a multiple
      *              of the chunksize.
+     *
      * @return Result value.
      */
     virtual Result allocate(Size *size, Address *addr, Size align = ZERO);
@@ -101,6 +102,7 @@ class BitAllocator : public Allocator
      *              ZERO for chunksize. Must be a multiple
      *              of the chunksize.
      * @param allocStart Allocation address to start searching at.
+     *
      * @return Result value.
      */
     Result allocate(Size *size, Address *addr, Size align = ZERO, Address allocStart = 0);
@@ -109,6 +111,7 @@ class BitAllocator : public Allocator
      * Allocate address.
      *
      * @param addr Allocate a specific address.
+     *
      * @return Result value.
      */
     Result allocate(Address addr);
@@ -118,7 +121,7 @@ class BitAllocator : public Allocator
      *
      * @return True if allocated, false otherwise.
      */
-    bool isAllocated(Address page);
+    bool isAllocated(Address page) const;
 
     /**
      * Release memory chunk.

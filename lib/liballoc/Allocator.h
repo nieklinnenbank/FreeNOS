@@ -68,12 +68,14 @@ class Allocator
 
     /**
      * Makes the given Allocator the default.
+     *
      * @param alloc Instance of an Allocator.
-     */ 
+     */
     static void setDefault(Allocator *alloc);
 
     /**
      * Retrieve the currently default Allocator.
+     *
      * @return Allocator pointer.
      */
     static Allocator *getDefault();
@@ -92,6 +94,7 @@ class Allocator
      * address must be aligned to the given size.
      *
      * @param size Alignment size
+     *
      * @return Result code
      */
     Result setAlignment(Size size);
@@ -102,6 +105,7 @@ class Allocator
      * The allocation base will be added to each allocation.
      *
      * @param addr Allocation base address.
+     *
      * @return Result code
      */
     Result setBase(Address addr);
@@ -111,14 +115,14 @@ class Allocator
      *
      * @return Size of memory owned by the Allocator.
      */
-    virtual Size size() = 0;
+    virtual Size size() const = 0;
 
     /**
      * Get memory available.
      *
      * @return Size of memory available by the Allocator.
      */
-    virtual Size available() = 0;
+    virtual Size available() const = 0;
 
     /**
      * Allocate memory.
@@ -128,6 +132,7 @@ class Allocator
      * @param addr Output parameter which contains the address
      *             allocated on success.
      * @param align Alignment of the required memory or use ZERO for default.
+     *
      * @return Result value.
      */
     virtual Result allocate(Size *size, Address *addr, Size align = ZERO) = 0;
@@ -136,6 +141,7 @@ class Allocator
      * Release memory.
      *
      * @param addr Points to memory previously returned by allocate().
+     *
      * @return Result value.
      *
      * @see allocate
@@ -149,12 +155,15 @@ class Allocator
      *
      * Any alignment corrections on the input address will result
      * in an address which is higher than the input address.
-     * 
+     *
      * @param addr Input address which need to be aligned.
      * @param boundary Boundary size to align the address for.
+     *
      * @return Aligned Address.
      */
-    Address aligned(Address addr, Size boundary);
+    Address aligned(Address addr, Size boundary) const;
+
+  protected:
 
     /** Our parent Allocator, if any. */
     Allocator *m_parent;
@@ -164,7 +173,7 @@ class Allocator
 
     /** Allocation base address */
     Address m_base;
-    
+
   private:
 
     /** Points to the default Allocator for new()/delete(). */
@@ -180,6 +189,7 @@ class Allocator
 
 /**
  * Allocate new memory.
+ *
  * @param sz Amount of memory to allocate.
  */
 inline void * operator new(__SIZE_TYPE__ sz)
@@ -194,6 +204,7 @@ inline void * operator new(__SIZE_TYPE__ sz)
 
 /**
  * Allocate memory for an array.
+ *
  * @param sz Amount of memory to allocate.
  */
 inline void * operator new[](__SIZE_TYPE__ sz)
@@ -208,6 +219,7 @@ inline void * operator new[](__SIZE_TYPE__ sz)
 
 /**
  * Free memory back to the current Allocator.
+ *
  * @param mem Points to memory to release.
  */
 inline void operator delete (void *mem)
@@ -217,6 +229,7 @@ inline void operator delete (void *mem)
 
 /**
  * Uses the Heap class to free memory, with the delete[] operator.
+ *
  * @param mem Points to memory to release.
  */
 inline void operator delete[] (void *mem)
@@ -235,6 +248,7 @@ inline void operator delete[] (void *mem)
 
 /**
  * Let the new() operator return the given memory address.
+ *
  * @param sz Size to allocate (ignored).
  * @param addr Memory address to return.
  */
