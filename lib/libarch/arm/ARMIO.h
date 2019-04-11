@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -33,7 +33,9 @@ class ARMIO : public IO
 
     /**
      * Read a byte from a port.
+     *
      * @param port The I/O port to read from.
+     *
      * @return A byte read from the port.
      */
     inline u8 inb(u16 port)
@@ -43,7 +45,9 @@ class ARMIO : public IO
 
     /**
      * Read a word from a port.
+     *
      * @param port The I/O port to read from.
+     *
      * @return Word read from the port.
      */
     inline u16 inw(u16 port)
@@ -53,6 +57,7 @@ class ARMIO : public IO
 
     /**
      * Output a byte to a port.
+     *
      * @param port Port to write to.
      * @param byte The byte to output.
      */
@@ -62,6 +67,7 @@ class ARMIO : public IO
 
     /**
      * Output a word to a port.
+     *
      * @param port Port to write to.
      * @param byte The word to output.
      */
@@ -71,6 +77,7 @@ class ARMIO : public IO
 
     /**
      * Output a long to a I/O port.
+     *
      * @param port Target I/O port.
      * @param l The long 32-bit number to output.
      */
@@ -79,7 +86,7 @@ class ARMIO : public IO
     }
 
     /**
-     * write to MMIO register
+     * write to memory mapped I/O register
      */
     inline void write(u32 reg, u32 data)
     {
@@ -91,9 +98,13 @@ class ARMIO : public IO
     }
 
     /**
-     * read from MMIO register
+     * read from memory mapped I/O register
+     *
+     * @param reg Address to read
+     *
+     * @return 32-bit value
      */
-    inline u32 read(u32 reg)
+    inline u32 read(u32 reg) const
     {
         dmb();
         u32 *ptr = (u32 *) (reg + m_base);
@@ -111,7 +122,7 @@ class ARMIO : public IO
      * @param count Number of bytes to read.
      * @param buf Output buffer.
      */
-    inline void read(Address addr, Size count, void *buf)
+    inline void read(Address addr, Size count, void *buf) const
     {
         for (Size i = 0; i < count; i+= sizeof(u32))
         {
@@ -133,7 +144,6 @@ class ARMIO : public IO
             write(addr + i, *(u32 *) (((u8 *)buf) + i));
         }
     }
-
 
     /**
      * Set bits in memory mapped register.

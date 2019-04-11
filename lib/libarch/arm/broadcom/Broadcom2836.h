@@ -63,6 +63,8 @@ class Broadcom2836
         FrequencyError
     };
 
+  public:
+
     /**
      * Constructor
      */
@@ -80,6 +82,7 @@ class Broadcom2836
      *
      * @param timer Timer to set
      * @param enable True to enable the timer interrupt
+     *
      * @return Result code
      */
     Result setCoreTimerIrq(Timer timer, bool enable);
@@ -88,9 +91,10 @@ class Broadcom2836
      * Get core timer interrupt status
      *
      * @param timer Timer to check for interrupt status
+     *
      * @return True if timer IRQ is raised, false otherwise.
      */
-    bool getCoreTimerIrqStatus(Timer timer);
+    bool getCoreTimerIrqStatus(Timer timer) const;
 
   private:
 

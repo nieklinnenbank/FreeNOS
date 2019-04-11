@@ -21,9 +21,8 @@
 extern Address vecTable[], handlerTable;
 
 ARMInterrupt::ARMInterrupt(Address base)
+    : m_vecTable(base)
 {
-    m_vecTable     = base;
-
     MemoryBlock::copy((void *)m_vecTable, vecTable, ARM_INTR_VECTAB_SIZE);
 }
 

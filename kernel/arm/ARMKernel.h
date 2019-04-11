@@ -21,7 +21,6 @@
 #include <FreeNOS/Kernel.h>
 #include <FreeNOS/Process.h>
 #include <Types.h>
-#include <arm/ARMTags.h>
 #include <arm/broadcom/BroadcomTimer.h>
 
 #ifdef BCM2836
@@ -119,7 +118,7 @@ inline ulong trapKernel5(ulong api, ulong arg1, ulong arg2, ulong arg3,
 class ARMKernel : public Kernel
 {
   public:
-    
+
     /**
      * Constructor function.
      *

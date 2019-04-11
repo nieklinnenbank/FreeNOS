@@ -179,6 +179,7 @@ class IntelACPI : public CoreManager
      * Boot a processor.
      *
      * @param info CoreInfo object pointer.
+     *
      * @return Result code.
      */
     virtual Result boot(CoreInfo *info);
@@ -192,11 +193,13 @@ class IntelACPI : public CoreManager
      */
     Result scanAPIC(MultipleAPICTable *madt);
 
+  private:
+
     /** I/O object for searching the RootSystemDescriptor. */
     IntelIO m_bios;
 
     /** Root/Extended SDT table I/O object. */
-    IntelIO m_rootIO;    
+    IntelIO m_rootIO;
 };
 
 #endif /* __LIBARCH_INTEL_ACPI_H */

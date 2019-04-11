@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -10,7 +10,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -25,6 +25,7 @@
 
 /**
  * Retrieve the IRQ number from CPUState.
+ *
  * @return IRQ number.
  */
 #define IRQ_REG(state) \
@@ -66,7 +67,7 @@ inline u64 timestamp()
     io.outw(0xB004, 0x0 | 0x2000); \
 })
 
-/**  
+/**
  * Puts the CPU in a lower power consuming state. 
  */
 #define idle() \
@@ -74,6 +75,7 @@ inline u64 timestamp()
 
 /**
  * Loads the Task State Register (LTR) with the given segment.
+ *
  * @param sel TSS segment selector.
  */
 #define ltr(sel) \
@@ -84,6 +86,7 @@ inline u64 timestamp()
 
 /**
  * Flushes the Translation Lookaside Buffers (TLB) for a single page.
+ *
  * @param addr Memory address to flush.
  */
 #define tlb_flush(addr) \
@@ -117,25 +120,27 @@ inline u64 timestamp()
 
 /**
  * Disable interrupts, and store current interrupt state.
+ *
  * @warning This is dangerous: no guarantee of the current stack state.
  */
-#define irq_disable()				\
-({						\
-    ulong ret;					\
-						\
-    asm volatile ("pushfl\n"			\
-		  "popl %0" : "=g" (ret) :);	\
-    cli();					\
-    ret;					\
+#define irq_disable()                           \
+({                                              \
+    ulong ret;                                  \
+                                                \
+    asm volatile ("pushfl\n"                    \
+                  "popl %0" : "=g" (ret) :);    \
+    cli();                                      \
+    ret;                                        \
 })
 
 /**
  * Restore the previous interrupt state.
+ *
  * @warning This is dangerous: no guarantee of the current stack state.
  */
-#define irq_restore(saved)			\
-    asm volatile ("push %0\n"			\
-		  "popfl\n" :: "g" (saved))
+#define irq_restore(saved)                      \
+    asm volatile ("push %0\n"                   \
+                  "popfl\n" :: "g" (saved))
 
 /**
  * @group Intel CPU Exceptions
@@ -179,8 +184,8 @@ inline u64 timestamp()
  * @}
  */
 
-/** 
- * Intel's Task State Segment. 
+/**
+ * Intel's Task State Segment.
  *
  * The TSS is mainly used for hardware context switching, which
  * the current implementation does not use. The only fields used
@@ -205,8 +210,8 @@ typedef struct TSS
 }
 TSS;
 
-/** 
- * Segment descriptor used in the GDT. 
+/**
+ * Segment descriptor used in the GDT.
  */
 typedef struct Segment
 {
@@ -301,14 +306,14 @@ class IntelCore : public Core
      *
      * @param state The current CPU state.
      */
-    void logException(CPUState *state);
+    void logException(CPUState *state) const;
 
     /**
      * Log the CPU state.
      *
      * @param state The current CPU state.
      */
-    void logState(CPUState *state);
+    void logState(CPUState *state) const;
 
     /**
      * Log a register.
@@ -316,22 +321,22 @@ class IntelCore : public Core
      * @param name Name of the register.
      * @param reg Value of the register.
      */
-    void logRegister(const char *name, u32 reg);
+    void logRegister(const char *name, u32 reg) const;
 
     /**
      * Read the CR2 register.
      */
-    volatile u32 readCR2();
+    volatile u32 readCR2() const;
 
     /**
      * Read the CR3 register.
      */
-    volatile u32 readCR3();
+    volatile u32 readCR3() const;
 
     /**
      * Write the CR3 register
      */
-    void writeCR3(u32 cr3);
+    void writeCR3(u32 cr3) const;
 };
 
 #ifdef __KERNEL__

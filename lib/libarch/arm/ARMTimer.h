@@ -27,6 +27,8 @@
 
 /**
  * ARM Generic Timer.
+ *
+ * @note Currently only used for QEMU emulator support of Raspberry Pi
  */
 class ARMTimer : public Timer
 {
@@ -38,7 +40,8 @@ class ARMTimer : public Timer
      * Set timer frequency.
      *
      * @param hertz Frequency of the timer in hertz.
-     * @return Result code.
+     *
+     * @return Result code
      */
     virtual Result setFrequency(Size hertz);
 
@@ -48,16 +51,35 @@ class ARMTimer : public Timer
      * Should be called on each Timer interrupt to
      * keep the m_info variable synchronized with the actual hardware.
      * Also clears the timer interrupt flag.
+     *
+     * @return Result code
      */
     virtual Result tick();
 
   private:
 
-    u32 getSystemFrequency(void);
+    /**
+     * Retrieve system timer frequency
+     *
+     * @return System frequency
+     */
+    u32 getSystemFrequency(void) const;
+
+    /**
+     * Set Timer 1 value
+     *
+     * @param value New timer value
+     */
     void setPL1TimerValue(u32 value);
+
+    /**
+     * Set Timer 1 control value
+     *
+     * @param value New timer control value
+     */
     void setPL1Control(u32 value);
-    u64 getPL1TimerCompare(void);
-    void setPL1TimerCompare(u64 value);
+
+  private:
 
     Size m_frequency;
 };

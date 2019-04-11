@@ -53,6 +53,8 @@ class ARMInterrupt : public IntController
         FIQ
     };
 
+  public:
+
     /**
      * Constructor
      *
@@ -64,12 +66,19 @@ class ARMInterrupt : public IntController
     /**
      * Install an interrupt handler.
      *
+     * @param vector Interrupt vector to install
      * @param handler Interrupt handler function to install.
+     *
+     * @return Result code
      */
     Result install(Interrupt vector, Handler handler);
 
     /**
      * Check if an IRQ vector is set.
+     *
+     * @param irq Interrupt number
+     *
+     * @return True if triggered. False otherwise
      */
     virtual bool isTriggered(uint irq) = 0;
 
@@ -80,7 +89,7 @@ class ARMInterrupt : public IntController
      *
      * The ARM processor will start executing at the appropriate
      * vector offset in the jump table and perform a jump to
-     * the interrupt handler address, which it retrieves from the 
+     * the interrupt handler address, which it retrieves from the
      * interrupt handlers table.
      *
      * @see m_handlerTable;

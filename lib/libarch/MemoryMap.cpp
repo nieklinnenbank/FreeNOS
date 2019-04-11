@@ -33,7 +33,7 @@ MemoryMap::MemoryMap(const MemoryMap &map)
     setRange(UserArgs,      map.m_regions[UserArgs]);
 }
 
-Memory::Range MemoryMap::range(MemoryMap::Region region)
+Memory::Range MemoryMap::range(MemoryMap::Region region) const
 {
     return m_regions[region];
 }

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -113,9 +113,9 @@ MemoryContext::Result ARMPaging::enableMMU()
     ctrl.set(ARMControl::BranchPrediction);
 
     // Program first level table
-    ctrl.write(ARMControl::TranslationTable0, (((u32) m_firstTableAddr) | 
-        (1 << 3) | /* outer write-back, write-allocate */
-        (1 << 6)   /* inner write-back, write-allocate */
+    ctrl.write(ARMControl::TranslationTable0, (((u32) m_firstTableAddr) |
+        (1 << 3) | // outer write-back, write-allocate
+        (1 << 6)   // inner write-back, write-allocate
     ));
     ctrl.write(ARMControl::TranslationTable1,    0);
     ctrl.write(ARMControl::TranslationTableCtrl, 0);
@@ -147,7 +147,7 @@ MemoryContext::Result ARMPaging::enableMMU()
     isb();
     return Success;
 }
-#endif
+#endif /* ARMV7 */
 
 MemoryContext::Result ARMPaging::activate()
 {
@@ -164,14 +164,15 @@ MemoryContext::Result ARMPaging::activate()
 #ifdef ARMV6
         mcr(p15, 0, 0, c7, c5,  0);    // flush entire instruction cache
         mcr(p15, 0, 0, c7, c10, 0);    // flush entire data cache
-        mcr(p15, 0, 0, c7, c7,  0);    // flush entire cache 
-        mcr(p15, 0, 5, c7, c10, 0);    // data memory barrier 
-        mcr(p15, 0, 4, c7, c10, 0);    // memory sync barrier 
+        mcr(p15, 0, 0, c7, c7,  0);    // flush entire cache
+        mcr(p15, 0, 5, c7, c10, 0);    // data memory barrier
+        mcr(p15, 0, 4, c7, c10, 0);    // memory sync barrier
 #else
         m_cache.cleanInvalidate(Cache::Unified);
-#endif
+#endif /* ARMV6 */
+
         // Switch first page table and re-enable L1 caching
-        ctrl.write(ARMControl::TranslationTable0, (((u32) m_firstTableAddr) | 
+        ctrl.write(ARMControl::TranslationTable0, (((u32) m_firstTableAddr) |
             (1 << 3) | /* outer write-back, write-allocate */
             (1 << 6)   /* inner write-back, write-allocate */
         ));
@@ -219,12 +220,12 @@ MemoryContext::Result ARMPaging::unmap(Address virt)
     return r;
 }
 
-MemoryContext::Result ARMPaging::lookup(Address virt, Address *phys)
+MemoryContext::Result ARMPaging::lookup(Address virt, Address *phys) const
 {
     return m_firstTable->translate(virt, phys, m_alloc);
 }
 
-MemoryContext::Result ARMPaging::access(Address virt, Memory::Access *access)
+MemoryContext::Result ARMPaging::access(Address virt, Memory::Access *access) const
 {
     return m_firstTable->access(virt, access, m_alloc);
 }

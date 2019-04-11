@@ -32,7 +32,6 @@
 #include "IntelIO.h"
 #include "IntelAPIC.h"
 
-
 /** Forward declarations */
 class MemoryContext;
 class IntelPIT;
@@ -129,6 +128,7 @@ class IntelMP : public CoreManager
      * Boot a processor.
      *
      * @param info CoreInfo object pointer.
+     *
      * @return Result code.
      */
     virtual Result boot(CoreInfo *info);
@@ -148,6 +148,8 @@ class IntelMP : public CoreManager
      * @return MPConfig object pointer on success or ZERO on failure.
      */
     MPConfig * scanMemory(Address addr);
+
+  private:
 
     /** I/O instance for BIOS memory */
     IntelIO m_bios;

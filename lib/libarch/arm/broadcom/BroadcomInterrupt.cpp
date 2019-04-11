@@ -18,6 +18,22 @@
 #include <Log.h>
 #include "BroadcomInterrupt.h"
 
+#define INTERRUPT_BASE_ADDR        0xB000
+#define INTERRUPT_BASICPEND       (INTERRUPT_BASE_ADDR+0x200)
+#define INTERRUPT_IRQPEND1        (INTERRUPT_BASE_ADDR+0x204)
+#define INTERRUPT_IRQPEND2        (INTERRUPT_BASE_ADDR+0x208)
+#define INTERRUPT_FIQCONTROL      (INTERRUPT_BASE_ADDR+0x20C)
+#define INTERRUPT_ENABLEIRQ1      (INTERRUPT_BASE_ADDR+0x210)
+#define INTERRUPT_ENABLEIRQ2      (INTERRUPT_BASE_ADDR+0x214)
+#define INTERRUPT_ENABLEBASICIRQ  (INTERRUPT_BASE_ADDR+0x218)
+#define INTERRUPT_DISABLEIRQ1     (INTERRUPT_BASE_ADDR+0x21C)
+#define INTERRUPT_DISABLEIRQ2     (INTERRUPT_BASE_ADDR+0x220)
+#define INTERRUPT_DISABLEBASICIRQ (INTERRUPT_BASE_ADDR+0x224)
+   #define IRQSYSTIMERC1 1
+   #define IRQSYSTIMERC3 3
+   #define IRQAUX        29
+   #define IRQUART       57
+
 BroadcomInterrupt::BroadcomInterrupt() : ARMInterrupt()
 {
     // disable all IRQ sources first, just to be "safe"
@@ -27,40 +43,40 @@ BroadcomInterrupt::BroadcomInterrupt() : ARMInterrupt()
 
 BroadcomInterrupt::Result BroadcomInterrupt::enable(uint vector)
 {
-    //enable the respective interrupt
+    // enable the respective interrupt
     if(vector < 32)
     {
-        //only 1 bits are recognized when writing to the (en/dis)able regs.
-        //  using |= here could be problematic since it would likely be
-        //  implemented as multiple instructions: at least a read, an or,
-        //  and a write. if we interrupted _after_ the read instruction or
-        //  the or instruction, and disabled certain bits in the IRQ
-        //  routine, the |= would write back the old state of the enable
-        //  bits. This would effectively be re-enabling interrupts that we
-        //  wanted disabled.
-        m_io.write(INTERRUPT_ENABLEIRQ1, (1<<vector)); //zeroes are ignored, don't use |=
+        // only 1 bits are recognized when writing to the (en/dis)able regs.
+        // using |= here could be problematic since it would likely be
+        // implemented as multiple instructions: at least a read, an or,
+        // and a write. if we interrupted _after_ the read instruction or
+        // the or instruction, and disabled certain bits in the IRQ
+        // routine, the |= would write back the old state of the enable
+        // bits. This would effectively be re-enabling interrupts that we
+        // wanted disabled.
+        m_io.write(INTERRUPT_ENABLEIRQ1, (1<<vector));
     }
     else
     {
-        m_io.write(INTERRUPT_ENABLEIRQ2, (1<<(vector-32))); //zeroes are ignored, don't use |=
+        m_io.write(INTERRUPT_ENABLEIRQ2, (1<<(vector-32)));
     }
     return Success;
 }
 
 BroadcomInterrupt::Result BroadcomInterrupt::disable(uint vector)
 {
-    //disable IRQs for this device before NULL-ing the vector. otherwise,
-    //  we might interrupt with a NULL_VECT in the handler's address.
-    //  because the interrupt wasn't ACKed because we never went to the
-    //  handler routine, the device will continue to assert its IRQ line,
-    //  which will put us in a never-ending IRQ loop.
+    // disable IRQs for this device before NULL-ing the vector. otherwise,
+    // we might interrupt with a NULL_VECT in the handler's address.
+    // because the interrupt wasn't ACKed because we never went to the
+    // handler routine, the device will continue to assert its IRQ line,
+    // which will put us in a never-ending IRQ loop.
     if(vector < 32)
     {
-        m_io.write(INTERRUPT_DISABLEIRQ1, (1<<vector)); //zeroes are ignored, don't use |=
+        m_io.write(INTERRUPT_DISABLEIRQ1, (1<<vector));
     }
     else
     {
-        m_io.write(INTERRUPT_DISABLEIRQ2, (1<<(vector-32))); //zeroes are ignored, don't use |=
+        m_io.write(INTERRUPT_DISABLEIRQ2, (1<<(vector-32)));
     }
     return Success;
 }

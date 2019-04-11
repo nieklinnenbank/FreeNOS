@@ -33,7 +33,6 @@
 #include <arm/ARMCore.h>
 #include <arm/ARMCacheV7.h>
 #include <arm/ARMIO.h>
-#include <arm/ARMState.h>
 #include <arm/ARMPaging.h>
 #include <arm/ARMMap.h>
 #include <arm/ARMKernel.h>

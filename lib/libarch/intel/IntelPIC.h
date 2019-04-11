@@ -83,6 +83,7 @@ class IntelPIC : public IntController
      * Enable hardware interrupt (IRQ).
      *
      * @param irq Interrupt Request number.
+     *
      * @return Result code.
      */
     virtual Result enable(uint irq);
@@ -91,6 +92,7 @@ class IntelPIC : public IntController
      * Disable hardware interrupt (IRQ).
      *
      * @param irq Interrupt Request number.
+     *
      * @return Result code.
      */
     virtual Result disable(uint irq);
@@ -103,6 +105,7 @@ class IntelPIC : public IntController
      * on the next trigger moment.
      *
      * @param irq Interrupt Request number to clear.
+     *
      * @return Result code.
      */
     virtual Result clear(uint irq);

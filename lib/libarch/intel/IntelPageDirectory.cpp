@@ -30,13 +30,15 @@
 
 /**
  * Entry inside the page directory of a given virtual address.
+ *
  * @param vaddr Virtual Address.
+ *
  * @return Index of the corresponding page directory entry.
  */
 #define DIRENTRY(vaddr) \
     ((vaddr) >> DIRSHIFT)
 
-IntelPageTable * IntelPageDirectory::getPageTable(Address virt, SplitAllocator *alloc)
+IntelPageTable * IntelPageDirectory::getPageTable(Address virt, SplitAllocator *alloc) const
 {
     u32 entry = m_tables[ DIRENTRY(virt) ];
 
@@ -92,7 +94,9 @@ MemoryContext::Result IntelPageDirectory::unmap(Address virt, SplitAllocator *al
         return table->unmap(virt);
 }
 
-MemoryContext::Result IntelPageDirectory::translate(Address virt, Address *phys, SplitAllocator *alloc)
+MemoryContext::Result IntelPageDirectory::translate(Address virt,
+                                                    Address *phys,
+                                                    SplitAllocator *alloc) const
 {
     IntelPageTable *table = getPageTable(virt, alloc);
     if (!table)
@@ -108,7 +112,9 @@ MemoryContext::Result IntelPageDirectory::translate(Address virt, Address *phys,
         return table->translate(virt, phys);
 }
 
-MemoryContext::Result IntelPageDirectory::access(Address virt, Memory::Access *access, SplitAllocator *alloc)
+MemoryContext::Result IntelPageDirectory::access(Address virt,
+                                                 Memory::Access *access,
+                                                 SplitAllocator *alloc) const
 {
     IntelPageTable *table = getPageTable(virt, alloc);
     if (!table)
@@ -117,7 +123,7 @@ MemoryContext::Result IntelPageDirectory::access(Address virt, Memory::Access *a
         return table->access(virt, access);
 }
 
-u32 IntelPageDirectory::flags(Memory::Access access)
+u32 IntelPageDirectory::flags(Memory::Access access) const
 {
     u32 f = 0;
 
@@ -127,7 +133,9 @@ u32 IntelPageDirectory::flags(Memory::Access access)
     return f;
 }
 
-MemoryContext::Result IntelPageDirectory::releaseRange(Memory::Range range, SplitAllocator *alloc, bool tablesOnly)
+MemoryContext::Result IntelPageDirectory::releaseRange(Memory::Range range,
+                                                       SplitAllocator *alloc,
+                                                       bool tablesOnly)
 {
     Address phys;
 

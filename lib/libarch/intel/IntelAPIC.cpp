@@ -33,10 +33,11 @@
 #define APIC_DEST_DM_INIT       0x00500
 #define APIC_DEST_DM_STARTUP    0x00600
 
-IntelAPIC::IntelAPIC() : IntController()
+IntelAPIC::IntelAPIC()
+    : IntController()
 {
     m_frequency = 0;
-    m_int       = TimerVector;
+    m_int = TimerVector;
     m_io.setBase(IOBase);
 }
 
@@ -45,7 +46,7 @@ IntelIO & IntelAPIC::getIO()
     return m_io;
 }
 
-uint IntelAPIC::getCounter()
+uint IntelAPIC::getCounter() const
 {
     return m_io.read(InitialCount);
 }
@@ -88,7 +89,7 @@ Timer::Result IntelAPIC::start(IntelPIT *pit)
     return Timer::Success;
 }
 
-Timer::Result IntelAPIC::wait(u32 microseconds)
+Timer::Result IntelAPIC::wait(u32 microseconds) const
 {
     if (!isKernel)
     {

@@ -16,7 +16,7 @@
  */
 
 #include "ARMConstant.h"
- 
+
 .globl vecTable, handlerTable, loadCoreState0
 
 /*
@@ -39,7 +39,7 @@ ldr pc, [pc, #0x18] /* Prefetch Abort */
 ldr pc, [pc, #0x18] /* Data Abort */
 ldr pc, [pc, #0x18] /* Reserved */
 ldr pc, [pc, #0x18] /* IRQ vector */
-ldr pc, [pc, #0x18] /* FIQ vector */ 
+ldr pc, [pc, #0x18] /* FIQ vector */
 
 .long(ex_reset)
 .long(ex_undefined)
@@ -60,14 +60,14 @@ ldr pc, [pc, #0x18] /* FIQ vector */
     push {r0-r12}         /* save user registers */
 
     mov r2, sp            /* save SP and LR of user */
-    stmdb r2, {sp, lr}^  
+    stmdb r2, {sp, lr}^
     sub sp, sp, #8
 
     mrs r8, spsr
     push {r8}             /* save program status (SPSR) for user */
 
     mov r0, #\index       /* load function from handlerTable */
-    ldr r1, =handlerTable 
+    ldr r1, =handlerTable
     mov r2, #4
     mla r1, r0, r2, r1
     ldr r0, [r1]
@@ -83,8 +83,8 @@ loadCoreState\index:
     ldmdb r2, {sp, lr}^
 
     add sp, sp, #(13*4)   /* restore user registers */
-    mov r2, sp            
-    ldmdb r2, {r0-r12}^   
+    mov r2, sp
+    ldmdb r2, {r0-r12}^
 
     pop {r14}             /* restore calling PC (return address) */
 

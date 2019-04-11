@@ -117,7 +117,7 @@ class IntelAPIC : public IntController, public Timer
      *
      * @return Initial timer counter.
      */
-    uint getCounter();
+    uint getCounter() const;
 
     /**
      * Initialize the APIC.
@@ -132,7 +132,7 @@ class IntelAPIC : public IntController, public Timer
      * @param microseconds The number of microseconds to wait at minimum.
      * @return Result code.
      */
-    virtual Timer::Result wait(u32 microseconds);
+    virtual Timer::Result wait(u32 microseconds) const;
 
     /**
      * Start the timer using PIT as reference timer.

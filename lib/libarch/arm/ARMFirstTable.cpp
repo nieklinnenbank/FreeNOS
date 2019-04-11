@@ -96,13 +96,15 @@
 
 /**
  * Entry inside the page directory of a given virtual address.
+ *
  * @param vaddr Virtual Address.
+ *
  * @return Index of the corresponding page directory entry.
  */
 #define DIRENTRY(vaddr) \
     ((vaddr) >> DIRSHIFT)
 
-ARMSecondTable * ARMFirstTable::getSecondTable(Address virt, SplitAllocator *alloc)
+ARMSecondTable * ARMFirstTable::getSecondTable(Address virt, SplitAllocator *alloc) const
 {
     u32 entry = m_tables[ DIRENTRY(virt) ];
 
@@ -189,7 +191,9 @@ MemoryContext::Result ARMFirstTable::unmap(Address virt, SplitAllocator *alloc)
         return table->unmap(virt);
 }
 
-MemoryContext::Result ARMFirstTable::translate(Address virt, Address *phys, SplitAllocator *alloc)
+MemoryContext::Result ARMFirstTable::translate(Address virt,
+                                               Address *phys,
+                                               SplitAllocator *alloc) const
 {
     ARMSecondTable *table = getSecondTable(virt, alloc);
     if (!table)
@@ -198,7 +202,9 @@ MemoryContext::Result ARMFirstTable::translate(Address virt, Address *phys, Spli
         return table->translate(virt, phys);
 }
 
-MemoryContext::Result ARMFirstTable::access(Address virt, Memory::Access *access, SplitAllocator *alloc)
+MemoryContext::Result ARMFirstTable::access(Address virt,
+                                            Memory::Access *access,
+                                            SplitAllocator *alloc) const
 {
     ARMSecondTable *table = getSecondTable(virt, alloc);
     if (!table)
@@ -207,7 +213,7 @@ MemoryContext::Result ARMFirstTable::access(Address virt, Memory::Access *access
         return table->access(virt, access);
 }
 
-u32 ARMFirstTable::flags(Memory::Access access)
+u32 ARMFirstTable::flags(Memory::Access access) const
 {
     u32 f = PAGE1_AP_SYS;
 
@@ -224,7 +230,9 @@ u32 ARMFirstTable::flags(Memory::Access access)
     return f;
 }
 
-MemoryContext::Result ARMFirstTable::releaseRange(Memory::Range range, SplitAllocator *alloc, bool tablesOnly)
+MemoryContext::Result ARMFirstTable::releaseRange(Memory::Range range,
+                                                  SplitAllocator *alloc,
+                                                  bool tablesOnly)
 {
     Address phys;
 

@@ -86,6 +86,7 @@ class IntelPIT : public Timer
      * the interrupts generated.
      *
      * @param hertz Number of interrupt triggers per second (in hertz)
+     *
      * @return Result code.
      */
     virtual Result setFrequency(Size hertz);
@@ -103,9 +104,12 @@ class IntelPIT : public Timer
      * Set Control register.
      *
      * @param flags New flags to set in the Control register.
+     *
      * @return Result code.
      */
     Result setControl(ControlFlags flags);
+
+  private:
 
     /** I/O instance */
     IntelIO m_io;

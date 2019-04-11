@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -29,10 +29,22 @@
 #include <Types.h>
 #include <Memory.h>
 
+/**
+ * Per-Core information structure
+ *
+ * This struct contains information relevant for each core in the system.
+ * The kernel and coreserver use this struct for memory management
+ * and setting up IPC communication channels between cores.
+ */
 typedef struct CoreInfo
 {
+    /** Set to non-zero by early boot code when this core is running */
     uint booted;
+
+    /** Core identifier. Zero for the boot core */
     uint coreId;
+
+    /** Defines the physical memory available to the core */
     Memory::Range memory;
 
     /** Kernel entry point */
@@ -44,12 +56,22 @@ typedef struct CoreInfo
     /** Kernel command */
     char kernelCommand[KERNEL_PATHLEN];
 
+    /** Boot image physical memory address */
     Address bootImageAddress;
+
+    /** Boot image size in bytes */
     Address bootImageSize;
+
+    /** Physical memory address of IPC channel for CoreServer of this core */
     Address coreChannelAddress;
+
+    /** Size of the IPC channel in bytes */
     Size coreChannelSize;
 
+    /** Physical memory address of the kernel heap */
     Address heapAddress;
+
+    /** Size in bytes of the kernel heap */
     Size heapSize;
 
     /** Arch-specific timer counter */
@@ -59,6 +81,7 @@ typedef struct CoreInfo
     {
         return false;
     }
+
     bool operator != (const struct CoreInfo & info) const
     {
         return true;

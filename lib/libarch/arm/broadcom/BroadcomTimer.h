@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -10,7 +10,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -54,6 +54,7 @@ class BroadcomTimer : public Timer
      * Set timer frequency.
      *
      * @param hertz Frequency of the timer in hertz.
+     *
      * @return Result code.
      */
     virtual Result setFrequency(Size hertz);
@@ -64,11 +65,14 @@ class BroadcomTimer : public Timer
      * Should be called on each Timer interrupt to
      * keep the m_info variable synchronized with the actual hardware.
      * Also clears the timer interrupt flag.
+     *
+     * @return Result code.
      */
     virtual Result tick();
 
   private:
 
+    /** Number of internal cycles needed to provide the current timer frequency */
     u32 m_cycles;
 
     /** I/O instance */

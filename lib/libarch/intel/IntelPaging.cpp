@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,16 +20,11 @@
 #include "IntelCore.h"
 #include "IntelPaging.h"
 
-//
-// SplitAllocator: physical allocator which defines two regions: low and high.
-//                 it can allocate from either low or high memory, returning physical addresses, aligned e.g. on PAGESIZE.
-//
-// MemoryMap:      defines the virtual memory layout, defines which regions belong to the kernel,
-//                 which belong to the user.
-//
-
 IntelPaging::IntelPaging(MemoryMap *map, SplitAllocator *alloc)
-    : MemoryContext(map, alloc), m_pageDirectoryAllocated(false)
+    : MemoryContext(map, alloc)
+    , m_pageDirectory(0)
+    , m_pageDirectoryAddr(0)
+    , m_pageDirectoryAllocated(false)
 {
     IntelCore core;
 
@@ -65,10 +60,10 @@ IntelPaging::IntelPaging(MemoryMap *map, SplitAllocator *alloc)
 
 IntelPaging::IntelPaging(MemoryMap *map, Address pageDirectory, SplitAllocator *alloc)
     : MemoryContext(map, alloc)
+    , m_pageDirectory((IntelPageDirectory *) alloc->toVirtual(pageDirectory))
+    , m_pageDirectoryAddr(pageDirectory)
+    , m_pageDirectoryAllocated(false)
 {
-    m_pageDirectory     = (IntelPageDirectory *) alloc->toVirtual(pageDirectory);
-    m_pageDirectoryAddr = pageDirectory;
-    m_pageDirectoryAllocated = false;
 }
 
 IntelPaging::~IntelPaging()
@@ -109,12 +104,12 @@ MemoryContext::Result IntelPaging::unmap(Address virt)
     return r;
 }
 
-MemoryContext::Result IntelPaging::lookup(Address virt, Address *phys)
+MemoryContext::Result IntelPaging::lookup(Address virt, Address *phys) const
 {
     return m_pageDirectory->translate(virt, phys, m_alloc);
 }
 
-MemoryContext::Result IntelPaging::access(Address virt, Memory::Access *access)
+MemoryContext::Result IntelPaging::access(Address virt, Memory::Access *access) const
 {
     return m_pageDirectory->access(virt, access, m_alloc);
 }

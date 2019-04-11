@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -51,7 +51,7 @@ typedef struct AoutSymbolTable
     u32 reserved;
 }
 AoutSymbolTable;
-        
+
 /**
  * The section header table for ELF.
  */
@@ -62,7 +62,7 @@ typedef struct ElfSectionHeaderTable
     u32 address;
     u32 shndx;
 }
-ElfSectionHeaderTable;          
+ElfSectionHeaderTable;
 
 /**
  * The Multiboot information.
@@ -100,8 +100,9 @@ typedef struct MultibootModule
 MultibootModule;
 
 /**
- * The memory map. Be careful that the offset 0 is base_addr_low
- * but no size.
+ * The MultiBoot memory map.
+ *
+ * @note Be careful that the offset 0 is base_addr_low but no size.
  */
 typedef struct MultibootMemoryMap
 {

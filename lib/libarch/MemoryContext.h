@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -10,7 +10,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -70,6 +70,7 @@ class MemoryContext
      * Activate the MemoryContext.
      *
      * This function applies this MemoryContext to the hardware MMU.
+     *
      * @return Result code.
      */
     virtual Result activate() = 0;
@@ -80,6 +81,7 @@ class MemoryContext
      * @param virt Virtual address.
      * @param phys Physical address.
      * @param access Page entry protection flags.
+     *
      * @return Result code.
      */
     virtual Result map(Address virt, Address phys, Memory::Access access) = 0;
@@ -91,6 +93,7 @@ class MemoryContext
      * mapping without deallocating any physical memory.
      *
      * @param virt Virtual address to unmap.
+     *
      * @return Result code
      */
     virtual Result unmap(Address virt) = 0;
@@ -99,23 +102,26 @@ class MemoryContext
      * Translate virtual address to physical address.
      *
      * @param virt Virtual address to lookup on input, physical address on output.
+     *
      * @return Result code
      */
-    virtual Result lookup(Address virt, Address *phys) = 0;
+    virtual Result lookup(Address virt, Address *phys) const = 0;
 
     /**
      * Get Access flags for a virtual address.
      *
      * @param virt Virtual address to get Access flags for.
      * @param access MemoryAccess object pointer.
+     *
      * @return Result code.
      */
-    virtual Result access(Address addr, Memory::Access *access) = 0;
+    virtual Result access(Address addr, Memory::Access *access) const = 0;
 
     /**
      * Map a range of physical pages to virtual addresses.
      *
      * @param range Range object describing the range of physical pages.
+     *
      * @return Result code.
      */
     virtual Result mapRange(Memory::Range *range);
@@ -124,6 +130,7 @@ class MemoryContext
      * Unmaps a range of virtual memory.
      *
      * @param range Range object describing the range of virtual addresses.
+     *
      * @return Result code
      */
     virtual Result unmapRange(Memory::Range *range);
@@ -132,6 +139,7 @@ class MemoryContext
      * Release a memory page mapping.
      *
      * @param virt Virtual address of the page to release.
+     *
      * @return Result code
      */
     virtual Result release(Address virt);
@@ -140,6 +148,7 @@ class MemoryContext
      * Release a range of physical memory by its virtual memory pages.
      *
      * @param range Range object describing the range of physical pages to release.
+     *
      * @return Result code
      */
     virtual Result releaseRange(Memory::Range *range, bool tablesOnly = false) = 0;
@@ -151,6 +160,7 @@ class MemoryContext
      * which resides in the given memory region.
      *
      * @param region Memory region to release
+     *
      * @return Result code
      */
     virtual Result releaseRegion(MemoryMap::Region region, bool tablesOnly = false) = 0;
@@ -165,9 +175,10 @@ class MemoryContext
      * @param region Memory region to search in.
      * @param size Number of bytes requested to be free.
      * @param virt Virtual memory address on output.
+     *
      * @return Result code
      */
-    virtual Result findFree(Size size, MemoryMap::Region region, Address *virt);
+    virtual Result findFree(Size size, MemoryMap::Region region, Address *virt) const;
 
   protected:
 

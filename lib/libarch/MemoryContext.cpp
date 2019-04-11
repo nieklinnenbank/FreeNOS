@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -10,7 +10,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -22,9 +22,9 @@
 MemoryContext * MemoryContext::m_current = 0;
 
 MemoryContext::MemoryContext(MemoryMap *map, SplitAllocator *alloc)
+    : m_alloc(alloc)
+    , m_map(map)
 {
-    m_alloc = alloc;
-    m_map   = map;
 }
 
 MemoryContext::~MemoryContext()
@@ -77,7 +77,7 @@ MemoryContext::Result MemoryContext::release(Address virt)
     return result;
 }
 
-MemoryContext::Result MemoryContext::findFree(Size size, MemoryMap::Region region, Address *virt)
+MemoryContext::Result MemoryContext::findFree(Size size, MemoryMap::Region region, Address *virt) const
 {
     Memory::Range r = m_map->range(region);
     Size currentSize = 0;

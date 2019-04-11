@@ -27,7 +27,7 @@ ARMTimer::ARMTimer()
 {
 }
 
-u32 ARMTimer::getSystemFrequency(void)
+u32 ARMTimer::getSystemFrequency(void) const
 {
     return mrc(p15, 0, 0, c14, c0);
 }
@@ -35,16 +35,6 @@ u32 ARMTimer::getSystemFrequency(void)
 void ARMTimer::setPL1TimerValue(u32 value)
 {
     mcr(p15, 0, 0, c14, c2, value);
-}
-
-u64 ARMTimer::getPL1TimerCompare(void)
-{
-    return mrrc(p15, 2, c14);
-}
-
-void ARMTimer::setPL1TimerCompare(u64 value)
-{
-    mcrr(p15, 2, c14, value);
 }
 
 void ARMTimer::setPL1Control(u32 value)

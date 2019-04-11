@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -26,8 +26,6 @@
  */
 class Timer
 {
-  private:
-
   public:
 
     /**
@@ -74,6 +72,7 @@ class Timer
      * Set timer frequency.
      *
      * @param hertz Frequency of the timer in hertz.
+     *
      * @return Result code.
      */
     virtual Result setFrequency(Size hertz);
@@ -82,6 +81,7 @@ class Timer
      * Get current timer info.
      *
      * @param info Timer Info object pointer for output.
+     *
      * @return Result code.
      */
     virtual Result getCurrent(Info *info);
@@ -125,14 +125,16 @@ class Timer
      * Busy wait a number of microseconds.
      *
      * @param microseconds The number of microseconds to wait at minimum.
+     *
      * @return Result code.
      */
-    virtual Result wait(u32 microseconds);
+    virtual Result wait(u32 microseconds) const;
 
     /**
      * Check if a timer value is expired
      *
      * @param info Timer info value to compare
+     *
      * @return True if expired, false otherwise
      */
     bool isExpired(const Info & info) const;

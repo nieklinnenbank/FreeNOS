@@ -65,6 +65,8 @@ class BroadcomGPIO
         IOError
     };
 
+  public:
+
     /**
      * Constructor
      */
@@ -82,6 +84,7 @@ class BroadcomGPIO
      *
      * @param pin Pin number to set.
      * @param function Alternate function number to set.
+     *
      * @return Result code.
      */
     virtual Result setAltFunction(Size pin, uint function);

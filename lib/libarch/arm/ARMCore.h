@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -10,7 +10,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -26,14 +26,18 @@
 /**
  * Retrieve the IRQ number from CPUState.
  * This does not work for ARM. See BCM2835Interrupt instead.
+ *
  * @return IRQ number.
  */
 #define IRQ_REG(state) \
     (0)
-//(state)->r0)
 
 /**
- * We remap IRQ's to interrupt vectors 32-47.
+ * Remap interrupt vector (unused for ARM)
+ *
+ * @param vector Interrupt vector number
+ *
+ * @return Same interrupt vector
  */
 #define IRQ(vector) (vector)
 
@@ -85,68 +89,48 @@
 
 /**
  * Reads the CPU's timestamp counter.
+ *
  * @return 64-bit integer.
  */
 #define timestamp() 0
 
 /**
- * Reboot the system (by sending the a reset signal on the keyboard I/O port)
+ * Reboot the system
  */
 #define cpu_reboot()
 
 /**
  * Shutdown the machine via ACPI.
+ *
  * @note We do not have ACPI yet. Shutdown now has a bit naive implementation.
  * @see http://forum.osdev.org/viewtopic.php?t=16990
  */
 #define cpu_shutdown()
 
-/**  
- * Puts the CPU in a lower power consuming state. 
+/**
+ * Puts the CPU in a lower power consuming state.
  */
 #define idle() \
     asm volatile ("wfi")
 
-/**
- * Explicitely enable interrupts.
- */
-#define irq_enable() \
-({ \
-    asm volatile("mrs r0,cpsr;" \
-                 "bic r0, r0, #0x180;" /* both IRQ and FIQ */ \
-                 "msr cpsr_c,r0"); \
-})
-
-/**
- * Disable interrupts, and store current interrupt state.
- * @warning This is dangerous: no guarantee of the current stack state.
- */
-#define irq_disable() \
-({ \
-    asm volatile("mrs r0,cpsr;" \
-                 "orr r0, r0, #0x180;" /* both IRQ and FIQ */ \
-                 "msr cpsr_c,r0"); \
-})
-
-/**
- * Restore the previous interrupt state.
- * @warning This is dangerous: no guarantee of the current stack state.
- */
-#define irq_restore(saved)
-
 #ifdef ARMV6
+/**
+ * Flush the entire Translation Lookaside Buffer.
+ */
 #define tlb_flush_all() \
 ({ \
     ARMControl ctrl; \
     ctrl.write(ARMControl::UnifiedTLBClear, 0); \
 })
 #else
+/**
+ * Flush the entire Translation Lookaside Buffer.
+ */
 inline void tlb_flush_all()
 {
     asm volatile ("mcr p15, 0, %0, c8, c7, 0" :: "r"(0) : "memory");
 }
-
-#endif
+#endif /* ARMV6 */
 
 #define tlb_invalidate(page) \
 ({ \
@@ -215,7 +199,7 @@ inline void isb()
 }
 
 /** 
- * Contains all the CPU registers. 
+ * Contains all the CPU registers.
  */
 typedef struct CPUState
 {
@@ -228,30 +212,35 @@ typedef struct CPUState
 ALIGN(4) CPUState;
 
 /**
- *
+ * Class representing an ARM processor core
  */
 class ARMCore : public Core
 {
   public:
 
+    /**
+     * Result codes
+     */
     enum Result
     {
         Success = 0,
     };
+
+  public:
 
     /**
      * Log a CPU exception.
      *
      * @param state The current CPU state.
      */
-    void logException(CPUState *state);
+    void logException(CPUState *state) const;
 
     /**
      * Log the CPU state.
      *
      * @param state The current CPU state.
      */
-    void logState(CPUState *state);
+    void logState(CPUState *state) const;
 
     /**
      * Log a register.
@@ -260,7 +249,7 @@ class ARMCore : public Core
      * @param reg Value of the register.
      * @param text Additional information text.
      */
-    void logRegister(const char *name, u32 reg, const char *text = "");
+    void logRegister(const char *name, u32 reg, const char *text = "") const;
 };
 
 #endif /* __ARM_CORE_H */
