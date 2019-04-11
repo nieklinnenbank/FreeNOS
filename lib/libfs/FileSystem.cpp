@@ -159,7 +159,7 @@ Error FileSystem::processRequest(FileSystemRequest *req)
                     (Address) msg->path, PATHLEN)) <= 0)
     {
         ERROR("path missing: result = " << (int)msg->result << " from = " << msg->from <<
-              " addr = " << (uint)msg->path << " action = " << (int) msg->action << " stat = " << (int) msg->stat);
+              " addr = " << (void *) msg->path << " action = " << (int) msg->action << " stat = " << (void *) msg->stat);
         msg->type = ChannelMessage::Response;
         msg->result = EACCES;
         m_registry->getProducer(msg->from)->write(msg);

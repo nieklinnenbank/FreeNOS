@@ -48,7 +48,7 @@ int stat(const char *path, struct stat *buf)
     msg.path   = fullpath;
     msg.stat   = &st;
 
-    DEBUG("path = " << (uint) msg.path << " stat = " << (uint) msg.stat);
+    DEBUG("path = " << (void *) msg.path << " stat = " << (void *) msg.stat);
 
     /* Ask the FileSystem for the information. */
     if (mnt)
