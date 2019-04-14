@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -42,7 +42,7 @@ class Device : public File
      *
      * @return String object
      */
-    virtual String & getIdentifier();
+    virtual const String & getIdentifier() const;
 
     /**
      * @brief Perform device specific initialization.
@@ -55,6 +55,7 @@ class Device : public File
      * Called when an interrupt has been triggered for this device.
      *
      * @param vector Vector number of the interrupt.
+     *
      * @return Error result code.
      */
     virtual Error interrupt(Size vector);

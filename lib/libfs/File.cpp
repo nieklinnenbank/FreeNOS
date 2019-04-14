@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,25 +18,25 @@
 #include "File.h"
 
 File::File(FileType type, UserID uid, GroupID gid)
+    : m_type(type)
+    , m_uid(uid)
+    , m_gid(gid)
 {
-    m_type      = type;
     m_access    = OwnerRWX;
     m_size      = 0;
     m_openCount = 0;
-    m_uid       = uid;
-    m_gid       = gid;
 }
 
 File::~File()
 {
 }
 
-FileType File::getType()
+FileType File::getType() const
 {
     return m_type;
 }
 
-Size File::getOpenCount()
+Size File::getOpenCount() const
 {
     return m_openCount;
 }
@@ -62,7 +62,7 @@ Error File::write(IOBuffer & buffer, Size size, Size offset)
 {
     return ENOTSUP;
 }
-    
+
 Error File::status(FileSystemMessage *msg)
 {
     FileStat st;
@@ -76,7 +76,7 @@ Error File::status(FileSystemMessage *msg)
     st.groupID  = m_gid;
     st.deviceID.major = m_deviceId.major;
     st.deviceID.minor = m_deviceId.minor;
-    
+
     // Copy to the remote process
     if ((e = VMCopy(msg->from, API::Write, (Address) &st,
                    (Address) msg->stat, sizeof(st)) > 0))

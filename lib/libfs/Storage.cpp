@@ -15,35 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __FILESYSTEM_FILESTAT_H
-#define __FILESYSTEM_FILESTAT_H
-
 #include <Types.h>
-#include "FileType.h"
+#include <errno.h>
+#include "Storage.h"
 
-/**
- * Contains file information.
- */
-typedef struct FileStat
+Storage::Storage()
 {
-    /** File type. */
-    FileType type;
-
-    /** File access permission bits. */
-    FileModes access;
-
-    /** Size of the file in bytes. */
-    Size size;
-
-    /** User identity. */
-    UserID userID;
-
-    /** Group identity. */
-    GroupID groupID;
-
-    /** Device identity. */
-    DeviceID deviceID;
 }
-FileStat;
 
-#endif /* __FILESYSTEM_FILESTAT_H */
+Storage::~Storage()
+{
+}
+
+Error Storage::read(u64 offset, void *buffer, Size size)
+{
+    return ENOTSUP;
+}
+
+Error Storage::write(u64 offset, void *buffer, Size size)
+{
+    return ENOTSUP;
+}
