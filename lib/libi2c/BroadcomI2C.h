@@ -111,6 +111,7 @@ class BroadcomI2C : public I2C
      * Set clock divider.
      *
      * @param divider Clock divider to use.
+     *
      * @return Result code.
      */
     virtual Result setClockDivider(Size divider);
@@ -119,6 +120,7 @@ class BroadcomI2C : public I2C
      * Set Slave address.
      *
      * @param addr The 7-bit address of the I2C slave device.
+     *
      * @return Result code.
      */
     virtual Result setAddress(Address addr);
@@ -128,6 +130,7 @@ class BroadcomI2C : public I2C
      *
      * @param buf Buffer containing bytes to write.
      * @param size Number of bytes to write.
+     *
      * @return Result code.
      */
     virtual Result write(u8 *buf, Size size);
@@ -137,6 +140,7 @@ class BroadcomI2C : public I2C
      *
      * @param buf Buffer for storing bytes read.
      * @param size Number of bytes to read.
+     *
      * @return Result code.
      */
     virtual Result read(u8 *buf, Size size);
