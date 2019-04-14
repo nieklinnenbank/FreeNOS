@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -42,6 +42,8 @@ class ChannelRegistry
         NotFound
     };
 
+  public:
+
     /**
      * Constructor.
      */
@@ -56,6 +58,7 @@ class ChannelRegistry
      * Get one consumer.
      *
      * @param pid ProcessID of the channel to get
+     *
      * @return Channel pointer if found or ZERO
      */
     Channel * getConsumer(ProcessID pid);
@@ -64,6 +67,7 @@ class ChannelRegistry
      * Get one producer.
      *
      * @param pid ProcessID of the channel to get
+     *
      * @return Channel pointer if found or ZERO
      */
     Channel * getProducer(ProcessID pid);
@@ -87,6 +91,7 @@ class ChannelRegistry
      *
      * @param pid ProcessID of the attached process
      * @param channel Channel object
+     *
      * @return Result code
      */
     Result registerConsumer(ProcessID pid, Channel *channel);
@@ -96,6 +101,7 @@ class ChannelRegistry
      *
      * @param pid ProcessID of the attached process
      * @param channel Channel object
+     *
      * @return Result code
      */
     Result registerProducer(ProcessID pid, Channel *channel);
@@ -104,6 +110,7 @@ class ChannelRegistry
      * Unregister consumer channel.
      *
      * @param pid ProcessID of the attached process
+     *
      * @return Result code
      */
     Result unregisterConsumer(ProcessID pid);
@@ -112,6 +119,7 @@ class ChannelRegistry
      * Unregister producer channel.
      *
      * @param pid ProcessID of the attached process
+     *
      * @return Result code
      */
     Result unregisterProducer(ProcessID pid);

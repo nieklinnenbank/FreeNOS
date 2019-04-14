@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -34,21 +34,24 @@ template <class Func> struct MessageHandler
 {
     /**
      * Constructor function.
+     *
      * @param f Function to execute.
      * @param r Send a reply?
      */
     MessageHandler(Func f, bool r) : exec(f), sendReply(r)
-    {}
-    
+    {
+    }
+
     /** Handler function. */
     Func exec;
-    
+
     /** Whether to send a reply or not. */
     bool sendReply;
 };
 
 /**
  * Template class which serves incoming messages from Channels using MessageHandlers.
+ *
  * @param MsgType Type of Message to serve.
  */
 template <class Base, class MsgType> class ChannelServer
@@ -57,7 +60,7 @@ template <class Base, class MsgType> class ChannelServer
 
     /** Member function pointer inside Base, to handle IPC messages. */
     typedef void (Base::*IPCHandlerFunction)(MsgType *);
-    
+
     /** Member function pointer inside Base, to handle interrupts. */
     typedef void (Base::*IRQHandlerFunction)(Size);
 
@@ -76,6 +79,7 @@ template <class Base, class MsgType> class ChannelServer
 
     /**
      * Constructor function.
+     *
      * @param num Number of message handlers to support.
      */
     ChannelServer(Base *inst, Size num = 32)
@@ -169,12 +173,14 @@ template <class Base, class MsgType> class ChannelServer
                 }
             }
         }
+
         // Satify compiler
         return 0;
     }
-    
+
     /**
      * Register a new IPC message action handler.
+     *
      * @param slot Action value to trigger h.
      * @param h Handler to execute.
      * @param r Does the handler need to send a reply (per default) ?
@@ -183,9 +189,10 @@ template <class Base, class MsgType> class ChannelServer
     {
         m_ipcHandlers->insert(slot, new MessageHandler<IPCHandlerFunction>(h, sendReply));
     }
-    
+
     /**
      * Register a new IRQ message vector handler
+     *
      * @param slot Vector value to trigger h.
      * @param h Handler to execute.
      */
@@ -239,6 +246,7 @@ template <class Base, class MsgType> class ChannelServer
      *
      * @param pid ProcessID
      * @param range Memory range of shared mapping
+     *
      * @return Result code
      */
     Result accept(ProcessID pid, Memory::Range range)
@@ -398,10 +406,10 @@ template <class Base, class MsgType> class ChannelServer
 
     /** IPC handler functions. */
     Vector<MessageHandler<IPCHandlerFunction> *> *m_ipcHandlers;
-    
+
     /** IRQ handler functions. */
     Vector<MessageHandler<IRQHandlerFunction> *> *m_irqHandlers;
-    
+
     /** Server object instance. */
     Base *m_instance;
 

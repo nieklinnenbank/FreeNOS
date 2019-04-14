@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -218,7 +218,7 @@ Channel * ChannelClient::findConsumer(ProcessID pid)
     // Try to connect
     if ((r = connect(pid)) != Success)
         return ZERO;
-    
+
     return m_registry->getConsumer(pid);
 }
 
@@ -232,7 +232,7 @@ Channel * ChannelClient::findProducer(ProcessID pid)
     // Try to connect
     if ((r = connect(pid)) != Success)
         return ZERO;
-    
+
     return m_registry->getProducer(pid);
 }
 

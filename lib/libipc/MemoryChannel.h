@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -36,6 +36,9 @@ class MemoryChannel : public Channel
 {
   private:
 
+    /**
+     * Defines in-memory ring header
+     */
     typedef struct RingHead
     {
         /** Index where the ring buffer starts. */
@@ -65,6 +68,7 @@ class MemoryChannel : public Channel
      *             Read/Write for the producer, Read-only for the consumer.
      * @param feedback Virtual memory address of the feedback page.
      *        Read/write for the consumer, read-only for the producer.
+     *
      * @return Result code.
      */
     Result setVirtual(Address data, Address feedback);
@@ -79,6 +83,7 @@ class MemoryChannel : public Channel
      *             Read/Write for the producer, Read-only for the consumer.
      * @param feedback Physical memory address of the feedback page.
      *        Read/write for the consumer, read-only for the producer.
+     *
      * @return Result code.
      */
     Result setPhysical(Address data, Address feedback);
@@ -87,6 +92,7 @@ class MemoryChannel : public Channel
      * Set message size.
      *
      * @param size New message size.
+     *
      * @return Result code.
      */
     virtual Result setMessageSize(Size size);
@@ -95,6 +101,7 @@ class MemoryChannel : public Channel
      * Read a message.
      *
      * @param buffer Output buffer for the message.
+     *
      * @return Result code.
      */
     virtual Result read(void *buffer);
@@ -103,6 +110,7 @@ class MemoryChannel : public Channel
      * Write a message.
      *
      * @param buffer Input buffer for the message.
+     *
      * @return Result code.
      */
     virtual Result write(void *buffer);
