@@ -47,6 +47,8 @@ class NetworkQueue
     }
     Packet;
 
+  public:
+
     /**
      * Constructor
      *

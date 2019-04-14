@@ -48,6 +48,8 @@ class UDP : public NetworkProtocol
     }
     Header;
 
+  public:
+
     /**
      * Constructor
      */
@@ -111,6 +113,8 @@ class UDP : public NetworkProtocol
 
     static const ulong calculateSum(const u16 *ptr,
                                     Size bytes);
+
+  private:
 
     UDPFactory *m_factory;
 

@@ -108,7 +108,6 @@ NetworkClient::Result NetworkClient::connectSocket(int sock, IPV4::Address addr,
 
 NetworkClient::Result NetworkClient::bindSocket(int sock, IPV4::Address addr, u16 port)
 {
-    
     DEBUG("");
     return writeSocketInfo(sock, addr, port, Listen);
 }

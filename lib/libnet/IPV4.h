@@ -87,6 +87,8 @@ class IPV4 : public NetworkProtocol
     }
     PseudoHeader;
 
+  public:
+
     /**
      * Constructor
      */
@@ -100,6 +102,8 @@ class IPV4 : public NetworkProtocol
 
     /**
      * Perform initialization.
+     *
+     * @return Error code
      */
     virtual Error initialize();
 
@@ -120,6 +124,7 @@ class IPV4 : public NetworkProtocol
      * Get current IP address
      *
      * @param address IPV4 address buffer
+     *
      * @return Error code
      */
     virtual Error getAddress(Address *address);
@@ -128,8 +133,9 @@ class IPV4 : public NetworkProtocol
      * Set current IP address
      *
      * @param address IPV4 address buffer
+     *
      * @return Error code
-     */    
+     */
     virtual Error setAddress(Address *address);
 
     /**
@@ -152,6 +158,8 @@ class IPV4 : public NetworkProtocol
      * Get a new packet for transmission
      *
      * @param destination
+     *
+     * @return Error code
      */
     Error getTransmitPacket(NetworkQueue::Packet **pkt,
                             Address destination,
@@ -170,6 +178,7 @@ class IPV4 : public NetworkProtocol
      *
      * @param buffer Input buffer for calculating checksum
      * @param length Number of bytes in the buffer
+     *
      * @return IP checksum value for the given buffer
      */
     static const u16 checksum(const void *buffer, Size length);

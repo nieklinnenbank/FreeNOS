@@ -59,6 +59,8 @@ class ICMP : public NetworkProtocol
     }
     Header;
 
+  public:
+
     /**
      * Constructor
      */
@@ -77,6 +79,8 @@ class ICMP : public NetworkProtocol
 
     /**
      * Perform initialization.
+     *
+     * @return Error code
      */
     virtual Error initialize();
 
@@ -96,6 +100,8 @@ class ICMP : public NetworkProtocol
 
     /**
      * Send packet
+     *
+     * @return Error code
      */
     Error sendPacket(IPV4::Address ip, Header *header);
 

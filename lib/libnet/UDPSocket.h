@@ -57,6 +57,7 @@ class UDPSocket : public NetworkSocket
      * @param buffer Input/Output buffer to output bytes to.
      * @param size Number of bytes to read, at maximum.
      * @param offset Offset inside the file to start reading.
+     *
      * @return Number of bytes read on success, Error on failure.
      */
     virtual Error read(IOBuffer & buffer, Size size, Size offset);
@@ -67,6 +68,7 @@ class UDPSocket : public NetworkSocket
      * @param buffer Input/Output buffer to input bytes from.
      * @param size Number of bytes to write, at maximum.
      * @param offset Offset inside the file to start writing.
+     *
      * @return Number of bytes written on success, Error on failure.
      */
     virtual Error write(IOBuffer & buffer, Size size, Size offset);

@@ -53,6 +53,8 @@ class NetworkProtocol : public Directory
 
     /**
      * Perform initialization.
+     *
+     * @return Error code
      */
     virtual Error initialize() = 0;
 
