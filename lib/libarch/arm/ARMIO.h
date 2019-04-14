@@ -91,9 +91,9 @@ class ARMIO : public IO
     inline void write(u32 reg, u32 data)
     {
         dmb();
-        u32 *ptr = (u32 *) (reg + m_base);
+        u32 addr = reg + m_base;
         asm volatile("str %[data], [%[reg]]"
-                 : : [reg]"r"(ptr), [data]"r"(data));
+                 : : [reg]"r"(addr), [data]"r"(data));
         dmb();
     }
 
@@ -107,10 +107,10 @@ class ARMIO : public IO
     inline u32 read(u32 reg) const
     {
         dmb();
-        u32 *ptr = (u32 *) (reg + m_base);
+        u32 addr = reg + m_base;
         u32 data;
         asm volatile("ldr %[data], [%[reg]]"
-                 : [data]"=r"(data) : [reg]"r"(ptr));
+                 : [data]"=r"(data) : [reg]"r"(addr));
         dmb();
         return data;
     }
