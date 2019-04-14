@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -146,7 +146,7 @@ int MPI_Init(int *argc, char ***argv)
     }
     else
     {
-        // If we are slave (node N): 
+        // If we are slave (node N):
         // read the -addr argument, and map the UniChannels into our address space.
         for (int i = 1; i < (*argc); i++)
         {
@@ -194,10 +194,12 @@ int MPI_Init(int *argc, char ***argv)
         readChannel->insert(i, *ch);
 
         if (info.coreId == 0)
-        printf("%s: read: core%d: data=%x feedback=%x base%d=%x\n", (*argv)[0], i, 
-            MEMBASE(info.coreId) + (PAGESIZE * 2 * i),
-            MEMBASE(info.coreId) + (PAGESIZE * 2 * i) + PAGESIZE,
-            i, MEMBASE(i));
+        {
+            printf("%s: read: core%d: data=%x feedback=%x base%d=%x\n", (*argv)[0], i,
+                    MEMBASE(info.coreId) + (PAGESIZE * 2 * i),
+                    MEMBASE(info.coreId) + (PAGESIZE * 2 * i) + PAGESIZE,
+                    i, MEMBASE(i));
+        }
     }
 
     // Fill write channels
@@ -211,10 +213,12 @@ int MPI_Init(int *argc, char ***argv)
         writeChannel->insert(i, *ch);
 
         if (info.coreId == 0)
-        printf("%s: write: core%d: data=%x feedback=%x base%d=%x\n", (*argv)[0], i, 
-            MEMBASE(i) + (PAGESIZE * 2 * info.coreId),
-            MEMBASE(i) + (PAGESIZE * 2 * info.coreId) + PAGESIZE,
-            i, MEMBASE(i));
+        {
+            printf("%s: write: core%d: data=%x feedback=%x base%d=%x\n", (*argv)[0], i,
+                    MEMBASE(i) + (PAGESIZE * 2 * info.coreId),
+                    MEMBASE(i) + (PAGESIZE * 2 * info.coreId) + PAGESIZE,
+                    i, MEMBASE(i));
+        }
     }
 
     return MPI_SUCCESS;
