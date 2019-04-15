@@ -39,6 +39,8 @@ class SPI
         RangeError
     };
 
+  public:
+
     /**
      * Constructor
      */
@@ -57,6 +59,7 @@ class SPI
      * @param sendBuf Buffer containing bytes to write, and to read.
      * @param recvBuf Buffer for receiving bytes.
      * @param size Number of bytes to write/read.
+     *
      * @return Result code.
      */
     virtual Result transfer(u8 *sendBuf, u8 *recvBuf, Size size) = 0;
@@ -66,6 +69,7 @@ class SPI
      *
      * @param buf Buffer containing bytes to write.
      * @param size Number of bytes to write.
+     *
      * @return Result code.
      */
     virtual Result write(u8 *buf, Size size) = 0;
@@ -75,6 +79,7 @@ class SPI
      *
      * @param buf Buffer for storing bytes read.
      * @param size Number of bytes to read.
+     *
      * @return Result code.
      */
     virtual Result read(u8 *buf, Size size) = 0;

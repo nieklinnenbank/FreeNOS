@@ -38,7 +38,7 @@ BroadcomSPI::Result BroadcomSPI::initialize()
     m_gpio.setAltFunction(9,  BroadcomGPIO::Function0); // MISO
     m_gpio.setAltFunction(10, BroadcomGPIO::Function0); // MOSI
     m_gpio.setAltFunction(11, BroadcomGPIO::Function0); // CLK
-    
+
     // Reset registers and clear FIFO
     m_io.write(Control, 0);
     m_io.write(Control, ClearFIFO);
