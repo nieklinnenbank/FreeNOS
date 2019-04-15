@@ -39,6 +39,7 @@ template <class T> class TestInt : public TestData<T>
      * Get random test value(s).
      *
      * @param count Number or values to generate.
+     *
      * @return The last generated T value.
      */
     virtual T random(Size count = 1);
@@ -47,6 +48,7 @@ template <class T> class TestInt : public TestData<T>
      * Get unique random test value(s).
      *
      * @param count Number of unique values to generate.
+     *
      * @return The last generated T value.
      */
     virtual T unique(Size count = 1);

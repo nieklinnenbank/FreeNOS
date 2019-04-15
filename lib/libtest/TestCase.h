@@ -47,6 +47,7 @@
  * Test if the given expression is true and return NOK otherwise.
  *
  * @param expression The expression to test against
+ *
  * @return NOK only if the expression evaluates to false
  */
 #define testAssert(expression) \

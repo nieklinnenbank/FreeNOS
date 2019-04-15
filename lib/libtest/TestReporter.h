@@ -105,6 +105,8 @@ class TestReporter
      */
     virtual void reportFinish(List<TestInstance *> & tests) = 0;
 
+  protected:
+
     /** Argument count */
     int m_argc;
 

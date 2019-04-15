@@ -22,22 +22,49 @@
 
 class TestReporter;
 
+/**
+ * Reponsible for discovering and running tests
+ */
 class TestRunner
 {
   public:
 
+    /**
+     * Class constructor
+     *
+     * @param argc Program argument count
+     * @param argv Program argument values
+     */
     TestRunner(int argc, char **argv);
 
+    /**
+     * Destructor
+     */
     virtual ~TestRunner();
 
+    /**
+     * Get test reporter
+     *
+     * @return TestReporter pointer
+     */
     TestReporter * getReporter();
 
+    /**
+     * Run all discovered tests
+     *
+     * @return Number of failed tests. Zero if success.
+     */
     int run(void);
 
   protected:
 
+    /** Program argument count */
     int m_argc;
+
+    /** Program argument values */
     char **m_argv;
+
+    /** Reports test results */
     TestReporter *m_reporter;
 };
 

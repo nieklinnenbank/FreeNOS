@@ -50,6 +50,8 @@ class TestResult
         Skipped
     };
 
+  public:
+
     /**
      * Constructor
      */

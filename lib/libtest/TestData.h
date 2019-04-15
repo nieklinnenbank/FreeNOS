@@ -85,6 +85,7 @@ template <class T> class TestData
      * Retrieve previously random generated test data by index.
      *
      * @param index Index of the value to retrieve.
+     *
      * @return T value reference.
      */
     T & get(Size index)
@@ -104,6 +105,7 @@ template <class T> class TestData
      * Get random test value(s).
      *
      * @param count Number or values to generate.
+     *
      * @return The last generated T value.
      */
     virtual T random(Size count = 1) = 0;
@@ -112,6 +114,7 @@ template <class T> class TestData
      * Get unique random test value(s).
      *
      * @param count Number of unique values to generate.
+     *
      * @return The last generated T value.
      */
     virtual T unique(Size count = 1) = 0;

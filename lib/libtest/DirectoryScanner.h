@@ -18,17 +18,36 @@
 #ifndef __LIBTEST_DIRECTORYSCANNER_H
 #define __LIBTEST_DIRECTORYSCANNER_H
 
+/**
+ * Scan directory for automated tests
+ */
 class DirectoryScanner
 {
   public:
 
+    /**
+     * Constructor
+     *
+     * @param argc Program argument count
+     * @param argv Program argument values
+     */
     DirectoryScanner(int argc, char **argv);
 
+    /**
+     * Scan filesystem path for tests
+     *
+     * @param path Input filesystem path
+     *
+     * @return Zero on success, non-zero otherwise
+     */
     int scan(const char *path);
 
   private:
 
+    /** Program argument count */
     int m_argc;
+
+    /** Program argument values */
     char **m_argv;
 };
 
