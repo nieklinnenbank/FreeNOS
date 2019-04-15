@@ -41,7 +41,7 @@ namespace USBTransfer
     {
         High = 0,
         Full = 1,
-        Low  = 2        
+        Low  = 2
     };
 
     /**
@@ -120,7 +120,6 @@ namespace USBTransfer
         u16 length;
     }
     PACKED Setup;
-
 };
 
 #endif /* __LIBUSB_USBDEVICE_H */

@@ -105,6 +105,8 @@ class USBHub : public USBDevice
      */
     Error portAttach(u8 port);
 
+  private:
+
     /** Hub descriptor. */
     USBDescriptor::Hub *m_hub;
 };

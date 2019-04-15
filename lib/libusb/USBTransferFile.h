@@ -39,6 +39,7 @@ class USBTransferFile : public File
      * @param buffer Input/Output buffer to input bytes from.
      * @param size Number of bytes to write, at maximum.
      * @param offset Offset inside the file to start writing.
+     *
      * @return Number of bytes written on success, Error on failure.
      */
     virtual Error write(IOBuffer & buffer, Size size, Size offset);

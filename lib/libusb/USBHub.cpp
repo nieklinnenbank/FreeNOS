@@ -15,21 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
- * Blocking-reads for /path/to/usb/controller/$eventfile
- * The USBController has an EventFile for that, which returns 
- * when the interrupt occurred, perhaps even with the data describing what the event was.
- *
- * The USB Hub powers on, enables, resets, and configures devices+ports when
- * a port status changes. It spawns new device drivers which then do direct I/O with the
- * controller.
- *
- * Interaction with USBController for controlling the ports is using USB Control messages, e.g.:
- *   /usb/control
- * of:
- *   /usb/transfer
- */
-
 #include <Log.h>
 #include <unistd.h>
 #include <string.h>
