@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -62,6 +62,7 @@ template <class T> class Index : public Sequence<T>
      * Adds the given item to the Sequence, if possible.
      *
      * @param item The item to add to the Sequence.
+     *
      * @return Position of the item in the Sequence or -1 on failure.
      */
     virtual int insert(const T & item)
@@ -83,10 +84,12 @@ template <class T> class Index : public Sequence<T>
 
     /**
      * Inserts the given item at the given position.
+     *
      * If an item exists at the given position, it will be replaced by the given item.
      *
      * @param position The position to insert the item.
      * @param item The item to insert
+     *
      * @return bool Whether inserting the item at the given position succeeded.
      */
     virtual bool insert(Size position, const T & item)
@@ -115,6 +118,7 @@ template <class T> class Index : public Sequence<T>
      * Removes the item at the given position.
      *
      * @param position The position of the item to remove.
+     *
      * @return bool Whether removing the item succeeded.
      */
     virtual bool remove(Size position)
@@ -134,6 +138,7 @@ template <class T> class Index : public Sequence<T>
      * Returns the item at the given position.
      *
      * @param position The position of the item to get.
+     *
      * @return Pointer to the item at the given position or ZERO if no item available.
      */
     virtual const T * get(Size position) const
@@ -146,11 +151,12 @@ template <class T> class Index : public Sequence<T>
 
     /**
      * Returns a reference to the item at the given position.
-     * Note that this function does not perform bounds checking.
-     * Position must be a valid index.
      *
      * @param position Valid index inside this array.
+     *
      * @return Reference to the item at the given position
+     *
+     * @note This function does not perform bounds checking. Position must be a valid index.
      */
     virtual const T & at(Size position) const
     {

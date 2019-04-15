@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -49,10 +49,11 @@ template <class K, class V> class HashTable : public Associative<K,V>
          */
         Bucket()
         {
-        }    
+        }
 
         /**
          * Constructor.
+         *
          * @param k K to use.
          * @param v V of the bucket.
          */
@@ -71,6 +72,7 @@ template <class K, class V> class HashTable : public Associative<K,V>
 
         /**
          * Comparision operator.
+         *
          * @param b HashBucket instance to compare us with.
          */
         bool operator == (const Bucket & b) const
@@ -88,7 +90,7 @@ template <class K, class V> class HashTable : public Associative<K,V>
 
         /** Key for this item. */
         K key;
-    
+
         /** Value of the item. */
         V value;
     };
@@ -109,13 +111,15 @@ template <class K, class V> class HashTable : public Associative<K,V>
         for (Size i = 0; i < m_table.size(); i++)
             m_table.insert(List<Bucket>());
     }
-    
+
     /**
      * Inserts the given item to the Assocation.
+     *
      * If an item exists for the given key, its value will be replaced.
      *
      * @param position The position to insert the item.
      * @param item The item to insert
+     *
      * @return bool Whether inserting the item at the given position succeeded.
      */
     virtual bool insert(const K & key, const V & value)
@@ -134,6 +138,7 @@ template <class K, class V> class HashTable : public Associative<K,V>
                 return true;
             }
         }
+
         // Key does not exist. Append it.
         m_table[idx].append(Bucket(key, value));
         m_count++;
@@ -145,6 +150,7 @@ template <class K, class V> class HashTable : public Associative<K,V>
      *
      * @param k Associated key.
      * @param v New item to append.
+     *
      * @return True if append successfull, false otherwise.
      */
     virtual bool append(const K & key, const V & value)
@@ -157,11 +163,12 @@ template <class K, class V> class HashTable : public Associative<K,V>
         m_count++;
         return true;
     }
-    
+
     /**
      * Remove value(s) for the given key.
      *
      * @param k Associated key.
+     *
      * @return Number of values removed.
      */
     virtual int remove(const K & key)
@@ -230,7 +237,7 @@ template <class K, class V> class HashTable : public Associative<K,V>
             for (ListIterator<Bucket> j(m_table[i]); j.hasCurrent(); j++)
                 if (j.current().value == value && !lst.contains(j.current().key))
                     lst << j.current().key;
-        
+
         return lst;
     }
 
@@ -270,6 +277,7 @@ template <class K, class V> class HashTable : public Associative<K,V>
      * Returns the first value for the given key.
      *
      * @param key Key to find.
+     *
      * @return Pointer to the first value for the given key or ZERO if not found.
      */
     virtual const V * get(const K & key) const
@@ -285,10 +293,12 @@ template <class K, class V> class HashTable : public Associative<K,V>
 
     /**
      * Returns a reference to the first value for the given key.
-     * This function assumes the key exists.
      *
      * @param key Key to find.
+     *
      * @return Reference to the first value for the key.
+     *
+     * @note This function assumes the key exists.
      */
     virtual const V & at(const K & key) const
     {
@@ -303,6 +313,7 @@ template <class K, class V> class HashTable : public Associative<K,V>
 
     /**
      * Return the first value for the given key.
+     *
      * If the key is not found, the default value is returned.
      *
      * @return First value for the given key, or the defaultValue.
@@ -348,7 +359,7 @@ template <class K, class V> class HashTable : public Associative<K,V>
 
     /** Internal table. */
     Vector<List<Bucket> > m_table;
-    
+
     /** Number of values in the buckets. */
     Size m_count;
 };

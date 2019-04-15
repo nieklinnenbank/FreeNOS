@@ -44,6 +44,8 @@ class ArgumentParser
         AlreadyExists
     };
 
+  public:
+
     /**
      * Constructor
      */
@@ -85,6 +87,10 @@ class ArgumentParser
     /**
      * Register a flag Argument
      *
+     * @param arg Argument identifier
+     * @param name Argument name
+     * @param description Argument single line description
+     *
      * @return Result code.
      */
     Result registerFlag(char arg,
@@ -93,6 +99,10 @@ class ArgumentParser
 
     /**
      * Register a positional argument.
+     *
+     * @param name Argument name
+     * @param description Argument single line description
+     * @param count Maximum number to set for this positional argument
      *
      * @return Result code.
      */

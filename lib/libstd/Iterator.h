@@ -67,6 +67,7 @@ template <class T> class Iterator
 
     /**
      * Fetch the next item modifiable.
+     *
      * This function first fetches the next item
      * and then updates the current item pointer to that item.
      *
@@ -83,6 +84,7 @@ template <class T> class Iterator
 
     /**
      * Increment operator.
+     *
      * This function first increment the current item
      * and then updates the next item pointer.
      */

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -27,12 +27,15 @@ template <class T> class Singleton
 
     /**
      * Constructor
+     *
      * @param instance New instance of T.
      */
     Singleton<T>(T *obj)
     {
         instance = obj;
     }
+
+  public:
 
     /** One and only instance. */
     static T *instance;

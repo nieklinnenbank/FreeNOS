@@ -47,6 +47,7 @@ class Container
 
     /**
      * Returns the number of items inside the Container.
+     *
      * @return Number of items inside the Container.
      */
     virtual Size count() const = 0;
@@ -67,6 +68,7 @@ class Container
      * Ensure that at least the given size is available.
      *
      * @param size Size to reserve in the Container
+     *
      * @return True if the given size is reserved, false otherwise.
      */
     virtual bool reserve(Size size);
@@ -75,6 +77,7 @@ class Container
      * Shrink the container size by the given amount of items.
      *
      * @param size Number of items to shrink.
+     *
      * @return True if shrink succeeded, false otherwise.
      */
     virtual bool shrink(Size size);
@@ -90,6 +93,7 @@ class Container
      * Change the size of the Container.
      *
      * @param size New size of the container.
+     *
      * @return True if the resize succeeded, false otherwise.
      */
     virtual bool resize(Size size);

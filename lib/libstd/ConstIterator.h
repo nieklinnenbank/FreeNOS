@@ -70,8 +70,11 @@ template <class T> class ConstIterator
 
     /**
      * Increment operator.
+     *
      * This function first increment the current item
      * and then updates the next item pointer.
+     *
+     * @param num Ignored
      */
     virtual void operator ++(int num) = 0;
 };

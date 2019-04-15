@@ -84,6 +84,7 @@ template <class T> class ListIterator : public Iterator<T>
 
     /**
      * Check if there is more on the List to iterate.
+     *
      * @return true if more items, false if not.
      */
     virtual bool hasNext() const
@@ -93,6 +94,7 @@ template <class T> class ListIterator : public Iterator<T>
 
     /**
      * Check if there is a current item on the List.
+     *
      * @return True if current item available, false otherwise.
      */
     virtual bool hasCurrent() const
@@ -122,12 +124,14 @@ template <class T> class ListIterator : public Iterator<T>
 
     /**
      * Fetch the next item.
+     8
      * This function first fetches the next item
      * and then updates the current item pointer to that item.
      * It assumes the iterator has a next item.
      *
-     * @see hasNext
      * @return The next item.
+     *
+     * @see hasNext
      */
     virtual T & next()
     {
@@ -162,6 +166,7 @@ template <class T> class ListIterator : public Iterator<T>
 
     /**
      * Increment operator.
+     *
      * This function first increment the current item
      * and then updates the next item pointer.
      */

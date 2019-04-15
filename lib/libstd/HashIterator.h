@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -60,6 +60,7 @@ template <class K, class V> class HashIterator : public Iterator<V>
 
     /**
      * Check if there is more to iterate.
+     *
      * @return true if more items, false if not.
      */
     virtual bool hasNext() const
@@ -109,6 +110,7 @@ template <class K, class V> class HashIterator : public Iterator<V>
 
     /**
      * Fetch the next item.
+     *
      * This function first fetches the next item
      * and then updates the current item pointer to that item.
      *
@@ -133,8 +135,11 @@ template <class K, class V> class HashIterator : public Iterator<V>
 
     /**
      * Increment operator.
+     *
      * This function first increment the current item
      * and then updates the next item pointer.
+     *
+     * @param num Ignored
      */
     virtual void operator ++(int num)
     {

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -580,15 +580,15 @@ Size String::setUnsigned(ulong number, Number::Base base, char *string, bool sig
         *p++ = (remainder < 10) ? remainder + '0' : remainder + 'a' - 10;
     }
     while (ud /= divisor);
-    
+
     // Terminate buffer
     *p = 0;
-    
+
     // Initialize pointers
     p1 = saved;
     p2 = p - 1;
     written += p2-p1+1;
-    
+
     // Reverse buf
     while (p1 < p2)
     {

@@ -31,8 +31,6 @@
  */
 class ArgumentContainer
 {
-  private:
-
   public:
 
     /**
@@ -44,6 +42,8 @@ class ArgumentContainer
         InvalidArgument,
         NotFound
     };
+
+  public:
 
     /**
      * Constructor
@@ -59,6 +59,7 @@ class ArgumentContainer
      * Get argument by name
      *
      * @param name Name of the argument
+     *
      * @return String object pointer if found or ZERO if not found
      */
     const char * get(const char *name) const;
@@ -81,6 +82,8 @@ class ArgumentContainer
      * Add positional argument.
      *
      * @param arg Positional argument
+     *
+     * @return Result code
      */
     Result addPositional(Argument *arg);
 
@@ -88,6 +91,8 @@ class ArgumentContainer
      * Add flag argument.
      *
      * @param arg Flag argument
+     *
+     * @return Result code
      */
     Result addFlag(Argument *arg);
 

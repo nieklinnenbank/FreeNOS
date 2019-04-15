@@ -34,6 +34,7 @@ template <class T> class Sequence : public Container, public Comparable<Sequence
      * Adds the given item to the Sequence, if possible.
      *
      * @param item The item to add to the Sequence.
+     *
      * @return Position of the item in the Sequence or -1 on failure.
      */
     virtual int insert(const T & item)
@@ -43,10 +44,12 @@ template <class T> class Sequence : public Container, public Comparable<Sequence
 
     /**
      * Inserts the given item at the given position.
+     *
      * If an item exists at the given position, it will be replaced by the given item.
      *
      * @param position The position to insert the item.
      * @param item The item to insert
+     *
      * @return bool Whether inserting the item at the given position succeeded.
      */
     virtual bool insert(Size position, const T & item)
@@ -71,6 +74,7 @@ template <class T> class Sequence : public Container, public Comparable<Sequence
      * Remove all items with the given value.
      *
      * @param value Value to remove.
+     *
      * @return Number of items removed.
      */
     virtual int remove(T value)
@@ -82,6 +86,7 @@ template <class T> class Sequence : public Container, public Comparable<Sequence
      * Removes the item at the given position.
      *
      * @param position The position of the item to remove.
+     *
      * @return bool Whether removing the item succeeded.
      */
     virtual bool removeAt(Size position)
@@ -104,17 +109,19 @@ template <class T> class Sequence : public Container, public Comparable<Sequence
      * Returns the item at the given position.
      *
      * @param position The position of the item to get.
+     *
      * @return Pointer to the item at the given position or ZERO if no item available.
      */
     virtual const T * get(Size position) const = 0;
 
     /**
      * Returns a reference to the item at the given position.
-     * Note that this function does not perform bounds checking.
-     * Position must be a valid index.
      *
      * @param position Valid index inside this array.
+     *
      * @return Reference to the item at the given position
+     *
+     * @note Position must be a valid index.
      */
     virtual const T & at(Size position) const = 0;
 
@@ -163,6 +170,7 @@ template <class T> class Sequence : public Container, public Comparable<Sequence
      * Returns the item at the given position in the Sequence.
      *
      * @param i The index of the item to return.
+     *
      * @return the Item at position i.
      */
     const T & operator [] (int i) const
@@ -174,6 +182,7 @@ template <class T> class Sequence : public Container, public Comparable<Sequence
      * Returns the item at the given position in the Sequence.
      *
      * @param i The index of the item to return.
+     *
      * @return the Item at position i.
      */
     const T & operator [] (Size i) const
@@ -185,6 +194,7 @@ template <class T> class Sequence : public Container, public Comparable<Sequence
      * Returns the item at the given position in the Sequence.
      *
      * @param i The index of the item to return.
+     *
      * @return the Item at position i.
      */
     T & operator [] (int i)
@@ -196,6 +206,7 @@ template <class T> class Sequence : public Container, public Comparable<Sequence
      * Returns the item at the given position in the Sequence.
      *
      * @param i The index of the item to return.
+     *
      * @return the Item at position i.
      */
     T & operator [] (Size i)

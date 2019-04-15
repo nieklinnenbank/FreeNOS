@@ -51,6 +51,8 @@ class Application
         ShowUsage
     };
 
+  public:
+
     /**
      * Class constructor.
      *
@@ -155,7 +157,6 @@ class Application
 
     /** Program version */
     String m_version;
-
 };
 
 #endif /* __LIBSTD_APPLICATION_H */
