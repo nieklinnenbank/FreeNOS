@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -108,7 +108,7 @@ int forkexec(const char *path, const char *argv[])
                        Memory::Readable |
                        Memory::Writable |
                        Memory::Executable;
-        
+
         // Create mapping first
         if (VMCtl(pid, Map, &range) != 0)
         {
@@ -122,7 +122,8 @@ int forkexec(const char *path, const char *argv[])
         // Release buffer
         delete regions[i].data;
     }
-    /* Create mapping for command-line arguments. */
+
+    // Create mapping for command-line arguments
     range = map.range(MemoryMap::UserArgs);
     range.phys = ZERO;
     range.access = Memory::User | Memory::Readable | Memory::Writable;
@@ -138,6 +139,7 @@ int forkexec(const char *path, const char *argv[])
         strlcpy(arguments + (ARGV_SIZE * count), argv[count], ARGV_SIZE);
         count++;
     }
+
     // Fill in the current working directory
     strlcpy(arguments + PAGESIZE, **(getCurrentDirectory()), PATH_MAX);
 
@@ -159,6 +161,7 @@ int forkexec(const char *path, const char *argv[])
         ProcessCtl(pid, KillPID);
         return -1;
     }
+
     // Let the Child begin execution
     ProcessCtl(pid, Resume);
 

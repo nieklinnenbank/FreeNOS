@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -31,12 +31,12 @@ int open(const char *path, int oflag, ...)
     FileStat st;
     char fullpath[PATH_MAX];
 
-    /* Relative or absolute? */
+    // Relative or absolute?
     if (path[0] != '/')
     {
         char cwd[PATH_MAX];
 
-        /* What's the current working dir? */
+        // What's the current working dir?
         getcwd(cwd, PATH_MAX);
         snprintf(fullpath, sizeof(fullpath), "%s/%s", cwd, path);
     }
@@ -62,7 +62,7 @@ int open(const char *path, int oflag, ...)
             msg.type = ChannelMessage::Request;
             ChannelClient::instance->syncSendReceive(&msg, mnt);
         }
-    
+
         // Set errno
         errno = msg.result;
 

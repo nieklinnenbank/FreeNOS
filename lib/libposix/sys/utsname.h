@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -36,26 +36,28 @@ struct utsname
 {
     /** Name of this implementation of the operating system. */
     char sysname[UTSBUF];
-    
+
     /**
-     * Name of this node within the communications 
+     * Name of this node within the communications
      * network to which this node is attached, if any.
      */
     char nodename[UTSBUF];
 
     /** Current release level of this implementation. */
     char release[UTSBUF];
-    
+
     /** Current version level of this release. */
     char version[UTSBUF];
-    
-    /** Name of the hardware type on which the system is running. */  
+
+    /** Name of the hardware type on which the system is running. */
     char machine[UTSBUF];
 };
 
 /**
  * Get the name of the current system
+ *
  * @param name Used to store information identifying the current system
+ *
  * @return Upon successful completion, a non-negative value shall be returned.
  *         Otherwise, -1 shall be returned and errno set to indicate the error.
  */

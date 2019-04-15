@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -38,7 +38,7 @@ ssize_t write(int fildes, const void *buf, size_t nbyte)
         errno = ENOENT;
         return -1;
     }
-    
+
     // Write the file
     msg.type   = ChannelMessage::Request;
     msg.action = WriteFile;

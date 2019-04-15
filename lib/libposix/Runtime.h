@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -27,8 +27,8 @@
 #include "FileDescriptor.h"
 
 /**
- * @defgroup libposix libposix (POSIX.1-2008) 
- * @{ 
+ * @defgroup libposix libposix (POSIX.1-2008)
+ * @{
  */
 
 /** Maximum size of each argument. */
@@ -38,41 +38,58 @@
 #define ARGV_COUNT (PAGESIZE / ARGV_SIZE)
 
 /**
- * C(++) program entry point.
+ * Program entry point.
+ *
  * @param argc Argument count.
  * @param argv Argument values.
+ *
  * @return Exit status.
  */
 int main(int argc, char **argv);
 
 /**
  * Retrieve the ProcessID of the FileSystemMount for the given path.
+ *
  * @param path Path to lookup.
+ *
  * @return ProcessID of the FileSystemMount on success and ZERO otherwise.
  */
 ProcessID findMount(const char *path);
 
 /**
  * Lookup the ProcessID of a FileSystemMount by a filedescriptor number.
+ *
  * @param fildes FileDescriptor number.
+ *
  * @return ProcessID of the FileSystemMount on success and ZERO otherwise.
  */
 ProcessID findMount(int fildes);
 
+/**
+ * Refresh mounted filesystems
+ *
+ * @param path Input path to refresh or NULL to refresh all mountpoints
+ */
 void refreshMounts(const char *path);
 
 /**
  * Get File Descriptors table.
+ *
+ * @return FileDescriptor array pointer
  */
 FileDescriptor * getFiles();
 
 /**
  * Get mounts table.
+ *
+ * @return FileSystemMount array pointer
  */
 FileSystemMount * getMounts();
 
 /**
  * Get current directory String.
+ *
+ * @return String pointer containing current directory
  */
 String * getCurrentDirectory();
 

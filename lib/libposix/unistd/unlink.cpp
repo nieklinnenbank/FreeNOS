@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -27,19 +27,19 @@ int unlink(const char *path)
     ProcessID mnt = findMount(path);
     char fullpath[PATH_MAX];
 
-    /* Relative or absolute? */
+    // Relative or absolute?
     if (path[0] != '/')
     {
         char cwd[PATH_MAX];
 
-        /* What's the current working dir? */
+        // What's the current working dir?
         getcwd(cwd, PATH_MAX);
         snprintf(fullpath, sizeof(fullpath), "%s/%s", cwd, path);
     }
     else
         strlcpy(fullpath, path, sizeof(fullpath));
 
-    /* Ask for the unlink. */
+    // Ask for the unlink
     if (mnt)
     {
         msg.type   = ChannelMessage::Request;
@@ -48,12 +48,12 @@ int unlink(const char *path)
         msg.from   = SELF;
         ChannelClient::instance->syncSendReceive(&msg, mnt);
 
-        /* Set error number. */
+        // Set error number
         errno = msg.result;
     }
     else
         errno = ENOENT;
-    
-    /* Done. */
+
+    // Done
     return errno == ESUCCESS ? 0 : (off_t) -1;
 }

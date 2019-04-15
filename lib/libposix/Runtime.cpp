@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -173,7 +173,7 @@ ProcessID findMount(const char *path)
     Size length = 0, len;
     char tmp[PATH_MAX];
 
-    /* Is the path relative? */
+    // Is the path relative?
     if (path[0] != '/')
     {
         getcwd(tmp, sizeof(tmp));
@@ -181,18 +181,16 @@ ProcessID findMount(const char *path)
     }
     else
         strlcpy(tmp, path, PATH_MAX);
-        
-    /* Find the longest match. */
+
+    // Find the longest match
     for (Size i = 0; i < FILESYSTEM_MAXMOUNTS; i++)
     {
         if (mounts[i].path[0])
         {
             len = strlen(mounts[i].path);
-    
-            /*
-             * Only choose this mount, if it matches,
-             * and is longer than the last match.
-             */
+
+            // Only choose this mount, if it matches,
+            // and is longer than the last match.
             if (strncmp(tmp, mounts[i].path, len) == 0 && len > length)
             {
                 length = len;
@@ -200,6 +198,7 @@ ProcessID findMount(const char *path)
             }
         }
     }
+
     // All done
     return m ? m->procID : ZERO;
 }
@@ -294,7 +293,7 @@ String * getCurrentDirectory()
     return currentDirectory;
 }
 
-extern C void SECTION(".entry") _entry() 
+extern C void SECTION(".entry") _entry()
 {
     int ret, argc;
     char *arguments;
@@ -302,34 +301,35 @@ extern C void SECTION(".entry") _entry()
     SystemInformation info;
     Arch::MemoryMap map;
 
-    /* Clear BSS */
+    // Clear BSS
     extern Address __bss_start, __bss_end;
     Address bss_size = &__bss_end - &__bss_start;
     MemoryBlock::set(&__bss_start, 0, bss_size);
 
-    /* Setup the heap, C++ constructors and default mounts. */
+    // Setup the heap, C++ constructors and default mounts
     setupHeap();
     runConstructors();
     setupChannels();
     setupMappings();
     setupRandomizer();
 
-    /* Allocate buffer for arguments. */
+    // Allocate buffer for arguments
     argc = 0;
     argv = (char **) new char[ARGV_COUNT];
     arguments = (char *) map.range(MemoryMap::UserArgs).virt;
 
-    /* Fill in arguments list. */
+    // Fill in arguments list
     while (argc < ARGV_COUNT && *arguments)
     {
         argv[argc] = arguments;
         arguments += ARGV_SIZE;
         argc++;
     }
-    /* Pass control to the program. */
+
+    // Pass control to the program
     ret = main(argc, argv);
 
-    /* Terminate execution. */
+    // Terminate execution
     runDestructors();
     exit(ret);
 }

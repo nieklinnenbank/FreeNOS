@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -24,23 +24,23 @@ unsigned int sleep(unsigned int seconds)
 {
     Timer::Info info;
 
-    /* Get current kernel timer ticks */
+    // Get current kernel timer ticks
     if (ProcessCtl(SELF, InfoTimer, (Address) &info) != API::Success)
     {
         errno = EAGAIN;
         return seconds;
     }
 
-    /* Set time to wait */
+    // Set time to wait
     info.ticks += (info.frequency * seconds);
 
-    /* Wait until the timer expires */
+    // Wait until the timer expires
     if (ProcessCtl(SELF, WaitTimer, (Address) &info) != API::Success)
     {
         errno = EIO;
         return seconds;
     }
 
-    /* Done */
+    // Done
     return 0;
 }

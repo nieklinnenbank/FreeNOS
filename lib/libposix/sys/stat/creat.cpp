@@ -31,26 +31,26 @@ int creat(const char *path, mode_t mode)
     ProcessID mnt = findMount(path);
     char fullpath[PATH_MAX];
 
-    /* Relative or absolute? */
+    // Relative or absolute?
     if (path[0] != '/')
     {
         char cwd[PATH_MAX];
 
-        /* What's the current working dir? */
+        // What's the current working dir?
         getcwd(cwd, PATH_MAX);
         snprintf(fullpath, sizeof(fullpath), "%s/%s", cwd, path);
     }
     else
         strlcpy(fullpath, path, sizeof(fullpath));
 
-    /* Fill in the message. */
+    // Fill in the message
     msg.type     = ChannelMessage::Request;
     msg.action   = CreateFile;
     msg.path     = fullpath;
     msg.filetype = RegularFile;
     msg.mode     = (FileModes) (mode & FILEMODE_MASK);
 
-    /* Ask FileSystem to create the file for us. */
+    // Ask FileSystem to create the file for us
     if (mnt)
     {
         ChannelClient::instance->syncSendReceive(&msg, mnt);
@@ -61,6 +61,6 @@ int creat(const char *path, mode_t mode)
     else
         errno = ENOENT;
 
-    /* Report result. */
+    // Report result
     return msg.result == ESUCCESS ? 0 : -1;
 }

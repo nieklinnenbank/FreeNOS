@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -79,13 +79,14 @@ int spawn(Address program, Size programSize, const char *command)
                        Memory::Readable |
                        Memory::Writable |
                        Memory::Executable;
-        
+
         // Create mapping first
         if (VMCtl(pid, Map, &range) != 0)
         {
             errno = EFAULT;
             return -1;
         }
+
         // Copy bytes
         VMCopy(pid, API::Write, (Address) regions[i].data,
                regions[i].virt, regions[i].size);
@@ -93,7 +94,8 @@ int spawn(Address program, Size programSize, const char *command)
         // Release data buffer
         delete regions[i].data;
     }
-    /* Create mapping for command-line arguments. */
+
+    // Create mapping for command-line arguments
     range = map.range(MemoryMap::UserArgs);
     range.phys = ZERO;
     range.access = Memory::User | Memory::Readable | Memory::Writable;
@@ -115,6 +117,7 @@ int spawn(Address program, Size programSize, const char *command)
         }
         command++;
     }
+
     // The last argument
     strlcpy(arguments + (ARGV_SIZE * count), arg, command-arg+1);
 
