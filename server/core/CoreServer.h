@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,7 +20,7 @@
 
 /**
  * @defgroup core CoreServer
- * @{  
+ * @{
  */
 
 #include <FreeNOS/System.h>
@@ -59,7 +59,7 @@ class CoreServer : public ChannelServer<CoreServer, FileSystemMessage>
 
     /**
      * Result codes.
-     */    
+     */
     enum Result
     {
         Success,
@@ -71,36 +71,104 @@ class CoreServer : public ChannelServer<CoreServer, FileSystemMessage>
         MemoryError
     };
 
+  public:
+
     /**
      * Class constructor function.
      */
     CoreServer();
 
+    /**
+     * Initialize the server
+     *
+     * @return Result code
+     */
     Result initialize();
 
+    /**
+     * Boot a processor core
+     *
+     * @param coreId Core identifier number
+     * @param info CoreInfo pointer containing specific core information
+     * @param regions Kernel executable memory regions
+     *
+     * @return Result code
+     */
     Result bootCore(uint coreId, CoreInfo *info, ExecutableFormat::Region *regions);
 
+    /**
+     * Discover processor cores
+     *
+     * @return Result code
+     */
     Result discover();
 
+    /**
+     * Load operating system kernel
+     *
+     * @return Result code
+     */
     Result loadKernel();
 
+    /**
+     * Boot all processor cores
+     *
+     * @return Result code
+     */
     Result bootAll();
 
+    /**
+     * Run a ping-pong test
+     *
+     * @return Result code
+     */
     Result test();
 
+    /**
+     * Routine for the slave processor core
+     *
+     * @return Exit code
+     */
     int runCore();
-
-    bool retryRequests();
 
   private:
 
+    /**
+     * Setup communication channels between CoreServers
+     *
+     * @return Exit code
+     */
     Result setupChannels();
 
+    /**
+     * Clear memory pages with zeroes
+     *
+     * @param addr Physical memory address to clear
+     * @param size Number of bytes to clear
+     *
+     * @return Exit code
+     */
     Result clearPages(Address addr, Size size);
 
+    /**
+     * Get and fill the number of processor cores
+     *
+     * @param msg FileSystemMessage to fill in the core count
+     *
+     * @return Exit code
+     */
     void getCoreCount(FileSystemMessage *msg);
 
+    /**
+     * Create a process on the current processor core
+     *
+     * @param msg FileSystemMessage containing process information
+     *
+     * @return Exit code
+     */
     void createProcess(FileSystemMessage *msg);
+
+  private:
 
 #ifdef INTEL
     IntelMP m_mp;
@@ -111,7 +179,7 @@ class CoreServer : public ChannelServer<CoreServer, FileSystemMessage>
     ExecutableFormat *m_kernel;
     u8 *m_kernelImage;
 
-    ExecutableFormat::Region m_regions[16]; 
+    ExecutableFormat::Region m_regions[16];
 
     Size m_numRegions;
 

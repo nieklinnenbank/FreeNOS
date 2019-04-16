@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -36,10 +36,8 @@ int main(int argc, char **argv)
         path = argv[1];
 
     TmpFileSystem server(path);
-    
-    /*
-     * Mount, then start serving requests.
-     */
+
+    // Mount, then start serving requests.
     server.mount();
     return server.run();
 }

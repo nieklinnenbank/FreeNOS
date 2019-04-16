@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -246,7 +246,7 @@ CoreServer::Result CoreServer::loadKernel()
         return IOError;
     }
     close(fd);
-    
+
     // Attempt to read executable format
     if (ExecutableFormat::find(m_kernelImage, st.st_size, &m_kernel) != ExecutableFormat::Success)
         return ExecError;
@@ -299,8 +299,8 @@ CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info,
         API::Result r = VMCopy(SELF, API::Write, (Address) regions[i].data,
                                range.virt,
                                regions[i].size);
-	if ((Size)r != regions[i].size)
-	    return MemoryError;
+        if ((Size)r != regions[i].size)
+            return MemoryError;
 
         // Unmap the target kernel's memory
         if (VMCtl(SELF, UnMap, &range) != API::Success)
@@ -503,9 +503,4 @@ CoreServer::Result CoreServer::setupChannels()
     }
 #endif /* INTEL */
     return Success;
-}
-
-bool CoreServer::retryRequests()
-{
-    return false;
 }

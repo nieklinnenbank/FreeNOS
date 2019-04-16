@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,9 +21,9 @@
 #include <Types.h>
 #include "LinnSuperBlock.h"
 
-/**                                                                                                                                                                                                      
- * @defgroup linn LinnFS (Linnenbank Filesystem) 
- * @{ 
+/**
+ * @defgroup linn LinnFS (Linnenbank Filesystem)
+ * @{
  */
 
 /**
@@ -51,8 +51,11 @@
 
 /**
  * @brief Calculate the number of LinnGroups in a filesystem.
+ *
  * Calculation is based on the blocksCount and blocksPerGroup fields.
+ *
  * @param sb LinnSuperBlock pointer.
+ *
  * @return Number of LinnGroups in the filesystem.
  */
 #define LINN_GROUP_COUNT(sb) \
@@ -61,7 +64,9 @@
 
 /**
  * Calculate the number of blocks needed for the blocks bitmap.
+ *
  * @param sb LinnSuperBlock pointer.
+ *
  * @return Number of blocks needed for the blocks bitmap.
  */
 #define LINN_GROUP_NUM_BLOCKMAP(sb) \
@@ -70,7 +75,9 @@
 
 /**
  * Calculate the number of blocks needed for the inodes bitmap.
+ *
  * @param sb LinnSuperBlock pointer.
+ *
  * @return Number of blocks needed for the inodes bitmap.
  */
 #define LINN_GROUP_NUM_INODEMAP(sb) \
@@ -79,7 +86,9 @@
 
 /**
  * Calculate the number of blocks needed for the inodes table.
+ *
  * @param sb LinnSuperBlock pointer.
+ *
  * @return Number of blocks needed for the inodes table.
  */
 #define LINN_GROUP_NUM_INODETAB(sb) \
@@ -88,7 +97,9 @@
 
 /**
  * Calculate the number of LinnGroups which fit in one block.
+ *
  * @param sb LinnSuperBlock pointer.
+ *
  * @return Number of LinnGroups per block.
  */
 #define LINN_GROUP_PER_BLOCK(sb) \
@@ -96,7 +107,9 @@
 
 /**
  * Number of blocks needed to store LinnGroups.
+ *
  * @param sb LinnSuperBlock pointer.
+ *
  * @return Number of blocks required for LinnGroups.
  */
 #define LINN_GROUP_BLOCKS(sb) \
@@ -114,16 +127,16 @@ typedef struct LinnGroup
 {
     /** The number of free blocks in this group. */
     le32 freeBlocksCount;
-    
+
     /** Number of free inodes in this group. */
     le32 freeInodesCount;
 
     /** Block bitmap. Used to mark blocks used/free. */
     le32 blockMap;
-    
+
     /** Inode bitmap. Used to mark inodes used/free. */
     le32 inodeMap;
-    
+
     /** Inode table contains pre-allocated inodes. */
     le32 inodeTable;
 }
