@@ -48,6 +48,7 @@ class Loopback : public NetworkDevice
      * Read ethernet address.
      *
      * @param address Ethernet address reference for output
+     *
      * @return Error code
      */
     virtual Error getAddress(Ethernet::Address *address);
@@ -56,6 +57,7 @@ class Loopback : public NetworkDevice
      * Set ethernet address
      *
      * @param address New ethernet address to set
+     *
      * @return Error code
      */
     virtual Error setAddress(Ethernet::Address *address);

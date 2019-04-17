@@ -211,6 +211,8 @@ class SMSC95xxUSB : public USBDevice
      */
     void write(Register reg, u32 value);
 
+  private:
+
     /** Word aligned temporary value */
     u32 *m_value;
 

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -50,13 +50,16 @@ class Keyboard : public Device
 
     /**
      * @brief Initialize the PS2 Keyboard driver.
+     *
      * @return Error status code.
      */
     virtual Error initialize();
 
     /**
      * @brief Executed when a key state has changed.
+     *
      * @param vector Interrupt vector.
+     *
      * @return Error status code.
      */
     virtual Error interrupt(Size vector);
@@ -67,6 +70,7 @@ class Keyboard : public Device
      * @param buffer Output buffer.
      * @param size Number of bytes to read.
      * @param offset Unused.
+     *
      * @return Number of bytes read or error code on failure.
      */
     virtual Error read(IOBuffer & buffer, Size size, Size offset);

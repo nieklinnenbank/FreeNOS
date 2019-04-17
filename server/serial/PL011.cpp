@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
  * Copyright (C) 2013 Goswin von Brederlow <goswin-v-b@web.de>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -39,7 +39,7 @@ Error PL011::initialize()
 
     // Disable PL011.
     m_io.write(PL011_CR, 0x00000000);
-    
+
     // Setup the GPIO pin 14 && 15.
     // Disable pull up/down for all GPIO pins & delay for 150 cycles.
     m_io.write(GPPUD, 0x00000000);

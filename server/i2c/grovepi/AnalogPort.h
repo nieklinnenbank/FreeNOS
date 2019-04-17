@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,9 +18,9 @@
 #ifndef __SERVER_I2C_GROVEPI_ANALOGPORT_H
 #define __SERVER_I2C_GROVEPI_ANALOGPORT_H
 
-/**     
+/**
  * @defgroup groveDigi GrovePi Analog Port
- * @{     
+ * @{
  */
 
 #include <Macros.h>
@@ -44,6 +44,7 @@ class AnalogPort : public Device
 
     /**
      * @brief Initializes the time class.
+     *
      * @return Error status code.
      */
     virtual Error initialize();
@@ -54,7 +55,8 @@ class AnalogPort : public Device
      * @param buffer Buffer to save the read bytes.
      * @param size Number of bytes to read.
      * @param offset Offset in the file to read.
-     * @return Number of bytes on success and ZERO on failure. 
+     *
+     * @return Number of bytes on success and ZERO on failure.
      */
     virtual Error read(IOBuffer & buffer, Size size, Size offset);
 
@@ -71,4 +73,4 @@ class AnalogPort : public Device
  * @}
  */
 
-#endif /* __TIME_TIME_H */
+#endif /* __SERVER_I2C_GROVEPI_ANALOGPORT_H */

@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
  * Copyright (C) 2013 Goswin von Brederlow <goswin-v-b@web.de>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -36,32 +36,39 @@ class PL011 : public Device
 
     /**
      * @brief Initializes the i8250 serial UART.
+     *
      * @return Error status code.
      */
     virtual Error initialize();
 
     /**
      * Called when an interrupt has been triggered for this device.
+     *
      * @param vector Vector number of the interrupt.
+     *
      * @return Error result code.
      */
     virtual Error interrupt(Size vector);
 
-    /** 
+    /**
      * Read bytes from the i8250.
+     *
      * @param buffer Buffer to save the read bytes.
      * @param size Number of bytes to read.
      * @param offset Unused.
+     *
      * @return Number of bytes on success and ZERO on failure. 
      */
     virtual Error read(IOBuffer & buffer, Size size, Size offset);
 
-    /** 
+    /**
      * Write bytes to the device.
-     * @param buffer Buffer containing bytes to write. 
+     *
+     * @param buffer Buffer containing bytes to write.
      * @param size Number of bytes to write.
      * @param offset Unused.
-     * @return Number of bytes on success and ZERO on failure. 
+     *
+     * @return Number of bytes on success and ZERO on failure.
      */
     virtual Error write(IOBuffer & buffer, Size size, Size offset);
 
@@ -126,6 +133,8 @@ class PL011 : public Device
      * wont optimize away.
      */
     void delay(s32 count);
+
+  private:
 
     /** interrupt vector */
     u32 m_irq;

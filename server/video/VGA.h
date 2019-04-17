@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,16 +18,16 @@
 #ifndef __VIDEO_VGA_SERVER_H
 #define __VIDEO_VGA_SERVER_H
 
-/**     
- * @defgroup vga VGA (Vector Graphics Array)   
- * @{     
+/**
+ * @defgroup vga VGA (Vector Graphics Array)
+ * @{
  */
 
 #include <DeviceServer.h>
 #include <Types.h>
 
 /** VGA physical video memory address. */
-#define VGA_PADDR (0xb8000) 
+#define VGA_PADDR (0xb8000)
 
 /** VGA I/O address port. */
 #define VGA_IOADDR 0x3d4
@@ -37,6 +37,7 @@
 
 /**
  * Encodes VGA attributes.
+ *
  * @param front Front text color.
  * @param back Background color.
  */
@@ -45,6 +46,7 @@
 
 /**
  * Encodes a character for VGA output.
+ *
  * @param ch Character to encode.
  * @param front Front text color.
  * @param back Background color.
@@ -88,9 +90,10 @@ enum Colors
 class VGA : public Device
 {
     public:
-    
+
     /**
      * @brief Class constructor function.
+     *
      * @param width Number of characters horizontally.
      * @param height Number of characters vertically.
      */
@@ -116,10 +119,11 @@ class VGA : public Device
      * @param buffer Output buffer.
      * @param size Number of bytes to copy into the buffer.
      * @param offset Offset in VGA video memory to read in bytes.
+     *
      * @return An error code describing the status of the operation.
      */
     virtual Error read(IOBuffer & buffer, Size size, Size offset);
-    
+
     /**
      * @brief Write to VGA video memory.
      *
@@ -129,18 +133,19 @@ class VGA : public Device
      * @param buffer Input buffer.
      * @param size Number of bytes to copy from the buffer.
      * @param offset Offset in VGA video memory to write in bytes.
+     *
      * @return An error code describing the status of the operation.
      */
     virtual Error write(IOBuffer & buffer, Size size, Size offset);
-    
+
   private:
-    
+
     /** @brief VGA video memory address. */
     u16 *vga;
-    
+
     /** @brief Number of characters horizontally. */
     Size width;
-    
+
     /** @brief Number of characters vertically. */
     Size height;
 };

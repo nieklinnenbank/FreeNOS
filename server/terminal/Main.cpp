@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -28,9 +28,7 @@ int main(int argc, char **argv)
 
     refreshMounts(0);
 
-    /*
-     * Start serving requests.
-     */
+    // Start serving requests.
     server.registerDevice(new Terminal, "tty0");
     return server.run();
 }

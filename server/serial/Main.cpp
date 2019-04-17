@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -49,7 +49,7 @@ int main(int argc, char **argv)
 {
     DeviceServer server("/dev/serial");
 
-    /* Open the logging facilities. */
+    // Open the logging facilities
     Log *log = new KernelLog();
     log->setMinimumLogLevel(Log::Notice);
 
@@ -57,7 +57,7 @@ int main(int argc, char **argv)
     PL011 *dev = ZERO;
     dev = new PL011(uarts[0].irq);
 #else
-    /* Assume first UART is available */
+    // Assume first UART is available
     i8250 *dev = ZERO;
     dev = new i8250(uarts[0].port, uarts[0].irq);
 #endif /* BCM2835 */
@@ -70,15 +70,13 @@ int main(int argc, char **argv)
     server.registerDevice(dev, "/serial0/io");
     server.registerInterrupt(dev, uarts[0].irq);
 #ifdef BCM2835
-    /* For ARM: it does not have IRQ_REQ(), so just take 0 for all IRQs */
+    // For ARM: it does not have IRQ_REQ(), so just take 0 for all IRQs
     server.registerInterrupt(dev, 0);
 #endif
 
-    /* Perform log. */
+    // Perform log
     INFO("detected at PORT=" << uarts[0].port << " IRQ=" << uarts[0].irq);
 
-    /*
-     * Start serving requests.
-     */
+    // Start serving requests
     return server.run();
 }

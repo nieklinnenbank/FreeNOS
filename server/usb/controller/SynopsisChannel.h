@@ -74,7 +74,7 @@ class SynopsisChannel
     enum CharacteristicsFlags
     {
         LowSpeed          = (1 << 17),
-        ChannelEnable     = (1 << 31)        
+        ChannelEnable     = (1 << 31)
     };
 
     /**
@@ -131,6 +131,8 @@ class SynopsisChannel
         IOError,
         Busy
     };
+
+  public:
 
     /**
      * Constructor

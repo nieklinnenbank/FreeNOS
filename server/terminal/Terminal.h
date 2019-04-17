@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,10 +17,10 @@
 
 #ifndef __TERMINAL_TERMINAL_H
 #define __TERMINAL_TERMINAL_H
-        
-/**  
- * @defgroup terminal Terminal (System Console Device)  
- * @{    
+
+/**
+ * @defgroup terminal Terminal (System Console Device)
+ * @{
  */
 
 #include <FreeNOS/Config.h>
@@ -29,8 +29,8 @@
 #include <Types.h>
 #include <teken.h>
 
-/** 
- * @brief Print this banner per default on new Terminals. 
+/**
+ * @brief Print this banner per default on new Terminals.
  */
 #define BANNER \
     "FreeNOS " RELEASE " [" ARCH "/" SYSTEM "] (" BUILDUSER "@" BUILDHOST ") (" COMPILER_VERSION ") " DATETIME "\r\n"
@@ -58,80 +58,92 @@ class Terminal : public Device
     /**
      * @brief Class destructor.
      */
-    ~Terminal();
+    virtual ~Terminal();
 
     /**
      * @brief Retrieve the width of the Terminal.
+     *
      * @return Terminal width.
      */
     Size getWidth();
-    
+
     /**
      * @brief Retrieve the height of the Terminal.
+     *
      * @return Terminal height.
      */
     Size getHeight();
-    
+
     /**
      * @brief Retrieve file descriptor of the input source.
+     *
      * @return File descriptor number.
      */
     int getInput();
-    
+
     /**
      * @brief Retrieve file descriptor of the output source.
+     *
      * @return File descriptor number.
      */
     int getOutput();
-    
+
     /**
      * @brief Retrieve a pointer to the local buffer.
+     *
      * @return Pointer to the local buffer.
      */
     u16 * getBuffer();
 
-    /** 
-     * Saved byte and attribute value at cursor position. 
-     * @return Saved value. 
+    /**
+     * Saved byte and attribute value at cursor position.
+     *
+     * @return Saved value.
      */
     u16 * getCursorValue();
 
-    /** 
-     * Hides the cursor from the VGA screen. 
+    /**
+     * Hides the cursor from the VGA screen.
      */
     void hideCursor();
 
-    /** 
-     * Sets the new position of the cursor. 
-     * @param pos New position coordinates. 
+    /**
+     * Sets the new position of the cursor.
+     *
+     * @param pos New position coordinates.
      */
     void setCursor(const teken_pos_t *pos);
 
-    /** 
-     * Show the VGA cursor. 
+    /**
+     * Show the VGA cursor.
      */
     void showCursor();
 
     /**
      * @brief Initializes the Terminal.
+     *
      * @return Error result code.
      */
     virtual Error initialize();
 
     /**
      * Read bytes from the Terminal.
+     *
      * @param buffer Output buffer.
      * @param size Number of bytes to read.
      * @param offset Unused.
+     *
      * @return Number of bytes read or error code on failure.
      */
     virtual Error read(IOBuffer & buffer, Size size, Size offset);
 
     /**
      * Write bytes to the Terminal (vga memory).
+     *
      * @param buffer Contains the bytes to write.
      * @param size Number of bytes to write.
      * @param offset Unused.
+     *
      * @return Number of bytes written or error code on failure.
      */
     virtual Error write(IOBuffer & buffer, Size size, Size offset);
@@ -157,24 +169,26 @@ class Terminal : public Device
      * @brief Path to the input and output files.
      */
     const char *inputFile, *outputFile;
-    
+
     /**
      * @brief Width and height of the Terminal.
      */
     const Size width, height;
-    
+
     /** Input and output file descriptors. */
     int input, output;
 };
 
 /**
  * Makes a sound (bell).
+ *
  * @param term Terminal object pointer.
  */
 void bell(Terminal *term);
 
 /**
  * Output a new character.
+ *
  * @param term Terminal object pointer.
  * @param pos Terminal position.
  * @param ch Character to output.
@@ -182,9 +196,10 @@ void bell(Terminal *term);
  */
 void putchar(Terminal *term, const teken_pos_t *pos,
          teken_char_t ch, const teken_attr_t *attr);
-    
+
 /**
  * Sets the Terminal cursor.
+ *
  * @param term Terminal object pointer.
  * @param pos Position to put the cursor.
  */
@@ -192,6 +207,7 @@ void cursor(Terminal *term, const teken_pos_t *pos);
 
 /**
  * Fills the Terminal buffer with a character.
+ *
  * @param term Terminal object pointer.
  * @param rect Indicates where to fill.
  * @param ch Character to be used for filling.
@@ -202,6 +218,7 @@ void fill(Terminal *ctx, const teken_rect_t *rect,
 
 /**
  * Copy bytes to the terminal.
+ *
  * @param ctx Terminal object pointer.
  * @param rect Source rectagular area with VGA memory buffer.
  * @param pos Position to copy the rect to.
@@ -211,6 +228,7 @@ void copy(Terminal *ctx, const teken_rect_t *rect,
 
 /**
  * Set terminal parameters.
+ *
  * @param ctx Terminal object pointer.
  * @param key Option key identifier.
  * @param value New value for the option.

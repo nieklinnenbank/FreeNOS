@@ -76,7 +76,6 @@ Error SMSC95xxUSB::initialize()
     a.addr[5] = 0x55;
     setMACAddress(a);
 
-
     // Enable RX/TX bits on hardware
     write(HardwareConfig, read(HardwareConfig) | MultipleEther | BulkIn | BCE);
     write(BurstCap, SMSC9512_DEFAULT_HS_BURST_CAP_SIZE / SMSC9512_HS_USB_PKT_SIZE);

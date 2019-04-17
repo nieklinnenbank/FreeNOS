@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -44,6 +44,7 @@ class DigitalPort : public Device
 
     /**
      * @brief Initializes the time class.
+     *
      * @return Error status code.
      */
     virtual Error initialize();
@@ -54,6 +55,7 @@ class DigitalPort : public Device
      * @param buffer Buffer to save the read bytes.
      * @param size Number of bytes to read.
      * @param offset Offset in the file to read.
+     *
      * @return Number of bytes on success and ZERO on failure. 
      */
     virtual Error read(IOBuffer & buffer, Size size, Size offset);
@@ -64,6 +66,7 @@ class DigitalPort : public Device
      * @param buffer Buffer to save the read bytes.
      * @param size Number of bytes to read.
      * @param offset Offset in the file to read.
+     *
      * @return Number of bytes on success and ZERO on failure. 
      */
     virtual Error write(IOBuffer & buffer, Size size, Size offset);

@@ -58,6 +58,7 @@ typedef struct IPCTestMessage : public ChannelMessage
      * @brief Comparison operator.
      *
      * @param m IPCTestMessage to compare with.
+     *
      * @return True if equal, false otherwise.
      */
     bool operator == (IPCTestMessage *m)

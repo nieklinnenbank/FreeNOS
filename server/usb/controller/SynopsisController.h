@@ -185,6 +185,8 @@ class SynopsisController : public USBController
      */
     void softReset();
 
+  private:
+
     /** Power Management. */
     BroadcomPower m_power;
 
