@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -40,7 +40,7 @@ Process::Process(ProcessID id, Address entry, bool privileged, const MemoryMap &
     m_kernelChannel = new MemoryChannel;
     MemoryBlock::set(&m_sleepTimer, 0, sizeof(m_sleepTimer));
 }
-    
+
 Process::~Process()
 {
     delete m_kernelChannel;
@@ -214,7 +214,7 @@ Process::Result Process::sleep(Timer::Info *timer)
     if (!m_wakeups)
     {
         m_state = Sleeping;
-        
+
         if (timer)
             MemoryBlock::copy(&m_sleepTimer, timer, sizeof(m_sleepTimer));
 

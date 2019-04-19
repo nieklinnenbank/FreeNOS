@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
  * Copyright (C) 2013 Goswin von Brederlow <goswin-v-b@web.de>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -31,22 +31,22 @@ class RaspiSerial : public Log
      */
     RaspiSerial();
 
-    /*
+    /**
      * Initialize UART0.
      */
     void init(void);
 
-    /*
+    /**
      * Receive a byte via UART0.
      *
-     * Returns:
-     * uint8_t: byte received.
+     * @return byte received.
      */
     u8 get(void);
 
-    /*
+    /**
      * Transmit a byte via UART0.
-     * uint8_t Byte: byte to send.
+     *
+     * @param byte byte to send.
      */
     void put(u8 byte);
 
@@ -54,7 +54,8 @@ class RaspiSerial : public Log
 
     /*
      * print a string to the UART one character at a time
-     * const char *str: 0-terminated string
+     *
+     * @param str NUL-terminated string
      */
     virtual void write(const char *str);
 
@@ -111,14 +112,17 @@ class RaspiSerial : public Log
         PL011_TDR    = (PL011_BASE + 0x8C),
     };
 
-    /*
+    /**
      * delay function
-     * int32_t delay: number of cycles to delay
      *
      * This just loops <delay> times in a way that the compiler
      * wont optimize away.
+     *
+     * @param count number of cycles to delay
      */
     void delay(s32 count);
+
+  private:
 
     /** I/O instance */
     ARMIO m_io;

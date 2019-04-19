@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,9 +20,9 @@
 
 #include <FreeNOS/System.h>
 
-/**  
- * @defgroup kernelapi kernel (API) 
- * @{  
+/**
+ * @defgroup kernelapi kernel (API)
+ * @{
  */
 
 /**
@@ -32,6 +32,7 @@
  * @param pid Remote process.
  * @param parameter Parameter for the operation.
  * @param size Size parameter for the operation.
+ *
  * @return API::Success on success and other API::ErrorCode on failure.
  */
 inline API::Result VMShare(ProcessID pid, API::Operation op, ProcessShares::MemoryShare *share)

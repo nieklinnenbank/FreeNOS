@@ -19,7 +19,11 @@
 #include <Log.h>
 #include <SplitAllocator.h>
 #include "ARMProcess.h"
+
 #define MEMALIGN8 8
+
+static bool firstProcess = true;
+extern u8 svcStack[PAGESIZE];
 
 ARMProcess::ARMProcess(ProcessID id, Address entry, bool privileged, const MemoryMap &map)
     : Process(id, entry, privileged, map)
@@ -50,9 +54,9 @@ Process::Result ARMProcess::initialize()
 
     // Fill usermode program registers
     MemoryBlock::set(&m_cpuState, 0, sizeof(m_cpuState));
-    m_cpuState.sp = m_userStack;  /* user stack pointer */
-    m_cpuState.pc = m_entry;      /* user program counter */
-    m_cpuState.cpsr = (m_privileged ? SYS_MODE : USR_MODE); /* current program status (CPSR) */
+    m_cpuState.sp = m_userStack;  // user stack pointer
+    m_cpuState.pc = m_entry;      // user program counter
+    m_cpuState.cpsr = (m_privileged ? SYS_MODE : USR_MODE); // current program status (CPSR)
 
     // Finalize with generic initialization
     return Process::initialize();
@@ -72,8 +76,6 @@ void ARMProcess::setCpuState(const CPUState *cpuState)
     MemoryBlock::copy(&m_cpuState, cpuState, sizeof(*cpuState));
 }
 
-static bool firstProcess = true;
-extern u8 svcStack[PAGESIZE];
 
 void ARMProcess::execute(Process *previous)
 {
@@ -88,7 +90,7 @@ void ARMProcess::execute(Process *previous)
         CPUState *ptr = ((CPUState *) (svcStack)) - 1;
         MemoryBlock::copy(ptr, &m_cpuState, sizeof(*ptr));
 
-        /* Switch to the actual SVC stack and switch to usermode */
+        // Switch to the actual SVC stack and switch to usermode
         asm volatile ("ldr sp, =svcStack\n"
                       "sub sp, sp, %0\n"
                       "ldr r0, =loadCoreState0\n"

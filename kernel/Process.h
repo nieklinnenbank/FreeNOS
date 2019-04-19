@@ -69,7 +69,7 @@ class Process
      * @param privileged If true, the process has unlimited access to hardware.
      */
     Process(ProcessID id, Address entry, bool privileged, const MemoryMap &map);
-    
+
     /**
      * Destructor function.
      */
@@ -77,12 +77,14 @@ class Process
 
     /**
      * Retrieve our ID number.
+     *
      * @return Process Identification number.
      */
     ProcessID getID() const;
 
     /**
      * Retrieve our parent ID.
+     *
      * @return Process ID of our parent.
      */
     ProcessID getParent() const;
@@ -94,24 +96,28 @@ class Process
 
     /**
      * Get sleep timer.
+     *
      * @return Sleep timer value.
      */
     const Timer::Info & getSleepTimer() const;
 
     /**
      * Get process shares.
+     *
      * @return Reference to memory shares.
      */
     ProcessShares & getShares();
 
     /**
      * Retrieves the current state.
+     *
      * @return Current status of the Process.
      */
     State getState() const;
 
-    /*
+    /**
      * Get the address of our page directory.
+     *
      * @return Page directory address.
      */
     Address getPageDirectory() const;
@@ -139,6 +145,8 @@ class Process
 
     /**
      * Raise kernel event
+     *
+     * @return Result code
      */
     Result raiseEvent(struct ProcessEvent *event);
 
@@ -151,6 +159,7 @@ class Process
 
     /**
      * Puts the Process in a new state.
+     *
      * @param st New state of the Process.
      */
     void setState(State st);
@@ -167,6 +176,7 @@ class Process
 
     /**
      * Set sleep timer.
+     *
      * @param sleeptimer New sleep timer value.
      */
     void setSleepTimer(const Timer::Info *sleeptimer);
@@ -194,7 +204,9 @@ class Process
 
     /**
      * Compare two processes.
+     *
      * @param p Process to compare with.
+     *
      * @return True if equal, false otherwise.
      */
     bool operator == (Process *proc);
@@ -210,6 +222,7 @@ class Process
      * Stops the process for executing until woken up
      *
      * @param timer Timer on which the process must be woken up (if expired), or ZERO for no limit
+     *
      * @return Result code
      */
     Result sleep(Timer::Info *timer = 0);

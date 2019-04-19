@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,9 +22,9 @@
 #include <FreeNOS/Process.h>
 #include <Types.h>
 
-/**  
- * @defgroup kernelapi kernel (API) 
- * @{  
+/**
+ * @defgroup kernelapi kernel (API)
+ * @{
  */
 
 /**
@@ -61,16 +61,16 @@ typedef struct ProcessInfo
 
     /** Parent process id. */
     ProcessID parent;
-    
+
     /** Defines the current state of the Process. */
     Process::State state;
-    
+
     /** Virtual address of the user stack. */
     Address userStack;
 
     /** Virtual address of the kernel stack. */
     Address kernelStack;
-    
+
     /** Physical address of the page directory. */
     Address pageDirectory;
 }
@@ -87,6 +87,7 @@ Log & operator << (Log &log, ProcessOperation op);
  * @param addr Input argument address, used for program entry point for Spawn,
  *             ProcessInfo pointer for Info.
  * @param output Output argument address (optional).
+ *
  * @return API::Success on success and other API::ErrorCode on failure.
  */
 inline API::Result ProcessCtl(ProcessID proc, ProcessOperation op, Address addr = 0, Address output = 0)

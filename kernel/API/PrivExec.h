@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,9 +20,9 @@
 
 #include <FreeNOS/System.h>
 
-/**  
- * @defgroup kernelapi kernel (API) 
- * @{  
+/**
+ * @defgroup kernelapi kernel (API)
+ * @{
  */
 
 /**
@@ -42,6 +42,7 @@ PrivOperation;
  * Prototype for user applications. Performs various privileged operations.
  *
  * @param op The operation to perform.
+ *
  * @return API::Success on success and other API::ErrorCode on failure.
  */
 inline API::Result PrivExec(PrivOperation op, Address param = 0)

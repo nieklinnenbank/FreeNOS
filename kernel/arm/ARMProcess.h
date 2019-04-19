@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -29,7 +29,7 @@ class ARMProcess : public Process
 
     /** Size of the kernel stack */
     static const Size KernelStackSize = PAGESIZE;
-    
+
     /**
      * Constructor function.
      *
@@ -38,7 +38,7 @@ class ARMProcess : public Process
      * @param privileged If true, the process has unlimited access to hardware.
      */
     ARMProcess(ProcessID id, Address entry, bool privileged, const MemoryMap &map);
-    
+
     /**
      * Destructor function.
      */

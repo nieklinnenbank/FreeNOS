@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -35,14 +35,14 @@ class Timer;
 struct CPUState;
 
 /**
- * Function which is called when the CPU is interrupted. 
+ * Function which is called when the CPU is interrupted.
  *
- * @param state State of the CPU on the moment the interrupt occurred. 
- * @param param Optional parameter for the handler. 
+ * @param state State of the CPU on the moment the interrupt occurred.
+ * @param param Optional parameter for the handler.
  */
 
 typedef void InterruptHandler(struct CPUState *state, ulong param);
-    
+
 /**
  * Interrupt hook class.
  */
@@ -50,6 +50,7 @@ typedef struct InterruptHook
 {
     /**
      * Constructor function.
+     *
      * @param h Handler function for the hook.
      * @param p Parameter to pass.
      */
@@ -59,6 +60,7 @@ typedef struct InterruptHook
 
     /**
      * Comparision operator.
+     *
      * @param i InterruptHook pointer.
      * @return True if equal, false otherwise.
      */
@@ -75,9 +77,9 @@ typedef struct InterruptHook
 }
 InterruptHook;
 
-/** 
+/**
  * @defgroup kernel kernel (generic)
- * @{ 
+ * @{
  */
 
 /**
@@ -163,11 +165,11 @@ class Kernel : public Singleton<Kernel>
      */
     int run();
 
-    /** 
-     * Enable or disable an hardware interrupt (IRQ). 
+    /**
+     * Enable or disable an hardware interrupt (IRQ).
      *
-     * @param irq IRQ number. 
-     * @param enabled True to enable, and false to disable. 
+     * @param irq IRQ number.
+     * @param enabled True to enable, and false to disable.
      */
     void enableIRQ(u32 irq, bool enabled);
 

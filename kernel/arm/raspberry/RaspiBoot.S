@@ -22,10 +22,10 @@
 
 /* To keep this in the first portion of the binary. */
 .section ".text.boot"
- 
+
 /* Make _start global. */
 .globl _start, svcStack
- 
+
 /*
  * Entry point for the kernel.
  *
@@ -88,16 +88,16 @@ _start:
     mov r7, #0
     mov r8, #0
     b       2f
- 
+
 1:
     /* store multiple at r4. */
     stmia r4!, {r5-r8}
- 
+
     /* If we are still below bss_end, loop. */
 2:
     cmp r4, r9
     blo 1b
- 
+
     /* Call kernel_main */
     ldr r3, =kernel_main
     blx r3

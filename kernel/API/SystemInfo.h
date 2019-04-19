@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,9 +22,9 @@
 #include <FreeNOS/Config.h>
 #include <FreeNOS/Kernel.h>
 
-/**  
- * @defgroup kernelapi kernel (API) 
- * @{  
+/**
+ * @defgroup kernelapi kernel (API)
+ * @{
  */
 
 struct SystemInformation;
@@ -33,6 +33,7 @@ struct SystemInformation;
  * Prototype for user applications. Retrieves system information.
  *
  * @param info Pointer to SystemInformation output buffer.
+ *
  * @return API::Success on success and other API::ErrorCode on failure.
  */
 inline API::Result SystemInfo(SystemInformation *info)
@@ -60,10 +61,10 @@ typedef struct SystemInformation
 
     /** System version. */
     ulong version;
-    
+
     /** Boot commandline. */
     char cmdline[64];
-    
+
     /** Total and available memory in bytes. */
     Size memorySize, memoryAvail;
 

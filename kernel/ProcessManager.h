@@ -32,12 +32,12 @@
 class ProcessManager
 {
   public:
-    
+
     /**
      * Constructor function.
      */
     ProcessManager(Scheduler *scheduler);
-    
+
     /**
      * Destructor function.
      */
@@ -57,10 +57,12 @@ class ProcessManager
 
     /**
      * Retrieve a Process by it's ID.
+     *
      * @param id ProcessID number.
+     *
      * @return Pointer to the appropriate process or ZERO if not found.
      */
-    Process * get(ProcessID id);        
+    Process * get(ProcessID id);
 
     /**
      * Remove a Process.
@@ -81,16 +83,21 @@ class ProcessManager
 
     /**
      * Current process running. NULL if no process running yet.
+     *
+     * @return Process pointer
      */
     Process * current();
 
     /**
-     * Previous process running.
+     * Get the previous process running.
+     *
+     * @return Process pointer
      */
     Process * previous();
 
     /**
      * Retrieve the process table.
+     *
      * @return Pointer to the process table.
      */
     Vector<Process *> * getProcessTable();

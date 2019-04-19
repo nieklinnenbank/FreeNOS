@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -28,7 +28,7 @@ API::Result VMShareHandler(ProcessID procID, API::Operation op, ProcessShares::M
     Error ret = API::Success;
 
     DEBUG("");
-    
+
     // Find the given process
     if (procID == SELF)
     {
@@ -54,6 +54,7 @@ API::Result VMShareHandler(ProcessID procID, API::Operation op, ProcessShares::M
             }
             break;
         }
+
         case API::Read:
             if (procs->current()->getShares().readShare(share) != ProcessShares::Success)
             {

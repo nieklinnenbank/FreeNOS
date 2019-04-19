@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,9 +20,9 @@
 
 #include <FreeNOS/System.h>
 
-/**  
- * @defgroup kernelapi kernel (API) 
- * @{  
+/**
+ * @defgroup kernelapi kernel (API)
+ * @{
  */
 
 /**
@@ -43,9 +43,11 @@ MemoryOperation;
 
 /**
  * Prototype for user applications. Examines and modifies virtual memory pages.
+ *
  * @param procID Remote process.
  * @param op Determines which operation to perform.
  * @param range Describes the memory pages to operate on.
+ *
  * @return API::Success on success and other API::ErrorCode on failure.
  */
 inline API::Result VMCtl(ProcessID procID, MemoryOperation op,

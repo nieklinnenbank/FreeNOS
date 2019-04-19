@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -91,12 +91,12 @@ void ProcessManager::remove(Process *proc, uint exitStatus)
 
 Process * ProcessManager::schedule(Process *proc)
 {
-    /* If needed, let the scheduler select a new process */
+    // If needed, let the scheduler select a new process
     if (!proc)
     {
         proc = m_scheduler->select(&m_procs, m_idle);
-        
-        /* If no process ready, let us idle. */
+
+        // If no process ready, let us idle
         if (!proc)
             proc = m_idle;
     }
@@ -106,7 +106,7 @@ Process * ProcessManager::schedule(Process *proc)
         FATAL("no process found to run!"); for(;;);
     }
 
-    /* Only execute if its a different process */
+    // Only execute if its a different process
     if (proc != m_current)
     {
         m_previous = m_current;

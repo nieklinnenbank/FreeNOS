@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -61,7 +61,7 @@ API::Result ProcessCtlHandler(ProcessID procID,
         proc = procs->create(addr, map);
         proc->setParent(procs->current()->getID());
         return proc->getID();
-    
+
     case KillPID:
         procs->remove(proc, addr); // Addr contains the exit status
         procs->schedule();
@@ -93,7 +93,7 @@ API::Result ProcessCtlHandler(ProcessID procID,
     case DisableIRQ:
         Kernel::instance->enableIRQ(addr, false);
         break;
-    
+
     case InfoPID:
         info->id    = proc->getID();
         info->state = proc->getState();
@@ -112,7 +112,7 @@ API::Result ProcessCtlHandler(ProcessID procID,
     case InfoTimer:
         if (!(timer = Kernel::instance->getTimer()))
             return API::NotFound;
-        
+
         timer->getCurrent((Timer::Info *) addr);
         break;
 
