@@ -58,7 +58,8 @@ ARMPaging::ARMPaging(MemoryMap *map, SplitAllocator *alloc)
 
 ARMPaging::~ARMPaging()
 {
-    m_alloc->release(m_firstTableAddr);
+    for (Size i = 0; i < sizeof(ARMFirstTable); i += PAGESIZE)
+        m_alloc->release(m_firstTableAddr + i);
 }
 
 #ifdef ARMV6
