@@ -23,6 +23,17 @@
 #include <MemoryContext.h>
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_intel
+ * @{
+ */
+
+/**
  * Intel second level page table implementation.
  */
 class IntelPageTable
@@ -86,5 +97,11 @@ class IntelPageTable
     /** Array of page table entries. */
     u32 m_pages[1024];
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_INTEL_PAGETABLE_H */

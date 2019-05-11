@@ -25,6 +25,14 @@
 class ARP;
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libnet
+ * @{
+ */
+
+/**
  * Address Resolution Protocol (ARP) socket.
  *
  * ARP sockets receive a copy of ARP reply packets.
@@ -90,5 +98,10 @@ class ARPSocket : public NetworkSocket
     /** Ethernet address for reply. */
     Ethernet::Address m_ethAddr;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBNET_ARPSOCKET_H */

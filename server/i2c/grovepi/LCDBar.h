@@ -18,15 +18,18 @@
 #ifndef __SERVER_I2C_GROVEPI_LCDBAR_H
 #define __SERVER_I2C_GROVEPI_LCDBAR_H
 
-/**     
- * @defgroup groveDigi GrovePi LCD Bar
- * @{
- */
-
 #include <Macros.h>
 #include <Types.h>
 #include <Device.h>
 #include <I2C.h>
+
+/**
+ * @addtogroup server
+ * @{
+ *
+ * @addtogroup grovepi
+ * @{
+ */
 
 /**
  * @brief GrovePi LCD Bar
@@ -102,6 +105,7 @@ class LCDBar : public Device
 };
 
 /**
+ * @}
  * @}
  */
 

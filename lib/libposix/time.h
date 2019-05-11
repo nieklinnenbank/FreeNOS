@@ -22,7 +22,10 @@
 #include "sys/types.h"
 
 /**
- * @defgroup libposix libposix (POSIX.1-2008)
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libposix
  * @{
  */
 
@@ -56,6 +59,7 @@ extern C unsigned long mktime(const unsigned int year, const unsigned int month,
                               const unsigned int day, const unsigned int hour,
                               const unsigned int min, const unsigned int sec);
 /**
+ * @}
  * @}
  */
 

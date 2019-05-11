@@ -19,7 +19,13 @@
 #define __LIBARCH_INTEL_BOOT_H
 
 /**
- * @defgroup kernel kernel (generic)
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_intel
  * @{
  */
 
@@ -35,10 +41,27 @@
 /** The magic number passed by a Multiboot-compliant boot loader.  */
 #define MULTIBOOT_BOOTLOADER_MAGIC      0x2BADB002
 
+/**
+ * @}
+ * @}
+ * @}
+ */
+
 /* Do not include in assembler source. */
 #ifndef __ASSEMBLER__
 
 #include <Types.h>
+
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_intel
+ * @{
+ */
 
 /**
  * The symbol table for a.out.
@@ -145,6 +168,8 @@ extern C void multibootEntry();
 extern C void multibootToCoreInfo(MultibootInfo *info);
 
 /**
+ * @}
+ * @}
  * @}
  */
 

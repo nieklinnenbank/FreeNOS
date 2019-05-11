@@ -21,7 +21,10 @@
 #include <Types.h>
 
 /**
- * @defgroup libexec_elf libexec (ELF)
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libexec
  * @{
  */
 
@@ -319,6 +322,7 @@ typedef struct ELFSegment
 ELFSegment;
 
 /**
+ * @}
  * @}
  */
 

@@ -23,6 +23,14 @@
 #include "Storage.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libfs
+ * @{
+ */
+
+/**
  * Use a file as Storage provider.
  *
  * @see Storage
@@ -84,5 +92,10 @@ class FileStorage : public Storage
     /** Offset used as a base for I/O. */
     Size m_offset;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __FILESYSTEM_STORAGE_H */

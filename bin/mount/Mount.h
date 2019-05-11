@@ -21,6 +21,11 @@
 #include <POSIXApplication.h>
 
 /**
+ * @addtogroup bin
+ * @{
+ */
+
+/**
  * Mount filesystems on the system.
  */
 class Mount : public POSIXApplication
@@ -47,5 +52,9 @@ class Mount : public POSIXApplication
      */
     virtual Result exec();
 };
+
+/**
+ * @}
+ */
 
 #endif /* __BIN_MOUNT_MOUNT_H */

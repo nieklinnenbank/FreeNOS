@@ -21,6 +21,11 @@
 #include <POSIXApplication.h>
 
 /**
+ * @addtogroup bin
+ * @{
+ */
+
+/**
  * Print the operating system name.
  */
 class UnixName : public POSIXApplication
@@ -47,5 +52,9 @@ class UnixName : public POSIXApplication
      */
     virtual Result exec();
 };
+
+/**
+ * @}
+ */
 
 #endif /* __BIN_UNAME_UNIXNAME_H */

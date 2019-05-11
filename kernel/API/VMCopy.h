@@ -21,7 +21,10 @@
 #include <FreeNOS/System.h>
 
 /**
- * @defgroup kernelapi kernel (API)
+ * @addtogroup kernel
+ * @{
+ *
+ * @addtogroup kernelapi
  * @{
  */
 
@@ -42,7 +45,24 @@ inline API::Result VMCopy(ProcessID proc, API::Operation how, Address ours,
     return trapKernel5(API::VMCopyNumber, proc, how, ours, theirs, sz);
 }
 
+/**
+ * @}
+ */
+
+#ifdef __KERNEL__
+
+/**
+ * @addtogroup kernelapi_handler
+ * @{
+ */
+
 extern API::Result VMCopyHandler(ProcessID proc, API::Operation how, Address ours, Address theirs, Size sz);
+
+/**
+ * @}
+ */
+
+#endif /* __KERNEL__ */
 
 /**
  * @}

@@ -21,6 +21,14 @@
 #include "Types.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
+/**
  * Memory block operations class
  */
 class MemoryBlock
@@ -81,5 +89,10 @@ class MemoryBlock
      */
     static bool compare(const char *p1, const char *p2, Size count = 0);
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __MEMORYBLOCK_H */

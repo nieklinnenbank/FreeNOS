@@ -24,12 +24,15 @@
 #include <Types.h>
 
 /**
- * @defgroup tmpfs tmpfs (Temporary Filesystem)
+ * @addtogroup server
+ * @{
+ *
+ * @addtogroup tmpfs
  * @{
  */
 
 /**
- * Temporary filesystem (procfs). Maps files into virtual memory.
+ * Temporary filesystem (TmpFS). Maps files into virtual memory.
  */
 class TmpFileSystem : public FileSystem
 {
@@ -58,6 +61,7 @@ class TmpFileSystem : public FileSystem
 };
 
 /**
+ * @}
  * @}
  */
 

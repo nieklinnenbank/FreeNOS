@@ -18,6 +18,14 @@
 #ifndef __LIBSTD_CHARACTER_H
 #define __LIBSTD_CHARACTER_H
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
 namespace Character
 {
     /**
@@ -141,5 +149,10 @@ namespace Character
         return (c >= 'a' && c <= 'z') ? (c - 32) : (c);
     }
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBSTD_CHARACTER_H */

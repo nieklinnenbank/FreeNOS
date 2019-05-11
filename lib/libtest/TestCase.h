@@ -18,14 +18,25 @@
 #ifndef __LIBTEST_TESTCASE_H
 #define __LIBTEST_TESTCASE_H
 
-/*
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libtest
+ * @{
+ */
+
+#ifndef private
+
+/**
+ * Redefine private as public for accessing class members in testcases
+ *
  * Testcases sometimes need to access private members
  * of a class. This define makes sure that a TestCase
  * can access the private members.
  */
-#ifndef private
 #define private public
-#endif
+#endif /* private */
 
 /* Same for protected */
 #ifndef protected
@@ -63,5 +74,10 @@
  */
 #define testString(s1, s2) \
     testAssert(MemoryBlock::compare((s1), (s2)))
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBTEST_TESTCASE_H */

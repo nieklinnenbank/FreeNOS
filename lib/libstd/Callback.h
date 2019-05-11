@@ -21,6 +21,14 @@
 #include "Types.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
+/**
  * Represents a callback function
  */
 class CallbackFunction
@@ -89,5 +97,10 @@ template <class Base, class ParamType> class Callback : public CallbackFunction
     /** Function pointer */
     Function m_function;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBSTD_CALLBACK_H */

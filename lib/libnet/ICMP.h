@@ -29,6 +29,14 @@ class ICMPSocket;
 class ARP;
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libnet
+ * @{
+ */
+
+/**
  * Internet Control Message Protocol (ICMP)
  */
 class ICMP : public NetworkProtocol
@@ -121,5 +129,10 @@ class ICMP : public NetworkProtocol
 
     ::IPV4 *m_ipv4;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBNET_ICMP_H */

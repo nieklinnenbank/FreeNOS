@@ -21,6 +21,11 @@
 #include <POSIXApplication.h>
 
 /**
+ * @addtogroup bin
+ * @{
+ */
+
+/**
  * Concatenate files to standard output.
  */
 class Cat : public POSIXApplication
@@ -65,5 +70,9 @@ class Cat : public POSIXApplication
      */
     Result cat(const char *file) const;
 };
+
+/**
+ * @}
+ */
 
 #endif /* __BIN_CAT_CAT_H */

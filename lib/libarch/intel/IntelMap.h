@@ -21,6 +21,17 @@
 #include <MemoryMap.h>
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_intel
+ * @{
+ */
+
+/**
  * Defines memory map for Intel systems
  */
 class IntelMap : public MemoryMap
@@ -37,5 +48,11 @@ namespace Arch
 {
     typedef IntelMap MemoryMap;
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_MEMORYMAP_H */

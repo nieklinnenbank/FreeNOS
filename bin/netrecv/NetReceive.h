@@ -23,6 +23,11 @@
 #include <POSIXApplication.h>
 
 /**
+ * @addtogroup bin
+ * @{
+ */
+
+/**
  * Network receive application.
  */
 class NetReceive : public POSIXApplication
@@ -52,5 +57,9 @@ class NetReceive : public POSIXApplication
     /** Socket */
     int m_socket;
 };
+
+/**
+ * @}
+ */
 
 #endif /* __BIN_NETRECEIVE_H */

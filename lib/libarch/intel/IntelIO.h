@@ -22,6 +22,17 @@
 #include <IO.h>
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_intel
+ * @{
+ */
+
+/**
  * Intel I/O functions.
  */
 class IntelIO : public IO
@@ -180,5 +191,11 @@ namespace Arch
 {
     typedef IntelIO IO;
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_INTELIO_H */

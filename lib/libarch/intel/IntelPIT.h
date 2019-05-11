@@ -24,6 +24,17 @@
 #include "IntelIO.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_intel
+ * @{
+ */
+
+/**
  * Intel 8254 Programmable Interrupt Timer (PIT).
  */
 class IntelPIT : public Timer
@@ -114,5 +125,11 @@ class IntelPIT : public Timer
     /** I/O instance */
     IntelIO m_io;
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_INTEL_PIT_H */

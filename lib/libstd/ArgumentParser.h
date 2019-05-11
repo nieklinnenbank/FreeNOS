@@ -27,6 +27,14 @@
 #include "ArgumentContainer.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
+/**
  * Generic command-line argument parser.
  */
 class ArgumentParser
@@ -143,5 +151,10 @@ class ArgumentParser
     /** Program description */
     String m_description;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBSTD_ARGUMENTPARSER_H */

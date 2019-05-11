@@ -28,6 +28,14 @@ class UDP;
 class Ethernet;
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libnet
+ * @{
+ */
+
+/**
  * Internet Protocol Version 4
  */
 class IPV4 : public NetworkProtocol
@@ -203,5 +211,10 @@ class IPV4 : public NetworkProtocol
     /** Packet ID for IPV4 */
     u16 m_id;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBNET_IPV4_H */

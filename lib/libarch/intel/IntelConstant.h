@@ -19,6 +19,17 @@
 #define __LIBARCH_INTEL_CONSTANT_H
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_intel
+ * @{
+ */
+
+/**
  * Intel CPU Constants
  * @{
  */
@@ -87,6 +98,12 @@
 #define MEMALIGN        4
 
 /**
+ * @}
+ */
+
+/**
+ * @}
+ * @}
  * @}
  */
 

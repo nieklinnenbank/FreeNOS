@@ -25,13 +25,13 @@
 #include <Index.h>
 #include <MemoryContext.h>
 
-/**
- * @defgroup kernel kernel (generic)
- * @{
- */
-
 class MemoryChannel;
 class Process;
+
+/**
+ * @addtogroup kernel
+ * @{
+ */
 
 /**
  * Manages memory shares for a Process.

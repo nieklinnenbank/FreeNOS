@@ -21,6 +21,11 @@
 #include <POSIXApplication.h>
 
 /**
+ * @addtogroup bin
+ * @{
+ */
+
+/**
  * List files on the filesystem.
  */
 class ListFiles : public POSIXApplication
@@ -68,5 +73,9 @@ class ListFiles : public POSIXApplication
      */
     Result printSingleFile(const String & path, String & out) const;
 };
+
+/**
+ * @}
+ */
 
 #endif /* __BIN_LS_LS_H */

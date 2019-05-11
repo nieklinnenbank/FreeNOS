@@ -22,15 +22,19 @@
 #include <BootImage.h>
 
 /**
- * @defgroup x86kernel kernel (x86)
+ * @addtogroup kernel
+ * @{
+ *
+ * @addtogroup kernel_intel
  * @{
  */
 
 /**
- * @group Intel Kernel Traps
+ * @name Intel Kernel Traps
  *
+ * Intel specific software interrupts.
  * These functions are called by the user program to
- * invoke the kernel APIs.
+ * invoke the kernel APIs, also known as system calls.
  *
  * @{
  */
@@ -127,6 +131,8 @@ inline ulong trapKernel5(ulong num, ulong arg1, ulong arg2, ulong arg3,
 
 /**
  * @}
+ * @}
+ * @}
  */
 
 #include <FreeNOS/Kernel.h>
@@ -136,7 +142,15 @@ inline ulong trapKernel5(ulong num, ulong arg1, ulong arg2, ulong arg3,
 #include <Timer.h>
 
 /**
- * We remap IRQ's to interrupt vectors 32-47.
+ * @addtogroup kernel
+ * @{
+ *
+ * @addtogroup kernel_intel
+ * @{
+ */
+
+/**
+ * Remap IRQs to interrupt vectors 32-47.
  */
 #define IRQ(vector) \
     (vector) + 32
@@ -200,6 +214,7 @@ class IntelKernel : public Kernel
 };
 
 /**
+ * @}
  * @}
  */
 

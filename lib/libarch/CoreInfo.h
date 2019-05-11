@@ -18,16 +18,37 @@
 #ifndef __LIBARCH_COREINFO_H
 #define __LIBARCH_COREINFO_H
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ */
+
 #define KERNEL_PATHLEN 64
 
 /** Needed by IntelBoot16.S. Depends on sizeof(Memory::Access) which is an emum */
 #define COREINFO_SIZE  (KERNEL_PATHLEN + (8 * 4) + (4 * 4) + (4 * 4))
+
+/**
+ * @}
+ * @}
+ */
 
 #ifndef __ASSEMBLER__
 
 #include <Macros.h>
 #include <Types.h>
 #include <Memory.h>
+
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ */
 
 /**
  * Per-Core information structure
@@ -99,4 +120,10 @@ CoreInfo;
 extern CoreInfo coreInfo;
 
 #endif /* __ASSEMBLER__ */
+
+/**
+ * @}
+ * @}
+ */
+
 #endif /* __LIBARCH_COREINFO_H */

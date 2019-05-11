@@ -24,12 +24,15 @@
 #include <Macros.h>
 
 /**
- * @defgroup libc libc (ISO C99)
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libposix
  * @{
  */
 
 /**
- * @brief Seek operations
+ * @name File seek operations
  * @{
  */
 
@@ -47,7 +50,7 @@
  */
 
 /**
- * @brief File streams
+ * @name File streams
  * @{
  */
 
@@ -196,6 +199,7 @@ extern C int printf(const char *format, ...);
 extern C int vprintf(const char *format, va_list args);
 
 /**
+ * @}
  * @}
  */
 

@@ -22,6 +22,20 @@
 #include <IO.h>
 #include "ARMCore.h"
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_arm
+ * @{
+ */
+
+/**
+ * Input/Output operations specific to the ARM architecture
+ */
 class ARMIO : public IO
 {
   public:
@@ -176,5 +190,11 @@ namespace Arch
 {
     typedef ARMIO IO;
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_ARMIO_H */

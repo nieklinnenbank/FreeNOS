@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -26,16 +26,16 @@
 #include <Index.h>
 #include "ProcessShares.h"
 
-/** 
- * @defgroup kernel kernel (generic)
- * @{ 
- */
-
 /** @see IPCMessage.h. */
 struct Message;
 class MemoryContext;
 class MemoryChannel;
 struct ProcessEvent;
+
+/**
+ * @addtogroup kernel
+ * @{
+ */
 
 /**
  * Represents a process which may run on the host.
@@ -59,8 +59,8 @@ class Process
         Stopped,
         Sleeping,
         Waiting
-    };    
-    
+    };
+
     /**
      * Constructor function.
      *

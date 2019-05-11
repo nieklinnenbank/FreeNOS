@@ -24,7 +24,10 @@
 #include "Allocator.h"
 
 /**
- * @defgroup kernel kernel (generic)
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup liballoc
  * @{
  */
 
@@ -145,6 +148,7 @@ class BitAllocator : public Allocator
 
 /**
  * @}
+ * @}
  */
 
-#endif /* __MEMORY_H */
+#endif /* __LIBALLOC_BITALLOCATOR_H */

@@ -22,6 +22,14 @@
 #include <Types.h>
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libi2c
+ * @{
+ */
+
+/**
  * I2C controller abstract interface.
  */
 class I2C
@@ -85,5 +93,10 @@ class I2C
     /** I/O instance */
     Arch::IO m_io;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBI2C_I2C_H */

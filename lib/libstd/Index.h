@@ -23,6 +23,14 @@
 #include "Macros.h"
 #include "Sequence.h"
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
 /** Default size of an Index */
 #define INDEX_DEFAULT_SIZE  64
 
@@ -229,5 +237,10 @@ template <class T> class Index : public Sequence<T>
     /** Amount of valid pointers in the array. */
     Size m_count;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBSTD_INDEX_H */

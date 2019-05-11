@@ -22,7 +22,15 @@
 #include <Types.h>
 
 /**
- * Process which may execute on an Intel x86 CPU.
+ * @addtogroup kernel
+ * @{
+ *
+ * @addtogroup kernel_intel
+ * @{
+ */
+
+/**
+ * Process which may execute on an Intel CPU.
  */
 class IntelProcess : public Process
 {
@@ -72,6 +80,7 @@ namespace Arch
 };
 
 /**
+ * @}
  * @}
  */
 

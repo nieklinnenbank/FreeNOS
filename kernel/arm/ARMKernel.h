@@ -32,6 +32,24 @@
 class ARMInterrupt;
 
 /**
+ * @addtogroup kernel
+ * @{
+ *
+ * @addtogroup kernel_arm
+ * @{
+ */
+
+/**
+ * @name ARM Kernel Traps
+ *
+ * ARM specific software interrupts.
+ * These functions are called by the user program to
+ * invoke the kernel APIs, also known as system calls.
+ *
+ * @{
+ */
+
+/**
  * Perform a kernel trap with 1 argument.
  *
  * @param api Unique number of the handler to execute.
@@ -50,6 +68,12 @@ inline ulong trapKernel1(ulong api, ulong arg1)
 
 /**
  * Perform a kernel trap with 2 arguments.
+ *
+ * @param api Unique number of the handler to execute.
+ * @param arg1 First argument
+ * @param arg2 Second argument
+ *
+ * @return An integer
  */
 inline ulong trapKernel2(ulong api, ulong arg1, ulong arg2)
 {
@@ -133,6 +157,10 @@ inline ulong trapKernel5(ulong api, ulong arg1, ulong arg2, ulong arg3,
 }
 
 /**
+ * @}
+ */
+
+/**
  * Represents the ARM kernel implementation
  */
 class ARMKernel : public Kernel
@@ -208,5 +236,10 @@ class ARMKernel : public Kernel
     /** Interrupt number for the timer */
     u8 m_timerIrq;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __ARM_KERNEL_H */

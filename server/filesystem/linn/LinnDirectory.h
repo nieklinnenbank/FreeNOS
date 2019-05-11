@@ -28,7 +28,10 @@
 #include "IOBuffer.h"
 
 /**
- * @defgroup linn LinnFS (Linnenbank Filesystem)
+ * @addtogroup server
+ * @{
+ *
+ * @addtogroup linnfs
  * @{
  */
 
@@ -106,6 +109,7 @@ class LinnDirectory : public Directory
 };
 
 /**
+ * @}
  * @}
  */
 

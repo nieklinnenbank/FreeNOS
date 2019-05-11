@@ -22,7 +22,10 @@
 #include "types.h"
 
 /**
- * @defgroup libposix libposix (POSIX.1-2008)
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libposix
  * @{
  */
 
@@ -71,6 +74,7 @@ extern C int gettimeofday(struct timeval *tv, struct timezone *tz);
 extern C int printtimediff(struct timeval *t1, struct timeval *t2);
 
 /**
+ * @}
  * @}
  */
 

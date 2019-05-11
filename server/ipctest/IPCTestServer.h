@@ -23,6 +23,14 @@
 #include "IPCTestMessage.h"
 
 /**
+ * @addtogroup server
+ * @{
+ *
+ * @addtogroup server_ipctest
+ * @{
+ */
+
+/**
  * Test server for inter process communication (IPC).
  */
 class IPCTestServer : public ChannelServer<IPCTestServer, IPCTestMessage>
@@ -56,5 +64,10 @@ class IPCTestServer : public ChannelServer<IPCTestServer, IPCTestMessage>
     void testActionBHandler(IPCTestMessage *msg);
 
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __SERVER_IPCTEST_IPCTESTSERVER_H */

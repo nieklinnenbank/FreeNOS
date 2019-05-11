@@ -21,7 +21,10 @@
 #include <FreeNOS/System.h>
 
 /**
- * @defgroup kernelapi kernel (API)
+ * @addtogroup kernel
+ * @{
+ *
+ * @addtogroup kernelapi
  * @{
  */
 
@@ -40,7 +43,24 @@ inline API::Result VMShare(ProcessID pid, API::Operation op, ProcessShares::Memo
     return trapKernel3(API::VMShareNumber, pid, op, (Address) share);
 }
 
+/**
+ * @}
+ */
+
+#ifdef __KERNEL__
+
+/**
+ * @addtogroup kernelapi_handler
+ * @{
+ */
+
 extern API::Result VMShareHandler(ProcessID pid, API::Operation op, ProcessShares::MemoryShare *share);
+
+/**
+ * @}
+ */
+
+#endif /* __KERNEL__ */
 
 /**
  * @}

@@ -23,6 +23,14 @@
 #include "String.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
+/**
  * Output a log line to the system log (syslog).
  *
  * @param type Log level
@@ -179,6 +187,11 @@ Log & operator << (Log &log, unsigned long number);
 Log & operator << (Log &log, void *ptr);
 
 /**
+ * @}
+ */
+
+/**
+ * @}
  * @}
  */
 

@@ -29,7 +29,15 @@
 #endif /* __SERVER__ */
 
 /**
- * @brief Runtime functions
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
+/**
+ * @name Runtime assertion
  * @{
  */
 
@@ -60,7 +68,7 @@ extern C int __assertWrite(Address addr);
  */
 
 /**
- * @brief Preprocessor macros
+ * @name Preprocessor assertion
  * @{
  */
 
@@ -116,7 +124,7 @@ extern C int __assertWrite(Address addr);
 #else
 
 /**
- * @brief Dummy preprocessor macros
+ * @name Dummy preprocessor macros
  * @{
  */
 
@@ -142,6 +150,11 @@ extern C int __assertWrite(Address addr);
 #define assertWrite(addr)
 
 /**
+ * @}
+ */
+
+/**
+ * @}
  * @}
  */
 

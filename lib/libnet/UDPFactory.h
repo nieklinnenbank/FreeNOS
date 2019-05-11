@@ -23,6 +23,14 @@
 class UDP;
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libnet
+ * @{
+ */
+
+/**
  * User Datagram Protocol (UDP).
  *
  * The UDP factory creates new sockets for applications.
@@ -57,5 +65,10 @@ class UDPFactory : public File
     /** UDP protocol instance */
     UDP *m_udp;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBNET_UDPFACTORY_H */

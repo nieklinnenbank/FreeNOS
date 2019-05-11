@@ -23,6 +23,17 @@
 #include <MemoryContext.h>
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_arm
+ * @{
+ */
+
+/**
  * ARM second level page table implementation.
  */
 class ARMSecondTable
@@ -87,5 +98,11 @@ class ARMSecondTable
     /** Array of second level page table entries */
     u32 m_pages[256];
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_ARM_SECONDTABLE_H */

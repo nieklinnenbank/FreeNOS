@@ -21,6 +21,14 @@
 #include <Macros.h>
 #include <Types.h>
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ */
+
 extern C uint isKernel;
 
 #define swab16(x) ((u16)(                                   \
@@ -152,10 +160,6 @@ extern C uint isKernel;
 #endif /* CPU_LITTLE_ENDIAN */
 
 /**
- * @}
- */
-
-/**
  * Generic Core implementation.
  */
 class Core
@@ -164,5 +168,10 @@ class Core
 
     /* empty */
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_CORE_H */

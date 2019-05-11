@@ -24,6 +24,17 @@
 #include "ARMControl.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_arm
+ * @{
+ */
+
+/**
  * ARMv7 cache management implementation.
  *
  * @see ARM Architecture Reference Manual, page xxx
@@ -134,5 +145,11 @@ namespace Arch
 {
     typedef ARMCacheV7 Cache;
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_ARM_ARMCACHEV7_H */

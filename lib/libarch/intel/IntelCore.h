@@ -24,6 +24,17 @@
 #include "IntelIO.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_intel
+ * @{
+ */
+
+/**
  * Retrieve the IRQ number from CPUState.
  *
  * @return IRQ number.
@@ -275,8 +286,8 @@ typedef struct IRQRegs3
 }
 IRQRegs3;
 
-/** 
- * Contains all the CPU registers. 
+/**
+ * Contains all the CPU registers.
  */
 typedef struct CPUState
 {
@@ -351,4 +362,11 @@ extern TSS kernelTss;
 extern Address kernelPageDir[];
 
 #endif /* __KERNEL__ */
+
+/**
+ * @}
+ * @}
+ * @}
+ */
+
 #endif /* __LIBARCH_INTEL_CPU_H */

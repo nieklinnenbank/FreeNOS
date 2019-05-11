@@ -26,6 +26,17 @@
 #include "SynopsisChannel.h"
 
 /**
+ * @addtogroup server
+ * @{
+ *
+ * @addtogroup usb
+ * @{
+ *
+ * @addtogroup usb_controller
+ * @{
+ */
+
+/**
  * Synopsis DesignWare USB Host Controller implementation.
  *
  * @see https://github.com/xinu-os/xinu/system/platforms/arm-rpi/usb_dwc_regs.h
@@ -193,5 +204,11 @@ class SynopsisController : public USBController
     /** Channels. */
     Index<SynopsisChannel> m_channels;
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __LIBUSB_SYNOPSISUSB_H */

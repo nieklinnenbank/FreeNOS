@@ -21,7 +21,10 @@
 #include <Macros.h>
 
 /**
- * @defgroup libposix libposix (POSIX.1-2008)
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libposix
  * @{
  */
 
@@ -48,6 +51,7 @@ extern C int abs(int number);
 extern C u32 sqrt(u32 number);
 
 /**
+ * @}
  * @}
  */
 

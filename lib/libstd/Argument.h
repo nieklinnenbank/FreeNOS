@@ -22,6 +22,14 @@
 #include "String.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
+/**
  * Represents program command line argument
  */
 class Argument
@@ -147,5 +155,10 @@ class Argument
     /** Maximum argument count */
     Size m_count;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBSTD_ARGUMENT_H */

@@ -21,6 +21,11 @@
 #include <POSIXApplication.h>
 
 /**
+ * @addtogroup bin
+ * @{
+ */
+
+/**
  * Output the system process list.
  */
 class ProcessList : public POSIXApplication
@@ -47,5 +52,9 @@ class ProcessList : public POSIXApplication
      */
     virtual Result exec();
 };
+
+/**
+ * @}
+ */
 
 #endif /* __BIN_PS_PROCESSLIST_H */

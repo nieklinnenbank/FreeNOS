@@ -22,6 +22,14 @@
 #include "TestInt.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libtest
+ * @{
+ */
+
+/**
  * Generate test data for character strings.
  */
 template <class T> class TestChar : public TestData<T>
@@ -144,5 +152,10 @@ template<> char * TestChar<char *>::unique(Size count)
     }
     return value;
 }
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBTEST_TESTCHAR_H */

@@ -20,6 +20,14 @@
 
 #include "TestInstance.h"
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libtest
+ * @{
+ */
+
 typedef TestResult TestFunction(void);
 
 /**
@@ -49,5 +57,10 @@ class LocalTest : public TestInstance
     /** Contains the test to run */
     TestFunction *m_func;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBTEST_LOCALTEST_H */

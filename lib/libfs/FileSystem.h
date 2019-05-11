@@ -30,6 +30,14 @@
 #include "FileSystemRequest.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libfs
+ * @{
+ */
+
+/**
  * Abstract filesystem class.
  */
 class FileSystem : public ChannelServer<FileSystem, FileSystemMessage>
@@ -251,5 +259,10 @@ class FileSystem : public ChannelServer<FileSystem, FileSystemMessage>
     /** Contains ongoing requests */
     List<FileSystemRequest *> *m_requests;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIB_LIBFS_FILESYSTEM_H */

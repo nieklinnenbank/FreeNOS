@@ -23,6 +23,17 @@
 #include <Timer.h>
 #include <arm/ARMIO.h>
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_bcm
+ * @{
+ */
+
 #define SYSTIMER_BASE 0x3000
 
 #define SYSTIMER_CS   (SYSTIMER_BASE + 0x0)
@@ -78,5 +89,11 @@ class BroadcomTimer : public Timer
     /** I/O instance */
     ARMIO m_io;
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_ARM_BROADCOMTIMER_H */

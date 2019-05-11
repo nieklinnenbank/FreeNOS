@@ -21,6 +21,14 @@
 #include "File.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libfs
+ * @{
+ */
+
+/**
  * Abstract device class interface.
  */
 class Device : public File
@@ -65,5 +73,10 @@ class Device : public File
     /** Unique identifier for this Device. */
     String m_identifier;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIB_LIBFS_DEVICE_H */

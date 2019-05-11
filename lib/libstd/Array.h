@@ -24,6 +24,14 @@
 #include "Macros.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
+/**
  * This is a wrapper class for a fixed size array.
  *
  * This class contains some extra functionality, somewhat like the Arrays class in Java.
@@ -147,5 +155,10 @@ template <class T, Size N> class Array : public Sequence<T>
     /** The actual array where the data is stored. */
     T m_array[N];
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBSTD_ARRAY_H */

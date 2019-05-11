@@ -18,15 +18,21 @@
 #ifndef __API_IOCTL_H
 #define __API_IOCTL_H
 
-#include <FreeNOS/System.h>
+#ifndef __SYSTEM
+#error Do not include this file directly, use FreeNOS/System.h instead
+#endif
 
 /**
- * @defgroup kernelapi kernel (API)
+ * @addtogroup kernel
+ * @{
+ *
+ * @addtogroup kernelapi
  * @{
  */
 
 /**
  * Available operation to perform using PrivExec().
+ *
  * @see PrivExec
  */
 typedef enum IOOperation
@@ -68,9 +74,32 @@ inline API::Result WriteLong(Address addr, ulong value)
 }
 
 /**
- * Kernel handler prototype.
+ * @}
+ */
+
+#ifdef __KERNEL__
+
+/**
+ * @addtogroup kernelapi_handler
+ * @{
+ */
+
+/**
+ * Kernel handler prototype for various I/O functions.
+ *
+ * @param op Operation to perform
+ * @param addr Input/Output address
+ * @param value Value for writing
+ *
+ * @return Error code
  */
 extern Error IOCtlHandler(IOOperation op, Address addr, ulong value);
+
+/**
+ * @}
+ */
+
+#endif /* __KERNEL__ */
 
 /**
  * @}

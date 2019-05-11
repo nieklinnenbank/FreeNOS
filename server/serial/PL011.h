@@ -25,6 +25,19 @@
 #include <Types.h>
 #include <Device.h>
 
+/**
+ * @addtogroup server
+ * @{
+ *
+ * @addtogroup serial
+ * @{
+ */
+
+/**
+ * The PL011 is a commonly available UART device frequently found in ARM systems.
+ *
+ * @see libarch_arm
+ */
 class PL011 : public Device
 {
   public:
@@ -142,5 +155,10 @@ class PL011 : public Device
     /** I/O instance */
     Arch::IO m_io;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __ARM_PL011_H */

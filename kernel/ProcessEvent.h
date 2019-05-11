@@ -23,7 +23,7 @@
 #include "ProcessShares.h"
 
 /**
- * @defgroup kernel kernel (generic)
+ * @addtogroup kernel
  * @{
  */
 

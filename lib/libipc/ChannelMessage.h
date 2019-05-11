@@ -21,6 +21,14 @@
 #include <Types.h>
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libipc
+ * @{
+ */
+
+/**
  * Basic message format for sending on a Channel
  */
 class ChannelMessage
@@ -42,5 +50,10 @@ class ChannelMessage
     /** Optional request identifier */
     Size identifier:31;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBIPC_CHANNELMESSAGE_H */

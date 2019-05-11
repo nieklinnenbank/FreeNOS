@@ -27,6 +27,14 @@
 #include "Argument.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
+/**
  * Generic command-line argument parser.
  */
 class ArgumentContainer
@@ -104,5 +112,10 @@ class ArgumentContainer
     /** Contains all positional arguments. */
     Vector<Argument *> m_positionals;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBSTD_ARGUMENTCONTAINER_H */

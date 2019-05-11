@@ -28,6 +28,14 @@
 #include "ChannelRegistry.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libipc
+ * @{
+ */
+
+/**
  * Message handler function (dummy) container.
  */
 template <class Func> struct MessageHandler
@@ -424,5 +432,10 @@ template <class Base, class MsgType> class ChannelServer
     /** System timer expiration value */
     Timer::Info m_expiry;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBIPC_CHANNELSERVER_H */

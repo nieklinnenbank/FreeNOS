@@ -22,6 +22,14 @@
 #include "TestCase.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libtest
+ * @{
+ */
+
+/**
  * Responsible for outputting test results.
  */
 class TestReporter
@@ -122,5 +130,10 @@ class TestReporter
     /** Test statistics */
     uint m_ok, m_fail, m_skip;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBTEST_TESTREPORTER_H */

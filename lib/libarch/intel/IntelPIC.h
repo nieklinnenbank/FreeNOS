@@ -24,6 +24,17 @@
 #include "IntelIO.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_intel
+ * @{
+ */
+
+/**
  * Intel 8259 Programmable Interrupt Controller (PIC).
  */
 class IntelPIC : public IntController
@@ -118,5 +129,11 @@ class IntelPIC : public IntController
     /** I/O instance for slave. */
     IntelIO m_slave;
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_INTEL_PIC_H */

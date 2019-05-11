@@ -29,6 +29,17 @@ class MemoryContext;
 class IntelPIT;
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_intel
+ * @{
+ */
+
+/**
  * Intel Advanced Programmable Interrupt Controller (APIC)
  */
 class IntelAPIC : public IntController, public Timer
@@ -193,5 +204,11 @@ class IntelAPIC : public IntController, public Timer
     /** I/O object */
     IntelIO m_io;
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_INTEL_APIC_H */

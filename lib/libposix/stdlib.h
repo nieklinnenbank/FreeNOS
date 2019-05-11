@@ -22,7 +22,10 @@
 #include <sys/types.h>
 
 /**
- * @defgroup libc libc (ISO C99)
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libposix
  * @{
  */
 
@@ -149,6 +152,7 @@ extern C void srandom(unsigned int seed);
 extern C long int random(void);
 
 /**
+ * @}
  * @}
  */
 

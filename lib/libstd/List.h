@@ -23,6 +23,14 @@
 #include "Sequence.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
+/**
  * Simple linked list template class.
  */
 template <class T> class List : public Sequence<T>
@@ -453,5 +461,10 @@ template <class T> class List : public Sequence<T>
     /** Number of items currently in the List. */
     Size m_count;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBSTD_LIST_H */

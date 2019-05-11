@@ -21,6 +21,11 @@
 #include <POSIXApplication.h>
 
 /**
+ * @addtogroup bin
+ * @{
+ */
+
+/**
  * Login program which starts the user shell.
  */
 class Login : public POSIXApplication
@@ -61,5 +66,9 @@ class Login : public POSIXApplication
      */
     void printPrompt() const;
 };
+
+/**
+ * @}
+ */
 
 #endif /* __BIN_LOGIN_LOGIN_H */

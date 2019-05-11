@@ -21,7 +21,10 @@
 #ifndef __ASSEMBLER__
 
 /**
- * @defgroup types types
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
  * @{
  */
 
@@ -173,6 +176,11 @@ namespace Number
 #endif /* __cplusplus */
 
 /**
+ * @}
+ */
+
+/**
+ * @}
  * @}
  */
 

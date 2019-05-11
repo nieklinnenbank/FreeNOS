@@ -21,6 +21,11 @@
 #include <POSIXApplication.h>
 
 /**
+ * @addtogroup bin
+ * @{
+ */
+
+/**
  * Test program for inter process communication
  */
 class IPCTest : public POSIXApplication
@@ -47,5 +52,9 @@ class IPCTest : public POSIXApplication
      */
     virtual Result exec();
 };
+
+/**
+ * @}
+ */
 
 #endif /* __BIN_IPCTEST_IPCTEST_H */

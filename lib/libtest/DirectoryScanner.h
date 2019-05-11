@@ -19,6 +19,14 @@
 #define __LIBTEST_DIRECTORYSCANNER_H
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libtest
+ * @{
+ */
+
+/**
  * Scan directory for automated tests
  */
 class DirectoryScanner
@@ -50,5 +58,10 @@ class DirectoryScanner
     /** Program argument values */
     char **m_argv;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBTEST_DIRECTORYSCANNER_H */

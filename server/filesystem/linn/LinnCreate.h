@@ -24,6 +24,17 @@
 #include "LinnSuperBlock.h"
 #include "LinnInode.h"
 
+/**
+ * @addtogroup server
+ * @{
+ *
+ * @addtogroup linnfs
+ * @{
+ *
+ * @addtogroup linncreate
+ * @{
+ */
+
 /** Default block size. */
 #define LINN_CREATE_BLOCK_SIZE          2048
 
@@ -236,5 +247,11 @@ class LinnCreate
     /** Array of blocks available in the filesystem. */
     u8 *blocks;
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __FILESYSTEM_LINN_CREATE_H */

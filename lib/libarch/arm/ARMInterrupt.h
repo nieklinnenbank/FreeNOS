@@ -21,6 +21,17 @@
 #include <Types.h>
 #include <IntController.h>
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_arm
+ * @{
+ */
+
 /** Size of the ARM exception vector table in bytes */
 #define ARM_INTR_VECTAB_SIZE   (64)
 
@@ -97,5 +108,11 @@ class ARMInterrupt : public IntController
      */
     Address m_vecTable;
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_ARM_INTERRUPT_H */

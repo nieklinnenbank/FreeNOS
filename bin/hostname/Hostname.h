@@ -21,6 +21,11 @@
 #include <POSIXApplication.h>
 
 /**
+ * @addtogroup bin
+ * @{
+ */
+
+/**
  * Print the system hostname.
  */
 class Hostname : public POSIXApplication
@@ -47,5 +52,9 @@ class Hostname : public POSIXApplication
      */
     virtual Result exec();
 };
+
+/**
+ * @}
+ */
 
 #endif /* __BIN_HOSTNAME_HOSTNAME_H */

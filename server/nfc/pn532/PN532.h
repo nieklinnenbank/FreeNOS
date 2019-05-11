@@ -19,7 +19,10 @@
 #define __SERVER_NFC_PN532_H
 
 /**
- * @defgroup pn532 PN532 NFC driver
+ * @addtogroup server
+ * @{
+ *
+ * @addtogroup pn532
  * @{
  */
 
@@ -95,6 +98,7 @@ class PN532 : public Device
 };
 
 /**
+ * @}
  * @}
  */
 

@@ -27,6 +27,14 @@ class IPV4;
 class ICMP;
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libnet
+ * @{
+ */
+
+/**
  * Ethernet networking protocol
  */
 class Ethernet : public NetworkProtocol
@@ -155,5 +163,10 @@ class Ethernet : public NetworkProtocol
 };
 
 Log & operator << (Log &log, const Ethernet::Address & addr);
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBNET_ETHERNET_H */

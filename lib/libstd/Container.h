@@ -22,6 +22,14 @@
 #include "Macros.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
+/**
  * Containers provide access to stored items.
  */
 class Container
@@ -98,5 +106,10 @@ class Container
      */
     virtual bool resize(Size size);
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBSTD_CONTAINER_H */

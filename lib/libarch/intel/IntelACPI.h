@@ -23,6 +23,17 @@
 #include "IntelIO.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_intel
+ * @{
+ */
+
+/**
  * Intel Advanced Configuration and Power Interface (ACPI).
  */
 class IntelACPI : public CoreManager
@@ -201,5 +212,11 @@ class IntelACPI : public CoreManager
     /** Root/Extended SDT table I/O object. */
     IntelIO m_rootIO;
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_INTEL_ACPI_H */

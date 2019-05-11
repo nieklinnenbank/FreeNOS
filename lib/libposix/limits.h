@@ -22,7 +22,10 @@
 #include <sys/types.h>
 
 /**
- * @defgroup libc libc (ISO C99)
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libposix
  * @{
  */
 
@@ -33,6 +36,7 @@
 #define PATH_MAX  64
 
 /**
+ * @}
  * @}
  */
 

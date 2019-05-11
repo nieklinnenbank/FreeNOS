@@ -22,7 +22,10 @@
 #include <Macros.h>
 
 /**
- * @defgroup libmpi libmpi (Message Passing Interface v3.1)
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libmpi
  * @{
  */
 
@@ -207,6 +210,7 @@ extern C int MPI_Get_library_version(char *version, int *resultlen);
  */
 
 /**
+ * @}
  * @}
  */
 

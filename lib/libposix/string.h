@@ -22,7 +22,10 @@
 #include "errno.h"
 
 /**
- * @defgroup libc libc (ISO C99)
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libposix
  * @{
  */
 
@@ -242,6 +245,7 @@ extern C char * strchr(const char *s, int c);
 extern C char * strrchr(const char *s, int c);
 
 /**
+ * @}
  * @}
  */
 

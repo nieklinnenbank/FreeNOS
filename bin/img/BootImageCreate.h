@@ -22,6 +22,11 @@
 #include <ExecutableFormat.h>
 #include <BootImage.h>
 
+/**
+ * @addtogroup bin
+ * @{
+ */
+
 /** Maximum memory regions. */
 #define BOOTENTRY_MAX_REGIONS 16
 
@@ -35,7 +40,7 @@ typedef struct BootEntry
 
     /** Memory regions for this symbol */
     ExecutableFormat::Region regions[BOOTENTRY_MAX_REGIONS];
-    
+
     /** Number of memory regions. */
     Size numRegions;
 }
@@ -91,5 +96,9 @@ class BootImageCreate : public Application
     Size readBootSymbols(const char *file,
                          Vector<BootEntry *> *entries);
 };
+
+/**
+ * @}
+ */
 
 #endif /* __BIN_IMG_BOOTIMAGECREATE_H */

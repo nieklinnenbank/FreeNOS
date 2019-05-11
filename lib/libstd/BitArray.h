@@ -22,6 +22,14 @@
 #include "Assert.h"
 #include "Types.h"
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
 /** Macro to convert number of bits to bytes */
 #define BITS_TO_BYTES(bits) ((bits / 8) + ((bits % 8) ? 1 : 0))
 
@@ -169,5 +177,10 @@ class BitArray
     /** True if m_array was allocated interally. */
     bool m_allocated;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBSTD_BITARRAY_H */

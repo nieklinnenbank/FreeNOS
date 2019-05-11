@@ -22,7 +22,10 @@
 #include <Macros.h>
 
 /**
- * @defgroup libposix libposix (POSIX.1-2008)
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libposix
  * @{
  */
 
@@ -64,6 +67,7 @@ struct utsname
 extern C int uname(struct utsname *name);
 
 /**
+ * @}
  * @}
  */
 

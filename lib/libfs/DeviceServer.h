@@ -20,6 +20,14 @@
 
 #include "FileSystem.h"
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libfs
+ * @{
+ */
+
 /** Maximum number of devices handled simultaneously by a DeviceServer. */
 #define DEVICE_MAX 32
 
@@ -109,5 +117,10 @@ class DeviceServer : public FileSystem
      */
     Vector<List<Device *> *> m_interrupts;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIB_LIBFS_DEVICESERVER_H */

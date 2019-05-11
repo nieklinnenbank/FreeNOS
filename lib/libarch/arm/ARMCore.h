@@ -24,6 +24,17 @@
 #include "ARMControl.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_arm
+ * @{
+ */
+
+/**
  * Retrieve the IRQ number from CPUState.
  * This does not work for ARM. See BCM2835Interrupt instead.
  *
@@ -251,5 +262,11 @@ class ARMCore : public Core
      */
     void logRegister(const char *name, u32 reg, const char *text = "") const;
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __ARM_CORE_H */

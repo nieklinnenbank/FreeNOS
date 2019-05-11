@@ -26,6 +26,17 @@
 class SplitAllocator;
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_intel
+ * @{
+ */
+
+/**
  * Intel page directory implementation.
  */
 class IntelPageDirectory
@@ -132,5 +143,11 @@ class IntelPageDirectory
     /** Array of page directory entries. */
     u32 m_tables[1024];
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_INTEL_PAGEDIRECTORY_H */

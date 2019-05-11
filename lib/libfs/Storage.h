@@ -22,6 +22,14 @@
 #include <errno.h>
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libfs
+ * @{
+ */
+
+/**
  * Provides a storage device to build filesystems on top.
  */
 class Storage
@@ -67,5 +75,10 @@ class Storage
      */
     virtual u64 capacity() const = 0;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __FILESYSTEM_STORAGE_H */

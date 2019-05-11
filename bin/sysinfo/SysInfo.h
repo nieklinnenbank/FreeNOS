@@ -21,6 +21,11 @@
 #include <POSIXApplication.h>
 
 /**
+ * @addtogroup bin
+ * @{
+ */
+
+/**
  * Print global system information.
  */
 class SysInfo : public POSIXApplication
@@ -47,5 +52,9 @@ class SysInfo : public POSIXApplication
      */
     virtual Result exec();
 };
+
+/**
+ * @}
+ */
 
 #endif /* __BIN_SYSINFO_SYSINFO_H */

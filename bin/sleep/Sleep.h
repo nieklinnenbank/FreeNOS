@@ -21,6 +21,11 @@
 #include <POSIXApplication.h>
 
 /**
+ * @addtogroup bin
+ * @{
+ */
+
+/**
  * Stop executing for some time.
  */
 class Sleep : public POSIXApplication
@@ -47,5 +52,9 @@ class Sleep : public POSIXApplication
      */
     virtual Result exec();
 };
+
+/**
+ * @}
+ */
 
 #endif /* __BIN_SLEEP_SLEEP_H */

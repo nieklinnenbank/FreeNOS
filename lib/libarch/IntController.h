@@ -25,6 +25,14 @@
 struct CPUState;
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ */
+
+/**
  * Interrupt controller interface.
  */
 class IntController
@@ -102,5 +110,10 @@ class IntController
     uint m_base;
 
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_INTCONTROLLER_H */

@@ -30,7 +30,10 @@
 #include "LinnGroup.h"
 
 /**
- * @defgroup linn LinnFS (Linnenbank Filesystem)
+ * @addtogroup server
+ * @{
+ *
+ * @addtogroup linnfs
  * @{
  */
 
@@ -175,6 +178,7 @@ class LinnFileSystem : public FileSystem
 #endif /* __HOST__ */
 
 /**
+ * @}
  * @}
  */
 

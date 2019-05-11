@@ -23,6 +23,11 @@
 #include <POSIXApplication.h>
 
 /**
+ * @addtogroup bin
+ * @{
+ */
+
+/**
  * Network send application.
  */
 class NetSend : public POSIXApplication
@@ -54,5 +59,9 @@ class NetSend : public POSIXApplication
     /** Socket */
     int m_socket;
 };
+
+/**
+ * @}
+ */
 
 #endif /* __BIN_NETSEND_H */

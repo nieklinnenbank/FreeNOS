@@ -21,6 +21,14 @@
 #include <Types.h>
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libusb
+ * @{
+ */
+
+/**
  * USB 2.0 standard transfers.
  */
 namespace USBTransfer
@@ -121,5 +129,10 @@ namespace USBTransfer
     }
     PACKED Setup;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBUSB_USBDEVICE_H */

@@ -21,6 +21,14 @@
 #include <Types.h>
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libusb
+ * @{
+ */
+
+/**
  * USB 2.0 definitions.
  */
 namespace USB
@@ -44,5 +52,10 @@ namespace USB
         VendorSpecific    = 0xff
     };
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBUSB_USB_H */

@@ -22,6 +22,14 @@
 #include "FileType.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libfs
+ * @{
+ */
+
+/**
  * Contains file information.
  */
 typedef struct FileStat
@@ -45,5 +53,10 @@ typedef struct FileStat
     DeviceID deviceID;
 }
 FileStat;
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __FILESYSTEM_FILESTAT_H */

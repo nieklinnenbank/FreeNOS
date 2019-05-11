@@ -28,6 +28,14 @@
 class SplitAllocator;
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ */
+
+/**
  * Virtual memory abstract interface.
  */
 class MemoryContext
@@ -191,5 +199,10 @@ class MemoryContext
     /** The currently active MemoryContext */
     static MemoryContext *m_current;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_MEMORYCONTEXT_H */

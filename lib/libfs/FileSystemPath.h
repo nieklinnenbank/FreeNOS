@@ -23,6 +23,14 @@
 #include <Types.h>
 #include <String.h>
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libfs
+ * @{
+ */
+
 /** Maximum length of a filesystem path. */
 #define PATHLEN 64
 
@@ -122,5 +130,10 @@ class FileSystemPath
     /** Separator character. */
     char m_separator;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __FILESYSTEM_FILESYSTEMPATH_H */

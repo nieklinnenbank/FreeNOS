@@ -27,6 +27,17 @@ class SplitAllocator;
 class ARMFirstTable;
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_arm
+ * @{
+ */
+
+/**
  * ARM virtual memory implementation.
  */
 class ARMPaging : public MemoryContext
@@ -142,5 +153,11 @@ namespace Arch
 {
     typedef ARMPaging Memory;
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_ARM_PAGING_H */

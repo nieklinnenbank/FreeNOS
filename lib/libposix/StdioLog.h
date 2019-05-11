@@ -22,6 +22,14 @@
 #include "Log.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libposix
+ * @{
+ */
+
+/**
  * Log to standard output.
  */
 class StdioLog : public Log
@@ -40,6 +48,11 @@ class StdioLog : public Log
      */
     virtual void write(const char *str);
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __HOST__ */
 #endif /* __LIBARCH_STDIOLOG_H */

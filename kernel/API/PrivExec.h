@@ -21,12 +21,16 @@
 #include <FreeNOS/System.h>
 
 /**
- * @defgroup kernelapi kernel (API)
+ * @addtogroup kernel
+ * @{
+ *
+ * @addtogroup kernelapi
  * @{
  */
 
 /**
  * Available operations to perform using PrivExec().
+ *
  * @see PrivExec
  */
 typedef enum PrivOperation
@@ -51,9 +55,26 @@ inline API::Result PrivExec(PrivOperation op, Address param = 0)
 }
 
 /**
+ * @}
+ */
+
+#ifdef __KERNEL__
+
+/**
+ * @addtogroup kernelapi_handler
+ * @{
+ */
+
+/**
  * Prototype for kernel handler.
  */
 extern API::Result PrivExecHandler(PrivOperation op, Address param);
+
+/**
+ * @}
+ */
+
+#endif /* __KERNEL__ */
 
 /**
  * @}

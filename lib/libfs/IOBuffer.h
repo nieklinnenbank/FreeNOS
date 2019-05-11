@@ -23,6 +23,14 @@
 #include "FileSystemMessage.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libfs
+ * @{
+ */
+
+/**
  * @brief Abstract Input/Output buffer.
  */
 class IOBuffer
@@ -141,5 +149,10 @@ class IOBuffer
     /** Bytes written to the buffer. */
     Size m_count;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIB_LIBFS_IOBUFFER_H */

@@ -22,6 +22,14 @@
 #include <Types.h>
 
 /**
+ * @addtogroup server
+ * @{
+ *
+ * @addtogroup server_ipctest
+ * @{
+ */
+
+/**
  * Defines possible actions performed for IPCTestMessage.
  */
 typedef enum IPCTestAction
@@ -77,5 +85,10 @@ typedef struct IPCTestMessage : public ChannelMessage
     u32 data;
 }
 IPCTestMessage;
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __SERVER_IPCTEST_IPCTESTMESSAGE_H */

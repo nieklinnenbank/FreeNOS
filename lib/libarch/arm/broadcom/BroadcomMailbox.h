@@ -23,6 +23,17 @@
 #include <arm/ARMIO.h>
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_bcm
+ * @{
+ */
+
+/**
  * Broadcom System-on-Chip Mailbox interface.
  *
  * The Mailbox on the BCM2835 is a message-based interface between
@@ -129,5 +140,11 @@ class BroadcomMailbox
     /** I/O object */
     ARMIO m_io;
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_ARM_BROADCOM_MAILBOX_H */

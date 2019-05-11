@@ -24,6 +24,14 @@
 #include <string.h>
 #include "limits.h"
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libposix
+ * @{
+ */
+
 #define FILE_DESCRIPTOR_MAX 1024
 
 /**
@@ -74,5 +82,10 @@ class FileDescriptor
     /** State of the file descriptor. */
     bool open;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBPOSIX_FILEDESCRIPTOR_H */

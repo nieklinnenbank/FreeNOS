@@ -21,6 +21,14 @@
 #include "Types.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
+/**
  * Abstracts an iteration process.
  */
 template <class T> class Iterator
@@ -90,5 +98,10 @@ template <class T> class Iterator
      */
     virtual void operator ++(int num) = 0;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBSTD_ITERATOR_H */

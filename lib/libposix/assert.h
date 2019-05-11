@@ -23,7 +23,10 @@
 #include "stddef.h"
 
 /**
- * @defgroup libc libc (ISO C99)
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libposix
  * @{
  */
 
@@ -64,6 +67,7 @@
 #endif
 
 /**
+ * @}
  * @}
  */
 

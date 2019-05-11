@@ -28,7 +28,16 @@
 #include <errno.h>
 
 /**
- * @brief Abstracts a file present on a FileSystem.
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libfs
+ * @{
+ */
+
+/**
+ * Represents a file present on a FileSystem.
+ *
  * @see FileSystem
  */
 class File
@@ -138,5 +147,10 @@ class File
     /** Device major/minor ID. */
     DeviceID m_deviceId;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIB_LIBFS_FILE_H */

@@ -21,6 +21,11 @@
 #include <POSIXApplication.h>
 
 /**
+ * @addtogroup bin
+ * @{
+ */
+
+/**
  * Perform system benchmarking tests.
  */
 class BenchMark : public POSIXApplication
@@ -47,5 +52,9 @@ class BenchMark : public POSIXApplication
      */
     virtual Result exec();
 };
+
+/**
+ * @}
+ */
 
 #endif /* __BIN_BENCH_BENCHMARK_H */

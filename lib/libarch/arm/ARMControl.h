@@ -22,6 +22,17 @@
 #include <Macros.h>
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_arm
+ * @{
+ */
+
+/**
  * ARM System Control Coprocessor (CP15).
  *
  * The ARM Architecture defines a coprocessor to
@@ -176,5 +187,11 @@ class ARMControl
      */
     void unset(Register reg, u32 flags);
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __ARM_CONTROL_H */

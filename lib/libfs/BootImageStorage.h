@@ -23,6 +23,14 @@
 #include "Storage.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libfs
+ * @{
+ */
+
+/**
  * Uses a BootImage symbol entry as filesystem storage provider (aka RamFS).
  */
 class BootImageStorage : public Storage
@@ -72,5 +80,10 @@ class BootImageStorage : public Storage
     /** Size of the BootSymbol. */
     Size m_size;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __FILESYSTEM_BOOTIMAGESTORAGE_H */

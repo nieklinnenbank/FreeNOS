@@ -23,6 +23,14 @@
 #include "USBDescriptor.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libusb
+ * @{
+ */
+
+/**
  * USB Hub driver.
  */
 class USBHub : public USBDevice
@@ -110,5 +118,10 @@ class USBHub : public USBDevice
     /** Hub descriptor. */
     USBDescriptor::Hub *m_hub;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBUSB_USBHUB_H */

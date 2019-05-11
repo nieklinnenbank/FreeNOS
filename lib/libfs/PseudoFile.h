@@ -23,6 +23,14 @@
 #include "IOBuffer.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libfs
+ * @{
+ */
+
+/**
  * Pseudo files only exist in memory.
  */
 class PseudoFile : public File
@@ -85,6 +93,7 @@ class PseudoFile : public File
 };
 
 /**
+ * @}
  * @}
  */
 

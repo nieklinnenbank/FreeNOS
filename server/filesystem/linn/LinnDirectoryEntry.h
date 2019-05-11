@@ -21,7 +21,10 @@
 #include <Types.h>
 
 /**
- * @defgroup linn LinnFS (Linnenbank Filesystem)
+ * @addtogroup server
+ * @{
+ *
+ * @addtogroup linnfs
  * @{
  */
 
@@ -52,6 +55,7 @@ typedef struct LinnDirectoryEntry
 LinnDirectoryEntry;
 
 /**
+ * @}
  * @}
  */
 

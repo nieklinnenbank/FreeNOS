@@ -22,6 +22,17 @@
 #include <Types.h>
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_bcm
+ * @{
+ */
+
+/**
  * Broadcom 2836 device specific I/O configuration
  */
 class Broadcom2836
@@ -104,5 +115,11 @@ class Broadcom2836
     /** I/O instance */
     ARMIO m_io;
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_ARM_BROADCOM2836_H */

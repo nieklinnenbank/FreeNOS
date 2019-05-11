@@ -23,6 +23,14 @@
 #include <Ethernet.h>
 
 /**
+ * @addtogroup server
+ * @{
+ *
+ * @addtogroup loopback
+ * @{
+ */
+
+/**
  * Loopback network device implementation.
  */
 class Loopback : public NetworkDevice
@@ -74,5 +82,10 @@ class Loopback : public NetworkDevice
     /** Ethernet address for the loopback device */
     Ethernet::Address m_address;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __SERVER_NETWORK_LOOPBACK_H */

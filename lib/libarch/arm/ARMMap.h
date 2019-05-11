@@ -20,6 +20,20 @@
 
 #include <MemoryMap.h>
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_arm
+ * @{
+ */
+
+/**
+ * Memory mapping for the kernel and user processes on the ARM architecture
+ */
 class ARMMap : public MemoryMap
 {
   public:
@@ -34,5 +48,11 @@ namespace Arch
 {
     typedef ARMMap MemoryMap;
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_ARMMAP_H */

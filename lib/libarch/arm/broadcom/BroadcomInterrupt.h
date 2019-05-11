@@ -22,6 +22,17 @@
 #include <arm/ARMIO.h>
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_bcm
+ * @{
+ */
+
+/**
  * Triggered when the system timer matches the C1 register
  *
  * @see table page 113 of the BCM2835 Arm Peripherals datasheet for vector numbers
@@ -78,5 +89,11 @@ class BroadcomInterrupt : public ARMInterrupt
     /** I/O instance */
     ARMIO m_io;
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* LIBARCH_ARM_BROADCOMINTERRUPT_H */

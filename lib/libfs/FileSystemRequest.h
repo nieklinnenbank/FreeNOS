@@ -22,6 +22,14 @@
 #include "IOBuffer.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libfs
+ * @{
+ */
+
+/**
  * Encapsulates a pending FileSystemMessage.
  */
 class FileSystemRequest
@@ -60,5 +68,10 @@ class FileSystemRequest
     /** Wrapper for doing I/O on the FileSystemMessage buffer. */
     IOBuffer *m_ioBuffer;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __FILESYSTEM_FILE_SYSTEM_REQUEST_H */

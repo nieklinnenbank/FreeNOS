@@ -25,6 +25,14 @@
 class UDP;
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libnet
+ * @{
+ */
+
+/**
  * User Datagram Protocol (UDP) socket.
  *
  * UDP sockets accept payloads to send when writing
@@ -107,5 +115,10 @@ class UDPSocket : public NetworkSocket
     /** Incoming packet queue */
     NetworkQueue m_queue;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBNET_UDPSOCKET_H */

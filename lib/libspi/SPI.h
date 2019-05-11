@@ -22,6 +22,14 @@
 #include <Types.h>
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libspi
+ * @{
+ */
+
+/**
  * SPI controller abstract interface.
  */
 class SPI
@@ -89,5 +97,10 @@ class SPI
     /** I/O instance */
     Arch::IO m_io;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBSPI_SPI_H */

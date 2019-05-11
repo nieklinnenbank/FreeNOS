@@ -19,6 +19,14 @@
 #define __LIBIPC_CHANNEL_H
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libipc
+ * @{
+ */
+
+/**
  * Unidirectional point-to-point messaging channel.
  */
 class Channel
@@ -130,5 +138,10 @@ class Channel
     /** Maximum number of message that the Channel can hold. */
     Size m_maximumMessages;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBIPC_CHANNEL_H */

@@ -23,6 +23,14 @@
 #include "Ethernet.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libnet
+ * @{
+ */
+
+/**
  * Networking Client implementation.
  *
  * Maintains also the network state of each TCP/UDP socket, creates the
@@ -156,5 +164,10 @@ class NetworkClient
     /** Network device name */
     String m_deviceName;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBNET_NETWORKCLIENT_H */

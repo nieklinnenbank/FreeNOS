@@ -23,6 +23,14 @@
 class TestReporter;
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libtest
+ * @{
+ */
+
+/**
  * Reponsible for discovering and running tests
  */
 class TestRunner
@@ -67,5 +75,10 @@ class TestRunner
     /** Reports test results */
     TestReporter *m_reporter;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBTEST_TESTRUNNER_H */

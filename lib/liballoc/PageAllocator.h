@@ -23,7 +23,10 @@
 #include "Allocator.h"
 
 /**
- * @defgroup liballoc liballoc
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup liballoc
  * @{
  */
 
@@ -100,6 +103,7 @@ class PageAllocator : public Allocator
 };
 
 /**
+ * @}
  * @}
  */
 

@@ -23,6 +23,14 @@
 #include "IPV4.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libnet
+ * @{
+ */
+
+/**
  * IPV4 address file.
  */
 class IPV4Address : public File
@@ -66,5 +74,10 @@ class IPV4Address : public File
     /** IPV4 object pointer */
     IPV4 *m_ipv4;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBNET_IPV4ADDRESS_H */

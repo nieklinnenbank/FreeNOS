@@ -21,6 +21,11 @@
 #include <POSIXApplication.h>
 
 /**
+ * @addtogroup bin
+ * @{
+ */
+
+/**
  * Retrieve file status from the filesystem
  */
 class FileStatus : public POSIXApplication
@@ -58,5 +63,9 @@ class FileStatus : public POSIXApplication
      */
     Result printStatus(const String & file) const;
 };
+
+/**
+ * @}
+ */
 
 #endif /* __BIN_STAT_FILESTATUS_H */

@@ -20,6 +20,14 @@
 
 #include <Types.h>
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libusb
+ * @{
+ */
+
 namespace USBDescriptor
 {
     /**
@@ -153,5 +161,10 @@ namespace USBDescriptor
     }
     PACKED String;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBUSB_USBDESCRIPTOR_H */

@@ -19,7 +19,15 @@
 #define __API_PROCESSID_H
 
 /**
- * @brief Static PIDS.
+ * @addtogroup kernel
+ * @{
+ *
+ * @addtogroup kernelapi
+ * @{
+ */
+
+/**
+ * @name Static Process IDs
  * @{
  */
 
@@ -32,6 +40,8 @@
 #define ROOTFS_PID      2
 
 /**
+ * @}
+ * @}
  * @}
  */
 

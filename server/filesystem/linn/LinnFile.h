@@ -28,7 +28,10 @@
 #include <errno.h>
 
 /**
- * @defgroup linn LinnFS (Linnenbank Filesystem)
+ * @addtogroup server
+ * @{
+ *
+ * @addtogroup linnfs
  * @{
  */
 
@@ -74,6 +77,7 @@ class LinnFile : public File
 };
 
 /**
+ * @}
  * @}
  */
 

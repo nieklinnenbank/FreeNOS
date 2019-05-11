@@ -24,6 +24,14 @@
 #include "Sequence.h"
 #include "List.h"
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
 /** Default maximum length of a String's value. */
 #define STRING_DEFAULT_SIZE 64
 
@@ -445,5 +453,10 @@ class String : public Sequence<char>
     /** Number format to use for convertions. */
     Number::Base m_base;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBSTD_STRING_H */

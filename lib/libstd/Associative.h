@@ -26,6 +26,14 @@
 #include "ListIterator.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
+/**
  * Associatives are containers that provide a mapping of keys to values.
  */
 template <class K, class V> class Associative : public Container, public Comparable<Associative<K,V> >
@@ -195,5 +203,10 @@ template <class K, class V> class Associative : public Container, public Compara
         return at(key);
     }
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBSTD_ASSOCIATIVE_H */

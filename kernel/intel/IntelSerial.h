@@ -24,6 +24,14 @@
 class IntelIO;
 
 /**
+ * @addtogroup kernel
+ * @{
+ *
+ * @addtogroup kernel_intel
+ * @{
+ */
+
+/**
  * Intel Serial port debug log class.
  *
  * @note This class is a singleton
@@ -74,5 +82,10 @@ class IntelSerial : public Log
     /** I/O instance */
     IntelIO m_io;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* _INTEL_SERIAL_H */

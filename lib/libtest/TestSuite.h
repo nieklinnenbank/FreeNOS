@@ -24,6 +24,14 @@
 class TestInstance;
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libtest
+ * @{
+ */
+
+/**
  * Maintains a list of test instances
  */
 class TestSuite : public Singleton<TestSuite>
@@ -54,5 +62,10 @@ class TestSuite : public Singleton<TestSuite>
     /** List of TestInstances in the suite */
     List<TestInstance *> m_tests;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBTEST_TESTSUITE_H */

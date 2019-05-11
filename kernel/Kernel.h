@@ -35,12 +35,16 @@ class Timer;
 struct CPUState;
 
 /**
+ * @addtogroup kernel
+ * @{
+ */
+
+/**
  * Function which is called when the CPU is interrupted.
  *
  * @param state State of the CPU on the moment the interrupt occurred.
  * @param param Optional parameter for the handler.
  */
-
 typedef void InterruptHandler(struct CPUState *state, ulong param);
 
 /**
@@ -76,11 +80,6 @@ typedef struct InterruptHook
     ulong param;
 }
 InterruptHook;
-
-/**
- * @defgroup kernel kernel (generic)
- * @{
- */
 
 /**
  * FreeNOS kernel implementation.

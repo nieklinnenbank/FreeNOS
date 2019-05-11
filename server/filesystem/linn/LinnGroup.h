@@ -22,7 +22,10 @@
 #include "LinnSuperBlock.h"
 
 /**
- * @defgroup linn LinnFS (Linnenbank Filesystem)
+ * @addtogroup server
+ * @{
+ *
+ * @addtogroup linnfs
  * @{
  */
 
@@ -143,6 +146,7 @@ typedef struct LinnGroup
 LinnGroup;
 
 /**
+ * @}
  * @}
  */
 

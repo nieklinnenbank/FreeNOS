@@ -22,6 +22,14 @@
 #include "Memory.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ */
+
+/**
  * Generic I/O functions.
  */
 class IO
@@ -84,5 +92,10 @@ class IO
     /** Memory range for performing I/O mappings. */
     Memory::Range m_range;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_IO_H */

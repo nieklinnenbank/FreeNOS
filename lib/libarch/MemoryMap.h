@@ -20,6 +20,14 @@
 
 #include "Memory.h"
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ */
+
 #define MEMORYMAP_MAX_REGIONS 8
 
 /**
@@ -84,5 +92,10 @@ class MemoryMap
     /** Memory ranges. */
     Memory::Range m_regions[MEMORYMAP_MAX_REGIONS];
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_MEMORYMAP_H */

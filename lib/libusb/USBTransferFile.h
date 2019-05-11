@@ -22,6 +22,14 @@
 #include "USBController.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libusb
+ * @{
+ */
+
+/**
  * USB transfer file for USBController (/usb/transfer)
  */
 class USBTransferFile : public File
@@ -49,5 +57,10 @@ class USBTransferFile : public File
     /** Pointer to the USB controller for doing actual transfers */
     USBController *m_controller;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBUSB_USBTRANSFERFILE_H */

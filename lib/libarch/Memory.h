@@ -21,6 +21,14 @@
 #include <Types.h>
 #include <BitOperations.h>
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ */
+
 namespace Memory
 {
     /**
@@ -52,5 +60,10 @@ namespace Memory
     }
     Range;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_MEMORY_H */

@@ -21,6 +21,11 @@
 #include <POSIXApplication.h>
 
 /**
+ * @addtogroup bin
+ * @{
+ */
+
+/**
  * Remove file from the filesystem
  */
 class Remove : public POSIXApplication
@@ -47,5 +52,9 @@ class Remove : public POSIXApplication
      */
     virtual Result exec();
 };
+
+/**
+ * @}
+ */
 
 #endif /* __BIN_RM_REMOVE_H */

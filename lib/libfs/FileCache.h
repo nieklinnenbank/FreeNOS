@@ -22,6 +22,14 @@
 #include "File.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libfs
+ * @{
+ */
+
+/**
  * Cached in-memory file.
  */
 typedef struct FileCache
@@ -72,5 +80,10 @@ typedef struct FileCache
     FileCache *parent;
 }
 FileCache;
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIB_LIBFS_FILECACHE_H */

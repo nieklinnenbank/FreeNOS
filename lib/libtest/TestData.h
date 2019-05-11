@@ -31,6 +31,14 @@
 #endif /* __HOST__ */
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libtest
+ * @{
+ */
+
+/**
  * Generate test data for a certain data type.
  */
 template <class T> class TestData
@@ -124,5 +132,10 @@ template <class T> class TestData
     /** Vector with generated values. */
     Vector<T> m_values;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBTEST_TESTDATA_H */

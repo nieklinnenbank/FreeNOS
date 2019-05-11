@@ -23,7 +23,10 @@
 #include "sys/types.h"
 
 /**
- * @defgroup libposix libposix (POSIX.1-2008)
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libposix
  * @{
  */
 
@@ -218,6 +221,7 @@ extern C int unlink(const char *path);
 extern C unsigned int sleep(unsigned int seconds);
 
 /**
+ * @}
  * @}
  */
 

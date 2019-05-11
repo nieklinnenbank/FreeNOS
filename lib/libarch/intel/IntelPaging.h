@@ -27,6 +27,17 @@
 class SplitAllocator;
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_intel
+ * @{
+ */
+
+/**
  * Intel virtual memory implementation.
  */
 class IntelPaging : public MemoryContext
@@ -147,5 +158,11 @@ namespace Arch
 {
     typedef IntelPaging Memory;
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_INTEL_PAGING_H */

@@ -22,6 +22,17 @@
 #include <Types.h>
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_bcm
+ * @{
+ */
+
+/**
  * Broadcom (2835) GPIO controller implementation.
  */
 class BroadcomGPIO
@@ -94,5 +105,11 @@ class BroadcomGPIO
     /** I/O instance */
     Arch::IO m_io;
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_ARM_BROADCOMGPIO_H */

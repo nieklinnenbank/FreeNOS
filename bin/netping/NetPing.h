@@ -23,6 +23,11 @@
 #include <POSIXApplication.h>
 
 /**
+ * @addtogroup bin
+ * @{
+ */
+
+/**
  * Network ping/pong application.
  */
 class NetPing : public POSIXApplication
@@ -59,5 +64,9 @@ class NetPing : public POSIXApplication
     /** Socket */
     int m_socket;
 };
+
+/**
+ * @}
+ */
 
 #endif /* __BIN_NETPING_H */

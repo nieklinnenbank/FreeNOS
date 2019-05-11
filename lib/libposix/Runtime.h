@@ -27,7 +27,10 @@
 #include "FileDescriptor.h"
 
 /**
- * @defgroup libposix libposix (POSIX.1-2008)
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libposix
  * @{
  */
 
@@ -94,6 +97,7 @@ FileSystemMount * getMounts();
 String * getCurrentDirectory();
 
 /**
+ * @}
  * @}
  */
 

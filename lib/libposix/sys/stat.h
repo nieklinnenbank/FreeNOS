@@ -27,12 +27,15 @@
 #include "types.h"
 
 /**
- * @defgroup libposix libposix (POSIX.1-2008)
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libposix
  * @{
  */
 
 /**
- * @brief File type bits.
+ * @name File stat type bits.
  *
  * The <sys/stat.h> header shall define the following symbolic constants for
  * the file types encoded in type mode_t. The values shall be suitable for
@@ -119,7 +122,7 @@
 /** @} */
 
 /**
- * @brief File type macros.
+ * @name File type macros.
  *
  * The following macros shall be provided to test whether a file is of the
  * specified type. The value m supplied to the macros is the value of st_mode
@@ -302,6 +305,7 @@ extern C int mkdir(const char *path, mode_t mode);
 extern C int creat(const char *path, mode_t mode);
 
 /**
+ * @}
  * @}
  */
 

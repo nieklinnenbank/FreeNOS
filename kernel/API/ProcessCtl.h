@@ -23,12 +23,16 @@
 #include <Types.h>
 
 /**
- * @defgroup kernelapi kernel (API)
+ * @addtogroup kernel
+ * @{
+ *
+ * @addtogroup kernelapi
  * @{
  */
 
 /**
  * Available operation to perform using ProcessCtl.
+ *
  * @see ProcessCtl
  */
 typedef enum ProcessOperation
@@ -96,9 +100,26 @@ inline API::Result ProcessCtl(ProcessID proc, ProcessOperation op, Address addr 
 }
 
 /**
+ * @}
+ */
+
+#ifdef __KERNEL__
+
+/**
+ * @addtogroup kernelapi_handler
+ * @{
+ */
+
+/**
  * Kernel handler prototype.
  */
 extern API::Result ProcessCtlHandler(ProcessID proc, ProcessOperation op, Address addr, Address output);
+
+/**
+ * @}
+ */
+
+#endif /* __KERNEL__ */
 
 /**
  * @}

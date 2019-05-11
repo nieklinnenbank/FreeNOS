@@ -22,7 +22,10 @@
 #include <Device.h>
 
 /**
- * @defgroup ata ATA (Advanced Technology Attachment)
+ * @addtogroup server
+ * @{
+ *
+ * @addtogroup ATA
  * @{
  */
 
@@ -307,6 +310,7 @@ class ATAController : public Device
 };
 
 /**
+ * @}
  * @}
  */
 

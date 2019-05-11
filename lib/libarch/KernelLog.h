@@ -22,6 +22,14 @@
 #include "Log.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ */
+
+/**
  * Log to the kernel using PrivExec().
  */
 class KernelLog : public Log
@@ -38,6 +46,11 @@ class KernelLog : public Log
      */
     virtual void write(const char *str);
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __HOST__ */
 #endif /* __LIBARCH_KERNELLOG_H */

@@ -21,6 +21,14 @@
 #include <Types.h>
 #include "limits.h"
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libposix
+ * @{
+ */
+
 /** Maximum number of mounted filesystems. */
 #define FILESYSTEM_MAXMOUNTS 16
 
@@ -39,5 +47,10 @@ typedef struct FileSystemMount
     ulong options;
 }
 FileSystemMount;
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __FILESYSTEM_FILE_SYSTEM_MOUNT_H */

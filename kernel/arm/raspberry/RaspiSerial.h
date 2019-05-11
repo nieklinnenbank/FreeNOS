@@ -22,6 +22,17 @@
 #include <Log.h>
 #include <Types.h>
 
+/**
+ * @addtogroup kernel
+ * @{
+ *
+ * @addtogroup kernel_arm
+ * @{
+ */
+
+/**
+ * BCM2835 specific UART logging implementation for the ARMKernel
+ */
 class RaspiSerial : public Log
 {
   public:
@@ -127,5 +138,10 @@ class RaspiSerial : public Log
     /** I/O instance */
     ARMIO m_io;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __ARM_RASPISERIAL_H */

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,6 +21,11 @@
 #include <Types.h>
 #include <POSIXApplication.h>
 #include "ShellCommand.h"
+
+/**
+ * @addtogroup bin
+ * @{
+ */
 
 /**
  * System command shell interpreter
@@ -87,13 +92,12 @@ class Shell : public POSIXApplication
      * @return Exit status of the command.
      */
     int executeInput(char *cmdline);
-    
+
     /**
      * Fetch a command text from standard input.
      * @return Pointer to a command text.
      */
     char * getInput();
-
 
     /**
      * Output a prompt.
@@ -115,5 +119,9 @@ class Shell : public POSIXApplication
     /** All known ShellCommands. */
     HashTable<String, ShellCommand *> m_commands;
 };
+
+/**
+ * @}
+ */
 
 #endif /* __BIN_SH_SHELL */

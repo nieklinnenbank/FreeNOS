@@ -23,7 +23,10 @@
 #include <Types.h>
 
 /**
- * @defgroup libexec libexec
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libexec
  * @{
  */
 
@@ -123,6 +126,7 @@ class ExecutableFormat
 };
 
 /**
+ * @}
  * @}
  */
 

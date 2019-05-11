@@ -29,6 +29,14 @@
 #include "USBMessage.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libusb
+ * @{
+ */
+
+/**
  * USB device class.
  */
 class USBDevice : public Device
@@ -188,5 +196,10 @@ class USBDevice : public Device
      */
     Array<u8, 128> m_endpointsPacketId;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBUSB_USBDEVICE_H */

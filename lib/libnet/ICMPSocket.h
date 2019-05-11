@@ -25,6 +25,14 @@
 class ICMP;
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libnet
+ * @{
+ */
+
+/**
  * Internet Control Message Protocol (ICMP) socket.
  *
  * ICMP sockets are associated with one IP-host and
@@ -113,5 +121,10 @@ class ICMPSocket : public NetworkSocket
     ICMP::Header m_reply;
     bool m_gotReply;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBNET_ICMPSOCKET_H */

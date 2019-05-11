@@ -22,12 +22,15 @@
 #include <FreeNOS/Config.h>
 #include <FreeNOS/Kernel.h>
 
+struct SystemInformation;
+
 /**
- * @defgroup kernelapi kernel (API)
+ * @addtogroup kernel
+ * @{
+ *
+ * @addtogroup kernelapi
  * @{
  */
-
-struct SystemInformation;
 
 /**
  * Prototype for user applications. Retrieves system information.
@@ -42,9 +45,31 @@ inline API::Result SystemInfo(SystemInformation *info)
 }
 
 /**
+ * @}
+ */
+
+#ifdef __KERNEL__
+
+/**
+ * @addtogroup kernelapi_handler
+ * @{
+ */
+
+/**
  * Kernel prototype.
  */
 extern API::Result SystemInfoHandler(SystemInformation *info);
+
+/**
+ * @}
+ */
+
+#endif /* __KERNEL__ */
+
+/**
+ * @addtogroup kernelapi
+ * @{
+ */
 
 /**
  * System information structure.
@@ -85,8 +110,8 @@ typedef struct SystemInformation
 }
 SystemInformation;
 
-
 /**
+ * @}
  * @}
  */
 

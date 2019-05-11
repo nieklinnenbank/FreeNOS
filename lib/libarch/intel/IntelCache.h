@@ -23,6 +23,17 @@
 #include <Cache.h>
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_intel
+ * @{
+ */
+
+/**
  * Intel cache management implementation.
  */
 class IntelCache : public Cache
@@ -75,5 +86,11 @@ namespace Arch
 {
     typedef IntelCache Cache;
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_INTEL_INTELCACHE_H */

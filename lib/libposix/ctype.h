@@ -21,7 +21,10 @@
 #include <Character.h>
 
 /**
- * @defgroup libc libc (ISO C99)
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libposix
  * @{
  */
 
@@ -105,6 +108,7 @@
 #define toupper(c) Character::upper(c)
 
 /**
+ * @}
  * @}
  */
 

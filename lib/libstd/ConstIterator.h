@@ -21,6 +21,14 @@
 #include "Types.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
+/**
  * Abstracts an iteration process for a constant.
  */
 template <class T> class ConstIterator
@@ -78,5 +86,10 @@ template <class T> class ConstIterator
      */
     virtual void operator ++(int num) = 0;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBSTD_CONSTITERATOR_H */

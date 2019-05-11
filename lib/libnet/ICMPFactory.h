@@ -24,6 +24,14 @@
 class ICMP;
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libnet
+ * @{
+ */
+
+/**
  * Internet Control Message Protocol (ICMP) factory.
  *
  * The ICMP factory creates new sockets for applications.
@@ -58,5 +66,10 @@ class ICMPFactory : public File
     /** ICMP protocol instance */
     ICMP *m_icmp;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBNET_ICMPFACTORY_H */

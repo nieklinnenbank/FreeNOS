@@ -19,6 +19,15 @@
 #define __LIBTEST_TESTINT_H
 
 #include "TestData.h"
+
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libtest
+ * @{
+ */
+
 /**
  * Generate test data for integers.
  */
@@ -145,5 +154,10 @@ template<> uint TestInt<uint>::unique(Size count)
     // Success
     return m_values[offset + count - 1];
 }
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBTEST_TESTINT_H */

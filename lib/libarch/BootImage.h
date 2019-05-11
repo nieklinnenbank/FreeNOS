@@ -18,6 +18,14 @@
 #ifndef __LIBARCH_BOOTIMAGE_H
 #define __LIBARCH_BOOTIMAGE_H
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ */
+
 /** First magic byte. */
 #define BOOTIMAGE_MAGIC0        ('F') + ('r' << 8) + ('e' << 16) + ('e' << 24)
 
@@ -109,5 +117,10 @@ typedef struct BootSegment
     u32 offset;
 }
 BootSegment;
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_BOOTIMAGE_H */

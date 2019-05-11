@@ -22,7 +22,10 @@
 #include "types.h"
 
 /**
- * @defgroup libposix libposix (POSIX.1-2008)
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libposix
  * @{
  */
 
@@ -102,6 +105,7 @@ extern C int sendto(int sockfd, const void *buf, size_t len, int flags,
 extern C int shutdown(int sockfd, int how);
 
 /**
+ * @}
  * @}
  */
 

@@ -22,6 +22,14 @@
 #include <Types.h>
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ */
+
+/**
  * Represents a configurable timer device.
  */
 class Timer
@@ -150,5 +158,10 @@ class Timer
     /** Timer interrupt number. */
     Size m_int;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_TIMER_H */

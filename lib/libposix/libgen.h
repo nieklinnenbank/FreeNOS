@@ -21,7 +21,10 @@
 #include <Macros.h>
 
 /**
- * @defgroup libposix libposix (POSIX.1-2008)
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libposix
  * @{
  */
 
@@ -49,6 +52,7 @@ extern C char * basename(char *path);
 extern C char * dirname(char *path);
 
 /**
+ * @}
  * @}
  */
 

@@ -30,6 +30,14 @@ class UDPFactory;
 class ARP;
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libnet
+ * @{
+ */
+
+/**
  * User Datagram Protocol (UDP)
  */
 class UDP : public NetworkProtocol
@@ -125,5 +133,10 @@ class UDP : public NetworkProtocol
 
     ::IPV4 *m_ipv4;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBNET_UDP_H */

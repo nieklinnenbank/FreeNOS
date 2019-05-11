@@ -22,6 +22,14 @@
 #include "SMSC95xxUSB.h"
 
 /**
+ * @addtogroup server
+ * @{
+ *
+ * @addtogroup smsc95xx
+ * @{
+ */
+
+/**
  * SMSC95xx USB-based Ethernet controller.
  */
 class SMSC95xx : public NetworkDevice
@@ -77,5 +85,10 @@ class SMSC95xx : public NetworkDevice
     /** USB enabled implementation class */
     SMSC95xxUSB *m_usb;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBNET_SMSC95XX_H */

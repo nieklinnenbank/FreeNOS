@@ -21,6 +21,11 @@
 #include <POSIXApplication.h>
 
 /**
+ * @addtogroup bin
+ * @{
+ */
+
+/**
  * Echo standard input to output.
  */
 class Echo : public POSIXApplication
@@ -47,5 +52,9 @@ class Echo : public POSIXApplication
      */
     virtual Result exec();
 };
+
+/**
+ * @}
+ */
 
 #endif /* __BIN_ECHO_ECHO_H */

@@ -26,7 +26,7 @@
 class Timer;
 
 /**
- * @defgroup kernel kernel (generic)
+ * @addtogroup kernel
  * @{
  */
 

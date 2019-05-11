@@ -24,6 +24,14 @@
 #include "Assert.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
+/**
  * Iterate through a List.
  */
 template <class T> class ListIterator : public Iterator<T>
@@ -194,5 +202,10 @@ template <class T> class ListIterator : public Iterator<T>
     /** Next node */
     class List<T>::Node *m_next;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBSTD_LISTITERATOR_H */

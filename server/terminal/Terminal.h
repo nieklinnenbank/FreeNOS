@@ -18,16 +18,19 @@
 #ifndef __TERMINAL_TERMINAL_H
 #define __TERMINAL_TERMINAL_H
 
-/**
- * @defgroup terminal Terminal (System Console Device)
- * @{
- */
-
 #include <FreeNOS/Config.h>
 #include <Device.h>
 #include <Macros.h>
 #include <Types.h>
 #include <teken.h>
+
+/**
+ * @addtogroup server
+ * @{
+ *
+ * @addtogroup terminal
+ * @{
+ */
 
 /**
  * @brief Print this banner per default on new Terminals.
@@ -241,6 +244,7 @@ void param(Terminal *ctx, int key, int value);
 void respond(Terminal *ctx, const void *buf, size_t size);
 
 /**
+ * @}
  * @}
  */
 

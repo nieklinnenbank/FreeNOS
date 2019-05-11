@@ -21,6 +21,11 @@
 #include <POSIXApplication.h>
 
 /**
+ * @addtogroup bin
+ * @{
+ */
+
+/**
  * Compute prime numbers using the Sieve of Eratosthenes algorithm
  */
 class SievePrime : public POSIXApplication
@@ -57,5 +62,9 @@ class SievePrime : public POSIXApplication
      */
     void searchSequential(int number, unsigned *map) const;
 };
+
+/**
+ * @}
+ */
 
 #endif /* __BIN_PRIME_SIEVEPRIME_H */

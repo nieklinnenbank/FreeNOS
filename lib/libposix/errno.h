@@ -22,7 +22,20 @@
 #include <Types.h>
 
 /**
- * @defgroup libc libc (ISO C99)
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libposix
+ * @{
+ */
+
+/**
+ * @name Error codes
+ *
+ * Functions that use errno variable can set the errno value to any of these values.
+ *
+ * @see errno
+ *
  * @{
  */
 
@@ -278,6 +291,9 @@
 /** Last defined error value (do not use). */
 #define ELAST           ERESTART
 
+/**
+ * @}
+ */
 
 /**
  * The lvalue errno is used by many functions to return error values.
@@ -290,6 +306,7 @@ extern C int errno;
 extern C char *error_map[];
 
 /**
+ * @}
  * @}
  */
 

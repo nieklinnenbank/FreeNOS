@@ -23,6 +23,17 @@
 #include <arm/broadcom/BroadcomMailbox.h>
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_bcm
+ * @{
+ */
+
+/**
  * Broadcom Power Management.
  */
 class BroadcomPower
@@ -80,5 +91,11 @@ class BroadcomPower
     /** Current bitmask of enabled devices. */
     u32 m_mask;
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_ARM_BROADCOMPOWER_H */

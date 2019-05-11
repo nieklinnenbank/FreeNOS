@@ -18,13 +18,17 @@
 #ifndef __TIME_TIME_H
 #define __TIME_TIME_H
 
-/**
- * @defgroup time Time (System Time Device)
- */
-
 #include <Macros.h>
 #include <Types.h>
 #include <Device.h>
+
+/**
+ * @addtogroup server
+ * @{
+ *
+ * @addtogroup time
+ * @{
+ */
 
 /** @brief The base I/O port of the CMOS. */
 #define RTC_PORT(x) (0x70 + (x))
@@ -139,6 +143,7 @@ class Time : public Device
 };
 
 /**
+ * @}
  * @}
  */
 

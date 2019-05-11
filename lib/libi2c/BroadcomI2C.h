@@ -24,6 +24,14 @@
 #include "I2C.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libi2c
+ * @{
+ */
+
+/**
  * Broadcom (2835) I2C controller implementation.
  *
  * This class implements access to the I2C controller
@@ -150,5 +158,10 @@ class BroadcomI2C : public I2C
     /** GPIO controller. */
     BroadcomGPIO m_gpio;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBI2C_BROADCOMI2C_H */

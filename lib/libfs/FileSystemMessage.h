@@ -26,6 +26,14 @@
 #include "FileStat.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libfs
+ * @{
+ */
+
+/**
  * Actions which may be performed on the filesystem.
  */
 typedef enum FileSystemAction
@@ -116,5 +124,10 @@ typedef struct FileSystemMessage : public ChannelMessage
     DeviceID deviceID;
 }
 FileSystemMessage;
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __FILESYSTEM_FILE_SYSTEM_MESSAGE_H */

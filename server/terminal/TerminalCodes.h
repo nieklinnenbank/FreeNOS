@@ -19,7 +19,10 @@
 #define __TERMINAL_CODES_H
 
 /**
- * @defgroup terminal Terminal (System Console Device)
+ * @addtogroup server
+ * @{
+ *
+ * @addtogroup terminal
  * @{
  */
 
@@ -27,7 +30,7 @@
 #define _SGR(x) "\033[" #x "m"
 
 /**
- * @name Colors
+ * @name Terminal Colors
  * @see http://en.wikipedia.org/wiki/ANSI_escape_code
  * @{
  */
@@ -47,6 +50,7 @@
  */
 
 /**
+ * @}
  * @}
  */
 

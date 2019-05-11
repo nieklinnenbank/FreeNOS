@@ -21,6 +21,11 @@
 #include <POSIXApplication.h>
 
 /**
+ * @addtogroup bin
+ * @{
+ */
+
+/**
  * Create new device file node.
  */
 class MakeNode : public POSIXApplication
@@ -47,5 +52,9 @@ class MakeNode : public POSIXApplication
      */
     virtual Result exec();
 };
+
+/**
+ * @}
+ */
 
 #endif /* __BIN_MKNOD_MAKENODE_H */

@@ -27,6 +27,14 @@
 #include <FileSystemMessage.h>
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libipc
+ * @{
+ */
+
+/**
  * Client for using Channels.
  */
 class ChannelClient : public Singleton<ChannelClient>
@@ -214,5 +222,10 @@ class ChannelClient : public Singleton<ChannelClient>
     /** Contains ongoing requests */
     Index<Request> m_requests;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBIPC_CHANNELCLIENT_H */

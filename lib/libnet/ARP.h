@@ -27,6 +27,14 @@
 class ARPSocket;
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libnet
+ * @{
+ */
+
+/**
  * Address Resolution Protocol
  */
 class ARP : public NetworkProtocol
@@ -215,5 +223,10 @@ class ARP : public NetworkProtocol
     /** Contains a cached mapping from IP to Ethernet addresses */
     HashTable<IPV4::Address, ARPCache *> m_cache;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBNET_ARP_H */

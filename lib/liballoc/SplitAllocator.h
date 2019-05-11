@@ -23,7 +23,10 @@
 #include "BitAllocator.h"
 
 /**
- * @defgroup liballoc liballoc
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup liballoc
  * @{
  */
 
@@ -141,6 +144,7 @@ class SplitAllocator : public Allocator
 };
 
 /**
+ * @}
  * @}
  */
 

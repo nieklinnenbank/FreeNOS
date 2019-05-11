@@ -24,6 +24,14 @@
 class Channel;
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libipc
+ * @{
+ */
+
+/**
  * Registration for Channels.
  */
 class ChannelRegistry
@@ -132,5 +140,10 @@ class ChannelRegistry
     /** Contains registered producer channels */
     HashTable<ProcessID, Channel *> m_producer;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBIPC_CHANNELREGISTRY_H */

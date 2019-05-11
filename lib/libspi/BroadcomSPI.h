@@ -24,6 +24,14 @@
 #include "SPI.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libspi
+ * @{
+ */
+
+/**
  * Broadcom (2835) SPI controller implementation.
  */
 class BroadcomSPI : public SPI
@@ -130,5 +138,10 @@ class BroadcomSPI : public SPI
     /** GPIO controller. */
     BroadcomGPIO m_gpio;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBI2C_BROADCOMSPI_H */

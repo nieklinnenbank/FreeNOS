@@ -21,6 +21,14 @@
 #include "TestInstance.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libtest
+ * @{
+ */
+
+/**
  * Represents external test program
  */
 class ExternalTest : public TestInstance
@@ -51,5 +59,10 @@ class ExternalTest : public TestInstance
     /** Program argument values */
     char ** m_argv;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBTEST_EXTERNALTEST_H */

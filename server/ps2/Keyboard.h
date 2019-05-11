@@ -18,14 +18,17 @@
 #ifndef __INPUT_KEYBOARD_H
 #define __INPUT_KEYBOARD_H
 
-/**
- * @defgroup ps2 PS2 Keyboard (IBM Personal System/2 Keyboard)  
- * @{  
- */
-
 #include <Device.h>
 #include <Macros.h>
 #include <Types.h>
+
+/**
+ * @addtogroup server
+ * @{
+ *
+ * @addtogroup ps2
+ * @{
+ */
 
 /** PS2 Keyboard input port. */
 #define PS2_PORT        0x60
@@ -34,7 +37,7 @@
 #define PS2_IRQ         1
 
 /** Bit is set in the scancode, if a key is released. */
-#define PS2_RELEASE     0x80 
+#define PS2_RELEASE     0x80
 
 /**
  * @brief PS2 Keyboard device driver.
@@ -94,6 +97,7 @@ class Keyboard : public Device
 };
 
 /**
+ * @}
  * @}
  */
 

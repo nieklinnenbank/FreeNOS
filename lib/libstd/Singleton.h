@@ -19,6 +19,14 @@
 #define __SINGLETON_H
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
+/**
  * Singleton design pattern; only one instance is allowed.
  */
 template <class T> class Singleton
@@ -43,5 +51,10 @@ template <class T> class Singleton
 
 /* Initialize the static member obj. */
 template <class T> T* Singleton<T>::instance = 0;
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __SINGLETON_H */

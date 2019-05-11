@@ -19,6 +19,14 @@
 #define __LIBSTD_FACTORY_H
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
+/**
  * Abstract Factory design pattern.
  */
 template <class T> class Factory
@@ -35,5 +43,10 @@ template <class T> class Factory
         return new T();
     }
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBSTD_FACTORY_H */

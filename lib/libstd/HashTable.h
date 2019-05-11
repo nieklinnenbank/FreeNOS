@@ -31,6 +31,14 @@
 #define HASHTABLE_DEFAULT_SIZE    64
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
+/**
  * Efficient key -> value lookups.
  */
 template <class K, class V> class HashTable : public Associative<K,V>
@@ -363,5 +371,10 @@ template <class K, class V> class HashTable : public Associative<K,V>
     /** Number of values in the buckets. */
     Size m_count;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBSTD_HASHTABLE_H */

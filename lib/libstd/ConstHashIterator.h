@@ -26,6 +26,14 @@
 #include "Assert.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
+/**
  * Iterate through a constant (read-only) HashTable.
  */
 template <class K, class V> class ConstHashIterator : public ConstIterator<V>
@@ -134,5 +142,10 @@ template <class K, class V> class ConstHashIterator : public ConstIterator<V>
     /** Iterator of keys. */
     ListIterator<K> m_iter;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBSTD_HASHITERATOR_H */

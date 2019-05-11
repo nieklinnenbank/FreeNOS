@@ -18,8 +18,25 @@
 #ifndef __LIBARCH_INTEL_MP_H
 #define __LIBARCH_INTEL_MP_H
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_intel
+ * @{
+ */
+
 /** Physical memory address for the CoreInfo structure. */
 #define MPINFOADDR 0x10000
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #ifndef __ASSEMBLER__
 
@@ -35,6 +52,17 @@
 /** Forward declarations */
 class MemoryContext;
 class IntelPIT;
+
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_intel
+ * @{
+ */
 
 /**
  * Intel Multi-Processor Specification.
@@ -160,6 +188,12 @@ class IntelMP : public CoreManager
     /** APIC instance */
     IntelAPIC m_apic;
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __ASSEMBLER__ */
 #endif /* __LIBARCH_INTEL_MP_H */

@@ -21,7 +21,7 @@
 #include <Macros.h>
 
 /**
- * @defgroup kernel kernel (generic)
+ * @addtogroup kernel
  * @{
  */
 

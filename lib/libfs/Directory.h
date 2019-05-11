@@ -25,6 +25,14 @@
 #include <stdio.h>
 #include <string.h>
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libfs
+ * @{
+ */
+
 /** @brief Maximum length of a filename. */
 #define DIRENT_LEN      64
 
@@ -176,5 +184,10 @@ class Directory : public File
      */
     List<Dirent *> entries;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBFS_DIRECTORY_H */

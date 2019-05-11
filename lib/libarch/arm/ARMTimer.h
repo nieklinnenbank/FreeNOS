@@ -22,6 +22,17 @@
 #include <Macros.h>
 #include <Timer.h>
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_arm
+ * @{
+ */
+
 /** PhysicalTimer1, IRQ number. */
 #define GTIMER_PHYS_1_IRQ 3
 
@@ -83,5 +94,11 @@ class ARMTimer : public Timer
 
     Size m_frequency;
 };
+
+/**
+ * @}
+ * @}
+ * @}
+ */
 
 #endif /* __LIBARCH_ARM_ARMTIMER_H */

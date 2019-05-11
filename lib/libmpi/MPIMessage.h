@@ -18,6 +18,14 @@
 #ifndef __LIBMPI_MPIMESSAGE_H
 #define __LIBMPI_MPIMESSAGE_H
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libmpi
+ * @{
+ */
+
 typedef struct MPIMessage
 {
     union
@@ -26,5 +34,10 @@ typedef struct MPIMessage
     };
 }
 MPIMessage;
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBMPI_MPIMESSAGE_H */

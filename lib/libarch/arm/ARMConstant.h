@@ -19,6 +19,17 @@
 #define __LIBARCH_ARM_CONSTANT_H
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libarch
+ * @{
+ *
+ * @addtogroup libarch_arm
+ * @{
+ */
+
+/**
  * ARM CPU Constants
  * @{
  */
@@ -116,6 +127,9 @@
 #define MEMALIGN        4
 
 /**
+ * @}
+ * @}
+ * @}
  * @}
  */
 

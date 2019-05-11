@@ -18,15 +18,17 @@
 #ifndef __SERIAL_I8250_H
 #define __SERIAL_I8250_H
 
-/**
- * @defgroup i8250 i8250 (Intel 8250)
- * @{
- */
-
 #include <Macros.h>
 #include <Types.h>
 #include <Device.h>
 
+/**
+ * @addtogroup server
+ * @{
+ *
+ * @addtogroup serial
+ * @{
+ */
 
 /**
  * i8250 serial UART.
@@ -111,6 +113,7 @@ class i8250 : public Device
 };
 
 /**
+ * @}
  * @}
  */
 

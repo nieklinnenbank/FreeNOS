@@ -23,6 +23,11 @@
 #include "Process.h"
 #include "Scheduler.h"
 
+/**
+ * @addtogroup kernel
+ * @{
+ */
+
 /** Maximum number of processes. */
 #define MAX_PROCS 1024
 

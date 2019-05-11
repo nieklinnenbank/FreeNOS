@@ -21,6 +21,11 @@
 #include <POSIXApplication.h>
 
 /**
+ * @addtogroup bin
+ * @{
+ */
+
+/**
  * Initialize system processes.
  */
 class Init : public POSIXApplication
@@ -47,5 +52,9 @@ class Init : public POSIXApplication
      */
     virtual Result exec();
 };
+
+/**
+ * @}
+ */
 
 #endif /* __BIN_INIT_INIT_H */

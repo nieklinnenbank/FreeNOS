@@ -23,6 +23,14 @@
 #include "Channel.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libipc
+ * @{
+ */
+
+/**
  * Unidirectional point-to-point channel using shared memory.
  *
  * Implemented by using two separated memory pages.
@@ -145,5 +153,10 @@ class MemoryChannel : public Channel
     /** Local RingHead. */
     RingHead m_head;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBIPC_MEMORYCHANNEL_H */

@@ -24,6 +24,14 @@
 #include "Macros.h"
 #include "MemoryBlock.h"
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
 /** Default size of an Vector */
 #define VECTOR_DEFAULT_SIZE  64
 
@@ -244,5 +252,10 @@ template <class T> class Vector : public Sequence<T>
     /** Number of used items in the array. */
     Size m_count;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBSTD_VECTOR_H */

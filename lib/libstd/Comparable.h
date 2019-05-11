@@ -21,6 +21,14 @@
 #include "Types.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
+/**
  * Objects which can be compared to each other.
  */
 template <class T> class Comparable
@@ -57,5 +65,10 @@ template <class T> class Comparable
      */
     virtual int compareTo(const T &t) const = 0;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBSTD_COMPARABLE_H */

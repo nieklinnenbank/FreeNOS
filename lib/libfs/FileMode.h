@@ -20,6 +20,14 @@
 
 #include <Types.h>
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libfs
+ * @{
+ */
+
 /** Number of bits required for all FileModes. */
 #define FILEMODE_BITS 9
 
@@ -64,5 +72,10 @@ FileMode;
 
 /** Multiple FileMode values combined. */
 typedef u16 FileModes;
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __FILESYSTEM_FILEMODE_H */

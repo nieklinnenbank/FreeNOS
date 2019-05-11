@@ -21,6 +21,11 @@
 #include <POSIXApplication.h>
 
 /**
+ * @addtogroup bin
+ * @{
+ */
+
+/**
  * Create new files on the filesystem
  */
 class CreateFile : public POSIXApplication
@@ -58,5 +63,9 @@ class CreateFile : public POSIXApplication
      */
     Result createFile(const String & file) const;
 };
+
+/**
+ * @}
+ */
 
 #endif /* __BIN_TOUCH_CREATEFILE_H */

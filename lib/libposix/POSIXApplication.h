@@ -21,6 +21,14 @@
 #include <Application.h>
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libposix
+ * @{
+ */
+
+/**
  * POSIX-compatible application
  */
 class POSIXApplication : public Application
@@ -51,5 +59,10 @@ class POSIXApplication : public Application
      */
     virtual Result output(const char *string) const;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBPOSIX_POSIXAPPLICATION_H */

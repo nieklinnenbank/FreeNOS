@@ -24,6 +24,14 @@
 #include "Macros.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
+/**
  * Sequences are containers that provide indexed based storage of items.
  */
 template <class T> class Sequence : public Container, public Comparable<Sequence<T> >
@@ -214,5 +222,10 @@ template <class T> class Sequence : public Container, public Comparable<Sequence
         return (T &) at(i);
     }
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBSTD_SEQUENCE_H */

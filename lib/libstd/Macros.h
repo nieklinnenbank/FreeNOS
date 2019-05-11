@@ -20,6 +20,14 @@
 
 #include "Types.h"
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
 /** Binary 1 means true. */
 #define TRUE            1
 
@@ -146,5 +154,10 @@ inline bool doubleEquals(double a, double b, double epsilon)
  */
 #define ALIGN(n) \
     __attribute__((aligned(n)))
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __MACROS_H */

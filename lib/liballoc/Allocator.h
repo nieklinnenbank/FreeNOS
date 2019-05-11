@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -26,7 +26,10 @@
 #pragma GCC diagnostic ignored "-Wnew-returns-null"
 
 /**
- * @defgroup liballoc liballoc
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup liballoc
  * @{
  */
 
@@ -238,15 +241,6 @@ inline void operator delete[] (void *mem)
 }
 
 /**
- * @}
- */
-
-/**
- * @name Absolute memory allocation.
- * @{
- */
-
-/**
  * Let the new() operator return the given memory address.
  *
  * @param sz Size to allocate (ignored).
@@ -264,6 +258,7 @@ inline void * operator new(__SIZE_TYPE__ sz, Address addr)
 #endif /* __HOST__ */
 
 /**
+ * @}
  * @}
  */
 

@@ -18,6 +18,14 @@
 #ifndef __LIBIPC_EVENTNOTIFIER_H
 #define __LIBIPC_EVENTNOTIFIER_H
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libipc
+ * @{
+ */
+
 class EventNotifier
 {
   public:
@@ -25,5 +33,10 @@ class EventNotifier
   private:
 
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBIPC_EVENTNOTIFIER_H */

@@ -22,6 +22,14 @@
 #include "TestResult.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libtest
+ * @{
+ */
+
+/**
  * Represents a test instance
  */
 class TestInstance
@@ -54,5 +62,10 @@ class TestInstance
     /** Name of the test instance */
     String m_name;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBTEST_TESTINSTANCE_H */

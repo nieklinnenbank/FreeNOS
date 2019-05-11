@@ -22,7 +22,10 @@
 #include "Allocator.h"
 
 /**
- * @defgroup liballoc liballoc
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup liballoc
  * @{
  */
 
@@ -92,6 +95,7 @@ class BubbleAllocator : public Allocator
 };
 
 /**
+ * @}
  * @}
  */
 

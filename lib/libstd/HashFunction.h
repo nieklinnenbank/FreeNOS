@@ -21,6 +21,14 @@
 #include "Types.h"
 #include "String.h"
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libstd
+ * @{
+ */
+
 /** Prime number used by FNV hashing. */
 #define FNV_PRIME 16777619
 
@@ -46,5 +54,10 @@ Size hash(const String & key, Size mod);
  * @return Computed hash.
  */
 Size hash(int key, Size mod);
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBSTD_HASH_FUNCTION_H */

@@ -22,7 +22,10 @@
 #include "types.h"
 
 /**
- * @defgroup libposix libposix (POSIX.1-2008)
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libposix
  * @{
  */
 
@@ -45,6 +48,7 @@
 extern C pid_t waitpid(pid_t pid, int *stat_loc, int options);
 
 /**
+ * @}
  * @}
  */
 

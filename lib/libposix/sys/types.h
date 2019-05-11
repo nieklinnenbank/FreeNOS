@@ -21,7 +21,10 @@
 #include <Types.h>
 
 /**
- * @defgroup libposix libposix (POSIX.1-2008)
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libposix
  * @{
  */
 
@@ -65,6 +68,7 @@ typedef sint blksize_t;
 typedef u64 time_t;
 
 /**
+ * @}
  * @}
  */
 

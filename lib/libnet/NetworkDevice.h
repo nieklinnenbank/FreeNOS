@@ -28,6 +28,14 @@
 #include "NetworkQueue.h"
 
 /**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libnet
+ * @{
+ */
+
+/**
  * Network Device abstract class.
  */
 class NetworkDevice : public Device
@@ -126,5 +134,10 @@ class NetworkDevice : public Device
 
     UDP *m_udp;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __LIBNET_NETWORKDEVICE_H */

@@ -21,6 +21,14 @@
 #include <FreeNOS/Process.h>
 
 /**
+ * @addtogroup kernel
+ * @{
+ *
+ * @addtogroup kernel_arm
+ * @{
+ */
+
+/**
  * ARM specific process implementation.
  */
 class ARMProcess : public Process
@@ -84,5 +92,10 @@ namespace Arch
 {
     typedef ARMProcess Process;
 };
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __ARM_ARMPROCESS_H */

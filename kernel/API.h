@@ -27,7 +27,7 @@
 #include <Vector.h>
 
 /**
- * @defgroup kernel kernel (generic)
+ * @addtogroup kernel
  * @{
  */
 
@@ -120,6 +120,10 @@ class API
     Vector<Handler *> m_apis;
 };
 
+/**
+ * @}
+ */
+
 /** Operator to print a Operation to a Log */
 Log & operator << (Log &log, API::Operation op);
 
@@ -135,9 +139,5 @@ Log & operator << (Log &log, API::Operation op);
 #include "API/VMShare.h"
 #include "API/IOCtl.h"
 #include "API/ProcessID.h"
-
-/**
- * @}
- */
 
 #endif /* __KERNEL_API_H */

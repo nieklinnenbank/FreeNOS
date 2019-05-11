@@ -18,13 +18,16 @@
 #ifndef __VIDEO_VGA_SERVER_H
 #define __VIDEO_VGA_SERVER_H
 
-/**
- * @defgroup vga VGA (Vector Graphics Array)
- * @{
- */
-
 #include <DeviceServer.h>
 #include <Types.h>
+
+/**
+ * @addtogroup server
+ * @{
+ *
+ * @addtogroup video
+ * @{
+ */
 
 /** VGA physical video memory address. */
 #define VGA_PADDR (0xb8000)
@@ -151,6 +154,7 @@ class VGA : public Device
 };
 
 /**
+ * @}
  * @}
  */
 

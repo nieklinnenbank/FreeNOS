@@ -18,6 +18,14 @@
 #ifndef __FILESYSTEM_FILETYPE_H
 #define __FILESYSTEM_FILETYPE_H
 
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libfs
+ * @{
+ */
+
 /** Number of bits needed to store a FileType. */
 #define FILETYPE_BITS   3
 
@@ -62,5 +70,10 @@ typedef enum FileType
     UnknownFile         = 7,
 }
 FileType;
+
+/**
+ * @}
+ * @}
+ */
 
 #endif /* __FILESYSTEM_FILETYPE_H */

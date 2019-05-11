@@ -18,11 +18,6 @@
 #ifndef __CORE_CORESERVER_H
 #define __CORE_CORESERVER_H
 
-/**
- * @defgroup core CoreServer
- * @{
- */
-
 #include <FreeNOS/System.h>
 #include <FreeNOS/API.h>
 #include <ChannelServer.h>
@@ -43,10 +38,22 @@
 #endif /* INTEL */
 
 /**
+ * @addtogroup server
+ * @{
+ *
+ * @addtogroup core
+ * @{
+ */
+
+/**
  * Represents a single Core in a Central Processing Unit (CPU).
  *
  * Each core in a system will run its own instance of CoreServer.
  * CoreServers will communicate and collaborate together to implement functionality.
+ *
+ * @note Multiprocessor support is only implemented for the Intel architecture
+ *
+ * @see IntelMP
  */
 class CoreServer : public ChannelServer<CoreServer, FileSystemMessage>
 {
@@ -194,6 +201,7 @@ class CoreServer : public ChannelServer<CoreServer, FileSystemMessage>
 };
 
 /**
+ * @}
  * @}
  */
 

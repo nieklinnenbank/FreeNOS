@@ -21,7 +21,10 @@
 #include <FreeNOS/System.h>
 
 /**
- * @defgroup kernelapi kernel (API)
+ * @addtogroup kernel
+ * @{
+ *
+ * @addtogroup kernelapi
  * @{
  */
 
@@ -56,7 +59,24 @@ inline API::Result VMCtl(ProcessID procID, MemoryOperation op,
     return trapKernel3(API::VMCtlNumber, procID, op, (Address) range);
 }
 
+/**
+ * @}
+ */
+
+#ifdef __KERNEL__
+
+/**
+ * @addtogroup kernelapi_handler
+ * @{
+ */
+
 extern API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range);
+
+/**
+ * @}
+ */
+
+#endif /* __KERNEL__ */
 
 /**
  * @}
