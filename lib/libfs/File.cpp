@@ -24,7 +24,6 @@ File::File(FileType type, UserID uid, GroupID gid)
 {
     m_access    = OwnerRWX;
     m_size      = 0;
-    m_openCount = 0;
 }
 
 File::~File()
@@ -34,23 +33,6 @@ File::~File()
 FileType File::getType() const
 {
     return m_type;
-}
-
-Size File::getOpenCount() const
-{
-    return m_openCount;
-}
-
-Error File::open(ProcessID *pid, Address *ident)
-{
-    m_openCount++;
-    return ESUCCESS;
-}
-
-Error File::close()
-{
-    m_openCount--;
-    return ESUCCESS;
 }
 
 Error File::read(IOBuffer & buffer, Size size, Size offset)

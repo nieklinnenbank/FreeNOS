@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2019 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,34 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __API_PROCESSID_H
-#define __API_PROCESSID_H
+#include <File.h>
+#include <Directory.h>
+#include "SysInfoFileSystem.h"
+#include "MountsFile.h"
 
-/**
- * @addtogroup kernel
- * @{
- *
- * @addtogroup kernelapi
- * @{
- */
-
-/**
- * @name Static Process IDs
- * @{
- */
-
-#define ANY             65535
-#define SELF            65534
-#define KERNEL_PID      65533
-
-#define CORESRV_PID     0
-#define SYSFS_PID       1
-#define ROOTFS_PID      2
-
-/**
- * @}
- * @}
- * @}
- */
-
-#endif /* __API_PROCESSID_H */
+SysInfoFileSystem::SysInfoFileSystem(const char *path)
+    : FileSystem(path)
+{
+    setRoot(new Directory);
+    registerFile(new MountsFile, "mounts");
+}

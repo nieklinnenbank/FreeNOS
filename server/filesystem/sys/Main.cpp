@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2019 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,34 +15,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __API_PROCESSID_H
-#define __API_PROCESSID_H
+#include <FreeNOS/System.h>
+#include <KernelLog.h>
+#include <stdlib.h>
+#include "SysInfoFileSystem.h"
 
-/**
- * @addtogroup kernel
- * @{
- *
- * @addtogroup kernelapi
- * @{
- */
+int main(int argc, char **argv)
+{
+    SystemInformation info;
+    const char *path = "/sys";
 
-/**
- * @name Static Process IDs
- * @{
- */
+    // Only run on core0
+    if (info.coreId != 0)
+        return EXIT_SUCCESS;
 
-#define ANY             65535
-#define SELF            65534
-#define KERNEL_PID      65533
+    KernelLog log;
+    log.setMinimumLogLevel(Log::Notice);
 
-#define CORESRV_PID     0
-#define SYSFS_PID       1
-#define ROOTFS_PID      2
+    if (argc > 1)
+        path = argv[1];
 
-/**
- * @}
- * @}
- * @}
- */
+    SysInfoFileSystem server(path);
 
-#endif /* __API_PROCESSID_H */
+    // Mount, then start serving requests.
+    server.mount();
+    return server.run();
+}

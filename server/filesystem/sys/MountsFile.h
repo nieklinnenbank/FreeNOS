@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Niek Linnenbank
+ * Copyright (C) 2019 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,55 +15,40 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIB_LIBFS_FILE_H
-#define __LIB_LIBFS_FILE_H
+#ifndef __LIB_LIBFS_MOUNTSFILE_H
+#define __LIB_LIBFS_MOUNTSFILE_H
 
-#include <FreeNOS/System.h>
-#include <FreeNOS/API.h>
-#include <Types.h>
-#include "FileSystemMessage.h"
-#include "FileType.h"
-#include "FileMode.h"
-#include "IOBuffer.h"
-#include <errno.h>
+#include <File.h>
 
 /**
- * @addtogroup lib
+ * @addtogroup server
  * @{
  *
- * @addtogroup libfs
+ * @addtogroup sysfs
  * @{
  */
 
 /**
- * Represents a file present on a FileSystem.
+ * The filesystem mounts file exports the FileSystemMount table.
+ *
+ * To retrieve the currently mounted filesystems, a process simply reads this entire file.
+ * To mount a new file system, a process writes a new 'FileSystemMount' structure to this file.
  *
  * @see FileSystem
  */
-class File
+class MountsFile : public File
 {
   public:
 
     /**
      * Constructor function.
-     *
-     * @param type Type of file.
-     * @param uid User identity.
-     * @param gid Group identity.
      */
-    File(FileType type = RegularFile, UserID uid = ZERO, GroupID gid = ZERO);
+    MountsFile();
 
     /**
      * Destructor function.
      */
-    virtual ~File();
-
-    /**
-     * Retrieve our filetype.
-     *
-     * @return FileType object.
-     */
-    FileType getType() const;
+    virtual ~MountsFile();
 
     /**
      * @brief Read bytes from the file.
@@ -86,35 +71,6 @@ class File
      * @return Number of bytes written on success, Error on failure.
      */
     virtual Error write(IOBuffer & buffer, Size size, Size offset);
-
-    /**
-     * Retrieve file statistics.
-     *
-     * @param st Buffer to write statistics to.
-     *
-     * @return Error code
-     */
-    virtual Error status(FileSystemMessage *msg);
-
-  protected:
-
-    /** Type of this file. */
-    FileType m_type;
-
-    /** Access permissions. */
-    FileModes m_access;
-
-    /** Size of the file, in bytes. */
-    Size m_size;
-
-    /** Owner of the file. */
-    UserID m_uid;
-
-    /** Group of the file. */
-    GroupID m_gid;
-
-    /** Device major/minor ID. */
-    DeviceID m_deviceId;
 };
 
 /**
@@ -122,4 +78,4 @@ class File
  * @}
  */
 
-#endif /* __LIB_LIBFS_FILE_H */
+#endif /* __LIB_LIBFS_MOUNTSFILE_H */

@@ -60,34 +60,34 @@ Directory * FileSystem::getRoot()
 Error FileSystem::mount()
 {
     pid_t pid = ProcessCtl(SELF, GetPID);
-    FileSystemPath path;
-    String mountString("/mount");
-    String p;
-    char buf[16];
+    FileSystemMount mnt;
 
-    // The rootfs server and /mount server have a fixed mount
-    if (pid == ROOTFS_PID || pid == MOUNTFS_PID)
+    // The rootfs server and sysfs server have a fixed mount
+    if (pid == ROOTFS_PID || pid == SYSFS_PID)
         return ESUCCESS;
 
-    // Set variables
-    pid = ProcessCtl(SELF, GetPID);
-    mountString << m_mountPath;
-    path.parse(*mountString);
-    snprintf(buf, sizeof(buf), "%u", pid);
-    
-    // Make directories for /mount/$PATH
-    for (ListIterator<String *> i(*path.split()); i.hasCurrent(); i++)
-    {
-        String *s = i.current();
-        p << "/" << **s;
+    // Fill the mount structure
+    mnt.procID = pid;
+    mnt.options = 0;
+    strlcpy(mnt.path, m_mountPath, PATH_MAX);
 
-        if (i.hasNext())
-            mkdir(*p, S_IWUSR | S_IRUSR);
+    // Open the mounts file in SysFS
+    int fd = open("/sys/mounts", O_WRONLY);
+    if (fd < 0)
+    {
+        ERROR("failed to open mount '" << m_mountPath << "': " << strerror(errno));
+        return errno;
     }
-    // write our PID to /mount/$PATH
-    creat(*mountString, S_IRUSR|S_IWUSR);
-    int fd = open(*mountString, O_WRONLY);
-    write(fd, buf, strlen(buf));
+
+    // write the mount structure to the SysFS mounts file
+    if (write(fd, &mnt, sizeof(mnt)) != sizeof(mnt))
+    {
+        ERROR("failed to write mount '" << m_mountPath << "': " << strerror(errno));
+        close(fd);
+        return errno;
+    }
+
+    // Close it
     close(fd);
 
     // Done
@@ -447,18 +447,12 @@ void FileSystem::clearFileCache(FileCache *cache)
         if (i.current()->valid)
         {
             clearFileCache(i.current());
-
-            /* May we remove reference to this entry? */
-            if (i.current()->file->getOpenCount() == 0)    
-            {
-                i.remove();
-            }
+            i.remove();
         }
     }
 
     /* Remove the entry itself, if empty. */
-    if (!cache->valid && cache->entries.count() == 0 &&
-         cache->file->getOpenCount() == 0)
+    if (!cache->valid && cache->entries.count() == 0)
     {
         /* Remove entry from parent */
         if (cache->parent)

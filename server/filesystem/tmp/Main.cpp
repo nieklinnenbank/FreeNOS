@@ -23,7 +23,7 @@
 int main(int argc, char **argv)
 {
     SystemInformation info;
-    const char *path = "/mount";
+    const char *path = "/tmp";
 
     // Only run on core0
     if (info.coreId != 0)

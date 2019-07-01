@@ -252,6 +252,12 @@
  */
 
 /**
+ * @defgroup sysfs SysFS
+ *
+ * The system information filesystem (SysFS) provides current hardware and software information.
+ */
+
+/**
  * @defgroup grovepi grovepi
  *
  * The GrovePI is an I/O extension platform for the Raspberry Pi 1/2/3.

@@ -140,9 +140,9 @@ void setupMappings()
 {
     // Fill the mounts table
     memset(mounts, 0, sizeof(FileSystemMount) * FILESYSTEM_MAXMOUNTS);
-    strlcpy(mounts[0].path, "/mount", PATH_MAX);
+    strlcpy(mounts[0].path, "/sys", PATH_MAX);
     strlcpy(mounts[1].path, "/", PATH_MAX);
-    mounts[0].procID  = MOUNTFS_PID;
+    mounts[0].procID  = SYSFS_PID;
     mounts[0].options = ZERO;
     mounts[1].procID  = ROOTFS_PID;
     mounts[1].options = ZERO;
@@ -205,69 +205,26 @@ ProcessID findMount(const char *path)
 
 void refreshMounts(const char *path)
 {
-    char tmp[PATH_MAX], number[16];
-    int fd;
-    struct dirent *dent;
-    DIR *d;
+    FileSystemMessage msg;
     pid_t pid = getpid();
+    int fd;
 
-    // Skip for rootfs and mountfs
-    if (pid == ROOTFS_PID || pid == MOUNTFS_PID)
+    // Skip for rootfs and sysfs
+    if (pid == ROOTFS_PID || pid == SYSFS_PID)
         return;
 
     // Clear mounts table
-    if (!path)
-    {
-        path = "/mount";
-        MemoryBlock::set(&mounts[2], 0, sizeof(FileSystemMount) * (FILESYSTEM_MAXMOUNTS-2));
-    }
+    MemoryBlock::set(&mounts[2], 0, sizeof(FileSystemMount) * (FILESYSTEM_MAXMOUNTS-2));
 
-    // Attempt to open the directory
-    if (!(d = opendir(path)))
-        return;
-
-    // walk the /mounts recursively and refill the mounts table (starting from index 2)
-    while ((dent = readdir(d)))
-    {
-        snprintf(tmp, sizeof(tmp), "/mount/%s", dent->d_name);
-
-        switch (dent->d_type)
-        {
-            case DT_DIR:
-                if (dent->d_name[0] != '.')
-                    refreshMounts(tmp);
-                break;
-
-            case DT_REG:
-                fd = open(tmp, O_RDONLY);
-                if (fd >= 0)
-                {
-                    MemoryBlock::set(number, 0, sizeof(number));
-
-                    if (read(fd, number, sizeof(number)) > 0)
-                    {
-                        pid_t pid = atoi(number);
-
-                        // Append to the mounts table
-                        for (Size i = 0; i < FILESYSTEM_MAXMOUNTS; i++)
-                        {
-                            if (!mounts[i].path[0])
-                            {
-                                mounts[i].procID = pid;
-                                strlcpy(mounts[i].path, tmp+6, PATH_MAX);
-                                break;
-                            }
-                        }
-                    }
-                    close(fd);
-                }
-                break;
-
-            default:
-                break;
-        }
-    }
-    closedir(d);
+    // Re-read the mounts table from SysFS.
+    msg.type   = ChannelMessage::Request;
+    msg.action = ReadFile;
+    msg.path   = "/sys/mounts";
+    msg.buffer = (char *) &mounts;
+    msg.size   = sizeof(FileSystemMount) * FILESYSTEM_MAXMOUNTS;
+    msg.offset = 0;
+    msg.from   = SELF;
+    ChannelClient::instance->syncSendReceive(&msg, SYSFS_PID);
 }
 
 ProcessID findMount(int fildes)
