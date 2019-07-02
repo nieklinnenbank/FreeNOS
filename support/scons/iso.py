@@ -41,14 +41,14 @@ def iso_func(target, source, env):
                   ' --modules="multiboot iso9660 biosdisk gzio" ' + temp)
 
     # Fallback without grub2.
-    elif env.Detect('mkisofs'):
+    elif env.Detect('genisoimage'):
         shutil.copy('config/intel/pc/menu.lst', temp + '/boot/grub')
         shutil.copy('kernel/intel/pc/stage2_eltorito', temp)
-        os.system('mkisofs -quiet -R -b stage2_eltorito -no-emul-boot ' +
+        os.system('genisoimage -quiet -R -b stage2_eltorito -no-emul-boot ' +
                   '-boot-load-size 4 -boot-info-table -o ' + str(target[0]) +
                   ' -V "FreeNOS ' + env['VERSION'] + '" ' + temp);
     else:
-        raise Exception("no ISO generation program found. Install grub-mkrescue or mkisofs")
+        raise Exception("no ISO generation program found. Install grub-mkrescue or genisoimage")
 
     # Clean up temporary directory.
     shutil.rmtree(temp);
