@@ -20,15 +20,23 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <Runtime.h>
+#include <KernelLog.h>
 
 int main(int argc, char **argv)
 {
+    KernelLog log;
+    log.setMinimumLogLevel(Log::Notice);
+
+    // Wait for the input/output devices to become available
+    waitMount("/dev/ps2");
+    waitMount("/dev/video");
+    refreshMounts(0);
+
+    // Register our device
     DeviceServer server("/console");
     server.initialize();
 
-    refreshMounts(0);
-
     // Start serving requests.
-    server.registerDevice(new Terminal, "tty0");
+    server.registerDevice(new Terminal("/dev/ps2/keyboard0", "/dev/video/vga0"), "tty0");
     return server.run();
 }

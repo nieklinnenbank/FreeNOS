@@ -158,7 +158,7 @@ class FileSystem : public ChannelServer<FileSystem, FileSystemMessage>
      *
      * @return True if retry is needed again, false if all requests processed
      */
-    bool retryRequests();
+    virtual bool retryRequests();
 
   protected:
 

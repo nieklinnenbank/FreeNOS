@@ -61,6 +61,7 @@ Error MountsFile::write(IOBuffer & buffer, Size size, Size offset)
         if (!mounts[i].path[0])
         {
             memcpy((void *)&mounts[i], &fs, sizeof(fs));
+            NOTICE("mounted " << mounts[i].path);
             return size;
         }
     }

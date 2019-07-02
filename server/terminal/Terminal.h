@@ -54,8 +54,7 @@ class Terminal : public Device
      * @param width Width of the Terminal.
      * @param height Height of the Terminal.
      */
-    Terminal(const char *inputFile  = "/dev/ps2/keyboard0",
-             const char *outputFile = "/dev/video/vga0",
+    Terminal(const char *inputFile, const char *outputFile,
              Size width = 80, Size height = 25);
 
     /**

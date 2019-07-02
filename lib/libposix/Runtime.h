@@ -76,6 +76,15 @@ ProcessID findMount(int fildes);
 void refreshMounts(const char *path);
 
 /**
+ * Blocking wait for a mounted filesystem
+ *
+ * @param path Full path of the mounted filesystem
+ *
+ * @note Blocks until a filesystem is mounted on the exact given input path
+ */
+void waitMount(const char *path);
+
+/**
  * Get File Descriptors table.
  *
  * @return FileDescriptor array pointer

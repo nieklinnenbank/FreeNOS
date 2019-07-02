@@ -207,7 +207,6 @@ void refreshMounts(const char *path)
 {
     FileSystemMessage msg;
     pid_t pid = getpid();
-    int fd;
 
     // Skip for rootfs and sysfs
     if (pid == ROOTFS_PID || pid == SYSFS_PID)
@@ -233,6 +232,21 @@ ProcessID findMount(int fildes)
         return files[fildes].open ? files[fildes].mount : ZERO;
     else
         return ZERO;
+}
+
+void waitMount(const char *path)
+{
+    FileSystemMessage msg;
+
+    // Send a write containing the requested path to the 'mountwait' file on SysFS
+    msg.type   = ChannelMessage::Request;
+    msg.action = WriteFile;
+    msg.path   = "/sys/mountwait";
+    msg.buffer = (char *) path;
+    msg.size   = strlen(path);
+    msg.offset = 0;
+    msg.from   = SELF;
+    ChannelClient::instance->syncSendReceive(&msg, SYSFS_PID);
 }
 
 FileSystemMount * getMounts()

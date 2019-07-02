@@ -19,10 +19,12 @@
 #include <Directory.h>
 #include "SysInfoFileSystem.h"
 #include "MountsFile.h"
+#include "MountWaitFile.h"
 
 SysInfoFileSystem::SysInfoFileSystem(const char *path)
     : FileSystem(path)
 {
     setRoot(new Directory);
     registerFile(new MountsFile, "mounts");
+    registerFile(new MountWaitFile, "mountwait");
 }
