@@ -72,7 +72,7 @@ template <class T> class TestData
         // Collect seed from the current time
 #ifdef __HOST__
         struct timeval tv;
-        gettimeofday(&tv, NULL);
+        gettimeofday(&tv, (struct timezone *)NULL);
         seed += tv.tv_sec + tv.tv_usec;
 #else
         seed += timestamp();
