@@ -42,7 +42,7 @@ API::Result API::invoke(Number number,
 {
     Handler **handler = (Handler **) m_apis.get(number);
 
-    if (handler)
+    if (handler && *handler)
         return (*handler)(arg1, arg2, arg3, arg4, arg5);
     else
         return InvalidArgument;
