@@ -254,6 +254,9 @@ remapped:
     movl $(stack + STACK_SIZE), %esp
     movl %esp, %ebp
 
+    /* Initialize floating point unit (FPU) */
+    finit
+
     /* Invoke kernel. */
     pushl $coreInfo
     call kernel_main
