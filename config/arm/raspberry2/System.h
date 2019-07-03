@@ -30,6 +30,8 @@
 #define IO_SIZE (1024*1024*128)
 
 #include <arm/ARMConstant.h>
+
+#ifndef __HOST__
 #include <arm/ARMCore.h>
 #include <arm/ARMCacheV7.h>
 #include <arm/ARMIO.h>
@@ -39,5 +41,6 @@
 #include <arm/ARMProcess.h>
 
 #include <FreeNOS/API.h>
+#endif /* __HOST__ */
 
 #endif /* __ARM_RASPBERRY_SYSTEM_H */

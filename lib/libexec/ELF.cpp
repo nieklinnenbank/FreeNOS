@@ -22,6 +22,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <MemoryBlock.h>
 #include "ELF.h"
 
 ELF::ELF(const u8 *image, Size size)
