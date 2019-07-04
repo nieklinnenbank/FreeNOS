@@ -141,6 +141,6 @@ Error PL011::write(IOBuffer & buffer, Size size, Size offset)
 
 void PL011::delay(s32 count)
 {
-    asm volatile("1: subs %[count], %[count], #1; bne 1b"
-         : : [count]"r"(count));
+    asm volatile("1: subs %0, %0, #1; bne 1b"
+         : "=r"(count) : "0"(count));
 }

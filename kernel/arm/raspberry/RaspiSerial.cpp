@@ -106,6 +106,6 @@ void RaspiSerial::write(const char *str)
 
 void RaspiSerial::delay(s32 count)
 {
-    asm volatile("1: subs %[count], %[count], #1; bne 1b"
-         : : [count]"r"(count));
+    asm volatile("1: subs %0, %0, #1; bne 1b"
+         : "=r"(count) : "0"(count));
 }
