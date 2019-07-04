@@ -25,6 +25,7 @@
 #include <FileSystemMount.h>
 #include <FileSystemMessage.h>
 #include <MemoryMap.h>
+#include <Core.h>
 #include "FileDescriptor.h"
 #include "stdlib.h"
 #include "string.h"
@@ -273,9 +274,7 @@ extern C void SECTION(".entry") _entry()
     Arch::MemoryMap map;
 
     // Clear BSS
-    extern Address __bss_start, __bss_end;
-    Address bss_size = &__bss_end - &__bss_start;
-    MemoryBlock::set(&__bss_start, 0, bss_size);
+    clearBSS();
 
     // Setup the heap, C++ constructors and default mounts
     setupHeap();

@@ -170,6 +170,11 @@ class Core
 };
 
 /**
+ * Generic function to clear the BSS memory section to zero
+ */
+extern C void clearBSS();
+
+/**
  * @}
  * @}
  */

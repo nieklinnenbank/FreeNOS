@@ -69,8 +69,10 @@ SECTIONS
 
     .bss :
     {
+        __bss_start = .;
         *(.bss)
         *(.bss.*)
+        __bss_end = .;
         *(COMMON)
 
         . += 4;
