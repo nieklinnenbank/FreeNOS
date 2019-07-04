@@ -60,9 +60,6 @@ class NetPing : public POSIXApplication
      * Send ICMP ping/pong.
      */
     Result icmpPing(const char *dev, const char *host);
-
-    /** Socket */
-    int m_socket;
 };
 
 /**

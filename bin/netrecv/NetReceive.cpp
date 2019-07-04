@@ -49,7 +49,6 @@
 
 NetReceive::NetReceive(int argc, char **argv)
     : POSIXApplication(argc, argv)
-    , m_socket(0)
 {
     parser().setDescription("receive network packets");
     parser().registerPositional("DEVICE", "device name of network adapter");

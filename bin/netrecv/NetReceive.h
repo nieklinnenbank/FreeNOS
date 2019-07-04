@@ -53,9 +53,6 @@ class NetReceive : public POSIXApplication
 
     Result receiveArp();
     Result receivePacket(u8 *packet, Size size);
-
-    /** Socket */
-    int m_socket;
 };
 
 /**

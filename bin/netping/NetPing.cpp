@@ -51,7 +51,6 @@
 
 NetPing::NetPing(int argc, char **argv)
     : POSIXApplication(argc, argv)
-    , m_socket(0)
 {
     parser().setDescription("send network pings");
     parser().registerPositional("DEVICE", "device name of network adapter");

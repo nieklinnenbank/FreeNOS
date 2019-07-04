@@ -55,9 +55,6 @@ class NetSend : public POSIXApplication
      * Send ARP request.
      */
     Result arpRequest(IPV4::Address ipAddr, Ethernet::Address *ethAddr);
-
-    /** Socket */
-    int m_socket;
 };
 
 /**
