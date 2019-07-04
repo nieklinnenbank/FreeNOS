@@ -81,7 +81,7 @@ ARMKernel::ARMKernel(ARMInterrupt *intr,
 #endif
 }
 
-void ARMKernel::interrupt(CPUState state)
+void ARMKernel::interrupt(volatile CPUState state)
 {
     ARMKernel *kernel = (ARMKernel *) Kernel::instance;
     ARMInterrupt *intr = (ARMInterrupt *) kernel->m_intControl;
@@ -107,8 +107,8 @@ void ARMKernel::interrupt(CPUState state)
         next = (ARMProcess *)kernel->getProcessManager()->schedule();
         if (next)
         {
-            proc->setCpuState(&state);
-            MemoryBlock::copy(&state, next->cpuState(), sizeof(state));
+            proc->setCpuState((const CPUState *)&state);
+            MemoryBlock::copy((void *)&state, next->cpuState(), sizeof(state));
         }
     }
 
@@ -116,7 +116,7 @@ void ARMKernel::interrupt(CPUState state)
     {
         if (intr->isTriggered(i))
         {
-            kernel->executeIntVector(i, &state);
+            kernel->executeIntVector(i, (CPUState *)&state);
         }
     }
 
@@ -155,7 +155,7 @@ void ARMKernel::reserved(CPUState state)
     for(;;);
 }
 
-void ARMKernel::trap(CPUState state)
+void ARMKernel::trap(volatile CPUState state)
 {
     ProcessManager *mgr = Kernel::instance->getProcessManager();
     ARMProcess *proc = (ARMProcess *) mgr->current(), *proc2;
@@ -183,9 +183,9 @@ void ARMKernel::trap(CPUState state)
         if (mgr->get(procId) != NULL)
         {
             state.r0 = 0;
-            proc->setCpuState(&state);
+            proc->setCpuState((const CPUState *)&state);
         }
-        MemoryBlock::copy(&state, proc2->cpuState(), sizeof(state));
+        MemoryBlock::copy((void*)&state, proc2->cpuState(), sizeof(state));
     }
     else
         state.r0 = r;
