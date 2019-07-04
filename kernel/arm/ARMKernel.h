@@ -46,6 +46,13 @@ class ARMInterrupt;
  * These functions are called by the user program to
  * invoke the kernel APIs, also known as system calls.
  *
+ * On ARM, there are no machine-specific input operand
+ * constraints to specify registers for inline assembly.
+ * Therefore, we need to use Local Register Variables syntax to
+ * guarantee that specific registers are used.
+ *
+ * @see https://gcc.gnu.org/onlinedocs/gcc/Local-Register-Variables.html#Local-Register-Variables
+ *
  * @{
  */
 
@@ -58,12 +65,14 @@ class ARMInterrupt;
  */
 inline ulong trapKernel1(ulong api, ulong arg1)
 {
-    ulong ret;
+    register unsigned reg0 asm ("r0") = api;
+    register unsigned reg1 asm ("r1") = arg1;
+
     asm volatile ("swi #0\n"
-                  "mov %[ret], r0\n"
-                : [ret]"=r"(ret)
-                :: "memory");
-    return ret;
+                : "+r"(reg0)
+                : "0"(reg0), "r"(reg1)
+                : "memory");
+    return reg0;
 }
 
 /**
@@ -77,12 +86,15 @@ inline ulong trapKernel1(ulong api, ulong arg1)
  */
 inline ulong trapKernel2(ulong api, ulong arg1, ulong arg2)
 {
-    ulong ret;
+    register unsigned reg0 asm ("r0") = api;
+    register unsigned reg1 asm ("r1") = arg1;
+    register unsigned reg2 asm ("r2") = arg2;
+
     asm volatile ("swi #0\n"
-                  "mov %[ret], r0\n"
-                : [ret]"=r"(ret)
-                :: "memory");
-    return ret;
+                : "+r"(reg0)
+                : "0"(reg0), "r"(reg1), "r"(reg2)
+                : "memory");
+    return reg0;
 }
 
 /**
@@ -97,12 +109,16 @@ inline ulong trapKernel2(ulong api, ulong arg1, ulong arg2)
  */
 inline ulong trapKernel3(ulong api, ulong arg1, ulong arg2, ulong arg3)
 {
-    ulong ret;
+    register unsigned reg0 asm ("r0") = api;
+    register unsigned reg1 asm ("r1") = arg1;
+    register unsigned reg2 asm ("r2") = arg2;
+    register unsigned reg3 asm ("r3") = arg3;
+
     asm volatile ("swi #0\n"
-                  "mov %[ret], r0\n"
-                : [ret]"=r"(ret)
-                :: "memory");
-    return ret;
+                : "+r"(reg0)
+                : "0"(reg0), "r"(reg1), "r"(reg2), "r"(reg3)
+                : "memory");
+    return reg0;
 }
 
 /**
@@ -119,14 +135,17 @@ inline ulong trapKernel3(ulong api, ulong arg1, ulong arg2, ulong arg3)
 inline ulong trapKernel4(ulong api, ulong arg1, ulong arg2, ulong arg3,
                          ulong arg4)
 {
-    ulong ret;
-    asm volatile ("ldr r4, %[arg4]\n"
-                  "swi #0\n"
-                  "mov %[ret], r0\n"
-                : [ret]"=r"(ret)
-                : [arg4]"m"(arg4)
+    register unsigned reg0 asm ("r0") = api;
+    register unsigned reg1 asm ("r1") = arg1;
+    register unsigned reg2 asm ("r2") = arg2;
+    register unsigned reg3 asm ("r3") = arg3;
+    register unsigned reg4 asm ("r4") = arg4;
+
+    asm volatile ("swi #0\n"
+                : "+r"(reg0)
+                : "0"(reg0), "r"(reg1), "r"(reg2), "r"(reg3), "r"(reg4)
                 : "memory");
-    return ret;
+    return reg0;
 }
 
 /**
@@ -144,16 +163,18 @@ inline ulong trapKernel4(ulong api, ulong arg1, ulong arg2, ulong arg3,
 inline ulong trapKernel5(ulong api, ulong arg1, ulong arg2, ulong arg3,
                          ulong arg4, ulong arg5)
 {
-    ulong ret;
-    asm volatile ("ldr r4, %[arg4]\n"
-                  "ldr r5, %[arg5]\n"
-                  "swi #0\n"
-                  "mov %[ret], r0\n"
-                : [ret]"=r"(ret)
-                : [arg4]"m"(arg4),
-                  [arg5]"m"(arg5)
+    register unsigned reg0 asm ("r0") = api;
+    register unsigned reg1 asm ("r1") = arg1;
+    register unsigned reg2 asm ("r2") = arg2;
+    register unsigned reg3 asm ("r3") = arg3;
+    register unsigned reg4 asm ("r4") = arg4;
+    register unsigned reg5 asm ("r5") = arg5;
+
+    asm volatile ("swi #0\n"
+                : "+r"(reg0)
+                : "0"(reg0), "r"(reg1), "r"(reg2), "r"(reg3), "r"(reg4), "r"(reg5)
                 : "memory");
-    return ret;
+    return reg0;
 }
 
 /**
