@@ -22,6 +22,7 @@ import shlex
 import sys
 import os
 import os.path
+import time
 
 def timeoutChecker(proc, timeout):
     time.sleep(timeout)
@@ -74,6 +75,7 @@ def runTester(target, source, env):
     ch.start()
 
     # Give input to the FreeNOS /bin/login and start the autotester.
+    time.sleep(5)
     proc.stdin.write("root\n/test/run /test --tap\n")
 
     # Buffer TAP output
