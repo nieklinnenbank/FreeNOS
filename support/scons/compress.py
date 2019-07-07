@@ -23,7 +23,10 @@ import shutil
 # Compress a file using GZIP
 #
 def gzip_func(target, source, env):
-    os.system('gzip -c "' + str(source[0]) + '" > "' + str(target[0]) + '"')
+    gzip_cmd = 'gzip -c "' + str(source[0]) + '" > "' + str(target[0]) + '"'
+    r = os.system(gzip_cmd)
+    if r != 0:
+        raise Exception("failed to compress `" + str(target[0]) + "': command `" + gzip_cmd + "' failed: exit code " + str(r >> 8))
 
 #
 # String command representation for GZIP builder.

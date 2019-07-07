@@ -56,9 +56,13 @@ def boot_image_func(target, source, env):
     d = os.getcwd()
 
     os.chdir(env['BUILDROOT'])
-    os.system("'" + d + "/" + build.host['BUILDROOT'] + "/bin/img/img' '" +
-                    d + "/" + str(source[0]) + "' '" +
-                    d + "/" + str(target[0]) + "'")
+    img_cmd = "'" + d + "/" + build.host['BUILDROOT'] + "/bin/img/img' '" + \
+                    d + "/" + str(source[0]) + "' '" + \
+                    d + "/" + str(target[0]) + "'"
+    r = os.system(img_cmd)
+    if r != 0:
+        raise Exception("failed to generate boot image `" + str(target[0]) + "': command `" + img_cmd + "' failed: exit code " + str(r>>8))
+
     os.chdir(d)
 
 def boot_image_str(target, source, env):

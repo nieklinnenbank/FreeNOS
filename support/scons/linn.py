@@ -26,11 +26,16 @@ def linnfs_generate(target, source, env):
 
     for f in source:
         if os.access(str(f), os.X_OK):
-            os.system(env['CROSS_COMPILE'] + 'strip ' + str(f))
+            strip_cmd = env['CROSS_COMPILE'] + 'strip ' + str(f)
+            r = os.system(strip_cmd)
+            if r != 0:
+                raise Exception("failed to strip `" + str(f) + "': command `" + strip_cmd + "' failed: exit code " + str(r>>8))
 
     rootfs_path = env.Dir(env['ROOTFS']).srcnode().path
-
-    os.system("build/host/server/filesystem/linn/create '" + str(target[0]) + "' -n 16384 -d '" + rootfs_path + "'")
+    linn_cmd = "build/host/server/filesystem/linn/create '" + str(target[0]) + "' -n 16384 -d '" + rootfs_path + "'"
+    r = os.system(linn_cmd)
+    if r != 0:
+        raise Exception("failed to build LinnFS image `" + str(target[0]) + "': command `" + linn_cmd + "' failed: exit code " + str(r >> 8))
 
 #
 # Prints out a user friendly command-line string.
