@@ -55,10 +55,13 @@ def boot_image_func(target, source, env):
     # Invoke the mkimage utility to generate a boot image.
     d = os.getcwd()
 
-    os.chdir(env['BUILDROOT'])
-    img_cmd = "'" + d + "/" + build.host['BUILDROOT'] + "/bin/img/img' '" + \
-                    d + "/" + str(source[0]) + "' '" + \
-                    d + "/" + str(target[0]) + "'"
+    os.chdir(env['BUILDPATH'])
+
+    img_cmd = "'" + build.host['BUILDROOT'] + "/bin/img/img' '" \
+                  + "--prefix=" + env['BUILDROOT'] + "' '" \
+                  + str(source[0]) + "' '" \
+                  + str(target[0]) + "'"
+
     r = os.system(img_cmd)
     if r != 0:
         raise Exception("failed to generate boot image `" + str(target[0]) + "': command `" + img_cmd + "' failed: exit code " + str(r>>8))

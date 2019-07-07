@@ -89,11 +89,13 @@ class BootImageCreate : public Application
      * Read boot symbols using a configuration file.
      *
      * @param file Name of the boot configuration file.
+     * @param prefix Prefix each entry from the config file with the given path or NULL
      * @param entries Pointer to Vector with BootEntry's
      *
      * @return Number of bytes read
      */
     Size readBootSymbols(const char *file,
+                         const char *prefix,
                          Vector<BootEntry *> *entries);
 };
 

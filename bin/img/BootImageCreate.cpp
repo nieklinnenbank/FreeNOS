@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <limits.h>
 #include <sys/stat.h>
 #include "BootImageCreate.h"
 
@@ -31,6 +32,7 @@ BootImageCreate::BootImageCreate(int argc, char **argv)
     : Application(argc, argv)
 {
     parser().setDescription("Create system boot image");
+    parser().registerFlag('p', "prefix", "Prefix each entry from the config file with the given path");
     parser().registerPositional("CONFFILE", "Configuration file for the boot image");
     parser().registerPositional("OUTFILE", "Output file name of the boot image");
 }
@@ -45,33 +47,48 @@ BootImageCreate::Result BootImageCreate::output(const char *string) const
     return Success;
 }
 
-Size BootImageCreate::readBootSymbols(const char *file,
+Size BootImageCreate::readBootSymbols(const char *conf_file,
+                                      const char *prefix,
                                       Vector<BootEntry *> *entries)
 {
-    char line[128];
+    char line[PATH_MAX];
     const char *prog = *(parser().name());
     Size num = BOOTENTRY_MAX_REGIONS;
     Size totalBytes = 0, totalEntries = 0;
     BootEntry *entry;
     FILE *fp;
     ExecutableFormat *format;
-    
-    /* Open configuration file. */
-    if ((fp = fopen(file, "r")) == NULL)
+    size_t prefix_len = prefix ? strlen(prefix) : 0;
+
+    // Open configuration file
+    if ((fp = fopen(conf_file, "r")) == NULL)
     {
         fprintf(stderr, "%s: failed to open `%s': %s\n",
-                prog, file, strerror(errno));
+                prog, conf_file, strerror(errno));
         exit(EXIT_FAILURE);
     }
-    /* Read out lines. */
+
+    // Read out lines
     while (fgets(line, sizeof(line), fp) != NULL)
     {
-        /* Clear newline. */
-        line[strlen(line) - 1] = 0;
-
-        /* Allocate new boot entry. */
+        // Allocate new boot entry
         entry = new BootEntry;
+
+        // Remove trailing newline
+        if (strlen(line) < sizeof(line) - 1)
+            line[strlen(line)-1] = 0;
+
+        // Fill boot symbol name first
+        line[sizeof(line)-1] = 0;
         strncpy(entry->symbol.name, line, BOOTIMAGE_NAMELEN);
+
+        // Append path prefix, if set
+        if (prefix_len && prefix_len < BOOTIMAGE_NAMELEN)
+        {
+            char tmp[PATH_MAX];
+            snprintf(tmp, sizeof(tmp), "%s/%s", prefix, line);
+            strncpy(line, tmp, sizeof(line));
+        }
 
         // Find the file
         struct stat st;
@@ -128,8 +145,8 @@ Size BootImageCreate::readBootSymbols(const char *file,
         // Insert into Array
         entries->insert(entry);
         totalEntries++;
-        
-        /* Debug out memory sections. */
+
+        // Debug out memory sections
         for (Size i = 0; i < entry->numRegions; i++)
         {
             printf("%s[%u]: vaddr=%x size=%u\n",
@@ -138,10 +155,13 @@ Size BootImageCreate::readBootSymbols(const char *file,
             totalBytes += entry->regions[i].size;
         }
     }
-    /* All done. */
+    // Close config file
+    fclose(fp);
+
+    // All done
     printf("%d entries, %d bytes total\n", totalEntries, totalBytes);
     return totalEntries;
-}    
+}
 
 BootImageCreate::Result BootImageCreate::exec()
 {
@@ -155,9 +175,10 @@ BootImageCreate::Result BootImageCreate::exec()
     const char *prog = *(parser().name());
     const char *conf_file = arguments().get("CONFFILE");
     const char *out_file = arguments().get("OUTFILE");
+    const char *prefix = arguments().get("prefix");
 
     // Read boot symbols
-    if (readBootSymbols(conf_file, &input) == 0)
+    if (readBootSymbols(conf_file, prefix, &input) == 0)
     {
         fprintf(stderr, "%s: failed to read boot symbols\n", prog);
         return IOError;
