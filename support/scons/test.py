@@ -76,7 +76,10 @@ def runTester(target, source, env):
 
     # Give input to the FreeNOS /bin/login and start the autotester.
     time.sleep(5)
-    proc.stdin.write("root\n/test/run /test --tap\n")
+    try:
+        proc.stdin.write("root\n/test/run /test --tap\n")
+    except:
+        pass
 
     # Buffer TAP output
     tap=""
@@ -88,7 +91,8 @@ def runTester(target, source, env):
 
         line = line.strip()
 
-        print line
+        sys.stdout.write(line + os.linesep)
+        sys.stdout.flush()
 
         if line.startswith('# Finish') and line.endswith('/test/run'):
             proc.terminate()
