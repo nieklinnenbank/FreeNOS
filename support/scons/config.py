@@ -268,6 +268,6 @@ def eval_string(string, replace_dict = None):
 	    var_name = substr[idx+2:]
 
 	    if var_name in replace_dict:
-		final_string += replace_dict[var_name]
+		final_string += str(replace_dict[var_name])
 
     return final_string
