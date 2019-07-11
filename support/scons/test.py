@@ -75,7 +75,7 @@ def runTester(target, source, env):
     ch.start()
 
     # Give input to the FreeNOS /bin/login and start the autotester.
-    time.sleep(5)
+    time.sleep(env['TESTDELAY'])
     try:
         proc.stdin.write("root\n/test/run /test --tap\n")
     except:
@@ -129,6 +129,8 @@ def AutoTester(env, **kw):
     for target,action in kw.items():
         env.Append(TESTCMD = str(action))
         env.AlwaysBuild(env.Alias(target, [], runTester))
+
+    env.SetDefault(TESTDELAY=5)
 
 #
 # Add ourselves to the given environment.
