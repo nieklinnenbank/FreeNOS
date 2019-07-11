@@ -69,13 +69,15 @@ def runTester(target, source, env):
     # Launch process
     proc = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
 
+    # Wait for the test process to initialize
+    time.sleep(env['TESTDELAY'])
+
     # Launch a timeout process which will send a SIGTERM
     # to the process after a certain amount of time
     ch = multiprocessing.Process(target = timeoutChecker, args=(proc, 60 * 3))
     ch.start()
 
     # Give input to the FreeNOS /bin/login and start the autotester.
-    time.sleep(env['TESTDELAY'])
     try:
         proc.stdin.write("root\n/test/run /test --tap\n")
     except:
