@@ -95,6 +95,31 @@ def SubDirectories():
 
 	SConscript( dirs = dir_list )
 
+#
+# Reduce maximum number of open files resource limit.
+# Internally, SCons and python's subprocess module contain a loop which invokes close(2)
+# for 0..N files where N is the maximum number of open files.
+# The loop is called every time a new process is created (e.g. from a builder).
+# This loop becomes a serious performance issue when the limit
+# is set to a high value, e.g. 1 million on an Ubuntu 18.04 Jenkins slave.
+# Therefore, we override the limit here to prevent the potential performance penalty.
+#
+import resource
+resource.setrlimit(resource.RLIMIT_NOFILE, (512, 512))
+
+# Also override the cached value in the subprocess module of scons (in versions < 3.x.x)
+try:
+    SCons.compat.subprocess.MAXFD = 512
+except:
+    pass
+
+# Override cached value in python's subprocess module
+try:
+    import subprocess
+    subprocess.MAXFD = 512
+except:
+    pass
+
 Export('SubDirectories')
 
 # Create target, host and kernel environments.
