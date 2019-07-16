@@ -49,12 +49,9 @@
  */
 inline u64 timestamp()
 {
-    u32 low = 0, high = 0;
-
-    asm volatile ("rdtsc\n"
-                  "movl %%eax, %0\n"
-                  "movl %%edx, %1\n" : "=r"(low), "=r"(high));
-    return ((u64)high << 32) | (low);
+    unsigned long long val;
+    asm volatile ("rdtsc\n" : "=A"(val));
+    return val;
 }
 
 /**
