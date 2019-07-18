@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <arm/ARMConstant.h>
+#include <FreeNOS/System.h>
 
 #define STACKSIZE   PAGESIZE
 
@@ -56,6 +56,19 @@ _start:
     ELR
     ERET
 1:
+
+#ifdef ARMV7
+    /* Read CoreID */
+    mrc p15, 0, r0, c0, c0, 5
+    and r0, r0, #3
+    cmp r0, #0
+    beq 3f
+
+2:  /* cpu 1..N */
+    wfi
+    b 2b
+3:  /* cpu 0 */
+#endif /* ARMV7 */
 
     /* Initialize stack pointers for all ARM modes */
     msr cpsr_c, #(IRQ_MODE | IRQ_BIT | FIQ_BIT) /* IRQ mode */

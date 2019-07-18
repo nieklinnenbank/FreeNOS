@@ -29,26 +29,13 @@ extern Address __bootimg;
 
 extern C int kernel_main(u32 r0, u32 r1, u32 r2)
 {
-    ARMControl ctrl;
-
-#ifdef BCM2836
-    // Prevent additional processors from booting further
-    Size coreId = ctrl.read(ARMControl::CoreID) & 0x3;
-    if (coreId != 0)
-    {
-        for (;;)
-        {
-            idle();
-        }
-    }
-#endif /* BCM2836 */
-
     // Invalidate all caches now
     Arch::Cache cache;
     cache.invalidate(Cache::Unified);
 
 #ifdef ARMV7
     // Raise the SMP bit for ARMv7
+    ARMControl ctrl;
     ctrl.set(ARMControl::SMPBit);
 #endif
 
