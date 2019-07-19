@@ -51,24 +51,13 @@ Error PL011::initialize()
 
     // Write 0 to GPPUDCLK0 to make it take effect.
     m_io.write(GPPUDCLK0, 0x00000000);
-    
+
     // Clear pending interrupts.
     m_io.write(PL011_ICR, 0x7FF);
 
     // Set integer & fractional part of baud rate.
-    // Divider = UART_CLOCK/(16 * Baud)
-    // Fraction part register = (Fractional part * 64) + 0.5
-    // UART_CLOCK = 3000000; Baud = 115200.
-
-    // Divider = 3000000/(16 * 115200) = 1.627 = ~1.
-    // Fractional part register = (.627 * 64) + 0.5 = 40.6 = ~40.
-#ifdef BCM2836
     m_io.write(PL011_IBRD, 26);
     m_io.write(PL011_FBRD, 3);
-#else
-    m_io.write(PL011_IBRD, 1);
-    m_io.write(PL011_FBRD, 40);
-#endif /* BCM2836 */
 
     // Disable FIFO, use 8 bit data transmission, 1 stop bit, no parity
     m_io.write(PL011_LCRH, PL011_LCRH_WLEN_8BIT);
