@@ -25,7 +25,9 @@
 #define BCM2835
 
 /** Default IO base on the Broadcom 2835 */
+#ifndef IO_BASE
 #define IO_BASE 0x20000000
+#endif /* IO_BASE */
 #define IO_SIZE (1024*1024*128)
 
 #include <arm/ARMConstant.h>

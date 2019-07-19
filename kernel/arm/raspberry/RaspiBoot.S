@@ -57,7 +57,7 @@ _start:
     ERET
 1:
 
-#ifdef ARMV7
+#ifdef BCM2836
     /* Read CoreID */
     mrc p15, 0, r0, c0, c0, 5
     and r0, r0, #3
@@ -68,7 +68,7 @@ _start:
     wfi
     b 2b
 3:  /* cpu 0 */
-#endif /* ARMV7 */
+#endif /* BCM2836 */
 
     /* Initialize stack pointers for all ARM modes */
     msr cpsr_c, #(IRQ_MODE | IRQ_BIT | FIQ_BIT) /* IRQ mode */
