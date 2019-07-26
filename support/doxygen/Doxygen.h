@@ -19,59 +19,6 @@
 #define __DOXYGEN_H
 
 /**
- * @mainpage FreeNOS Documentation
- * @section About
- *
- * This documentation is for FreeNOS (Free Niek's Operating System).
- * FreeNOS is an experimental operating system for learning purposes, licensed under the GPLv3.
- *
- * $Revision$
- * @see http://www.freenos.org/
- * @see http://gplv3.fsf.org/
- *
- * @section building Building
- *
- * $ scons iso
- *
- * @section booting_qemu Booting under Qemu
- *
- * $ scons qemu
- *
- * @section booting_qemu_curses Booting under Qemu with Curses console
- *
- * $ scons qemu_curses
- *
- * @section booting_qemu_sdl Booting under Qemu with SDL console
- *
- * $ scons qemu_sdl
- *
- * @section booting_bochs Booting under Bochs
- *
- * $ scons bochs
- *
- * @section debugging_qemu Debugging under Qemu
- *
- * $ scons qemu_debug
- *
- * @section debugging_bochs Debugging under Bochs
- *
- * $ scons bochs_debug
- *
- * @section cleaning Cleaning up
- *
- * $ scons -c .
- *
- * @section snapshots Creating a snapshot
- *
- * $ scons snapshot
- *
- * @section releasing Creating a release
- *
- * $ scons release
- *
- */
-
-/**
  * @defgroup bin bin
  *
  * User program binaries that can be executed from the command line as a command or via forkexec().

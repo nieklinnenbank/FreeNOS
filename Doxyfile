@@ -77,9 +77,8 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = include bin lib server kernel support/doxygen
+INPUT                  = include bin lib server kernel support/doxygen README.md
 INPUT_ENCODING         = UTF-8
-FILE_PATTERNS          = 
 RECURSIVE              = YES
 EXCLUDE                = 
 EXCLUDE_SYMLINKS       = YES
