@@ -20,7 +20,6 @@ import sys
 sys.path.insert(1, './support/scons')
 
 from build import *
-from archive import *
 
 #
 # Target build
@@ -76,3 +75,11 @@ target.Gzip('#${BUILDROOT}/boot.img.gz', '#${BUILDROOT}/boot.img')
 Import('rootfs_files')
 target.LinnImage('#${BUILDROOT}/rootfs.linn', rootfs_files)
 target.Depends('#${BUILDROOT}/rootfs.linn', '#build/host')
+
+#
+# Source Release
+#
+target.Targets(release = 'git archive -o "FreeNOS-${VERSION}.tar.gz" HEAD; \
+                          git log --decorate=short > ChangeLog-${VERSION}; \
+                          md5sum "FreeNOS-${VERSION}.tar.gz" > "FreeNOS-${VERSION}.tar.gz.md5"; \
+                          sha1sum "FreeNOS-${VERSION}.tar.gz" > "FreeNOS-${VERSION}.tar.gz.sha1"')

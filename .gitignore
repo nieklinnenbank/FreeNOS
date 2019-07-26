@@ -13,4 +13,5 @@ config.log
 *.BAK
 *.rej
 *.orig
-
+*.tar.gz
+ChangeLog-*
