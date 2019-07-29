@@ -79,7 +79,7 @@ target.Depends('#${BUILDROOT}/rootfs.linn', '#build/host')
 #
 # Source Release
 #
-target.Targets(release = 'git archive -o "FreeNOS-${VERSION}.tar.gz" HEAD; \
+target.Targets(release = 'git archive --format tar --prefix "FreeNOS-${VERSION}/" HEAD | gzip > "FreeNOS-${VERSION}.tar.gz"; \
                           git log --decorate=short > ChangeLog-${VERSION}; \
                           md5sum "FreeNOS-${VERSION}.tar.gz" > "FreeNOS-${VERSION}.tar.gz.md5"; \
                           sha1sum "FreeNOS-${VERSION}.tar.gz" > "FreeNOS-${VERSION}.tar.gz.sha1"')
