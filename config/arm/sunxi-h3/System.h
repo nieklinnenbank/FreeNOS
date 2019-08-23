@@ -25,7 +25,7 @@
 #define SUNXI_H3
 #define SMP
 
-#define IO_BASE 0x3F000000
+#define IO_BASE 0x01000000
 #define IO_SIZE (1024*1024*128)
 
 #define UART_BASE 0x01c28000
