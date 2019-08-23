@@ -116,8 +116,8 @@ def write_header(env, filename = None):
     name, ext = os.path.splitext(filename)
     name = name.replace('/', '_')
     
-    out.write('#ifndef __' + name.upper() + '_H\n')
-    out.write('#define __' + name.upper() + '_H\n\n')
+    out.write('#ifndef __' + name.upper().replace('-', '_') + '_H\n')
+    out.write('#define __' + name.upper().replace('-', '_') + '_H\n\n')
     out.write('#define VERSION_GET_CODE(a,b,c) (((a) << 16) + ((b) << 8) + (c))\n')
     out.write('#define DATETIME  __DATE__ " " __TIME__\n')
     out.write('#define COPYRIGHT "Copyright (C) ' + escape(datetime.datetime.today().year) + ' Niek Linnenbank\\r\\n" \\\n' + \
