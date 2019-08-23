@@ -22,7 +22,7 @@ OUTPUT_FORMAT("elf32-littlearm")
 SECTIONS
 {
     /* Starts at LOADER_ADDR. */
-    . = 0x8000;
+    . = 0x10000;
     __start = .;
     __text_start = .;
     .text :

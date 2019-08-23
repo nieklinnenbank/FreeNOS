@@ -33,6 +33,11 @@
 #define GPIO_BASE (IO_BASE + 0x200000)
 #define UART_BASE (GPIO_BASE + 0x1000)
 
+/** Triggered when the PL011 asserts IRQ status */
+#define UART0_IRQ 57
+
+#define RAM_SIZE (1024 * 1024 * 512)
+
 #include <arm/ARMConstant.h>
 
 #ifndef __HOST__

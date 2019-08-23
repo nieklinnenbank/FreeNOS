@@ -21,9 +21,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#ifdef BCM2835
+#ifdef ARM
 #include "PL011.h"
-#include <arm/broadcom/BroadcomInterrupt.h>
 #else
 #include "i8250.h"
 #endif
@@ -35,8 +34,8 @@ struct SerialAddress
 }
 uarts[] =
 {
-#ifdef BCM2835
-    { 0x0, BCM_IRQ_PL011 }
+#ifdef ARM
+    { 0x0, UART0_IRQ }
 #else
     { 0x3f8, 4 },
     { 0x2f8, 3 },
@@ -53,14 +52,14 @@ int main(int argc, char **argv)
     Log *log = new KernelLog();
     log->setMinimumLogLevel(Log::Notice);
 
-#ifdef BCM2835
+#ifdef ARM
     PL011 *dev = ZERO;
     dev = new PL011(uarts[0].irq);
 #else
     // Assume first UART is available
     i8250 *dev = ZERO;
     dev = new i8250(uarts[0].port, uarts[0].irq);
-#endif /* BCM2835 */
+#endif /* ARM */
 
     server.initialize();
 
@@ -69,7 +68,8 @@ int main(int argc, char **argv)
 
     server.registerDevice(dev, "/serial0/io");
     server.registerInterrupt(dev, uarts[0].irq);
-#ifdef BCM2835
+#ifdef ARM
+// TOOD: needed?
     // For ARM: it does not have IRQ_REQ(), so just take 0 for all IRQs
     server.registerInterrupt(dev, 0);
 #endif

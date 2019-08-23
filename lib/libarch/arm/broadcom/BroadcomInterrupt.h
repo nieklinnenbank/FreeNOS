@@ -40,11 +40,6 @@
 #define BCM_IRQ_SYSTIMERM1 1
 
 /**
- * Triggered when the PL011 asserts IRQ status
- */
-#define BCM_IRQ_PL011      57
-
-/**
  * Raspberry Pi Interrupt Controller implementation
  */
 class BroadcomInterrupt : public ARMInterrupt

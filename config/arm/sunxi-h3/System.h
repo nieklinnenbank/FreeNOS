@@ -30,6 +30,12 @@
 
 #define UART_BASE 0x01c28000
 
+/** Triggered when the PL011 asserts IRQ status */
+// TODO: ???
+#define UART0_IRQ 57
+
+#define RAM_SIZE (1024 * 1024 * 256)
+
 #include <arm/ARMConstant.h>
 
 #ifndef __HOST__

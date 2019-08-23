@@ -42,7 +42,11 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
 
     // Create local objects needed for the kernel
     Arch::MemoryMap mem;
+#ifdef BCM2835
     BroadcomInterrupt irq;
+#else
+    BroadcomInterrupt irq; // TODO: temporary use BCM interrupt for SunXi
+#endif
     BootImage *bootimage = (BootImage *) &__bootimg;
 
     // Fill coreInfo
@@ -52,11 +56,7 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
     coreInfo.kernel.phys      = 0;
     coreInfo.kernel.size      = MegaByte(4);
     coreInfo.memory.phys      = 0;
-#ifdef BCM2836
-    coreInfo.memory.size      = MegaByte(1024);
-#else
-    coreInfo.memory.size      = MegaByte(512);
-#endif /* BCM2836 */
+    coreInfo.memory.size      = RAM_SIZE;
 
     // Initialize heap at the end of the kernel (and after embedded boot image)
     coreInfo.heapAddress = coreInfo.bootImageAddress + coreInfo.bootImageSize;
@@ -69,7 +69,7 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
     constructors();
 
     // Open the serial console as default Log
-    PL011 pl011(BCM_IRQ_PL011);
+    PL011 pl011(UART_IRQ);
     pl011.initialize();
 
     DeviceLog console(pl011);
