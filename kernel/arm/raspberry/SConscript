@@ -28,11 +28,11 @@ env.Append(CPPFLAGS = '-D__KERNEL__')
 env.UseLibraries(['liballoc', 'libstd', 'libarch', 'libipc', 'libfs', 'libposix'])
 env.UseServers(['core', 'serial'])
 
-env.TargetProgram('kernel', [ Glob('*.S'),
-                              Glob('*.cpp'),
+env.TargetProgram('kernel', [ Glob('*.cpp'),
                               Glob('#' + env['BUILDROOT'] + '/kernel/*.cpp'),
                               Glob('#' + env['BUILDROOT'] + '/kernel/API/*.cpp'),
                               Glob('#' + env['BUILDROOT'] + '/kernel/arm/*.cpp'),
+                              Glob('#' + env['BUILDROOT'] + '/kernel/arm/*.S'),
                               '#server/serial/PL011.cpp'
                               ],
                    False)
