@@ -25,14 +25,15 @@ for item in env['LINKUSER']:
 env.Append(LINKFLAGS = env['LINKKERN'])
 env.Append(CPPFLAGS = '-D__KERNEL__')
 
-env.UseLibraries(['liballoc', 'libstd', 'libarch', 'libipc'])
-env.UseServers(['core'])
+env.UseLibraries(['liballoc', 'libstd', 'libarch', 'libipc', 'libfs', 'libposix'])
+env.UseServers(['core', 'serial'])
 
 env.TargetProgram('kernel', [ Glob('*.S'),
                               Glob('*.cpp'),
                               Glob('#' + env['BUILDROOT'] + '/kernel/*.cpp'),
                               Glob('#' + env['BUILDROOT'] + '/kernel/API/*.cpp'),
-                              Glob('#' + env['BUILDROOT'] + '/kernel/arm/*.cpp')
+                              Glob('#' + env['BUILDROOT'] + '/kernel/arm/*.cpp'),
+                              '#server/serial/PL011.cpp'
                               ],
                    False)
 

@@ -23,7 +23,8 @@
 #include <arm/ARMControl.h>
 #include <arm/broadcom/BroadcomInterrupt.h>
 #include <arm/broadcom/BroadcomTimer.h>
-#include "RaspiSerial.h"
+#include <PL011.h>
+#include <DeviceLog.h>
 
 extern Address __bootimg;
 
@@ -68,7 +69,10 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
     constructors();
 
     // Open the serial console as default Log
-    RaspiSerial console;
+    PL011 pl011(BCM_IRQ_PL011);
+    pl011.initialize();
+
+    DeviceLog console(pl011);
     console.setMinimumLogLevel(Log::Notice);
 
     // Create the kernel
