@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/System.h>
 #include <MemoryBlock.h>
 #include <Memory.h>
 #include "ARMMap.h"
@@ -23,8 +24,8 @@ ARMMap::ARMMap()
 {
     MemoryBlock::set(m_regions, 0, sizeof(m_regions));
 
-    m_regions[KernelData].virt      = 0;
-    m_regions[KernelData].phys      = 0;
+    m_regions[KernelData].virt      = RAM_ADDR;
+    m_regions[KernelData].phys      = RAM_ADDR;
     m_regions[KernelData].size      = GigaByte(1) - MegaByte(128);
     m_regions[KernelData].access    = Memory::Readable | Memory::Writable | Memory::Executable;
 

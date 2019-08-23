@@ -74,6 +74,17 @@ Allocator::Result SplitAllocator::release(Address addr)
     return m_alloc->release(addr);
 }
 
+#ifdef ARM
+void * SplitAllocator::toVirtual(Address phys) const
+{
+    return (void *)phys;
+}
+
+void * SplitAllocator::toPhysical(Address virt) const
+{
+    return (void *)virt;
+}
+#else
 void * SplitAllocator::toVirtual(Address phys) const
 {
     return (void *) (phys - m_low.phys);
@@ -83,3 +94,4 @@ void * SplitAllocator::toPhysical(Address virt) const
 {
     return (void *) (virt + m_low.phys);
 }
+#endif /* ARM */

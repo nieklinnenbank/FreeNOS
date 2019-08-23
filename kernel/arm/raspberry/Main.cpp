@@ -53,9 +53,9 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
     MemoryBlock::set(&coreInfo, 0, sizeof(CoreInfo));
     coreInfo.bootImageAddress = (Address) (bootimage);
     coreInfo.bootImageSize    = bootimage->bootImageSize;
-    coreInfo.kernel.phys      = 0;
+    coreInfo.kernel.phys      = RAM_ADDR;
     coreInfo.kernel.size      = MegaByte(4);
-    coreInfo.memory.phys      = 0;
+    coreInfo.memory.phys      = RAM_ADDR;
     coreInfo.memory.size      = RAM_SIZE;
 
     // Initialize heap at the end of the kernel (and after embedded boot image)

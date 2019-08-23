@@ -34,6 +34,7 @@
 // TODO: ???
 #define UART0_IRQ 57
 
+#define RAM_ADDR (0x40000000)
 #define RAM_SIZE (1024 * 1024 * 256)
 
 #include <arm/ARMConstant.h>

@@ -36,6 +36,7 @@
 /** Triggered when the PL011 asserts IRQ status */
 #define UART0_IRQ 57
 
+#define RAM_ADDR (0x0)
 #define RAM_SIZE (1024 * 1024 * 1024)
 
 #include <arm/ARMConstant.h>
