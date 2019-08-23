@@ -108,7 +108,7 @@ class IOBuffer
      *
      * @return Number of bytes written on success, and error code on failure.
      */
-    Error bufferedWrite(void *buffer, Size size);
+    Error bufferedWrite(const void *buffer, Size size);
 
     /**
      * Flush write buffers.

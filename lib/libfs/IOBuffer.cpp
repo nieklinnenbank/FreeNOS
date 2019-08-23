@@ -56,7 +56,7 @@ Error IOBuffer::bufferedRead()
     return m_count;
 }
 
-Error IOBuffer::bufferedWrite(void *buffer, Size size)
+Error IOBuffer::bufferedWrite(const void *buffer, Size size)
 {
     Size i = 0;
 
