@@ -28,14 +28,23 @@ PL011::PL011(u32 irq)
 
 Error PL011::initialize()
 {
-    // Remap IO base to ensure we have user-level access to the registers.
-    if (m_io.map(IO_BASE + GPIO_BASE, PAGESIZE*2,
-                 Memory::User | Memory::Readable | Memory::Writable | Memory::Device)
-        != IO::Success)
-        return EINVAL;
+    if (!isKernel)
+    {
+        // Remap IO base to ensure we have user-level access to the registers.
+        if (m_io.map(IO_BASE + GPIO_BASE, PAGESIZE*2,
+                     Memory::User | Memory::Readable | Memory::Writable | Memory::Device)
+            != IO::Success)
+        {
+            return EINVAL;
+        }
 
-    // Disable receiving interrupts
-    ProcessCtl(SELF, DisableIRQ, 0);
+        // Disable receiving interrupts
+        ProcessCtl(SELF, DisableIRQ, 0);
+    }
+    else
+    {
+        m_io.setBase(IO_BASE + GPIO_BASE);
+    }
 
     // Disable PL011.
     m_io.write(PL011_CR, 0x00000000);
@@ -62,9 +71,18 @@ Error PL011::initialize()
     // Disable FIFO, use 8 bit data transmission, 1 stop bit, no parity
     m_io.write(PL011_LCRH, PL011_LCRH_WLEN_8BIT);
 
-    // Enable Rx/Tx interrupts
-    m_io.write(PL011_IMSC,
-         PL011_IMSC_RXIM);
+    if (isKernel)
+    {
+        // Mask all interrupts.
+        m_io.write(PL011_IMSC, (1 << 1) | (1 << 4) | (1 << 5) |
+                               (1 << 6) | (1 << 7) | (1 << 8) |
+                               (1 << 9) | (1 << 10));
+    }
+    else
+    {
+        // Enable Rx/Tx interrupts
+        m_io.write(PL011_IMSC, PL011_IMSC_RXIM);
+    }
 
     // Enable PL011, receive & transfer part of UART.
     m_io.write(PL011_CR, (1 << 0) | (1 << 8) | (1 << 9));
@@ -84,7 +102,10 @@ Error PL011::interrupt(u32 vector)
         m_io.write(PL011_ICR, PL011_ICR_TXIC);
 
     // Re-enable interrupts
-    ProcessCtl(SELF, EnableIRQ, m_irq);
+    if (!isKernel)
+    {
+        ProcessCtl(SELF, EnableIRQ, m_irq);
+    }
     return ESUCCESS;
 }
 
