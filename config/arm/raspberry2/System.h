@@ -24,6 +24,7 @@
 #define ARMV7
 #define BCM2835
 #define BCM2836
+#define SMP
 
 /** Default IO base on the Broadcom 2836 */
 #define IO_BASE 0x3F000000
