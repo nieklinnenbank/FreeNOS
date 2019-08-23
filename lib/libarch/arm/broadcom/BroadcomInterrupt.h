@@ -49,7 +49,7 @@ class BroadcomInterrupt : public ARMInterrupt
     /**
      * Constructor
      */
-    BroadcomInterrupt();
+    BroadcomInterrupt(Address base);
 
     /**
      * Enable an IRQ vector

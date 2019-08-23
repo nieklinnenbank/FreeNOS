@@ -72,7 +72,7 @@ class ARMInterrupt : public IntController
      * @param base Base address of the interrupt jump table.
      *             By default this is physical address 0x0 in RAM.
      */
-    ARMInterrupt(Address base = 0x0);
+    ARMInterrupt(Address base);
 
     /**
      * Install an interrupt handler.

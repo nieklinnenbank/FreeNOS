@@ -43,9 +43,9 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
     // Create local objects needed for the kernel
     Arch::MemoryMap mem;
 #ifdef BCM2835
-    BroadcomInterrupt irq;
+    BroadcomInterrupt irq(RAM_ADDR);
 #else
-    BroadcomInterrupt irq; // TODO: temporary use BCM interrupt for SunXi
+    BroadcomInterrupt irq(RAM_ADDR); // TODO: temporary use BCM interrupt for SunXi
 #endif
     BootImage *bootimage = (BootImage *) &__bootimg;
 
@@ -69,7 +69,7 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
     constructors();
 
     // Open the serial console as default Log
-    PL011 pl011(UART_IRQ);
+    PL011 pl011(UART0_IRQ);
     pl011.initialize();
 
     DeviceLog console(pl011);

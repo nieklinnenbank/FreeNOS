@@ -34,7 +34,7 @@
    #define IRQAUX        29
    #define IRQUART       57
 
-BroadcomInterrupt::BroadcomInterrupt() : ARMInterrupt()
+BroadcomInterrupt::BroadcomInterrupt(Address base) : ARMInterrupt(base)
 {
     // disable all IRQ sources first, just to be "safe"
     m_io.write(INTERRUPT_DISABLEIRQ1, 0xFFFFFFFF);

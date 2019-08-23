@@ -17,6 +17,7 @@
 
 #include <MemoryBlock.h>
 #include "ARMInterrupt.h"
+#include "ARMCore.h"
 
 extern Address vecTable[], handlerTable;
 
@@ -24,6 +25,7 @@ ARMInterrupt::ARMInterrupt(Address base)
     : m_vecTable(base)
 {
     MemoryBlock::copy((void *)m_vecTable, vecTable, ARM_INTR_VECTAB_SIZE);
+    vbar_set(base);
 }
 
 ARMInterrupt::Result ARMInterrupt::install(

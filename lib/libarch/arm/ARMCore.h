@@ -124,6 +124,12 @@
 #define idle() \
     asm volatile ("wfi")
 
+/**
+ * Change Vector Base Address (VBAR)
+ */
+#define vbar_set(addr) \
+    mcr(p15, 0, 0, c12, c0, (addr))
+
 #ifdef ARMV6
 /**
  * Flush the entire Translation Lookaside Buffer.
