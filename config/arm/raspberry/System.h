@@ -30,6 +30,9 @@
 #endif /* IO_BASE */
 #define IO_SIZE (1024*1024*128)
 
+#define GPIO_BASE (IO_BASE + 0x200000)
+#define UART_BASE (GPIO_BASE + 0x1000)
+
 #include <arm/ARMConstant.h>
 
 #ifndef __HOST__

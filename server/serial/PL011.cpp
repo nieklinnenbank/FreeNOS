@@ -31,7 +31,7 @@ Error PL011::initialize()
     if (!isKernel)
     {
         // Remap IO base to ensure we have user-level access to the registers.
-        if (m_io.map(IO_BASE + GPIO_BASE, PAGESIZE*2,
+        if (m_io.map(UART_BASE, PAGESIZE*2,
                      Memory::User | Memory::Readable | Memory::Writable | Memory::Device)
             != IO::Success)
         {
@@ -43,23 +43,11 @@ Error PL011::initialize()
     }
     else
     {
-        m_io.setBase(IO_BASE + GPIO_BASE);
+        m_io.setBase(UART_BASE);
     }
 
     // Disable PL011.
     m_io.write(PL011_CR, 0x00000000);
-
-    // Setup the GPIO pin 14 && 15.
-    // Disable pull up/down for all GPIO pins & delay for 150 cycles.
-    m_io.write(GPPUD, 0x00000000);
-    delay(150);
-
-    // Disable pull up/down for pin 14,15 & delay for 150 cycles.
-    m_io.write(GPPUDCLK0, (1 << 14) | (1 << 15));
-    delay(150);
-
-    // Write 0 to GPPUDCLK0 to make it take effect.
-    m_io.write(GPPUDCLK0, 0x00000000);
 
     // Clear pending interrupts.
     m_io.write(PL011_ICR, 0x7FF);
