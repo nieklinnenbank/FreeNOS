@@ -21,6 +21,9 @@
 #include <Types.h>
 #include <IntController.h>
 
+/** Forward declaration */
+struct CPUState;
+
 /**
  * @addtogroup lib
  * @{
@@ -38,7 +41,7 @@
 /**
  * ARM exception handling functionality.
  */
-class ARMException : public IntController
+class ARMException
 {
   public:
 
@@ -56,6 +59,23 @@ class ARMException : public IntController
         IRQ,
         FIQ
     };
+
+    /**
+     * Result codes.
+     */
+    enum Result
+    {
+        Success,
+        NotFound,
+        IOError
+    };
+
+    /**
+     * Function which is called when the CPU is interrupted.
+     *
+     * @param state State of the CPU on the moment the interrupt occurred.
+     */
+    typedef void Handler(struct CPUState state);
 
   public:
 

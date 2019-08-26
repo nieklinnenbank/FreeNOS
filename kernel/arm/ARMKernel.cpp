@@ -24,12 +24,13 @@
 #include <arm/broadcom/BroadcomInterrupt.h>
 #include "ARMKernel.h"
 
-ARMKernel::ARMKernel(ARMException *intr,
+ARMKernel::ARMKernel(IntController *intr,
                      CoreInfo *info)
     : Kernel(info)
 #ifdef BCM2836
     , m_bcm(info->coreId)
 #endif /* BMC2836 */
+    , m_exception(RAM_ADDR)
 {
     ARMControl ctrl;
 
@@ -37,13 +38,13 @@ ARMKernel::ARMKernel(ARMException *intr,
 
     // Setup interrupt callbacks
     m_intControl = intr;
-    intr->install(ARMException::UndefinedInstruction, undefinedInstruction);
-    intr->install(ARMException::SoftwareInterrupt, trap);
-    intr->install(ARMException::PrefetchAbort, prefetchAbort);
-    intr->install(ARMException::DataAbort, dataAbort);
-    intr->install(ARMException::Reserved, reserved);
-    intr->install(ARMException::IRQ, interrupt);
-    intr->install(ARMException::FIQ, interrupt);
+    m_exception.install(ARMException::UndefinedInstruction, undefinedInstruction);
+    m_exception.install(ARMException::SoftwareInterrupt, trap);
+    m_exception.install(ARMException::PrefetchAbort, prefetchAbort);
+    m_exception.install(ARMException::DataAbort, dataAbort);
+    m_exception.install(ARMException::Reserved, reserved);
+    m_exception.install(ARMException::IRQ, interrupt);
+    m_exception.install(ARMException::FIQ, interrupt);
 
     // Configure clocks and irqs. For BCM2836, only use the generic ARM timer
     // when running under Qemu. Unfortunately, Qemu dropped support for the
@@ -84,7 +85,6 @@ ARMKernel::ARMKernel(ARMException *intr,
 void ARMKernel::interrupt(volatile CPUState state)
 {
     ARMKernel *kernel = (ARMKernel *) Kernel::instance;
-    ARMException *intr = (ARMException *) kernel->m_intControl;
     ARMProcess *proc = (ARMProcess *) Kernel::instance->getProcessManager()->current(), *next;
     bool tick;
 
@@ -98,7 +98,7 @@ void ARMKernel::interrupt(volatile CPUState state)
     else
 #endif /* BCM2836 */
     {
-        tick = intr->isTriggered(BCM_IRQ_SYSTIMERM1);
+        tick = kernel->m_intControl->isTriggered(BCM_IRQ_SYSTIMERM1);
     }
 
     if (tick)
@@ -114,7 +114,7 @@ void ARMKernel::interrupt(volatile CPUState state)
 
     for (uint i = kernel->m_timerIrq + 1; i < 64; i++)
     {
-        if (intr->isTriggered(i))
+        if (kernel->m_intControl->isTriggered(i))
         {
             kernel->executeIntVector(i, (CPUState *)&state);
         }

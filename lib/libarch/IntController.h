@@ -21,9 +21,6 @@
 #include <Types.h>
 #include <Macros.h>
 
-/** Forward declaration */
-struct CPUState;
-
 /**
  * @addtogroup lib
  * @{
@@ -50,13 +47,6 @@ class IntController
         IOError,
         NotFound
     };
-
-    /**
-     * Function which is called when the CPU is interrupted.
-     *
-     * @param state State of the CPU on the moment the interrupt occurred.
-     */
-    typedef void Handler(struct CPUState state);
 
     /**
      * Constructor.

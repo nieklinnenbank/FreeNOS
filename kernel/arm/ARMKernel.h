@@ -28,8 +28,10 @@
 #include <arm/ARMTimer.h>
 #endif /* BCM2836 */
 
+#include <arm/ARMException.h>
+
 /** Forward declaration */
-class ARMException;
+class IntController;
 
 /**
  * @addtogroup kernel
@@ -191,10 +193,10 @@ class ARMKernel : public Kernel
     /**
      * Constructor function.
      *
-     * @param intr ARM interrupt controller implementation.
+     * @param intr Interrupt controller implementation.
      * @param info Contains processor core specific information
      */
-    ARMKernel(ARMException *intr,
+    ARMKernel(IntController *intr,
               CoreInfo *info);
 
   private:
@@ -250,6 +252,9 @@ class ARMKernel : public Kernel
     /** ARM generic timer. Only used for QEMU */
     ARMTimer m_armTimer;
 #endif /* BCM2836 */
+
+    /** ARM exception handling subsystem. */
+    ARMException m_exception;
 
     /** Broadcom specific timer module */
     BroadcomTimer m_bcmTimer;

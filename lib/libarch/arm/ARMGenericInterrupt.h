@@ -18,8 +18,8 @@
 #ifndef __LIBARCH_ARM_ARMGENERICINTERRUPT_H
 #define __LIBARCH_ARM_ARMGENERICINTERRUPT_H
 
+#include <IntController.h>
 #include "ARMIO.h"
-#include "ARMException.h"
 
 /**
  * @addtogroup lib
@@ -35,7 +35,7 @@
 /**
  * ARM Generic Interrupt Controller (GIC) version 2.
  */
-class ARMGenericInterrupt : public ARMException
+class ARMGenericInterrupt : public IntController
 {
   private:
 
@@ -95,12 +95,10 @@ class ARMGenericInterrupt : public ARMException
     /**
      * Constructor
      *
-     * @param exceptionbase Base address of the exception vector jump table
      * @param distRegisterBase GIC distributor register base offset
      * @param cpuRegisterBase GIC CPU register base offset
      */
-    ARMGenericInterrupt(Address exceptionBase,
-                        Address distRegisterBase,
+    ARMGenericInterrupt(Address distRegisterBase,
                         Address cpuRegisterBase);
 
     /**

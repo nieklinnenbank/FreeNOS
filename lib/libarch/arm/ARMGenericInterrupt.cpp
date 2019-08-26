@@ -19,10 +19,9 @@
 #include "ARMGenericInterrupt.h"
 
 ARMGenericInterrupt::ARMGenericInterrupt(
-    Address exceptionBase,
     Address distRegisterBase,
     Address cpuRegisterBase)
-    : ARMException(exceptionBase)
+    : IntController()
 {
     // Set I/O register bases
     m_dist.setBase(distRegisterBase);

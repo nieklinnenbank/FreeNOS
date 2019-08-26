@@ -43,9 +43,9 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
     // Create local objects needed for the kernel
     Arch::MemoryMap mem;
 #ifdef BCM2835
-    BroadcomInterrupt irq(RAM_ADDR);
+    BroadcomInterrupt irq;
 #else
-    BroadcomInterrupt irq(RAM_ADDR); // TODO: temporary use BCM interrupt for SunXi
+    BroadcomInterrupt irq; // TODO: temporary use BCM interrupt for SunXi
 #endif
     BootImage *bootimage = (BootImage *) &__bootimg;
 
