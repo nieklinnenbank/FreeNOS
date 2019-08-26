@@ -86,6 +86,20 @@ BroadcomInterrupt::Result BroadcomInterrupt::clear(uint vector)
     return Success;
 }
 
+BroadcomInterrupt::Result BroadcomInterrupt::nextPending(uint & irq)
+{
+    for (Size i = 0; i < 64; i++)
+    {
+        if (isTriggered(i))
+        {
+            irq = i;
+            return Success;
+        }
+    }
+
+    return NotFound;
+}
+
 bool BroadcomInterrupt::isTriggered(u32 vector)
 {
     u32 basic = m_io.read(INTERRUPT_BASICPEND);

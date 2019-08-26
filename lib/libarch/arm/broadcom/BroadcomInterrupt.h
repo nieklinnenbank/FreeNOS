@@ -73,6 +73,15 @@ class BroadcomInterrupt : public ARMException
     virtual Result clear(uint vector);
 
     /**
+     * Retrieve the next pending interrupt (IRQ).
+     *
+     * @param irq Outputs the next pending interrupt on Success
+     *
+     * @return Result code.
+     */
+    virtual Result nextPending(uint & irq);
+
+    /**
      * Check if an IRQ vector is set.
      *
      * @return Result code

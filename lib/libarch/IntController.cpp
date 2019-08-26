@@ -26,3 +26,13 @@ uint IntController::getBase() const
 {
     return m_base;
 }
+
+IntController::Result IntController::nextPending(uint & irq)
+{
+    return NotFound;
+}
+
+bool IntController::isTriggered(uint irq)
+{
+    return false;
+}

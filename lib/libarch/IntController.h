@@ -104,6 +104,24 @@ class IntController
      */
     virtual Result clear(uint irq) = 0;
 
+    /**
+     * Retrieve the next pending interrupt (IRQ).
+     *
+     * @param irq Outputs the next pending interrupt on Success
+     *
+     * @return Result code.
+     */
+    virtual Result nextPending(uint & irq);
+
+    /**
+     * Check if an IRQ vector is set.
+     *
+     * @param irq Interrupt number
+     *
+     * @return True if triggered. False otherwise
+     */
+    virtual bool isTriggered(uint irq);
+
   protected:
 
     /** Interrupt number base offset */

@@ -77,15 +77,6 @@ class ARMException : public IntController
      */
     Result install(ExceptionType vector, Handler handler);
 
-    /**
-     * Check if an IRQ vector is set.
-     *
-     * @param irq Interrupt number
-     *
-     * @return True if triggered. False otherwise
-     */
-    virtual bool isTriggered(uint irq) = 0;
-
   private:
 
     /**
