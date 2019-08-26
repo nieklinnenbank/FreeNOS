@@ -20,15 +20,8 @@
 
 #include <FreeNOS/Kernel.h>
 #include <FreeNOS/Process.h>
-#include <Types.h>
-#include <arm/broadcom/BroadcomTimer.h>
-
-#ifdef BCM2836
-#include <arm/broadcom/Broadcom2836.h>
-#include <arm/ARMTimer.h>
-#endif /* BCM2836 */
-
 #include <arm/ARMException.h>
+#include <Types.h>
 
 /** Forward declaration */
 class IntController;
@@ -193,11 +186,9 @@ class ARMKernel : public Kernel
     /**
      * Constructor function.
      *
-     * @param intr Interrupt controller implementation.
      * @param info Contains processor core specific information
      */
-    ARMKernel(IntController *intr,
-              CoreInfo *info);
+    ARMKernel(CoreInfo *info);
 
   private:
 
@@ -243,24 +234,10 @@ class ARMKernel : public Kernel
      */
     static void reserved(CPUState state);
 
-  private:
-
-#ifdef BCM2836
-    /** Broadcom specific registers */
-    Broadcom2836 m_bcm;
-
-    /** ARM generic timer. Only used for QEMU */
-    ARMTimer m_armTimer;
-#endif /* BCM2836 */
+  protected:
 
     /** ARM exception handling subsystem. */
     ARMException m_exception;
-
-    /** Broadcom specific timer module */
-    BroadcomTimer m_bcmTimer;
-
-    /** Interrupt number for the timer */
-    u8 m_timerIrq;
 };
 
 /**

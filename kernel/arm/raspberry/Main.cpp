@@ -18,13 +18,13 @@
 #include <FreeNOS/Config.h>
 #include <FreeNOS/Support.h>
 #include <FreeNOS/System.h>
-#include <FreeNOS/arm/ARMKernel.h>
 #include <Macros.h>
 #include <arm/ARMControl.h>
 #include <arm/broadcom/BroadcomInterrupt.h>
 #include <arm/broadcom/BroadcomTimer.h>
 #include <PL011.h>
 #include <DeviceLog.h>
+#include "RaspberryKernel.h"
 
 extern Address __bootimg;
 
@@ -42,11 +42,6 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
 
     // Create local objects needed for the kernel
     Arch::MemoryMap mem;
-#ifdef BCM2835
-    BroadcomInterrupt irq;
-#else
-    BroadcomInterrupt irq; // TODO: temporary use BCM interrupt for SunXi
-#endif
     BootImage *bootimage = (BootImage *) &__bootimg;
 
     // Fill coreInfo
@@ -76,7 +71,7 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
     console.setMinimumLogLevel(Log::Notice);
 
     // Create the kernel
-    ARMKernel kernel(&irq, &coreInfo);
+    RaspberryKernel kernel(&coreInfo);
 
     // Run the kernel
     return kernel.run();

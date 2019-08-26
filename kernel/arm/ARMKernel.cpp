@@ -24,12 +24,8 @@
 #include <arm/broadcom/BroadcomInterrupt.h>
 #include "ARMKernel.h"
 
-ARMKernel::ARMKernel(IntController *intr,
-                     CoreInfo *info)
+ARMKernel::ARMKernel(CoreInfo *info)
     : Kernel(info)
-#ifdef BCM2836
-    , m_bcm(info->coreId)
-#endif /* BMC2836 */
     , m_exception(RAM_ADDR)
 {
     ARMControl ctrl;
@@ -37,7 +33,6 @@ ARMKernel::ARMKernel(IntController *intr,
     NOTICE("");
 
     // Setup interrupt callbacks
-    m_intControl = intr;
     m_exception.install(ARMException::UndefinedInstruction, undefinedInstruction);
     m_exception.install(ARMException::SoftwareInterrupt, trap);
     m_exception.install(ARMException::PrefetchAbort, prefetchAbort);
@@ -45,33 +40,6 @@ ARMKernel::ARMKernel(IntController *intr,
     m_exception.install(ARMException::Reserved, reserved);
     m_exception.install(ARMException::IRQ, interrupt);
     m_exception.install(ARMException::FIQ, interrupt);
-
-    // Configure clocks and irqs. For BCM2836, only use the generic ARM timer
-    // when running under Qemu. Unfortunately, Qemu dropped support for the
-    // broadcom timer in recent versions. On hardware, use the broadcom timer.
-#ifdef BCM2836
-    u32 system_frequency = ctrl.read(ARMControl::SystemFrequency);
-    NOTICE("sysfreq = " << system_frequency);
-    if (system_frequency == 62500000)
-    {
-        // Use ARM generic timer
-        m_timer = &m_armTimer;
-        m_timerIrq = GTIMER_PHYS_1_IRQ;
-        m_armTimer.setFrequency(100);
-
-        // Setup IRQ routing
-        m_bcm.setCoreTimerIrq(Broadcom2836::PhysicalTimer1, true);
-    }
-#endif /* BCM2836 */
-
-    /* Default to broadcom timer and interrupt handling */
-    if (m_timer == NULL)
-    {
-        m_timer = &m_bcmTimer;
-        m_timerIrq = BCM_IRQ_SYSTIMERM1;
-        m_bcmTimer.setFrequency( 250 ); /* trigger timer interrupts at 250Hz (clock runs at 1Mhz) */
-        m_intControl->enable(BCM_IRQ_SYSTIMERM1);
-    }
 
     // Set ARMCore modes
     ctrl.set(ARMControl::AlignmentFaults);
@@ -82,44 +50,12 @@ ARMKernel::ARMKernel(IntController *intr,
 #endif
 }
 
-void ARMKernel::interrupt(volatile CPUState state)
+void ARMKernel::interrupt(CPUState state)
 {
-    ARMKernel *kernel = (ARMKernel *) Kernel::instance;
-    ARMProcess *proc = (ARMProcess *) Kernel::instance->getProcessManager()->current(), *next;
-    bool tick;
-
-    DEBUG("procId = " << proc->getID());
-
-#ifdef BCM2836
-    if (kernel->m_timer == &kernel->m_armTimer)
-    {
-        tick = kernel->m_bcm.getCoreTimerIrqStatus(Broadcom2836::PhysicalTimer1);
-    }
-    else
-#endif /* BCM2836 */
-    {
-        tick = kernel->m_intControl->isTriggered(BCM_IRQ_SYSTIMERM1);
-    }
-
-    if (tick)
-    {
-        kernel->m_timer->tick();
-        next = (ARMProcess *)kernel->getProcessManager()->schedule();
-        if (next)
-        {
-            proc->setCpuState((const CPUState *)&state);
-            MemoryBlock::copy((void *)&state, next->cpuState(), sizeof(state));
-        }
-    }
-
-    for (uint i = kernel->m_timerIrq + 1; i < 64; i++)
-    {
-        if (kernel->m_intControl->isTriggered(i))
-        {
-            kernel->executeIntVector(i, (CPUState *)&state);
-        }
-    }
-
+    ARMCore core;
+    core.logException(&state);
+    FATAL("unhandled IRQ in procId = " << Kernel::instance->getProcessManager()->current()->getID());
+    for(;;);
 }
 
 void ARMKernel::undefinedInstruction(CPUState state)
