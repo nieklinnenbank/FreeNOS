@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBARCH_ARM_INTERRUPT_H
-#define __LIBARCH_ARM_INTERRUPT_H
+#ifndef __LIBARCH_ARM_EXCEPTION_H
+#define __LIBARCH_ARM_EXCEPTION_H
 
 #include <Types.h>
 #include <IntController.h>
@@ -33,26 +33,19 @@
  */
 
 /** Size of the ARM exception vector table in bytes */
-#define ARM_INTR_VECTAB_SIZE   (64)
+#define ARM_EX_VECTAB_SIZE   (64)
 
 /**
- * ARM interrupt controller.
- *
- * This class provides generic functionity for installing
- * and servicing interrupts on ARM. Each ARM system should
- * provide a ARM interrupt controller implementation which
- * inherits from this class.
- *
- * @see http://www.state-machine.com/arm/Building_bare-metal_ARM_with_GNU.pdf
+ * ARM exception handling functionality.
  */
-class ARMInterrupt : public IntController
+class ARMException : public IntController
 {
   public:
 
     /**
-     * ARM interrupt types.
+     * ARM exception types.
      */
-    enum Interrupt
+    enum ExceptionType
     {
         Reset = 0,
         UndefinedInstruction,
@@ -72,17 +65,17 @@ class ARMInterrupt : public IntController
      * @param base Base address of the interrupt jump table.
      *             By default this is physical address 0x0 in RAM.
      */
-    ARMInterrupt(Address base);
+    ARMException(Address base);
 
     /**
-     * Install an interrupt handler.
+     * Install an exception handler.
      *
-     * @param vector Interrupt vector to install
-     * @param handler Interrupt handler function to install.
+     * @param vector Exception vector to install
+     * @param handler Exception handler function to install.
      *
      * @return Result code
      */
-    Result install(Interrupt vector, Handler handler);
+    Result install(ExceptionType vector, Handler handler);
 
     /**
      * Check if an IRQ vector is set.
@@ -96,15 +89,15 @@ class ARMInterrupt : public IntController
   private:
 
     /**
-     * ARM interrupt jump table.
+     * ARM exception vector jump table.
      *
      * The ARM processor will start executing at the appropriate
      * vector offset in the jump table and perform a jump to
-     * the interrupt handler address, which it retrieves from the
-     * interrupt handlers table.
+     * the exception handler address, which it retrieves from the
+     * exception handlers table.
      *
      * @see m_handlerTable;
-     * @see ARMInterruptTable.S
+     * @see ARMExceptionTable.S
      */
     Address m_vecTable;
 };
@@ -115,4 +108,4 @@ class ARMInterrupt : public IntController
  * @}
  */
 
-#endif /* __LIBARCH_ARM_INTERRUPT_H */
+#endif /* __LIBARCH_ARM_EXCEPTION_H */

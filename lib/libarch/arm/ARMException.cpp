@@ -16,21 +16,21 @@
  */
 
 #include <MemoryBlock.h>
-#include "ARMInterrupt.h"
+#include "ARMException.h"
 #include "ARMCore.h"
 
 extern Address vecTable[], handlerTable;
 
-ARMInterrupt::ARMInterrupt(Address base)
+ARMException::ARMException(Address base)
     : m_vecTable(base)
 {
-    MemoryBlock::copy((void *)m_vecTable, vecTable, ARM_INTR_VECTAB_SIZE);
+    MemoryBlock::copy((void *)m_vecTable, vecTable, ARM_EX_VECTAB_SIZE);
     vbar_set(base);
 }
 
-ARMInterrupt::Result ARMInterrupt::install(
-    ARMInterrupt::Interrupt vector,
-    ARMInterrupt::Handler handler)
+ARMException::Result ARMException::install(
+    ARMException::ExceptionType vector,
+    ARMException::Handler handler)
 {
     ((Address *) &handlerTable)[vector] = (Address) handler;
     return Success;

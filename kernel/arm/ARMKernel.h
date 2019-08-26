@@ -29,7 +29,7 @@
 #endif /* BCM2836 */
 
 /** Forward declaration */
-class ARMInterrupt;
+class ARMException;
 
 /**
  * @addtogroup kernel
@@ -194,7 +194,7 @@ class ARMKernel : public Kernel
      * @param intr ARM interrupt controller implementation.
      * @param info Contains processor core specific information
      */
-    ARMKernel(ARMInterrupt *intr,
+    ARMKernel(ARMException *intr,
               CoreInfo *info);
 
   private:

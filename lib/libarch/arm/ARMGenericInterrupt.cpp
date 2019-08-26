@@ -22,7 +22,7 @@ ARMGenericInterrupt::ARMGenericInterrupt(
     Address exceptionBase,
     Address distRegisterBase,
     Address cpuRegisterBase)
-    : ARMInterrupt(exceptionBase)
+    : ARMException(exceptionBase)
 {
     // Set I/O register bases
     m_dist.setBase(distRegisterBase);

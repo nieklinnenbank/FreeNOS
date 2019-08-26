@@ -24,7 +24,7 @@
  *
  * When an interrupt occurs, the ARM will jump to a predefined
  * memory location, which points effectively an entry in the table below.
- * The table below should be loaded at 0x0. Each entry can only be 4 bytes
+ * The table below is normally loaded at the beginning of RAM. Each entry can only be 4 bytes
  * in size. The LDR (Load Register) instruction will load PC with the corresponding
  * address of the interrupt service routine from the interrupt routine table,
  * which is directly after the jump table in memory.
@@ -124,9 +124,9 @@ callHandler 7
 subs pc, r14, #4
 
 /*
- * ARM interrupt handler table.
+ * ARM exception handler table.
  *
- * Contains the addresses of C/C++ interrupt service routines.
+ * Contains the addresses of C/C++ exception handler routines.
  */
 handlerTable:
 .fill 8, 4, 0

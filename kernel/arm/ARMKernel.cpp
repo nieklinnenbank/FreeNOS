@@ -19,12 +19,12 @@
 #include <Log.h>
 #include <SplitAllocator.h>
 #include <CoreInfo.h>
-#include <arm/ARMInterrupt.h>
+#include <arm/ARMException.h>
 #include <arm/ARMConstant.h>
 #include <arm/broadcom/BroadcomInterrupt.h>
 #include "ARMKernel.h"
 
-ARMKernel::ARMKernel(ARMInterrupt *intr,
+ARMKernel::ARMKernel(ARMException *intr,
                      CoreInfo *info)
     : Kernel(info)
 #ifdef BCM2836
@@ -37,13 +37,13 @@ ARMKernel::ARMKernel(ARMInterrupt *intr,
 
     // Setup interrupt callbacks
     m_intControl = intr;
-    intr->install(ARMInterrupt::UndefinedInstruction, undefinedInstruction);
-    intr->install(ARMInterrupt::SoftwareInterrupt, trap);
-    intr->install(ARMInterrupt::PrefetchAbort, prefetchAbort);
-    intr->install(ARMInterrupt::DataAbort, dataAbort);
-    intr->install(ARMInterrupt::Reserved, reserved);
-    intr->install(ARMInterrupt::IRQ, interrupt);
-    intr->install(ARMInterrupt::FIQ, interrupt);
+    intr->install(ARMException::UndefinedInstruction, undefinedInstruction);
+    intr->install(ARMException::SoftwareInterrupt, trap);
+    intr->install(ARMException::PrefetchAbort, prefetchAbort);
+    intr->install(ARMException::DataAbort, dataAbort);
+    intr->install(ARMException::Reserved, reserved);
+    intr->install(ARMException::IRQ, interrupt);
+    intr->install(ARMException::FIQ, interrupt);
 
     // Configure clocks and irqs. For BCM2836, only use the generic ARM timer
     // when running under Qemu. Unfortunately, Qemu dropped support for the
@@ -84,7 +84,7 @@ ARMKernel::ARMKernel(ARMInterrupt *intr,
 void ARMKernel::interrupt(volatile CPUState state)
 {
     ARMKernel *kernel = (ARMKernel *) Kernel::instance;
-    ARMInterrupt *intr = (ARMInterrupt *) kernel->m_intControl;
+    ARMException *intr = (ARMException *) kernel->m_intControl;
     ARMProcess *proc = (ARMProcess *) Kernel::instance->getProcessManager()->current(), *next;
     bool tick;
 

@@ -18,7 +18,7 @@
 #ifndef __LIBARCH_ARM_BROADCOMINTERRUPT_H
 #define __LIBARCH_ARM_BROADCOMINTERRUPT_H
 
-#include <arm/ARMInterrupt.h>
+#include <arm/ARMException.h>
 #include <arm/ARMIO.h>
 
 /**
@@ -42,7 +42,7 @@
 /**
  * Raspberry Pi Interrupt Controller implementation
  */
-class BroadcomInterrupt : public ARMInterrupt
+class BroadcomInterrupt : public ARMException
 {
   public:
 

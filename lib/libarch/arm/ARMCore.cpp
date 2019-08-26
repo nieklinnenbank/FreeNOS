@@ -18,7 +18,6 @@
 #include <Log.h>
 #include <String.h>
 #include "ARMCore.h"
-#include "ARMInterrupt.h"
 
 void ARMCore::logException(CPUState *state) const
 {

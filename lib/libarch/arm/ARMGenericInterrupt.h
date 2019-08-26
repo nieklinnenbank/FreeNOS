@@ -19,7 +19,7 @@
 #define __LIBARCH_ARM_ARMGENERICINTERRUPT_H
 
 #include "ARMIO.h"
-#include "ARMInterrupt.h"
+#include "ARMException.h"
 
 /**
  * @addtogroup lib
@@ -35,7 +35,7 @@
 /**
  * ARM Generic Interrupt Controller (GIC) version 2.
  */
-class ARMGenericInterrupt : public ARMInterrupt
+class ARMGenericInterrupt : public ARMException
 {
   private:
 
