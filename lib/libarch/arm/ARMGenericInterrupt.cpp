@@ -35,34 +35,38 @@ ARMGenericInterrupt::ARMGenericInterrupt(
     m_dist.write(GICD_CTRL, DistCtrlGroup0 | DistCtrlGroup1);
     m_cpu.write(GICC_CTRL, CpuCtrlGroup0 | CpuCtrlGroup1);
 
-    // Set all interrupts in group 0
+    // Set all interrupts in group 1, priority 0 (highest)
     for (uint i = 0; i < numRegisters(1); i++)
     {
-        m_dist.write(GICD_GROUPR + i, 0);
+        m_dist.write(GICD_GROUPR + (i * 4), 1);
+        m_dist.write(GICD_IPRIORITYR + (i * 4), 0);
     }
+
+    // Set minimum priority level
+    m_cpu.write(GICC_PMR, 3);
 
     // All interrupts assigned to core0
     for (uint i = 0; i < (32 / 4); i++)
     {
-        m_dist.write(GICD_ITARGETSR + i, (1 << 0) | (1 << 8) | (1 << 16) | (1 << 24));
+        m_dist.write(GICD_ITARGETSR + (i * 4), (1 << 0) | (1 << 8) | (1 << 16) | (1 << 24));
     }
 
     // Initially disable forwarding of all interrupts
     for (uint i = 0; i < numRegisters(1); i++)
     {
-        m_dist.write(GICD_ISENABLER + i, 0);
+        m_dist.write(GICD_ISENABLER + (i * 4), 0);
     }
 }
 
 ARMGenericInterrupt::Result ARMGenericInterrupt::enable(uint irq)
 {
-    m_dist.set(GICD_ISENABLER + (irq % 32), irq % 32);
+    m_dist.set(GICD_ISENABLER + (irq / 8), (1 << (irq % 8)));
     return Success;
 }
 
 ARMGenericInterrupt::Result ARMGenericInterrupt::disable(uint irq)
 {
-    m_dist.set(GICD_ICENABLER + (irq % 32), irq % 32);
+    m_dist.set(GICD_ICENABLER + (irq / 8), (1 << (irq % 8)));
     return Success;
 }
 
@@ -93,5 +97,8 @@ bool ARMGenericInterrupt::isTriggered(uint irq)
 
 Size ARMGenericInterrupt::numRegisters(Size bits) const
 {
-    return (m_numIrqs * bits) / 32;
+    if (m_numIrqs % 32)
+        return ((m_numIrqs * bits) / 32) + 1;
+    else
+        return (m_numIrqs * bits) / 32;
 }

@@ -44,17 +44,18 @@ class ARMGenericInterrupt : public IntController
      */
     enum DistRegisters
     {
-        GICD_CTRL      = 0x0000,
-        GICD_TYPER     = 0x0004,
-        GICD_GROUPR    = 0x0080,
-        GICD_ISENABLER = 0x0100,
-        GICD_ICENABLER = 0x0180,
-        GICD_ICPENDR   = 0x0280,
-        GICD_ISACTIVER = 0x0300,
-        GICD_ICACTIVER = 0x0380,
-        GICD_ITARGETSR = 0x0800,
-        GICD_ICFGR     = 0x0C00,
-        GICD_ID2       = 0x0FE8
+        GICD_CTRL       = 0x0000,
+        GICD_TYPER      = 0x0004,
+        GICD_GROUPR     = 0x0080,
+        GICD_ISENABLER  = 0x0100,
+        GICD_ICENABLER  = 0x0180,
+        GICD_ICPENDR    = 0x0280,
+        GICD_ISACTIVER  = 0x0300,
+        GICD_ICACTIVER  = 0x0380,
+        GICD_IPRIORITYR = 0x0400,
+        GICD_ITARGETSR  = 0x0800,
+        GICD_ICFGR      = 0x0C00,
+        GICD_ID2        = 0x0FE8
     };
 
     enum DistCtrlFlags
@@ -74,6 +75,7 @@ class ARMGenericInterrupt : public IntController
     enum CpuRegisters
     {
         GICC_CTRL      = 0x0000,
+        GICC_PMR       = 0x0004,
         GICC_IAR       = 0x000C,
         GICC_EOIR      = 0x0010,
         GICC_IDR       = 0x00FC
