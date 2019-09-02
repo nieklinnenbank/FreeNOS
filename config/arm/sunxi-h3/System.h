@@ -28,11 +28,12 @@
 #define IO_BASE 0x01000000
 #define IO_SIZE (1024*1024*128)
 
-#define UART_BASE 0x01c28000
+#define UART_BASE       0x01c28000
+#define GIC_DIST_BASE   0x01c81000
+#define GIC_CPU_BASE    0x01c82000
 
-/** Triggered when the PL011 asserts IRQ status */
-// TODO: ???
-#define UART0_IRQ 57
+#define UART0_IRQ       32
+#define ARMTIMER_IRQ    26
 
 #define RAM_ADDR (0x40000000)
 #define RAM_SIZE (1024 * 1024 * 256)
