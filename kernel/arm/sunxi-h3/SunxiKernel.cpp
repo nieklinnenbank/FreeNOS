@@ -39,7 +39,7 @@ SunxiKernel::SunxiKernel(CoreInfo *info)
     // Configure clocks and irqs
     m_timer = &m_armTimer;
     m_armTimer.setFrequency(100);
-    m_intControl->enable(ARMTIMER_PHYS_IRQ);
+    m_intControl->enable(ARMTIMER_IRQ);
 }
 
 void SunxiKernel::interrupt(volatile CPUState state)
@@ -54,7 +54,7 @@ void SunxiKernel::interrupt(volatile CPUState state)
     IntController::Result result = kernel->m_intControl->nextPending(irq);
     if (result == IntController::Success)
     {
-        if (irq == ARMTIMER_PHYS_IRQ)
+        if (irq == ARMTIMER_IRQ)
             tick = true;
         else
             kernel->executeIntVector(irq, (CPUState *)&state);

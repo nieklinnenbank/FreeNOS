@@ -33,9 +33,6 @@
  * @{
  */
 
-/** PhysicalTimer1, IRQ number. */
-#define GTIMER_PHYS_1_IRQ 3
-
 /**
  * ARM Generic Timer.
  *

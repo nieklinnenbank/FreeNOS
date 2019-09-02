@@ -36,6 +36,9 @@
 /** Triggered when the PL011 asserts IRQ status */
 #define UART0_IRQ 57
 
+/** PhysicalTimer1, IRQ number. */
+#define ARMTIMER_IRQ 3
+
 #define RAM_ADDR (0x0)
 #define RAM_SIZE (1024 * 1024 * 512)
 

@@ -49,7 +49,7 @@ RaspberryKernel::RaspberryKernel(CoreInfo *info)
     {
         // Use ARM generic timer
         m_timer = &m_armTimer;
-        m_timerIrq = GTIMER_PHYS_1_IRQ;
+        m_timerIrq = ARMTIMER_IRQ;
         m_armTimer.setFrequency(100);
 
         // Setup IRQ routing
