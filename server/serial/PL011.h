@@ -48,7 +48,7 @@ class PL011 : public Device
     PL011(u32 irq);
 
     /**
-     * @brief Initializes the i8250 serial UART.
+     * @brief Initializes the UART.
      *
      * @return Error status code.
      */
@@ -64,7 +64,7 @@ class PL011 : public Device
     virtual Error interrupt(Size vector);
 
     /**
-     * Read bytes from the i8250.
+     * Read bytes from the UART.
      *
      * @param buffer Buffer to save the read bytes.
      * @param size Number of bytes to read.
