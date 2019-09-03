@@ -20,7 +20,7 @@
 #include <FreeNOS/System.h>
 #include <Macros.h>
 #include <arm/ARMControl.h>
-#include <PL011.h>
+#include <NS16550.h>
 #include <DeviceLog.h>
 #include "SunxiKernel.h"
 
@@ -62,10 +62,10 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
     constructors();
 
     // Open the serial console as default Log
-    PL011 pl011(UART0_IRQ);
-    pl011.initialize();
+    NS16550 uart(UART0_IRQ);
+    uart.initialize();
 
-    DeviceLog console(pl011);
+    DeviceLog console(uart);
     console.setMinimumLogLevel(Log::Notice);
 
     // Create the kernel

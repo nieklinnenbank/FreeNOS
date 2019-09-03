@@ -33,7 +33,7 @@ env.TargetProgram('kernel', [ Glob('*.cpp'),
                               Glob('#' + env['BUILDROOT'] + '/kernel/API/*.cpp'),
                               Glob('#' + env['BUILDROOT'] + '/kernel/arm/*.cpp'),
                               Glob('#' + env['BUILDROOT'] + '/kernel/arm/*.S'),
-                              '#server/serial/PL011.cpp'
+                              '#server/serial/NS16550.cpp'
                               ],
                    False)
 
