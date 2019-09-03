@@ -67,17 +67,15 @@ Error NS16550::initialize()
         // TODO: they overlap? Perhaps DLAB must be used here too?
         // m_io.write(InterruptIdentity, InterruptIdentityFifoEnable);
         m_io.write(InterruptEnable, ReceiveDataInterrupt);
+        ProcessCtl(SELF, EnableIRQ, m_irq);
     }
     return 0;
 }
 
 Error NS16550::interrupt(u32 vector)
 {
-    // Re-enable interrupts
-    if (!isKernel)
-    {
-        ProcessCtl(SELF, EnableIRQ, m_irq);
-    }
+    // Mask interrupt until FIFOs are empty
+    m_io.write(InterruptEnable, 0);
     return ESUCCESS;
 }
 
@@ -91,6 +89,16 @@ Error NS16550::read(IOBuffer & buffer, Size size, Size offset)
         u8 byte = m_io.read(ReceiveBuffer);
         buffer.bufferedWrite(&byte, 1);
         bytes++;
+    }
+
+    // Re-enable interrupts
+    if (!isKernel)
+    {
+        if (!(m_io.read(InterruptEnable) & ReceiveDataInterrupt))
+        {
+            m_io.write(InterruptEnable, ReceiveDataInterrupt);
+            ProcessCtl(SELF, EnableIRQ, m_irq);
+        }
     }
     return buffer.getCount() ? (Error) buffer.getCount() : EAGAIN;
 }
