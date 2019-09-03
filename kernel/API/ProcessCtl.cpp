@@ -23,12 +23,17 @@
 #include <Log.h>
 #include "ProcessCtl.h"
 
-void interruptNotify(CPUState *st, Process *p)
+void interruptNotify(CPUState *st, Process *p, ulong vec)
 {
     ProcessEvent event;
 
     event.type   = InterruptEvent;
+
+#ifdef IRQ_REG
     event.number = IRQ_REG(st);
+#else
+    event.number = vec;
+#endif /* IRQ_REG */
 
     p->raiseEvent(&event);
 }

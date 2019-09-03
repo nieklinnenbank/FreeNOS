@@ -35,15 +35,6 @@
  */
 
 /**
- * Retrieve the IRQ number from CPUState.
- * This does not work for ARM. See BCM2835Interrupt instead.
- *
- * @return IRQ number.
- */
-#define IRQ_REG(state) \
-    (0)
-
-/**
  * Remap interrupt vector (unused for ARM)
  *
  * @param vector Interrupt vector number

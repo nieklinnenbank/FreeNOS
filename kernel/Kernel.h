@@ -43,9 +43,10 @@ struct CPUState;
  * Function which is called when the CPU is interrupted.
  *
  * @param state State of the CPU on the moment the interrupt occurred.
- * @param param Optional parameter for the handler.
+ * @param param Optional first parameter for the handler.
+ * @param vector Optional IRQ vector value. Used by some architectures.
  */
-typedef void InterruptHandler(struct CPUState *state, ulong param);
+typedef void InterruptHandler(struct CPUState *state, ulong param, ulong vector);
 
 /**
  * Interrupt hook class.

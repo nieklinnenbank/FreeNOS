@@ -130,7 +130,7 @@ IntelKernel::IntelKernel(CoreInfo *info)
     ltr(KERNEL_TSS_SEL);
 }
 
-void IntelKernel::exception(CPUState *state, ulong param)
+void IntelKernel::exception(CPUState *state, ulong param, ulong vector)
 {
     IntelCore core;
     ProcessManager *procs = Kernel::instance->getProcessManager();
@@ -143,7 +143,7 @@ void IntelKernel::exception(CPUState *state, ulong param)
     procs->schedule();
 }
 
-void IntelKernel::interrupt(CPUState *state, ulong param)
+void IntelKernel::interrupt(CPUState *state, ulong param, ulong vector)
 {
     IntelKernel *kern = (IntelKernel *) Kernel::instance;
 
@@ -155,7 +155,7 @@ void IntelKernel::interrupt(CPUState *state, ulong param)
     }
 }
 
-void IntelKernel::trap(CPUState *state, ulong param)
+void IntelKernel::trap(CPUState *state, ulong param, ulong vector)
 {
     state->regs.eax = Kernel::instance->getAPI()->invoke(
         (API::Number) state->regs.eax,
@@ -167,7 +167,7 @@ void IntelKernel::trap(CPUState *state, ulong param)
     );
 }
 
-void IntelKernel::clocktick(CPUState *state, ulong param)
+void IntelKernel::clocktick(CPUState *state, ulong param, ulong vector)
 {
     IntelKernel *kern = (IntelKernel *) Kernel::instance;
     Size irq = kern->m_timer->getInterrupt();

@@ -39,7 +39,7 @@ Error PL011::initialize()
         }
 
         // Disable receiving interrupts
-        ProcessCtl(SELF, DisableIRQ, 0);
+        ProcessCtl(SELF, DisableIRQ, m_irq);
     }
     else
     {

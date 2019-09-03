@@ -174,32 +174,36 @@ class IntelKernel : public Kernel
      *
      * @param state Contains CPU registers, interrupt vector and error code.
      * @param param Not used.
+     * @param vector Not used.
      */
-    static void exception(CPUState *state, ulong param);
+    static void exception(CPUState *state, ulong param, ulong vector);
 
     /**
      * Default interrupt handler.
      *
      * @param state Contains CPU registers, interrupt vector and error code.
      * @param param Not used.
+     * @param vector Not used.
      */
-    static void interrupt(CPUState *state, ulong param);
+    static void interrupt(CPUState *state, ulong param, ulong vector);
 
     /**
      * Kernel trap handler (system calls).
      *
      * @param state Contains the arguments for the APIHandler, in CPU registers.
      * @param param Not used.
+     * @param vector Not used.
      */
-    static void trap(CPUState *state, ulong param);
+    static void trap(CPUState *state, ulong param, ulong vector);
 
     /**
      * i8253 system clock interrupt handler.
      *
      * @param state CPU registers on time of interrupt.
      * @param param Not used.
+     * @param vector Not used.
      */
-    static void clocktick(CPUState *state, ulong param);
+    static void clocktick(CPUState *state, ulong param, ulong vector);
 
   private:
 

@@ -166,7 +166,7 @@ void Kernel::executeIntVector(u32 vec, CPUState *state)
     // Execute them all
     for (ListIterator<InterruptHook *> i(lst); i.hasCurrent(); i++)
     {
-        i.current()->handler(state, i.current()->param);
+        i.current()->handler(state, i.current()->param, vec);
     }
 }
 

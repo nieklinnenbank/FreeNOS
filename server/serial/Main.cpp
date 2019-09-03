@@ -74,11 +74,6 @@ int main(int argc, char **argv)
 
     server.registerDevice(dev, "/serial0/io");
     server.registerInterrupt(dev, uarts[0].irq);
-#ifdef ARM
-// TOOD: needed?
-    // For ARM: it does not have IRQ_REQ(), so just take 0 for all IRQs
-    server.registerInterrupt(dev, 0);
-#endif
 
     // Perform log
     INFO("detected at PORT=" << uarts[0].port << " IRQ=" << uarts[0].irq);
