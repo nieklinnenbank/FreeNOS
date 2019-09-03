@@ -23,6 +23,7 @@
 
 #ifdef ARM
 #include "PL011.h"
+#include "NS16550.h"
 #else
 #include "i8250.h"
 #endif
@@ -53,8 +54,13 @@ int main(int argc, char **argv)
     log->setMinimumLogLevel(Log::Notice);
 
 #ifdef ARM
+#ifdef BCM2835
     PL011 *dev = ZERO;
     dev = new PL011(uarts[0].irq);
+#else
+    NS16550 *dev = ZERO;
+    dev = new NS16550(uarts[0].irq);
+#endif /* BCM2835 */
 #else
     // Assume first UART is available
     i8250 *dev = ZERO;
