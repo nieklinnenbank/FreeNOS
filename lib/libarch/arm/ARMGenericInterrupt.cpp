@@ -35,10 +35,10 @@ ARMGenericInterrupt::ARMGenericInterrupt(
     m_dist.write(GICD_CTRL, DistCtrlGroup0 | DistCtrlGroup1);
     m_cpu.write(GICC_CTRL, CpuCtrlGroup0 | CpuCtrlGroup1);
 
-    // Set all interrupts in group 1, priority 0 (highest)
+    // Set all interrupts in group 0, priority 0 (highest)
     for (uint i = 0; i < numRegisters(1); i++)
     {
-        m_dist.write(GICD_GROUPR + (i * 4), 1);
+        m_dist.write(GICD_GROUPR + (i * 4), 0);
         m_dist.write(GICD_IPRIORITYR + (i * 4), 0);
     }
 
