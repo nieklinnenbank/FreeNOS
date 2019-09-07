@@ -60,13 +60,13 @@ ARMGenericInterrupt::ARMGenericInterrupt(
 
 ARMGenericInterrupt::Result ARMGenericInterrupt::enable(uint irq)
 {
-    m_dist.set(GICD_ISENABLER + (irq / 8), (1 << (irq % 8)));
+    m_dist.set(GICD_ISENABLER + (4 * (irq / 32)), (1 << (irq % 32)));
     return Success;
 }
 
 ARMGenericInterrupt::Result ARMGenericInterrupt::disable(uint irq)
 {
-    m_dist.set(GICD_ICENABLER + (irq / 8), (1 << (irq % 8)));
+    m_dist.set(GICD_ICENABLER + (4 * (irq / 32)), (1 << (irq % 32)));
     return Success;
 }
 
