@@ -47,7 +47,7 @@ Error NS16550::initialize()
 
     // Set integer & fractional part of baud rate.
     setDivisorLatch(true);
-    m_io.write(DivisorLatchLow, 0x01);
+    m_io.write(DivisorLatchLow, 13);
     m_io.write(DivisorLatchHigh, 0x00);
     setDivisorLatch(false);
 
