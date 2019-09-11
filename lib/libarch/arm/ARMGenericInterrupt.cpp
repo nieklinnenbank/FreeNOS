@@ -31,31 +31,39 @@ ARMGenericInterrupt::ARMGenericInterrupt(
     m_numIrqs = 32 * ((m_dist.read(GICD_TYPER) & DistTypeIrqsMask) + 1);
     NOTICE(m_numIrqs << " IRQ lines");
 
-    // Enable all groups
-    m_dist.write(GICD_CTRL, DistCtrlGroup0 | DistCtrlGroup1);
-    m_cpu.write(GICC_CTRL, CpuCtrlGroup0 | CpuCtrlGroup1);
-
-    // Set all interrupts in group 0, priority 0 (highest)
+    // Set all interrupts in group 0 and disable all interrupts
     for (uint i = 0; i < numRegisters(1); i++)
     {
         m_dist.write(GICD_GROUPR + (i * 4), 0);
-        m_dist.write(GICD_IPRIORITYR + (i * 4), 0);
+        m_dist.write(GICD_ICENABLER + (i * 4), ~0);
+    }
+
+    // Set interrupt configuration to level triggered (2-bits)
+    for (uint i = 0; i < (m_numIrqs / 2); i++)
+    {
+        m_dist.write(GICD_ICFGR + (i * 4), 0);
+    }
+
+    // Set interrupt priority
+    for (uint i = 0; i < (m_numIrqs / 4); i++)
+    {
+        m_dist.write(GICD_IPRIORITYR + (i * 4), 0xA0A0A0A0);
     }
 
     // Set minimum priority level
-    m_cpu.write(GICC_PMR, 3);
+    m_cpu.write(GICC_PMR, 0xF0);
 
-    // All interrupts assigned to core0
-    for (uint i = 0; i < (32 / 4); i++)
+    // All interrupts are assigned to core0.
+    // Ignore the first 32 PPIs, which are local and banked per core.
+    for (uint i = 8; i < (m_numIrqs / 4); i++)
     {
-        m_dist.write(GICD_ITARGETSR + (i * 4), (1 << 0) | (1 << 8) | (1 << 16) | (1 << 24));
+        m_dist.write(GICD_ITARGETSR + (i * 4),
+                    (1 << 0) | (1 << 8) | (1 << 16) | (1 << 24));
     }
 
-    // Initially disable forwarding of all interrupts
-    for (uint i = 0; i < numRegisters(1); i++)
-    {
-        m_dist.write(GICD_ISENABLER + (i * 4), 0);
-    }
+    // Enable all groups
+    m_dist.write(GICD_CTRL, DistCtrlGroup0 | DistCtrlGroup1);
+    m_cpu.write(GICC_CTRL, CpuCtrlGroup0 | CpuCtrlGroup1);
 }
 
 ARMGenericInterrupt::Result ARMGenericInterrupt::enable(uint irq)
@@ -73,6 +81,7 @@ ARMGenericInterrupt::Result ARMGenericInterrupt::disable(uint irq)
 ARMGenericInterrupt::Result ARMGenericInterrupt::clear(uint irq)
 {
     m_cpu.write(GICC_EOIR, irq);
+    m_cpu.write(GICC_DIR, irq);
     return Success;
 }
 

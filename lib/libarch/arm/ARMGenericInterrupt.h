@@ -78,7 +78,8 @@ class ARMGenericInterrupt : public IntController
         GICC_PMR       = 0x0004,
         GICC_IAR       = 0x000C,
         GICC_EOIR      = 0x0010,
-        GICC_IDR       = 0x00FC
+        GICC_IDR       = 0x00FC,
+        GICC_DIR       = 0x1000
     };
 
     enum CpuCtrlFlags
