@@ -74,18 +74,25 @@ class ARMTimer : public Timer
     u32 getSystemFrequency(void) const;
 
     /**
-     * Set Timer 1 value
-     *
-     * @param value New timer value
-     */
-    void setPL1TimerValue(u32 value);
-
-    /**
      * Set Timer 1 control value
      *
      * @param value New timer control value
      */
     void setPL1Control(u32 value);
+
+    /**
+     * Set Physical Timer 1 value
+     *
+     * @param value New timer value
+     */
+    void setPL1PhysicalTimerValue(u32 value);
+
+    /**
+     * Set Physical Timer 1 control value
+     *
+     * @param value New timer control value
+     */
+    void setPL1PhysicalTimerControl(u32 value);
 
   private:
 
