@@ -81,6 +81,10 @@
         <string>ARCH=arm SYSTEM=raspberry2 COMPILER=gcc CROSS_COMPILE=arm-linux-gnueabi- VERSION_SUFFIX=-6</string>
         <string>ARCH=arm SYSTEM=raspberry2 COMPILER=gcc CROSS_COMPILE=arm-linux-gnueabi- VERSION_SUFFIX=-7</string>
         <string>ARCH=arm SYSTEM=raspberry2 COMPILER=gcc CROSS_COMPILE=arm-linux-gnueabi- VERSION_SUFFIX=-8</string>
+        <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=gcc CROSS_COMPILE=arm-linux-gnueabi- VERSION_SUFFIX=-5</string>
+        <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=gcc CROSS_COMPILE=arm-linux-gnueabi- VERSION_SUFFIX=-6</string>
+        <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=gcc CROSS_COMPILE=arm-linux-gnueabi- VERSION_SUFFIX=-7</string>
+        <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=gcc CROSS_COMPILE=arm-linux-gnueabi- VERSION_SUFFIX=-8</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=-4.8</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=-5</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=-6</string>
