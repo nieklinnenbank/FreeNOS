@@ -74,7 +74,7 @@ ELF::Result ELF::regions(ELF::Region *regions, Size *count) const
     (*count) = 0;
 
     // Fill in the memory regions
-    for (Size i = 0; i < max && i < num; i++)
+    for (Size i = 0; c < max && i < num; i++)
     {
         // We are only interested in loadable segments
         if (segments[i].type != ELF_SEGMENT_LOAD)
