@@ -73,6 +73,19 @@
     <hudson.matrix.TextAxis>
       <name>sysargs</name>
       <values>
+
+        <string>ARCH=arm SYSTEM=raspberry COMPILER=clang VERSION_SUFFIX=60</string>
+        <string>ARCH=arm SYSTEM=raspberry COMPILER=clang VERSION_SUFFIX=70</string>
+        <string>ARCH=arm SYSTEM=raspberry COMPILER=clang VERSION_SUFFIX=80</string>
+
+        <string>ARCH=arm SYSTEM=raspberry2 COMPILER=clang VERSION_SUFFIX=60</string>
+        <string>ARCH=arm SYSTEM=raspberry2 COMPILER=clang VERSION_SUFFIX=70</string>
+        <string>ARCH=arm SYSTEM=raspberry2 COMPILER=clang VERSION_SUFFIX=80</string>
+
+        <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=clang VERSION_SUFFIX=60</string>
+        <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=clang VERSION_SUFFIX=70</string>
+        <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=clang VERSION_SUFFIX=80</string>
+
         <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=48</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=5</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=6</string>
@@ -82,6 +95,7 @@
         <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=60</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=70</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=80</string>
+
       </values>
     </hudson.matrix.TextAxis>
   </axes>
