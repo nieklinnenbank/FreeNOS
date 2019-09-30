@@ -69,19 +69,27 @@ def runTester(target, source, env):
     # Launch process
     proc = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
 
-    # Wait for the test process to initialize
-    time.sleep(env['TESTDELAY'])
-
     # Launch a timeout process which will send a SIGTERM
     # to the process after a certain amount of time
     ch = multiprocessing.Process(target = timeoutChecker, args=(proc, 60 * 3))
     ch.start()
 
-    # Give input to the FreeNOS /bin/login and start the autotester.
-    try:
-        proc.stdin.write("root\n/test/run /test --tap\n")
-    except:
-        pass
+    # When running from the FreeNOS interactive console, first wait for
+    # the /bin/login prompt and give the login input values. After that,
+    # start the autotester.
+    if 'TESTPROMPT' in env:
+        output=""
+        while True:
+            c = proc.stdout.read(1)
+
+            sys.stdout.write(c)
+            sys.stdout.flush()
+            output += c
+
+            if env['TESTPROMPT'] in output:
+                proc.stdin.write("root\n/test/run /test --tap\n")
+                proc.stdin.flush()
+                break
 
     # Buffer TAP output
     tap=""
@@ -115,14 +123,7 @@ def runTester(target, source, env):
     ch.terminate()
     sys.exit(1)
 
-#
-# Run the FreeNOS autotester inside qemu
-#
-def AutoTester(env, **kw):
-
-    # Generate an environment, if not given.
-    if not env:
-        env = DefaultEnvironment()
+def setupTester(env, **kw):
 
     # Make sure to pass the whole environment to the command.
     env.Append(ENV = os.environ)
@@ -132,13 +133,35 @@ def AutoTester(env, **kw):
         env.Append(TESTCMD = str(action))
         env.AlwaysBuild(env.Alias(target, [], runTester))
 
-    env.SetDefault(TESTDELAY=5)
+#
+# Run the FreeNOS autotester inside qemu
+#
+def AutoTester(env, **kw):
+    if not env:
+        env = DefaultEnvironment()
+    else:
+        env = env.Clone()
+
+    env.SetDefault(TESTPROMPT="\nlogin: ")
+    setupTester(env, **kw)
+
+#
+# Run FreeNOS autotester in a host OS local process
+#
+def LocalTester(env, **kw):
+    if not env:
+        env = DefaultEnvironment()
+    else:
+        env = env.Clone()
+
+    setupTester(env, **kw)
 
 #
 # Add ourselves to the given environment.
 #
 def generate(env):
     env.AddMethod(AutoTester)
+    env.AddMethod(LocalTester)
 
 #
 # We always exist.
