@@ -41,22 +41,34 @@ Process::Result IntelProcess::initialize()
         Kernel::instance->getAllocator()
     );
     if (!m_memoryContext)
+    {
+        ERROR("failed to create memory context");
         return OutOfMemory;
+    }
 
     // User stack (high memory).
     range = m_map.range(MemoryMap::UserStack);
     range.access = Memory::Readable | Memory::Writable | Memory::User;
     if (Kernel::instance->getAllocator()->allocate(&range.size, &range.phys) != Allocator::Success)
+    {
+        ERROR("failed to allocate user stack");
         return OutOfMemory;
+    }
 
     if (m_memoryContext->mapRange(&range) != MemoryContext::Success)
+    {
+        ERROR("failed to map user stack");
         return MemoryMapError;
+    }
     setUserStack(range.virt + range.size - MEMALIGN);
 
     // Kernel stack (low memory).
     stackSize = KernelStackSize;
     if (Kernel::instance->getAllocator()->allocateLow(stackSize, &stackAddr) != Allocator::Success)
+    {
+        ERROR("failed to allocate kernel stack");
         return OutOfMemory;
+    }
 
     stackAddr = (Address) Kernel::instance->getAllocator()->toVirtual(stackAddr);
     m_kernelStackBase = stackAddr + stackSize;
