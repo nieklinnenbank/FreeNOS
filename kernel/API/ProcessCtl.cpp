@@ -64,6 +64,9 @@ API::Result ProcessCtlHandler(ProcessID procID,
     {
     case Spawn:
         proc = procs->create(addr, map);
+        if (!proc)
+            return API::IOError;
+
         proc->setParent(procs->current()->getID());
         return proc->getID();
 
