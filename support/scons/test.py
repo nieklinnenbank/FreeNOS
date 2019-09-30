@@ -81,6 +81,8 @@ def runTester(target, source, env):
         output=""
         while True:
             c = proc.stdout.read(1)
+            if c == '':
+                break
 
             sys.stdout.write(c)
             sys.stdout.flush()
