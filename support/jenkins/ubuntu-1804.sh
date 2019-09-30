@@ -50,7 +50,7 @@ COMPILER_PACKAGES="gcc-4.8 gcc-4.8-multilib g++-4.8 g++-4.8-multilib \
                    gcc-6-arm-linux-gnueabi g++-6-arm-linux-gnueabi \
                    gcc-7-arm-linux-gnueabi g++-7-arm-linux-gnueabi \
                    gcc-8-arm-linux-gnueabi g++-8-arm-linux-gnueabi"
-MISC_PACKAGES="build-essential scons genisoimage xorriso qemu-system"
+MISC_PACKAGES="build-essential scons genisoimage xorriso qemu-system binutils-multiarch"
 PACKAGES="$JENKINS_PACKAGES $COMPILER_PACKAGES $MISC_PACKAGES"
 
 # Download installer

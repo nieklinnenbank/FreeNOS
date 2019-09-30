@@ -25,7 +25,7 @@ def linnfs_generate(target, source, env):
     """
     for f in source:
         if os.access(str(f), os.X_OK):
-            strip_cmd = env['CROSS_COMPILE'] + 'strip ' + str(f)
+            strip_cmd = env['STRIP'] + ' ' + str(f)
             r = os.system(strip_cmd)
             if r != 0:
                 print("WARNING: failed to strip `" + str(f) + "': command `" + strip_cmd + "' failed: exit code " + str(r>>8))

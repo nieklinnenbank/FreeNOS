@@ -47,7 +47,7 @@ Follow the instructions below to install the build dependencies on your host OS.
 Update your system repository cache and install the required development tools using:
 
     $ sudo apt-get update
-    $ sudo apt-get install build-essential scons genisoimage xorriso qemu-system
+    $ sudo apt-get install build-essential scons genisoimage xorriso qemu-system binutils-multiarch
 
 If your Ubuntu host is 64-bit, you need to install the GCC multilib package
 to cross compile for the 32-bit architecture:
