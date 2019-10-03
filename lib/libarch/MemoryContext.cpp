@@ -39,10 +39,20 @@ MemoryContext * MemoryContext::getCurrent()
 MemoryContext::Result MemoryContext::mapRange(Memory::Range *range)
 {
     Result r = Success;
+    Allocator::Arguments alloc_args;
 
     // Allocate physical pages, if needed.
     if (!range->phys)
-        m_alloc->allocate(&range->size, &range->phys);
+    {
+        alloc_args.address = 0;
+        alloc_args.size = range->size;
+        alloc_args.alignment = PAGESIZE;
+
+        if (m_alloc->allocate(alloc_args) != Allocator::Success)
+            return OutOfMemory;
+
+        range->phys = alloc_args.address;
+    }
 
     // Insert virtual page(s)
     for (Size i = 0; i < range->size; i += PAGESIZE)

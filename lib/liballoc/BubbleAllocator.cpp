@@ -36,15 +36,15 @@ Size BubbleAllocator::available() const
     return m_size - (m_current - m_start);
 }
 
-Allocator::Result BubbleAllocator::allocate(Size *sz, Address *addr, Size align)
+Allocator::Result BubbleAllocator::allocate(Allocator::Arguments & args)
 {
-    Size needed = aligned(*sz, MEMALIGN);
+    Size needed = aligned(args.size, MEMALIGN);
 
     // Do we still have enough room?
     if (m_current + needed < m_start + m_size)
     {
         m_current += needed;
-        *addr = (Address) (m_current - needed);
+        args.address = (Address) (m_current - needed);
         return Success;
     }
     // No more memory available

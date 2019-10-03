@@ -60,6 +60,28 @@ class Allocator
     };
 
     /**
+     * Allocator input/output arguments
+     */
+    typedef struct Arguments
+    {
+        /** Output parameter which contains the address allocated on success. */
+        Address address;
+
+        /**
+         * Amount of memory in bytes.
+         * On input this member specified the number of bytes to allocate.
+         * On output, represents the actual amount of allocated memory in bytes.
+         */
+        Size size;
+
+        /** Alignment of the required memory or use ZERO for default alignment. */
+        Size alignment;
+
+    } Arguments;
+
+  public:
+
+    /**
      * Class constructor.
      */
     Allocator();
@@ -130,15 +152,11 @@ class Allocator
     /**
      * Allocate memory.
      *
-     * @param size Amount of memory in bytes to allocate on input.
-     *             On output, the amount of memory in bytes actually allocated.
-     * @param addr Output parameter which contains the address
-     *             allocated on success.
-     * @param align Alignment of the required memory or use ZERO for default.
+     * @param args Allocator arguments containing the requested size, address and alignment.
      *
      * @return Result value.
      */
-    virtual Result allocate(Size *size, Address *addr, Size align = ZERO) = 0;
+    virtual Result allocate(Arguments & args) = 0;
 
     /**
      * Release memory.
@@ -197,10 +215,14 @@ class Allocator
  */
 inline void * operator new(__SIZE_TYPE__ sz)
 {
-    Address addr;
+    Allocator::Arguments alloc_args;
 
-    if (Allocator::getDefault()->allocate((Size *) &sz, &addr) == Allocator::Success)
-        return (void *) addr;
+    alloc_args.size = sz;
+    alloc_args.address = 0;
+    alloc_args.alignment = 0;
+
+    if (Allocator::getDefault()->allocate(alloc_args) == Allocator::Success)
+        return (void *) alloc_args.address;
     else
         return (void *) NULL;
 }
@@ -212,10 +234,14 @@ inline void * operator new(__SIZE_TYPE__ sz)
  */
 inline void * operator new[](__SIZE_TYPE__ sz)
 {
-    Address addr;
+    Allocator::Arguments alloc_args;
 
-    if (Allocator::getDefault()->allocate((Size *) &sz, &addr) == Allocator::Success)
-        return (void *) addr;
+    alloc_args.size = sz;
+    alloc_args.address = 0;
+    alloc_args.alignment = 0;
+
+    if (Allocator::getDefault()->allocate(alloc_args) == Allocator::Success)
+        return (void *) alloc_args.address;
     else
         return (void *) NULL;
 }

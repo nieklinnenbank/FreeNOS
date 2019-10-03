@@ -27,11 +27,15 @@
 ARMPaging::ARMPaging(MemoryMap *map, SplitAllocator *alloc)
     : MemoryContext(map, alloc)
 {
+    Allocator::Arguments alloc_args;
+    alloc_args.address = 0;
+    alloc_args.size = sizeof(ARMFirstTable);
+    alloc_args.alignment = sizeof(ARMFirstTable);
+
     // Allocate page directory from low physical memory.
-    if (alloc->allocateLow(sizeof(ARMFirstTable),
-                          &m_firstTableAddr,
-                           sizeof(ARMFirstTable)) == Allocator::Success)
+    if (alloc->allocateLow(alloc_args) == Allocator::Success)
     {
+        m_firstTableAddr = alloc_args.address;
         m_firstTable = (ARMFirstTable *) alloc->toVirtual(m_firstTableAddr);
 
         // Initialize the page directory

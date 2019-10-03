@@ -79,16 +79,22 @@ API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *ra
             break;
         }
 
-        case ReserveMem:
+        case ReserveMem: {
             for (uint i = 0; i < range->size; i+=PAGESIZE)
             {
-                if (Kernel::instance->getAllocator()->allocate(range->phys + i) != Allocator::Success)
+                Allocator::Arguments alloc_args;
+                alloc_args.address = range->phys + i;
+                alloc_args.size = PAGESIZE;
+                alloc_args.alignment = PAGESIZE;
+
+                if (Kernel::instance->getAllocator()->allocate(alloc_args) != Allocator::Success)
                 {
                     ERROR("address " << (void *) (range->phys + i) << " already allocated");
                     return API::OutOfMemory;
                 }
             }
             break;
+        }
 
         default:
             ret = API::InvalidArgument;

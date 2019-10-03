@@ -44,14 +44,14 @@ Size SplitAllocator::available() const
     return m_alloc->available();
 }
 
-Allocator::Result SplitAllocator::allocate(Size *size, Address *addr, Size align)
+Allocator::Result SplitAllocator::allocate(Allocator::Arguments & args)
 {
     Allocator::Result r;
 
-    if ((r = allocateLow(*size, addr, align)) == Success)
+    if ((r = allocateLow(args)) == Success)
         return r;
     else
-        return allocateHigh(*size, addr, align);
+        return allocateHigh(args);
 }
 
 Allocator::Result SplitAllocator::allocate(Address addr)
@@ -59,14 +59,14 @@ Allocator::Result SplitAllocator::allocate(Address addr)
     return m_alloc->allocate(addr);
 }
 
-Allocator::Result SplitAllocator::allocateLow(Size size, Address *addr, Size align)
+Allocator::Result SplitAllocator::allocateLow(Allocator::Arguments & args)
 {
-    return m_alloc->allocate(&size, addr, align, 0);
+    return m_alloc->allocate(args, 0);
 }
 
-Allocator::Result SplitAllocator::allocateHigh(Size size, Address *addr, Size align)
+Allocator::Result SplitAllocator::allocateHigh(Allocator::Arguments & args)
 {
-    return m_alloc->allocate(&size, addr, align, m_high.phys - m_alloc->base());
+    return m_alloc->allocate(args, m_high.phys - m_alloc->base());
 }
 
 Allocator::Result SplitAllocator::release(Address addr)

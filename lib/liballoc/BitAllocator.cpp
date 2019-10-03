@@ -50,37 +50,33 @@ BitArray * BitAllocator::getBitArray()
     return &m_array;
 }
 
-Allocator::Result BitAllocator::allocate(Size *size,
-                                         Address *addr,
-                                         Size align)
+Allocator::Result BitAllocator::allocate(Allocator::Arguments & args)
 {
-    return allocate(size, addr, align, 0);
+    return allocate(args, 0);
 }
 
-Allocator::Result BitAllocator::allocate(Size *size,
-                                         Address *addr,
-                                         Size align,
+Allocator::Result BitAllocator::allocate(Allocator::Arguments & args,
                                          Address allocStart)
 {
-    Size num = (*size) / m_chunkSize;
+    Size num = (args.size) / m_chunkSize;
     BitArray::Result result;
     Size bit;
 
-    if ((*size) % m_chunkSize)
+    if ((args.size) % m_chunkSize)
         num++;
 
-    if (!align)
-        align = 1;
-    else if (align % m_chunkSize)
+    if (!args.alignment)
+        args.alignment = 1;
+    else if (args.alignment % m_chunkSize)
         return InvalidAlignment;
     else
-        align /= m_chunkSize;    
+        args.alignment /= m_chunkSize;
 
-    result = m_array.setNext(&bit, num, allocStart / m_chunkSize, align);
+    result = m_array.setNext(&bit, num, allocStart / m_chunkSize, args.alignment);
     if (result != BitArray::Success)
         return OutOfMemory;
 
-    *addr = m_base + (bit * m_chunkSize);
+    args.address = m_base + (bit * m_chunkSize);
     return Success;
 }
 

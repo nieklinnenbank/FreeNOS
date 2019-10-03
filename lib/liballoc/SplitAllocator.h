@@ -67,15 +67,11 @@ class SplitAllocator : public Allocator
     /**
      * Allocate memory.
      *
-     * @param size Amount of memory in bytes to allocate on input. 
-     *             On output, the amount of memory in bytes actually allocated.
-     * @param addr Output parameter which contains the address
-     *             allocated on success.
-     * @param align Alignment of the required memory or use ZERO for default.
+     * @param args Allocator arguments containing the requested size, address and alignment.
      *
-     * @return Result code
+     * @return Result value.
      */
-    virtual Result allocate(Size *size, Address *addr, Size align = ZERO);
+    virtual Result allocate(Arguments & args);
 
     /**
      * Allocate address.
@@ -89,26 +85,20 @@ class SplitAllocator : public Allocator
     /**
      * Allocate from lower memory.
      *
-     * @param size Amount of memory in bytes to allocate.
-     * @param addr Output parameter which contains the address
-     *             allocated on success.
-     * @param align Alignment of the required memory or use ZERO for default.
+     * @param args Allocator arguments containing the requested size, address and alignment.
      *
      * @return Result code
      */
-    virtual Result allocateLow(Size size, Address *addr, Size align = ZERO);
+    Result allocateLow(Arguments & args);
 
     /**
      * Allocate from high memory.
      *
-     * @param size Amount of memory in bytes to allocate.
-     * @param addr Output parameter which contains the address
-     *             allocated on success.
-     * @param align Alignment of the required memory or use ZERO for default.
+     * @param args Allocator arguments containing the requested size, address and alignment.
      *
      * @return Result code
      */
-    virtual Result allocateHigh(Size size, Address *addr, Size align = ZERO);
+    Result allocateHigh(Arguments & args);
 
     /**
      * Release memory.

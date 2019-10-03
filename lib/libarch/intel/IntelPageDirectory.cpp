@@ -67,19 +67,23 @@ MemoryContext::Result IntelPageDirectory::map(Address virt,
                                               SplitAllocator *alloc)
 {
     IntelPageTable *table = getPageTable(virt, alloc);
-    Address addr;
+    Allocator::Arguments alloc_args;
 
     // Check if the page table is present.
     if (!table)
     {
+        alloc_args.address = 0;
+        alloc_args.size = sizeof(IntelPageTable);
+        alloc_args.alignment = PAGESIZE;
+
         // Allocate a new page table
-        if (alloc->allocateLow(sizeof(IntelPageTable), &addr) != Allocator::Success)
+        if (alloc->allocateLow(alloc_args) != Allocator::Success)
             return MemoryContext::OutOfMemory;
 
-        MemoryBlock::set(alloc->toVirtual(addr), 0, sizeof(IntelPageTable));
+        MemoryBlock::set(alloc->toVirtual(alloc_args.address), 0, sizeof(IntelPageTable));
 
         // Assign to the page directory
-        m_tables[ DIRENTRY(virt) ] = addr | PAGE_PRESENT | PAGE_WRITE | flags(access);
+        m_tables[ DIRENTRY(virt) ] = alloc_args.address | PAGE_PRESENT | PAGE_WRITE | flags(access);
         table = getPageTable(virt, alloc);
     }
     return table->map(virt, phys, access);

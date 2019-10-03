@@ -33,28 +33,31 @@ ARMProcess::ARMProcess(ProcessID id, Address entry, bool privileged, const Memor
 Process::Result ARMProcess::initialize()
 {
     Memory::Range range;
+    Allocator::Arguments alloc_args;
 
     // Create MMU context
-    m_memoryContext = new ARMPaging(
-        &m_map,
-        Kernel::instance->getAllocator()
-    );
-
+    m_memoryContext = new ARMPaging(&m_map, Kernel::instance->getAllocator());
     if (!m_memoryContext)
     {
         ERROR("failed to create memory context");
         return OutOfMemory;
     }
 
-    // User stack (high memory).
+    // Allocate User stack
     range = m_map.range(MemoryMap::UserStack);
     range.access = Memory::Readable | Memory::Writable | Memory::User;
-    if (Kernel::instance->getAllocator()->allocate(&range.size, &range.phys) != Allocator::Success)
+    alloc_args.address = 0;
+    alloc_args.size = range.size;
+    alloc_args.alignment = PAGESIZE;
+
+    if (Kernel::instance->getAllocator()->allocate(alloc_args) != Allocator::Success)
     {
         ERROR("failed to allocate user stack");
         return OutOfMemory;
     }
+    range.phys = alloc_args.address;
 
+    // Map User stack
     if (m_memoryContext->mapRange(&range) != MemoryContext::Success)
     {
         ERROR("failed to map user stack");

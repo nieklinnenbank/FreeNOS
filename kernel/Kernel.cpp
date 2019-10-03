@@ -200,7 +200,8 @@ Kernel::Result Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Siz
     Process *proc;
     char *vaddr;
     Arch::MemoryMap map;
-    Memory::Range argRange = map.range(MemoryMap::UserArgs);
+    Memory::Range argRange;
+    Allocator::Arguments alloc_args;
 
     // Point to the program and segments table
     program = &((BootSymbol *) (imageVAddr + image->symbolTableOffset))[index];
@@ -235,10 +236,27 @@ Kernel::Result Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Siz
                      Memory::Executable);
         }
     }
-    // Map program arguments into the process
+
+    // Allocate page for program arguments
+    argRange = map.range(MemoryMap::UserArgs);
     argRange.access = Memory::User | Memory::Readable | Memory::Writable;
-    m_alloc->allocateLow(argRange.size, &argRange.phys);
-    mem->mapRange(&argRange);
+    alloc_args.address = 0;
+    alloc_args.size = argRange.size;
+    alloc_args.alignment = PAGESIZE;
+
+    if (m_alloc->allocateLow(alloc_args) != Allocator::Success)
+    {
+        FATAL("failed to allocate program arguments page");
+        return ProcessError;
+    }
+    argRange.phys = alloc_args.address;
+
+    // Map program arguments in the process
+    if (mem->mapRange(&argRange) != MemoryContext::Success)
+    {
+        FATAL("failed to map program arguments page");
+        return ProcessError;
+    }
 
     // Copy program arguments
     vaddr = (char *) m_alloc->toVirtual(argRange.phys);

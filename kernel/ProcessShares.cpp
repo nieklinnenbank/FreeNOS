@@ -97,7 +97,10 @@ ProcessShares::Result ProcessShares::createShare(ProcessID pid,
     // Allocate MemoryShare objects
     share  = new MemoryShare;
     if (!share)
+    {
+        ERROR("failed to allocate MemoryShare");
         return OutOfMemory;
+    }
 
     // Fill the share object
     share->pid        = pid;
@@ -122,6 +125,7 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
     MemoryContext *remoteMem = instance.getMemoryContext();
     Address paddr, vaddr;
     Arch::Cache cache;
+    Allocator::Arguments alloc_args;
 
     if (share->range.size == 0)
         return InvalidArgument;
@@ -133,18 +137,31 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
     // Allocate local
     localShare = new MemoryShare;
     if (!localShare)
+    {
+        ERROR("failed to allocate MemoryShare for local process");
         return OutOfMemory;
+    }
 
     // Allocate remote
     remoteShare = new MemoryShare;
     if (!remoteShare)
     {
+        ERROR("failed to allocate MemoryShare for remote process");
         delete localShare;
         return OutOfMemory;
     }
+
     // Allocate actual pages
-    if (Kernel::instance->getAllocator()->allocateLow(share->range.size, &paddr) != Allocator::Success)
+    alloc_args.address = 0;
+    alloc_args.size = share->range.size;
+    alloc_args.alignment = PAGESIZE;
+
+    if (Kernel::instance->getAllocator()->allocateLow(alloc_args) != Allocator::Success)
+    {
+        ERROR("failed to allocate pages for MemoryShare");
         return OutOfMemory;
+    }
+    paddr = alloc_args.address;
 
     // Zero out the pages
     vaddr = (Address) Kernel::instance->getAllocator()->toVirtual(paddr);
@@ -165,6 +182,7 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
     if (localMem->findFree(localShare->range.size, MemoryMap::UserShare, &localShare->range.virt) != MemoryContext::Success ||
         localMem->mapRange(&localShare->range) != MemoryContext::Success)
     {
+        ERROR("failed to map MemoryShare in local process");
         delete localShare;
         delete remoteShare;
         return OutOfMemory;
@@ -182,6 +200,7 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
     if (remoteMem->findFree(remoteShare->range.size, MemoryMap::UserShare, &remoteShare->range.virt) != MemoryContext::Success ||
         remoteMem->mapRange(&remoteShare->range) != MemoryContext::Success)
     {
+        ERROR("failed to map MemoryShare in remote process");
         delete localShare;
         delete remoteShare;
         return OutOfMemory;

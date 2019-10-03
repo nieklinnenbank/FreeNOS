@@ -31,30 +31,34 @@ Process::Result IntelProcess::initialize()
 {
     Address stackSize, stackAddr;
     Memory::Range range;
+    Allocator::Arguments alloc_args;
     CPUState *regs;
     u16 dataSel = m_privileged ? KERNEL_DS_SEL : USER_DS_SEL;
     u16 codeSel = m_privileged ? KERNEL_CS_SEL : USER_CS_SEL;
 
     // Create MMU context
-    m_memoryContext = new IntelPaging(
-        &m_map,
-        Kernel::instance->getAllocator()
-    );
+    m_memoryContext = new IntelPaging(&m_map, Kernel::instance->getAllocator());
     if (!m_memoryContext)
     {
         ERROR("failed to create memory context");
         return OutOfMemory;
     }
 
-    // User stack (high memory).
+    // Allocate User stack
     range = m_map.range(MemoryMap::UserStack);
     range.access = Memory::Readable | Memory::Writable | Memory::User;
-    if (Kernel::instance->getAllocator()->allocate(&range.size, &range.phys) != Allocator::Success)
+    alloc_args.address = 0;
+    alloc_args.size = range.size;
+    alloc_args.alignment = PAGESIZE;
+
+    if (Kernel::instance->getAllocator()->allocate(alloc_args) != Allocator::Success)
     {
         ERROR("failed to allocate user stack");
         return OutOfMemory;
     }
+    range.phys = alloc_args.address;
 
+    // Map User stack
     if (m_memoryContext->mapRange(&range) != MemoryContext::Success)
     {
         ERROR("failed to map user stack");
@@ -62,14 +66,18 @@ Process::Result IntelProcess::initialize()
     }
     setUserStack(range.virt + range.size - MEMALIGN);
 
-    // Kernel stack (low memory).
+    // Allocate Kernel stack
     stackSize = KernelStackSize;
-    if (Kernel::instance->getAllocator()->allocateLow(stackSize, &stackAddr) != Allocator::Success)
+    alloc_args.address = 0;
+    alloc_args.size = stackSize;
+    alloc_args.alignment = PAGESIZE;
+
+    if (Kernel::instance->getAllocator()->allocateLow(alloc_args) != Allocator::Success)
     {
         ERROR("failed to allocate kernel stack");
         return OutOfMemory;
     }
-
+    stackAddr = alloc_args.address;
     stackAddr = (Address) Kernel::instance->getAllocator()->toVirtual(stackAddr);
     m_kernelStackBase = stackAddr + stackSize;
     setKernelStack(m_kernelStackBase - sizeof(CPUState)

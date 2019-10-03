@@ -163,10 +163,19 @@ Process::Result Process::initialize()
     Memory::Range range;
     Address paddr, vaddr;
     Arch::Cache cache;
+    Allocator::Arguments alloc_args;
 
     // Allocate two pages for the kernel event channel
-    if (Kernel::instance->getAllocator()->allocateLow(PAGESIZE*2, &paddr) != Allocator::Success)
+    alloc_args.address = 0;
+    alloc_args.size = PAGESIZE * 2;
+    alloc_args.alignment = PAGESIZE;
+
+    if (Kernel::instance->getAllocator()->allocateLow(alloc_args) != Allocator::Success)
+    {
+        ERROR("failed to allocate kernel event channel");
         return OutOfMemory;
+    }
+    paddr = alloc_args.address;
 
     // Translate to virtual address in kernel low memory
     vaddr = (Address) Kernel::instance->getAllocator()->toVirtual(paddr);

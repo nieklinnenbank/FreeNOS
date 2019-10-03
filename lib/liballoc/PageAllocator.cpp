@@ -44,15 +44,15 @@ Size PageAllocator::available() const
     return m_size - m_allocated;
 }
 
-Allocator::Result PageAllocator::allocate(Size *size, Address *addr, Size align)
+Allocator::Result PageAllocator::allocate(Allocator::Arguments & args)
 {
     Memory::Range range;
 
     // Set return address
-    *addr = m_base + m_allocated;
+    args.address = m_base + m_allocated;
 
-    Size bytes  = *size > PAGEALLOC_MINIMUM ?
-                  *size : PAGEALLOC_MINIMUM;
+    Size bytes  = args.size > PAGEALLOC_MINIMUM ?
+                  args.size : PAGEALLOC_MINIMUM;
 
     // Align to pagesize
     bytes = aligned(bytes, PAGESIZE);
@@ -68,10 +68,10 @@ Allocator::Result PageAllocator::allocate(Size *size, Address *addr, Size align)
     MemoryBlock::set((void *) range.virt, 0, range.size);
 
     // Update count
-    m_allocated += range.size; 
+    m_allocated += range.size;
 
     // Success
-    *size = range.size;
+    args.size = range.size;
     return Success;
 }
 

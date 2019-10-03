@@ -27,12 +27,17 @@ IntelPaging::IntelPaging(MemoryMap *map, SplitAllocator *alloc)
     , m_pageDirectoryAllocated(false)
 {
     IntelCore core;
+    Allocator::Arguments alloc_args;
+
+    alloc_args.address = 0;
+    alloc_args.size = sizeof(IntelPageDirectory);
+    alloc_args.alignment = sizeof(IntelPageDirectory); // TODO: i think its needed? or maybe PAGESIZE?
 
     // Allocate page directory from low physical memory.
-    if (alloc->allocateLow(sizeof(IntelPageDirectory),
-                          &m_pageDirectoryAddr) == Allocator::Success)
+    if (alloc->allocateLow(alloc_args) == Allocator::Success)
     {
         m_pageDirectoryAllocated = true;
+        m_pageDirectoryAddr = alloc_args.address;
         m_pageDirectory = (IntelPageDirectory *) alloc->toVirtual(m_pageDirectoryAddr);
 
         // Initialize the page directory
