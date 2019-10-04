@@ -89,12 +89,14 @@ def runTester(target, source, env):
             output += c
 
             if env['TESTPROMPT'] in output:
+                time.sleep(1)
                 proc.stdin.write("root\n/test/run /test --tap\n")
                 proc.stdin.flush()
                 break
 
     # Buffer TAP output
     tap=""
+    tapname=""
 
     while True:
         line = proc.stdout.readline()
@@ -106,17 +108,28 @@ def runTester(target, source, env):
         sys.stdout.write(line + os.linesep)
         sys.stdout.flush()
 
-        if line.startswith('# Finish') and line.endswith('/test/run'):
+        if line.startswith('# Completed'):
             proc.terminate()
             ch.terminate()
-            return
+
+            if line.startswith('# Completed OK'):
+                return
+            else:
+                print "Terminated with failures"
+                sys.exit(1)
 
         elif "# Start" in line:
+            if tapname:
+                # current test ended unexpectedly
+                writeTap(tapname, tap + "\nBail out! " + tapname + " terminated unexpectedly\n", env)
+
+            tapname=line.split(' ')[3]
             tap=line + "\n"
 
         elif line.startswith("# Finish"):
-            writeTap(line[9:], tap, env)
+            writeTap(tapname, tap, env)
             tap=""
+            tapname=""
         else:
             tap += line + "\n"
 
