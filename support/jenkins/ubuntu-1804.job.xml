@@ -131,7 +131,26 @@ scons $sysargs $debugging VERBOSE=True HOST:VERBOSE=True QEMU_BUILD=True KVMFLAG
 </command>
     </hudson.tasks.Shell>
   </builders>
-  <publishers/>
+  <publishers>
+     <org.tap4j.plugin.TapPublisher plugin="tap@2.3">
+       <testResults>build/**/*.tap</testResults>
+       <failIfNoResults>false</failIfNoResults>
+       <failedTestsMarkBuildAsFailure>true</failedTestsMarkBuildAsFailure>
+       <outputTapToConsole>false</outputTapToConsole>
+       <enableSubtests>false</enableSubtests>
+       <discardOldReports>false</discardOldReports>
+       <todoIsFailure>false</todoIsFailure>
+       <includeCommentDiagnostics>false</includeCommentDiagnostics>
+       <validateNumberOfTests>true</validateNumberOfTests>
+       <planRequired>true</planRequired>
+       <verbose>true</verbose>
+       <showOnlyFailures>false</showOnlyFailures>
+       <stripSingleParents>false</stripSingleParents>
+       <flattenTapResult>false</flattenTapResult>
+       <removeYamlIfCorrupted>false</removeYamlIfCorrupted>
+       <skipIfBuildNotOk>false</skipIfBuildNotOk>
+     </org.tap4j.plugin.TapPublisher>
+  </publishers>
   <buildWrappers>
     <hudson.plugins.ws__cleanup.PreBuildCleanup plugin="ws-cleanup@0.37">
       <deleteDirs>false</deleteDirs>
