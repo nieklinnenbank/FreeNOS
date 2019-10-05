@@ -127,6 +127,9 @@ def runTester(target, source, env):
             tap=line + "\n"
 
         elif line.startswith("# Finish"):
+            if line.split(' ')[3] != 'OK':
+                tap += "\nBail out! " + tapname + " terminated with errors\n"
+
             writeTap(tapname, tap, env)
             tap=""
             tapname=""
