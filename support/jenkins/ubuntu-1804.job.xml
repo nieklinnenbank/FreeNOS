@@ -125,16 +125,16 @@
   <builders>
     <hudson.tasks.Shell>
       <command>#!/bin/bash
-scons $sysargs $debugging VERBOSE=True HOST:VERBOSE=True QEMU_BUILD=True KVMFLAGS=&quot;&quot;
-scons $sysargs $debugging VERBOSE=True HOST:VERBOSE=True QEMU_BUILD=True KVMFLAGS=&quot;&quot; tap_test
-scons $sysargs $debugging VERBOSE=True HOST:VERBOSE=True QEMU_BUILD=True KVMFLAGS=&quot;&quot; qemu_test
+scons $sysargs $debugging VERBOSE=True HOST:VERBOSE=True QEMU_BUILD=True KVMFLAGS=&quot;&quot; || exit 1
+scons $sysargs $debugging VERBOSE=True HOST:VERBOSE=True QEMU_BUILD=True KVMFLAGS=&quot;&quot; tap_test || exit 1
+scons $sysargs $debugging VERBOSE=True HOST:VERBOSE=True QEMU_BUILD=True KVMFLAGS=&quot;&quot; qemu_test || exit 1
 </command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>
      <org.tap4j.plugin.TapPublisher plugin="tap@2.3">
        <testResults>build/**/*.tap</testResults>
-       <failIfNoResults>false</failIfNoResults>
+       <failIfNoResults>true</failIfNoResults>
        <failedTestsMarkBuildAsFailure>true</failedTestsMarkBuildAsFailure>
        <outputTapToConsole>false</outputTapToConsole>
        <enableSubtests>false</enableSubtests>
