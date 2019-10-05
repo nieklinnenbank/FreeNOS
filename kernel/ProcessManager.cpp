@@ -77,8 +77,8 @@ void ProcessManager::remove(Process *proc, uint exitStatus)
             m_procs[i]->getState() == Process::Waiting &&
             m_procs[i]->getWait() == proc->getID())
         {
+            m_procs[i]->setWaitResult(exitStatus);
             m_procs[i]->setState(Process::Ready);
-            m_procs[i]->setWait(exitStatus);
         }
     }
 

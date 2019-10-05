@@ -115,7 +115,13 @@ API::Result ProcessCtlHandler(ProcessID procID,
         procs->current()->setWait(proc->getID());
         procs->current()->setState(Process::Waiting);
         procs->schedule();
-        return procs->current()->getWait(); // contains the exit status of the other process
+
+        // contains the exit status of the other process.
+        // Note that only the Intel code has kernel stacks.
+        // For ARM, the kernel continues executing here even after
+        // the schedule() is done. For ARM, the actual wait result is
+        // injected directly in the saved CPU registers.
+        return procs->current()->getWaitResult();
 
     case InfoTimer:
         if (!(timer = Kernel::instance->getTimer()))

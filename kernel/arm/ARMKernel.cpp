@@ -118,7 +118,7 @@ void ARMKernel::trap(volatile CPUState state)
         // Only if the previous process still exists (not killed in API)
         if (mgr->get(procId) != NULL)
         {
-            state.r0 = 0;
+            state.r0 = r;
             proc->setCpuState((const CPUState *)&state);
         }
         MemoryBlock::copy((void*)&state, proc2->cpuState(), sizeof(state));

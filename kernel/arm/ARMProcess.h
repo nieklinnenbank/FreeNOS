@@ -67,6 +67,13 @@ class ARMProcess : public Process
     const CPUState * cpuState() const;
 
     /**
+     * Set wait result.
+     *
+     * @param result Exit status of the other process
+     */
+    virtual void setWaitResult(uint result);
+
+    /**
      * Initialize the Process.
      *
      * Allocates various (architecture specific) resources,

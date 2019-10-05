@@ -95,6 +95,11 @@ class Process
     ProcessID getWait() const;
 
     /**
+     * Get wait result
+     */
+    uint getWaitResult() const;
+
+    /**
      * Get sleep timer.
      *
      * @return Sleep timer value.
@@ -173,6 +178,13 @@ class Process
      * Set Wait ID.
      */
     void setWait(ProcessID id);
+
+    /**
+     * Set wait result
+     *
+     * @param result Exit code of the other process
+     */
+    virtual void setWaitResult(uint result);
 
     /**
      * Set sleep timer.
@@ -257,6 +269,9 @@ class Process
 
     /** Waits for exit of this Process. */
     ProcessID m_waitId;
+
+    /** Wait exit result of the other Process. */
+    uint m_waitResult;
 
     /** Privilege level */
     bool m_privileged;
