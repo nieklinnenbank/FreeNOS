@@ -35,9 +35,6 @@ class ARMProcess : public Process
 {
   public:
 
-    /** Size of the kernel stack */
-    static const Size KernelStackSize = PAGESIZE;
-
     /**
      * Constructor function.
      *

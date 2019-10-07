@@ -105,8 +105,7 @@ API::Result ProcessCtlHandler(ProcessID procID,
     case InfoPID:
         info->id    = proc->getID();
         info->state = proc->getState();
-        info->userStack     = proc->getUserStack();
-        info->kernelStack   = proc->getKernelStack();
+        info->userStack = proc->getUserStack();
         info->parent = proc->getParent();
         break;
 

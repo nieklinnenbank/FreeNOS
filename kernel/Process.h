@@ -134,13 +134,6 @@ class Process
     Address getUserStack() const;
 
     /**
-     * Get the address of the kernel stack.
-     *
-     * @return Kernel stack address.
-     */
-    Address getKernelStack() const;
-
-    /**
      * Get MMU memory context.
      *
      * @return MemoryContext pointer.
@@ -198,13 +191,6 @@ class Process
      * @param addr New stack address.
      */
     void setUserStack(Address addr);
-
-    /**
-     * Set the kernel stack address.
-     *
-     * @param addr New kernel stack address.
-     */
-    void setKernelStack(Address addr);
 
     /**
      * Compare two processes.
@@ -279,12 +265,6 @@ class Process
 
     /** User stack address. */
     Address m_userStack;
-
-    /** Current kernel stack address (changes during execution). */
-    Address m_kernelStack;
-
-    /** Base kernel stack (fixed) */
-    Address m_kernelStackBase;
 
     /** Number of wakeups received */
     Size m_wakeups;

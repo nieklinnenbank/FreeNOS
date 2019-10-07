@@ -80,9 +80,9 @@ Process::Result IntelProcess::initialize()
     stackAddr = alloc_args.address;
     stackAddr = (Address) Kernel::instance->getAllocator()->toVirtual(stackAddr);
     m_kernelStackBase = stackAddr + stackSize;
-    setKernelStack(m_kernelStackBase - sizeof(CPUState)
-                                     - sizeof(IRQRegs0)
-                                     - sizeof(CPURegs));
+    m_kernelStack = m_kernelStackBase - sizeof(CPUState)
+                                      - sizeof(IRQRegs0)
+                                      - sizeof(CPURegs);
 
     // Fill kernel stack with initial (user)registers to restore
     // loadCoreState: struct CPUState

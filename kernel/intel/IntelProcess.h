@@ -72,6 +72,15 @@ class IntelProcess : public Process
      * Saves and restores registers, then perform a context switch.
      */
     virtual void execute(Process *previous);
+
+  private:
+
+    /** Current kernel stack address (changes during execution). */
+    Address m_kernelStack;
+
+    /** Base kernel stack (fixed) */
+    Address m_kernelStackBase;
+
 };
 
 namespace Arch

@@ -71,9 +71,6 @@ typedef struct ProcessInfo
 
     /** Virtual address of the user stack. */
     Address userStack;
-
-    /** Virtual address of the kernel stack. */
-    Address kernelStack;
 }
 ProcessInfo;
 

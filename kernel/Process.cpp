@@ -28,7 +28,6 @@ Process::Process(ProcessID id, Address entry, bool privileged, const MemoryMap &
     : m_id(id), m_map(map), m_shares(id)
 {
     m_state         = Sleeping;
-    m_kernelStack   = 0;
     m_userStack     = 0;
     m_parent        = 0;
     m_waitId        = 0;
@@ -102,11 +101,6 @@ Address Process::getUserStack() const
     return m_userStack;
 }
 
-Address Process::getKernelStack() const
-{
-    return m_kernelStack;
-}
-
 MemoryContext * Process::getMemoryContext()
 {
     return m_memoryContext;
@@ -140,11 +134,6 @@ void Process::setSleepTimer(const Timer::Info *sleepTimer)
 void Process::setUserStack(Address addr)
 {
     m_userStack = addr;
-}
-
-void Process::setKernelStack(Address addr)
-{
-    m_kernelStack = addr;
 }
 
 Process::Result Process::raiseEvent(ProcessEvent *event)
