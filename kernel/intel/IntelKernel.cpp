@@ -69,7 +69,7 @@ IntelKernel::IntelKernel(CoreInfo *info)
     if (info->coreId == 0)
     {
         // Set PIT interrupt frequency to 250 hertz
-        m_pit.setFrequency(250);
+        m_pit.setFrequency(100);
 
         // Configure the master and slave PICs
         m_pic.initialize();
