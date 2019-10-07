@@ -107,7 +107,6 @@ API::Result ProcessCtlHandler(ProcessID procID,
         info->state = proc->getState();
         info->userStack     = proc->getUserStack();
         info->kernelStack   = proc->getKernelStack();
-        info->pageDirectory = proc->getPageDirectory();
         info->parent = proc->getParent();
         break;
 

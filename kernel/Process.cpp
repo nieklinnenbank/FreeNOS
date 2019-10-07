@@ -30,7 +30,6 @@ Process::Process(ProcessID id, Address entry, bool privileged, const MemoryMap &
     m_state         = Sleeping;
     m_kernelStack   = 0;
     m_userStack     = 0;
-    m_pageDirectory = 0;
     m_parent        = 0;
     m_waitId        = 0;
     m_waitResult    = 0;
@@ -98,11 +97,6 @@ const Timer::Info & Process::getSleepTimer() const
     return m_sleepTimer;
 }
 
-Address Process::getPageDirectory() const
-{
-    return m_pageDirectory;
-}
-
 Address Process::getUserStack() const
 {
     return m_userStack;
@@ -141,11 +135,6 @@ void Process::setWait(ProcessID id)
 void Process::setSleepTimer(const Timer::Info *sleepTimer)
 {
     MemoryBlock::copy(&m_sleepTimer, sleepTimer, sizeof(m_sleepTimer));
-}
-
-void Process::setPageDirectory(Address addr)
-{
-    m_pageDirectory = addr;
 }
 
 void Process::setUserStack(Address addr)

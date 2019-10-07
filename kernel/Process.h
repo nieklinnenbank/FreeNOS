@@ -44,6 +44,9 @@ class Process
 {
   public:
 
+    /**
+     * Result codes
+     */
     enum Result
     {
         Success,
@@ -52,12 +55,17 @@ class Process
         WakeupPending
     };
 
+    /**
+     * Represents the execution state of the Process
+     */
     enum State
     {
         Ready,
         Sleeping,
         Waiting
     };
+
+  public:
 
     /**
      * Constructor function.
@@ -117,13 +125,6 @@ class Process
      * @return Current status of the Process.
      */
     State getState() const;
-
-    /**
-     * Get the address of our page directory.
-     *
-     * @return Page directory address.
-     */
-    Address getPageDirectory() const;
 
     /**
      * Get the address of the user stack.
@@ -190,13 +191,6 @@ class Process
      * @param sleeptimer New sleep timer value.
      */
     void setSleepTimer(const Timer::Info *sleeptimer);
-
-    /**
-     * Set page directory address.
-     *
-     * @param addr New page directory address.
-     */
-    void setPageDirectory(Address addr);
 
     /**
      * Sets the address of the user stack.
@@ -282,9 +276,6 @@ class Process
 
     /** MMU memory context */
     MemoryContext *m_memoryContext;
-
-    /** Page directory. */
-    Address m_pageDirectory;
 
     /** User stack address. */
     Address m_userStack;

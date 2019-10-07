@@ -74,9 +74,6 @@ typedef struct ProcessInfo
 
     /** Virtual address of the kernel stack. */
     Address kernelStack;
-
-    /** Physical address of the page directory. */
-    Address pageDirectory;
 }
 ProcessInfo;
 
