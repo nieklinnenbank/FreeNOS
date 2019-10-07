@@ -94,13 +94,6 @@ class ProcessManager
     Process * current();
 
     /**
-     * Get the previous process running.
-     *
-     * @return Process pointer
-     */
-    Process * previous();
-
-    /**
      * Retrieve the process table.
      *
      * @return Pointer to the process table.
@@ -117,9 +110,6 @@ class ProcessManager
 
     /** Currently executing process */
     Process *m_current;
-
-    /** Previous process executing */
-    Process *m_previous;
 
     /** Idle process */
     Process *m_idle;

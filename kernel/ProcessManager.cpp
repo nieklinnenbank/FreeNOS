@@ -25,7 +25,6 @@ ProcessManager::ProcessManager(Scheduler *scheduler)
     DEBUG("m_procs = " << MAX_PROCS);
     m_scheduler = scheduler;
     m_current   = ZERO;
-    m_previous  = ZERO;
     m_idle      = ZERO;
 }
 
@@ -59,9 +58,6 @@ Process * ProcessManager::get(ProcessID id)
 
 void ProcessManager::remove(Process *proc, uint exitStatus)
 {
-    if (proc == m_previous)
-        m_previous = ZERO;
-
     if (proc == m_idle)
         m_idle = ZERO;
 
@@ -109,14 +105,14 @@ Process * ProcessManager::schedule(Process *proc)
     // Only execute if its a different process
     if (proc != m_current)
     {
-        m_previous = m_current;
-        m_current  = proc;
+        Process *previous = m_current;
 
-        if (m_previous && m_previous->getState() == Process::Running)
-            m_previous->setState(Process::Ready);
+        if (previous->getState() == Process::Running)
+            previous->setState(Process::Ready);
 
+        m_current = proc;
         proc->setState(Process::Running);
-        proc->execute(m_previous);
+        proc->execute(previous);
         return m_current;
     }
     return (Process *) NULL;
@@ -125,11 +121,6 @@ Process * ProcessManager::schedule(Process *proc)
 Process * ProcessManager::current()
 {
     return m_current;
-}
-
-Process * ProcessManager::previous()
-{
-    return m_previous;
 }
 
 void ProcessManager::setIdle(Process *proc)
