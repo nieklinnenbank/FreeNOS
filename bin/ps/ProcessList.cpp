@@ -30,7 +30,6 @@ const char * ProcessList::ProcessStates[] =
 {
     "Running",
     "Ready",
-    "Stopped",
     "Sleeping",
     "Waiting"
 };

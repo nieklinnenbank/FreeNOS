@@ -56,7 +56,6 @@ class Process
     {
         Running,
         Ready,
-        Stopped,
         Sleeping,
         Waiting
     };

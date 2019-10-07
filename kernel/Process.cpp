@@ -27,7 +27,7 @@
 Process::Process(ProcessID id, Address entry, bool privileged, const MemoryMap &map)
     : m_id(id), m_map(map), m_shares(id)
 {
-    m_state         = Stopped;
+    m_state         = Sleeping;
     m_kernelStack   = 0;
     m_userStack     = 0;
     m_pageDirectory = 0;
