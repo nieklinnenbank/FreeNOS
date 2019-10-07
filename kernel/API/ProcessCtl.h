@@ -51,7 +51,6 @@ typedef enum ProcessOperation
     EnterSleep,
     Schedule,
     Resume,
-    SetStack
 }
 ProcessOperation;
 

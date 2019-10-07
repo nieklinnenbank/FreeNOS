@@ -140,10 +140,6 @@ API::Result ProcessCtlHandler(ProcessID procID,
         if (procs->current()->sleep((Timer::Info *)addr) == Process::Success)
             procs->schedule();
         break;
-
-    case SetStack:
-        proc->setUserStack(addr);
-        break;
     }
     return API::Success;
 }
@@ -165,7 +161,6 @@ Log & operator << (Log &log, ProcessOperation op)
         case EnterSleep: log.append("EnterSleep"); break;
         case Schedule:  log.append("Schedule"); break;
         case Resume:    log.append("Resume"); break;
-        case SetStack:  log.append("SetStack"); break;
         default:        log.append("???"); break;
     }
     return log;
