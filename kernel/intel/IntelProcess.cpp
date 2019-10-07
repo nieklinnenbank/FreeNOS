@@ -29,7 +29,7 @@ IntelProcess::IntelProcess(ProcessID id, Address entry, bool privileged, const M
 
 Process::Result IntelProcess::initialize()
 {
-    Address stackSize, stackAddr;
+    Address userStack;
     Memory::Range range;
     Allocator::Arguments alloc_args;
     CPUState *regs;
@@ -64,12 +64,11 @@ Process::Result IntelProcess::initialize()
         ERROR("failed to map user stack");
         return MemoryMapError;
     }
-    setUserStack(range.virt + range.size - MEMALIGN);
+    userStack = range.virt + range.size - MEMALIGN;
 
     // Allocate Kernel stack
-    stackSize = KernelStackSize;
     alloc_args.address = 0;
-    alloc_args.size = stackSize;
+    alloc_args.size = KernelStackSize;
     alloc_args.alignment = PAGESIZE;
 
     if (Kernel::instance->getAllocator()->allocateLow(alloc_args) != Allocator::Success)
@@ -77,9 +76,8 @@ Process::Result IntelProcess::initialize()
         ERROR("failed to allocate kernel stack");
         return OutOfMemory;
     }
-    stackAddr = alloc_args.address;
-    stackAddr = (Address) Kernel::instance->getAllocator()->toVirtual(stackAddr);
-    m_kernelStackBase = stackAddr + stackSize;
+    m_kernelStackBase = (Address) Kernel::instance->getAllocator()->toVirtual(alloc_args.address);
+    m_kernelStackBase += KernelStackSize;
     m_kernelStack = m_kernelStackBase - sizeof(CPUState)
                                       - sizeof(IRQRegs0)
                                       - sizeof(CPURegs);
@@ -93,13 +91,13 @@ Process::Result IntelProcess::initialize()
     regs->seg.gs     = dataSel;
     regs->seg.es     = dataSel;
     regs->seg.ds     = dataSel;
-    regs->regs.ebp   = m_userStack;
+    regs->regs.ebp   = userStack;
     regs->regs.esp0  = m_kernelStack;
     regs->irq.eip    = m_entry;
     regs->irq.cs     = codeSel;
     regs->irq.eflags = INTEL_EFLAGS_DEFAULT |
                        INTEL_EFLAGS_IRQ;
-    regs->irq.esp3   = m_userStack;
+    regs->irq.esp3   = userStack;
     regs->irq.ss3    = dataSel;
 
     // restoreState: iret

@@ -127,13 +127,6 @@ class Process
     State getState() const;
 
     /**
-     * Get the address of the user stack.
-     *
-     * @return User stack address.
-     */
-    Address getUserStack() const;
-
-    /**
      * Get MMU memory context.
      *
      * @return MemoryContext pointer.
@@ -184,13 +177,6 @@ class Process
      * @param sleeptimer New sleep timer value.
      */
     void setSleepTimer(const Timer::Info *sleeptimer);
-
-    /**
-     * Sets the address of the user stack.
-     *
-     * @param addr New stack address.
-     */
-    void setUserStack(Address addr);
 
     /**
      * Compare two processes.
@@ -262,9 +248,6 @@ class Process
 
     /** MMU memory context */
     MemoryContext *m_memoryContext;
-
-    /** User stack address. */
-    Address m_userStack;
 
     /** Number of wakeups received */
     Size m_wakeups;

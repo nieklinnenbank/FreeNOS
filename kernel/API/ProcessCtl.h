@@ -67,9 +67,6 @@ typedef struct ProcessInfo
 
     /** Defines the current state of the Process. */
     Process::State state;
-
-    /** Virtual address of the user stack. */
-    Address userStack;
 }
 ProcessInfo;
 
