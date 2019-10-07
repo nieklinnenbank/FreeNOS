@@ -28,7 +28,6 @@
 
 const char * ProcessList::ProcessStates[] =
 {
-    "Running",
     "Ready",
     "Sleeping",
     "Waiting"
@@ -47,6 +46,7 @@ ProcessList::Result ProcessList::exec()
     ProcessInfo info;
     String out;
     char line[256], cmd[PATH_MAX];
+    pid_t pid = getpid();
 
     // Print header
     out << "ID  PARENT  USER GROUP STATUS     CMD\r\n";
@@ -66,7 +66,7 @@ ProcessList::Result ProcessList::exec()
             // Output a line
             snprintf(line, sizeof(line),
                     "%3d %7d %4d %5d %10s %32s\r\n",
-                     i, info.parent, 0, 0, ProcessStates[info.state], cmd);
+                     i, info.parent, 0, 0, i == pid ? "Running" : ProcessStates[info.state], cmd);
             out << line;
         }
     }

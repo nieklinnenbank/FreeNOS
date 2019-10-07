@@ -52,7 +52,7 @@ Process * Scheduler::select(Vector<Process *> *procs, Process *idle)
                 p->wakeup();
 
             // Select this process if it wants to run
-            if (p != idle && (state == Process::Ready || state == Process::Running))
+            if (p != idle && state == Process::Ready)
             {
                 return p;
             }

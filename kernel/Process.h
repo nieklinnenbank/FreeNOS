@@ -54,7 +54,6 @@ class Process
 
     enum State
     {
-        Running,
         Ready,
         Sleeping,
         Waiting

@@ -221,9 +221,7 @@ Process::Result Process::initialize()
 Process::Result Process::wakeup()
 {
     m_wakeups++;
-
-    if (m_state != Running)
-        m_state = Ready;
+    m_state = Ready;
 
     MemoryBlock::set(&m_sleepTimer, 0, sizeof(m_sleepTimer));
     return Success;
