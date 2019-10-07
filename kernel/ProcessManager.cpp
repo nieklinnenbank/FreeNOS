@@ -45,6 +45,10 @@ Process * ProcessManager::create(Address entry, const MemoryMap &map)
     if (proc && proc->initialize() == Process::Success)
     {
         m_procs.insert(proc);
+
+        if (m_current != 0)
+            proc->setParent(m_current->getID());
+
         return proc;
     }
     return ZERO;

@@ -66,9 +66,8 @@ API::Result ProcessCtlHandler(ProcessID procID,
         proc = procs->create(addr, map);
         if (!proc)
             return API::IOError;
-
-        proc->setParent(procs->current()->getID());
-        return proc->getID();
+        else
+            return proc->getID();
 
     case KillPID:
         procs->remove(proc, addr); // Addr contains the exit status
