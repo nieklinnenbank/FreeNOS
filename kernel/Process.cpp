@@ -105,11 +105,6 @@ bool Process::isPrivileged() const
     return m_privileged;
 }
 
-void Process::setState(Process::State st)
-{
-    m_state = st;
-}
-
 void Process::setParent(ProcessID id)
 {
     m_parent = id;

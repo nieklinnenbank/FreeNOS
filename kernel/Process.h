@@ -210,17 +210,9 @@ class Process
     const Timer::Info & getSleepTimer() const;
 
     /**
-     * Puts the Process in a new state.
-     *
-     * @param st New state of the Process.
-     */
-    void setState(State st);
-
-    /**
      * Set parent process ID.
      */
     void setParent(ProcessID id);
-
 
     /**
      * Set wait result
