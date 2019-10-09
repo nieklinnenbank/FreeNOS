@@ -133,3 +133,24 @@ ProcessManager::Result ProcessManager::wait(Process *proc)
     m_current->setWait(proc->getID());
     return Success;
 }
+
+ProcessManager::Result ProcessManager::sleep(const Timer::Info *timer, bool ignoreWakeups)
+{
+    Process::Result result;
+
+    if (!m_current)
+    {
+        ERROR("no current process found");
+        return InvalidArgument;
+    }
+
+    result = m_current->sleep(timer, ignoreWakeups);
+    if (result != Process::Success && result != Process::WakeupPending)
+    {
+        ERROR("failed to sleep process ID " << m_current->getID() <<
+              ": result: " << (uint) result);
+        return IOError;
+    }
+
+    return Success;
+}

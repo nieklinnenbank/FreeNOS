@@ -96,6 +96,16 @@ class ProcessManager
     Result wait(Process *proc);
 
     /**
+     * Let current Process sleep until a timer expires or wakeup occurs.
+     *
+     * @param timer Timer on which the process must be woken up (if expired), or ZERO for no limit
+     * @param ignoreWakeups True to enter Sleep state regardless of pending wakeups
+     *
+     * @return Result code
+     */
+    Result sleep(const Timer::Info *timer = 0, bool ignoreWakeups = false);
+
+    /**
      * Set the idle process.
      */
     void setIdle(Process *proc);

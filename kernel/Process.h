@@ -195,7 +195,7 @@ class Process
      *
      * @return Result code
      */
-    Result sleep(const Timer::Info *timer = 0, bool ignoreWakeups = false);
+    Result sleep(const Timer::Info *timer, bool ignoreWakeups);
 
     /**
      * Initialize the Process.
