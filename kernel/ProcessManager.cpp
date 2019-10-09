@@ -19,22 +19,17 @@
 #include <Log.h>
 #include "ProcessManager.h"
 
-ProcessManager::ProcessManager(Scheduler *scheduler)
+ProcessManager::ProcessManager()
     : m_procs(MAX_PROCS)
 {
     DEBUG("m_procs = " << MAX_PROCS);
-    m_scheduler = scheduler;
+
     m_current   = ZERO;
     m_idle      = ZERO;
 }
 
 ProcessManager::~ProcessManager()
 {
-}
-
-Scheduler * ProcessManager::getScheduler()
-{
-    return m_scheduler;
 }
 
 Process * ProcessManager::create(Address entry, const MemoryMap &map)
@@ -94,7 +89,7 @@ Process * ProcessManager::schedule(Process *proc)
     // If needed, let the scheduler select a new process
     if (!proc)
     {
-        proc = m_scheduler->select(&m_procs, m_idle);
+        proc = m_scheduler.select(&m_procs, m_idle);
 
         // If no process ready, let us idle
         if (!proc)

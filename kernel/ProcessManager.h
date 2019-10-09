@@ -41,19 +41,12 @@ class ProcessManager
     /**
      * Constructor function.
      */
-    ProcessManager(Scheduler *scheduler);
+    ProcessManager();
 
     /**
      * Destructor function.
      */
     virtual ~ProcessManager();
-
-    /**
-     * Get scheduler object
-     *
-     * @return Scheduler object instance
-     */
-    Scheduler * getScheduler();
 
     /**
      * Create and add a new Process.
@@ -106,7 +99,7 @@ class ProcessManager
     Vector<Process *> m_procs;
 
     /** Object which selects processes to run. */
-    Scheduler *m_scheduler;
+    Scheduler m_scheduler;
 
     /** Currently executing process */
     Process *m_current;

@@ -23,8 +23,6 @@
 #include <Macros.h>
 #include "Process.h"
 
-class Timer;
-
 /**
  * @addtogroup kernel
  * @{
@@ -44,13 +42,6 @@ class Scheduler
     Scheduler();
 
     /**
-     * Set timer to use
-     *
-     * @param timer Timer instance
-     */
-    void setTimer(Timer *timer);
-
-    /**
      * Select the next process to run.
      *
      * @param procs Process table
@@ -64,9 +55,6 @@ class Scheduler
 
     /** Contains last used index for scheduling */
     Size m_index;
-
-    /** Points to the Timer to use for sleep timeouts */
-    Timer *m_timer;
 };
 
 /**

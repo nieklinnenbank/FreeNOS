@@ -16,6 +16,7 @@
  */
 
 #include <Log.h>
+#include "Kernel.h"
 #include "Scheduler.h"
 
 Scheduler::Scheduler()
@@ -23,12 +24,6 @@ Scheduler::Scheduler()
     DEBUG("");
 
     m_index = 0;
-    m_timer = 0;
-}
-
-void Scheduler::setTimer(Timer *timer)
-{
-    m_timer = timer;
 }
 
 Process * Scheduler::select(Vector<Process *> *procs, Process *idle)
@@ -48,7 +43,7 @@ Process * Scheduler::select(Vector<Process *> *procs, Process *idle)
             Process::State state = p->getState();
 
             // Wakeup the process if its sleeptimer expired
-            if (state == Process::Sleeping && m_timer->isExpired(p->getSleepTimer()))
+            if (state == Process::Sleeping && Kernel::instance->getTimer()->isExpired(p->getSleepTimer()))
                 p->wakeup();
 
             // Select this process if it wants to run

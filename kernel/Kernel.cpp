@@ -28,7 +28,6 @@
 #include "Memory.h"
 #include "Process.h"
 #include "ProcessManager.h"
-#include "Scheduler.h"
 
 Kernel::Kernel(CoreInfo *info)
     : Singleton<Kernel>(this), m_interrupts(256)
@@ -48,7 +47,7 @@ Kernel::Kernel(CoreInfo *info)
 
     // Initialize members
     m_alloc  = new SplitAllocator(info->memory, highMem);
-    m_procs  = new ProcessManager(new Scheduler());
+    m_procs  = new ProcessManager();
     m_api    = new API();
     m_coreInfo   = info;
     m_intControl = ZERO;
@@ -276,7 +275,6 @@ int Kernel::run()
     loadBootImage();
 
     // Start the scheduler
-    m_procs->getScheduler()->setTimer(m_timer);
     m_procs->schedule();
 
     // Never actually returns.
