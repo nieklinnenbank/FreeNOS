@@ -120,11 +120,6 @@ void Process::setWait(ProcessID id)
     m_waitId = id;
 }
 
-void Process::setSleepTimer(const Timer::Info *sleepTimer)
-{
-    MemoryBlock::copy(&m_sleepTimer, sleepTimer, sizeof(m_sleepTimer));
-}
-
 Process::Result Process::raiseEvent(ProcessEvent *event)
 {
     // Write the message. Be sure to flush the caches because
@@ -194,9 +189,9 @@ Process::Result Process::wakeup()
     return Success;
 }
 
-Process::Result Process::sleep(Timer::Info *timer)
+Process::Result Process::sleep(const Timer::Info *timer, bool ignoreWakeups)
 {
-    if (!m_wakeups)
+    if (!m_wakeups || ignoreWakeups)
     {
         m_state = Sleeping;
 

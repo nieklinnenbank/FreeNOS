@@ -172,13 +172,6 @@ class Process
     virtual void setWaitResult(uint result);
 
     /**
-     * Set sleep timer.
-     *
-     * @param sleeptimer New sleep timer value.
-     */
-    void setSleepTimer(const Timer::Info *sleeptimer);
-
-    /**
      * Compare two processes.
      *
      * @param p Process to compare with.
@@ -198,10 +191,11 @@ class Process
      * Stops the process for executing until woken up
      *
      * @param timer Timer on which the process must be woken up (if expired), or ZERO for no limit
+     * @param ignoreWakeups True to enter Sleep state regardless of pending wakeups
      *
      * @return Result code
      */
-    Result sleep(Timer::Info *timer = 0);
+    Result sleep(const Timer::Info *timer = 0, bool ignoreWakeups = false);
 
     /**
      * Initialize the Process.

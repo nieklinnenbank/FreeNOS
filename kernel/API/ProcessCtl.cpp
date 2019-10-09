@@ -128,14 +128,17 @@ API::Result ProcessCtlHandler(ProcessID procID,
 
     case WaitTimer:
         // Process is only allowed to continue execution after the sleep timer expires
-        procs->current()->setSleepTimer((const Timer::Info *)addr);
-        procs->current()->setState(Process::Sleeping);
+        if (procs->current()->sleep((const Timer::Info *)addr, true) != Process::Success)
+        {
+            ERROR("failed to WaitTimer on process ID " << procs->current()->getID());
+            return API::IOError;
+        }
         procs->schedule();
         break;
 
     case EnterSleep:
         // Only sleeps the process if no pending wakeups
-        if (procs->current()->sleep((Timer::Info *)addr) == Process::Success)
+        if (procs->current()->sleep((const Timer::Info *)addr) == Process::Success)
             procs->schedule();
         break;
     }
