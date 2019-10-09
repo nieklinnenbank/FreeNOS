@@ -115,10 +115,18 @@ void Process::setParent(ProcessID id)
     m_parent = id;
 }
 
-void Process::setWait(ProcessID id)
+Process::Result Process::wait(ProcessID id)
 {
+    if (m_state != Ready)
+    {
+        ERROR("Process ID " << m_id << " has invalid state: " << (uint) m_state);
+        return InvalidArgument;
+    }
+
     m_state  = Waiting;
     m_waitId = id;
+
+    return Success;
 }
 
 Process::Result Process::raiseEvent(ProcessEvent *event)

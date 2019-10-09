@@ -55,6 +55,7 @@ class Process
     enum Result
     {
         Success,
+        InvalidArgument,
         MemoryMapError,
         OutOfMemory,
         WakeupPending
@@ -191,6 +192,15 @@ class Process
     Result sleep(const Timer::Info *timer, bool ignoreWakeups);
 
     /**
+     * Let Process wait for other Process to terminate.
+     *
+     * @param id Process ID to wait for
+     *
+     * @return Result code
+     */
+    Result wait(ProcessID id);
+
+    /**
      * Get sleep timer.
      *
      * @return Sleep timer value.
@@ -209,10 +219,6 @@ class Process
      */
     void setParent(ProcessID id);
 
-    /**
-     * Set Wait ID.
-     */
-    void setWait(ProcessID id);
 
     /**
      * Set wait result

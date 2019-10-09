@@ -133,7 +133,12 @@ Vector<Process *> * ProcessManager::getProcessTable()
 
 ProcessManager::Result ProcessManager::wait(Process *proc)
 {
-    m_current->setWait(proc->getID());
+    if (m_current->wait(proc->getID()) != Process::Success)
+    {
+        ERROR("process ID " << m_current->getID() << " failed to wait");
+        return IOError;
+    }
+
     return Success;
 }
 
