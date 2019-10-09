@@ -87,9 +87,9 @@ class ProcessManager
     /**
      * Schedule next process to run.
      *
-     * @return Pointer to newly scheduled Process or NULL if unchanged
+     * @return Result code
      */
-    Process * schedule(Process *proc = ZERO);
+    Result schedule();
 
     /**
      * Let current Process wait for another Process to terminate.

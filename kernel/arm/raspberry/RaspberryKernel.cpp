@@ -89,8 +89,10 @@ void RaspberryKernel::interrupt(volatile CPUState state)
     if (tick)
     {
         kernel->m_timer->tick();
-        next = (ARMProcess *)kernel->getProcessManager()->schedule();
-        if (next)
+        kernel->getProcessManager()->schedule();
+
+        next = (ARMProcess *) kernel->getProcessManager()->current();
+        if (next != proc)
         {
             proc->setCpuState((const CPUState *)&state);
             MemoryBlock::copy((void *)&state, next->cpuState(), sizeof(state));

@@ -75,5 +75,6 @@ Process * Scheduler::select(Vector<Process *> *procs, Process *idle)
             }
         }
     }
-    return (Process *) NULL;
+
+    return idle;
 }

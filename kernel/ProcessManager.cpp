@@ -92,17 +92,14 @@ void ProcessManager::remove(Process *proc, uint exitStatus)
     delete proc;
 }
 
-Process * ProcessManager::schedule(Process *proc)
+ProcessManager::Result ProcessManager::schedule()
 {
-    // If needed, let the scheduler select a new process
-    if (!proc)
-    {
-        proc = m_scheduler.select(&m_procs, m_idle);
+    // Let the scheduler select a new process
+    Process *proc = m_scheduler.select(&m_procs, m_idle);
 
-        // If no process ready, let us idle
-        if (!proc)
-            proc = m_idle;
-    }
+    // If no process ready, let us idle
+    if (!proc)
+        proc = m_idle;
 
     if (!proc)
     {
@@ -116,9 +113,9 @@ Process * ProcessManager::schedule(Process *proc)
 
         m_current = proc;
         proc->execute(previous);
-        return m_current;
     }
-    return (Process *) NULL;
+
+    return Success;
 }
 
 Process * ProcessManager::current()
