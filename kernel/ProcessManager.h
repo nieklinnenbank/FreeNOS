@@ -151,6 +151,9 @@ class ProcessManager
 
     /** Idle process */
     Process *m_idle;
+
+    /** Next timer */
+    Timer::Info m_nextSleepTimer;
 };
 
 /**

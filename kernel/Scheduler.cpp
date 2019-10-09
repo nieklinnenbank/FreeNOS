@@ -50,6 +50,7 @@ Scheduler::Result Scheduler::dequeue(Process *proc, bool ignoreState)
 
 Process * Scheduler::select(Vector<Process *> *procs, Process *idle)
 {
+    Process *p;
     Size size = procs->size();
 
     for (Size i = 0; i < size; i++)
@@ -58,21 +59,12 @@ Process * Scheduler::select(Vector<Process *> *procs, Process *idle)
         m_index = (m_index + 1) % size;
 
         // Pick the process
-        Process *p = procs->at(m_index);
+        p = procs->at(m_index);
 
-        if (p)
+        // Select this process if it wants to run
+        if (p && p != idle && p->getState() == Process::Ready)
         {
-            Process::State state = p->getState();
-
-            // Wakeup the process if its sleeptimer expired
-            if (state == Process::Sleeping && Kernel::instance->getTimer()->isExpired(p->getSleepTimer()))
-                p->wakeup();
-
-            // Select this process if it wants to run
-            if (p != idle && state == Process::Ready)
-            {
-                return p;
-            }
+            return p;
         }
     }
 

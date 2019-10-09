@@ -26,6 +26,7 @@ ProcessManager::ProcessManager()
 
     m_current   = ZERO;
     m_idle      = ZERO;
+    MemoryBlock::set(&m_nextSleepTimer, 0, sizeof(m_nextSleepTimer));
 }
 
 ProcessManager::~ProcessManager()
@@ -94,6 +95,8 @@ void ProcessManager::remove(Process *proc, uint exitStatus)
 
 ProcessManager::Result ProcessManager::schedule()
 {
+    Timer *timer = Kernel::instance->getTimer();
+
     // Let the scheduler select a new process
     Process *proc = m_scheduler.select(&m_procs, m_idle);
 
@@ -104,6 +107,27 @@ ProcessManager::Result ProcessManager::schedule()
     if (!proc)
     {
         FATAL("no process found to run!"); for(;;);
+    }
+
+    // Wakeup the process if its sleeptimer expired
+    if (timer->isExpired(m_nextSleepTimer))
+    {
+        MemoryBlock::set(&m_nextSleepTimer, 0, sizeof(m_nextSleepTimer));
+
+        // Loop all procs, wakeup() those which have their sleep timer expired
+        for (Size i = 0; i < MAX_PROCS; i++)
+        {
+            Process *p = m_procs.at(i);
+            if (p && p->getState() == Process::Sleeping)
+            {
+                const Timer::Info & procTimer = p->getSleepTimer();
+
+                if (timer->isExpired(procTimer))
+                    p->wakeup();
+                else if (procTimer.ticks < m_nextSleepTimer.ticks || !m_nextSleepTimer.ticks)
+                    MemoryBlock::copy(&m_nextSleepTimer, &procTimer, sizeof(m_nextSleepTimer));
+            }
+        }
     }
 
     // Only execute if its a different process
@@ -171,6 +195,11 @@ ProcessManager::Result ProcessManager::sleep(const Timer::Info *timer, bool igno
             {
                 ERROR("process ID " << m_current->getID() << " not removed from Scheduler");
                 return IOError;
+            }
+
+            if (timer && (timer->ticks < m_nextSleepTimer.ticks || !m_nextSleepTimer.ticks))
+            {
+                MemoryBlock::copy(&m_nextSleepTimer, timer, sizeof(m_nextSleepTimer));
             }
             break;
 
