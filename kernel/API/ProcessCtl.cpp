@@ -108,8 +108,11 @@ API::Result ProcessCtlHandler(ProcessID procID,
         break;
 
     case WaitPID:
-        procs->current()->setWait(proc->getID());
-        procs->current()->setState(Process::Waiting);
+        if (procs->wait(proc) != ProcessManager::Success)
+        {
+            ERROR("failed to wait for Process ID " << proc->getID());
+            return API::IOError;
+        }
         procs->schedule();
 
         // contains the exit status of the other process.

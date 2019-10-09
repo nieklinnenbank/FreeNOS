@@ -117,6 +117,7 @@ void Process::setParent(ProcessID id)
 
 void Process::setWait(ProcessID id)
 {
+    m_state  = Waiting;
     m_waitId = id;
 }
 

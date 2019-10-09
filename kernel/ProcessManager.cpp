@@ -127,3 +127,9 @@ Vector<Process *> * ProcessManager::getProcessTable()
 {
     return &m_procs;
 }
+
+ProcessManager::Result ProcessManager::wait(Process *proc)
+{
+    m_current->setWait(proc->getID());
+    return Success;
+}

@@ -39,6 +39,18 @@ class ProcessManager
   public:
 
     /**
+     * Result code
+     */
+    enum Result
+    {
+        Success,
+        InvalidArgument,
+        IOError
+    };
+
+  public:
+
+    /**
      * Constructor function.
      */
     ProcessManager();
@@ -73,6 +85,15 @@ class ProcessManager
      * @return Pointer to newly scheduled Process or NULL if unchanged
      */
     Process * schedule(Process *proc = ZERO);
+
+    /**
+     * Let current Process wait for another Process to terminate.
+     *
+     * @param proc Process pointer
+     *
+     * @return Result code
+     */
+    Result wait(Process *proc);
 
     /**
      * Set the idle process.
