@@ -203,6 +203,12 @@ Process::Result Process::wakeup(bool ignorePendingSleep)
 
 Process::Result Process::sleep(const Timer::Info *timer, bool ignoreWakeups)
 {
+    if (m_state != Ready)
+    {
+        ERROR("Process ID " << m_id << " has invalid state: " << (uint) m_state);
+        return InvalidArgument;
+    }
+
     if (!m_wakeups || ignoreWakeups)
     {
         m_state = Sleeping;
