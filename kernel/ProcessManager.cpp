@@ -42,7 +42,7 @@ Process * ProcessManager::create(Address entry, const MemoryMap &map, bool ready
         m_procs.insert(proc);
 
         if (readyToRun)
-            proc->setState(Process::Ready);
+            proc->wakeup(true);
 
         if (m_current != 0)
             proc->setParent(m_current->getID());
@@ -76,7 +76,7 @@ void ProcessManager::remove(Process *proc, uint exitStatus)
             m_procs[i]->getWait() == proc->getID())
         {
             m_procs[i]->setWaitResult(exitStatus);
-            m_procs[i]->setState(Process::Ready);
+            m_procs[i]->wakeup(true);
         }
     }
 
