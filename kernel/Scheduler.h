@@ -29,10 +29,20 @@
  */
 
 /**
- * Responsible for deciding which Process may execute on the CPU(s).
+ * Responsible for deciding which Process may execute on the local Core.
  */
 class Scheduler
 {
+  public:
+
+    /**
+     * Result code
+     */
+    enum Result
+    {
+        Success,
+        InvalidArgument
+    };
 
   public:
 
@@ -42,6 +52,26 @@ class Scheduler
     Scheduler();
 
     /**
+     * Add a Process to the run schedule.
+     *
+     * @param proc Process pointer
+     * @param ignoreState True to not check for the Process state prior to dequeue.
+     *
+     * @return Result code
+     */
+    Result enqueue(Process *proc, bool ignoreState = false);
+
+    /**
+     * Remove a Process from the run schedule.
+     *
+     * @param proc Process pointer
+     * @param ignoreState True to not check for the Process state prior to dequeue.
+     *
+     * @return Result code
+     */
+    Result dequeue(Process *proc, bool ignoreState = false);
+
+    /**
      * Select the next process to run.
      *
      * @param procs Process table
@@ -49,7 +79,7 @@ class Scheduler
      *
      * @return Process pointer or NULL if no matching process found
      */
-    virtual Process * select(Vector<Process *> *procs, Process *idle);
+    Process * select(Vector<Process *> *procs, Process *idle);
 
   private:
 

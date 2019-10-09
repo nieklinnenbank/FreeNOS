@@ -42,7 +42,10 @@ Process * ProcessManager::create(Address entry, const MemoryMap &map, bool ready
         m_procs.insert(proc);
 
         if (readyToRun)
+        {
             proc->wakeup(true);
+            m_scheduler.enqueue(proc);
+        }
 
         if (m_current != 0)
             proc->setParent(m_current->getID());
@@ -77,11 +80,13 @@ void ProcessManager::remove(Process *proc, uint exitStatus)
         {
             m_procs[i]->setWaitResult(exitStatus);
             m_procs[i]->wakeup(true);
+            m_scheduler.enqueue(m_procs[i]);
         }
     }
 
-    // Remove process from administration
+    // Remove process from administration and schedule
     m_procs[proc->getID()] = ZERO;
+    m_scheduler.dequeue(proc, true);
 
     // Free the process memory
     delete proc;
@@ -139,6 +144,12 @@ ProcessManager::Result ProcessManager::wait(Process *proc)
         return IOError;
     }
 
+    if (m_scheduler.dequeue(m_current) != Scheduler::Success)
+    {
+        ERROR("process ID " << m_current->getID() << " not removed from Scheduler");
+        return IOError;
+    }
+
     return Success;
 }
 
@@ -153,11 +164,23 @@ ProcessManager::Result ProcessManager::sleep(const Timer::Info *timer, bool igno
     }
 
     result = m_current->sleep(timer, ignoreWakeups);
-    if (result != Process::Success && result != Process::WakeupPending)
+    switch (result)
     {
-        ERROR("failed to sleep process ID " << m_current->getID() <<
-              ": result: " << (uint) result);
-        return IOError;
+        case Process::WakeupPending:
+            return WakeupPending;
+
+        case Process::Success:
+            if (m_scheduler.dequeue(m_current) != Scheduler::Success)
+            {
+                ERROR("process ID " << m_current->getID() << " not removed from Scheduler");
+                return IOError;
+            }
+            break;
+
+        default:
+            ERROR("failed to sleep process ID " << m_current->getID() <<
+                  ": result: " << (uint) result);
+            return IOError;
     }
 
     return Success;
@@ -171,6 +194,12 @@ ProcessManager::Result ProcessManager::wakeup(Process *proc)
     {
         ERROR("failed to wakeup process ID " << proc->getID() <<
               ": result: " << (uint) result);
+        return IOError;
+    }
+
+    if (m_scheduler.enqueue(proc) != Scheduler::Success)
+    {
+        ERROR("process ID " << proc->getID() << " not added to Scheduler");
         return IOError;
     }
 

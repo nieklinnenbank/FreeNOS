@@ -26,6 +26,28 @@ Scheduler::Scheduler()
     m_index = 0;
 }
 
+Scheduler::Result Scheduler::enqueue(Process *proc, bool ignoreState)
+{
+    if (proc->getState() != Process::Ready && !ignoreState)
+    {
+        ERROR("process ID " << proc->getID() << " not in Ready state");
+        return InvalidArgument;
+    }
+
+    return Success;
+}
+
+Scheduler::Result Scheduler::dequeue(Process *proc, bool ignoreState)
+{
+    if (proc->getState() == Process::Ready && !ignoreState)
+    {
+        ERROR("process ID " << proc->getID() << " is in Ready state");
+        return InvalidArgument;
+    }
+
+    return Success;
+}
+
 Process * Scheduler::select(Vector<Process *> *procs, Process *idle)
 {
     Size size = procs->size();

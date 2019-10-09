@@ -45,7 +45,8 @@ class ProcessManager
     {
         Success,
         InvalidArgument,
-        IOError
+        IOError,
+        WakeupPending
     };
 
   public:
