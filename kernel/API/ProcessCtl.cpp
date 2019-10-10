@@ -86,7 +86,11 @@ API::Result ProcessCtlHandler(ProcessID procID,
 
     case Resume:
         // increment wakeup counter and set process ready
-        proc->wakeup();
+        if (procs->wakeup(proc) != ProcessManager::Success)
+        {
+            ERROR("failed to wakeup process ID " << proc->getID());
+            return API::IOError;
+        }
         break;
 
     case WatchIRQ:

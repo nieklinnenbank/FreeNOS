@@ -106,6 +106,15 @@ class ProcessManager
     Result sleep(const Timer::Info *timer = 0, bool ignoreWakeups = false);
 
     /**
+     * Take Process out of Sleep state and mark ready for execution.
+     *
+     * @param proc Process pointer
+     *
+     * @return Result code
+     */
+    Result wakeup(Process *proc);
+
+    /**
      * Set the idle process.
      */
     void setIdle(Process *proc);

@@ -154,3 +154,17 @@ ProcessManager::Result ProcessManager::sleep(const Timer::Info *timer, bool igno
 
     return Success;
 }
+
+ProcessManager::Result ProcessManager::wakeup(Process *proc)
+{
+    Process::Result result;
+
+    if ((result = proc->wakeup()) != Process::Success)
+    {
+        ERROR("failed to wakeup process ID " << proc->getID() <<
+              ": result: " << (uint) result);
+        return IOError;
+    }
+
+    return Success;
+}
