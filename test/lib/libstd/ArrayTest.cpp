@@ -180,11 +180,13 @@ TestCase(ArrayCompare)
     testAssert(a1.compareTo(a2) == 0);
     testAssert(a1.equals(a2));
     testAssert(a1.size() == a2.size());
+    testAssert(a1.count() == a2.count());
 
     // Change one item. Arrays cannot be equal
     a1.insert(0, ~(a1[0]));
     testAssert(a1.compareTo(a2) != 0);
     testAssert(!a1.equals(a2));
     testAssert(a1.size() == a2.size());
+    testAssert(a1.count() == a2.count());
     return OK;
 }
