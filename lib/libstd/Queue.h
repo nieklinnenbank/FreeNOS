@@ -20,6 +20,7 @@
 
 #include "Types.h"
 #include "Macros.h"
+#include "Container.h"
 
 /**
  * @addtogroup lib
@@ -32,7 +33,7 @@
 /**
  * Array of items as a First-In-First-Out (FIFO) datastructure.
  */
-template <class T, Size N> class Queue
+template <class T, Size N> class Queue : public Container
 {
   public:
 
@@ -41,9 +42,7 @@ template <class T, Size N> class Queue
      */
     Queue()
     {
-        m_head = 0;
-        m_tail = 0;
-        m_count = 0;
+        clear();
     }
 
     /**
@@ -81,6 +80,16 @@ template <class T, Size N> class Queue
         m_count--;
 
         return m_array[idx];
+    }
+
+    /**
+     * Removes all items from the Queue.
+     */
+    virtual void clear()
+    {
+        m_head = 0;
+        m_tail = 0;
+        m_count = 0;
     }
 
     /**

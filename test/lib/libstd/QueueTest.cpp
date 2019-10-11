@@ -135,3 +135,24 @@ TestCase(QueueFull)
 
     return OK;
 }
+
+TestCase(QueueClear)
+{
+    Queue<int, 64> q;
+    TestInt<int> ints(INT_MIN, INT_MAX);
+
+    // Fill the queue
+    for (Size i = 0; i < 64; i++)
+    {
+        q.push(ints.random());
+        testAssert(q.count() == (i + 1));
+        testAssert(q.size() == 64);
+    }
+
+    // Clear it
+    q.clear();
+    testAssert(q.count() == 0);
+    testAssert(q.size() == 64);
+
+    return OK;
+}
