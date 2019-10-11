@@ -21,6 +21,7 @@
 
 #include <Vector.h>
 #include <Macros.h>
+#include <Queue.h>
 #include "Process.h"
 
 /**
@@ -74,17 +75,16 @@ class Scheduler
     /**
      * Select the next process to run.
      *
-     * @param procs Process table
      * @param idle Idle process, if any
      *
      * @return Process pointer or NULL if no matching process found
      */
-    Process * select(Vector<Process *> *procs, Process *idle);
+    Process * select(Process *idle);
 
   private:
 
-    /** Contains last used index for scheduling */
-    Size m_index;
+    /** Contains processes ready to run */
+    Queue<Process *, MAX_PROCS> m_queue;
 };
 
 /**

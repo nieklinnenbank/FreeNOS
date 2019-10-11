@@ -21,6 +21,14 @@
 #include <Types.h>
 #include <MemoryMap.h>
 #include "Process.h"
+
+/**
+ * Maximum number of processes.
+ *
+ * @group kernel
+ */
+#define MAX_PROCS 1024
+
 #include "Scheduler.h"
 
 /**
@@ -28,8 +36,6 @@
  * @{
  */
 
-/** Maximum number of processes. */
-#define MAX_PROCS 1024
 
 /**
  * Represents a process which may run on the host.

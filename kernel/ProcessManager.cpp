@@ -98,7 +98,7 @@ ProcessManager::Result ProcessManager::schedule()
     Timer *timer = Kernel::instance->getTimer();
 
     // Let the scheduler select a new process
-    Process *proc = m_scheduler.select(&m_procs, m_idle);
+    Process *proc = m_scheduler.select(m_idle);
 
     // If no process ready, let us idle
     if (!proc)
@@ -109,7 +109,7 @@ ProcessManager::Result ProcessManager::schedule()
         FATAL("no process found to run!"); for(;;);
     }
 
-    // Wakeup the process if its sleeptimer expired
+    // Wakeup processes if the next sleeptimer expired
     if (timer->isExpired(m_nextSleepTimer))
     {
         MemoryBlock::set(&m_nextSleepTimer, 0, sizeof(m_nextSleepTimer));
@@ -123,9 +123,13 @@ ProcessManager::Result ProcessManager::schedule()
                 const Timer::Info & procTimer = p->getSleepTimer();
 
                 if (timer->isExpired(procTimer))
-                    p->wakeup();
+                {
+                    wakeup(p);
+                }
                 else if (procTimer.ticks < m_nextSleepTimer.ticks || !m_nextSleepTimer.ticks)
+                {
                     MemoryBlock::copy(&m_nextSleepTimer, &procTimer, sizeof(m_nextSleepTimer));
+                }
             }
         }
     }
@@ -134,7 +138,6 @@ ProcessManager::Result ProcessManager::schedule()
     if (proc != m_current)
     {
         Process *previous = m_current;
-
         m_current = proc;
         proc->execute(previous);
     }
@@ -150,6 +153,7 @@ Process * ProcessManager::current()
 void ProcessManager::setIdle(Process *proc)
 {
     m_idle = proc;
+    m_scheduler.dequeue(proc, true);
 }
 
 Vector<Process *> * ProcessManager::getProcessTable()
@@ -215,6 +219,7 @@ ProcessManager::Result ProcessManager::sleep(const Timer::Info *timer, bool igno
 ProcessManager::Result ProcessManager::wakeup(Process *proc)
 {
     Process::Result result;
+    Process::State state = proc->getState();
 
     if ((result = proc->wakeup()) != Process::Success)
     {
@@ -223,10 +228,13 @@ ProcessManager::Result ProcessManager::wakeup(Process *proc)
         return IOError;
     }
 
-    if (m_scheduler.enqueue(proc) != Scheduler::Success)
+    if (state != Process::Ready)
     {
-        ERROR("process ID " << proc->getID() << " not added to Scheduler");
-        return IOError;
+        if (m_scheduler.enqueue(proc) != Scheduler::Success)
+        {
+            ERROR("process ID " << proc->getID() << " not added to Scheduler");
+            return IOError;
+        }
     }
 
     return Success;

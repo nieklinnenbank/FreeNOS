@@ -22,8 +22,6 @@
 Scheduler::Scheduler()
 {
     DEBUG("");
-
-    m_index = 0;
 }
 
 Scheduler::Result Scheduler::enqueue(Process *proc, bool ignoreState)
@@ -34,6 +32,7 @@ Scheduler::Result Scheduler::enqueue(Process *proc, bool ignoreState)
         return InvalidArgument;
     }
 
+    m_queue.push(proc);
     return Success;
 }
 
@@ -45,28 +44,32 @@ Scheduler::Result Scheduler::dequeue(Process *proc, bool ignoreState)
         return InvalidArgument;
     }
 
-    return Success;
-}
+    Size count = m_queue.count();
 
-Process * Scheduler::select(Vector<Process *> *procs, Process *idle)
-{
-    Process *p;
-    Size size = procs->size();
-
-    for (Size i = 0; i < size; i++)
+    // Traverse the Queue to remove the Process
+    for (Size i = 0; i < count; i++)
     {
-        // Increment process index
-        m_index = (m_index + 1) % size;
+        Process *p = m_queue.pop();
 
-        // Pick the process
-        p = procs->at(m_index);
-
-        // Select this process if it wants to run
-        if (p && p != idle && p->getState() == Process::Ready)
-        {
-            return p;
-        }
+        if (p == proc)
+            return Success;
+        else
+            m_queue.push(p);
     }
 
-    return idle;
+    FATAL("process ID " << proc->getID() << " is not in the schedule");
+    for (;;);
+}
+
+Process * Scheduler::select(Process *idle)
+{
+    if (m_queue.count() > 0)
+    {
+        Process *p = m_queue.pop();
+        m_queue.push(p);
+
+        return p;
+    }
+
+    return (Process *) NULL;
 }
