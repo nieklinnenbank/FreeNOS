@@ -98,7 +98,7 @@ ProcessManager::Result ProcessManager::schedule()
     Timer *timer = Kernel::instance->getTimer();
 
     // Let the scheduler select a new process
-    Process *proc = m_scheduler.select(m_idle);
+    Process *proc = m_scheduler.select();
 
     // If no process ready, let us idle
     if (!proc)

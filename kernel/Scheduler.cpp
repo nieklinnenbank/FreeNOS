@@ -61,7 +61,7 @@ Scheduler::Result Scheduler::dequeue(Process *proc, bool ignoreState)
     for (;;);
 }
 
-Process * Scheduler::select(Process *idle)
+Process * Scheduler::select()
 {
     if (m_queue.count() > 0)
     {
