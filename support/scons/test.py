@@ -71,7 +71,7 @@ def runTester(target, source, env):
 
     # Launch a timeout process which will send a SIGTERM
     # to the process after a certain amount of time
-    ch = multiprocessing.Process(target = timeoutChecker, args=(proc, 60 * 3))
+    ch = multiprocessing.Process(target = timeoutChecker, args=(proc, 60 * 5))
     ch.start()
 
     # When running from the FreeNOS interactive console, first wait for
