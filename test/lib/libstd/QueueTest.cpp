@@ -156,3 +156,40 @@ TestCase(QueueClear)
 
     return OK;
 }
+
+TestCase(QueueContains)
+{
+    Queue<int, 64> q;
+    TestInt<int> ints(0, 1024);
+
+    // Fill the queue
+    for (Size i = 0; i < 64; i++)
+    {
+        q.push(ints.random());
+        testAssert(q.count() == (i + 1));
+        testAssert(q.size() == 64);
+    }
+
+    // Verify that all items exist
+    for (Size i = 0; i < 64; i++)
+        testAssert(q.contains(ints[i]));
+
+    // Check that other integers do not exist
+    testAssert(!q.contains(1025));
+    testAssert(!q.contains(-1));
+
+    // Clear the queue
+    q.clear();
+    testAssert(q.count() == 0);
+    testAssert(q.size() == 64);
+
+    // Verify that none of the items exist
+    for (Size i = 0; i < 64; i++)
+        testAssert(!q.contains(ints[i]));
+
+    // Check that other integers also still do not exist
+    testAssert(!q.contains(1025));
+    testAssert(!q.contains(-1));
+
+    return OK;
+}

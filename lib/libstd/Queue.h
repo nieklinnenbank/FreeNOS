@@ -83,6 +83,24 @@ template <class T, Size N> class Queue : public Container
     }
 
     /**
+     * Look if an item exists on the Queue
+     *
+     * @param item Item reference
+     *
+     * @return True if the item exists, false otherwise
+     */
+    bool contains(const T & item) const
+    {
+        for (Size i = 0; i < m_count; i++)
+        {
+            if (m_array[(m_tail + i) % N] == item)
+                return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Removes all items from the Queue.
      */
     virtual void clear()
