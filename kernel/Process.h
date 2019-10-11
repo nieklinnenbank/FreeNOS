@@ -132,12 +132,6 @@ class Process
      */
     MemoryContext * getMemoryContext();
 
-    /**
-     * Raise kernel event
-     *
-     * @return Result code
-     */
-    Result raiseEvent(struct ProcessEvent *event);
 
     /**
      * Get privilege.
@@ -201,6 +195,13 @@ class Process
      * @return Result code
      */
     Result wait(ProcessID id);
+
+    /**
+     * Raise kernel event
+     *
+     * @return Result code
+     */
+    Result raiseEvent(struct ProcessEvent *event);
 
     /**
      * Get sleep timer.

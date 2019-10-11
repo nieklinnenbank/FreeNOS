@@ -231,3 +231,27 @@ ProcessManager::Result ProcessManager::wakeup(Process *proc)
 
     return Success;
 }
+
+ProcessManager::Result ProcessManager::raiseEvent(Process *proc, struct ProcessEvent *event)
+{
+    Process::Result result;
+    Process::State state = proc->getState();
+
+    if ((result = proc->raiseEvent(event)) != Process::Success)
+    {
+        ERROR("failed to raise event in process ID " << proc->getID() <<
+              ": result: " << (uint) result);
+        return IOError;
+    }
+
+    if (state != Process::Ready)
+    {
+        if (m_scheduler.enqueue(proc) != Scheduler::Success)
+        {
+            ERROR("process ID " << proc->getID() << " not added to Scheduler");
+            return IOError;
+        }
+    }
+
+    return Success;
+}

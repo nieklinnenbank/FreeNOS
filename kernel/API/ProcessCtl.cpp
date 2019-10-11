@@ -35,7 +35,7 @@ void interruptNotify(CPUState *st, Process *p, ulong vec)
     event.number = vec;
 #endif /* IRQ_REG */
 
-    p->raiseEvent(&event);
+    Kernel::instance->getProcessManager()->raiseEvent(p, &event);
 }
 
 API::Result ProcessCtlHandler(ProcessID procID,

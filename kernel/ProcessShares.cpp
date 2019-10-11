@@ -62,7 +62,7 @@ ProcessShares::~ProcessShares()
             ProcessEvent event;
             event.type = ProcessTerminated;
             event.number = m_pid;
-            proc->raiseEvent(&event);
+            procs->raiseEvent(proc, &event);
         }
     }
 }
@@ -210,12 +210,13 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
     instance.m_shares.insert(*remoteShare);
 
     // raise event on the remote process
-    Process *proc = Kernel::instance->getProcessManager()->get(instance.getProcessID());
+    ProcessManager *procs = Kernel::instance->getProcessManager();
+    Process *proc = procs->get(instance.getProcessID());
     ProcessEvent event;
     event.type   = ShareCreated;
     event.number = m_pid;
     MemoryBlock::copy(&event.share, remoteShare, sizeof(*remoteShare));
-    proc->raiseEvent(&event);
+    procs->raiseEvent(proc, &event);
 
     // Update parameter outputs
     MemoryBlock::copy(share, localShare, sizeof(*share));

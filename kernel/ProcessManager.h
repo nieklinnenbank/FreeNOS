@@ -120,6 +120,16 @@ class ProcessManager
     Result wakeup(Process *proc);
 
     /**
+     * Raise kernel event for a Process
+     *
+     * @param proc Process pointer
+     * @param event Event to raise
+     *
+     * @return Result code
+     */
+    Result raiseEvent(Process *proc, struct ProcessEvent *event);
+
+    /**
      * Set the idle process.
      */
     void setIdle(Process *proc);
