@@ -47,10 +47,7 @@ template <class T> class Comparable
      *
      * @return True if equal, false otherwise.
      */
-    virtual bool equals(const T &t) const
-    {
-        return compareTo(t) == 0;
-    }
+    virtual bool equals(const T &t) const = 0;
 
     /**
      * Compares this Comparable to the given Comparable.

@@ -189,6 +189,18 @@ template <class K, class V> class Associative : public Container, public Compara
     }
 
     /**
+     * Test if an Associative is equal to an other Associative.
+     *
+     * @param a Associative instance.
+     *
+     * @return True if equal, false otherwise.
+     */
+    virtual bool equals(const Associative<K,V> &a) const
+    {
+        return compareTo(a) == 0;
+    }
+
+    /**
      * Returns the first value for the given key.
      *
      * If there are multiple values for the key, the first

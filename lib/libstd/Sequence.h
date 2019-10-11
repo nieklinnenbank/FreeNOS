@@ -175,6 +175,18 @@ template <class T> class Sequence : public Container, public Comparable<Sequence
     }
 
     /**
+     * Test if this Sequence is equal to an other Sequence.
+     *
+     * @param s Sequence instance.
+     *
+     * @return True if equal, false otherwise.
+     */
+    virtual bool equals(const Sequence<T> &s) const
+    {
+        return compareTo(s) == 0;
+    }
+
+    /**
      * Returns the item at the given position in the Sequence.
      *
      * @param i The index of the item to return.
