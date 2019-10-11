@@ -32,7 +32,7 @@ ProcessManager::~ProcessManager()
 {
 }
 
-Process * ProcessManager::create(Address entry, const MemoryMap &map)
+Process * ProcessManager::create(Address entry, const MemoryMap &map, bool readyToRun)
 {
     Process *proc = new Arch::Process(m_procs.count(), entry, false, map);
 
@@ -40,6 +40,9 @@ Process * ProcessManager::create(Address entry, const MemoryMap &map)
     if (proc && proc->initialize() == Process::Success)
     {
         m_procs.insert(proc);
+
+        if (readyToRun)
+            proc->setState(Process::Ready);
 
         if (m_current != 0)
             proc->setParent(m_current->getID());

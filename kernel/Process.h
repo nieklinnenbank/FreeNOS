@@ -31,6 +31,8 @@ struct Message;
 class MemoryContext;
 class MemoryChannel;
 struct ProcessEvent;
+class ProcessManager;
+class Scheduler;
 
 /**
  * @addtogroup kernel
@@ -42,6 +44,9 @@ struct ProcessEvent;
  */
 class Process
 {
+  friend class ProcessManager;
+  friend class Scheduler;
+
   public:
 
     /**
@@ -106,13 +111,6 @@ class Process
     uint getWaitResult() const;
 
     /**
-     * Get sleep timer.
-     *
-     * @return Sleep timer value.
-     */
-    const Timer::Info & getSleepTimer() const;
-
-    /**
      * Get process shares.
      *
      * @return Reference to memory shares.
@@ -148,6 +146,58 @@ class Process
     bool isPrivileged() const;
 
     /**
+     * Compare two processes.
+     *
+     * @param p Process to compare with.
+     *
+     * @return True if equal, false otherwise.
+     */
+    bool operator == (Process *proc);
+
+  protected:
+
+    /**
+     * Initialize the Process.
+     *
+     * Allocates various (architecture specific) resources,
+     * creates MMU context and stacks.
+     *
+     * @return Result code
+     */
+    virtual Result initialize();
+
+    /**
+     * Allow the Process to run on the CPU.
+     *
+     * @param previous The previous Process which ran on the CPU. ZERO if none.
+     */
+    virtual void execute(Process *previous) = 0;
+
+    /**
+     * Prevent process from sleeping.
+     *
+     * @return Result code
+     */
+    Result wakeup();
+
+    /**
+     * Stops the process for executing until woken up
+     *
+     * @param timer Timer on which the process must be woken up (if expired), or ZERO for no limit
+     * @param ignoreWakeups True to enter Sleep state regardless of pending wakeups
+     *
+     * @return Result code
+     */
+    Result sleep(const Timer::Info *timer, bool ignoreWakeups);
+
+    /**
+     * Get sleep timer.
+     *
+     * @return Sleep timer value.
+     */
+    const Timer::Info & getSleepTimer() const;
+
+    /**
      * Puts the Process in a new state.
      *
      * @param st New state of the Process.
@@ -170,49 +220,6 @@ class Process
      * @param result Exit code of the other process
      */
     virtual void setWaitResult(uint result);
-
-    /**
-     * Compare two processes.
-     *
-     * @param p Process to compare with.
-     *
-     * @return True if equal, false otherwise.
-     */
-    bool operator == (Process *proc);
-
-    /**
-     * Prevent process from sleeping.
-     *
-     * @return Result code
-     */
-    Result wakeup();
-
-    /**
-     * Stops the process for executing until woken up
-     *
-     * @param timer Timer on which the process must be woken up (if expired), or ZERO for no limit
-     * @param ignoreWakeups True to enter Sleep state regardless of pending wakeups
-     *
-     * @return Result code
-     */
-    Result sleep(const Timer::Info *timer, bool ignoreWakeups);
-
-    /**
-     * Initialize the Process.
-     *
-     * Allocates various (architecture specific) resources,
-     * creates MMU context and stacks.
-     *
-     * @return Result code
-     */
-    virtual Result initialize();
-
-    /**
-     * Allow the Process to run on the CPU.
-     *
-     * @param previous The previous Process which ran on the CPU. ZERO if none.
-     */
-    virtual void execute(Process *previous) = 0;
 
   protected:
 

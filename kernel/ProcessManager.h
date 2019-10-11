@@ -61,9 +61,13 @@ class ProcessManager
     virtual ~ProcessManager();
 
     /**
-     * Create and add a new Process.
+     * Create a new Process.
+     *
+     * @param entry Process executable entry point
+     * @param map Memory mapping
+     * @param readyToRun True to immediately run the Process or false to sleep.
      */
-    Process * create(Address entry, const MemoryMap &map);
+    Process * create(Address entry, const MemoryMap &map, bool readyToRun = false);
 
     /**
      * Retrieve a Process by it's ID.

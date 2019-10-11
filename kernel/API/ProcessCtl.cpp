@@ -65,9 +65,11 @@ API::Result ProcessCtlHandler(ProcessID procID,
     case Spawn:
         proc = procs->create(addr, map);
         if (!proc)
+        {
+            ERROR("failed to create process");
             return API::IOError;
-        else
-            return proc->getID();
+        }
+        return proc->getID();
 
     case KillPID:
         procs->remove(proc, addr); // Addr contains the exit status
