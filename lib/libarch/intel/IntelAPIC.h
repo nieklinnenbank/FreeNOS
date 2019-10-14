@@ -218,6 +218,16 @@ class IntelAPIC : public IntController, public Timer
      */
     IntController::Result sendStartupIPI(uint cpuId, Address addr);
 
+    /**
+     * Send Intercore-Processor-Interrupt.
+     *
+     * @param coreId Core identifier to send IPI to.
+     * @param vector Interrupt vector number of the IPI.
+     *
+     * @return Result code.
+     */
+    IntController::Result sendIPI(uint coreId, uint vector);
+
   private:
 
     /** I/O object */

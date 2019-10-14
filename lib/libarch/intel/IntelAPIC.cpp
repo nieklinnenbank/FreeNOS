@@ -233,3 +233,22 @@ IntController::Result IntelAPIC::sendStartupIPI(uint cpuId, Address addr)
     // Startup interrupt delivered.
     return IntController::Success;
 }
+
+IntController::Result IntelAPIC::sendIPI(uint cpuId, uint vector)
+{
+    ulong cfg;
+
+    // Write APIC Destination
+    cfg  = m_io.read(IntCommand2);
+    cfg &= 0x00ffffff;
+    m_io.write(IntCommand2, cfg | APIC_DEST(cpuId));
+
+    // Write to lower 32-bits of Interrupt Command, which triggers the IPI.
+    cfg = (APIC_DEST_FIELD | APIC_DEST_LEVELTRIG |
+            APIC_DEST_ASSERT);
+    cfg |= vector;
+    m_io.write(IntCommand1, cfg);
+
+    // Done
+    return IntController::Success;
+}

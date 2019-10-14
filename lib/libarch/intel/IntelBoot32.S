@@ -139,6 +139,7 @@ bootEntry32:
     idtEntry 46, 0x8e
     idtEntry 47, 0x8e
     idtEntry 48, 0x8e
+    idtEntry 50, 0x8e
     idtEntry 0x90, 0xee
 
     /* Load IDT. */
@@ -306,6 +307,7 @@ interruptHandler 45, 0
 interruptHandler 46, 0
 interruptHandler 47, 0
 interruptHandler 48, 0
+interruptHandler 50, 0
 interruptHandler 0x90, 0
 
 .section ".bss"
