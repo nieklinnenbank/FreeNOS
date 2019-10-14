@@ -76,7 +76,7 @@ IntelKernel::IntelKernel(CoreInfo *info)
         m_intControl = &m_pic;
     }
     else
-        m_intControl = 0;
+        m_intControl = &m_apic;
 
     // Try to configure the APIC.
     if (m_apic.initialize() == Timer::Success)
