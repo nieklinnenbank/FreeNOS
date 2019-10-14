@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/System.h>
 #include <Log.h>
 #include "ARMCore.h"
 #include "ARMTimer.h"
@@ -25,6 +26,7 @@
 ARMTimer::ARMTimer()
     : m_frequency(0)
 {
+    m_int = ARMTIMER_IRQ;
 }
 
 u32 ARMTimer::getSystemFrequency(void) const
