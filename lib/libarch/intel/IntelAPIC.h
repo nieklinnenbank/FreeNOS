@@ -106,6 +106,7 @@ class IntelAPIC : public IntController, public Timer
      */
     enum TimerFlags
     {
+        TimerMasked  = (1 << 16),
         PeriodicMode = (1 << 17)
     };
 
@@ -163,6 +164,24 @@ class IntelAPIC : public IntController, public Timer
     Timer::Result start(uint initialCounter, uint hertz);
 
     /**
+     * (Re)start the APIC timer.
+     *
+     * This function only re-enables the APIC timer.
+     * APIC initialization and timer configuration must
+     * be done prior to calling this function.
+     *
+     * @return Result code
+     */
+    virtual Timer::Result start();
+
+    /**
+     * Stop the APIC timer
+     *
+     * @return Result code
+     */
+    virtual Timer::Result stop();
+
+    /**
      * Enable hardware interrupt (IRQ).
      *
      * @param irq Interrupt Request number.
@@ -203,6 +222,9 @@ class IntelAPIC : public IntController, public Timer
 
     /** I/O object */
     IntelIO m_io;
+
+    /** Saved initial counter value for APIC timer */
+    uint m_initialCounter;
 };
 
 /**
