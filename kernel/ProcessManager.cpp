@@ -17,15 +17,19 @@
 
 #include <FreeNOS/System.h>
 #include <Log.h>
+#include <ListIterator.h>
+#include "ProcessEvent.h"
 #include "ProcessManager.h"
 
 ProcessManager::ProcessManager()
     : m_procs(MAX_PROCS)
+    , m_interruptNotifyList(256)
 {
     DEBUG("m_procs = " << MAX_PROCS);
 
     m_current   = ZERO;
     m_idle      = ZERO;
+    m_interruptNotifyList.fill(ZERO);
     MemoryBlock::set(&m_nextSleepTimer, 0, sizeof(m_nextSleepTimer));
 }
 
@@ -84,6 +88,9 @@ void ProcessManager::remove(Process *proc, uint exitStatus)
             m_scheduler.enqueue(m_procs[i]);
         }
     }
+
+    // Unregister any interrupt events for this process
+    unregisterInterruptNotify(proc);
 
     // Remove process from administration and schedule
     m_procs[proc->getID()] = ZERO;
@@ -258,6 +265,61 @@ ProcessManager::Result ProcessManager::raiseEvent(Process *proc, struct ProcessE
         {
             ERROR("process ID " << proc->getID() << " not added to Scheduler");
             return IOError;
+        }
+    }
+
+    return Success;
+}
+
+ProcessManager::Result ProcessManager::registerInterruptNotify(Process *proc, u32 vec)
+{
+    // Create List if necessary
+    if (!m_interruptNotifyList[vec])
+    {
+        m_interruptNotifyList.insert(vec, new List<Process *>());
+    }
+
+    // Check for duplicates
+    if (m_interruptNotifyList[vec]->contains(proc))
+        return AlreadyExists;
+
+    // Append the Process
+    m_interruptNotifyList[vec]->append(proc);
+    return Success;
+}
+
+ProcessManager::Result ProcessManager::unregisterInterruptNotify(Process *proc)
+{
+    // Remove the Process from all notify lists
+    for (Size i = 0; i < m_interruptNotifyList.size(); i++)
+    {
+        List<Process *> *lst = m_interruptNotifyList[i];
+        if (lst)
+        {
+            lst->remove(proc);
+        }
+    }
+
+    return Success;
+}
+
+ProcessManager::Result ProcessManager::interruptNotify(u32 vector)
+{
+    List<Process *> *lst = m_interruptNotifyList[vector];
+    if (lst)
+    {
+        ProcessEvent event;
+        event.type   = InterruptEvent;
+        event.number = vector;
+
+        for (ListIterator<Process *> i(lst); i.hasCurrent(); i++)
+        {
+            if (raiseEvent(i.current(), &event) != Success)
+            {
+                ERROR("failed to raise InterruptEvent for IRQ #" << vector <<
+                      " on Process ID " << i.current()->getID());
+                return IOError;
+            }
         }
     }
 

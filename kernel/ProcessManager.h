@@ -20,6 +20,8 @@
 
 #include <Types.h>
 #include <MemoryMap.h>
+#include <Vector.h>
+#include <List.h>
 #include "Process.h"
 
 /**
@@ -52,7 +54,8 @@ class ProcessManager
         Success,
         InvalidArgument,
         IOError,
-        WakeupPending
+        WakeupPending,
+        AlreadyExists
     };
 
   public:
@@ -136,6 +139,34 @@ class ProcessManager
     Result raiseEvent(Process *proc, struct ProcessEvent *event);
 
     /**
+     * Register an interrupt notification for a Process.
+     *
+     * @param proc Process pointer
+     * @param vector Interrupt vector number
+     *
+     * @return Result code
+     */
+    Result registerInterruptNotify(Process *proc, u32 vector);
+
+    /**
+     * Remove all interrupt notifications for a Process
+     *
+     * @param proc Process pointer
+     *
+     * @return Result code
+     */
+    Result unregisterInterruptNotify(Process *proc);
+
+    /**
+     * Raise interrupt notifications for a interrupt vector
+     *
+     * @param vector Interrupt vector
+     *
+     * @return Result code
+     */
+    Result interruptNotify(u32 vector);
+
+    /**
      * Set the idle process.
      */
     void setIdle(Process *proc);
@@ -170,6 +201,9 @@ class ProcessManager
 
     /** Next timer */
     Timer::Info m_nextSleepTimer;
+
+    /** Interrupt notification list */
+    Vector<List<Process *> *> m_interruptNotifyList;
 };
 
 /**

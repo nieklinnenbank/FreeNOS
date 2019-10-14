@@ -23,21 +23,6 @@
 #include <Log.h>
 #include "ProcessCtl.h"
 
-void interruptNotify(CPUState *st, Process *p, ulong vec)
-{
-    ProcessEvent event;
-
-    event.type   = InterruptEvent;
-
-#ifdef IRQ_REG
-    event.number = IRQ_REG(st);
-#else
-    event.number = vec;
-#endif /* IRQ_REG */
-
-    Kernel::instance->getProcessManager()->raiseEvent(p, &event);
-}
-
 API::Result ProcessCtlHandler(ProcessID procID,
                               ProcessOperation action,
                               Address addr,
@@ -96,7 +81,11 @@ API::Result ProcessCtlHandler(ProcessID procID,
         break;
 
     case WatchIRQ:
-        Kernel::instance->hookIntVector(IRQ(addr), (InterruptHandler *)interruptNotify, (ulong)proc);
+        if (procs->registerInterruptNotify(proc, IRQ(addr)) != ProcessManager::Success)
+        {
+            ERROR("failed to register IRQ #" << IRQ(addr) << " to process ID " << proc->getID());
+            return API::IOError;
+        }
         break;
 
     case EnableIRQ:

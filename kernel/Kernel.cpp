@@ -157,15 +157,19 @@ void Kernel::executeIntVector(u32 vec, CPUState *state)
 
     // Fetch the list of interrupt hooks (for this vector)
     List<InterruptHook *> *lst = m_interrupts[vec];
-
-    // Does at least one handler exist?
-    if (!lst)
-        return;
-
-    // Execute them all
-    for (ListIterator<InterruptHook *> i(lst); i.hasCurrent(); i++)
+    if (lst)
     {
-        i.current()->handler(state, i.current()->param, vec);
+        // Execute them all
+        for (ListIterator<InterruptHook *> i(lst); i.hasCurrent(); i++)
+        {
+            i.current()->handler(state, i.current()->param, vec);
+        }
+    }
+
+    // Raise any interrupt notifications for processes
+    if (m_procs->interruptNotify(vec) != ProcessManager::Success)
+    {
+        FATAL("failed to raise interrupt notification for IRQ #" << vec);
     }
 }
 
