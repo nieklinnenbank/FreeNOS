@@ -15,12 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "BroadcomInterrupt.h"
 #include "BroadcomTimer.h"
 
 BroadcomTimer::Result BroadcomTimer::setFrequency(Size hertz)
 {
     m_cycles = BCM_SYSTIMER_FREQ / hertz;
     m_frequency = hertz;
+    m_int = BCM_IRQ_SYSTIMERM1;
 
     // Use timer slot 1. Enable.
     m_io.write(SYSTIMER_C1, m_io.read(SYSTIMER_CLO) + m_cycles);
