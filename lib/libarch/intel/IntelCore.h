@@ -35,14 +35,6 @@
  */
 
 /**
- * Retrieve the IRQ number from CPUState.
- *
- * @return IRQ number.
- */
-#define IRQ_REG(state) \
-    ((state)->vector - 0x20)
-
-/**
  * Reads the CPU's timestamp counter.
  *
  * @return 64-bit integer.
