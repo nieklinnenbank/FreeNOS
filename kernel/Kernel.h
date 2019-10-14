@@ -171,7 +171,7 @@ class Kernel : public Singleton<Kernel>
      * @param irq IRQ number.
      * @param enabled True to enable, and false to disable.
      */
-    void enableIRQ(u32 irq, bool enabled);
+    virtual void enableIRQ(u32 irq, bool enabled);
 
     /**
      * Hooks a function to an hardware interrupt.

@@ -130,6 +130,21 @@ IntelKernel::IntelKernel(CoreInfo *info)
     ltr(KERNEL_TSS_SEL);
 }
 
+void IntelKernel::enableIRQ(u32 irq, bool enabled)
+{
+    if (irq == m_apic.getInterrupt())
+    {
+        if (enabled)
+            m_apic.start();
+        else
+            m_apic.stop();
+
+        return;
+    }
+
+    Kernel::enableIRQ(irq, enabled);
+}
+
 void IntelKernel::exception(CPUState *state, ulong param, ulong vector)
 {
     IntelCore core;

@@ -167,6 +167,14 @@ class IntelKernel : public Kernel
      */
     IntelKernel(CoreInfo *info);
 
+    /**
+     * Enable or disable an hardware interrupt (IRQ).
+     *
+     * @param irq IRQ number.
+     * @param enabled True to enable, and false to disable.
+     */
+    virtual void enableIRQ(u32 irq, bool enabled);
+
   private:
 
     /**
