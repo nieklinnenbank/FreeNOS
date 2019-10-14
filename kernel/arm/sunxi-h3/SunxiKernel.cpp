@@ -66,12 +66,13 @@ void SunxiKernel::interrupt(volatile CPUState state)
     {
         kernel->m_timer->tick();
         kernel->getProcessManager()->schedule();
+    }
 
-        next = (ARMProcess *) kernel->getProcessManager()->current();
-        if (next != proc)
-        {
-            proc->setCpuState((const CPUState *)&state);
-            MemoryBlock::copy((void *)&state, next->cpuState(), sizeof(state));
-        }
+    // If we scheduled a new process, switch the registers now
+    next = (ARMProcess *) kernel->getProcessManager()->current();
+    if (next != proc)
+    {
+        proc->setCpuState((const CPUState *)&state);
+        MemoryBlock::copy((void *)&state, next->cpuState(), sizeof(state));
     }
 }
