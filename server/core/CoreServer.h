@@ -176,6 +176,44 @@ class CoreServer : public ChannelServer<CoreServer, FileSystemMessage>
      */
     void createProcess(FileSystemMessage *msg);
 
+    /**
+     * Receive message from master
+     *
+     * @param msg FileSystemMessage pointer
+     *
+     * @return Result code
+     */
+    Result receiveFromMaster(FileSystemMessage *msg);
+
+    /**
+     * Send message to master
+     *
+     * @param msg FileSystemMessage pointer
+     *
+     * @return Result code
+     */
+    Result sendToMaster(FileSystemMessage *msg);
+
+    /**
+     * Receive message from slave
+     *
+     * @param coreId Core identifier
+     * @param msg FileSystemMessage pointer
+     *
+     * @return Result code
+     */
+    Result receiveFromSlave(uint coreId, FileSystemMessage *msg);
+
+    /**
+     * Send message to slave
+     *
+     * @param coreId Core identifier
+     * @param msg FileSystemMessage pointer
+     *
+     * @return Result code
+     */
+    Result sendToSlave(uint coreId, FileSystemMessage *msg);
+
   private:
 
 #ifdef INTEL

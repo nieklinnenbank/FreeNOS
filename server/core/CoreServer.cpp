@@ -67,7 +67,7 @@ int CoreServer::runCore()
     while (true)
     {
         // wait from a message of the master core
-        while (m_fromMaster->read(&msg) != Channel::Success);
+        receiveFromMaster(&msg);
 
         if (m_ipcHandlers->at(msg.action))
         {
@@ -76,8 +76,7 @@ int CoreServer::runCore()
 
             if (m_sendReply)
             {
-                while (m_toMaster->write(&msg) != Channel::Success)
-                    ;
+                sendToMaster(&msg);
             }
         }
     }
@@ -90,15 +89,6 @@ void CoreServer::createProcess(FileSystemMessage *msg)
 
     if (m_info.coreId == 0)
     {
-        MemoryChannel *ch = (MemoryChannel *) m_toSlave->get(msg->size);
-
-        if (!ch)
-        {
-            ERROR("invalid coreId=" << msg->size);
-            msg->result = EBADF;
-            return;
-        }
-
         range.virt = (Address) msg->buffer;
         VMCtl(msg->from, LookupVirtual, &range);
         msg->buffer = (char *) range.phys;
@@ -107,7 +97,7 @@ void CoreServer::createProcess(FileSystemMessage *msg)
         VMCtl(msg->from, LookupVirtual, &range);
         msg->path = (char *) range.phys;
 
-        if (ch->write(msg) != Channel::Success)
+        if (sendToSlave(msg->size, msg) != Success)
         {
             ERROR("failed to write channel on core"<<msg->size);
             msg->result = EBADF;
@@ -115,15 +105,12 @@ void CoreServer::createProcess(FileSystemMessage *msg)
         }
         DEBUG("creating program at phys " << (void *) msg->buffer << " on core" << msg->size);
 
-        ch = (MemoryChannel *) m_fromSlave->get(msg->size);
-        if (!ch)
+        if (receiveFromSlave(msg->size, msg) != Success)
         {
-            ERROR("cannot find read channel for core" << msg->size);
+            ERROR("failed to read channel on core" << msg->size);
             msg->result = EBADF;
             return;
         }
-        while (ch->read(msg) != Channel::Success)
-            ;
         DEBUG("program created with result " << (int)msg->result << " at core" << msg->size);
 
         msg->result = ESUCCESS;
@@ -144,8 +131,7 @@ void CoreServer::createProcess(FileSystemMessage *msg)
 
         // reply to master before calling waitpid()
         msg->result = ESUCCESS;
-        while (m_toMaster->write(msg) != Channel::Success)
-            ;
+        sendToMaster(msg);
 
         // Wait until the spawned process completes
         waitpid(pid, &status, 0);
@@ -182,7 +168,8 @@ CoreServer::Result CoreServer::test()
         msg.action = StatFile;
         msg.path = (char *)0x12345678;
         msg.size = m_info.coreId;
-        m_toMaster->write(&msg);
+
+        sendToMaster(&msg);
     }
     else
     {
@@ -191,16 +178,15 @@ CoreServer::Result CoreServer::test()
 
         for (Size i = 1; i < numCores; i++)
         {
-            MemoryChannel *ch = (MemoryChannel *) m_fromSlave->get(i);
-            if (!ch)
-                return IOError;
-
-            while (ch->read(&msg) != Channel::Success)
-                ;
+            receiveFromSlave(i, &msg);
 
             if (msg.action == StatFile)
             {
                 NOTICE("core" << i << " send a Ping");
+            }
+            else
+            {
+                ERROR("invalid message received from core" << i);
             }
         }
 
@@ -505,5 +491,54 @@ CoreServer::Result CoreServer::setupChannels()
                                   info.coreChannelAddress + (PAGESIZE * 3));
     }
 #endif /* INTEL */
+    return Success;
+}
+
+CoreServer::Result CoreServer::receiveFromMaster(FileSystemMessage *msg)
+{
+    // wait from a message of the master core
+    while (m_fromMaster->read(msg) != Channel::Success)
+        ;
+
+    return Success;
+}
+
+CoreServer::Result CoreServer::sendToMaster(FileSystemMessage *msg)
+{
+    while (m_toMaster->write(msg) != Channel::Success)
+        ;
+
+    return Success;
+}
+
+CoreServer::Result CoreServer::receiveFromSlave(uint coreId, FileSystemMessage *msg)
+{
+    MemoryChannel *ch = (MemoryChannel *) m_fromSlave->get(coreId);
+    if (!ch)
+        return IOError;
+
+    while (ch->read(msg) != Channel::Success)
+        ;
+
+    return Success;
+}
+
+CoreServer::Result CoreServer::sendToSlave(uint coreId, FileSystemMessage *msg)
+{
+    MemoryChannel *ch = (MemoryChannel *) m_toSlave->get(coreId);
+    if (!ch)
+    {
+        ERROR("cannot retrieve MemoryChannel for coreId: " << coreId);
+        msg->result = ENOENT;
+        return IOError;
+    }
+
+    if (ch->write(msg) != Channel::Success)
+    {
+        ERROR("failed to write channel on coreId: " << coreId);
+        msg->result = EBADF;
+        return IOError;
+    }
+
     return Success;
 }
