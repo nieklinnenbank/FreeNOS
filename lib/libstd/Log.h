@@ -43,12 +43,21 @@
         (*Log::instance) << "[" typestr "] " << __FILE__ ":" <<  __LINE__ << " " << __FUNCTION__ << " -- " << msg << "\r\n"; \
     }
 
+/** Action to take after printing a fatal error message */
+#ifndef FATAL_ACTION
+#define FATAL_ACTION for (;;);
+#endif /* FATAL_ACTION */
+
 /**
  * Output a critical message and terminate program immediatly.
  *
  * @param msg The critical message.
  */
-#define FATAL(msg)   MAKE_LOG(Log::Emergency, "Emergency", msg)
+#define FATAL(msg) \
+    { \
+        MAKE_LOG(Log::Emergency, "Emergency", msg); \
+        { FATAL_ACTION } \
+    }
 
 /**
  * Output an error message.
