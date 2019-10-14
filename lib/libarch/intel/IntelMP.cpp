@@ -21,8 +21,9 @@
 #include "IntelMP.h"
 #include "IntelBoot.h"
 
-IntelMP::IntelMP()
+IntelMP::IntelMP(IntelAPIC & apic)
     : CoreManager()
+    , m_apic(apic)
 {
     SystemInformation info;
 

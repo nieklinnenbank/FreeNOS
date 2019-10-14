@@ -47,11 +47,11 @@
 #include <CoreInfo.h>
 #include <CoreManager.h>
 #include "IntelIO.h"
-#include "IntelAPIC.h"
 
 /** Forward declarations */
 class MemoryContext;
 class IntelPIT;
+class IntelAPIC;
 
 /**
  * @addtogroup lib
@@ -143,7 +143,7 @@ class IntelMP : public CoreManager
     /**
      * Constructor
      */
-    IntelMP();
+    IntelMP(IntelAPIC & apic);
 
     /**
      * Discover processors.
@@ -186,7 +186,7 @@ class IntelMP : public CoreManager
     IntelIO m_lastMemory;
 
     /** APIC instance */
-    IntelAPIC m_apic;
+    IntelAPIC & m_apic;
 };
 
 /**

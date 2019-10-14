@@ -33,6 +33,7 @@
 #include <CoreInfo.h>
 
 #ifdef INTEL
+#include <intel/IntelAPIC.h>
 #include <intel/IntelMP.h>
 #include <intel/IntelACPI.h>
 #endif /* INTEL */
@@ -178,6 +179,7 @@ class CoreServer : public ChannelServer<CoreServer, FileSystemMessage>
   private:
 
 #ifdef INTEL
+    IntelAPIC m_apic;
     IntelMP m_mp;
     IntelACPI m_acpi;
     CoreManager *m_cores;

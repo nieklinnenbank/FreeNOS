@@ -33,6 +33,9 @@ const char * CoreServer::kernelPath = "/boot/kernel";
 
 CoreServer::CoreServer()
     : ChannelServer<CoreServer, FileSystemMessage>(this)
+#ifdef INTEL
+    , m_mp(m_apic)
+#endif /* INTEL */
 {
     m_numRegions = 0;
     m_kernel = ZERO;
