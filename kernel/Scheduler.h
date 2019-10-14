@@ -53,6 +53,13 @@ class Scheduler
     Scheduler();
 
     /**
+     * Get number of processes on the schedule
+     *
+     * @return Number of processes on the schedule
+     */
+    Size count() const;
+
+    /**
      * Add a Process to the run schedule.
      *
      * @param proc Process pointer

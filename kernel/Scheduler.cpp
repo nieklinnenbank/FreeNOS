@@ -24,6 +24,11 @@ Scheduler::Scheduler()
     DEBUG("");
 }
 
+Size Scheduler::count() const
+{
+    return m_queue.count();
+}
+
 Scheduler::Result Scheduler::enqueue(Process *proc, bool ignoreState)
 {
     if (proc->getState() != Process::Ready && !ignoreState)
