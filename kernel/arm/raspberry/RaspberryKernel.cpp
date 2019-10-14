@@ -90,13 +90,6 @@ void RaspberryKernel::interrupt(volatile CPUState state)
     {
         kernel->m_timer->tick();
         kernel->getProcessManager()->schedule();
-
-        next = (ARMProcess *) kernel->getProcessManager()->current();
-        if (next != proc)
-        {
-            proc->setCpuState((const CPUState *)&state);
-            MemoryBlock::copy((void *)&state, next->cpuState(), sizeof(state));
-        }
     }
 
     for (uint i = kernel->m_timerIrq + 1; i < 64; i++)
@@ -107,4 +100,10 @@ void RaspberryKernel::interrupt(volatile CPUState state)
         }
     }
 
+    next = (ARMProcess *) kernel->getProcessManager()->current();
+    if (next != proc)
+    {
+        proc->setCpuState((const CPUState *)&state);
+        MemoryBlock::copy((void *)&state, next->cpuState(), sizeof(state));
+    }
 }
