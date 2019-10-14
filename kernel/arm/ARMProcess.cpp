@@ -93,7 +93,6 @@ void ARMProcess::setWaitResult(uint result)
     if (m_state != Waiting)
     {
         FATAL("set wait result while process is not waiting: status: " << (uint) m_state);
-        for(;;);
     }
     m_cpuState.r0 = result;
 }

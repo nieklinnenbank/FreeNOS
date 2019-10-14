@@ -63,7 +63,6 @@ Scheduler::Result Scheduler::dequeue(Process *proc, bool ignoreState)
     }
 
     FATAL("process ID " << proc->getID() << " is not in the schedule");
-    for (;;);
 }
 
 Process * Scheduler::select()

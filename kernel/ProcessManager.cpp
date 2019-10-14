@@ -106,7 +106,7 @@ ProcessManager::Result ProcessManager::schedule()
 
     if (!proc)
     {
-        FATAL("no process found to run!"); for(;;);
+        FATAL("no process found to run!");
     }
 
     // Wakeup processes if the next sleeptimer expired

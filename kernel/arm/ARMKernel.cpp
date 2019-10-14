@@ -55,7 +55,6 @@ void ARMKernel::interrupt(CPUState state)
     ARMCore core;
     core.logException(&state);
     FATAL("unhandled IRQ in procId = " << Kernel::instance->getProcessManager()->current()->getID());
-    for(;;);
 }
 
 void ARMKernel::undefinedInstruction(CPUState state)
@@ -63,7 +62,6 @@ void ARMKernel::undefinedInstruction(CPUState state)
     ARMCore core;
     core.logException(&state);
     FATAL("procId = " << Kernel::instance->getProcessManager()->current()->getID());
-    for(;;);
 }
 
 void ARMKernel::prefetchAbort(CPUState state)
@@ -71,7 +69,6 @@ void ARMKernel::prefetchAbort(CPUState state)
     ARMCore core;
     core.logException(&state);
     FATAL("procId = " << Kernel::instance->getProcessManager()->current()->getID());
-    for(;;);
 }
 
 void ARMKernel::dataAbort(CPUState state)
@@ -79,7 +76,6 @@ void ARMKernel::dataAbort(CPUState state)
     ARMCore core;
     core.logException(&state);
     FATAL("procId = " << Kernel::instance->getProcessManager()->current()->getID());
-    for(;;);
 }
 
 
@@ -88,7 +84,6 @@ void ARMKernel::reserved(CPUState state)
     ARMCore core;
     core.logException(&state);
     FATAL("procId = " << Kernel::instance->getProcessManager()->current()->getID());
-    for(;;);
 }
 
 void ARMKernel::trap(volatile CPUState state)
