@@ -60,6 +60,12 @@ class CoreServer : public ChannelServer<CoreServer, FileSystemMessage>
 {
   private:
 
+    /** Inter-Processor-Interrupt vector number */
+    static const uint IPIVector = 50;
+
+    /** Number of times to busy wait on receiving a message */
+    static const Size MaxMessageRetry = 128;
+
     /** The default kernel for starting new cores. */
     static const char *kernelPath;
 

@@ -199,6 +199,12 @@ CoreServer::Result CoreServer::initialize()
 {
     Result r;
 
+#ifdef INTEL
+    // Register IPI vector
+    // TODO: minus 32 because of IRQ() in IntelKernel
+    ProcessCtl(SELF, WatchIRQ, IPIVector - 32);
+#endif /* INTEL */
+
     // Only core0 needs to start other coreservers
     if (m_info.coreId != 0)
         return setupChannels();
@@ -496,9 +502,20 @@ CoreServer::Result CoreServer::setupChannels()
 
 CoreServer::Result CoreServer::receiveFromMaster(FileSystemMessage *msg)
 {
+    Channel::Result result = Channel::NotFound;
+
     // wait from a message of the master core
-    while (m_fromMaster->read(msg) != Channel::Success)
-        ;
+    while (result != Channel::Success)
+    {
+        for (uint i = 0; i < MaxMessageRetry && result != Channel::Success; i++)
+        {
+            result = m_fromMaster->read(msg);
+        }
+
+        // Wait for IPI which will wake us
+        ProcessCtl(SELF, EnableIRQ, IPIVector);
+        ProcessCtl(SELF, EnterSleep, 0, 0);
+    }
 
     return Success;
 }
@@ -528,17 +545,26 @@ CoreServer::Result CoreServer::sendToSlave(uint coreId, FileSystemMessage *msg)
     MemoryChannel *ch = (MemoryChannel *) m_toSlave->get(coreId);
     if (!ch)
     {
-        ERROR("cannot retrieve MemoryChannel for coreId: " << coreId);
+        ERROR("cannot retrieve MemoryChannel for core" << coreId);
         msg->result = ENOENT;
         return IOError;
     }
 
     if (ch->write(msg) != Channel::Success)
     {
-        ERROR("failed to write channel on coreId: " << coreId);
+        ERROR("failed to write channel on core" << coreId);
         msg->result = EBADF;
         return IOError;
     }
 
+#ifdef INTEL
+    // Send IPI to ensure the slave wakes up for the message
+    if (m_apic.sendIPI(coreId, IPIVector) != IntController::Success)
+    {
+        ERROR("failed to send IPI to core" << coreId);
+        return IOError;
+    }
+
+#endif /* INTEL */
     return Success;
 }
