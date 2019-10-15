@@ -37,9 +37,12 @@ ProcessManager::~ProcessManager()
 {
 }
 
-Process * ProcessManager::create(Address entry, const MemoryMap &map, bool readyToRun)
+Process * ProcessManager::create(Address entry,
+                                 const MemoryMap &map,
+                                 bool readyToRun,
+                                 bool privileged)
 {
-    Process *proc = new Arch::Process(m_procs.count(), entry, false, map);
+    Process *proc = new Arch::Process(m_procs.count(), entry, privileged, map);
 
     // Insert to the process table
     if (proc && proc->initialize() == Process::Success)

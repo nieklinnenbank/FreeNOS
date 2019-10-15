@@ -215,7 +215,7 @@ Kernel::Result Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Siz
         return InvalidBootImage;
 
     // Create process
-    proc = m_procs->create(program->entry, map, true);
+    proc = m_procs->create(program->entry, map, true, program->type == BootPrivProgram);
     if (!proc)
     {
         FATAL("failed to create boot program: " << program->name);

@@ -76,8 +76,14 @@ class ProcessManager
      * @param entry Process executable entry point
      * @param map Memory mapping
      * @param readyToRun True to immediately run the Process or false to sleep.
+     * @param privileged True to create a privileged Process
+     *
+     * @return Process pointer on success or ZERO on failure
      */
-    Process * create(Address entry, const MemoryMap &map, bool readyToRun = false);
+    Process * create(Address entry,
+                     const MemoryMap &map,
+                     bool readyToRun = false,
+                     bool privileged = false);
 
     /**
      * Retrieve a Process by it's ID.
