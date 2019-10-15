@@ -99,49 +99,6 @@ inline u64 timestamp()
     asm volatile("mov %cr3, %eax\n" \
                  "mov %eax, %cr3\n")
 
-
-/**
- * Enables interrupts.
- */
-#define sti() \
-    asm volatile ("sti")
-
-/**
- * Disables interrupts.
- */
-#define cli() \
-    asm volatile ("cli");
-
-/**
- * Explicitely enable interrupts.
- */
-#define irq_enable() \
-    sti()
-
-/**
- * Disable interrupts, and store current interrupt state.
- *
- * @warning This is dangerous: no guarantee of the current stack state.
- */
-#define irq_disable()                           \
-({                                              \
-    ulong ret;                                  \
-                                                \
-    asm volatile ("pushfl\n"                    \
-                  "popl %0" : "=g" (ret) :);    \
-    cli();                                      \
-    ret;                                        \
-})
-
-/**
- * Restore the previous interrupt state.
- *
- * @warning This is dangerous: no guarantee of the current stack state.
- */
-#define irq_restore(saved)                      \
-    asm volatile ("push %0\n"                   \
-                  "popfl\n" :: "g" (saved))
-
 /**
  * @group Intel CPU Exceptions
  * @{
