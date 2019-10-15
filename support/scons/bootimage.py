@@ -37,8 +37,10 @@ def boot_image_emitter(target, source, env):
 	       line[0] == '#':
 	    continue
 
-	# Make us depend on the program.
-	source.append('#' + env['BUILDROOT'] + '/' + line.strip())
+        symboltype, symbolname = line.strip().split(' ')
+
+	# Make us depend on the program/file.
+	source.append('#' + env['BUILDROOT'] + '/' + symbolname)
 
     # We also depend on the mkimage utility.
     source.append('#' + build.host['BUILDROOT'] + '/bin/img/img')

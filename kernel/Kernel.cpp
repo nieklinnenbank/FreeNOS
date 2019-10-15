@@ -211,7 +211,7 @@ Kernel::Result Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Siz
     segment = &((BootSegment *) (imageVAddr + image->segmentsTableOffset))[program->segmentsOffset];
 
     // Ignore non-BootProgram entries
-    if (program->type != BootProgram)
+    if (program->type != BootProgram && program->type != BootPrivProgram)
         return InvalidBootImage;
 
     // Create process

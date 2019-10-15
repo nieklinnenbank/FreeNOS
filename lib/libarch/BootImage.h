@@ -71,9 +71,10 @@ BootImage;
  */
 typedef enum BootSymbolType
 {
-    BootProgram    = 0,    /**< Executable program */
-    BootFilesystem = 1,    /**< Embedded filesystem */
-    BootData       = 2     /**< Binary data */
+    BootProgram     = 0, /**< Executable program */
+    BootPrivProgram = 1, /**< Privileged executable program */
+    BootFilesystem  = 2, /**< Embedded filesystem */
+    BootData        = 3  /**< Binary data */
 }
 BootSymbolType;
 

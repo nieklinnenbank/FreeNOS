@@ -53,6 +53,7 @@ Size BootImageCreate::readBootSymbols(const char *conf_file,
 {
     char line[PATH_MAX];
     const char *prog = *(parser().name());
+    const char *symbolname = 0;
     Size num = BOOTENTRY_MAX_REGIONS;
     Size totalBytes = 0, totalEntries = 0;
     BootEntry *entry;
@@ -78,61 +79,84 @@ Size BootImageCreate::readBootSymbols(const char *conf_file,
         if (strlen(line) < sizeof(line) - 1)
             line[strlen(line)-1] = 0;
 
+        // Get boot symbol type
+        if (strncmp(line, "BootProgram ", 12) == 0) {
+            entry->symbol.type = BootProgram;
+            symbolname = line + 12;
+        } else if (strncmp(line, "BootPrivProgram ", 16) == 0) {
+            entry->symbol.type = BootPrivProgram;
+            symbolname = line + 16;
+        } else if (strncmp(line, "BootData ", 9) == 0) {
+            entry->symbol.type = BootData;
+            symbolname = line + 9;
+        } else {
+            fprintf(stderr, "%s: symbol type unknown in line: %s\n",
+                    prog, line);
+            exit(EXIT_FAILURE);
+        }
+
         // Fill boot symbol name first
         line[sizeof(line)-1] = 0;
-        strncpy(entry->symbol.name, line, BOOTIMAGE_NAMELEN);
+        strncpy(entry->symbol.name, symbolname, BOOTIMAGE_NAMELEN);
 
         // Append path prefix, if set
         if (prefix_len && prefix_len < BOOTIMAGE_NAMELEN)
         {
             char tmp[PATH_MAX];
-            snprintf(tmp, sizeof(tmp), "%s/%s", prefix, line);
+            snprintf(tmp, sizeof(tmp), "%s/%s", prefix, symbolname);
             strncpy(line, tmp, sizeof(line));
+            symbolname = line;
         }
 
         // Find the file
         struct stat st;
-        if (stat(line, &st) == -1)
+        if (stat(symbolname, &st) == -1)
         {
             fprintf(stderr, "%s: failed to stat `%s': %s\n",
-                    prog, line, strerror(errno));
+                    prog, symbolname, strerror(errno));
             exit(EXIT_FAILURE);
         }
         // Allocate buffer
         u8 *buffer = new u8[st.st_size];
 
         // Read the file
-        FILE *entry_fd = fopen(line, "r");
+        FILE *entry_fd = fopen(symbolname, "r");
         if (!entry_fd)
         {
             fprintf(stderr, "%s: failed to open `%s': %s\n",
-                    prog, line, strerror(errno));
+                    prog, symbolname, strerror(errno));
             exit(EXIT_FAILURE);
         }
         if (fread(buffer, st.st_size, 1, entry_fd) != 1)
         {
             fprintf(stderr, "%s: failed to fread `%s': %s\n",
-                    prog, line, strerror(errno));
+                    prog, symbolname, strerror(errno));
             exit(EXIT_FAILURE);
         }
         fclose(entry_fd);
 
-        // Try to parse as BootProgram using libexec.
-        if (ExecutableFormat::find(buffer, st.st_size, &format) == ExecutableFormat::Success)
+        // Parse as BootProgram using libexec.
+        if (entry->symbol.type == BootProgram || entry->symbol.type == BootPrivProgram)
         {
+            if (ExecutableFormat::find(buffer, st.st_size, &format) != ExecutableFormat::Success)
+            {
+                fprintf(stderr, "%s: failed to parse executable image format in `%s': %s\n",
+                            prog, symbolname, strerror(errno));
+                exit(EXIT_FAILURE);
+            }
             // Extract memory regions
             if (format->regions(entry->regions, &num) != ExecutableFormat::Success || num <= 0)
             {
                 fprintf(stderr, "%s: failed to extract memory regions from `%s': %s\n",
-                            prog, line, strerror(errno));
+                            prog, symbolname, strerror(errno));
                 exit(EXIT_FAILURE);
             }
             entry->numRegions   = num;
-            entry->symbol.type  = BootProgram;
+
             format->entry((Address *)&entry->symbol.entry);
         }
         // BootData
-        else
+        else if (entry->symbol.type == BootData)
         {
             // Fill BootEntry
             entry->symbol.type = BootData;
@@ -141,6 +165,10 @@ Size BootImageCreate::readBootSymbols(const char *conf_file,
             entry->regions[0].access = Memory::User | Memory::Readable | Memory::Writable;
             entry->regions[0].size = st.st_size;
             entry->regions[0].data = buffer;
+        } else {
+            fprintf(stderr, "%s: unknown boot symbol type: %d\n",
+                    prog, (uint) entry->symbol.type);
+            exit(EXIT_FAILURE);
         }
         // Insert into Array
         entries->insert(entry);
@@ -150,7 +178,7 @@ Size BootImageCreate::readBootSymbols(const char *conf_file,
         for (Size i = 0; i < entry->numRegions; i++)
         {
             printf("%s[%u]: vaddr=%x size=%u\n",
-                    line, i, (uint) entry->regions[i].virt,
+                    symbolname, i, (uint) entry->regions[i].virt,
                     entry->regions[i].size);
             totalBytes += entry->regions[i].size;
         }
