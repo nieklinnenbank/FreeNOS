@@ -1,0 +1,99 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure("2") do |config|
+  # The most common configuration options are documented and commented below.
+  # For a complete reference, please see the online documentation at
+  # https://docs.vagrantup.com.
+
+  config.vm.define "master" do |master|
+
+    # Every Vagrant development environment requires a box. You can search for
+    # boxes at https://vagrantcloud.com/search.
+    master.vm.box = "generic/ubuntu1804"
+
+    # Create a forwarded port mapping which allows access to a specific port
+    # within the machine from a port on the host machine and only allow access
+    # via 127.0.0.1 to disable public access
+    master.vm.network "forwarded_port", guest: 8080, host: 8888, host_ip: "127.0.0.1"
+
+    master.vm.network "private_network", ip: "192.168.50.10"
+
+    master.vm.provider "virtualbox" do |vb|
+        vb.cpus   = 1
+        vb.memory = "512"
+    end
+    master.vm.provider :libvirt do |libvirt|
+        libvirt.cpus = 1
+        libvirt.memory = 512
+    end
+
+    # Enable provisioning with a shell script. Additional provisioners such as
+    # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
+    # documentation for more information about their specific syntax and use.
+    master.vm.provision "file", source: "master.key", destination: "master.key"
+    master.vm.provision "file", source: "hudson.util.Secret", destination: "hudson.util.Secret"
+    master.vm.provision "file", source: "credentials.xml", destination: "credentials.xml"
+    master.vm.provision "file", source: "ubuntu-1804.job.xml", destination: "ubuntu-1804.job.xml"
+    master.vm.provision "file", source: "ubuntu-1804.node.xml", destination: "ubuntu-1804.node.xml"
+    master.vm.provision "file", source: "freebsd-12.job.xml", destination: "freebsd-12.job.xml"
+    master.vm.provision "file", source: "freebsd-12.node.xml", destination: "freebsd-12.node.xml"
+    master.vm.provision "shell", path: "master.sh"
+  end
+
+  config.vm.define "ubuntu1804" do |ubuntu1804|
+
+    # Every Vagrant development environment requires a box. You can search for
+    # boxes at https://vagrantcloud.com/search.
+    ubuntu1804.vm.box = "generic/ubuntu1804"
+
+    ubuntu1804.vm.network "private_network", ip: "192.168.50.20"
+
+    ubuntu1804.vm.provider "virtualbox" do |vb|
+        vb.cpus   = 4
+        vb.memory = "2048"
+    end
+    ubuntu1804.vm.provider :libvirt do |libvirt|
+        libvirt.cpus = 4
+        libvirt.memory = 2048
+    end
+
+    # Enable provisioning with a shell script. Additional provisioners such as
+    # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
+    # documentation for more information about their specific syntax and use.
+
+    if ENV.has_key?('QEMUSRC')
+       ubuntu1804.vm.provision "file", source: ENV['QEMUSRC'], destination: "qemu-src.tar.gz"
+    end
+
+    ubuntu1804.vm.provision "shell", path: "ubuntu-1804.sh"
+  end
+
+  config.vm.define "freebsd12" do |freebsd12|
+
+    # Every Vagrant development environment requires a box. You can search for
+    # boxes at https://vagrantcloud.com/search.
+    freebsd12.vm.box = "generic/freebsd12"
+
+    freebsd12.vm.network "private_network", ip: "192.168.50.21"
+
+    freebsd12.vm.provider "virtualbox" do |vb|
+        vb.cpus   = 4
+        vb.memory = "2048"
+    end
+    freebsd12.vm.provider :libvirt do |libvirt|
+        libvirt.cpus = 4
+        libvirt.memory = 2048
+    end
+
+    # Enable provisioning with a shell script. Additional provisioners such as
+    # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
+    # documentation for more information about their specific syntax and use.
+    freebsd12.vm.provision "shell", path: "freebsd-12.sh"
+  end
+
+end

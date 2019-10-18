@@ -1,39 +1,21 @@
 <?xml version='1.1' encoding='UTF-8'?>
-<hudson.plugins.libvirt.VirtualMachineSlave plugin="libvirt-slave@1.8.5">
+<slave>
   <name>freebsd-12</name>
   <description></description>
-  <remoteFS>agent</remoteFS>
+  <remoteFS>/home/vagrant/agent</remoteFS>
   <numExecutors>4</numExecutors>
-  <mode>NORMAL</mode>
-  <retentionStrategy class="hudson.slaves.RetentionStrategy$Demand">
-    <inDemandDelay>0</inDemandDelay>
-    <idleDelay>1</idleDelay>
-  </retentionStrategy>
-  <launcher class="hudson.plugins.libvirt.VirtualMachineLauncher">
-    <delegate class="hudson.plugins.sshslaves.SSHLauncher" plugin="ssh-slaves@1.30.0">
-      <host>freebsd-12.kvm</host>
-      <port>22</port>
-      <launchTimeoutSeconds>210</launchTimeoutSeconds>
-      <maxNumRetries>10</maxNumRetries>
-      <retryWaitTime>15</retryWaitTime>
-      <sshHostKeyVerificationStrategy class="hudson.plugins.sshslaves.verifiers.NonVerifyingKeyVerificationStrategy"/>
-      <tcpNoDelay>true</tcpNoDelay>
-    </delegate>
-    <hypervisorDescription>QEMU - localhost</hypervisorDescription>
-    <virtualMachineName>freebsd-12</virtualMachineName>
-    <snapshotName></snapshotName>
-    <WAIT__TIME__MS>60000</WAIT__TIME__MS>
-    <timesToRetryOnFailure>0</timesToRetryOnFailure>
+  <mode>EXCLUSIVE</mode>
+  <retentionStrategy class="hudson.slaves.RetentionStrategy$Always"/>
+  <launcher class="hudson.plugins.sshslaves.SSHLauncher" plugin="ssh-slaves@1.31.0">
+    <host>192.168.50.21</host>
+    <port>22</port>
+    <credentialsId>daa4fa23-3512-4cc1-81a7-ca53771cc2af</credentialsId>
+    <launchTimeoutSeconds>210</launchTimeoutSeconds>
+    <maxNumRetries>10</maxNumRetries>
+    <retryWaitTime>15</retryWaitTime>
+    <sshHostKeyVerificationStrategy class="hudson.plugins.sshslaves.verifiers.NonVerifyingKeyVerificationStrategy"/>
+    <tcpNoDelay>true</tcpNoDelay>
   </launcher>
-  <label>freebsd-12</label>
+  <label>freebsd12</label>
   <nodeProperties/>
-  <userId>admin</userId>
-  <hypervisorDescription>QEMU - localhost</hypervisorDescription>
-  <snapshotName></snapshotName>
-  <virtualMachineName>freebsd-12</virtualMachineName>
-  <startupWaitingPeriodSeconds>60</startupWaitingPeriodSeconds>
-  <shutdownMethod>shutdown</shutdownMethod>
-  <rebootAfterRun>false</rebootAfterRun>
-  <startupTimesToRetryOnFailure>0</startupTimesToRetryOnFailure>
-  <beforeJobSnapshotName></beforeJobSnapshotName>
-</hudson.plugins.libvirt.VirtualMachineSlave>
+</slave>

@@ -322,6 +322,8 @@ Jenkins Continuous Integration
 Master Setup
 ------------
 
+$ sudo apt-get install vagrant vagrant-libvirt libvirt-bin qemu-kvm
+
 Install Jenkins on your host OS using your favorite package manager or from the official website (https://jenkins.io/).
 Follow the installation wizard instructions and after installation go to the Jenkins web interface at: http://localhost:8080
 

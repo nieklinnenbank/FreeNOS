@@ -1,3 +1,4 @@
+#!/bin/sh
 #
 # Copyright (C) 2019 Niek Linnenbank
 #
@@ -30,39 +31,34 @@
 #
 
 NAME="freebsd-12"
-ISO="FreeBSD-12.0-RELEASE-i386-bootonly.iso"
 JENKINS_PACKAGES="git openjdk11"
 COMPILER_PACKAGES="gcc gcc48 gcc5 gcc6 gcc7 gcc8 gcc9 \
-                   llvm35 llvm60 llvm70 llvm80"
+                   llvm60 llvm70 llvm80 llvm90"
 MISC_PACKAGES="qemu scons cdrkit-genisoimage xorriso"
 PACKAGES="$JENKINS_PACKAGES $COMPILER_PACKAGES $MISC_PACKAGES"
 
 # Trace execution
 set -x
 
-# Download installer
-if [ ! -e $ISO ] ; then
-    wget https://download.freebsd.org/ftp/releases/i386/i386/ISO-IMAGES/12.0/$ISO
+# Set system hostname
+sed "s/bazinga.localdomain/$NAME/" /etc/defaults/rc.conf > /tmp/rc.conf
+mv /tmp/rc.conf /etc/defaults/rc.conf
+sed "s/bazinga.localdomain/$NAME.localdomain/" /etc/hosts > /etc/hosts.bak
+sed "s/bazinga/$NAME/" /etc/hosts.bak > /etc/hosts
+rm /etc/hosts.bak
+hostname -s $NAME
+
+# Update system to latest patches
+freebsd-update -F --not-running-from-cron fetch
+freebsd-update -F --not-running-from-cron install
+/usr/sbin/pkg
+pkg update -f
+pkg upgrade -y
+
+# Install required packages for development
+pkg install -y $PACKAGES
+
+# Disable the FreeBSD linker, use the GNU linker
+if [ -e /usr/bin/ld.bfd ] ; then
+   mv /usr/bin/ld.bfd /usr/bin/ld.bfd.orig
 fi
-
-# Run installer
-virt-install --connect qemu:///system \
-             --name $NAME \
-             --memory 2048 \
-             --vcpus 4 \
-             --os-type freebsd \
-             --os-variant freebsd10.0 \
-             --disk size=16 \
-             --graphics vnc \
-             --cdrom $ISO
-
-# Bring slave up
-virsh start $NAME && sleep 30
-
-# Post installer commands
-ssh -t jenkins@$NAME.kvm "su -m root -c 'freebsd-update fetch && \
-                          freebsd-update install && \
-                          /usr/sbin/pkg; \
-                          pkg update && pkg upgrade && pkg install $PACKAGES; \
-                          ln -s /usr/local/openjdk11/bin/java /usr/local/bin/java; \
-                          mv /usr/bin/ld.bfd /usr/bin/ld.bfd.orig'"

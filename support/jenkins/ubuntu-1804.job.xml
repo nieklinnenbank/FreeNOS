@@ -4,7 +4,6 @@
   <description>Build FreeNOS on Ubuntu 1804</description>
   <keepDependencies>false</keepDependencies>
   <properties>
-    <hudson.plugins.libvirt.BeforeJobSnapshotJobProperty plugin="libvirt-slave@1.8.5"/>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
         <org.jvnet.jenkins.plugins.nodelabelparameter.LabelParameterDefinition plugin="nodelabelparameter@1.7.2">

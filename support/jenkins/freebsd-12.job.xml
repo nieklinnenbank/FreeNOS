@@ -4,7 +4,6 @@
   <description>Build FreeNOS on FreeBSD 12</description>
   <keepDependencies>false</keepDependencies>
   <properties>
-    <hudson.plugins.libvirt.BeforeJobSnapshotJobProperty plugin="libvirt-slave@1.8.5"/>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
         <org.jvnet.jenkins.plugins.nodelabelparameter.LabelParameterDefinition plugin="nodelabelparameter@1.7.2">
@@ -77,14 +76,17 @@
         <string>ARCH=arm SYSTEM=raspberry COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=60</string>
         <string>ARCH=arm SYSTEM=raspberry COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=70</string>
         <string>ARCH=arm SYSTEM=raspberry COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=80</string>
+        <string>ARCH=arm SYSTEM=raspberry COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=90</string>
 
         <string>ARCH=arm SYSTEM=raspberry2 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=60</string>
         <string>ARCH=arm SYSTEM=raspberry2 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=70</string>
         <string>ARCH=arm SYSTEM=raspberry2 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=80</string>
+        <string>ARCH=arm SYSTEM=raspberry2 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=90</string>
 
         <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=60</string>
         <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=70</string>
         <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=80</string>
+        <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=90</string>
 
         <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=48</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=5</string>
@@ -95,6 +97,7 @@
         <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=60</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=70</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=80</string>
+        <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=90</string>
 
       </values>
     </hudson.matrix.TextAxis>

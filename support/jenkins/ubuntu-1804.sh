@@ -1,3 +1,4 @@
+#!/bin/bash
 #
 # Copyright (C) 2019 Niek Linnenbank
 #
@@ -15,25 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
-# This script installs a KVM slave node with Ubuntu 18.04.
-# To use it in Jenkins, you need add the node using the example node
-# XML configuration file or manually add it as a KVM slave node.
-# You need to add the label 'ubuntu-1804' to the node to use the example build job file.
-#
-# Use the following settings when running the installer:
-#  - hostname: ubuntu-1804.kvm
-#  - add 'jenkins' user (with sudo rights)
-#
-# After installation:
-#  - install SSH server: $ sudo apt-get install openssh-server
-#
-# See the README file for more details on Jenkins setup.
-#
-
-NAME="ubuntu-1804"
-UBUNTU_RELEASE="18.04.2"
-ISO="ubuntu-$UBUNTU_RELEASE-desktop-amd64.iso"
 JENKINS_PACKAGES="git default-jre"
 COMPILER_PACKAGES="gcc-4.8 gcc-4.8-multilib g++-4.8 g++-4.8-multilib \
                    gcc-5 gcc-5-multilib g++-5 g++-5-multilib \
@@ -50,32 +32,44 @@ COMPILER_PACKAGES="gcc-4.8 gcc-4.8-multilib g++-4.8 g++-4.8-multilib \
                    gcc-6-arm-linux-gnueabi g++-6-arm-linux-gnueabi \
                    gcc-7-arm-linux-gnueabi g++-7-arm-linux-gnueabi \
                    gcc-8-arm-linux-gnueabi g++-8-arm-linux-gnueabi"
-MISC_PACKAGES="build-essential scons genisoimage xorriso qemu-system binutils-multiarch"
+MISC_PACKAGES="build-essential scons genisoimage xorriso binutils-multiarch"
 PACKAGES="$JENKINS_PACKAGES $COMPILER_PACKAGES $MISC_PACKAGES"
 
-# Download installer
-if [ ! -e $ISO ] ; then
-    wget http://releases.ubuntu.com/$UBUNTU_RELEASE/$ISO
-fi
-
-# Trace execution
+set -e
 set -x
 
-# Run installer
-virt-install --connect qemu:///system \
-             --name $NAME \
-             --memory 2048 \
-             --vcpus 4 \
-             --os-type linux \
-             --os-variant ubuntu16.04 \
-             --disk size=40 \
-             --graphics vnc \
-             --cdrom $ISO
+# Set hostname
+echo ubuntu1804 > /etc/hostname
 
-# Bring slave up
-virsh start $NAME && sleep 30
+# Auto select mirror
+sed -i 's/us.archive.ubuntu.com/nl.archive.ubuntu.com/' /etc/apt/sources.list
 
-# Post installer commands
-ssh -t jenkins@$NAME.kvm "sudo apt-get update && \
-                          sudo apt-get dist-upgrade && \
-                          sudo apt-get install $PACKAGES"
+# Remove hardcoded DNS servers
+cat /etc/netplan/01-netcfg.yaml | grep -v 'nameservers:' | grep -v 'addresses: ' > /etc/netplan/01-netcfg.yaml.new
+mv /etc/netplan/01-netcfg.yaml.new /etc/netplan/01-netcfg.yaml
+netplan apply
+sleep 5
+
+# Update system to latest patches
+apt-get update
+apt-get dist-upgrade -y
+
+# Use Qemu from APT if not provided
+if [ ! -e qemu-src.tar.gz ] ; then
+  PACKAGES="$PACKAGES qemu-system"
+else
+    # Compile Qemu from source
+    apt-get install -y build-essential pkg-config libglib2.0-dev libpixman-1-dev bison flex
+    tar zxf qemu-src.tar.gz
+    rm qemu-src.tar.gz
+    cd qemu-*
+    ./configure --prefix=/usr/local --target-list=arm-softmmu,i386-softmmu
+    # TODO: pass number of cores as environment variable
+    make -j5
+    make install
+    cd ..
+    rm -rf qemu-*
+fi
+
+# Install all packages needed for development
+apt-get install -y $PACKAGES
