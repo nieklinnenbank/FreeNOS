@@ -15,4 +15,5 @@ config.log
 *.orig
 *.tar.gz
 *.tar
+.vagrant
 ChangeLog-*
