@@ -14,4 +14,5 @@ config.log
 *.rej
 *.orig
 *.tar.gz
+*.tar
 ChangeLog-*
