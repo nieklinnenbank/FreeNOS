@@ -71,5 +71,10 @@ else
     rm -rf qemu-*
 fi
 
+# Extract generated source archive
+rm -rf ~vagrant/FreeNOS
+tar xf ~vagrant/src.tar -C ~vagrant
+rm -f ~vagrant/src.tar
+
 # Install all packages needed for development
 apt-get install -y $PACKAGES

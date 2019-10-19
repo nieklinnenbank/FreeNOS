@@ -1,5 +1,47 @@
-# -*- mode: ruby -*-
-# vi: set ft=ruby :
+#
+# Copyright (C) 2019 Niek Linnenbank
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+require 'rubygems/package'
+require 'find'
+
+# Generate a TAR archive from the current source tree
+File.open("src.tar", "wb") do |file|
+    Gem::Package::TarWriter.new(file) do |tar|
+        Find.find("../../") do |path|
+            filename = "FreeNOS/" + path[6..-1]
+
+            if filename == "FreeNOS/src.tar"
+                next
+            end
+
+            if FileTest.symlink?(path)
+                tar.add_symlink(filename, File.readlink(path), File.stat(path).mode)
+            elsif FileTest.directory?(path)
+                tar.mkdir(filename, 0755)
+            else
+                tar.add_file(filename, File.stat(path).mode) do |io|
+                    File.open(path, "rb") do |f|
+                        io.write(f.read())
+                    end
+                end
+            end
+        end
+    end
+end
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
@@ -69,7 +111,7 @@ Vagrant.configure("2") do |config|
     if ENV.has_key?('QEMUSRC')
        ubuntu1804.vm.provision "file", source: ENV['QEMUSRC'], destination: "qemu-src.tar.gz"
     end
-
+    ubuntu1804.vm.provision "file", source: "src.tar", destination: "src.tar"
     ubuntu1804.vm.provision "shell", path: "ubuntu-1804.sh"
   end
 
@@ -93,6 +135,7 @@ Vagrant.configure("2") do |config|
     # Enable provisioning with a shell script. Additional provisioners such as
     # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
     # documentation for more information about their specific syntax and use.
+    freebsd12.vm.provision "file", source: "src.tar", destination: "src.tar"
     freebsd12.vm.provision "shell", path: "freebsd-12.sh"
   end
 

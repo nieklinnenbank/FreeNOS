@@ -1,11 +1,19 @@
 #!/bin/bash
-
 #
-# See: https://technologyconversations.com/2017/06/16/automating-jenkins-docker-setup/
-# See: https://riptutorial.com/jenkins/example/24925/disable-setup-wizard
-# See: https://github.com/geerlingguy/ansible-role-jenkins/issues/50
+# Copyright (C) 2015 Niek Linnenbank
 #
-# See: https://github.com/foxylion/docker-jenkins/tree/master/docker-images/master
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 set -e
@@ -15,7 +23,6 @@ set -x
 echo master > /etc/hostname
 
 # Auto select mirror
-#sed -i -e 's/http:\/\/us.archive/mirror:\/\/mirrors/' -e 's/\/ubuntu\//\/mirrors.txt/' /etc/apt/sources.list
 sed -i 's/us.archive.ubuntu.com/nl.archive.ubuntu.com/' /etc/apt/sources.list
 
 # Remove hardcoded DNS servers
