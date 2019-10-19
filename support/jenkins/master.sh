@@ -39,7 +39,6 @@ apt-get dist-upgrade -y
 apt-get install -y git default-jre daemon
 
 # Add jenkins repository
-# TODO: only add the key once
 wget -q -O - https://pkg.jenkins.io/debian/jenkins.io.key | apt-key add -
 echo deb https://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list
 apt-get update
