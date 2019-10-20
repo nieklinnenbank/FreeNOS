@@ -43,6 +43,20 @@ File.open("src.tar", "wb") do |file|
     end
 end
 
+# Sets the number of CPUs used by the jenkins build slaves
+if ENV.has_key?('SLAVE_CPUS')
+    slave_cpus = ENV['SLAVE_CPUS']
+else
+    slave_cpus = 4
+end
+
+# Sets the amount of memory in MB used by jenkins build slaves
+if ENV.has_key?('SLAVE_MEMORY')
+    slave_memory = ENV['SLAVE_MEMORY']
+else
+    slave_memory = 2048
+end
+
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
 # backwards compatibility). Please don't change it unless you know what
@@ -84,7 +98,7 @@ Vagrant.configure("2") do |config|
     master.vm.provision "file", source: "ubuntu-1804.node.xml", destination: "ubuntu-1804.node.xml"
     master.vm.provision "file", source: "freebsd-12.job.xml", destination: "freebsd-12.job.xml"
     master.vm.provision "file", source: "freebsd-12.node.xml", destination: "freebsd-12.node.xml"
-    master.vm.provision "shell", path: "master.sh"
+    master.vm.provision "shell", path: "master.sh", env: { "SLAVE_CPUS" => slave_cpus }
   end
 
   config.vm.define "ubuntu1804" do |ubuntu1804|
@@ -96,12 +110,12 @@ Vagrant.configure("2") do |config|
     ubuntu1804.vm.network "private_network", ip: "192.168.50.20"
 
     ubuntu1804.vm.provider "virtualbox" do |vb|
-        vb.cpus   = 4
-        vb.memory = "2048"
+        vb.cpus   = slave_cpus
+        vb.memory = slave_memory
     end
     ubuntu1804.vm.provider :libvirt do |libvirt|
-        libvirt.cpus = 4
-        libvirt.memory = 2048
+        libvirt.cpus = slave_cpus
+        libvirt.memory = slave_memory
     end
 
     # Enable provisioning with a shell script. Additional provisioners such as
@@ -124,12 +138,12 @@ Vagrant.configure("2") do |config|
     freebsd12.vm.network "private_network", ip: "192.168.50.21"
 
     freebsd12.vm.provider "virtualbox" do |vb|
-        vb.cpus   = 4
-        vb.memory = "2048"
+        vb.cpus   = slave_cpus
+        vb.memory = slave_memory
     end
     freebsd12.vm.provider :libvirt do |libvirt|
-        libvirt.cpus = 4
-        libvirt.memory = 2048
+        libvirt.cpus = slave_cpus
+        libvirt.memory = slave_memory
     end
 
     # Enable provisioning with a shell script. Additional provisioners such as

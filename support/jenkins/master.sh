@@ -84,6 +84,11 @@ instance.save()
 Jenkins.instance.getInjector().getInstance(AdminWhitelistRule.class).setMasterKillSwitch(false)
 EOF
 
+# Override number of executors, if cpu count is specified
+if [ ! -z "$SLAVE_CPUS" ] ; then
+    sed -i "s/<numExecutors>4<\/numExecutors>/<numExecutors>$SLAVE_CPUS<\/numExecutors>/" ~vagrant/*.node.xml
+fi
+
 # Add configuration files to jenkins
 mkdir -p $JENKINS_HOME/jobs
 mkdir -p $JENKINS_HOME/jobs/FreeNOS-ubuntu1804
@@ -99,6 +104,8 @@ mv ~vagrant/ubuntu-1804.job.xml $JENKINS_HOME/jobs/FreeNOS-ubuntu1804/config.xml
 mv ~vagrant/ubuntu-1804.node.xml $JENKINS_HOME/nodes/ubuntu-1804/config.xml
 mv ~vagrant/freebsd-12.job.xml $JENKINS_HOME/jobs/FreeNOS-freebsd12/config.xml
 mv ~vagrant/freebsd-12.node.xml $JENKINS_HOME/nodes/freebsd-12/config.xml
+
+
 
 # Ensure permissions are set properly for jenkins
 chown -R $JENKINS_USER:$JENKINS_GROUP $JENKINS_HOME
