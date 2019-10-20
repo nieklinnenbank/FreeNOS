@@ -11,7 +11,7 @@
     <port>22</port>
     <credentialsId>daa4fa23-3512-4cc1-81a7-ca53771cc2af</credentialsId>
     <launchTimeoutSeconds>210</launchTimeoutSeconds>
-    <maxNumRetries>10</maxNumRetries>
+    <maxNumRetries>99999999</maxNumRetries>
     <retryWaitTime>15</retryWaitTime>
     <sshHostKeyVerificationStrategy class="hudson.plugins.sshslaves.verifiers.NonVerifyingKeyVerificationStrategy"/>
     <tcpNoDelay>true</tcpNoDelay>
