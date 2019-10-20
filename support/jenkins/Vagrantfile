@@ -126,7 +126,7 @@ Vagrant.configure("2") do |config|
        ubuntu1804.vm.provision "file", source: ENV['QEMUSRC'], destination: "qemu-src.tar.gz"
     end
     ubuntu1804.vm.provision "file", source: "src.tar", destination: "src.tar"
-    ubuntu1804.vm.provision "shell", path: "ubuntu-1804.sh"
+    ubuntu1804.vm.provision "shell", path: "ubuntu-1804.sh", env: { "SLAVE_CPUS" => slave_cpus }
   end
 
   config.vm.define "freebsd12" do |freebsd12|
@@ -150,7 +150,7 @@ Vagrant.configure("2") do |config|
     # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
     # documentation for more information about their specific syntax and use.
     freebsd12.vm.provision "file", source: "src.tar", destination: "src.tar"
-    freebsd12.vm.provision "shell", path: "freebsd-12.sh"
+    freebsd12.vm.provision "shell", path: "freebsd-12.sh", env: { "SLAVE_CPUS" => slave_cpus }
   end
 
 end

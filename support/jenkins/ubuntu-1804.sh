@@ -64,8 +64,12 @@ else
     rm qemu-src.tar.gz
     cd qemu-*
     ./configure --prefix=/usr/local --target-list=arm-softmmu,i386-softmmu
-    # TODO: pass number of cores as environment variable
-    make -j5
+
+    if [ ! -z "$SLAVE_CPUS" ] ; then
+        make -j$SLAVE_CPUS
+    else
+        make -j5
+    fi
     make install
     cd ..
     rm -rf qemu-*
