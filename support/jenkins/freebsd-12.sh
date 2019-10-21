@@ -55,6 +55,11 @@ freebsd-update -F --not-running-from-cron install
 pkg update -f
 pkg upgrade -y
 
+# Extract generated source archive
+rm -rf ~vagrant/FreeNOS
+tar xf ~vagrant/src.tar -C ~vagrant
+rm -f ~vagrant/src.tar
+
 # Install required packages for development
 pkg install -y $PACKAGES
 
