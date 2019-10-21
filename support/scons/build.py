@@ -144,9 +144,15 @@ host.Append(QEMUFLAGS = '')
 
 target = host.Clone(tools    = ["default", "bootimage", "iso", "binary", "linn", "phony", "test", "compress"],
                     toolpath = ["support/scons"])
- 
+
 # Configuration build variables may come from, in order of priority:
 #   Command-line arguments, OS environment or .conf file
+#
+# For the OS environment: ensure the 'ENV' environment variable does not exist,
+# to avoid internal SCons exception while running the autoconf tests.
+if 'ENV' in os.environ:
+   del os.environ['ENV']
+
 args = os.environ.copy()
 args.update(ARGUMENTS)
 
