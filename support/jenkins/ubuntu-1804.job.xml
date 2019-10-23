@@ -59,6 +59,7 @@
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <authToken>FreeNOS-ubuntu1804-JobToken</authToken>
   <triggers/>
   <concurrentBuild>true</concurrentBuild>
   <axes>
