@@ -17,28 +17,26 @@
 #
 
 #
-# This script installs a KVM slave node with FreeBSD 12.0.
-# To use it in Jenkins, you need add the node using the example node
-# XML configuration file or manually add it as a KVM slave node.
-# You need to add the label 'freebsd-12' to the node to use the example build job file.
-#
-# Use the following settings when running the installer:
-#  - hostname: freebsd-12.kvm
-#  - enable SSH server (default)
-#  - add 'jenkins' user (shell: csh, groups: wheel)
+# This script installs a slave node with FreeBSD 12.0.
+# To use it in Jenkins, simple schedule the associated FreeBSD 12.0 build job.
 #
 # See the README file for more details on Jenkins setup.
 #
 
 NAME="freebsd-12"
-JENKINS_PACKAGES="git openjdk11"
+JENKINS_PACKAGES="git openjdk11 bash"
 COMPILER_PACKAGES="gcc gcc48 gcc5 gcc6 gcc7 gcc8 gcc9 \
                    llvm60 llvm70 llvm80 llvm90"
 MISC_PACKAGES="qemu scons cdrkit-genisoimage xorriso"
 PACKAGES="$JENKINS_PACKAGES $COMPILER_PACKAGES $MISC_PACKAGES"
+RELEASE="`uname -r|cut -f 1,2 -d -`"
+CHROOT="freebsd32"
+CHROOTDIR="/usr/chroot/$CHROOT"
+CHROOTURL="http://ftp.nl.freebsd.org/pub/FreeBSD/releases/i386/i386/$RELEASE/base.txz"
 
-# Trace execution
+# Trace execution and stop on errors
 set -x
+set -e
 
 # Set system hostname
 sed "s/bazinga.localdomain/$NAME/" /etc/defaults/rc.conf > /tmp/rc.conf
@@ -51,19 +49,67 @@ hostname -s $NAME
 # Update system to latest patches
 freebsd-update -F --not-running-from-cron fetch
 freebsd-update -F --not-running-from-cron install
-/usr/sbin/pkg
+/usr/sbin/pkg || true
 pkg update -f
 pkg upgrade -y
 
+# Create chroot
+if [ ! -d $CHROOTDIR ] ; then
+    mkdir -p $CHROOTDIR
+    cd $CHROOTDIR
+    fetch $CHROOTURL
+    tar xpf base.txz
+    rm base.txz
+fi
+
+# Inherit users and home directories from host
+cd $CHROOTDIR
+cp -Rp /usr/home $CHROOTDIR/usr
+cp /etc/passwd $CHROOTDIR/etc
+cp /etc/master.passwd $CHROOTDIR/etc
+cp /etc/group $CHROOTDIR/etc
+chroot $CHROOTDIR /usr/sbin/pwd_mkdb -p /etc/master.passwd
+
 # Extract generated source archive
-rm -rf ~vagrant/FreeNOS
-tar xf ~vagrant/src.tar -C ~vagrant
+rm -rf $CHROOTDIR/usr/home/vagrant/FreeNOS
+tar xf ~vagrant/src.tar -C $CHROOTDIR/usr/home/vagrant
 rm -f ~vagrant/src.tar
+rm -f $CHROOTDIR/home
+ln -s /usr/home $CHROOTDIR/home
+
+# Ensure DNS configuration is used
+cp /etc/resolv.conf $CHROOTDIR/etc/
+
+# Update chroot system to latest patches
+chroot $CHROOTDIR freebsd-update -F --not-running-from-cron fetch
+chroot $CHROOTDIR freebsd-update -F --not-running-from-cron install
+chroot $CHROOTDIR sh -c 'ASSUME_ALWAYS_YES=yes /usr/sbin/pkg || true'
+chroot $CHROOTDIR sh -c 'ASSUME_ALWAYS_YES=yes pkg update -f'
+chroot $CHROOTDIR sh -c 'ASSUME_ALWAYS_YES=yes pkg upgrade -y'
 
 # Install required packages for development
-pkg install -y $PACKAGES
+chroot $CHROOTDIR pkg install -y $PACKAGES
 
 # Disable the FreeBSD linker, use the GNU linker
-if [ -e /usr/bin/ld.bfd ] ; then
-   mv /usr/bin/ld.bfd /usr/bin/ld.bfd.orig
+if [ -e $CHROOTDIR/usr/bin/ld.bfd ] ; then
+    mv $CHROOTDIR/usr/bin/ld.bfd $CHROOTDIR/usr/bin/ld.bfd.orig
 fi
+
+# Configure SSH daemon
+if [ "`grep sshd_enable=\"YES\" $CHROOTDIR/etc/defaults/rc.conf|wc -l`" -eq "0" ] ; then
+   echo 'sshd_enable="YES"' >> $CHROOTDIR/etc/defaults/rc.conf
+fi
+if [ "`grep 'Port 2222' $CHROOTDIR/etc/ssh/sshd_config|wc -l`" -eq "0" ] ; then
+   echo 'Port 2222' >> $CHROOTDIR/etc/ssh/sshd_config
+fi
+
+# Install SSH init script
+cat > /etc/rc.d/sshd_chroot << EOF
+#!/bin/sh
+mount -t devfs devfs $CHROOTDIR/dev || true
+chroot $CHROOTDIR /etc/rc.d/sshd \$1
+EOF
+chmod +x /etc/rc.d/sshd_chroot
+
+# Start SSH daemon
+/etc/rc.d/sshd_chroot start || true
