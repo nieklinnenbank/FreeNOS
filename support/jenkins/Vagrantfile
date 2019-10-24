@@ -24,7 +24,7 @@ File.open("src.tar", "wb") do |file|
         Find.find("../../") do |path|
             filename = "FreeNOS/" + path[6..-1]
 
-            if filename == "FreeNOS/src.tar"
+            if filename == "FreeNOS/support/jenkins/src.tar"
                 next
             end
 
