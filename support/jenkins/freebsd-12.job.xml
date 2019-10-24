@@ -108,34 +108,17 @@
       <command>#!/bin/csh
 unsetenv freebsd-12
 scons $sysargs $debugging VERBOSE=True</command>
-    </hudson.tasks.Shell>
-    <hudson.tasks.Shell>
-      <command>#!/bin/csh
-unsetenv freebsd-12
-scons $sysargs $debugging tap_test
+scons $sysargs $debugging xml_test
 scons $sysargs $debugging KVMFLAGS=&quot;&quot; TESTDELAY=30 qemu_test
-</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>
-     <org.tap4j.plugin.TapPublisher plugin="tap@2.3">
-       <testResults>build/**/*.tap</testResults>
-       <failIfNoResults>false</failIfNoResults>
-       <failedTestsMarkBuildAsFailure>true</failedTestsMarkBuildAsFailure>
-       <outputTapToConsole>false</outputTapToConsole>
-       <enableSubtests>false</enableSubtests>
-       <discardOldReports>false</discardOldReports>
-       <todoIsFailure>false</todoIsFailure>
-       <includeCommentDiagnostics>false</includeCommentDiagnostics>
-       <validateNumberOfTests>true</validateNumberOfTests>
-       <planRequired>true</planRequired>
-       <verbose>true</verbose>
-       <showOnlyFailures>false</showOnlyFailures>
-       <stripSingleParents>false</stripSingleParents>
-       <flattenTapResult>false</flattenTapResult>
-       <removeYamlIfCorrupted>false</removeYamlIfCorrupted>
-       <skipIfBuildNotOk>false</skipIfBuildNotOk>
-     </org.tap4j.plugin.TapPublisher>
+    <hudson.tasks.junit.JUnitResultArchiver plugin="junit@1.28">
+      <testResults>build/**/*.xml</testResults>
+      <keepLongStdio>false</keepLongStdio>
+      <healthScaleFactor>1.0</healthScaleFactor>
+      <allowEmptyResults>false</allowEmptyResults>
+    </hudson.tasks.junit.JUnitResultArchiver>
   </publishers>
   <buildWrappers>
     <hudson.plugins.ws__cleanup.PreBuildCleanup plugin="ws-cleanup@0.37">

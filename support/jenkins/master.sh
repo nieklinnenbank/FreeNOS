@@ -105,8 +105,6 @@ mv ~vagrant/ubuntu-1804.node.xml $JENKINS_HOME/nodes/ubuntu-1804/config.xml
 mv ~vagrant/freebsd-12.job.xml $JENKINS_HOME/jobs/FreeNOS-freebsd12/config.xml
 mv ~vagrant/freebsd-12.node.xml $JENKINS_HOME/nodes/freebsd-12/config.xml
 
-
-
 # Ensure permissions are set properly for jenkins
 chown -R $JENKINS_USER:$JENKINS_GROUP $JENKINS_HOME
 
@@ -132,7 +130,7 @@ java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin inst
 java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin matrix-combinations-parameter
 java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin nodelabelparameter
 java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin ws-cleanup
-java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin tap
+java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin junit
 java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin ssh-slaves
 
 # Restart jenkins to load the new plugins

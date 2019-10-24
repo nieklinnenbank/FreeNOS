@@ -120,7 +120,7 @@ def runTester(target, source, env):
 
         elif "<!-- Start" in line:
             xml_testname=line.split(' ')[2]
-            xml_data=line + "\n"
+            xml_data=""
 
         elif line.startswith("<!-- Finish"):
             if line.split(' ')[3] != 'OK':
