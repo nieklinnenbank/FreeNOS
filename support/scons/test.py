@@ -23,6 +23,7 @@ import sys
 import os
 import os.path
 import time
+import xml.etree.ElementTree as XmlParser
 
 def timeoutChecker(proc, timeout):
     time.sleep(timeout)
@@ -124,16 +125,17 @@ def runTester(target, source, env):
 
         elif line.startswith("<!-- Finish"):
             if line.split(' ')[3] != 'OK':
-                xml_data = '<?xml version="1.0" encoding="UTF-8" ?>\r\n' + \
-                           '<testsuites id="' + xml_testname + '">\r\n' + \
-                           '<testsuite id="' + xml_testname + '" tests="1">\r\n' + \
-                           '<testcase id="' + xml_testname + '.XMLParse" name="Terminated unexpectedly">\r\n' + \
-                           '<failure message="' + xml_testname + ' terminated unexpectedly" type="ERROR">\r\n' + \
-                           xml_testname + ' terminated unexpectedly\r\n' + \
-                           '</failure>\r\n' + \
-                           '</testcase>\r\n' + \
-                           '</testsuite>\r\n' + \
-                           '</testsuites>\r\n'
+                try:
+                    XmlParser.fromstring(xml_data)
+                except:
+                    xml_data = '<?xml version="1.0" encoding="UTF-8" ?>\r\n' + \
+                               '<testsuites id="' + xml_testname + '" name="' + xml_testname + '">\r\n' + \
+                               '<testsuite id="' + xml_testname + '" name="' + xml_testname + '" tests="1">\r\n' + \
+                               '<testcase id="' + xml_testname + '.XMLParse" name="Terminated with errors (XML invalid)">\r\n' + \
+                               '<failure message="' + xml_testname + ' terminated with errors (XML invalid)" type="ERROR" />\r\n' + \
+                               '</testcase>\r\n' + \
+                               '</testsuite>\r\n' + \
+                               '</testsuites>\r\n'
 
             writeXml(xml_testname, xml_data, env)
             xml_data=""
