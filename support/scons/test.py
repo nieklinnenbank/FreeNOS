@@ -30,11 +30,11 @@ def timeoutChecker(proc, timeout):
     proc.terminate()
     sys.exit(1)
 
-def writeTap(testname, data, env):
+def writeXml(testname, data, env):
     """
-    Write TAP test output
+    Write XML test output
     """
-    outfile = env['BUILDROOT'] + '/tap/' + testname + '.tap'
+    outfile = env['BUILDROOT'] + '/xml/' + testname + '.xml'
 
     try:
         os.makedirs(os.path.dirname(outfile))
@@ -47,7 +47,7 @@ def writeTap(testname, data, env):
 
 def runTester(target, source, env):
     """
-    Run the FreeNOS autotester and collect TAP results.
+    Run the FreeNOS autotester and collect XML results.
     """
 
     # Needed to workaround SCons problem with the pickle module.
@@ -90,13 +90,13 @@ def runTester(target, source, env):
 
             if env['TESTPROMPT'] in output:
                 time.sleep(1)
-                proc.stdin.write("root\n/test/run /test --tap\n")
+                proc.stdin.write("root\n/test/run /test --xml\n")
                 proc.stdin.flush()
                 break
 
-    # Buffer TAP output
-    tap=""
-    tapname=""
+    # Buffer XML output
+    xml_data=""
+    xml_testname=""
 
     while True:
         line = proc.stdout.readline()
@@ -108,33 +108,38 @@ def runTester(target, source, env):
         sys.stdout.write(line + os.linesep)
         sys.stdout.flush()
 
-        if line.startswith('# Completed'):
+        if line.startswith('<!-- Completed'):
             proc.terminate()
             ch.terminate()
 
-            if line.startswith('# Completed OK'):
+            if line.startswith('<!-- Completed OK'):
                 return
             else:
                 print "Terminated with failures"
                 sys.exit(1)
 
-        elif "# Start" in line:
-            if tapname:
-                # current test ended unexpectedly
-                writeTap(tapname, tap + "\nBail out! " + tapname + " terminated unexpectedly\n", env)
+        elif "<!-- Start" in line:
+            xml_testname=line.split(' ')[2]
+            xml_data=line + "\n"
 
-            tapname=line.split(' ')[3]
-            tap=line + "\n"
-
-        elif line.startswith("# Finish"):
+        elif line.startswith("<!-- Finish"):
             if line.split(' ')[3] != 'OK':
-                tap += "\nBail out! " + tapname + " terminated with errors\n"
+                xml_data = '<?xml version="1.0" encoding="UTF-8" ?>\r\n' + \
+                           '<testsuites id="' + xml_testname + '">\r\n' + \
+                           '<testsuite id="' + xml_testname + '" tests="1">\r\n' + \
+                           '<testcase id="' + xml_testname + '.XMLParse" name="Terminated unexpectedly">\r\n' + \
+                           '<failure message="' + xml_testname + ' terminated unexpectedly" type="ERROR">\r\n' + \
+                           xml_testname + ' terminated unexpectedly\r\n' + \
+                           '</failure>\r\n' + \
+                           '</testcase>\r\n' + \
+                           '</testsuite>\r\n' + \
+                           '</testsuites>\r\n'
 
-            writeTap(tapname, tap, env)
-            tap=""
-            tapname=""
+            writeXml(xml_testname, xml_data, env)
+            xml_data=""
+            xml_testname=""
         else:
-            tap += line + "\n"
+            xml_data += line + "\n"
 
     print "Unexpected end of test output"
     proc.terminate()
