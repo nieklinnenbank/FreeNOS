@@ -107,9 +107,10 @@
     <hudson.tasks.Shell>
       <command>#!/bin/csh
 unsetenv freebsd-12
-scons $sysargs $debugging VERBOSE=True</command>
+scons $sysargs $debugging VERBOSE=True
 scons $sysargs $debugging xml_test
 scons $sysargs $debugging KVMFLAGS=&quot;&quot; TESTDELAY=30 qemu_test
+</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>
