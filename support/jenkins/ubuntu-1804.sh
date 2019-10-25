@@ -57,7 +57,7 @@ apt-get dist-upgrade -y
 # Use Qemu from APT if not provided
 if [ ! -e qemu-src.tar.gz ] ; then
   PACKAGES="$PACKAGES qemu-system"
-elif [ ! -e /usr/bin/qemu-system-arm ] ; then
+elif [ ! -e /usr/local/bin/qemu-system-arm ] ; then
     # Compile Qemu from source
     apt-get install -y build-essential pkg-config libglib2.0-dev libpixman-1-dev bison flex
     tar zxf qemu-src.tar.gz
