@@ -48,7 +48,12 @@ mv /usr/bin/daemon /usr/bin/daemon.bak
 cp /bin/true /usr/bin/daemon
 
 # Install jenkins
-apt-get install -y jenkins
+if ! apt-get install -y jenkins; then
+   # Ensure to restore the daemon program if installation failed
+   mv /usr/bin/daemon.bak /usr/bin/daemon
+   echo "Jenkins install failed: aborting"
+   exit 1
+fi
 
 # Restore daemon program
 mv /usr/bin/daemon.bak /usr/bin/daemon
