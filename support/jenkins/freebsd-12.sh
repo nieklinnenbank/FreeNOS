@@ -26,7 +26,8 @@
 NAME="freebsd-12"
 JENKINS_PACKAGES="git openjdk11 bash"
 COMPILER_PACKAGES="gcc gcc48 gcc5 gcc6 gcc7 gcc8 gcc9 \
-                   llvm60 llvm70 llvm80 llvm90"
+                   llvm60 llvm70 llvm80 llvm90 \
+                   arm-none-eabi-gcc"
 MISC_PACKAGES="qemu scons cdrkit-genisoimage xorriso"
 PACKAGES="$JENKINS_PACKAGES $COMPILER_PACKAGES $MISC_PACKAGES"
 RELEASE="`uname -r|cut -f 1,2 -d -`"

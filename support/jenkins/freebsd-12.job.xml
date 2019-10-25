@@ -74,16 +74,19 @@
       <name>sysargs</name>
       <values>
 
+        <string>ARCH=arm SYSTEM=raspberry COMPILER=gcc CROSS_COMPILE=arm-none-eabi- VERSION_SUFFIX=</string>
         <string>ARCH=arm SYSTEM=raspberry COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=60</string>
         <string>ARCH=arm SYSTEM=raspberry COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=70</string>
         <string>ARCH=arm SYSTEM=raspberry COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=80</string>
         <string>ARCH=arm SYSTEM=raspberry COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=90</string>
 
+        <string>ARCH=arm SYSTEM=raspberry2 COMPILER=gcc CROSS_COMPILE=arm-none-eabi- VERSION_SUFFIX=</string>
         <string>ARCH=arm SYSTEM=raspberry2 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=60</string>
         <string>ARCH=arm SYSTEM=raspberry2 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=70</string>
         <string>ARCH=arm SYSTEM=raspberry2 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=80</string>
         <string>ARCH=arm SYSTEM=raspberry2 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=90</string>
 
+        <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=gcc CROSS_COMPILE=arm-none-eabi- VERSION_SUFFIX=</string>
         <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=60</string>
         <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=70</string>
         <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=80</string>
