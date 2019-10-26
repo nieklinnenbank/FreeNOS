@@ -40,14 +40,14 @@ env.TargetProgram('kernel', [ Glob('*.cpp'),
 #
 # Embed the boot.img in the kernel
 #
-env.Command('kernel.bootimg', 'kernel', env['CROSS_COMPILE'] + 'objcopy ' +
+env.Command('kernel.bootimg', 'kernel', env['OBJCOPY'] + ' ' +
             '--update-section .bootimg=' + env['BUILDROOT'] + '/boot.img ' + 
             env['BUILDROOT'] + '/kernel/arm/' + env['SYSTEM'] + '/kernel')
 
 #
 # Provide binary kernel image to write to the SD card.
 #
-env.Command('kernel.img', 'kernel.bootimg', env['CROSS_COMPILE'] + 'objcopy -O binary ' +
+env.Command('kernel.img', 'kernel.bootimg', env['OBJCOPY'] + ' -O binary ' +
             env['BUILDROOT'] + '/kernel/arm/' + env['SYSTEM'] + '/kernel ' +
             env['BUILDROOT'] + '/kernel/arm/' + env['SYSTEM'] + '/kernel.img')
 
