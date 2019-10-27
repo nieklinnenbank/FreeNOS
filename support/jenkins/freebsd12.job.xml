@@ -109,14 +109,23 @@
   <builders>
     <hudson.tasks.Shell>
       <command>#!/usr/local/bin/bash
-OBJCOPY='arm-none-eabi-objcopy'
-ARM_GCC_VERSION="`ls /usr/local/lib/gcc/arm-none-eabi|head -n 1`"
-LINKEXTRA="['-L/usr/local/lib/gcc/arm-none-eabi/$ARM_GCC_VERSION/']"
-TARGET_EXTRA_ARGS="OBJCOPY=$OBJCOPY LINKEXTRA=$LINKEXTRA"
+set -x
+export $sysargs $debugging
 
-scons $sysargs $debugging VERBOSE=True
-scons $sysargs $debugging xml_test
-scons $sysargs $debugging KVMFLAGS=&quot;&quot; TESTDELAY=30 $TARGET_EXTRA_ARGS qemu_test
+# Unfortunately Clang does not ship with its own linker and libgcc equivalent.
+# Therefore, re-use those from the GCC compiler
+if [ "$ARCH" == "arm" ] &amp;&amp; [ "$COMPILER" == "clang" ] ; then
+  OBJCOPY='arm-none-eabi-objcopy'
+  ARM_GCC_VERSION="`ls /usr/local/lib/gcc/arm-none-eabi|head -n 1`"
+  LINKEXTRA="['-L/usr/local/lib/gcc/arm-none-eabi/$ARM_GCC_VERSION/']"
+  EXTRA="OBJCOPY=$OBJCOPY LINKEXTRA=$LINKEXTRA"
+else
+  EXTRA=""
+fi
+
+scons VERBOSE=True $EXTRA
+scons $EXTRA xml_test
+scons KVMFLAGS=&quot;&quot; TESTDELAY=30 $EXTRA qemu_test
 </command>
     </hudson.tasks.Shell>
   </builders>
