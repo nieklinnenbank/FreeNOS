@@ -202,6 +202,8 @@ def set_value(env, key, value):
         env[key] = True
     elif value in ('False', 'false'):
         env[key] = False
+    elif value.startswith('[') and value.endswith(']'):
+        env[key] = eval(value)
     else:
         try:
             env[key] = int(value)
