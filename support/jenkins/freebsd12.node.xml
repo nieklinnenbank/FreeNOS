@@ -1,6 +1,6 @@
 <?xml version='1.1' encoding='UTF-8'?>
 <slave>
-  <name>freebsd-12</name>
+  <name>freebsd12</name>
   <description></description>
   <remoteFS>/home/vagrant/agent</remoteFS>
   <numExecutors>4</numExecutors>

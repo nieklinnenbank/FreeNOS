@@ -7,9 +7,9 @@
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
         <org.jvnet.jenkins.plugins.nodelabelparameter.LabelParameterDefinition plugin="nodelabelparameter@1.7.2">
-          <name>freebsd-12</name>
+          <name>freebsd12</name>
           <description></description>
-          <defaultValue>freebsd-12</defaultValue>
+          <defaultValue>freebsd12</defaultValue>
           <allNodesMatchingLabel>false</allNodesMatchingLabel>
           <triggerIfResult>allCases</triggerIfResult>
           <nodeEligibility class="org.jvnet.jenkins.plugins.nodelabelparameter.node.AllNodeEligibility"/>
@@ -109,7 +109,6 @@
   <builders>
     <hudson.tasks.Shell>
       <command>#!/usr/local/bin/bash
-unset freebsd-12
 OBJCOPY='arm-none-eabi-objcopy'
 ARM_GCC_VERSION="`ls /usr/local/lib/gcc/arm-none-eabi|head -n 1`"
 LINKEXTRA="['-L/usr/local/lib/gcc/arm-none-eabi/$ARM_GCC_VERSION/']"

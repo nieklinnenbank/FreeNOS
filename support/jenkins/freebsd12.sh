@@ -23,7 +23,7 @@
 # See the README file for more details on Jenkins setup.
 #
 
-NAME="freebsd-12"
+NAME="freebsd12"
 JENKINS_PACKAGES="git openjdk11 bash"
 COMPILER_PACKAGES="gcc gcc48 gcc5 gcc6 gcc7 gcc8 gcc9 \
                    llvm60 llvm70 llvm80 llvm90 \
