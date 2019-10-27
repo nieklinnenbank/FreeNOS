@@ -1,6 +1,6 @@
 <?xml version='1.1' encoding='UTF-8'?>
 <slave>
-  <name>ubuntu-1804</name>
+  <name>ubuntu1804</name>
   <description></description>
   <remoteFS>/home/vagrant/agent</remoteFS>
   <numExecutors>4</numExecutors>
