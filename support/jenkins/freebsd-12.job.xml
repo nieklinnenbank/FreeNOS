@@ -108,11 +108,16 @@
   </axes>
   <builders>
     <hudson.tasks.Shell>
-      <command>#!/bin/csh
-unsetenv freebsd-12
+      <command>#!/usr/local/bin/bash
+unset freebsd-12
+OBJCOPY='arm-none-eabi-objcopy'
+ARM_GCC_VERSION="`ls /usr/local/lib/gcc/arm-none-eabi|head -n 1`"
+LINKEXTRA="['-L/usr/local/lib/gcc/arm-none-eabi/$ARM_GCC_VERSION/']"
+TARGET_EXTRA_ARGS="OBJCOPY=$OBJCOPY LINKEXTRA=$LINKEXTRA"
+
 scons $sysargs $debugging VERBOSE=True
 scons $sysargs $debugging xml_test
-scons $sysargs $debugging KVMFLAGS=&quot;&quot; TESTDELAY=30 qemu_test
+scons $sysargs $debugging KVMFLAGS=&quot;&quot; TESTDELAY=30 $TARGET_EXTRA_ARGS qemu_test
 </command>
     </hudson.tasks.Shell>
   </builders>
