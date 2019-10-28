@@ -28,7 +28,7 @@ JENKINS_PACKAGES="git openjdk11 bash"
 COMPILER_PACKAGES="gcc gcc48 gcc5 gcc6 gcc7 gcc8 gcc9 \
                    llvm60 llvm70 llvm80 llvm90 \
                    arm-none-eabi-gcc"
-MISC_PACKAGES="qemu scons cdrkit-genisoimage xorriso"
+MISC_PACKAGES="scons cdrkit-genisoimage xorriso"
 PACKAGES="$JENKINS_PACKAGES $COMPILER_PACKAGES $MISC_PACKAGES"
 RELEASE="`uname -r|cut -f 1,2 -d -`"
 CHROOT="freebsd32"
@@ -90,6 +90,27 @@ chroot $CHROOTDIR sh -c 'ASSUME_ALWAYS_YES=yes pkg upgrade -y'
 
 # Install required packages for development
 chroot $CHROOTDIR pkg install -y $PACKAGES
+
+# Use Qemu from PKG if not provided
+if [ ! -e ~vagrant/qemu-src.tar.gz ] ; then
+    chroot $CHROOTDIR pkg install -y qemu
+elif [ ! -e /usr/local/bin/qemu-system-arm ] ; then
+    # Compile Qemu from source
+    chroot $CHROOTDIR pkg install -y python pkgconf gmake bison flex gettext
+    
+    mv ~vagrant/qemu-src.tar.gz $CHROOTDIR/usr/home/vagrant/
+    chroot $CHROOTDIR sh -c 'tar zxf ~vagrant/qemu-src.tar.gz -C ~vagrant'
+    chroot $CHROOTDIR sh -c 'rm ~vagrant/qemu-src.tar.gz'
+    chroot $CHROOTDIR sh -c 'cd ~vagrant/qemu-* && ./configure --prefix=/usr/local --target-list=arm-softmmu,i386-softmmu'
+
+    if [ ! -z "$SLAVE_CPUS" ] ; then
+        chroot $CHROOTDIR sh -c 'cd ~vagrant/qemu-* && gmake -j$SLAVE_CPUS'
+    else
+        chroot $CHROOTDIR sh -c 'cd ~vagrant/qemu-* && gmake -j5'
+    fi
+    chroot $CHROOTDIR sh -c 'cd ~vagrant/qemu-* && gmake install'
+    chroot $CHROOTDIR sh -c 'rm -rf ~vagrant/qemu-*'
+fi
 
 # Disable the FreeBSD linker, use the GNU linker
 if [ -e $CHROOTDIR/usr/bin/ld.bfd ] ; then
