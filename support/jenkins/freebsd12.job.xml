@@ -123,9 +123,9 @@ else
   EXTRA=""
 fi
 
-scons VERBOSE=True $EXTRA
-scons $EXTRA xml_test
-scons KVMFLAGS=&quot;&quot; TESTDELAY=30 $EXTRA qemu_test
+scons VERBOSE=True QEMU_BUILD=True $EXTRA
+scons QEMU_BUILD=True $EXTRA xml_test
+scons KVMFLAGS=&quot;&quot; TESTDELAY=30 QEMU_BUILD=True $EXTRA qemu_test
 </command>
     </hudson.tasks.Shell>
   </builders>
