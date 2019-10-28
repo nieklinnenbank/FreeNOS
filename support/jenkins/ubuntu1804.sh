@@ -35,8 +35,8 @@ COMPILER_PACKAGES="gcc-4.8 gcc-4.8-multilib g++-4.8 g++-4.8-multilib \
 MISC_PACKAGES="build-essential scons genisoimage xorriso binutils-multiarch"
 PACKAGES="$JENKINS_PACKAGES $COMPILER_PACKAGES $MISC_PACKAGES"
 
-set -e
-set -x
+# Include common functions
+source common.sh
 
 # Set hostname
 echo ubuntu1804 > /etc/hostname
@@ -51,15 +51,15 @@ netplan apply
 sleep 5
 
 # Update system to latest patches
-apt-get update
-apt-get dist-upgrade -y
+run_command_retry "apt-get update"
+run_command_retry "apt-get dist-upgrade -y"
 
 # Use Qemu from APT if not provided
 if [ ! -e qemu-src.tar.gz ] ; then
   PACKAGES="$PACKAGES qemu-system"
 elif [ ! -e /usr/local/bin/qemu-system-arm ] ; then
     # Compile Qemu from source
-    apt-get install -y build-essential pkg-config libglib2.0-dev libpixman-1-dev bison flex
+    run_command_retry "apt-get install -y build-essential pkg-config libglib2.0-dev libpixman-1-dev bison flex"
     tar zxf qemu-src.tar.gz
     rm qemu-src.tar.gz
     cd qemu-*
@@ -81,4 +81,4 @@ tar xf ~vagrant/src.tar -C ~vagrant
 rm -f ~vagrant/src.tar
 
 # Install all packages needed for development
-apt-get install -y $PACKAGES
+run_command_retry "apt-get install -y $PACKAGES"

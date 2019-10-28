@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (C) 2015 Niek Linnenbank
+# Copyright (C) 2019 Niek Linnenbank
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,8 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-set -e
-set -x
+# Include common functions
+source common.sh
 
 # Set hostname
 echo master > /etc/hostname
@@ -32,28 +32,26 @@ netplan apply
 sleep 5
 
 # Update system to latest patches
-apt-get update
-apt-get dist-upgrade -y
+run_command_retry "apt-get update"
+run_command_retry "apt-get dist-upgrade -y"
 
 # Install jenkins dependencies
-apt-get install -y git default-jre daemon
+run_command_retry "apt-get install -y git default-jre daemon"
 
 # Add jenkins repository
-wget -q -O - http://pkg.jenkins.io/debian/jenkins.io.key | apt-key add -
+run_command_retry "wget -q -O jenkins.io.key http://pkg.jenkins.io/debian/jenkins.io.key"
+apt-key add jenkins.io.key
 echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list
-apt-get update
+run_command_retry "apt-get update"
 
 # Prevent automatic start of jenkins
-mv /usr/bin/daemon /usr/bin/daemon.bak
+if [ ! -e /usr/bin/daemon.bak ] ; then
+    mv /usr/bin/daemon /usr/bin/daemon.bak
+fi
 cp /bin/true /usr/bin/daemon
 
 # Install jenkins
-if ! apt-get install -y jenkins; then
-   # Ensure to restore the daemon program if installation failed
-   mv /usr/bin/daemon.bak /usr/bin/daemon
-   echo "Jenkins install failed: aborting"
-   exit 1
-fi
+run_command_retry "apt-get install -y jenkins"
 
 # Restore daemon program
 mv /usr/bin/daemon.bak /usr/bin/daemon
@@ -119,24 +117,16 @@ chown -R $JENKINS_USER:$JENKINS_GROUP $JENKINS_HOME
 sleep 30
 
 # Download jenkins client library
-for i in {1..10}; do
-    rm -f jenkins-cli.jar
-    wget http://localhost:$HTTP_PORT/jnlpJars/jenkins-cli.jar -O jenkins-cli.jar || true
-    if [ -s jenkins-cli.jar ] ; then
-        break
-    else
-        sleep 5
-    fi
-done
+run_command_retry "wget -q http://localhost:$HTTP_PORT/jnlpJars/jenkins-cli.jar -O jenkins-cli.jar"
 
 # Install jenkins plugins
-java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin git
-java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin matrix-project
-java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin matrix-combinations-parameter
-java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin nodelabelparameter
-java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin ws-cleanup
-java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin junit
-java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin ssh-slaves
+run_command_retry "java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin git"
+run_command_retry "java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin matrix-project"
+run_command_retry "java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin matrix-combinations-parameter"
+run_command_retry "java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin nodelabelparameter"
+run_command_retry "java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin ws-cleanup"
+run_command_retry "java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin junit"
+run_command_retry "java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin ssh-slaves"
 
 # Restart jenkins to load the new plugins
 /etc/init.d/jenkins stop

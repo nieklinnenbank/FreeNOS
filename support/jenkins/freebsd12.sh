@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Copyright (C) 2019 Niek Linnenbank
 #
@@ -35,9 +35,8 @@ CHROOT="freebsd32"
 CHROOTDIR="/usr/chroot/$CHROOT"
 CHROOTURL="http://ftp.nl.freebsd.org/pub/FreeBSD/releases/i386/i386/$RELEASE/base.txz"
 
-# Trace execution and stop on errors
-set -x
-set -e
+# Include common functions
+source common.sh
 
 # Set system hostname
 sed "s/bazinga.localdomain/$NAME/" /etc/defaults/rc.conf > /tmp/rc.conf
@@ -48,23 +47,23 @@ rm /etc/hosts.bak
 hostname -s $NAME
 
 # Update system to latest patches
-freebsd-update -F --not-running-from-cron fetch
-freebsd-update -F --not-running-from-cron install
+run_command_retry "freebsd-update -F --not-running-from-cron fetch"
+run_command_retry "freebsd-update -F --not-running-from-cron install"
 /usr/sbin/pkg || true
-pkg update -f
-pkg upgrade -y
+run_command_retry "pkg update -f"
+run_command_retry "pkg upgrade -y"
 
 # Create chroot
 if [ ! -d $CHROOTDIR ] ; then
     mkdir -p $CHROOTDIR
     cd $CHROOTDIR
-    fetch $CHROOTURL
+    run_command_retry "fetch $CHROOTURL"
     tar xpf base.txz
     rm base.txz
+    cd ~vagrant
 fi
 
 # Inherit users and home directories from host
-cd $CHROOTDIR
 cp -Rp /usr/home $CHROOTDIR/usr
 cp /etc/passwd $CHROOTDIR/etc
 cp /etc/master.passwd $CHROOTDIR/etc
@@ -78,52 +77,77 @@ rm -f ~vagrant/src.tar
 rm -f $CHROOTDIR/home
 ln -s /usr/home $CHROOTDIR/home
 
+# Move Qemu source to chroot (if found)
+if [ -e ~vagrant/qemu-src.tar.gz ] ; then
+    mv ~vagrant/qemu-src.tar.gz $CHROOTDIR/usr/home/vagrant/
+fi
+
 # Ensure DNS configuration is used
 cp /etc/resolv.conf $CHROOTDIR/etc/
 
-# Update chroot system to latest patches
-chroot $CHROOTDIR freebsd-update -F --not-running-from-cron fetch
-chroot $CHROOTDIR freebsd-update -F --not-running-from-cron install
-chroot $CHROOTDIR sh -c 'ASSUME_ALWAYS_YES=yes /usr/sbin/pkg || true'
-chroot $CHROOTDIR sh -c 'ASSUME_ALWAYS_YES=yes pkg update -f'
-chroot $CHROOTDIR sh -c 'ASSUME_ALWAYS_YES=yes pkg upgrade -y'
+# Install static bash (needed for the chroot)
+run_command_retry "pkg install -y bash-static"
+cp /bin/bash $CHROOTDIR/bin/bash
+
+# Prepare script to setup the chroot
+cp common.sh $CHROOTDIR/usr/home/vagrant
+cat > $CHROOTDIR/usr/home/vagrant/setup.sh << EOF
+#!/bin/bash
+
+# Include generic functions
+source /usr/home/vagrant/common.sh
+
+# Needed for some pkg commands
+export ASSUME_ALWAYS_YES=yes
+
+# Update chroot to latest patches
+run_command_retry "freebsd-update -F --not-running-from-cron fetch"
+run_command_retry "freebsd-update -F --not-running-from-cron install"
+ASSUME_ALWAYS_YES=yes /usr/sbin/pkg || true
+run_command_retry "pkg update -f"
+run_command_retry "pkg upgrade -y"
 
 # Install required packages for development
-chroot $CHROOTDIR pkg install -y $PACKAGES
+run_command_retry "pkg install -y $PACKAGES"
 
 # Use Qemu from PKG if not provided
 if [ ! -e ~vagrant/qemu-src.tar.gz ] ; then
-    chroot $CHROOTDIR pkg install -y qemu
+    run_command_retry "pkg install -y qemu"
 elif [ ! -e /usr/local/bin/qemu-system-arm ] ; then
     # Compile Qemu from source
-    chroot $CHROOTDIR pkg install -y python pkgconf gmake bison flex gettext
-    
-    mv ~vagrant/qemu-src.tar.gz $CHROOTDIR/usr/home/vagrant/
-    chroot $CHROOTDIR sh -c 'tar zxf ~vagrant/qemu-src.tar.gz -C ~vagrant'
-    chroot $CHROOTDIR sh -c 'rm ~vagrant/qemu-src.tar.gz'
-    chroot $CHROOTDIR sh -c 'cd ~vagrant/qemu-* && ./configure --prefix=/usr/local --target-list=arm-softmmu,i386-softmmu'
+    run_command_retry "pkg install -y python pkgconf gmake bison flex gettext glib pixman"
+
+    tar zxf ~vagrant/qemu-src.tar.gz -C ~vagrant
+    rm ~vagrant/qemu-src.tar.gz
+    cd ~vagrant/qemu-* && ./configure --prefix=/usr/local --target-list=arm-softmmu,i386-softmmu
 
     if [ ! -z "$SLAVE_CPUS" ] ; then
-        chroot $CHROOTDIR sh -c 'cd ~vagrant/qemu-* && gmake -j$SLAVE_CPUS'
+        cd ~vagrant/qemu-* && gmake -j$SLAVE_CPUS
     else
-        chroot $CHROOTDIR sh -c 'cd ~vagrant/qemu-* && gmake -j5'
+        cd ~vagrant/qemu-* && gmake -j5
     fi
-    chroot $CHROOTDIR sh -c 'cd ~vagrant/qemu-* && gmake install'
-    chroot $CHROOTDIR sh -c 'rm -rf ~vagrant/qemu-*'
+    cd ~vagrant/qemu-* && gmake install
+    rm -rf ~vagrant/qemu-*
 fi
 
 # Disable the FreeBSD linker, use the GNU linker
-if [ -e $CHROOTDIR/usr/bin/ld.bfd ] ; then
-    mv $CHROOTDIR/usr/bin/ld.bfd $CHROOTDIR/usr/bin/ld.bfd.orig
+if [ -e /usr/bin/ld.bfd ] ; then
+    mv /usr/bin/ld.bfd /usr/bin/ld.bfd.orig
 fi
 
 # Configure SSH daemon
-if [ "`grep sshd_enable=\"YES\" $CHROOTDIR/etc/defaults/rc.conf|wc -l`" -eq "0" ] ; then
-   echo 'sshd_enable="YES"' >> $CHROOTDIR/etc/defaults/rc.conf
+if [ "`grep sshd_enable=\"YES\" /etc/defaults/rc.conf|wc -l`" -eq "0" ] ; then
+   echo 'sshd_enable="YES"' >> /etc/defaults/rc.conf
 fi
-if [ "`grep 'Port 2222' $CHROOTDIR/etc/ssh/sshd_config|wc -l`" -eq "0" ] ; then
-   echo 'Port 2222' >> $CHROOTDIR/etc/ssh/sshd_config
+if [ "`grep 'Port 2222' /etc/ssh/sshd_config|wc -l`" -eq "0" ] ; then
+   echo 'Port 2222' >> /etc/ssh/sshd_config
 fi
+EOF
+
+# Run the chroot setup script
+chmod +x $CHROOTDIR/usr/home/vagrant/common.sh
+chmod +x $CHROOTDIR/usr/home/vagrant/setup.sh
+chroot $CHROOTDIR sh -c /usr/home/vagrant/setup.sh
 
 # Install SSH init script
 cat > /etc/rc.d/sshd_chroot << EOF
