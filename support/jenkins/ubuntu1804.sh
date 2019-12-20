@@ -38,6 +38,9 @@ PACKAGES="$JENKINS_PACKAGES $COMPILER_PACKAGES $MISC_PACKAGES"
 # Include common functions
 source common.sh
 
+# Disable interactive dialogs for APT
+export DEBIAN_FRONTEND=noninteractive
+
 # Set hostname
 echo ubuntu1804 > /etc/hostname
 

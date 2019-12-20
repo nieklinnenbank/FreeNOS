@@ -19,6 +19,9 @@
 # Include common functions
 source common.sh
 
+# Disable interactive dialogs for APT
+export DEBIAN_FRONTEND=noninteractive
+
 # Set hostname
 echo master > /etc/hostname
 
