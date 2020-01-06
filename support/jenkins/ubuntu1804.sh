@@ -88,6 +88,7 @@ run_command_retry "apt-get install -y $PACKAGES"
 
 # Node is ready. Enable port 2222
 if [ "`grep 'Port 2222' /etc/ssh/sshd_config|wc -l`" -eq "0" ] ; then
+    echo 'Port 22' >> /etc/ssh/sshd_config
     echo 'Port 2222' >> /etc/ssh/sshd_config
     service sshd reload
 fi
