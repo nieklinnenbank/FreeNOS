@@ -25,6 +25,7 @@
 #define BCM2835
 #define BCM2836
 #define SMP
+#define SMP_WAIT
 
 /** Default IO base on the Broadcom 2836 */
 #define IO_BASE 0x3F000000
