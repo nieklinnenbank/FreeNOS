@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <KernelLog.h>
 #include <StdioLog.h>
+#include <Runtime.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include "CoreServer.h"
@@ -28,8 +28,10 @@ int main(int argc, char **argv)
 
 #ifdef INTEL
     const char *consolePath = "/console/tty0";
+    const char *consoleMount = "/console";
 #else
     const char *consolePath = "/dev/serial/serial0/io";
+    const char *consoleMount = "/dev/serial";
 #endif
 
     log.setMinimumLogLevel(Log::Notice);
@@ -40,6 +42,8 @@ int main(int argc, char **argv)
         close(0);
         close(1);
         close(2);
+
+        waitMount(consoleMount);
 
         while (open(consolePath, O_RDWR) == -1);
         open(consolePath, O_RDWR);
