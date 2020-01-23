@@ -23,9 +23,16 @@
 
 int main(int argc, char **argv)
 {
-#if defined(INTEL) && defined(STDIO_LOGGING)
     StdioLog log;
     SystemInformation info;
+
+#ifdef INTEL
+    const char *consolePath = "/console/tty0";
+#else
+    const char *consolePath = "/dev/serial/serial0/io";
+#endif
+
+    log.setMinimumLogLevel(Log::Notice);
 
     // Is this the master core?
     if (info.coreId == 0)
@@ -34,16 +41,12 @@ int main(int argc, char **argv)
         close(1);
         close(2);
 
-        while (open("/console/tty0", O_RDWR) == -1);
-        open("/console/tty0", O_RDWR);
-        open("/console/tty0", O_RDWR);
-    }
-#else
-    KernelLog log;
-#endif
+        while (open(consolePath, O_RDWR) == -1);
+        open(consolePath, O_RDWR);
+        open(consolePath, O_RDWR);
 
-    log.setMinimumLogLevel(Log::Notice);
-    NOTICE("initializing on core0");
+        NOTICE("initializing on core0");
+    }
 
     CoreServer server;
     server.initialize();
