@@ -21,18 +21,21 @@
 #include <unistd.h>
 #include "CoreServer.h"
 
+#ifdef INTEL
+#include "IntelCoreServer.h"
+#endif
+
 int main(int argc, char **argv)
 {
     StdioLog log;
     SystemInformation info;
 
 #ifdef INTEL
-    const char *consolePath = "/console/tty0";
-    const char *consoleMount = "/console";
-#else
+    IntelCoreServer server;
+#endif
+
     const char *consolePath = "/dev/serial/serial0/io";
     const char *consoleMount = "/dev/serial";
-#endif
 
     log.setMinimumLogLevel(Log::Notice);
 
@@ -52,8 +55,11 @@ int main(int argc, char **argv)
         NOTICE("initializing on core0");
     }
 
-    CoreServer server;
+#ifdef INTEL
     server.initialize();
     server.test();
     return server.runCore();
+#else
+    return 0;
+#endif
 }

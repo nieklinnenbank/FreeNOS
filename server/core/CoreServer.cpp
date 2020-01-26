@@ -25,30 +25,21 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#ifdef INTEL
-#include <intel/IntelMP.h>
-#endif
-
 const char * CoreServer::kernelPath = "/boot/kernel";
 
 CoreServer::CoreServer()
     : ChannelServer<CoreServer, FileSystemMessage>(this)
-#ifdef INTEL
-    , m_mp(m_apic)
-#endif /* INTEL */
 {
     m_numRegions = 0;
     m_kernel = ZERO;
     m_kernelImage = ZERO;
     m_coreInfo = ZERO;
 
-#ifdef INTEL
     m_cores = ZERO;
     m_toMaster = ZERO;
     m_fromMaster = ZERO;
     m_toSlave = ZERO;
     m_fromSlave = ZERO;
-#endif
 
     // Register IPC handlers
     addIPCHandler(ReadFile,  &CoreServer::getCoreCount);
@@ -144,14 +135,11 @@ void CoreServer::getCoreCount(FileSystemMessage *msg)
 
     if (m_info.coreId == 0)
     {
-#ifdef INTEL
         if (m_cores)
             msg->size = m_cores->getCores().count();
         else
             msg->size = 1;
-#else
-        msg->size = 1;
-#endif
+
         msg->result = ESUCCESS;
     }
     else
@@ -160,7 +148,6 @@ void CoreServer::getCoreCount(FileSystemMessage *msg)
 
 CoreServer::Result CoreServer::test()
 {
-#ifdef INTEL
     if (m_info.coreId != 0)
     {
         FileSystemMessage msg;
@@ -191,7 +178,6 @@ CoreServer::Result CoreServer::test()
         }
 
     }
-#endif /* INTEL */
     return Success;
 }
 
@@ -199,24 +185,33 @@ CoreServer::Result CoreServer::initialize()
 {
     Result r;
 
-#ifdef INTEL
-    // Register IPI vector
-    // TODO: minus 32 because of IRQ() in IntelKernel
-    ProcessCtl(SELF, WatchIRQ, IPIVector - 32);
-#endif /* INTEL */
-
     // Only core0 needs to start other coreservers
     if (m_info.coreId != 0)
         return setupChannels();
 
     if ((r = loadKernel()) != Success)
+    {
+        ERROR("failed to load kernel");
         return r;
+    }
 
-    if ((r = discover()) != Success)
+    if ((r = discoverCores()) != Success)
+    {
+        ERROR("failed to discover cores");
         return r;
+    }
+
+    if ((r = prepareCoreInfo()) != Success)
+    {
+        ERROR("failed to prepare CoreInfo data array");
+        return r;
+    }
 
     if ((r = setupChannels()) != Success)
+    {
+        ERROR("failed to setup IPC channels");
         return r;
+    }
 
     return bootAll();
 }
@@ -224,49 +219,72 @@ CoreServer::Result CoreServer::initialize()
 CoreServer::Result CoreServer::loadKernel()
 {
     struct stat st;
-    int fd;
+    int fd, r;
 
     DEBUG("Opening : " << kernelPath);
 
     // Read the program image
-    if (stat(kernelPath, &st) != 0)
+    if ((r = stat(kernelPath, &st)) != 0)
+    {
+        ERROR("failed to stat() kernel on path: " << kernelPath <<
+              ": result " << r);
         return IOError;
+    }
 
     if ((fd = open(kernelPath, O_RDONLY)) < 0)
+    {
+        ERROR("failed to open() kernel on path: " << kernelPath <<
+              ": result " << fd);
         return IOError;
+    }
 
     m_kernelImage = new u8[st.st_size];
-    if (read(fd, m_kernelImage, st.st_size) != st.st_size)
+    if ((r = read(fd, m_kernelImage, st.st_size)) != st.st_size)
     {
+        ERROR("failed to read() kernel on path: " << kernelPath <<
+              ": result " << r);
         return IOError;
     }
     close(fd);
 
     // Attempt to read executable format
-    if (ExecutableFormat::find(m_kernelImage, st.st_size, &m_kernel) != ExecutableFormat::Success)
+    ExecutableFormat::Result result = ExecutableFormat::find(m_kernelImage, st.st_size, &m_kernel);
+    if (result != ExecutableFormat::Success)
+    {
+        ERROR("failed to find ExecutableFormat of kernel on path: " << kernelPath <<
+             ": result " << (int) result);
         return ExecError;
+    }
 
     // Retrieve memory regions
     m_numRegions = 16;
-    if (m_kernel->regions(m_regions, &m_numRegions) != ExecutableFormat::Success)
+    result = m_kernel->regions(m_regions, &m_numRegions);
+
+    if (result != ExecutableFormat::Success)
+    {
+        ERROR("failed to get ExecutableFormat regions of kernel on path: " << kernelPath <<
+              ": result " << (int) result);
         return ExecError;
+    }
 
     DEBUG("kernel loaded");
     return Success;
 }
 
-CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info,
-                                        ExecutableFormat::Region *regions)
+CoreServer::Result CoreServer::prepareCore(uint coreId, CoreInfo *info,
+                                           ExecutableFormat::Region *regions)
 {
+    API::Result r;
     SystemInformation sysInfo;
+
     DEBUG("Reserving: " << (void *)info->memory.phys << " size=" <<
             info->memory.size << " available=" << sysInfo.memoryAvail);
 
     // Claim the core's memory
-    if (VMCtl(SELF, ReserveMem, &info->memory) != API::Success)
+    if ((r = VMCtl(SELF, ReserveMem, &info->memory)) != API::Success)
     {
-        ERROR("failed to reserve memory for core" << coreId <<
-              " at " << (void *)info->memory.phys);
+        ERROR("VMCtl(ReserveMem) failed for core" << coreId <<
+              " at " << (void *)info->memory.phys << ": result " << (int) r);
         return OutOfMemory;
     }
 
@@ -284,22 +302,31 @@ CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info,
                        Memory::User;
 
         // Map the target kernel's memory for regions[i].size
-        if (VMCtl(SELF, Map, &range) != 0)
+        if ((r = VMCtl(SELF, Map, &range)) != 0)
         {
+            ERROR("VMCtl(Map) failed for kernel on core" << coreId <<
+                  " at " << (void *)range.phys << ": result " << (int) r);
             return OutOfMemory;
         }
-        // Copy the kernel to the target core's memory
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-compare"
-        API::Result r = VMCopy(SELF, API::Write, (Address) regions[i].data,
-                               range.virt,
-                               regions[i].size);
+
+        // Copy the kernel to the target core's memory
+        r = VMCopy(SELF, API::Write, (Address) regions[i].data,
+                   range.virt, regions[i].size);
         if ((Size)r != regions[i].size)
+        {
+            ERROR("VMCopy failed for kernel regions[" << i << "].data" <<
+                  " at " << (void *)regions[i].data << ": result " << (int) r);
             return MemoryError;
+        }
 
         // Unmap the target kernel's memory
-        if (VMCtl(SELF, UnMap, &range) != API::Success)
+        if ((r = VMCtl(SELF, UnMap, &range)) != API::Success)
         {
+            ERROR("VMCtl(UnMap) failed for kernel on core" << coreId <<
+                  " at " << (void *)range.phys << ": result " << (int) r);
             return MemoryError;
         }
 
@@ -314,56 +341,41 @@ CoreServer::Result CoreServer::bootCore(uint coreId, CoreInfo *info,
     range.access = Memory::Readable | Memory::Writable | Memory::User;
 
     // Map BootImage buffer
-    if (VMCtl(SELF, Map, &range) != API::Success)
+    if ((r = VMCtl(SELF, Map, &range)) != API::Success)
     {
+        ERROR("VMCtl(Map) failed for BootImage on core" << coreId <<
+              " at " << (void *)range.phys << ": result " << (int) r);
         return OutOfMemory;
     }
+
     // Copy the BootImage
-    Error r = VMCopy(SELF, API::Write, sysInfo.bootImageAddress,
+    Error err = VMCopy(SELF, API::Write, sysInfo.bootImageAddress,
                      range.virt, sysInfo.bootImageSize);
-    if (r != (Error) sysInfo.bootImageSize)
+    if (err != (Error) sysInfo.bootImageSize)
+    {
+        ERROR("VMCopy failed for BootIage on core" << coreId <<
+              " at " << (void *)sysInfo.bootImageAddress <<
+              ": result " << (int)err);
         return MemoryError;
+    }
 
     // Unmap the BootImage
-    if (VMCtl(SELF, UnMap, &range) != API::Success)
+    if ((r = VMCtl(SELF, UnMap, &range)) != API::Success)
+    {
+        ERROR("VMCtl(UnMap) failed for BootImage on core" << coreId <<
+              " at " << (void *)range.phys << ": result " << (int) r);
         return MemoryError;
-
-#ifdef INTEL
-    // Signal the core to boot
-    if (m_mp.boot(info) != IntelMP::Success) {
-        ERROR("failed to boot core" << coreId);
-        return BootError;
-    } else {
-        NOTICE("core" << coreId << " started");
     }
-#endif
+
     return Success;
 }
 
 
-CoreServer::Result CoreServer::discover()
+CoreServer::Result CoreServer::prepareCoreInfo()
 {
-#ifdef INTEL
     SystemInformation sysInfo;
     Size memPerCore = 0;
 
-    if (m_acpi.initialize() == IntelACPI::Success &&
-        m_acpi.discover() == IntelACPI::Success)
-    {
-        NOTICE("using ACPI as CoreManager");
-        m_mp.discover();
-        m_cores = &m_acpi;
-    }
-    else if (m_mp.discover() == IntelMP::Success)
-    {
-        NOTICE("using MPTable as CoreManager");
-        m_cores = &m_mp;
-    }
-    else
-    {
-        ERROR("no CoreManager found (ACPI or MPTable)");
-        return NotFound;
-    }
     List<uint> & cores = m_cores->getCores();
     if (cores.count() == 0)
     {
@@ -375,13 +387,13 @@ CoreServer::Result CoreServer::discover()
     memPerCore /= MegaByte(4);
     memPerCore *= MegaByte(4);
 
-    NOTICE("found " << cores.count() << " cores -- " <<
+    NOTICE("found " << cores.count() << " cores: " <<
             (memPerCore / 1024 / 1024) << "MB per core");
 
     // Allocate CoreInfo for each core
     m_coreInfo = new Index<CoreInfo>(cores.count());
 
-    // Boot each core
+    // Prepare CoreInfo for each core
     for (ListIterator<uint> i(cores); i.hasCurrent(); i++)
     {
         uint coreId = i.current();
@@ -391,6 +403,7 @@ CoreServer::Result CoreServer::discover()
             CoreInfo *info = new CoreInfo;
             m_coreInfo->insert(coreId, *info);
             MemoryBlock::set(info, 0, sizeof(CoreInfo));
+
             info->coreId = coreId;
             info->memory.phys = memPerCore * coreId;
             info->memory.size = memPerCore - PAGESIZE;
@@ -408,13 +421,12 @@ CoreServer::Result CoreServer::discover()
             strlcpy(info->kernelCommand, kernelPath, KERNEL_PATHLEN);
         }
     }
-#endif
+
     return Success;
 }
 
 CoreServer::Result CoreServer::bootAll()
 {
-#ifdef INTEL
     List<uint> & cores = m_cores->getCores();
     if (cores.count() == 0)
     {
@@ -429,10 +441,11 @@ CoreServer::Result CoreServer::bootAll()
 
         if (coreId != 0)
         {
-            bootCore(coreId, (CoreInfo *)m_coreInfo->get(coreId), m_regions);
+            prepareCore(coreId, (CoreInfo *)m_coreInfo->get(coreId), m_regions);
+            bootCore(coreId, (CoreInfo *)m_coreInfo->get(coreId));
         }
     }
-#endif
+
     return Success;
 }
 
@@ -454,7 +467,6 @@ CoreServer::Result CoreServer::clearPages(Address addr, Size size)
 
 CoreServer::Result CoreServer::setupChannels()
 {
-#ifdef INTEL
     SystemInformation info;
 
     if (info.coreId == 0)
@@ -496,7 +508,7 @@ CoreServer::Result CoreServer::setupChannels()
         m_fromMaster->setPhysical(info.coreChannelAddress + (PAGESIZE * 2),
                                   info.coreChannelAddress + (PAGESIZE * 3));
     }
-#endif /* INTEL */
+
     return Success;
 }
 
@@ -513,8 +525,7 @@ CoreServer::Result CoreServer::receiveFromMaster(FileSystemMessage *msg)
         }
 
         // Wait for IPI which will wake us
-        ProcessCtl(SELF, EnableIRQ, IPIVector);
-        ProcessCtl(SELF, EnterSleep, 0, 0);
+        waitIPI();
     }
 
     return Success;
@@ -557,14 +568,12 @@ CoreServer::Result CoreServer::sendToSlave(uint coreId, FileSystemMessage *msg)
         return IOError;
     }
 
-#ifdef INTEL
     // Send IPI to ensure the slave wakes up for the message
-    if (m_apic.sendIPI(coreId, IPIVector) != IntController::Success)
+    if (sendIPI(coreId) != Success)
     {
         ERROR("failed to send IPI to core" << coreId);
         return IOError;
     }
 
-#endif /* INTEL */
     return Success;
 }
