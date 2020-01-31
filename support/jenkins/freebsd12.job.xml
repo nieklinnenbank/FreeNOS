@@ -93,7 +93,6 @@
         <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=90</string>
 
         <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=48</string>
-        <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=5</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=6</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=7</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=8</string>
