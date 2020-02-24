@@ -48,7 +48,7 @@ hostname -s $NAME
 
 # Update system to latest patches
 run_command_retry "freebsd-update -F --not-running-from-cron fetch"
-run_command_retry "freebsd-update -F --not-running-from-cron install"
+run_command_retry "freebsd-update -F --not-running-from-cron install" 2
 /usr/sbin/pkg || true
 run_command_retry "pkg update -f"
 run_command_retry "pkg upgrade -y"
@@ -102,7 +102,7 @@ export ASSUME_ALWAYS_YES=yes
 
 # Update chroot to latest patches
 run_command_retry "freebsd-update -F --not-running-from-cron fetch"
-run_command_retry "freebsd-update -F --not-running-from-cron install"
+run_command_retry "freebsd-update -F --not-running-from-cron install" 2
 ASSUME_ALWAYS_YES=yes /usr/sbin/pkg || true
 run_command_retry "pkg update -f"
 run_command_retry "pkg upgrade -y"
