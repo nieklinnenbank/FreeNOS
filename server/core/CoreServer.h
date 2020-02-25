@@ -28,6 +28,7 @@
 #include <MemoryChannel.h>
 #include <FileSystemMessage.h>
 #include <CoreInfo.h>
+#include <Factory.h>
 #include <CoreManager.h>
 
 /**
@@ -45,6 +46,7 @@
  * CoreServers will communicate and collaborate together to implement functionality.
  */
 class CoreServer : public ChannelServer<CoreServer, FileSystemMessage>
+                 , public AbstractFactory<CoreServer>
 {
   private:
 

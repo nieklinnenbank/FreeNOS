@@ -15,24 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <Factory.h>
 #include <StdioLog.h>
 #include <Runtime.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include "CoreServer.h"
 
-#ifdef INTEL
-#include "IntelCoreServer.h"
-#endif
-
 int main(int argc, char **argv)
 {
     StdioLog log;
     SystemInformation info;
-
-#ifdef INTEL
-    IntelCoreServer server;
-#endif
 
     const char *consolePath = "/dev/serial/serial0/io";
     const char *consoleMount = "/dev/serial";
@@ -55,11 +48,8 @@ int main(int argc, char **argv)
         NOTICE("initializing on core0");
     }
 
-#ifdef INTEL
-    server.initialize();
-    server.test();
-    return server.runCore();
-#else
-    return 0;
-#endif
+    CoreServer* server = CoreServer::create();
+    server->initialize();
+    server->test();
+    return server->runCore();
 }

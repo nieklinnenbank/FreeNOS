@@ -17,8 +17,14 @@
 
 #include <FreeNOS/System.h>
 #include <FreeNOS/API.h>
+#include <Factory.h>
 #include <Log.h>
 #include "IntelCoreServer.h"
+
+template<> CoreServer* AbstractFactory<CoreServer>::create()
+{
+    return new IntelCoreServer();
+}
 
 IntelCoreServer::IntelCoreServer()
     : CoreServer()
