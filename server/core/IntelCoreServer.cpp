@@ -62,11 +62,12 @@ IntelCoreServer::Result IntelCoreServer::bootCore(uint coreId, CoreInfo *info)
 
 IntelCoreServer::Result IntelCoreServer::discoverCores()
 {
+    m_mp.initialize();
+
     if (m_acpi.initialize() == IntelACPI::Success &&
         m_acpi.discover() == IntelACPI::Success)
     {
         NOTICE("using ACPI as CoreManager");
-        m_mp.discover();
         m_cores = &m_acpi;
     }
     else if (m_mp.discover() == IntelMP::Success)
