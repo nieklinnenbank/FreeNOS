@@ -25,6 +25,8 @@ src = [ 'Main.cpp', 'CoreServer.cpp' ]
 
 if env['ARCH'] == 'intel':
     src += [ 'IntelCoreServer.cpp' ]
+elif env['ARCH'] == 'arm' and env['SYSTEM'].startswith('sunxi'):
+    src += [ 'SunxiCoreServer.cpp' ]
 else:
     src += [ 'SingleCoreServer.cpp' ]
 

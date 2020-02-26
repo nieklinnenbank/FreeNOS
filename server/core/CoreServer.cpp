@@ -158,7 +158,7 @@ CoreServer::Result CoreServer::test()
 
         sendToMaster(&msg);
     }
-    else
+    else if (m_cores != NULL)
     {
         FileSystemMessage msg;
         Size numCores = m_cores->getCores().count();
@@ -176,7 +176,6 @@ CoreServer::Result CoreServer::test()
                 ERROR("invalid message received from core" << i);
             }
         }
-
     }
     return Success;
 }
