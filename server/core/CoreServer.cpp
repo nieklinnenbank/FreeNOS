@@ -405,7 +405,7 @@ CoreServer::Result CoreServer::prepareCoreInfo()
             MemoryBlock::set(info, 0, sizeof(CoreInfo));
 
             info->coreId = coreId;
-            info->memory.phys = memPerCore * coreId;
+            info->memory.phys = RAM_ADDR + (memPerCore * coreId);
             info->memory.size = memPerCore - PAGESIZE;
             info->kernel.phys = info->memory.phys;
             info->kernel.size = MegaByte(4);
@@ -453,6 +453,8 @@ CoreServer::Result CoreServer::clearPages(Address addr, Size size)
 {
     Memory::Range range;
 
+    DEBUG("addr = " << (void*)addr << ", size = " << size);
+
     range.phys = addr;
     range.virt = ZERO;
     range.size = size;
@@ -468,6 +470,8 @@ CoreServer::Result CoreServer::clearPages(Address addr, Size size)
 CoreServer::Result CoreServer::setupChannels()
 {
     SystemInformation info;
+
+    DEBUG("");
 
     if (info.coreId == 0)
     {
