@@ -118,7 +118,6 @@ elif [ ! -e /usr/local/bin/qemu-system-arm ] ; then
     run_command_retry "pkg install -y python pkgconf gmake bison flex gettext glib pixman"
 
     tar zxf ~vagrant/qemu-src.tar.gz -C ~vagrant
-    rm ~vagrant/qemu-src.tar.gz
     cd ~vagrant/qemu-* && ./configure --prefix=/usr/local --target-list=arm-softmmu,i386-softmmu
 
     if [ ! -z "$SLAVE_CPUS" ] ; then
@@ -126,8 +125,7 @@ elif [ ! -e /usr/local/bin/qemu-system-arm ] ; then
     else
         cd ~vagrant/qemu-* && gmake -j5
     fi
-    cd ~vagrant/qemu-* && gmake install
-    rm -rf ~vagrant/qemu-*
+    cd ~vagrant/qemu-* && gmake install && gmake clean
 fi
 
 # Disable the FreeBSD linker, use the GNU linker

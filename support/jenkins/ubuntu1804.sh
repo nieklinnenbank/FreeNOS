@@ -64,7 +64,6 @@ elif [ ! -e /usr/local/bin/qemu-system-arm ] ; then
     # Compile Qemu from source
     run_command_retry "apt-get install -y build-essential pkg-config libglib2.0-dev libpixman-1-dev bison flex"
     tar zxf qemu-src.tar.gz
-    rm qemu-src.tar.gz
     cd qemu-*
     ./configure --prefix=/usr/local --target-list=arm-softmmu,i386-softmmu
 
@@ -74,8 +73,8 @@ elif [ ! -e /usr/local/bin/qemu-system-arm ] ; then
         make -j5
     fi
     make install
+    make clean
     cd ..
-    rm -rf qemu-*
 fi
 
 # Extract generated source archive
