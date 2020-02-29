@@ -25,5 +25,7 @@ src = [ 'Main.cpp', 'CoreServer.cpp' ]
 
 if env['ARCH'] == 'intel':
     src += [ 'IntelCoreServer.cpp' ]
+else:
+    src += [ 'SingleCoreServer.cpp' ]
 
 env.TargetProgram('server', src)
