@@ -57,6 +57,20 @@ else
     slave_memory = 2048
 end
 
+# Contains the URL for cloning GIT archive with Qemu source
+if ENV.has_key?('QEMU_URL')
+    qemu_url = ENV['QEMU_URL']
+else
+    qemu_url = 'https://github.com/nieklinnenbank/qemu'
+end
+
+# Contains the branch in the GIT archive with Qemu source
+if ENV.has_key?('QEMU_BRANCH')
+    qemu_branch = ENV['QEMU_BRANCH']
+else
+    qemu_branch = 'orangepi-zero'
+end
+
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
 # backwards compatibility). Please don't change it unless you know what
@@ -122,12 +136,11 @@ Vagrant.configure("2") do |config|
     # Enable provisioning with a shell script. Additional provisioners such as
     # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
     # documentation for more information about their specific syntax and use.
-    if ENV.has_key?('QEMUSRC')
-       ubuntu1804.vm.provision "file", source: ENV['QEMUSRC'], destination: "qemu-src.tar.gz"
-    end
     ubuntu1804.vm.provision "file", source: "src.tar", destination: "src.tar"
     ubuntu1804.vm.provision "file", source: "common.sh", destination: "common.sh"
-    ubuntu1804.vm.provision "shell", path: "ubuntu1804.sh", env: { "SLAVE_CPUS" => slave_cpus }
+    ubuntu1804.vm.provision "shell", path: "ubuntu1804.sh", env: { "SLAVE_CPUS" => slave_cpus,
+                                                                   "QEMU_URL" => qemu_url,
+                                                                   "QEMU_BRANCH" => qemu_branch }
     ubuntu1804.vm.provision "shell", path: "schedule-job.sh", args: "FreeNOS-ubuntu1804"
   end
 
@@ -151,12 +164,11 @@ Vagrant.configure("2") do |config|
     # Enable provisioning with a shell script. Additional provisioners such as
     # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
     # documentation for more information about their specific syntax and use.
-    if ENV.has_key?('QEMUSRC')
-       freebsd12.vm.provision "file", source: ENV['QEMUSRC'], destination: "qemu-src.tar.gz"
-    end
     freebsd12.vm.provision "file", source: "src.tar", destination: "src.tar"
     freebsd12.vm.provision "file", source: "common.sh", destination: "common.sh"
-    freebsd12.vm.provision "shell", path: "freebsd12.sh", env: { "SLAVE_CPUS" => slave_cpus }
+    freebsd12.vm.provision "shell", path: "freebsd12.sh", env: { "SLAVE_CPUS" => slave_cpus,
+                                                                  "QEMU_URL" => qemu_url,
+                                                                  "QEMU_BRANCH" => qemu_branch }
     freebsd12.vm.provision "shell", path: "schedule-job.sh", args: "FreeNOS-freebsd12"
   end
 

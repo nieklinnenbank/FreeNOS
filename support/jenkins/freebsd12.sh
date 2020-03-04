@@ -111,21 +111,23 @@ run_command_retry "pkg upgrade -y"
 run_command_retry "pkg install -y $PACKAGES"
 
 # Use Qemu from PKG if not provided
-if [ ! -e ~vagrant/qemu-src.tar.gz ] ; then
+if [ -z "$QEMU_URL" ] ; then
     run_command_retry "pkg install -y qemu"
 elif [ ! -e /usr/local/bin/qemu-system-arm ] ; then
     # Compile Qemu from source
     run_command_retry "pkg install -y python pkgconf gmake bison flex gettext glib pixman"
 
-    tar zxf ~vagrant/qemu-src.tar.gz -C ~vagrant
-    cd ~vagrant/qemu-* && ./configure --prefix=/usr/local --target-list=arm-softmmu,i386-softmmu
+    git clone --depth=1 -b $QEMU_BRANCH $QEMU_URL qemu-git
+    cd qemu-git
+    ./configure --prefix=/usr/local --target-list=arm-softmmu,i386-softmmu
 
     if [ ! -z "$SLAVE_CPUS" ] ; then
-        cd ~vagrant/qemu-* && gmake -j$SLAVE_CPUS
+        gmake -j$SLAVE_CPUS
     else
-        cd ~vagrant/qemu-* && gmake -j5
+        gmake -j5
     fi
-    cd ~vagrant/qemu-* && gmake install && gmake clean
+    gmake install
+    gmake clean
 fi
 
 # Disable the FreeBSD linker, use the GNU linker

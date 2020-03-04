@@ -58,13 +58,13 @@ run_command_retry "apt-get update"
 run_command_retry "apt-get dist-upgrade -y"
 
 # Use Qemu from APT if not provided
-if [ ! -e qemu-src.tar.gz ] ; then
+if [ -z "$QEMU_URL" ] ; then
   PACKAGES="$PACKAGES qemu-system"
 elif [ ! -e /usr/local/bin/qemu-system-arm ] ; then
     # Compile Qemu from source
     run_command_retry "apt-get install -y build-essential pkg-config libglib2.0-dev libpixman-1-dev bison flex"
-    tar zxf qemu-src.tar.gz
-    cd qemu-*
+    git clone --depth=1 -b $QEMU_BRANCH $QEMU_URL qemu-git
+    cd qemu-git
     ./configure --prefix=/usr/local --target-list=arm-softmmu,i386-softmmu
 
     if [ ! -z "$SLAVE_CPUS" ] ; then
