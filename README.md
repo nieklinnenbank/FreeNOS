@@ -10,24 +10,24 @@ Visit the project website at http://www.FreeNOS.org for more information.
 Features
 ========
 
-* Intel x86 (PC) and ARMv6/ARMv7 architectures (Raspberry Pi 1,2,3)
+* Intel x86 (PC) and ARMv6/ARMv7 architectures (Raspberry Pi 1,2,3 and Orange Pi Zero/PC)
 * Virtual memory
 * Simple task scheduling
 * Inter Process Communication (IPC)
 * Symmetric Multi Processing with MPI support (Intel x86 only)
 * Devices:
-    * VGA/Keyboard consoles (also supported by Ed's libteken (http://80386.nl/projects/libteken/)
+    * VGA/Keyboard consoles
     * i8250 serial UART
     * PCI host controller
     * CMOS RTC clock
     * ATA host controller
-    * USB controller and (root)hub (Raspberry Pi only)
-    * Loopback network and SMSC95xx ethernet (Raspberry Pi only)
+    * USB controller and roothub (Raspberry Pi 1 only)
+    * Loopback network and SMSC95xx ethernet (Raspberry Pi 1 only)
 * Filesystems:
     * Virtual file system (VFS)
     * Temporary file system (TmpFS)
     * Linnenbank file system (LinnFS)
-* Networking (IP, UDP, ICMP, for Raspberry pi 1 only)
+* Networking (IP, UDP, ICMP, for Raspberry Pi 1 only)
 * POSIX, ANSI C libraries
 * Dynamic and Shared memory
 * Fully automatic autotester
@@ -39,8 +39,9 @@ Features
 Host Setup
 ==========
 
-First install all required build dependencies. FreeNOS needs SCons, an C++ compiler and for Intel targets a tool to generate ISO images.
-Follow the instructions below to install the build dependencies on your host OS.
+First install all required build dependencies. FreeNOS needs SCons, an C++ compiler and
+for Intel targets a tool to generate ISO images. Follow the instructions below to install
+the build dependencies on your host OS.
 
 *Ubuntu*
 
@@ -319,13 +320,81 @@ where it computes the same number of primes:
 Jenkins Continuous Integration
 ==============================
 
-Master Setup
-------------
+Automated with Vagrant
+----------------------
+The installation and configuration of continuous integration for FreeNOS is fully automated
+using Vagrant (https://www.vagrantup.com/). Vagrant is an open source program which automates
+the creation and configuration of virtual machines of various types of backends, for example
+Virtual Box and libvirt / KVM. FreeNOS provides a few script files which can be used by Vagrant
+to create the Jenkins master and slave nodes automatically, configure them and start build jobs.
 
-$ sudo apt-get install vagrant vagrant-libvirt libvirt-bin qemu-kvm
+Install Vagrant from the official website at https://www.vagrantup.com/ or via your OS package
+manager. For example, on Ubuntu Linux:
 
-Install Jenkins on your host OS using your favorite package manager or from the official website (https://jenkins.io/).
-Follow the installation wizard instructions and after installation go to the Jenkins web interface at: http://localhost:8080
+    $ sudo apt-get install vagrant
+
+Vagrant must have a backend virtual machine hypervisor to run the actual VM's. This can be
+done using any of the supported backend, for example VirtualBox or libvirt/KVM. For full details
+on how to setup Vagrant for your VM backend, please visit: https://www.vagrantup.com/docs/installation/.
+
+To install and use libvirt / KVM using Vagrant on Ubuntu Linux, first ensure that hardware virtualization
+extensions for your processor is enabled in the BIOS of your computer. After that, use the following
+commands to install libvirt, KVM and Vagrant libvirt support:
+
+    $ sudo apt-get install vagrant-libvirt libvirt-bin libvirt-dev qemu-kvm qemu-utils qemu
+
+Add yourself to the libvirt usergroup in order to use the libvirt installation:
+
+    $ sudo usermod -a -G libvirt my_userid
+
+Test if libvirt with KVM is working properly:
+
+    $ virsh list
+
+If you do not get any errors, libvirt with KVM should be working.
+
+To bring up the master machine, install it and start jenkins, use:
+
+    $ cd /path/to/FreeNOS
+    $ cd support/jenkins
+    $ vagrant up master
+
+After installation completes, open your webbrowser at http://localhost:8888/ to use Jenkins.
+The default username and password are: admin, admin.
+
+To bring up the Ubuntu slave use:
+
+    $ vagrant up ubuntu1804
+
+Similarly, bring up the FreeBSD 12.0 slave with:
+
+    $ vagrant up freebsd12
+
+When you wish to automatically bring up all the machines, install and configure them and also
+automatically run the jobs, simply use the following command. Note that this will consume
+lots of CPU and RAM:
+
+    $ vagrant up
+
+After making changes to the FreeNOS code, it is possible to re-run the jenkins jobs by
+provisioning the slaves again with:
+
+    $ vagrant provision freebsd12
+    $ vagrant provision ubuntu1804
+
+This will ensure the slaves are fully updated to the latest OS and compilers and runs
+the Jenkins jobs for all available configurations.
+
+Note for windows users with Vagrant: do not set core.autocrlf to true in git, as otherwise the
+source files will get \r\n characters added, leading to errors in the bash scripts.
+
+Jenkins Master (Manual Install)
+-------------------------------
+
+The following sections describe how to install Jenkins manually on your host OS for continuous
+integration of FreeNOS. Install Jenkins on your host OS using your favorite package manager or
+from the official website (https://jenkins.io/). Follow the installation wizard instructions and
+after installation go to the Jenkins web interface at: http://localhost:8080
 
 After installation, navigate to: Manage Jenkins > Manage Plugins
 Make sure the following plugins are installed. Choose the plugins from the 'Available' tab to find the plugins
@@ -395,8 +464,8 @@ are started, for example:
 Also visit the following page for more details on this automatic DNS setup for KVM:
 https://liquidat.wordpress.com/2017/03/03/howto-automated-dns-resolution-for-kvmlibvirt-guests-with-a-local-domain/
 
-FreeBSD 12.0 Slave
-------------------
+FreeBSD 12.0 Slave (Manual Install)
+-----------------------------------
 
 Run the example installation script in ./support/jenkins/freebsd-12.sh from the FreeNOS sources
 to setup the KVM guest with FreeBSD 12.0. Also see the comments in the installation script for more info:
