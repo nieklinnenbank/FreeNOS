@@ -117,6 +117,7 @@ elif [ ! -e /usr/local/bin/qemu-system-arm ] ; then
     # Compile Qemu from source
     run_command_retry "pkg install -y python pkgconf gmake bison flex gettext glib pixman"
 
+    rm -rf qemu-git
     git clone --depth=1 -b $QEMU_BRANCH $QEMU_URL qemu-git
     cd qemu-git
     ./configure --prefix=/usr/local --target-list=arm-softmmu,i386-softmmu
@@ -128,6 +129,8 @@ elif [ ! -e /usr/local/bin/qemu-system-arm ] ; then
     fi
     gmake install
     gmake clean
+    cd ..
+    rm -rf qemu-git
 fi
 
 # Disable the FreeBSD linker, use the GNU linker
