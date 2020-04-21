@@ -28,6 +28,7 @@ COMPILER_PACKAGES="gcc-4.8 gcc-4.8-multilib g++-4.8 g++-4.8-multilib \
                    clang-6.0 \
                    clang-7 \
                    clang-8 \
+                   clang-9 \
                    gcc-5-arm-linux-gnueabi g++-5-arm-linux-gnueabi \
                    gcc-6-arm-linux-gnueabi g++-6-arm-linux-gnueabi \
                    gcc-7-arm-linux-gnueabi g++-7-arm-linux-gnueabi \

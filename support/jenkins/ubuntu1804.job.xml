@@ -119,6 +119,7 @@
         <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=-6.0</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=-7</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=-8</string>
+        <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=-9</string>
       </values>
     </hudson.matrix.TextAxis>
   </axes>
