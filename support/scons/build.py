@@ -150,8 +150,13 @@ target = host.Clone(tools    = ["default", "bootimage", "iso", "binary", "linn",
 #
 # For the OS environment: ensure the 'ENV' environment variable does not exist,
 # to avoid internal SCons exception while running the autoconf tests.
-if 'ENV' in os.environ:
-   del os.environ['ENV']
+#
+# Additionally, remove the PWD and OLDPWD variables since they can change when
+# using scons -u, which causes an undesirable (near) full rebuild.
+#
+for i in [ 'ENV', 'PWD', 'OLDPWD' ]:
+    if i in os.environ:
+        del os.environ[i]
 
 args = os.environ.copy()
 args.update(ARGUMENTS)
