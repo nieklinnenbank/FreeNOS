@@ -23,14 +23,6 @@ def linnfs_generate(target, source, env):
     """
     Generate an LinnFS filesystem image.
     """
-    for f in source:
-        if os.access(str(f), os.X_OK):
-            strip_cmd = env['STRIP'] + ' ' + str(f)
-            r = os.system(strip_cmd)
-            if r != 0:
-                print("WARNING: failed to strip `" + str(f) + "': command `" + strip_cmd + "' failed: exit code " + str(r>>8))
-                break
-
     rootfs_path = env.Dir(env['ROOTFS']).srcnode().path
     linn_cmd = "build/host/server/filesystem/linn/create '" + str(target[0]) + \
                "' -n 32768 -d '" + rootfs_path + "'"
