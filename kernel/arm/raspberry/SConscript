@@ -28,7 +28,7 @@ env.Append(CPPFLAGS = '-D__KERNEL__')
 env.UseLibraries(['liballoc', 'libstd', 'libarch', 'libipc', 'libfs', 'libposix'])
 env.UseServers(['core', 'serial'])
 
-env.TargetProgram('kernel', [ Glob('*.cpp'),
+env.TargetProgram('kernel.empty', [ Glob('*.cpp'),
                               Glob('#' + env['BUILDROOT'] + '/kernel/*.cpp'),
                               Glob('#' + env['BUILDROOT'] + '/kernel/API/*.cpp'),
                               Glob('#' + env['BUILDROOT'] + '/kernel/arm/*.cpp'),
@@ -40,14 +40,16 @@ env.TargetProgram('kernel', [ Glob('*.cpp'),
 #
 # Embed the boot.img in the kernel
 #
-env.Command('kernel.bootimg', 'kernel', env['OBJCOPY'] + ' ' +
-            '--update-section .bootimg=' + env['BUILDROOT'] + '/boot.img ' + 
+env.Command('kernel', 'kernel.empty', env['OBJCOPY'] + ' ' +
+            '--update-section .bootimg=' + env['BUILDROOT'] + '/boot.img ' +
+            env['BUILDROOT'] + '/kernel/arm/' + env['SYSTEM'] + '/kernel.empty ' +
             env['BUILDROOT'] + '/kernel/arm/' + env['SYSTEM'] + '/kernel')
+env.Depends('kernel', '#' + env['BUILDROOT'] + '/boot.img')
 
 #
-# Provide binary kernel image to overwrite kernel.img on the Raspbian SD card.
+# Provide binary kernel image to write to the SD card.
 #
-env.Command('kernel.img', 'kernel.bootimg', env['OBJCOPY'] + ' -O binary ' +
+env.Command('kernel.img', 'kernel', env['OBJCOPY'] + ' -O binary ' +
             env['BUILDROOT'] + '/kernel/arm/' + env['SYSTEM'] + '/kernel ' +
             env['BUILDROOT'] + '/kernel/arm/' + env['SYSTEM'] + '/kernel.img')
 
@@ -56,9 +58,6 @@ env.Command('kernel.img', 'kernel.bootimg', env['OBJCOPY'] + ' -O binary ' +
 #
 env.Targets(qemu = build_env['QEMUCMD'] + ' -kernel ' + build_env['BUILDROOT'] +
                    '/kernel/arm/' + build_env['SYSTEM'] + '/kernel -nographic')
-
-env.Targets(qemu_usb = build_env['QEMUCMD'] + ' -kernel ' + build_env['BUILDROOT'] +
-                       '/kernel/arm/' + build_env['SYSTEM'] + '/kernel -nographic -usb -usbdevice disk:/tmp/disk.bin')
 
 env.Targets(qemu_debug = build_env['QEMUCMD'] + ' -kernel ' + build_env['BUILDROOT'] +
                          '/kernel/arm/' + build_env['SYSTEM'] + '/kernel -nographic -s -S')
