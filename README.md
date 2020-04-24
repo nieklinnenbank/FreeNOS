@@ -136,7 +136,18 @@ use the following command:
 
     $ scons qemu
 
-To debug FreeNOS using GDB, you need to have build using the DEBUG=False build variable.
+To debug FreeNOS using GDB, you need to build with the build variable DEBUG=True.
+This ensures that debugging symbols are available in the compiled programs that the
+debugger needs to translate between source code, CPU instructions and vice versa.
+Additionally, compiler optimizations are disabled with DEBUG=True, which gives slower
+performance but improved debugging experience. By default, the DEBUG build variable
+is already set to True.
+
+In case you have configured your build.conf with DEBUG=False, you can pass it on
+the commandline (or edit your build.conf to set DEBUG to True):
+
+    $ scons DEBUG=True
+
 Ensure that your host OS has GDB available for debugging the target architecture (Intel or ARM).
 For Ubuntu:
 
