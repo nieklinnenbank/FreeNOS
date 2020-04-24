@@ -276,6 +276,8 @@ file to ensure the first UART is available on GPIO pins 8 and 10:
 arm/sunxi-h3
 ------------
 
+### U-Boot on SD Card ###
+
 FreeNOS has support for ARM boards with Allwinner H3 System-on-chips such as the Orange Pi PC
 and Orange Pi Zero (H2+ is a H3 variant). To build FreeNOS for the Allwinner H3, copy the
 provided configuration file:
@@ -303,16 +305,6 @@ Before building, you need to select the following configuration item:
 
     Device Tree Control > Provider for DTB for DT Control > Embedded DTB
 
-Additionally, the following configuration items are currently required for FreeNOS.
-You can change them manually in the generated .config file or via the menuconfig tool:
-
-    CONFIG_ARMV7_BOOT_SEC_DEFAULT=y
-    CONFIG_SYS_ARM_MMU=n
-    CONFIG_SYS_ICACHE=off
-    CONFIG_SYS_DCACHE=off
-    CONFIG_SPL_SYS_ICACHE=off
-    CONFIG_SPL_SYS_DCACHE=off
-
 To build the U-Boot binary, simply use make without any arguments:
 
     $ ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- make
@@ -321,13 +313,16 @@ The file u-boot-sunxi-with-spl.bin is now ready to be written to the SD card:
 
     $ sudo dd if=u-boot-sunxi-with-spl.bin of=/dev/sdXXX bs=1024 seek=8 conv=notrunc
 
-Insert the SD card in the target board with the UART console connected and enter the following command in the
-U-Boot interactive console to load and start FreeNOS:
+Insert the SD card in the target board with the UART console connected and enter the following commands
+in the U-Boot interactive console to load and start FreeNOS:
 
+    => setenv bootm_boot_mode sec
     => fatload mmc 0:1 0x42000000 freenos.img
     14757888 bytes read in 670 ms (21 MiB/s)
     => go 0x42000000
     ## Starting application at 0x42000000 ...
+
+### U-Boot on SPI Flash ###
 
 Alternatively, the Orange Pi Zero board contains a small SPI flash which can also be used to install U-Boot.
 This can be done using the Allwinner Sunxi Tools via a special FEL mode via USB. First clone and build the sunxi-tools:
@@ -354,6 +349,20 @@ Start the board from the modified Armbian image and run the following commands t
 
     $ sudo apt-get install mtd-utils
     $ sudo flash_erase /dev/mtd0 0 0200000
+
+### U-Boot on Qemu/TFTP ###
+
+An alternative for testing the boot process using U-Boot is with Qemu. You can start U-Boot via Qemu as the kernel
+to be loaded using -kernel and provide tftp= argument for -netdev to enable the integrated TFTP server in Qemu.
+The following commands can be used to download the FreeNOS image via TFTP and boot it:
+
+    $ qemu-system-arm -M orangepi-pc -kernel /path/to/u-boot/u-boot -nographic \
+         -net nic,id=net0 -netdev user,id=hub0port0,tftp=/path/to/FreeNOS/
+    ...
+    => setenv bootm_boot_mode sec
+    => dhcp
+    => tftp build/arm/sunxi-h3/kernel/arm/sunxi-h3/kernel.img
+    => go 0x42000000
 
 Using FreeNOS
 =============

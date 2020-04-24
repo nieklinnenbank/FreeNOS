@@ -77,11 +77,13 @@ class MemoryContext
     /**
      * Activate the MemoryContext.
      *
-     * This function applies this MemoryContext to the hardware MMU.
+     * This function applies this MemoryContext on the hardware MMU.
+     *
+     * @param initializeMMU If true perform (re)initialization of the MMU
      *
      * @return Result code.
      */
-    virtual Result activate() = 0;
+    virtual Result activate(bool initializeMMU = false) = 0;
 
     /**
      * Map a physical page to a virtual address.

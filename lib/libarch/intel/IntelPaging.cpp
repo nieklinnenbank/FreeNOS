@@ -79,7 +79,7 @@ IntelPaging::~IntelPaging()
     }
 }
 
-MemoryContext::Result IntelPaging::activate()
+MemoryContext::Result IntelPaging::activate(bool initializeMMU)
 {
     IntelCore core;
     core.writeCR3(m_pageDirectoryAddr);
