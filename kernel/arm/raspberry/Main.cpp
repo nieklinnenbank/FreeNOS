@@ -28,7 +28,7 @@
 
 extern Address __bootimg;
 
-extern C int kernel_main(u32 r0, u32 r1, u32 r2)
+extern C int kernel_main(void)
 {
     // Invalidate all caches now
     Arch::Cache cache;
