@@ -19,12 +19,13 @@
 #include <FreeNOS/Support.h>
 #include <FreeNOS/System.h>
 #include <Macros.h>
+#include <MemoryBlock.h>
 #include <arm/ARMControl.h>
 #include <NS16550.h>
 #include <DeviceLog.h>
 #include "SunxiKernel.h"
 
-extern Address __bootimg;
+extern Address __bootimg, __bss_start, __bss_end;
 
 extern C int kernel_main(void)
 {
@@ -37,6 +38,9 @@ extern C int kernel_main(void)
     ARMControl ctrl;
     ctrl.set(ARMControl::SMPBit);
 #endif
+
+    // Clear BSS
+    MemoryBlock::set(&__bss_start, 0, &__bss_end - &__bss_start);
 
     // Create local objects needed for the kernel
     Arch::MemoryMap mem;
