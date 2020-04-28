@@ -104,60 +104,7 @@ MemoryContext::Result ARMPaging::enableMMU()
     return Success;
 }
 
-MemoryContext::Result ARMPaging::disableMMU()
-{
-    ARMControl ctrl;
-
-    // Deactivate both caches and branch prediction
-    ctrl.unset(ARMControl::InstructionCache);
-    ctrl.unset(ARMControl::DataCache);
-    ctrl.unset(ARMControl::BranchPrediction);
-
-    // Disable the MMU. This re-enables instruction and data cache too.
-    ctrl.unset(ARMControl::MMUEnabled);
-    NOTICE("MMUEnabled = " << (ctrl.read(ARMControl::SystemControl) & ARMControl::MMUEnabled));
-    tlb_flush_all();
-
-    // Flush TLB's and caches
-    tlb_flush_all();
-    m_cache.cleanInvalidate(Cache::Unified);
-
-    return Success;
-}
-
 #elif defined(ARMV7)
-
-MemoryContext::Result ARMPaging::disableMMU()
-{
-    ARMControl ctrl;
-
-    // Flush TLB's
-    tlb_flush_all();
-    dsb();
-    isb();
-
-    // Disable branch prediction
-    ctrl.unset(ARMControl::BranchPrediction);
-    ctrl.unset(ARMControl::AlignmentFaults);
-
-    // Disable the MMU.
-    u32 nControl = ctrl.read(ARMControl::SystemControl);
-
-    // Raise all caching, MMU and branch prediction flags.
-    nControl &= ~( (1 << 11) | (1 << 2) | (1 << 12) | (1 << 0) | (1 << 5) );
-
-    // Write back to set.
-    ctrl.write(ARMControl::SystemControl, nControl);
-
-    NOTICE("MMUEnabled = " << (ctrl.read(ARMControl::SystemControl) & ARMControl::MMUEnabled));
-
-    // Flush TLB's
-    tlb_flush_all();
-    dsb();
-    isb();
-
-    return Success;
-}
 
 MemoryContext::Result ARMPaging::enableMMU()
 {
@@ -215,7 +162,6 @@ MemoryContext::Result ARMPaging::activate(bool initializeMMU)
     // Do we need to (re)enable the MMU?
     if (initializeMMU)
     {
-        disableMMU();
         enableMMU();
     }
     // MMU already enabled, we only need to change first level table and flush caches.

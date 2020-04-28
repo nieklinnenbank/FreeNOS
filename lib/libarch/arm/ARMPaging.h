@@ -139,13 +139,6 @@ class ARMPaging : public MemoryContext
      */
     Result enableMMU();
 
-    /**
-     * Disable the MMU
-     *
-     * @return Result code
-     */
-    Result disableMMU();
-
   private:
 
     /** Pointer to the first level page table. */

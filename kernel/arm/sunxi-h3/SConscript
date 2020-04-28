@@ -47,11 +47,18 @@ env.Command('kernel', 'kernel.empty', env['OBJCOPY'] + ' ' +
 env.Depends('kernel', '#' + env['BUILDROOT'] + '/boot.img')
 
 #
-# Provide binary kernel image to write to the SD card.
+# Provide binary kernel image as input for U-Boot format image.
 #
 env.Command('kernel.img', 'kernel', env['OBJCOPY'] + ' -O binary ' +
             env['BUILDROOT'] + '/kernel/arm/' + env['SYSTEM'] + '/kernel ' +
             env['BUILDROOT'] + '/kernel/arm/' + env['SYSTEM'] + '/kernel.img')
+
+#
+# Provide kernel image with U-Boot header write to the SD card.
+#
+env.Command('kernel.ub', 'kernel.img', 'mkimage -T kernel -A arm -a 0x42000000 -O linux -C none -d ' +
+            env['BUILDROOT'] + '/kernel/arm/' + env['SYSTEM'] + '/kernel.img ' +
+            env['BUILDROOT'] + '/kernel/arm/' + env['SYSTEM'] + '/kernel.ub')
 
 #
 # Qemu targets

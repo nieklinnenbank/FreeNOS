@@ -48,7 +48,7 @@ the build dependencies on your host OS.
 Update your system repository cache and install the required development tools using:
 
     $ sudo apt-get update
-    $ sudo apt-get install build-essential scons genisoimage xorriso qemu-system binutils-multiarch
+    $ sudo apt-get install build-essential scons genisoimage xorriso qemu-system binutils-multiarch u-boot-tools
 
 If your Ubuntu host is 64-bit, you need to install the GCC multilib package
 to cross compile for the 32-bit architecture:
@@ -65,7 +65,7 @@ Update your system repository cache and install the required development tools u
 
     % su -
     # pkg update
-    # pkg install qemu scons cdrkit-genisoimage xorriso gcc
+    # pkg install qemu scons cdrkit-genisoimage xorriso gcc u-boot-tools
 
 On FreeBSD, make sure that the latest version of the GNU linker (from pkg) is used:
 
@@ -285,9 +285,9 @@ provided configuration file:
     $ cp config/arm/sunxi-h3/build.conf .
     $ scons
 
-The kernel image can be copied to an SD card with U-Boot installed (or any other bootloader):
+The kernel image in U-Boot format can be copied to an SD card with U-Boot installed:
 
-    $ cp build/arm/sunxi-h3/kernel/arm/sunxi-h3/kernel.img /media/sdcard/kernel.img
+    $ cp build/arm/sunxi-h3/kernel/arm/sunxi-h3/kernel.ub /media/sdcard/kernel.ub
 
 To install U-Boot mainline on the SD-card, clone the source and select the proper
 configuration for your board (Orange Pi PC: orangepi_pc_defconfig, Orange Pi Zero: orangepi_zero_defconfig):
@@ -317,10 +317,9 @@ Insert the SD card in the target board with the UART console connected and enter
 in the U-Boot interactive console to load and start FreeNOS:
 
     => setenv bootm_boot_mode sec
-    => fatload mmc 0:1 0x42000000 freenos.img
+    => fatload mmc 0:1 0x41ffffc0 kernel.ub
     14757888 bytes read in 670 ms (21 MiB/s)
-    => go 0x42000000
-    ## Starting application at 0x42000000 ...
+    => bootm 0x41ffffc0
 
 ### U-Boot on SPI Flash ###
 
@@ -361,8 +360,8 @@ The following commands can be used to download the FreeNOS image via TFTP and bo
     ...
     => setenv bootm_boot_mode sec
     => dhcp
-    => tftp build/arm/sunxi-h3/kernel/arm/sunxi-h3/kernel.img
-    => go 0x42000000
+    => tftp 0x41ffffc0 build/arm/sunxi-h3/kernel/arm/sunxi-h3/kernel.ub
+    => bootm 0x41ffffc0
 
 Using FreeNOS
 =============
