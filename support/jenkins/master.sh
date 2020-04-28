@@ -123,14 +123,28 @@ sleep 30
 # Download jenkins client library
 run_command_retry "wget -q http://localhost:$HTTP_PORT/jnlpJars/jenkins-cli.jar -O jenkins-cli.jar"
 
-# Install jenkins plugins
-run_command_retry "java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin git"
-run_command_retry "java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin matrix-project"
-run_command_retry "java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin matrix-combinations-parameter"
-run_command_retry "java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin nodelabelparameter"
-run_command_retry "java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin ws-cleanup"
-run_command_retry "java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin junit"
-run_command_retry "java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin ssh-slaves"
+# Jenkins plugin list
+JENKINS_PLUGINS=( git matrix-project matrix-combinations-parameter nodelabelparameter ws-cleanup junit ssh-slaves )
+JENKINS_URL="http://localhost:$HTTP_PORT"
+JENKINS_USER="admin"
+JENKINS_PASS="admin"
+
+# Install plugins and their dependencies
+for p in "${JENKINS_PLUGINS[@]}"
+do
+    run_command_retry "java -jar jenkins-cli.jar -s $JENKINS_URL -auth $JENKINS_USER:$JENKINS_PASS install-plugin $p"
+
+    CRUMB="`curl -v -X GET $JENKINS_URL/crumbIssuer/api/json --user $JENKINS_USER:$JENKINS_PASS | cut -d , -f 2 | cut -d : -f 2`"
+    CRUMB="`echo $CRUMB | sed s/\\"//g`"
+    echo "CRUMB: $CRUMB"
+
+    curl -XPOST --user $JENKINS_USER:$JENKINS_PASS --data "<jenkins><install plugin='$p@latest' /></jenkins>" \
+        --header "Jenkins-Crumb: $CRUMB" --header 'Content-Type: text/xml' \
+        $JENKINS_URL/pluginManager/installNecessaryPlugins
+done
+
+# Wait for plugin dependencies to be installed (background task)
+sleep 60
 
 # Restart jenkins to load the new plugins
 /etc/init.d/jenkins stop
