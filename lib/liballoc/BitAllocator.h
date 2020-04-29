@@ -77,13 +77,6 @@ class BitAllocator : public Allocator
     Address base() const;
 
     /**
-     * Get allocation BitArray.
-     *
-     * @return BitArray object pointer.
-     */
-    BitArray * getBitArray();
-
-    /**
      * Allocate memory.
      *
      * @param args Allocator arguments containing the requested size, address and alignment.

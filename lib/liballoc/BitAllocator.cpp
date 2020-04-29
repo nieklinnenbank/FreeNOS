@@ -45,11 +45,6 @@ Address BitAllocator::base() const
     return m_base;
 }
 
-BitArray * BitAllocator::getBitArray()
-{
-    return &m_array;
-}
-
 Allocator::Result BitAllocator::allocate(Allocator::Arguments & args)
 {
     return allocate(args, 0);
