@@ -218,7 +218,6 @@ inline void * operator new(__SIZE_TYPE__ sz)
     Allocator::Arguments alloc_args;
 
     alloc_args.size = sz;
-    alloc_args.address = 0;
     alloc_args.alignment = 0;
 
     if (Allocator::getDefault()->allocate(alloc_args) == Allocator::Success)
@@ -237,7 +236,6 @@ inline void * operator new[](__SIZE_TYPE__ sz)
     Allocator::Arguments alloc_args;
 
     alloc_args.size = sz;
-    alloc_args.address = 0;
     alloc_args.alignment = 0;
 
     if (Allocator::getDefault()->allocate(alloc_args) == Allocator::Success)
