@@ -83,8 +83,11 @@ class Allocator
 
     /**
      * Class constructor.
+     *
+     * @param base Initial value for base address for allocations
+     * @param alignment Initial memory alignment value for allocation addresses
      */
-    Allocator();
+    Allocator(Address base = 0, Size alignment = sizeof(u32));
 
     /**
      * Class destructor.

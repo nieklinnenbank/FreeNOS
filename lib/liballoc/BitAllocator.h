@@ -72,11 +72,6 @@ class BitAllocator : public Allocator
     virtual Size available() const;
 
     /**
-     * Get base memory address.
-     */
-    Address base() const;
-
-    /**
      * Allocate memory.
      *
      * @param args Allocator arguments containing the requested size, address and alignment.
@@ -123,9 +118,6 @@ class BitAllocator : public Allocator
 
     /** Marks which chunks are (un)used. */
     BitArray m_array;
-
-    /** Start of memory region. */
-    Address m_base;
 
     /** Size of each chunk. */
     Size m_chunkSize;

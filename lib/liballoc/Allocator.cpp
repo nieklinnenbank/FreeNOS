@@ -20,10 +20,10 @@
 
 Allocator * Allocator::m_default = ZERO;
 
-Allocator::Allocator()
+Allocator::Allocator(Address base, Size alignment)
     : m_parent(ZERO)
-    , m_alignment(sizeof(u32))
-    , m_base(ZERO)
+    , m_alignment(alignment)
+    , m_base(base)
 {
 }
 

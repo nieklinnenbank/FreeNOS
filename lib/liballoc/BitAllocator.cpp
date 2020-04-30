@@ -18,9 +18,8 @@
 #include "BitAllocator.h"
 
 BitAllocator::BitAllocator(Memory::Range range, Size chunkSize)
-    : Allocator()
+    : Allocator(range.phys)
     , m_array(range.size / chunkSize)
-    , m_base(range.phys)
     , m_chunkSize(chunkSize)
 {
 }
@@ -38,11 +37,6 @@ Size BitAllocator::size() const
 Size BitAllocator::available() const
 {
     return m_array.count(false) * m_chunkSize;
-}
-
-Address BitAllocator::base() const
-{
-    return m_base;
 }
 
 Allocator::Result BitAllocator::allocate(Allocator::Arguments & args)

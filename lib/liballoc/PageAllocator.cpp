@@ -22,16 +22,10 @@
 #define PAGEALLOC_MINIMUM (PAGESIZE * 2)
 
 PageAllocator::PageAllocator(Address base, Size size)
-    : Allocator()
-    , m_base(base)
+    : Allocator(base)
     , m_size(size)
     , m_allocated(PAGESIZE)
 {
-}
-
-Address PageAllocator::base() const
-{
-    return m_base;
 }
 
 Size PageAllocator::size() const

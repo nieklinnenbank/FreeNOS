@@ -46,15 +46,6 @@ class PageAllocator : public Allocator
     PageAllocator(Address start, Size size);
 
     /**
-     * Get base address.
-     *
-     * Returns the first address of the allocated memory region.
-     *
-     * @return Start address.
-     */
-    Address base() const;
-
-    /**
      * Get memory size.
      *
      * @return Size of memory owned by the Allocator.
@@ -88,9 +79,6 @@ class PageAllocator : public Allocator
     virtual Result release(Address addr);
 
   private:
-
-    /** Start of the allocated memory region. */
-    Address m_base;
 
     /** Maximum size to allocate */
     Size m_size;
