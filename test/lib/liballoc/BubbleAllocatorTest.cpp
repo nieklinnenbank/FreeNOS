@@ -30,8 +30,8 @@ TestCase(BubbleConstruct)
     TestInt<uint> addresses(UINT_MIN, UINT_MAX);
     TestInt<uint> sizes(PAGESIZE, PAGESIZE * 16);
 
-    BubbleAllocator ba(addresses.random(),
-                       sizes.random());
+    const Allocator::Range range = { addresses.random(), sizes.random(), sizeof(u32) };
+    BubbleAllocator ba(range);
 
     testAssert(ba.m_start == (u8 *) addresses[0]);
     testAssert(ba.m_size == sizes[0]);

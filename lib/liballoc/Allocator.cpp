@@ -20,11 +20,14 @@
 
 Allocator * Allocator::m_default = ZERO;
 
-Allocator::Allocator(Address base, Size alignment)
+Allocator::Allocator(const Allocator::Range range)
     : m_parent(ZERO)
-    , m_alignment(alignment)
-    , m_base(base)
+    , m_range(range)
 {
+    if (m_range.alignment == 0)
+    {
+        m_range.alignment = sizeof(u32);
+    }
 }
 
 Allocator::~Allocator()

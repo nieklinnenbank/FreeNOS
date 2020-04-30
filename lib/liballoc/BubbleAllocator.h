@@ -39,10 +39,9 @@ class BubbleAllocator : public Allocator
     /**
      * Class constructor.
      *
-     * @param start Memory address to start allocating from.
-     * @param size Maximum size of the memory region to allocate from.
+     * @param range Block of continguous memory to be managed.
      */
-    BubbleAllocator(Address start, Size size);
+    BubbleAllocator(const Range range);
 
     /**
      * Get memory size.

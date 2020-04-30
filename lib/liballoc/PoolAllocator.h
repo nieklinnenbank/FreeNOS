@@ -142,8 +142,10 @@ class PoolAllocator : public Allocator
 
     /**
      * Constructor
+     *
+     * @param range Block of continguous memory to be managed.
      */
-    PoolAllocator();
+    PoolAllocator(const Range range);
 
     /**
      * Get memory size.

@@ -66,7 +66,7 @@ class Allocator
     {
         Address address; /**< Starting address of the memory range. */
         Size size;       /**< Amount of memory in bytes. */
-        Size alignment;  /**< Alignment in bytes or ZERO for detault alignment. */
+        Size alignment;  /**< Alignment in bytes or ZERO for default alignment. */
     } Range;
 
   public:
@@ -74,10 +74,9 @@ class Allocator
     /**
      * Class constructor.
      *
-     * @param base Initial value for base address for allocations
-     * @param alignment Initial memory alignment value for allocation addresses
+     * @param range Block of continguous memory to manage.
      */
-    Allocator(Address base = 0, Size alignment = sizeof(u32));
+    Allocator(const Range range);
 
     /**
      * Class destructor.
@@ -160,16 +159,13 @@ class Allocator
     /** Our parent Allocator, if any. */
     Allocator *m_parent;
 
-    /** Allocation memory alignment. */
-    Size m_alignment;
-
-    /** Allocation base address */
-    Address m_base;
+    /** Range of memory that this Allocator manages */
+    Range m_range;
 
   private:
 
     /** Points to the default Allocator for new()/delete(). */
-    static Allocator *m_default; 
+    static Allocator *m_default;
 };
 
 #ifndef __HOST__

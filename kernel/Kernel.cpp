@@ -39,14 +39,9 @@ Kernel::Kernel(CoreInfo *info)
         Log::instance->append(COPYRIGHT "\r\n");
     }
 
-    // Compute lower & higher memory
-    Memory::Range highMem;
-    Arch::MemoryMap map;
-    MemoryBlock::set(&highMem, 0, sizeof(highMem));
-    highMem.phys = info->memory.phys + map.range(MemoryMap::KernelData).size;
-
     // Initialize members
-    m_alloc  = new SplitAllocator(info->memory, highMem);
+    const Allocator::Range range = { info->memory.phys, info->memory.size, 0 };
+    m_alloc  = new SplitAllocator(range);
     m_procs  = new ProcessManager();
     m_api    = new API();
     m_coreInfo   = info;
@@ -75,15 +70,17 @@ Kernel::Kernel(CoreInfo *info)
 
 Error Kernel::heap(Address base, Size size)
 {
+    Size metaData = sizeof(BubbleAllocator) + sizeof(PoolAllocator);
     Allocator *bubble, *pool;
-    Size meta = sizeof(BubbleAllocator) + sizeof(PoolAllocator);
+    const Allocator::Range bubbleRange = { base + metaData, size - metaData, sizeof(u32) };
+    const Allocator::Range poolRange   = { 0, 0, sizeof(u32) };
 
     // Clear the heap first
     MemoryBlock::set((void *) base, 0, size);
 
     // Setup the dynamic memory heap
-    bubble = new (base) BubbleAllocator(base + meta, size - meta);
-    pool   = new (base + sizeof(BubbleAllocator)) PoolAllocator();
+    bubble = new (base) BubbleAllocator(bubbleRange);
+    pool   = new (base + sizeof(BubbleAllocator)) PoolAllocator(poolRange);
     pool->setParent(bubble);
 
     // Set default allocator

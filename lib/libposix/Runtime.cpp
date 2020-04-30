@@ -98,10 +98,12 @@ void runDestructors()
 
 void setupHeap()
 {
-    PageAllocator *pageAlloc;
-    PoolAllocator *poolAlloc;
     Arch::MemoryMap map;
     Memory::Range heap = map.range(MemoryMap::UserHeap);
+    PageAllocator *pageAlloc;
+    PoolAllocator *poolAlloc;
+    const Allocator::Range pageRange = { heap.virt, heap.size, PAGESIZE };
+    const Allocator::Range poolRange = { 0, 0, sizeof(u32) };
 
     // Allocate one page to store the allocators themselves
     Memory::Range range;
@@ -112,8 +114,8 @@ void setupHeap()
     VMCtl(SELF, Map, &range);
 
     // Allocate instance copy on vm pages itself
-    pageAlloc = new (heap.virt) PageAllocator(heap.virt, heap.size);
-    poolAlloc = new (heap.virt + sizeof(PageAllocator)) PoolAllocator();
+    pageAlloc = new (heap.virt) PageAllocator(pageRange);
+    poolAlloc = new (heap.virt + sizeof(PageAllocator)) PoolAllocator(poolRange);
     poolAlloc->setParent(pageAlloc);
 
     // Set default allocator

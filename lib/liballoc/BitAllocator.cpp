@@ -17,8 +17,8 @@
 
 #include "BitAllocator.h"
 
-BitAllocator::BitAllocator(Memory::Range range, Size chunkSize)
-    : Allocator(range.phys)
+BitAllocator::BitAllocator(const Allocator::Range range, Size chunkSize)
+    : Allocator(range)
     , m_array(range.size / chunkSize)
     , m_chunkSize(chunkSize)
 {
@@ -65,32 +65,32 @@ Allocator::Result BitAllocator::allocate(Allocator::Range & args,
     if (result != BitArray::Success)
         return OutOfMemory;
 
-    args.address = m_base + (bit * m_chunkSize);
+    args.address = m_range.address + (bit * m_chunkSize);
     return Success;
 }
 
 Allocator::Result BitAllocator::allocate(Address addr)
 {
-    if (addr < m_base || isAllocated(addr))
+    if (addr < m_range.address || isAllocated(addr))
         return InvalidAddress;
 
-    m_array.set((addr - m_base) / m_chunkSize);
+    m_array.set((addr - m_range.address) / m_chunkSize);
     return Success;
 }
 
 bool BitAllocator::isAllocated(Address addr) const
 {
-    if (addr < m_base)
+    if (addr < m_range.address)
         return false;
     else
-        return m_array.isSet((addr - m_base) / m_chunkSize);
+        return m_array.isSet((addr - m_range.address) / m_chunkSize);
 }
 
 Allocator::Result BitAllocator::release(Address addr)
 {
-    if (addr < m_base)
+    if (addr < m_range.address)
         return InvalidAddress;
 
-    m_array.unset((addr - m_base) / m_chunkSize);
+    m_array.unset((addr - m_range.address) / m_chunkSize);
     return Success;
 }

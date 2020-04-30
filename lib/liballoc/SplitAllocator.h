@@ -40,10 +40,9 @@ class SplitAllocator : public Allocator
     /**
      * Class constructor.
      *
-     * @param low Lower physical memory.
-     * @param high Higher physical memory.
+     * @param range Block of continguous memory to be managed.
      */
-    SplitAllocator(Memory::Range low, Memory::Range high);
+    SplitAllocator(const Range range);
 
     /**
      * Class destructor.
@@ -118,9 +117,6 @@ class SplitAllocator : public Allocator
 
     /** Physical memory allocator. */
     BitAllocator *m_alloc;
-
-    /** Low memory */
-    Memory::Range m_low;
 };
 
 /**

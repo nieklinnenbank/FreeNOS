@@ -40,10 +40,9 @@ class PageAllocator : public Allocator
     /**
      * Class constructor.
      *
-     * @param base Starting address to allocate.
-     * @param size Maximum size in bytes.
+     * @param range Block of continguous memory to be managed.
      */
-    PageAllocator(Address start, Size size);
+    PageAllocator(const Range range);
 
     /**
      * Get memory size.

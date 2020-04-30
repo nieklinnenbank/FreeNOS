@@ -18,14 +18,10 @@
 #include <FreeNOS/System.h>
 #include "SplitAllocator.h"
 
-SplitAllocator::SplitAllocator(Memory::Range low, Memory::Range high)
-    : Allocator()
-    , m_low(low)
+SplitAllocator::SplitAllocator(const Allocator::Range range)
+    : Allocator(range)
+    , m_alloc(new BitAllocator(range, PAGESIZE))
 {
-    Memory::Range mem = low;
-    mem.size += high.size;
-
-    m_alloc = new BitAllocator(mem, PAGESIZE);
 }
 
 SplitAllocator::~SplitAllocator()
@@ -76,11 +72,11 @@ void * SplitAllocator::toPhysical(Address virt) const
 #else
 void * SplitAllocator::toVirtual(Address phys) const
 {
-    return (void *) (phys - m_low.phys);
+    return (void *) (phys - m_range.address);
 }
 
 void * SplitAllocator::toPhysical(Address virt) const
 {
-    return (void *) (virt + m_low.phys);
+    return (void *) (virt + m_range.address);
 }
 #endif /* ARM */

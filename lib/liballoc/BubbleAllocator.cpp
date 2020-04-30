@@ -18,11 +18,11 @@
 #include <Types.h>
 #include "BubbleAllocator.h"
 
-BubbleAllocator::BubbleAllocator(Address start, Size size)
-    : Allocator()
-    , m_start((u8 *) start)
-    , m_current((u8 *) start)
-    , m_size(size)
+BubbleAllocator::BubbleAllocator(const Allocator::Range range)
+    : Allocator(range)
+    , m_start((u8 *) range.address)
+    , m_current((u8 *) range.address)
+    , m_size(range.size)
 {
 }
 
@@ -38,7 +38,7 @@ Size BubbleAllocator::available() const
 
 Allocator::Result BubbleAllocator::allocate(Allocator::Range & args)
 {
-    Size needed = aligned(args.size, m_alignment);
+    Size needed = aligned(args.size, m_range.alignment);
 
     // Do we still have enough room?
     if (m_current + needed < m_start + m_size)

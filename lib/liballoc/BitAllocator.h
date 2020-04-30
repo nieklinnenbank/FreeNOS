@@ -45,10 +45,10 @@ class BitAllocator : public Allocator
     /**
      * Constructor function.
      *
-     * @param range Contigeous range of memory to manage.
+     * @param range Block of continguous memory to manage.
      * @param chunkSize Total memory will be divided into chunks.
      */
-    BitAllocator(Memory::Range range, Size chunkSize);
+    BitAllocator(const Range range, Size chunkSize);
 
     /**
      * Get chunk size.
