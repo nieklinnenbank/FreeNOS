@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
 #include "PoolAllocator.h"
 #include <MemoryBlock.h>
 
@@ -90,14 +89,14 @@ MemoryPool * PoolAllocator::newPool(Size index, Size cnt)
     alloc_args.size  = cnt * (1 << (index + 1));
     alloc_args.size += sizeof(MemoryPool);
     alloc_args.size += BITMAP_NUM_BYTES(cnt);
-    alloc_args.size += MEMALIGN;
+    alloc_args.size += m_alignment;
 
     // Ask m_parent for memory, then fill in the pool
     if (m_parent->allocate(alloc_args) == Allocator::Success)
     {
         pool = (MemoryPool *) alloc_args.address;
         pool->count  = cnt;
-        pool->addr   = aligned( ((Address) (pool + 1)) + BITMAP_NUM_BYTES(pool->count), MEMALIGN );
+        pool->addr   = aligned( ((Address) (pool + 1)) + BITMAP_NUM_BYTES(pool->count), m_alignment );
         pool->next   = m_pools[index];
         pool->free   = pool->count;
         pool->size   = (1 << (index + 1));

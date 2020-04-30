@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
+#include <Types.h>
 #include "BubbleAllocator.h"
 
 BubbleAllocator::BubbleAllocator(Address start, Size size)
@@ -38,7 +38,7 @@ Size BubbleAllocator::available() const
 
 Allocator::Result BubbleAllocator::allocate(Allocator::Arguments & args)
 {
-    Size needed = aligned(args.size, MEMALIGN);
+    Size needed = aligned(args.size, m_alignment);
 
     // Do we still have enough room?
     if (m_current + needed < m_start + m_size)

@@ -113,29 +113,6 @@ class Allocator
     void setParent(Allocator *parent);
 
     /**
-     * Set allocation alignment.
-     *
-     * Configure the Allocator such that each allocated
-     * address must be aligned to the given size.
-     *
-     * @param size Alignment size
-     *
-     * @return Result code
-     */
-    Result setAlignment(Size size);
-
-    /**
-     * Set allocation base.
-     *
-     * The allocation base will be added to each allocation.
-     *
-     * @param addr Allocation base address.
-     *
-     * @return Result code
-     */
-    Result setBase(Address addr);
-
-    /**
      * Get memory size.
      *
      * @return Size of memory owned by the Allocator.
