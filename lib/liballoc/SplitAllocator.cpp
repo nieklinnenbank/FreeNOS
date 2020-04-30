@@ -21,7 +21,6 @@
 SplitAllocator::SplitAllocator(Memory::Range low, Memory::Range high)
     : Allocator()
     , m_low(low)
-    , m_high(high)
 {
     Memory::Range mem = low;
     mem.size += high.size;
@@ -46,12 +45,7 @@ Size SplitAllocator::available() const
 
 Allocator::Result SplitAllocator::allocate(Allocator::Arguments & args)
 {
-    Allocator::Result r;
-
-    if ((r = allocateLow(args)) == Success)
-        return r;
-    else
-        return allocateHigh(args);
+    return allocateLow(args);
 }
 
 Allocator::Result SplitAllocator::allocate(Address addr)
@@ -62,11 +56,6 @@ Allocator::Result SplitAllocator::allocate(Address addr)
 Allocator::Result SplitAllocator::allocateLow(Allocator::Arguments & args)
 {
     return m_alloc->allocate(args, 0);
-}
-
-Allocator::Result SplitAllocator::allocateHigh(Allocator::Arguments & args)
-{
-    return m_alloc->allocate(args, m_high.phys - m_alloc->base());
 }
 
 Allocator::Result SplitAllocator::release(Address addr)

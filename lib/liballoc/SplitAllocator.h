@@ -92,15 +92,6 @@ class SplitAllocator : public Allocator
     Result allocateLow(Arguments & args);
 
     /**
-     * Allocate from high memory.
-     *
-     * @param args Allocator arguments containing the requested size, address and alignment.
-     *
-     * @return Result code
-     */
-    Result allocateHigh(Arguments & args);
-
-    /**
      * Release memory.
      *
      * @param addr Points to memory previously returned by allocate().
@@ -128,9 +119,6 @@ class SplitAllocator : public Allocator
 
     /** Low memory */
     Memory::Range m_low;
-
-    /** High memory */
-    Memory::Range m_high;
 };
 
 /**
