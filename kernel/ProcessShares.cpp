@@ -125,7 +125,7 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
     MemoryContext *remoteMem = instance.getMemoryContext();
     Address paddr, vaddr;
     Arch::Cache cache;
-    Allocator::Arguments alloc_args;
+    Allocator::Range alloc_args;
 
     if (share->range.size == 0)
         return InvalidArgument;

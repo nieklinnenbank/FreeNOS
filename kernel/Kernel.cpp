@@ -204,7 +204,7 @@ Kernel::Result Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Siz
     char *vaddr;
     Arch::MemoryMap map;
     Memory::Range argRange;
-    Allocator::Arguments alloc_args;
+    Allocator::Range alloc_args;
 
     // Point to the program and segments table
     program = &((BootSymbol *) (imageVAddr + image->symbolTableOffset))[index];

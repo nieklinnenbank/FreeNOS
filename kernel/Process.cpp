@@ -140,7 +140,7 @@ Process::Result Process::initialize()
     Memory::Range range;
     Address paddr, vaddr;
     Arch::Cache cache;
-    Allocator::Arguments alloc_args;
+    Allocator::Range alloc_args;
 
     // Allocate two pages for the kernel event channel
     alloc_args.address = 0;

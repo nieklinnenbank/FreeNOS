@@ -60,24 +60,14 @@ class Allocator
     };
 
     /**
-     * Allocator input/output arguments
+     * Describes a range of memory.
      */
-    typedef struct Arguments
+    typedef struct Range
     {
-        /** Output parameter which contains the address allocated on success. */
-        Address address;
-
-        /**
-         * Amount of memory in bytes.
-         * On input this member specified the number of bytes to allocate.
-         * On output, represents the actual amount of allocated memory in bytes.
-         */
-        Size size;
-
-        /** Alignment of the required memory or use ZERO for default alignment. */
-        Size alignment;
-
-    } Arguments;
+        Address address; /**< Starting address of the memory range. */
+        Size size;       /**< Amount of memory in bytes. */
+        Size alignment;  /**< Alignment in bytes or ZERO for detault alignment. */
+    } Range;
 
   public:
 
@@ -132,11 +122,12 @@ class Allocator
     /**
      * Allocate memory.
      *
-     * @param args Allocator arguments containing the requested size, address and alignment.
+     * @param args Contains the requested size and alignment on input.
+     *             On output, contains the actual allocated address.
      *
      * @return Result value.
      */
-    virtual Result allocate(Arguments & args) = 0;
+    virtual Result allocate(Range & args) = 0;
 
     /**
      * Release memory.
@@ -195,7 +186,7 @@ class Allocator
  */
 inline void * operator new(__SIZE_TYPE__ sz)
 {
-    Allocator::Arguments alloc_args;
+    Allocator::Range alloc_args;
 
     alloc_args.size = sz;
     alloc_args.alignment = 0;
@@ -213,7 +204,7 @@ inline void * operator new(__SIZE_TYPE__ sz)
  */
 inline void * operator new[](__SIZE_TYPE__ sz)
 {
-    Allocator::Arguments alloc_args;
+    Allocator::Range alloc_args;
 
     alloc_args.size = sz;
     alloc_args.alignment = 0;

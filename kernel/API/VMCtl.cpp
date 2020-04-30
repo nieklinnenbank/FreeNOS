@@ -80,7 +80,7 @@ API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *ra
         }
 
         case ReserveMem: {
-            Allocator::Arguments alloc_args;
+            Allocator::Range alloc_args;
             alloc_args.address = range->phys;
             alloc_args.size    = range->size;
             alloc_args.alignment = PAGESIZE;

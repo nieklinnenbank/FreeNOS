@@ -36,7 +36,7 @@ Size BubbleAllocator::available() const
     return m_size - (m_current - m_start);
 }
 
-Allocator::Result BubbleAllocator::allocate(Allocator::Arguments & args)
+Allocator::Result BubbleAllocator::allocate(Allocator::Range & args)
 {
     Size needed = aligned(args.size, m_alignment);
 

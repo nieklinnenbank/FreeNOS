@@ -27,7 +27,7 @@
 ARMPaging::ARMPaging(MemoryMap *map, SplitAllocator *alloc)
     : MemoryContext(map, alloc)
 {
-    Allocator::Arguments alloc_args;
+    Allocator::Range alloc_args;
     alloc_args.address = 0;
     alloc_args.size = sizeof(ARMFirstTable);
     alloc_args.alignment = sizeof(ARMFirstTable);

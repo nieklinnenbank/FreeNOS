@@ -74,21 +74,23 @@ class BitAllocator : public Allocator
     /**
      * Allocate memory.
      *
-     * @param args Allocator arguments containing the requested size, address and alignment.
+     * @param args Contains the requested size and alignment on input.
+     *             On output, contains the actual allocated address.
      *
      * @return Result value.
      */
-    virtual Result allocate(Arguments & args);
+    virtual Result allocate(Range & args);
 
     /**
      * Allocate memory from defined starting address.
      *
-     * @param args Allocator arguments containing the requested size, address and alignment.
+     * @param args Contains the requested size and alignment on input.
+     *             On output, contains the actual allocated address.
      * @param allocStart Allocation address to start searching at.
      *
      * @return Result value.
      */
-    Result allocate(Arguments & args, Address allocStart = 0);
+    Result allocate(Range & args, Address allocStart = 0);
 
     /**
      * Allocate a specific address.

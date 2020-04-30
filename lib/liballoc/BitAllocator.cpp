@@ -39,12 +39,12 @@ Size BitAllocator::available() const
     return m_array.count(false) * m_chunkSize;
 }
 
-Allocator::Result BitAllocator::allocate(Allocator::Arguments & args)
+Allocator::Result BitAllocator::allocate(Allocator::Range & args)
 {
     return allocate(args, 0);
 }
 
-Allocator::Result BitAllocator::allocate(Allocator::Arguments & args,
+Allocator::Result BitAllocator::allocate(Allocator::Range & args,
                                          Address allocStart)
 {
     Size num = (args.size) / m_chunkSize;

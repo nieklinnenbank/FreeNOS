@@ -67,7 +67,7 @@ MemoryContext::Result IntelPageDirectory::map(Address virt,
                                               SplitAllocator *alloc)
 {
     IntelPageTable *table = getPageTable(virt, alloc);
-    Allocator::Arguments alloc_args;
+    Allocator::Range alloc_args;
 
     // Check if the page table is present.
     if (!table)

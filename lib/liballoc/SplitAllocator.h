@@ -67,11 +67,12 @@ class SplitAllocator : public Allocator
     /**
      * Allocate memory.
      *
-     * @param args Allocator arguments containing the requested size, address and alignment.
+     * @param args Contains the requested size and alignment on input.
+     *             On output, contains the actual allocated address.
      *
      * @return Result value.
      */
-    virtual Result allocate(Arguments & args);
+    virtual Result allocate(Range & args);
 
     /**
      * Allocate address.
@@ -85,11 +86,12 @@ class SplitAllocator : public Allocator
     /**
      * Allocate from lower memory.
      *
-     * @param args Allocator arguments containing the requested size, address and alignment.
+     * @param args Contains the requested size and alignment on input.
+     *             On output, contains the actual allocated address.
      *
      * @return Result code
      */
-    Result allocateLow(Arguments & args);
+    Result allocateLow(Range & args);
 
     /**
      * Release memory.

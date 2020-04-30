@@ -34,7 +34,7 @@ Size PoolAllocator::available() const
     return m_parent ? m_parent->available() : ZERO;
 }
 
-Allocator::Result PoolAllocator::allocate(Allocator::Arguments & args)
+Allocator::Result PoolAllocator::allocate(Allocator::Range & args)
 {
     Size index, nPools = 1;
     MemoryPool *pool = ZERO;
@@ -81,7 +81,7 @@ Allocator::Result PoolAllocator::allocate(Allocator::Arguments & args)
 MemoryPool * PoolAllocator::newPool(Size index, Size cnt)
 {
     MemoryPool *pool = 0;
-    Allocator::Arguments alloc_args;
+    Allocator::Range alloc_args;
 
     // Prepare amount to allocate from m_parent
     alloc_args.address = 0;

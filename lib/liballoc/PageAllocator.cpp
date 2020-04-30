@@ -38,7 +38,7 @@ Size PageAllocator::available() const
     return m_size - m_allocated;
 }
 
-Allocator::Result PageAllocator::allocate(Allocator::Arguments & args)
+Allocator::Result PageAllocator::allocate(Allocator::Range & args)
 {
     Memory::Range range;
 

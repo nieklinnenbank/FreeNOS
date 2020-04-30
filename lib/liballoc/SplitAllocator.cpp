@@ -43,7 +43,7 @@ Size SplitAllocator::available() const
     return m_alloc->available();
 }
 
-Allocator::Result SplitAllocator::allocate(Allocator::Arguments & args)
+Allocator::Result SplitAllocator::allocate(Allocator::Range & args)
 {
     return allocateLow(args);
 }
@@ -53,7 +53,7 @@ Allocator::Result SplitAllocator::allocate(Address addr)
     return m_alloc->allocate(addr);
 }
 
-Allocator::Result SplitAllocator::allocateLow(Allocator::Arguments & args)
+Allocator::Result SplitAllocator::allocateLow(Allocator::Range & args)
 {
     return m_alloc->allocate(args, 0);
 }

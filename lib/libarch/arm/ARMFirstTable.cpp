@@ -122,7 +122,7 @@ MemoryContext::Result ARMFirstTable::map(Address virt,
 {
     ARMSecondTable *table = getSecondTable(virt, alloc);
     Arch::Cache cache;
-    Allocator::Arguments alloc_args;
+    Allocator::Range alloc_args;
 
     // Input addresses must be aligned on pagesize boundary
     if ((phys & ~PAGEMASK) || (virt & ~PAGEMASK))

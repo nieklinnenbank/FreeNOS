@@ -31,7 +31,7 @@ Process::Result IntelProcess::initialize()
 {
     Address userStack;
     Memory::Range range;
-    Allocator::Arguments alloc_args;
+    Allocator::Range alloc_args;
     CPUState *regs;
     u16 dataSel = m_privileged ? KERNEL_DS_SEL : USER_DS_SEL;
     u16 codeSel = m_privileged ? KERNEL_CS_SEL : USER_CS_SEL;
