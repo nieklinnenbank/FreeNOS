@@ -324,7 +324,7 @@ TestCase(HashIteratorReset)
     TestInt<int> ints(INT_MIN, INT_MAX);
     TestInt<Size> sizes(32, 128);
     Size size = sizes.random();
-    Size rounds = sizes.random();
+    const Size rounds = 10;
 
     // Generate unique keys
     strings.unique(size);
