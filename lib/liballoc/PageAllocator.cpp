@@ -29,7 +29,7 @@ PageAllocator::PageAllocator(const Allocator::Range range)
 
 Size PageAllocator::available() const
 {
-    return m_range.size - m_allocated;
+    return size() - m_allocated;
 }
 
 Allocator::Result PageAllocator::allocate(Allocator::Range & args)
@@ -37,7 +37,7 @@ Allocator::Result PageAllocator::allocate(Allocator::Range & args)
     Memory::Range range;
 
     // Set return address
-    args.address = m_range.address + m_allocated;
+    args.address = base() + m_allocated;
 
     Size bytes  = args.size > PAGEALLOC_MINIMUM ?
                   args.size : PAGEALLOC_MINIMUM;
@@ -48,7 +48,7 @@ Allocator::Result PageAllocator::allocate(Allocator::Range & args)
     // Fill in the message
     range.size   = bytes;
     range.access = Memory::User | Memory::Readable | Memory::Writable;
-    range.virt   = m_range.address + m_allocated;
+    range.virt   = base() + m_allocated;
     range.phys   = ZERO;
     VMCtl(SELF, Map, &range);
 

@@ -39,6 +39,11 @@ void Allocator::setParent(Allocator *parent)
     m_parent = parent;
 }
 
+Allocator * Allocator::parent()
+{
+    return m_parent;
+}
+
 Allocator * Allocator::getDefault()
 {
     return m_default;
@@ -52,6 +57,21 @@ void Allocator::setDefault(Allocator *alloc)
 Size Allocator::size() const
 {
     return m_range.size;
+}
+
+Address Allocator::base() const
+{
+    return m_range.address;
+}
+
+Size Allocator::alignment() const
+{
+    return m_range.alignment;
+}
+
+Size Allocator::available() const
+{
+    return m_parent ? m_parent->available() : ZERO;
 }
 
 Address Allocator::aligned(Address addr, Size boundary) const

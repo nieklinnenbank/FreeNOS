@@ -148,13 +148,6 @@ class PoolAllocator : public Allocator
     PoolAllocator(const Range range);
 
     /**
-     * Get memory available.
-     *
-     * @return Size of memory available by the Allocator.
-     */
-    virtual Size available() const;
-
-    /**
      * Allocate memory.
      *
      * @param args Contains the requested size and alignment on input.

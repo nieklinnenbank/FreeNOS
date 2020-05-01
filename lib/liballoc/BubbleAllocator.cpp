@@ -27,15 +27,15 @@ BubbleAllocator::BubbleAllocator(const Allocator::Range range)
 
 Size BubbleAllocator::available() const
 {
-    return m_range.size - (m_current - m_start);
+    return size() - (m_current - m_start);
 }
 
 Allocator::Result BubbleAllocator::allocate(Allocator::Range & args)
 {
-    Size needed = aligned(args.size, m_range.alignment);
+    Size needed = aligned(args.size, alignment());
 
     // Do we still have enough room?
-    if (m_current + needed < m_start + m_range.size)
+    if (m_current + needed < m_start + size())
     {
         m_current += needed;
         args.address = (Address) (m_current - needed);

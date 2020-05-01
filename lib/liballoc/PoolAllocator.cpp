@@ -24,11 +24,6 @@ PoolAllocator::PoolAllocator(const Allocator::Range range)
     MemoryBlock::set(m_pools, 0, sizeof(m_pools));
 }
 
-Size PoolAllocator::available() const
-{
-    return m_parent ? m_parent->available() : ZERO;
-}
-
 Allocator::Result PoolAllocator::allocate(Allocator::Range & args)
 {
     Size index, nPools = 1;
@@ -41,7 +36,7 @@ Allocator::Result PoolAllocator::allocate(Allocator::Range & args)
     }
 
     // Do we need to allocate an initial pool?
-    if (!m_pools[index] && m_parent)
+    if (!m_pools[index] && parent())
     {
         pool = m_pools[index] = newPool(index, POOL_MIN_COUNT(args.size));
     }
@@ -84,14 +79,14 @@ MemoryPool * PoolAllocator::newPool(Size index, Size cnt)
     alloc_args.size  = cnt * (1 << (index + 1));
     alloc_args.size += sizeof(MemoryPool);
     alloc_args.size += BITMAP_NUM_BYTES(cnt);
-    alloc_args.size += m_range.alignment;
+    alloc_args.size += alignment();
 
     // Ask m_parent for memory, then fill in the pool
-    if (m_parent->allocate(alloc_args) == Allocator::Success)
+    if (parent()->allocate(alloc_args) == Allocator::Success)
     {
         pool = (MemoryPool *) alloc_args.address;
         pool->count  = cnt;
-        pool->addr   = aligned( ((Address) (pool + 1)) + BITMAP_NUM_BYTES(pool->count), m_range.alignment );
+        pool->addr   = aligned( ((Address) (pool + 1)) + BITMAP_NUM_BYTES(pool->count), alignment() );
         pool->next   = m_pools[index];
         pool->free   = pool->count;
         pool->size   = (1 << (index + 1));

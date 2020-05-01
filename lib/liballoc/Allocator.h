@@ -105,6 +105,13 @@ class Allocator
     void setParent(Allocator *parent);
 
     /**
+     * Get parent Allocator
+     *
+     * @return Pointer to parent Allocator instance or NULL if none.
+     */
+    Allocator * parent();
+
+    /**
      * Get memory size.
      *
      * @return Size of memory owned by the Allocator.
@@ -112,11 +119,25 @@ class Allocator
     Size size() const;
 
     /**
+     * Get memory base address for allocations.
+     *
+     * @return Memory address used as base address
+     */
+    Address base() const;
+
+    /**
+     * Get memory alignment in bytes for allocations.
+     *
+     * @return Memory alignment value in bytes
+     */
+    Size alignment() const;
+
+    /**
      * Get memory available.
      *
      * @return Size of memory available by the Allocator.
      */
-    virtual Size available() const = 0;
+    virtual Size available() const;
 
     /**
      * Allocate memory.
@@ -154,18 +175,16 @@ class Allocator
      */
     Address aligned(Address addr, Size boundary) const;
 
-  protected:
+  private:
+
+    /** Points to the default Allocator for new()/delete(). */
+    static Allocator *m_default;
 
     /** Our parent Allocator, if any. */
     Allocator *m_parent;
 
     /** Range of memory that this Allocator manages */
     Range m_range;
-
-  private:
-
-    /** Points to the default Allocator for new()/delete(). */
-    static Allocator *m_default;
 };
 
 #ifndef __HOST__

@@ -67,11 +67,11 @@ void * SplitAllocator::toPhysical(Address virt) const
 #else
 void * SplitAllocator::toVirtual(Address phys) const
 {
-    return (void *) (phys - m_range.address);
+    return (void *) (phys - base());
 }
 
 void * SplitAllocator::toPhysical(Address virt) const
 {
-    return (void *) (virt + m_range.address);
+    return (void *) (virt + base());
 }
 #endif /* ARM */
