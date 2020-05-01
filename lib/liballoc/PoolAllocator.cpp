@@ -24,11 +24,6 @@ PoolAllocator::PoolAllocator(const Allocator::Range range)
     MemoryBlock::set(m_pools, 0, sizeof(m_pools));
 }
 
-Size PoolAllocator::size() const
-{
-    return m_parent ? m_parent->size() : ZERO;
-}
-
 Size PoolAllocator::available() const
 {
     return m_parent ? m_parent->available() : ZERO;

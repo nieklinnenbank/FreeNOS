@@ -58,13 +58,6 @@ class BitAllocator : public Allocator
     Size chunkSize() const;
 
     /**
-     * Get total size.
-     *
-     * @return Total size.
-     */
-    virtual Size size() const;
-
-    /**
      * Get available memory.
      *
      * @return Available memory.

@@ -103,7 +103,9 @@ void setupHeap()
     PageAllocator *pageAlloc;
     PoolAllocator *poolAlloc;
     const Allocator::Range pageRange = { heap.virt, heap.size, PAGESIZE };
-    const Allocator::Range poolRange = { 0, 0, sizeof(u32) };
+    const Allocator::Range poolRange = {
+        0, heap.size - sizeof(PageAllocator) - sizeof(PoolAllocator), sizeof(u32)
+    };
 
     // Allocate one page to store the allocators themselves
     Memory::Range range;

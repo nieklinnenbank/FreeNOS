@@ -23,19 +23,13 @@
 
 PageAllocator::PageAllocator(const Allocator::Range range)
     : Allocator(range)
-    , m_size(range.size)
     , m_allocated(PAGESIZE)
 {
 }
 
-Size PageAllocator::size() const
-{
-    return m_size;
-}
-
 Size PageAllocator::available() const
 {
-    return m_size - m_allocated;
+    return m_range.size - m_allocated;
 }
 
 Allocator::Result PageAllocator::allocate(Allocator::Range & args)

@@ -29,11 +29,6 @@ Size BitAllocator::chunkSize() const
     return m_chunkSize;
 }
 
-Size BitAllocator::size() const
-{
-    return m_array.size() * m_chunkSize;
-}
-
 Size BitAllocator::available() const
 {
     return m_array.count(false) * m_chunkSize;

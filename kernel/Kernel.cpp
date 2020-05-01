@@ -73,7 +73,7 @@ Error Kernel::heap(Address base, Size size)
     Size metaData = sizeof(BubbleAllocator) + sizeof(PoolAllocator);
     Allocator *bubble, *pool;
     const Allocator::Range bubbleRange = { base + metaData, size - metaData, sizeof(u32) };
-    const Allocator::Range poolRange   = { 0, 0, sizeof(u32) };
+    const Allocator::Range poolRange   = { 0, size - metaData, sizeof(u32) };
 
     // Clear the heap first
     MemoryBlock::set((void *) base, 0, size);

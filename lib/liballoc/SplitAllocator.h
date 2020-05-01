@@ -50,13 +50,6 @@ class SplitAllocator : public Allocator
     virtual ~SplitAllocator();
 
     /**
-     * Get memory size.
-     *
-     * @return Size of memory owned by the Allocator.
-     */
-    virtual Size size() const;
-
-    /**
      * Get memory available.
      *
      * @return Size of memory available by the Allocator.

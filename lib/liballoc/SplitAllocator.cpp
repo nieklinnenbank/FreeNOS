@@ -29,11 +29,6 @@ SplitAllocator::~SplitAllocator()
     delete m_alloc;
 }
 
-Size SplitAllocator::size() const
-{
-    return m_alloc->size();
-}
-
 Size SplitAllocator::available() const
 {
     return m_alloc->available();

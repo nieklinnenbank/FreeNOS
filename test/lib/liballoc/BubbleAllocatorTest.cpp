@@ -34,7 +34,7 @@ TestCase(BubbleConstruct)
     BubbleAllocator ba(range);
 
     testAssert(ba.m_start == (u8 *) addresses[0]);
-    testAssert(ba.m_size == sizes[0]);
+    testAssert(ba.size() == sizes[0]);
 
     return OK;
 }

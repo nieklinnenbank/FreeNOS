@@ -45,13 +45,6 @@ class PageAllocator : public Allocator
     PageAllocator(const Range range);
 
     /**
-     * Get memory size.
-     *
-     * @return Size of memory owned by the Allocator.
-     */
-    virtual Size size() const;
-
-    /**
      * Get memory available.
      *
      * @return Size of memory available by the Allocator.
@@ -79,9 +72,6 @@ class PageAllocator : public Allocator
     virtual Result release(Address addr);
 
   private:
-
-    /** Maximum size to allocate */
-    Size m_size;
 
     /** Total number of bytes allocated. */
     Size m_allocated;

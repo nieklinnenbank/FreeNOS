@@ -109,7 +109,7 @@ class Allocator
      *
      * @return Size of memory owned by the Allocator.
      */
-    virtual Size size() const = 0;
+    Size size() const;
 
     /**
      * Get memory available.

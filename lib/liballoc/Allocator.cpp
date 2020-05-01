@@ -49,6 +49,11 @@ void Allocator::setDefault(Allocator *alloc)
     m_default = alloc;
 }
 
+Size Allocator::size() const
+{
+    return m_range.size;
+}
+
 Address Allocator::aligned(Address addr, Size boundary) const
 {
     Address corrected = addr;
