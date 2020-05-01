@@ -20,12 +20,15 @@
 #include <FreeNOS/System.h>
 #include <Macros.h>
 #include <MemoryBlock.h>
+#include <arm/ARMPaging.h>
 #include <arm/ARMControl.h>
 #include <NS16550.h>
 #include <DeviceLog.h>
 #include "SunxiKernel.h"
 
 extern Address __bootimg, __bss_start, __bss_end;
+
+static u32 ALIGN(16 * 1024) SECTION(".data") tmpPageDir[4096];
 
 extern C int kernel_main(void)
 {
@@ -39,11 +42,17 @@ extern C int kernel_main(void)
     ctrl.set(ARMControl::SMPBit);
 #endif
 
+    // Prepare early page tables
+    Arch::MemoryMap mem;
+    ARMPaging paging(&mem, (Address) &tmpPageDir);
+
+    // Activate MMU
+    paging.activate(true);
+
     // Clear BSS
     MemoryBlock::set(&__bss_start, 0, &__bss_end - &__bss_start);
 
     // Create local objects needed for the kernel
-    Arch::MemoryMap mem;
     BootImage *bootimage = (BootImage *) &__bootimg;
 
     // Fill coreInfo

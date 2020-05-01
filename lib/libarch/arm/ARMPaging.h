@@ -53,6 +53,14 @@ class ARMPaging : public MemoryContext
     ARMPaging(MemoryMap *map, SplitAllocator *alloc);
 
     /**
+     * Secondary constructor with pre-allocated 1st page table.
+     *
+     * @param map Virtual memory map
+     * @param firstTableAddr Physical address of 1st page table
+     */
+    ARMPaging(MemoryMap *map, Address firstTableAddress);
+
+    /**
      * Destructor.
      */
     virtual ~ARMPaging();
@@ -131,6 +139,14 @@ class ARMPaging : public MemoryContext
     virtual Result releaseRange(Memory::Range *range, bool tablesOnly);
 
   private:
+
+    /**
+     * Installs default mappings on 1st level page table
+     *
+     * @param map Virtual memory map
+     * @param firstTableAddress Physical address of 1st level page table
+     */
+    void setupFirstTable(MemoryMap *map, Address firstTableAddress);
 
     /**
      * Enable the MMU

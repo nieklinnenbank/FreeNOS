@@ -99,8 +99,8 @@ void ARMProcess::setWaitResult(uint result)
 
 void ARMProcess::execute(Process *previous)
 {
-    // Activates the MMU if needed and applies memory context
-    m_memoryContext->activate(firstProcess);
+    // Activates memory context of this process
+    m_memoryContext->activate();
 
     // First process starts from loadCoreState0
     if (firstProcess)

@@ -35,28 +35,8 @@ ARMPaging::ARMPaging(MemoryMap *map, SplitAllocator *alloc)
     // Allocate page directory from low physical memory.
     if (alloc->allocateLow(alloc_args) == Allocator::Success)
     {
-        m_firstTableAddr = alloc_args.address;
-        m_firstTable = (ARMFirstTable *) alloc->toVirtual(m_firstTableAddr);
-
-        // Initialize the page directory
-        MemoryBlock::set(m_firstTable, 0, sizeof(ARMFirstTable));
-
-        // Map the kernel. The kernel has permanently mapped 1GB of
-        // physical memory (i.e. the "low memory" in SplitAllocator). The low
-        // memory starts at its physical base address offset (varies per core).
-        m_firstTable->mapLarge( m_map->range(MemoryMap::KernelData), m_alloc );
-
-        // Unmap I/O zone
-        for (Size i = 0; i < IO_SIZE; i += MegaByte(1))
-            m_firstTable->unmap(IO_BASE + i, m_alloc);
-
-        // Map the I/O zone as Device / Uncached memory.
-        Memory::Range io;
-        io.phys = IO_BASE;
-        io.virt = IO_BASE;
-        io.size = IO_SIZE;
-        io.access = Memory::Readable | Memory::Writable | Memory::Device;
-        m_firstTable->mapLarge(io, m_alloc);
+        m_firstTable = (ARMFirstTable *) alloc->toVirtual(alloc_args.address);
+        setupFirstTable(map, alloc_args.address);
     }
 }
 
@@ -64,6 +44,38 @@ ARMPaging::~ARMPaging()
 {
     for (Size i = 0; i < sizeof(ARMFirstTable); i += PAGESIZE)
         m_alloc->release(m_firstTableAddr + i);
+}
+
+ARMPaging::ARMPaging(MemoryMap *map, Address firstTableAddress)
+    : MemoryContext(map, ZERO)
+{
+    m_firstTable = (ARMFirstTable *) firstTableAddress;
+    setupFirstTable(map, firstTableAddress);
+}
+
+void ARMPaging::setupFirstTable(MemoryMap *map, Address firstTableAddress)
+{
+    m_firstTableAddr = firstTableAddress;
+
+    // Initialize the page directory
+    MemoryBlock::set(m_firstTable, 0, sizeof(ARMFirstTable));
+
+    // Map the kernel. The kernel has permanently mapped 1GB of
+    // physical memory (i.e. the "low memory" in SplitAllocator). The low
+    // memory starts at its physical base address offset (varies per core).
+    m_firstTable->mapLarge( m_map->range(MemoryMap::KernelData), m_alloc );
+
+    // Unmap I/O zone
+    for (Size i = 0; i < IO_SIZE; i += MegaByte(1))
+        m_firstTable->unmap(IO_BASE + i, m_alloc);
+
+    // Map the I/O zone as Device / Uncached memory.
+    Memory::Range io;
+    io.phys = IO_BASE;
+    io.virt = IO_BASE;
+    io.size = IO_SIZE;
+    io.access = Memory::Readable | Memory::Writable | Memory::Device;
+    m_firstTable->mapLarge(io, m_alloc);
 }
 
 #ifdef ARMV6
@@ -93,7 +105,6 @@ MemoryContext::Result ARMPaging::enableMMU()
 
     // Enable the MMU. This re-enables instruction and data cache too.
     ctrl.set(ARMControl::MMUEnabled);
-    NOTICE("MMUEnabled = " << (ctrl.read(ARMControl::SystemControl) & ARMControl::MMUEnabled));
     tlb_flush_all();
 
     // Reactivate both caches and branch prediction
@@ -140,8 +151,6 @@ MemoryContext::Result ARMPaging::enableMMU()
     // Write back to set.
     ctrl.write(ARMControl::SystemControl, nControl);
     isb();
-
-    NOTICE("MMUEnabled = " << (ctrl.read(ARMControl::SystemControl) & ARMControl::MMUEnabled));
 
     // Need to enable alignment faults separately of the MMU,
     // otherwise QEMU will hard reset the CPU
