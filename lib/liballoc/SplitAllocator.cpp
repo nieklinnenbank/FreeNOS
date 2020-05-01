@@ -20,18 +20,13 @@
 
 SplitAllocator::SplitAllocator(const Allocator::Range range)
     : Allocator(range)
-    , m_alloc(new BitAllocator(range, PAGESIZE))
+    , m_alloc(range, PAGESIZE)
 {
-}
-
-SplitAllocator::~SplitAllocator()
-{
-    delete m_alloc;
 }
 
 Size SplitAllocator::available() const
 {
-    return m_alloc->available();
+    return m_alloc.available();
 }
 
 Allocator::Result SplitAllocator::allocate(Allocator::Range & args)
@@ -41,17 +36,17 @@ Allocator::Result SplitAllocator::allocate(Allocator::Range & args)
 
 Allocator::Result SplitAllocator::allocate(Address addr)
 {
-    return m_alloc->allocate(addr);
+    return m_alloc.allocate(addr);
 }
 
 Allocator::Result SplitAllocator::allocateLow(Allocator::Range & args)
 {
-    return m_alloc->allocate(args, 0);
+    return m_alloc.allocate(args, 0);
 }
 
 Allocator::Result SplitAllocator::release(Address addr)
 {
-    return m_alloc->release(addr);
+    return m_alloc.release(addr);
 }
 
 #ifdef ARM

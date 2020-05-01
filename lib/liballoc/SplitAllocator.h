@@ -31,7 +31,7 @@
  */
 
 /**
- * Allocator which separates kernel mapped low-memory and higher memory.
+ * Allocator which separates kernel mapped memory at virtual and physical addresses.
  */
 class SplitAllocator : public Allocator
 {
@@ -43,11 +43,6 @@ class SplitAllocator : public Allocator
      * @param range Block of continguous memory to be managed.
      */
     SplitAllocator(const Range range);
-
-    /**
-     * Class destructor.
-     */
-    virtual ~SplitAllocator();
 
     /**
      * Get memory available.
@@ -109,7 +104,7 @@ class SplitAllocator : public Allocator
   private:
 
     /** Physical memory allocator. */
-    BitAllocator *m_alloc;
+    BitAllocator m_alloc;
 };
 
 /**
