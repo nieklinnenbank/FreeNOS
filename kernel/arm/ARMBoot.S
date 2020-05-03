@@ -18,7 +18,7 @@
 
 #include <FreeNOS/System.h>
 
-#define STACKSIZE   PAGESIZE
+#define STACKSIZE   (PAGESIZE * 4)
 
 /* To keep this in the first portion of the binary. */
 .section ".text.boot"
