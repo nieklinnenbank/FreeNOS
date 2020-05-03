@@ -41,7 +41,7 @@ Kernel::Kernel(CoreInfo *info)
 
     // Initialize members
     const Allocator::Range range = { info->memory.phys, info->memory.size, 0 };
-    m_alloc  = new SplitAllocator(range);
+    m_alloc  = new SplitAllocator(range, PAGESIZE);
     m_procs  = new ProcessManager();
     m_api    = new API();
     m_coreInfo   = info;
@@ -243,7 +243,7 @@ Kernel::Result Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Siz
     alloc_args.size = argRange.size;
     alloc_args.alignment = PAGESIZE;
 
-    if (m_alloc->allocateLow(alloc_args) != Allocator::Success)
+    if (m_alloc->allocate(alloc_args) != Allocator::Success)
     {
         FATAL("failed to allocate program arguments page");
         return ProcessError;

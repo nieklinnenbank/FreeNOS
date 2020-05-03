@@ -138,30 +138,27 @@ Process::Result Process::raiseEvent(ProcessEvent *event)
 Process::Result Process::initialize()
 {
     Memory::Range range;
-    Address paddr, vaddr;
     Arch::Cache cache;
-    Allocator::Range alloc_args;
+    Allocator::Range allocPhys, allocVirt;
 
     // Allocate two pages for the kernel event channel
-    alloc_args.address = 0;
-    alloc_args.size = PAGESIZE * 2;
-    alloc_args.alignment = PAGESIZE;
+    allocPhys.address = 0;
+    allocPhys.size = PAGESIZE * 2;
+    allocPhys.alignment = PAGESIZE;
 
-    if (Kernel::instance->getAllocator()->allocateLow(alloc_args) != Allocator::Success)
+    if (Kernel::instance->getAllocator()->allocate(allocPhys, allocVirt) != Allocator::Success)
     {
         ERROR("failed to allocate kernel event channel");
         return OutOfMemory;
     }
-    paddr = alloc_args.address;
 
-    // Translate to virtual address in kernel low memory
-    vaddr = (Address) Kernel::instance->getAllocator()->toVirtual(paddr);
-    MemoryBlock::set((void *)vaddr, 0, PAGESIZE*2);
-    cache.cleanData(vaddr);
-    cache.cleanData(vaddr + PAGESIZE);
+    // Initialize pages with zeroes
+    MemoryBlock::set((void *)allocVirt.address, 0, PAGESIZE*2);
+    cache.cleanData(allocVirt.address);
+    cache.cleanData(allocVirt.address + PAGESIZE);
 
     // Map data and feedback pages in userspace
-    range.phys   = paddr;
+    range.phys   = allocPhys.address;
     range.access = Memory::User | Memory::Readable;
     range.size   = PAGESIZE * 2;
     m_memoryContext->findFree(range.size, MemoryMap::UserPrivate, &range.virt);
@@ -179,7 +176,7 @@ Process::Result Process::initialize()
     // Setup the kernel event channel
     m_kernelChannel->setMode(Channel::Producer);
     m_kernelChannel->setMessageSize(sizeof(ProcessEvent));
-    m_kernelChannel->setVirtual(vaddr, vaddr + PAGESIZE);
+    m_kernelChannel->setVirtual(allocVirt.address, allocVirt.address + PAGESIZE);
 
     return Success;
 }

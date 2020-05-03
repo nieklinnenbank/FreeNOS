@@ -18,9 +18,10 @@
 #include <FreeNOS/System.h>
 #include "SplitAllocator.h"
 
-SplitAllocator::SplitAllocator(const Allocator::Range range)
+SplitAllocator::SplitAllocator(const Allocator::Range range, const Size pageSize)
     : Allocator(range)
-    , m_alloc(range, PAGESIZE)
+    , m_alloc(range, pageSize)
+    , m_pageSize(pageSize)
 {
 }
 
@@ -31,7 +32,22 @@ Size SplitAllocator::available() const
 
 Allocator::Result SplitAllocator::allocate(Allocator::Range & args)
 {
-    return allocateLow(args);
+    return m_alloc.allocate(args, 0);
+}
+
+Allocator::Result SplitAllocator::allocate(Allocator::Range & phys,
+                                           Allocator::Range & virt)
+{
+    Result r = m_alloc.allocate(phys, 0);
+
+    if (r == Success)
+    {
+        virt.address   = toVirtual(phys.address);
+        virt.size      = phys.size;
+        virt.alignment = phys.alignment;
+    }
+
+    return r;
 }
 
 Allocator::Result SplitAllocator::allocate(Address addr)
@@ -39,34 +55,25 @@ Allocator::Result SplitAllocator::allocate(Address addr)
     return m_alloc.allocate(addr);
 }
 
-Allocator::Result SplitAllocator::allocateLow(Allocator::Range & args)
-{
-    return m_alloc.allocate(args, 0);
-}
-
 Allocator::Result SplitAllocator::release(Address addr)
 {
     return m_alloc.release(addr);
 }
 
+Address SplitAllocator::toVirtual(Address phys) const
+{
 #ifdef ARM
-void * SplitAllocator::toVirtual(Address phys) const
-{
-    return (void *)phys;
-}
-
-void * SplitAllocator::toPhysical(Address virt) const
-{
-    return (void *)virt;
-}
+    return phys;
 #else
-void * SplitAllocator::toVirtual(Address phys) const
-{
-    return (void *) (phys - base());
+    return phys - base();
+#endif /* ARM */
 }
 
-void * SplitAllocator::toPhysical(Address virt) const
+Address SplitAllocator::toPhysical(Address virt) const
 {
-    return (void *) (virt + base());
-}
+#ifdef ARM
+    return virt;
+#else
+    return virt + base();
 #endif /* ARM */
+}

@@ -123,9 +123,8 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
     MemoryShare *remoteShare = ZERO;
     MemoryContext *localMem  = m_memory;
     MemoryContext *remoteMem = instance.getMemoryContext();
-    Address paddr, vaddr;
     Arch::Cache cache;
-    Allocator::Range alloc_args;
+    Allocator::Range allocPhys, allocVirt;
 
     if (share->range.size == 0)
         return InvalidArgument;
@@ -152,28 +151,26 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
     }
 
     // Allocate actual pages
-    alloc_args.address = 0;
-    alloc_args.size = share->range.size;
-    alloc_args.alignment = PAGESIZE;
+    allocPhys.address = 0;
+    allocPhys.size = share->range.size;
+    allocPhys.alignment = PAGESIZE;
 
-    if (Kernel::instance->getAllocator()->allocateLow(alloc_args) != Allocator::Success)
+    if (Kernel::instance->getAllocator()->allocate(allocPhys, allocVirt) != Allocator::Success)
     {
         ERROR("failed to allocate pages for MemoryShare");
         return OutOfMemory;
     }
-    paddr = alloc_args.address;
 
     // Zero out the pages
-    vaddr = (Address) Kernel::instance->getAllocator()->toVirtual(paddr);
-    MemoryBlock::set((void *)vaddr, 0, share->range.size);
+    MemoryBlock::set((void *) allocVirt.address, 0, share->range.size);
     for (Size i = 0; i < share->range.size; i+=PAGESIZE)
-        cache.cleanData(vaddr + i);
+        cache.cleanData(allocVirt.address + i);
 
     // Fill the local share object
     localShare->pid        = instance.getProcessID();
     localShare->coreId     = Kernel::instance->getCoreInfo()->coreId;
     localShare->tagId      = share->tagId;
-    localShare->range.phys = paddr;
+    localShare->range.phys = allocPhys.address;
     localShare->range.size = share->range.size;
     localShare->range.access = Memory::User | share->range.access;
     localShare->attached   = true;

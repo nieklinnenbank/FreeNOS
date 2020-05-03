@@ -31,7 +31,7 @@ Process::Result IntelProcess::initialize()
 {
     Address userStack;
     Memory::Range range;
-    Allocator::Range alloc_args;
+    Allocator::Range allocPhys, allocVirt;
     CPUState *regs;
     u16 dataSel = m_privileged ? KERNEL_DS_SEL : USER_DS_SEL;
     u16 codeSel = m_privileged ? KERNEL_CS_SEL : USER_CS_SEL;
@@ -47,16 +47,16 @@ Process::Result IntelProcess::initialize()
     // Allocate User stack
     range = m_map.range(MemoryMap::UserStack);
     range.access = Memory::Readable | Memory::Writable | Memory::User;
-    alloc_args.address = 0;
-    alloc_args.size = range.size;
-    alloc_args.alignment = PAGESIZE;
+    allocPhys.address = 0;
+    allocPhys.size = range.size;
+    allocPhys.alignment = PAGESIZE;
 
-    if (Kernel::instance->getAllocator()->allocate(alloc_args) != Allocator::Success)
+    if (Kernel::instance->getAllocator()->allocate(allocPhys) != Allocator::Success)
     {
         ERROR("failed to allocate user stack");
         return OutOfMemory;
     }
-    range.phys = alloc_args.address;
+    range.phys = allocPhys.address;
 
     // Map User stack
     if (m_memoryContext->mapRange(&range) != MemoryContext::Success)
@@ -67,16 +67,16 @@ Process::Result IntelProcess::initialize()
     userStack = range.virt + range.size - MEMALIGN;
 
     // Allocate Kernel stack
-    alloc_args.address = 0;
-    alloc_args.size = KernelStackSize;
-    alloc_args.alignment = PAGESIZE;
+    allocPhys.address = 0;
+    allocPhys.size = KernelStackSize;
+    allocPhys.alignment = PAGESIZE;
 
-    if (Kernel::instance->getAllocator()->allocateLow(alloc_args) != Allocator::Success)
+    if (Kernel::instance->getAllocator()->allocate(allocPhys, allocVirt) != Allocator::Success)
     {
         ERROR("failed to allocate kernel stack");
         return OutOfMemory;
     }
-    m_kernelStackBase = (Address) Kernel::instance->getAllocator()->toVirtual(alloc_args.address);
+    m_kernelStackBase = allocVirt.address;
     m_kernelStackBase += KernelStackSize;
     m_kernelStack = m_kernelStackBase - sizeof(CPUState)
                                       - sizeof(IRQRegs0)

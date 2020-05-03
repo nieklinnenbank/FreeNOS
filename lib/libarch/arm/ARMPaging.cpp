@@ -27,16 +27,16 @@
 ARMPaging::ARMPaging(MemoryMap *map, SplitAllocator *alloc)
     : MemoryContext(map, alloc)
 {
-    Allocator::Range alloc_args;
-    alloc_args.address = 0;
-    alloc_args.size = sizeof(ARMFirstTable);
-    alloc_args.alignment = sizeof(ARMFirstTable);
+    Allocator::Range phys, virt;
+    phys.address = 0;
+    phys.size = sizeof(ARMFirstTable);
+    phys.alignment = sizeof(ARMFirstTable);
 
-    // Allocate page directory from low physical memory.
-    if (alloc->allocateLow(alloc_args) == Allocator::Success)
+    // Allocate page directory
+    if (alloc->allocate(phys, virt) == Allocator::Success)
     {
-        m_firstTable = (ARMFirstTable *) alloc->toVirtual(alloc_args.address);
-        setupFirstTable(map, alloc_args.address);
+        m_firstTable = (ARMFirstTable *) virt.address;
+        setupFirstTable(map, phys.address);
     }
 }
 

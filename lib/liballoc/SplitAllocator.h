@@ -41,8 +41,9 @@ class SplitAllocator : public Allocator
      * Class constructor.
      *
      * @param range Block of continguous memory to be managed.
+     * @param pageSize Size of a single memory page.
      */
-    SplitAllocator(const Range range);
+    SplitAllocator(const Range range, const Size pageSize);
 
     /**
      * Get memory available.
@@ -52,7 +53,7 @@ class SplitAllocator : public Allocator
     virtual Size available() const;
 
     /**
-     * Allocate memory.
+     * Allocate physical memory.
      *
      * @param args Contains the requested size and alignment on input.
      *             On output, contains the actual allocated address.
@@ -62,28 +63,29 @@ class SplitAllocator : public Allocator
     virtual Result allocate(Range & args);
 
     /**
-     * Allocate address.
+     * Allocate physical/virtual memory.
      *
-     * @param addr Allocate a specific address.
+     * @param phys Contains the requested size and alignment on input.
+     *             On output, contains the actual allocated physical address.
+     * @param virt Contains the allocated memory translated for virtual addressing.
      *
-     * @return Result value.
+     * @return Result code
+     */
+    Result allocate(Range & phys, Range & virt);
+
+    /**
+     * Allocate one physical memory page.
+     *
+     * @param addr Physical memory page address
+     *
+     * @return Result code
      */
     Result allocate(Address addr);
 
     /**
-     * Allocate from lower memory.
+     * Release memory page.
      *
-     * @param args Contains the requested size and alignment on input.
-     *             On output, contains the actual allocated address.
-     *
-     * @return Result code
-     */
-    Result allocateLow(Range & args);
-
-    /**
-     * Release memory.
-     *
-     * @param addr Points to memory previously returned by allocate().
+     * @param addr Physical memory address of page to release.
      *
      * @return Result value.
      *
@@ -92,19 +94,30 @@ class SplitAllocator : public Allocator
     virtual Result release(Address addr);
 
     /**
-     * Convert the given physical address to lower virtual accessible address.
+     * Convert Address to virtual pointer.
+     *
+     * @param phys Physical address
+     *
+     * @return Virtual address
      */
-    void * toVirtual(Address phys) const;
+    Address toVirtual(Address phys) const;
 
     /**
-     * Convert lower virtual address back to system level physical address.
+     * Convert Address to physical pointer.
+     *
+     * @param virt Virtual address
+     *
+     * @return Physical address
      */
-    void * toPhysical(Address virt) const;
+    Address toPhysical(Address virt) const;
 
   private:
 
     /** Physical memory allocator. */
     BitAllocator m_alloc;
+
+    /** Size of a memory page. */
+    const Size m_pageSize;
 };
 
 /**

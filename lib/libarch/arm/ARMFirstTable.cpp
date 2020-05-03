@@ -122,7 +122,7 @@ MemoryContext::Result ARMFirstTable::map(Address virt,
 {
     ARMSecondTable *table = getSecondTable(virt, alloc);
     Arch::Cache cache;
-    Allocator::Range alloc_args;
+    Allocator::Range allocPhys, allocVirt;
 
     // Input addresses must be aligned on pagesize boundary
     if ((phys & ~PAGEMASK) || (virt & ~PAGEMASK))
@@ -136,17 +136,17 @@ MemoryContext::Result ARMFirstTable::map(Address virt,
             return MemoryContext::AlreadyExists;
 
         // Allocate a new page table
-        alloc_args.address = 0;
-        alloc_args.size = sizeof(ARMSecondTable);
-        alloc_args.alignment = PAGESIZE;
+        allocPhys.address = 0;
+        allocPhys.size = sizeof(ARMSecondTable);
+        allocPhys.alignment = PAGESIZE;
 
-        if (alloc->allocateLow(alloc_args) != Allocator::Success)
+        if (alloc->allocate(allocPhys, allocVirt) != Allocator::Success)
             return MemoryContext::OutOfMemory;
 
-        MemoryBlock::set(alloc->toVirtual(alloc_args.address), 0, PAGESIZE);
+        MemoryBlock::set((void *)alloc->toVirtual(allocVirt.address), 0, PAGESIZE);
 
         // Assign to the page directory. Do not assign permission flags (only for direct sections).
-        m_tables[ DIRENTRY(virt) ] = alloc_args.address | PAGE1_TABLE;
+        m_tables[ DIRENTRY(virt) ] = allocPhys.address | PAGE1_TABLE;
         cache.cleanData(&m_tables[DIRENTRY(virt)]);
         table = getSecondTable(virt, alloc);
     }
