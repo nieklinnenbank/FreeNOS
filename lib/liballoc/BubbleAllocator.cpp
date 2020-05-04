@@ -34,7 +34,7 @@ Allocator::Result BubbleAllocator::allocate(Allocator::Range & args)
     Size needed = aligned(args.size, alignment());
 
     // Do we still have enough room?
-    if (m_allocated + needed < size())
+    if (m_allocated + needed <= size())
     {
         args.address = base() + m_allocated;
         m_allocated += needed;
