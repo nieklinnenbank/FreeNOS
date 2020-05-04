@@ -83,7 +83,7 @@ class BitAllocator : public Allocator
      *
      * @return Result value.
      */
-    Result allocate(Range & args, Address allocStart = 0);
+    Result allocate(Range & args, const Address allocStart = 0);
 
     /**
      * Allocate a specific address.
@@ -92,14 +92,14 @@ class BitAllocator : public Allocator
      *
      * @return Result value.
      */
-    Result allocate(Address addr);
+    Result allocate(const Address addr);
 
     /**
      * Check if a chunk is allocated.
      *
      * @return True if allocated, false otherwise.
      */
-    bool isAllocated(Address page) const;
+    bool isAllocated(const Address page) const;
 
     /**
      * Release memory chunk.
@@ -115,7 +115,7 @@ class BitAllocator : public Allocator
     BitArray m_array;
 
     /** Size of each chunk. */
-    Size m_chunkSize;
+    const Size m_chunkSize;
 };
 
 /**

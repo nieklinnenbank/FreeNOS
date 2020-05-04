@@ -17,7 +17,7 @@
 
 #include "BitAllocator.h"
 
-BitAllocator::BitAllocator(const Allocator::Range range, Size chunkSize)
+BitAllocator::BitAllocator(const Allocator::Range range, const Size chunkSize)
     : Allocator(range)
     , m_array(range.size / chunkSize)
     , m_chunkSize(chunkSize)
@@ -40,7 +40,7 @@ Allocator::Result BitAllocator::allocate(Allocator::Range & args)
 }
 
 Allocator::Result BitAllocator::allocate(Allocator::Range & args,
-                                         Address allocStart)
+                                         const Address allocStart)
 {
     Size num = (args.size) / m_chunkSize;
     BitArray::Result result;
@@ -64,7 +64,7 @@ Allocator::Result BitAllocator::allocate(Allocator::Range & args,
     return Success;
 }
 
-Allocator::Result BitAllocator::allocate(Address addr)
+Allocator::Result BitAllocator::allocate(const Address addr)
 {
     if (addr < base() || isAllocated(addr))
         return InvalidAddress;
@@ -73,7 +73,7 @@ Allocator::Result BitAllocator::allocate(Address addr)
     return Success;
 }
 
-bool BitAllocator::isAllocated(Address addr) const
+bool BitAllocator::isAllocated(const Address addr) const
 {
     if (addr < base())
         return false;
