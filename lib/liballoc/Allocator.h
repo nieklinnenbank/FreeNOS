@@ -173,7 +173,7 @@ class Allocator
      *
      * @return Aligned Address.
      */
-    Address aligned(Address addr, Size boundary) const;
+    Address aligned(const Address addr, const Size boundary) const;
 
   private:
 

@@ -74,7 +74,7 @@ Size Allocator::available() const
     return m_parent ? m_parent->available() : ZERO;
 }
 
-Address Allocator::aligned(Address addr, Size boundary) const
+Address Allocator::aligned(const Address addr, const Size boundary) const
 {
     Address corrected = addr;
 
