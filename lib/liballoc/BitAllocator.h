@@ -20,7 +20,6 @@
 
 #include <BitArray.h>
 #include <Types.h>
-#include <Memory.h>
 #include "Allocator.h"
 
 /**
