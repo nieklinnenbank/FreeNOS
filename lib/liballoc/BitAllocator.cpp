@@ -81,7 +81,7 @@ bool BitAllocator::isAllocated(const Address addr) const
         return m_array.isSet((addr - base()) / m_chunkSize);
 }
 
-Allocator::Result BitAllocator::release(Address addr)
+Allocator::Result BitAllocator::release(const Address addr)
 {
     if (addr < base())
         return InvalidAddress;

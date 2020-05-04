@@ -60,7 +60,7 @@ Allocator::Result PageAllocator::allocate(Allocator::Range & args)
     return Success;
 }
 
-Allocator::Result PageAllocator::release(Address addr)
+Allocator::Result PageAllocator::release(const Address addr)
 {
     return InvalidAddress;
 }

@@ -158,7 +158,7 @@ class Allocator
      *
      * @see allocate
      */
-    virtual Result release(Address addr) = 0;
+    virtual Result release(const Address addr) = 0;
 
   protected:
 

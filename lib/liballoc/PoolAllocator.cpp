@@ -96,7 +96,7 @@ MemoryPool * PoolAllocator::newPool(Size index, Size cnt)
     return pool;
 }
 
-Allocator::Result PoolAllocator::release(Address addr)
+Allocator::Result PoolAllocator::release(const Address addr)
 {
     for (Size i = POOL_MIN_POWER - 1; i < POOL_MAX_POWER; i++)
     {

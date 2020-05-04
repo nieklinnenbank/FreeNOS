@@ -44,7 +44,7 @@ Allocator::Result BubbleAllocator::allocate(Allocator::Range & args)
     return OutOfMemory;
 }
 
-Allocator::Result BubbleAllocator::release(Address addr)
+Allocator::Result BubbleAllocator::release(const Address addr)
 {
     // BubbleAllocator never releases memory
     return InvalidAddress;

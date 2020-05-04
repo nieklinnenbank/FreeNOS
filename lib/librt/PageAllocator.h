@@ -74,7 +74,7 @@ class PageAllocator : public Allocator
      *
      * @see allocate
      */
-    virtual Result release(Address addr);
+    virtual Result release(const Address addr);
 
   private:
 

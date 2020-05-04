@@ -57,7 +57,7 @@ Allocator::Result SplitAllocator::allocate(const Address addr)
     return m_alloc.allocate(addr);
 }
 
-Allocator::Result SplitAllocator::release(Address addr)
+Allocator::Result SplitAllocator::release(const Address addr)
 {
     return m_alloc.release(addr);
 }

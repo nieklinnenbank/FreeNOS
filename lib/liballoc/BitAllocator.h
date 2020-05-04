@@ -106,7 +106,7 @@ class BitAllocator : public Allocator
      * @param chunk The memory chunk to release.
      * @return Result value.
      */
-    virtual Result release(Address chunk);
+    virtual Result release(const Address chunk);
 
   private:
 
