@@ -18,9 +18,6 @@
 #include <FreeNOS/System.h>
 #include "PageAllocator.h"
 
-/** Minimum size required to allocate. */
-#define PAGEALLOC_MINIMUM (PAGESIZE * 2)
-
 PageAllocator::PageAllocator(const Allocator::Range range)
     : Allocator(range)
     , m_allocated(PAGESIZE)
@@ -39,8 +36,8 @@ Allocator::Result PageAllocator::allocate(Allocator::Range & args)
     // Set return address
     args.address = base() + m_allocated;
 
-    Size bytes  = args.size > PAGEALLOC_MINIMUM ?
-                  args.size : PAGEALLOC_MINIMUM;
+    Size bytes  = args.size > MinimumAllocationSize ?
+                  args.size : MinimumAllocationSize;
 
     // Align to pagesize
     bytes = aligned(bytes, PAGESIZE);
