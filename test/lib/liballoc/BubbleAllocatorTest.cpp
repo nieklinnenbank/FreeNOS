@@ -22,9 +22,6 @@
 #include <TestMain.h>
 #include <BubbleAllocator.h>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
-
 TestCase(BubbleConstruct)
 {
     TestInt<uint> addresses(UINT_MIN, UINT_MAX);
@@ -33,8 +30,10 @@ TestCase(BubbleConstruct)
     const Allocator::Range range = { addresses.random(), sizes.random(), sizeof(u32) };
     BubbleAllocator ba(range);
 
-    testAssert(ba.m_start == (u8 *) addresses[0]);
+    testAssert(ba.m_allocated == 0);
+    testAssert(ba.base() == addresses[0]);
     testAssert(ba.size() == sizes[0]);
+    testAssert(ba.alignment() == sizeof(u32));
 
     return OK;
 }

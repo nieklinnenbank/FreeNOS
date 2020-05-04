@@ -73,11 +73,8 @@ class BubbleAllocator : public Allocator
 
   private:
 
-    /** Memory region to allocate from. */
-    u8 *m_start;
-
-    /** Current "top" of the growing bubble. */
-    u8 *m_current;
+    /** Number of bytes allocated. */
+    Size m_allocated;
 };
 
 /**

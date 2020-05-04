@@ -20,14 +20,13 @@
 
 BubbleAllocator::BubbleAllocator(const Allocator::Range range)
     : Allocator(range)
-    , m_start((u8 *) range.address)
-    , m_current((u8 *) range.address)
+    , m_allocated(0)
 {
 }
 
 Size BubbleAllocator::available() const
 {
-    return size() - (m_current - m_start);
+    return size() - m_allocated;
 }
 
 Allocator::Result BubbleAllocator::allocate(Allocator::Range & args)
@@ -35,10 +34,10 @@ Allocator::Result BubbleAllocator::allocate(Allocator::Range & args)
     Size needed = aligned(args.size, alignment());
 
     // Do we still have enough room?
-    if (m_current + needed < m_start + size())
+    if (m_allocated + needed < size())
     {
-        m_current += needed;
-        args.address = (Address) (m_current - needed);
+        args.address = base() + m_allocated;
+        m_allocated += needed;
         return Success;
     }
     // No more memory available
