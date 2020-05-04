@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -15,12 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
 #include "SplitAllocator.h"
 
-SplitAllocator::SplitAllocator(const Allocator::Range range, const Size pageSize)
-    : Allocator(range)
-    , m_alloc(range, pageSize)
+SplitAllocator::SplitAllocator(const Allocator::Range physRange,
+                               const Allocator::Range virtRange,
+                               const Size pageSize)
+    : Allocator(physRange)
+    , m_alloc(physRange, pageSize)
+    , m_virtRange(virtRange)
     , m_pageSize(pageSize)
 {
 }
@@ -50,7 +52,7 @@ Allocator::Result SplitAllocator::allocate(Allocator::Range & phys,
     return r;
 }
 
-Allocator::Result SplitAllocator::allocate(Address addr)
+Allocator::Result SplitAllocator::allocate(const Address addr)
 {
     return m_alloc.allocate(addr);
 }
@@ -60,20 +62,14 @@ Allocator::Result SplitAllocator::release(Address addr)
     return m_alloc.release(addr);
 }
 
-Address SplitAllocator::toVirtual(Address phys) const
+Address SplitAllocator::toVirtual(const Address phys) const
 {
-#ifdef ARM
-    return phys;
-#else
-    return phys - base();
-#endif /* ARM */
+    const Size mappingDiff = base() - m_virtRange.address;
+    return phys - mappingDiff;
 }
 
-Address SplitAllocator::toPhysical(Address virt) const
+Address SplitAllocator::toPhysical(const Address virt) const
 {
-#ifdef ARM
-    return virt;
-#else
-    return virt + base();
-#endif /* ARM */
+    const Size mappingDiff = base() - m_virtRange.address;
+    return virt + mappingDiff;
 }

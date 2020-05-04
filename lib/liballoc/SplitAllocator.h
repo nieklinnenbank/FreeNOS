@@ -40,10 +40,13 @@ class SplitAllocator : public Allocator
     /**
      * Class constructor.
      *
-     * @param range Block of continguous memory to be managed.
+     * @param physRange Block of physical continguous memory to be managed.
+     * @param virtRange Same block of memory in the virtual address space.
      * @param pageSize Size of a single memory page.
      */
-    SplitAllocator(const Range range, const Size pageSize);
+    SplitAllocator(const Range physRange,
+                   const Range virtRange,
+                   const Size pageSize);
 
     /**
      * Get memory available.
@@ -80,7 +83,7 @@ class SplitAllocator : public Allocator
      *
      * @return Result code
      */
-    Result allocate(Address addr);
+    Result allocate(const Address addr);
 
     /**
      * Release memory page.
@@ -100,7 +103,7 @@ class SplitAllocator : public Allocator
      *
      * @return Virtual address
      */
-    Address toVirtual(Address phys) const;
+    Address toVirtual(const Address phys) const;
 
     /**
      * Convert Address to physical pointer.
@@ -109,12 +112,15 @@ class SplitAllocator : public Allocator
      *
      * @return Physical address
      */
-    Address toPhysical(Address virt) const;
+    Address toPhysical(const Address virt) const;
 
   private:
 
     /** Physical memory allocator. */
     BitAllocator m_alloc;
+
+    /** Virtual memory range to manage. */
+    const Range m_virtRange;
 
     /** Size of a memory page. */
     const Size m_pageSize;

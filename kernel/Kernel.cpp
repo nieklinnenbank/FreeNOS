@@ -40,8 +40,12 @@ Kernel::Kernel(CoreInfo *info)
     }
 
     // Initialize members
-    const Allocator::Range range = { info->memory.phys, info->memory.size, 0 };
-    m_alloc  = new SplitAllocator(range, PAGESIZE);
+    Arch::MemoryMap map;
+    Memory::Range kernelData = map.range(MemoryMap::KernelData);
+
+    const Allocator::Range physRange = { info->memory.phys, info->memory.size, 0 };
+    const Allocator::Range virtRange = { kernelData.virt, kernelData.size, 0 };
+    m_alloc  = new SplitAllocator(physRange, virtRange, PAGESIZE);
     m_procs  = new ProcessManager();
     m_api    = new API();
     m_coreInfo   = info;
