@@ -52,7 +52,11 @@ Kernel::Kernel(CoreInfo *info)
     m_intControl = ZERO;
     m_timer      = ZERO;
 
-    // Mark kernel memory used (first 4MB in phys memory)
+    // Mark first 4MB in phys memory used
+    for (Size i = 0; i < (1024*1024*4); i += PAGESIZE)
+        m_alloc->allocate(info->memory.phys + i);
+
+    // Mark all kernel memory used
     for (Size i = 0; i < info->kernel.size; i += PAGESIZE)
         m_alloc->allocate(info->kernel.phys + i);
 
