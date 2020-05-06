@@ -81,7 +81,7 @@ _start:
     ldr sp, =undStack
 
     msr cpsr_c, #(SYS_MODE | IRQ_BIT | FIQ_BIT) /* System mode */
-    mov sp, #0x8000
+    ldr sp, =sysStack
 
     /* continue kernel in SVC mode, temporary stack */
     msr cpsr_c, #(SVC_MODE | IRQ_BIT | FIQ_BIT) /* SVC mode */
@@ -107,6 +107,9 @@ abtStack:
 
 .fill STACKSIZE, 1, 0
 undStack:
+
+.fill STACKSIZE, 1, 0
+sysStack:
 
 .fill STACKSIZE, 1, 0
 tmpStack:
