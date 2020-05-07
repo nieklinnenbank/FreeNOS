@@ -19,6 +19,7 @@
 #include <SplitAllocator.h>
 #include <MemoryBlock.h>
 #include <Log.h>
+#include "CoreInfo.h"
 #include "ARMCore.h"
 #include "ARMControl.h"
 #include "ARMPaging.h"
@@ -36,7 +37,7 @@ ARMPaging::ARMPaging(MemoryMap *map, SplitAllocator *alloc)
     if (alloc->allocate(phys, virt) == Allocator::Success)
     {
         m_firstTable = (ARMFirstTable *) virt.address;
-        setupFirstTable(map, phys.address);
+        setupFirstTable(map, phys.address, coreInfo.kernel.phys);
     }
 }
 
@@ -46,14 +47,18 @@ ARMPaging::~ARMPaging()
         m_alloc->release(m_firstTableAddr + i);
 }
 
-ARMPaging::ARMPaging(MemoryMap *map, Address firstTableAddress)
+ARMPaging::ARMPaging(MemoryMap *map,
+                     Address firstTableAddress,
+                     Address kernelBaseAddress)
     : MemoryContext(map, ZERO)
 {
     m_firstTable = (ARMFirstTable *) firstTableAddress;
-    setupFirstTable(map, firstTableAddress);
+    setupFirstTable(map, firstTableAddress, kernelBaseAddress);
 }
 
-void ARMPaging::setupFirstTable(MemoryMap *map, Address firstTableAddress)
+void ARMPaging::setupFirstTable(MemoryMap *map,
+                                Address firstTableAddress,
+                                Address kernelBaseAddress)
 {
     m_firstTableAddr = firstTableAddress;
 
@@ -61,9 +66,23 @@ void ARMPaging::setupFirstTable(MemoryMap *map, Address firstTableAddress)
     MemoryBlock::set(m_firstTable, 0, sizeof(ARMFirstTable));
 
     // Map the kernel. The kernel has permanently mapped 1GB of
-    // physical memory (i.e. the "low memory" in SplitAllocator). The low
-    // memory starts at its physical base address offset (varies per core).
-    m_firstTable->mapLarge( m_map->range(MemoryMap::KernelData), m_alloc );
+    // physical memory. This 1GiB memory region starts at its physical
+    // base address offset which varies per core.
+    Memory::Range kernelRange = m_map->range(MemoryMap::KernelData);
+    kernelRange.phys = kernelBaseAddress;
+    m_firstTable->mapLarge(kernelRange, m_alloc);
+
+#ifndef BCM2835
+    // Temporary stack is used for kernel initialization code
+    // and for SMP the temporary stack is shared between cores.
+    // This is needed in order to perform early-MMU enable.
+    m_firstTable->unmap(TMPSTACKADDR, m_alloc);
+
+    const Memory::Range tmpStackRange = {
+        TMPSTACKADDR, TMPSTACKADDR, MegaByte(1), Memory::Readable|Memory::Writable
+    };
+    m_firstTable->mapLarge(tmpStackRange, m_alloc);
+#endif /* BCM2835 */
 
     // Unmap I/O zone
     for (Size i = 0; i < IO_SIZE; i += MegaByte(1))

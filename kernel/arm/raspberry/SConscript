@@ -25,7 +25,7 @@ for item in env['LINKUSER']:
 env.Append(LINKFLAGS = env['LINKKERN'])
 env.Append(CPPFLAGS = '-D__KERNEL__')
 
-env.UseLibraries(['liballoc', 'libstd', 'libarch', 'libipc', 'libfs', 'libposix'])
+env.UseLibraries(['liballoc', 'libstd', 'libarch', 'libipc', 'libfs', 'libposix', 'libexec'])
 env.UseServers(['core', 'serial'])
 
 env.TargetProgram('kernel.empty', [ Glob('*.cpp'),

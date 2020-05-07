@@ -58,7 +58,7 @@ class ARMPaging : public MemoryContext
      * @param map Virtual memory map
      * @param firstTableAddr Physical address of 1st page table
      */
-    ARMPaging(MemoryMap *map, Address firstTableAddress);
+    ARMPaging(MemoryMap *map, Address firstTableAddress, Address kernelBaseAddress);
 
     /**
      * Destructor.
@@ -146,7 +146,7 @@ class ARMPaging : public MemoryContext
      * @param map Virtual memory map
      * @param firstTableAddress Physical address of 1st level page table
      */
-    void setupFirstTable(MemoryMap *map, Address firstTableAddress);
+    void setupFirstTable(MemoryMap *map, Address firstTableAddress, Address kernelBaseAddress);
 
     /**
      * Enable the MMU

@@ -56,7 +56,7 @@ extern C int kernel_main(void)
 
     // Prepare early page tables
     Arch::MemoryMap mem;
-    ARMPaging paging(&mem, (Address) &tmpPageDir);
+    ARMPaging paging(&mem, (Address) &tmpPageDir, RAM_ADDR);
 
     // Activate MMU
     paging.activate(true);
