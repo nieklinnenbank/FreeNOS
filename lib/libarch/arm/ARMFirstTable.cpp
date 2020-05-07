@@ -201,7 +201,14 @@ MemoryContext::Result ARMFirstTable::translate(Address virt,
 {
     ARMSecondTable *table = getSecondTable(virt, alloc);
     if (!table)
+    {
+        if (m_tables[DIRENTRY(virt)] & PAGE1_SECTION)
+        {
+            *phys = (m_tables[DIRENTRY(virt)] & SECTIONMASK) + ((virt % MegaByte(1)) & SECTIONMASK);
+            return MemoryContext::Success;
+        }
         return MemoryContext::InvalidAddress;
+    }
     else
         return table->translate(virt, phys);
 }
