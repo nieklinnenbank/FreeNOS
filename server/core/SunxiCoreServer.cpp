@@ -35,13 +35,24 @@ SunxiCoreServer::SunxiCoreServer()
 
 SunxiCoreServer::Result SunxiCoreServer::initialize()
 {
-    API::Result r = ProcessCtl(SELF, WatchIRQ, IPIVector);
+    SunxiCpuConfig::Result cpuResult;
+    SystemInformation info;
 
-    if (r != API::Success)
+    cpuResult = m_cpuConfig.initialize();
+    if (cpuResult != SunxiCpuConfig::Success)
     {
-        ERROR("failed to register IPI vector: "
-              "ProcessCtl(WatchIRQ) returned: " << (uint)r);
+        ERROR("failed to initialize CPU configuration module: " <<
+              (uint) cpuResult);
         return IOError;
+    }
+
+    // When running as a secondary core, flag ourselves as booted
+    if (info.coreId != 0)
+    {
+        CoreInfo tmpInfo;
+        VMCopy(SELF, API::Read, (Address) &tmpInfo, SecondaryCoreInfoAddress, sizeof(tmpInfo));
+        tmpInfo.booted = 1;
+        VMCopy(SELF, API::Write, (Address) &tmpInfo, SecondaryCoreInfoAddress, sizeof(tmpInfo));
     }
 
     return CoreServer::initialize();
@@ -49,10 +60,25 @@ SunxiCoreServer::Result SunxiCoreServer::initialize()
 
 SunxiCoreServer::Result SunxiCoreServer::bootCore(uint coreId, CoreInfo *info)
 {
+    // Copy the CoreInfo structure for the secondary core
+    VMCopy(SELF, API::Write, (Address) info, SecondaryCoreInfoAddress, sizeof(*info));
+
+    // Reset the secondary core
     if (m_cpuConfig.boot(info) != SunxiCpuConfig::Success)
     {
         ERROR("failed to boot coreId" << coreId);
         return BootError;
+    }
+
+    // Wait until the core raises the 'booted' flag in CoreInfo
+    while (1)
+    {
+        CoreInfo check;
+
+        VMCopy(SELF, API::Read, (Address) &check, SecondaryCoreInfoAddress, sizeof(check));
+
+        if (check.booted)
+            break;
     }
 
     return Success;
@@ -71,13 +97,10 @@ SunxiCoreServer::Result SunxiCoreServer::discoverCores()
 
 void SunxiCoreServer::waitIPI() const
 {
-    // Wait for IPI which will wake us
-    ProcessCtl(SELF, EnableIRQ, IPIVector);
-    ProcessCtl(SELF, EnterSleep, 0, 0);
+    // Busy wait until a message comes
 }
 
 SunxiCoreServer::Result SunxiCoreServer::sendIPI(uint coreId)
 {
-    ERROR("not yet implemented");
-    return IOError;
+    return Success;
 }

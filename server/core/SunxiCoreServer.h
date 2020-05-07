@@ -39,11 +39,6 @@ class SunxiCoreServer : public CoreServer
     /** Physical memory address for CoreInfo passed to secondary cores during bootup */
     static const Address SecondaryCoreInfoAddress = RAM_ADDR + (1024 * 1024);
 
-  private:
-
-    /** Inter-Processor-Interrupt vector number */
-    static const uint IPIVector = 50;
-
   public:
 
     /**
