@@ -74,28 +74,50 @@ ARMGenericInterrupt::Result ARMGenericInterrupt::initialize(bool performReset)
     return Success;
 }
 
+ARMGenericInterrupt::Result ARMGenericInterrupt::send(const uint targetCoreId,
+                                                      const uint irq)
+{
+    m_dist.write(GICD_SGIR, ((1 << targetCoreId) << 16) | irq);
+    return Success;
+}
+
 ARMGenericInterrupt::Result ARMGenericInterrupt::enable(uint irq)
 {
-    m_dist.set(GICD_ISENABLER + (4 * (irq / 32)), (1 << (irq % 32)));
+    if (!isSoftwareInterrupt(irq))
+    {
+        m_dist.set(GICD_ISENABLER + (4 * (irq / 32)), (1 << (irq % 32)));
+    }
     return Success;
 }
 
 ARMGenericInterrupt::Result ARMGenericInterrupt::disable(uint irq)
 {
-    m_dist.set(GICD_ICENABLER + (4 * (irq / 32)), (1 << (irq % 32)));
+    if (!isSoftwareInterrupt(irq))
+    {
+        m_dist.set(GICD_ICENABLER + (4 * (irq / 32)), (1 << (irq % 32)));
+    }
     return Success;
 }
 
 ARMGenericInterrupt::Result ARMGenericInterrupt::clear(uint irq)
 {
-    m_cpu.write(GICC_EOIR, irq);
-    m_cpu.write(GICC_DIR, irq);
+    if (isSoftwareInterrupt(irq))
+    {
+        // Clear all pending bits for SGIs, regardless of which core is the sender
+        m_dist.write(GICD_CPENDSGIR, m_dist.read(GICD_CPENDSGIR));
+    }
+
+    // The saved IAR contains target CPU bits for SGIs
+    m_cpu.write(GICC_EOIR, m_savedIrqAck);
+    m_cpu.write(GICC_DIR, m_savedIrqAck);
     return Success;
 }
 
 ARMGenericInterrupt::Result ARMGenericInterrupt::nextPending(uint & irq)
 {
-    irq = m_cpu.read(GICC_IAR) & CpuIrqAckMask;
+    m_savedIrqAck = m_cpu.read(GICC_IAR);
+
+    irq = m_savedIrqAck & CpuIrqAckMask;
 
     // Is this a spurious (unexpected) interrupt?
     if (irq == 1023)
@@ -118,4 +140,9 @@ Size ARMGenericInterrupt::numRegisters(Size bits) const
         return ((m_numIrqs * bits) / 32) + 1;
     else
         return (m_numIrqs * bits) / 32;
+}
+
+bool ARMGenericInterrupt::isSoftwareInterrupt(const uint irq) const
+{
+    return irq < NumberOfSoftwareInterrupts;
 }

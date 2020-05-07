@@ -112,6 +112,16 @@ class IntController
      */
     virtual bool isTriggered(uint irq);
 
+    /**
+     * Send an inter-processor-interrupt (IPI).
+     *
+     * @param targetCoreId Target processor that will receive the interrupt
+     * @param irq Interrupt number to send
+     *
+     * @return Result code
+     */
+    virtual Result send(const uint targetCoreId, const uint irq);
+
   protected:
 
     /** Interrupt number base offset */

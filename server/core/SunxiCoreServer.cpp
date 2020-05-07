@@ -38,6 +38,14 @@ SunxiCoreServer::Result SunxiCoreServer::initialize()
     SunxiCpuConfig::Result cpuResult;
     SystemInformation info;
 
+    API::Result r = ProcessCtl(SELF, WatchIRQ, SoftwareInterruptNumber);
+    if (r != API::Success)
+    {
+        ERROR("failed to register SGI vector: "
+              "ProcessCtl(WatchIRQ) returned: " << (uint)r);
+        return IOError;
+    }
+
     cpuResult = m_cpuConfig.initialize();
     if (cpuResult != SunxiCpuConfig::Success)
     {
@@ -97,10 +105,19 @@ SunxiCoreServer::Result SunxiCoreServer::discoverCores()
 
 void SunxiCoreServer::waitIPI() const
 {
-    // Busy wait until a message comes
+    // Wait for IPI which will wake us
+    ProcessCtl(SELF, EnableIRQ, SoftwareInterruptNumber);
+    ProcessCtl(SELF, EnterSleep, 0, 0);
 }
 
 SunxiCoreServer::Result SunxiCoreServer::sendIPI(uint coreId)
 {
+    API::Result r = ProcessCtl(SELF, SendIRQ, (coreId << 16) | SoftwareInterruptNumber);
+    if (r != API::Success)
+    {
+        ERROR("failed to send IPI to core" << coreId << ": " << (uint)r);
+        return IOError;
+    }
+
     return Success;
 }

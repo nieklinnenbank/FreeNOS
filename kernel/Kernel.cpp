@@ -137,6 +137,21 @@ void Kernel::enableIRQ(u32 irq, bool enabled)
     }
 }
 
+Kernel::Result Kernel::sendIRQ(const uint coreId, const uint irq)
+{
+    if (m_intControl)
+    {
+        IntController::Result r = m_intControl->send(coreId, irq);
+        if (r != IntController::Success)
+        {
+            ERROR("failed to send IPI to core" << coreId << ": " << (uint) r);
+            return IOError;
+        }
+    }
+
+    return Success;
+}
+
 void Kernel::hookIntVector(u32 vec, InterruptHandler h, ulong p)
 {
     InterruptHook hook(h, p);

@@ -96,6 +96,10 @@ API::Result ProcessCtlHandler(ProcessID procID,
         Kernel::instance->enableIRQ(addr, false);
         break;
 
+    case SendIRQ:
+        Kernel::instance->sendIRQ(addr >> 16, addr & 0xffff);
+        break;
+
     case InfoPID:
         info->id    = proc->getID();
         info->state = proc->getState();
