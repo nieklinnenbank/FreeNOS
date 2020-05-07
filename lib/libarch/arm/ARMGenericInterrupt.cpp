@@ -30,40 +30,48 @@ ARMGenericInterrupt::ARMGenericInterrupt(
     // Read number of interrupt lines available
     m_numIrqs = 32 * ((m_dist.read(GICD_TYPER) & DistTypeIrqsMask) + 1);
     NOTICE(m_numIrqs << " IRQ lines");
+}
 
-    // Set all interrupts in group 0 and disable all interrupts
-    for (uint i = 0; i < numRegisters(1); i++)
+ARMGenericInterrupt::Result ARMGenericInterrupt::initialize(bool performReset)
+{
+    if (performReset)
     {
-        m_dist.write(GICD_GROUPR + (i * 4), 0);
-        m_dist.write(GICD_ICENABLER + (i * 4), ~0);
+        // Set all interrupts in group 0 and disable all interrupts
+        for (uint i = 0; i < numRegisters(1); i++)
+        {
+            m_dist.write(GICD_GROUPR + (i * 4), 0);
+            m_dist.write(GICD_ICENABLER + (i * 4), ~0);
+        }
+
+        // Set interrupt configuration to level triggered (2-bits)
+        for (uint i = 0; i < (m_numIrqs / 2); i++)
+        {
+            m_dist.write(GICD_ICFGR + (i * 4), 0);
+        }
+
+        // Set interrupt priority
+        for (uint i = 0; i < (m_numIrqs / 4); i++)
+        {
+            m_dist.write(GICD_IPRIORITYR + (i * 4), 0xA0A0A0A0);
+        }
+
+        // All interrupts are assigned to core0.
+        // Ignore the first 32 PPIs, which are local and banked per core.
+        for (uint i = 8; i < (m_numIrqs / 4); i++)
+        {
+            m_dist.write(GICD_ITARGETSR + (i * 4),
+                        (1 << 0) | (1 << 8) | (1 << 16) | (1 << 24));
+        }
+
+        // Enable all groups
+        m_dist.write(GICD_CTRL, DistCtrlGroup0 | DistCtrlGroup1);
     }
 
-    // Set interrupt configuration to level triggered (2-bits)
-    for (uint i = 0; i < (m_numIrqs / 2); i++)
-    {
-        m_dist.write(GICD_ICFGR + (i * 4), 0);
-    }
-
-    // Set interrupt priority
-    for (uint i = 0; i < (m_numIrqs / 4); i++)
-    {
-        m_dist.write(GICD_IPRIORITYR + (i * 4), 0xA0A0A0A0);
-    }
-
-    // Set minimum priority level
+    // Set minimum priority level and enable all groups
     m_cpu.write(GICC_PMR, 0xF0);
-
-    // All interrupts are assigned to core0.
-    // Ignore the first 32 PPIs, which are local and banked per core.
-    for (uint i = 8; i < (m_numIrqs / 4); i++)
-    {
-        m_dist.write(GICD_ITARGETSR + (i * 4),
-                    (1 << 0) | (1 << 8) | (1 << 16) | (1 << 24));
-    }
-
-    // Enable all groups
-    m_dist.write(GICD_CTRL, DistCtrlGroup0 | DistCtrlGroup1);
     m_cpu.write(GICC_CTRL, CpuCtrlGroup0 | CpuCtrlGroup1);
+
+    return Success;
 }
 
 ARMGenericInterrupt::Result ARMGenericInterrupt::enable(uint irq)

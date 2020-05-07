@@ -31,6 +31,13 @@ SunxiKernel::SunxiKernel(CoreInfo *info)
 
     NOTICE("");
 
+    // Initialize the IRQ controller
+    ARMGenericInterrupt::Result r = m_gic.initialize(info->coreId == 0);
+    if (r != ARMGenericInterrupt::Success)
+    {
+        FATAL("failed to initialize the GIC: " << (uint) r);
+    }
+
     // Setup interrupt callbacks
     m_intControl = &m_gic;
     m_exception.install(ARMException::IRQ, interrupt);

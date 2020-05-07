@@ -105,6 +105,15 @@ class ARMGenericInterrupt : public IntController
                         Address cpuRegisterBase);
 
     /**
+     * Initialize the controller.
+     *
+     * @param performReset If true resets the controller with all IRQs disabled.
+     *
+     * @return Result code.
+     */
+    Result initialize(bool performReset = true);
+
+    /**
      * Enable hardware interrupt (IRQ).
      *
      * @param irq Interrupt Request number.
