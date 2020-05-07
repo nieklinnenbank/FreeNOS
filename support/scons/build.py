@@ -88,6 +88,12 @@ def TargetInstall(env, source, target = None):
 	env.Install(target, source)
         rootfs_files.append(str(target) + os.sep + os.path.basename(source))
 
+def TargetInstallAs(env, source, target):
+    if env['ARCH'] != 'host':
+        SCons.Tool.install.install_action.strfunction = CopyStrFunc
+        env.InstallAs(target, source)
+        rootfs_files.append(target)
+
 def SubDirectories():
     dir_list = []
     dir_src  = Dir('.').srcnode().abspath
@@ -136,6 +142,7 @@ host.AddMethod(TargetLibrary, "TargetLibrary")
 host.AddMethod(UseLibraries, "UseLibraries")
 host.AddMethod(UseServers, "UseServers")
 host.AddMethod(TargetInstall, "TargetInstall")
+host.AddMethod(TargetInstallAs, "TargetInstallAs")
 host.Append(ROOTFS = '#${BUILDROOT}/rootfs')
 host.Append(ROOTFS_FILES = [])
 host.Append(bin     = '${ROOTFS}/bin',
