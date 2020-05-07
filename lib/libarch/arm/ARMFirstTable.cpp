@@ -139,7 +139,7 @@ MemoryContext::Result ARMFirstTable::map(Address virt,
         if (alloc->allocate(allocPhys, allocVirt) != Allocator::Success)
             return MemoryContext::OutOfMemory;
 
-        MemoryBlock::set((void *)alloc->toVirtual(allocVirt.address), 0, PAGESIZE);
+        MemoryBlock::set((void *)allocVirt.address, 0, PAGESIZE);
 
         // Assign to the page directory. Do not assign permission flags (only for direct sections).
         m_tables[ DIRENTRY(virt) ] = allocPhys.address | PAGE1_TABLE;
