@@ -124,10 +124,6 @@ MemoryContext::Result ARMFirstTable::map(Address virt,
     Arch::Cache cache;
     Allocator::Range allocPhys, allocVirt;
 
-    // Input addresses must be aligned on pagesize boundary
-    if ((phys & ~PAGEMASK) || (virt & ~PAGEMASK))
-        return MemoryContext::InvalidAddress;
-
     // Check if the page table is present.
     if (!table)
     {
