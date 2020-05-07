@@ -24,13 +24,15 @@ SunxiCpuConfig::SunxiCpuConfig()
 
 SunxiCpuConfig::Result SunxiCpuConfig::initialize()
 {
-    if (m_io.map(IOBase, PAGESIZE,
+    if (m_io.map(IOBase & ~0xfff, PAGESIZE,
                  Memory::User | Memory::Readable |
                  Memory::Writable | Memory::Device) != IO::Success)
     {
         ERROR("failed to map I/O memory");
         return IOError;
     }
+
+    m_io.setBase(m_io.getBase() + (IOBase & 0xfff));
 
     return Success;
 }
@@ -64,5 +66,5 @@ SunxiCpuConfig::Result SunxiCpuConfig::boot(CoreInfo *info)
 
     m_io.write(EntryAddr, info->kernelEntry);
     m_io.write(reg, CpuCoreReset);
-    return IOError;
+    return Success;
 }
