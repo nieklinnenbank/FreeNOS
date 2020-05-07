@@ -42,6 +42,16 @@ extern C int kernel_main(void)
     ctrl.set(ARMControl::SMPBit);
 #endif
 
+    // Fill coreInfo
+    BootImage *bootimage = (BootImage *) &__bootimg;
+    MemoryBlock::set(&coreInfo, 0, sizeof(CoreInfo));
+    coreInfo.bootImageAddress = (Address) (bootimage);
+    coreInfo.bootImageSize    = bootimage->bootImageSize;
+    coreInfo.kernel.phys      = RAM_ADDR;
+    coreInfo.kernel.size      = MegaByte(4);
+    coreInfo.memory.phys      = RAM_ADDR;
+    coreInfo.memory.size      = RAM_SIZE;
+
     // Prepare early page tables
     Arch::MemoryMap mem;
     ARMPaging paging(&mem, (Address) &tmpPageDir);
@@ -51,18 +61,6 @@ extern C int kernel_main(void)
 
     // Clear BSS
     MemoryBlock::set(&__bss_start, 0, &__bss_end - &__bss_start);
-
-    // Create local objects needed for the kernel
-    BootImage *bootimage = (BootImage *) &__bootimg;
-
-    // Fill coreInfo
-    MemoryBlock::set(&coreInfo, 0, sizeof(CoreInfo));
-    coreInfo.bootImageAddress = (Address) (bootimage);
-    coreInfo.bootImageSize    = bootimage->bootImageSize;
-    coreInfo.kernel.phys      = RAM_ADDR;
-    coreInfo.kernel.size      = MegaByte(4);
-    coreInfo.memory.phys      = RAM_ADDR;
-    coreInfo.memory.size      = RAM_SIZE;
 
     // Initialize heap at the end of the kernel (and after embedded boot image)
     coreInfo.heapAddress = coreInfo.bootImageAddress + coreInfo.bootImageSize;
