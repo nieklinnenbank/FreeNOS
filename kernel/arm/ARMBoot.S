@@ -85,7 +85,7 @@ _start:
 
     /* continue kernel in SVC mode, temporary stack */
     msr cpsr_c, #(SVC_MODE | IRQ_BIT | FIQ_BIT) /* SVC mode */
-    ldr sp, =tmpStack
+    ldr sp, =(TMPSTACKADDR + STACKSIZE)
 
     /* Call kernel_main */
     ldr r3, =kernel_main
@@ -110,6 +110,3 @@ undStack:
 
 .fill STACKSIZE, 1, 0
 sysStack:
-
-.fill STACKSIZE, 1, 0
-tmpStack:
