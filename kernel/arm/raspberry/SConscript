@@ -38,6 +38,11 @@ env.TargetProgram('kernel.empty', [ Glob('*.cpp'),
                    False)
 
 #
+# Place the empty kernel in the rootfs for CoreServer
+#
+env.TargetInstallAs('kernel.empty', '${ROOTFS}/boot/kernel')
+
+#
 # Embed the boot.img in the kernel
 #
 env.Command('kernel', 'kernel.empty', env['OBJCOPY'] + ' ' +
