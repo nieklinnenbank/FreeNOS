@@ -294,7 +294,7 @@ CoreServer::Result CoreServer::prepareCore(uint coreId, CoreInfo *info,
     for (Size i = 0; i < m_numRegions; i++)
     {
         Memory::Range range;
-        range.phys = info->memory.phys + regions[i].virt;
+        range.phys = info->kernel.phys + (regions[i].virt - RAM_ADDR);
         range.virt = 0;
         range.size = regions[i].size;
         range.access = Memory::Readable | Memory::Writable |
@@ -329,7 +329,8 @@ CoreServer::Result CoreServer::prepareCore(uint coreId, CoreInfo *info,
             return MemoryError;
         }
 
-        DEBUG(kernelPath << "[" << i << "] = " << (void *) m_regions[i].virt);
+        DEBUG(kernelPath << "[" << i << "] = " << (void *) m_regions[i].virt <<
+              " @ " << (void *) range.phys);
     }
 
     // Copy the BootImage after the kernel.
