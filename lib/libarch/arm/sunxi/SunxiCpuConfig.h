@@ -20,6 +20,7 @@
 
 #include <FreeNOS/System.h>
 #include <CoreManager.h>
+#include "SunxiPowerManagement.h"
 
 /**
  * @addtogroup lib
@@ -63,6 +64,10 @@ class SunxiCpuConfig : public CoreManager
         Cpu3RstCtrl  = 0x0100, /**< CPU#3 Reset Control */
         Cpu3Ctrl     = 0x0104, /**< CPU#3 Control */
         Cpu3Status   = 0x0108, /**< CPU#3 Status */
+        Cpu0PwrClamp = 0x0120, /**< CPU#0 Power Clamp */
+        Cpu1PwrClamp = 0x0124, /**< CPU#0 Power Clamp */
+        Cpu2PwrClamp = 0x0128, /**< CPU#0 Power Clamp */
+        Cpu3PwrClamp = 0x012C, /**< CPU#0 Power Clamp */
         CpuSysRst    = 0x0140, /**< CPU System Reset */
         ClkGating    = 0x0144, /**< CPU Clock Gating */
         GenCtrl      = 0x0184, /**< General Control */
@@ -83,11 +88,6 @@ class SunxiCpuConfig : public CoreManager
     };
 
   public:
-
-    /*
-     * Constructor
-     */
-    SunxiCpuConfig();
 
     /**
      * Perform initialization.
@@ -116,6 +116,9 @@ class SunxiCpuConfig : public CoreManager
 
     /** Memory I/O object */
     Arch::IO m_io;
+
+    /** Power Management module */
+    SunxiPowerManagement m_power;
 };
 
 /**

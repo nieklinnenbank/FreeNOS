@@ -18,12 +18,9 @@
 #include <Log.h>
 #include "SunxiCpuConfig.h"
 
-SunxiCpuConfig::SunxiCpuConfig()
-{
-}
-
 SunxiCpuConfig::Result SunxiCpuConfig::initialize()
 {
+    // First map our own I/O memory
     if (m_io.map(IOBase & ~0xfff, PAGESIZE,
                  Memory::User | Memory::Readable |
                  Memory::Writable | Memory::Device) != IO::Success)
@@ -31,8 +28,15 @@ SunxiCpuConfig::Result SunxiCpuConfig::initialize()
         ERROR("failed to map I/O memory");
         return IOError;
     }
-
     m_io.setBase(m_io.getBase() + (IOBase & 0xfff));
+
+    // Also initialize the power management module
+    SunxiPowerManagement::Result r = m_power.initialize();
+    if (r != SunxiPowerManagement::Success)
+    {
+        ERROR("failed to initialize power management module: " << (uint)r);
+        return IOError;
+    }
 
     return Success;
 }
@@ -64,7 +68,25 @@ SunxiCpuConfig::Result SunxiCpuConfig::boot(CoreInfo *info)
         }
     }
 
+    // Set initial program counter for the core
     m_io.write(EntryAddr, info->kernelEntry);
-    m_io.write(reg, CpuCoreReset);
+
+    // Assert reset
+    m_io.write(reg, 0);
+
+    // Invalidate L1 cache for target core
+    m_io.unset(GenCtrl, 1 << info->coreId);
+
+    // Disable the debug interface
+    m_io.unset(DbgExtern, 1 << info->coreId);
+
+    // Active power for the core
+    m_power.powerOnCore(info->coreId);
+
+    // De-assert reset
+    m_io.write(reg, (1 << 0) | (1 << 1));
+
+    // Re-enable the debug interface
+    m_io.set(DbgExtern, 1 << info->coreId);
     return Success;
 }
