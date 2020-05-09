@@ -150,12 +150,6 @@ inline ulong trapKernel5(ulong num, ulong arg1, ulong arg2, ulong arg3,
  */
 
 /**
- * Remap IRQs to interrupt vectors 32-47.
- */
-#define IRQ(vector) \
-    (vector) + 32
-
-/**
  * Implements an x86 compatible kernel.
  */
 class IntelKernel : public Kernel

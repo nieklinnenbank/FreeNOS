@@ -186,8 +186,10 @@ void Kernel::executeIntVector(u32 vec, CPUState *state)
         }
     }
 
-    // Raise any interrupt notifications for processes
-    if (m_procs->interruptNotify(vec) != ProcessManager::Success)
+    // Raise any interrupt notifications for processes. Note that the IRQ
+    // base should be subtracted, since userspace doesn't know about re-mapped
+    // IRQ's, such as is done for the PIC on intel
+    if (m_procs->interruptNotify(vec - m_intControl->getBase()) != ProcessManager::Success)
     {
         FATAL("failed to raise interrupt notification for IRQ #" << vec);
     }

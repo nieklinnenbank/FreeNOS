@@ -81,9 +81,9 @@ API::Result ProcessCtlHandler(ProcessID procID,
         break;
 
     case WatchIRQ:
-        if (procs->registerInterruptNotify(proc, IRQ(addr)) != ProcessManager::Success)
+        if (procs->registerInterruptNotify(proc, addr) != ProcessManager::Success)
         {
-            ERROR("failed to register IRQ #" << IRQ(addr) << " to process ID " << proc->getID());
+            ERROR("failed to register IRQ #" << addr << " to process ID " << proc->getID());
             return API::IOError;
         }
         break;
