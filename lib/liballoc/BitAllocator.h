@@ -45,9 +45,10 @@ class BitAllocator : public Allocator
      * Constructor function.
      *
      * @param range Block of continguous memory to manage.
-     * @param chunkSize Total memory will be divided into chunks.
+     * @param chunkSize The input memory range will be divided into equally sized chunks.
+     *                  The chunkSize must be greater than zero.
      */
-    BitAllocator(const Range range, Size chunkSize);
+    BitAllocator(const Range range, const Size chunkSize);
 
     /**
      * Get chunk size.
@@ -67,6 +68,7 @@ class BitAllocator : public Allocator
      * Allocate memory.
      *
      * @param args Contains the requested size and alignment on input.
+     *             The alignment value must be a multiple of the chunk size.
      *             On output, contains the actual allocated address.
      *
      * @return Result value.
@@ -77,6 +79,7 @@ class BitAllocator : public Allocator
      * Allocate memory from defined starting address.
      *
      * @param args Contains the requested size and alignment on input.
+     *             The alignment value must be a multiple of the chunk size.
      *             On output, contains the actual allocated address.
      * @param allocStart Allocation address to start searching at.
      *

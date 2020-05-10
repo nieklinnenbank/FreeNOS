@@ -44,19 +44,20 @@ Allocator::Result BitAllocator::allocate(Allocator::Range & args,
 {
     Size num = (args.size) / m_chunkSize;
     BitArray::Result result;
-    Size bit;
+    Size bit, alignment = 1;
 
     if ((args.size) % m_chunkSize)
         num++;
 
-    if (!args.alignment)
-        args.alignment = 1;
-    else if (args.alignment % m_chunkSize)
-        return InvalidAlignment;
-    else
-        args.alignment /= m_chunkSize;
+    if (args.alignment)
+    {
+        if (args.alignment % m_chunkSize)
+            return InvalidAlignment;
+        else
+            alignment = args.alignment / m_chunkSize;
+    }
 
-    result = m_array.setNext(&bit, num, allocStart / m_chunkSize, args.alignment);
+    result = m_array.setNext(&bit, num, allocStart / m_chunkSize, alignment);
     if (result != BitArray::Success)
         return OutOfMemory;
 
