@@ -57,6 +57,9 @@ class BubbleAllocator : public Allocator
      *             On output, contains the actual allocated address.
      *
      * @return Result value.
+     *
+     * @note The alignment field in args is ignored. Only the alignment
+     *       value passed to the constructor is used.
      */
     virtual Result allocate(Range & args);
 
