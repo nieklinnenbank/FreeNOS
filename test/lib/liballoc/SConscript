@@ -22,4 +22,5 @@ env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libtest', 'libexec', 'liba
 env.UseLibraries([ 'libtest', 'liballoc', 'libarch', 'libstd' ], 'host')
 env.Append(CPPPATH = [ '#lib/liballoc' ])
 
+env.TargetHostProgram('BitAllocatorTest', 'BitAllocatorTest.cpp')
 env.TargetHostProgram('BubbleAllocatorTest', 'BubbleAllocatorTest.cpp')
