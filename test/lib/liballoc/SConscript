@@ -24,3 +24,4 @@ env.Append(CPPPATH = [ '#lib/liballoc' ])
 
 env.TargetHostProgram('BitAllocatorTest', 'BitAllocatorTest.cpp')
 env.TargetHostProgram('BubbleAllocatorTest', 'BubbleAllocatorTest.cpp')
+env.TargetHostProgram('SplitAllocatorTest', 'SplitAllocatorTest.cpp')

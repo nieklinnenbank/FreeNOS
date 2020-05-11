@@ -59,6 +59,7 @@ class SplitAllocator : public Allocator
      * Allocate physical memory.
      *
      * @param args Contains the requested size and alignment on input.
+     *             The alignment value must be a multiple of the pageSize.
      *             On output, contains the actual allocated address.
      *
      * @return Result value.
@@ -69,6 +70,7 @@ class SplitAllocator : public Allocator
      * Allocate physical/virtual memory.
      *
      * @param phys Contains the requested size and alignment on input.
+     *             The alignment value must be a multiple of the pageSize.
      *             On output, contains the actual allocated physical address.
      * @param virt Contains the allocated memory translated for virtual addressing.
      *
