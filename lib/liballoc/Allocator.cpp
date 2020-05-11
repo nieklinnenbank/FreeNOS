@@ -74,6 +74,16 @@ Size Allocator::available() const
     return m_parent ? m_parent->available() : ZERO;
 }
 
+Allocator::Result Allocator::allocate(Allocator::Range & range)
+{
+    return OutOfMemory;
+}
+
+Allocator::Result Allocator::release(const Address addr)
+{
+    return InvalidAddress;
+}
+
 Address Allocator::aligned(const Address addr, const Size boundary) const
 {
     Address corrected = addr;

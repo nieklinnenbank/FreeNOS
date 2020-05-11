@@ -147,7 +147,7 @@ class Allocator
      *
      * @return Result value.
      */
-    virtual Result allocate(Range & args) = 0;
+    virtual Result allocate(Range & args);
 
     /**
      * Release memory.
@@ -158,7 +158,7 @@ class Allocator
      *
      * @see allocate
      */
-    virtual Result release(const Address addr) = 0;
+    virtual Result release(const Address addr);
 
   protected:
 
