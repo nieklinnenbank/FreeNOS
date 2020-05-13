@@ -18,6 +18,7 @@
 #include <MemoryBlock.h>
 #include "ARMException.h"
 #include "ARMCore.h"
+#include <Log.h>
 
 extern Address vecTable[], handlerTable;
 
@@ -25,6 +26,13 @@ ARMException::ARMException(Address base)
     : m_vecTable(base)
 {
     MemoryBlock::copy((void *)m_vecTable, vecTable, ARM_EX_VECTAB_SIZE);
+
+    // First enable low interrupt vector base to allow re-mapping
+    u32 v = sysctrl_read();
+    v &= ~(1 << 13);
+    sysctrl_write(v);
+
+    // Remap to requested base address
     vbar_set(base);
 }
 

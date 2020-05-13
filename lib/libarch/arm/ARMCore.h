@@ -122,6 +122,18 @@
     mcr(p15, 0, 0, c12, c0, (addr))
 
 /**
+ * Read System Control register
+ */
+#define sysctrl_read() \
+    (mrc(p15, 0, 0, c1, c0))
+
+/**
+ * Write System Control register
+ */
+#define sysctrl_write(val) \
+    mcr(p15, 0, 0, c1, c0, (val))
+
+/**
  * Read unique core identifier.
  *
  * This function reads the Multi-Processor Affinity Register (MPIDR)
