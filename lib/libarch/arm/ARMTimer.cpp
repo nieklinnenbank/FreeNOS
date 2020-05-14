@@ -19,9 +19,6 @@
 #include "ARMCore.h"
 #include "ARMTimer.h"
 
-/** Timer enable. Set to enable timer. */
-#define CNTP_CTL_ENABLE  (1 << 0)
-
 ARMTimer::ARMTimer()
     : m_initialTimerCounter(0)
 {
@@ -62,6 +59,6 @@ ARMTimer::Result ARMTimer::setFrequency(const Size hertz)
 ARMTimer::Result ARMTimer::tick()
 {
     setPL1PhysicalTimerValue(m_initialTimerCounter);
-    setPL1PhysicalTimerControl(CNTP_CTL_ENABLE);
+    setPL1PhysicalTimerControl(TimerControlEnable);
     return Success;
 }

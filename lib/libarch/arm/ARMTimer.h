@@ -38,6 +38,11 @@
  */
 class ARMTimer : public Timer
 {
+  private:
+
+    /** Set this bit in the PL1 control register to enable it. */
+    static const u32 TimerControlEnable = 1;
+
   public:
 
     /**
@@ -72,13 +77,6 @@ class ARMTimer : public Timer
      * @return System frequency
      */
     u32 getSystemFrequency(void) const;
-
-    /**
-     * Set Timer 1 control value
-     *
-     * @param value New timer control value
-     */
-    void setPL1Control(const u32 value);
 
     /**
      * Set Physical Timer 1 value
