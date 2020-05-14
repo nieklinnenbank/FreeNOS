@@ -31,7 +31,16 @@ ARMTimer::ARMTimer()
 
 u32 ARMTimer::getSystemFrequency(void) const
 {
-    return mrc(p15, 0, 0, c14, c0);
+    u32 f = mrc(p15, 0, 0, c14, c0);
+
+#ifdef SYSTEM_FREQ
+    if (f == 0)
+    {
+        f = SYSTEM_FREQ;
+    }
+#endif /* SYSTEM_FREQ */
+
+    return f;
 }
 
 void ARMTimer::setPL1Control(u32 value)
