@@ -57,7 +57,8 @@ class ARMTimer : public Timer
     /**
      * Process timer tick.
      *
-     * Should be called on each timer interrupt to restart the timer.
+     * Should be called on each timer interrupt to restart the timer
+     * by applying the initial timer counter value.
      *
      * @return Result code
      */
@@ -95,8 +96,8 @@ class ARMTimer : public Timer
 
   private:
 
-    /** Currently configured timer frequency in hertz. */
-    Size m_frequency;
+    /** Currently configured initial timer counter. */
+    Size m_initialTimerCounter;
 };
 
 /**

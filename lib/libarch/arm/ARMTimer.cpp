@@ -23,7 +23,7 @@
 #define CNTP_CTL_ENABLE  (1 << 0)
 
 ARMTimer::ARMTimer()
-    : m_frequency(0)
+    : m_initialTimerCounter(0)
 {
     m_int = ARMTIMER_IRQ;
 }
@@ -59,14 +59,14 @@ void ARMTimer::setPL1PhysicalTimerControl(const u32 value)
 
 ARMTimer::Result ARMTimer::setFrequency(const Size hertz)
 {
-    m_frequency = hertz;
+    m_initialTimerCounter = getSystemFrequency() / hertz;
     tick();
     return Success;
 }
 
 ARMTimer::Result ARMTimer::tick()
 {
-    setPL1PhysicalTimerValue(getSystemFrequency() / m_frequency);
+    setPL1PhysicalTimerValue(m_initialTimerCounter);
     setPL1PhysicalTimerControl(CNTP_CTL_ENABLE);
     return Success;
 }
