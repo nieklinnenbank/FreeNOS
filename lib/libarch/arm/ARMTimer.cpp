@@ -42,11 +42,6 @@ u32 ARMTimer::getSystemFrequency(void) const
     return f;
 }
 
-void ARMTimer::setPL1Control(const u32 value)
-{
-    mcr(p15, 0, 0, c14, c1, value);
-}
-
 void ARMTimer::setPL1PhysicalTimerValue(const u32 value)
 {
     mcr(p15, 0, 0, c14, c2, value);
