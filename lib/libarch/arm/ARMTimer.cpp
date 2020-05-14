@@ -16,7 +16,6 @@
  */
 
 #include <FreeNOS/System.h>
-#include <Log.h>
 #include "ARMCore.h"
 #include "ARMTimer.h"
 
@@ -43,22 +42,22 @@ u32 ARMTimer::getSystemFrequency(void) const
     return f;
 }
 
-void ARMTimer::setPL1Control(u32 value)
+void ARMTimer::setPL1Control(const u32 value)
 {
     mcr(p15, 0, 0, c14, c1, value);
 }
 
-void ARMTimer::setPL1PhysicalTimerValue(u32 value)
+void ARMTimer::setPL1PhysicalTimerValue(const u32 value)
 {
     mcr(p15, 0, 0, c14, c2, value);
 }
 
-void ARMTimer::setPL1PhysicalTimerControl(u32 value)
+void ARMTimer::setPL1PhysicalTimerControl(const u32 value)
 {
     mcr(p15, 0, 1, c14, c2, value);
 }
 
-ARMTimer::Result ARMTimer::setFrequency(Size hertz)
+ARMTimer::Result ARMTimer::setFrequency(const Size hertz)
 {
     m_frequency = hertz;
     tick();
