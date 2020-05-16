@@ -34,13 +34,13 @@ Size SplitAllocator::available() const
 
 Allocator::Result SplitAllocator::allocate(Allocator::Range & args)
 {
-    return m_alloc.allocate(args, 0);
+    return m_alloc.allocate(args);
 }
 
 Allocator::Result SplitAllocator::allocate(Allocator::Range & phys,
                                            Allocator::Range & virt)
 {
-    Result r = m_alloc.allocate(phys, 0);
+    Result r = m_alloc.allocate(phys);
 
     if (r == Success)
     {
@@ -54,7 +54,7 @@ Allocator::Result SplitAllocator::allocate(Allocator::Range & phys,
 
 Allocator::Result SplitAllocator::allocate(const Address addr)
 {
-    return m_alloc.allocate(addr);
+    return m_alloc.allocateAt(addr);
 }
 
 Allocator::Result SplitAllocator::release(const Address addr)

@@ -39,11 +39,11 @@ Size BitAllocator::available() const
 
 Allocator::Result BitAllocator::allocate(Allocator::Range & args)
 {
-    return allocate(args, 0);
+    return allocateFrom(args, 0);
 }
 
-Allocator::Result BitAllocator::allocate(Allocator::Range & args,
-                                         const Address allocStart)
+Allocator::Result BitAllocator::allocateFrom(Allocator::Range & args,
+                                             const Address allocStart)
 {
     Size num = (args.size) / m_chunkSize;
     BitArray::Result result;
@@ -70,7 +70,7 @@ Allocator::Result BitAllocator::allocate(Allocator::Range & args,
     return Success;
 }
 
-Allocator::Result BitAllocator::allocate(const Address addr)
+Allocator::Result BitAllocator::allocateAt(const Address addr)
 {
     assert(!isAllocated(addr));
 

@@ -88,7 +88,7 @@ class BitAllocator : public Allocator
      *
      * @return Result value.
      */
-    Result allocate(Range & args, const Address allocStart = 0);
+    Result allocateFrom(Range & args, const Address allocStart);
 
     /**
      * Allocate a specific address.
@@ -97,7 +97,7 @@ class BitAllocator : public Allocator
      *
      * @return Result value.
      */
-    Result allocate(const Address addr);
+    Result allocateAt(const Address addr);
 
     /**
      * Check if a chunk is allocated.
