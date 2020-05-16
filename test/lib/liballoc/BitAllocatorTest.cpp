@@ -206,14 +206,14 @@ TestCase(BitAllocateStartFrom)
     BitAllocator ba(range, chunkSize);
     Allocator::Range args = { 0, chunkSize, 0 };
 
-    // Allocate one chunk, start searching at the 2nd chunk address
-    testAssert(ba.allocateFrom(args, chunkSize) == Allocator::Success);
+    // Allocate one chunk, start searching at the 2nd bit
+    testAssert(ba.allocateFrom(args, 1) == Allocator::Success);
     testAssert(args.address == allocBase + chunkSize);
     testAssert(args.size == chunkSize);
     testAssert(ba.isAllocated(allocBase + chunkSize));
 
-    // Allocate one chunk, start searching just after the 2nd chunk address
-    testAssert(ba.allocateFrom(args, chunkSize + 1) == Allocator::Success);
+    // Allocate one chunk, start searching at the 3rd bit
+    testAssert(ba.allocateFrom(args, 2) == Allocator::Success);
     testAssert(args.address == allocBase + (chunkSize * 2));
     testAssert(args.size == chunkSize);
     testAssert(ba.isAllocated(allocBase + (chunkSize * 2)));
@@ -314,8 +314,10 @@ TestCase(BitRelease)
     // All chunks are free again. Confirm re-allocation works
     testAssert(ba.available() == rangeSize);
     testAssert(ba.allocate(args) == Allocator::Success);
-    testAssert(args.address == range.address);
     testAssert(args.size == PAGESIZE);
 
+    // Note that the search for the allocation address begins at the
+    // last successfully allocated address, which here is the last chunk
+    testAssert(args.address == range.address + rangeSize - chunkSize);
     return OK;
 }

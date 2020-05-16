@@ -161,8 +161,11 @@ TestCase(SplitAllocateRelease)
     // All pages are free again. Confirm re-allocation works
     testAssert(sa.available() == allocSize);
     testAssert(sa.allocate(args) == Allocator::Success);
-    testAssert(args.address == physBase);
     testAssert(args.size == PAGESIZE);
 
+    // With the BitAllocator, the search for the allocation address
+    // begins at the last succesfully allocated address. In this case,
+    // that is the last page.
+    testAssert(args.address == physBase + allocSize - PAGESIZE);
     return OK;
 }

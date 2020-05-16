@@ -24,6 +24,7 @@ BitAllocator::BitAllocator(const Allocator::Range range,
     : Allocator(range)
     , m_array(range.size / chunkSize, bitmap)
     , m_chunkSize(chunkSize)
+    , m_lastBit(0)
 {
 }
 
@@ -39,11 +40,17 @@ Size BitAllocator::available() const
 
 Allocator::Result BitAllocator::allocate(Allocator::Range & args)
 {
-    return allocateFrom(args, 0);
+    Allocator::Result result = allocateFrom(args, m_lastBit);
+    if (result == OutOfMemory)
+    {
+        return allocateFrom(args, 0);
+    } else {
+        return result;
+    }
 }
 
 Allocator::Result BitAllocator::allocateFrom(Allocator::Range & args,
-                                             const Address allocStart)
+                                             const Size startBit)
 {
     Size num = (args.size) / m_chunkSize;
     BitArray::Result result;
@@ -60,13 +67,13 @@ Allocator::Result BitAllocator::allocateFrom(Allocator::Range & args,
             alignment = args.alignment / m_chunkSize;
     }
 
-    result = m_array.setNext(&bit, num, allocStart / m_chunkSize, alignment);
+    result = m_array.setNext(&bit, num, startBit, alignment);
     if (result != BitArray::Success)
         return OutOfMemory;
 
     args.address = base() + (bit * m_chunkSize);
-
     assert(isAllocated(args.address));
+    m_lastBit = bit;
     return Success;
 }
 

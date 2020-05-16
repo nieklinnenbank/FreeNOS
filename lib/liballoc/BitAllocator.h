@@ -84,11 +84,11 @@ class BitAllocator : public Allocator
      * @param args Contains the requested size and alignment on input.
      *             The alignment value must be a multiple of the chunk size.
      *             On output, contains the actual allocated address.
-     * @param allocStart Allocation address to start searching at.
+     * @param bit Bit position in the bitmap array to start searching at.
      *
      * @return Result value.
      */
-    Result allocateFrom(Range & args, const Address allocStart);
+    Result allocateFrom(Range & args, const Size startBit);
 
     /**
      * Allocate a specific address.
@@ -121,6 +121,9 @@ class BitAllocator : public Allocator
 
     /** Size of each chunk. */
     const Size m_chunkSize;
+
+    /** Last bit that was set. */
+    Size m_lastBit;
 };
 
 /**
