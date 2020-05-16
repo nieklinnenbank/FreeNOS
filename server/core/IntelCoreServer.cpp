@@ -34,8 +34,7 @@ IntelCoreServer::IntelCoreServer()
 
 IntelCoreServer::Result IntelCoreServer::initialize()
 {
-    // Register IPI vector. Minus 32 because of IRQ() in IntelKernel
-    API::Result r = ProcessCtl(SELF, WatchIRQ, IPIVector - 32);
+    API::Result r = ProcessCtl(SELF, WatchIRQ, IPIVector);
 
     if (r != API::Success)
     {
