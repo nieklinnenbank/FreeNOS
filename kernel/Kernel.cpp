@@ -66,7 +66,7 @@ Kernel::Kernel(CoreInfo *info)
 
     // Mark heap memory used
     for (Size i = 0; i < m_coreInfo->heapSize; i += PAGESIZE)
-        m_alloc->allocate(m_coreInfo->heapAddress + i);
+        m_alloc->allocate(m_alloc->toPhysical(m_coreInfo->heapAddress + i));
 
     // Reserve CoreChannel memory
     for (Size i = 0; i < m_coreInfo->coreChannelSize; i += PAGESIZE)
