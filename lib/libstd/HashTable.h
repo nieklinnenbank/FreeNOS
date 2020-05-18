@@ -132,8 +132,6 @@ template <class K, class V> class HashTable : public Associative<K,V>
      */
     virtual bool insert(const K & key, const V & value)
     {
-        assertRead(key);
-        assertRead(value);
 
         Size idx = hash(key, m_table.size());
 
@@ -163,8 +161,6 @@ template <class K, class V> class HashTable : public Associative<K,V>
      */
     virtual bool append(const K & key, const V & value)
     {
-        assertRead(key);
-        assertRead(value);
 
         // Always append
         m_table[hash(key, m_table.size())].append(Bucket(key, value));

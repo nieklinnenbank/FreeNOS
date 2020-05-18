@@ -46,7 +46,6 @@ template <class T> class ListIterator : public Iterator<T>
     ListIterator(List<T> *list)
         : m_list(*list)
     {
-        assertRead(list);
 
         m_current = ZERO;
         reset();
@@ -60,7 +59,6 @@ template <class T> class ListIterator : public Iterator<T>
     ListIterator(List<T> & list)
         : m_list(list)
     {
-        assertRead(list);
 
         m_current = ZERO;
         reset();
@@ -74,7 +72,6 @@ template <class T> class ListIterator : public Iterator<T>
     ListIterator(const List<T> & list)
         : m_list((List<T> &) list)
     {
-        assertRead(list);
 
         m_current = ZERO;
         reset();
@@ -85,7 +82,6 @@ template <class T> class ListIterator : public Iterator<T>
      */
     virtual void reset()
     {
-        assertRead(m_list);
         m_current = m_list.head();
         m_next = m_current;
     }
@@ -143,8 +139,6 @@ template <class T> class ListIterator : public Iterator<T>
      */
     virtual T & next()
     {
-        assertRead(m_current);
-        assertRead(m_current->next);
 
         m_current = m_next;
         m_next = m_current->next;

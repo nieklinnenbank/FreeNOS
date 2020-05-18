@@ -23,7 +23,6 @@ Size hash(const String & key, Size mod)
     Size ret  = FNV_INIT;
     Size size = key.length();
 
-    assertRead(key);
     assert(mod > 0);
 
     for (Size i = 0; i < size; i++)

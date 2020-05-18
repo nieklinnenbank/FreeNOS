@@ -50,20 +50,6 @@
 extern C void __assertFailure(const char *fmt, ...);
 
 /**
- * Verify that the given address is readable.
- *
- * @param addr Address to verify.
- */
-extern C int __assertRead(Address addr);
-
-/**
- * Verify that the given address is writeable.
- *
- * @param addr Address to verify.
- */
-extern C int __assertWrite(Address addr);
-
-/**
  * @}
  */
 
@@ -102,22 +88,6 @@ extern C int __assertWrite(Address addr);
     }
 
 /**
- * Presume that the given address is readable.
- *
- * @param addr Address to check.
- */
-#define assertRead(addr) \
-    assert(__assertRead((Address)addr))
-
-/**
- * Presume that the given address is writeable.
- *
- * @param addr Address to check.
- */
-#define assertWrite(addr) \
-    assert(__assertWrite((Address)addr))
-
-/**
  * @}
  */
 
@@ -134,20 +104,6 @@ extern C int __assertWrite(Address addr);
  * @param exp Expression is ignored.
  */
 #define assert(exp)
-
-/**
- * Dummy assertion function for checking read access on an address.
- *
- * @param addr Address is ignored.
- */
-#define assertRead(addr)
-
-/**
- * Dummy assertion function for checking read access on an address.
- *
- * @param addr Address is ignored.
- */
-#define assertWrite(addr)
 
 /**
  * @}

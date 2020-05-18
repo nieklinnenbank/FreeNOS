@@ -36,27 +36,3 @@ void __assertFailure(const char *fmt, ...)
     // Terminate immediately
     exit(EXIT_FAILURE);
 }
-
-int __assertRead(Address addr)
-{
-    Memory::Range range;
-
-    range.virt   = addr;
-    range.phys   = ZERO;
-    range.size   = sizeof(Address);
-    range.access = Memory::User | Memory::Readable;
-
-    return VMCtl(SELF, Access, &range);
-}
-
-int __assertWrite(Address addr)
-{
-    Memory::Range range;
-
-    range.virt   = addr;
-    range.phys   = ZERO;
-    range.size   = sizeof(Address);
-    range.access = Memory::User | Memory::Readable;
-
-    return VMCtl(SELF, Access, &range);
-}

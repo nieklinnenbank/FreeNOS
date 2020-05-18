@@ -45,8 +45,6 @@ Size BitArray::count(bool on) const
 
 void BitArray::set(Size bit, bool value)
 {
-    assertRead(m_array);
-    assertWrite(m_array);
 
     // Check if the bit is inside the array
     if (bit >= m_size)
@@ -79,7 +77,6 @@ void BitArray::unset(Size bit)
 bool BitArray::isSet(Size bit) const
 {
     assert(bit < m_size);
-    assertRead(m_array);
 
     return m_array[bit / 8] & (1 << (bit % 8));
 }

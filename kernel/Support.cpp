@@ -43,27 +43,6 @@ extern C void __assertFailure(const char *fmt, ...)
     for (;;) ;
 }
 
-extern C int __assertRead(Address addr)
-{
-
-    if (memory && scheduler && scheduler->current())
-    {
-        return memory->access(scheduler->current(), addr,
-                              sizeof(Address), PAGE_PRESENT|PAGE_USER);
-    }
-    return true;
-}
-
-extern C int __assertWrite(Address addr)
-{
-    if (memory && scheduler && scheduler->current())
-    {
-        return memory->access(scheduler->current(), addr,
-                              sizeof(Address), PAGE_PRESENT|PAGE_USER|PAGE_RW);
-    }
-    return true;
-}
-
 #endif /* __ASSERT__ */
 
 extern C void __cxa_pure_virtual()
