@@ -16,7 +16,6 @@
  */
 
 #include <Macros.h>
-#include <Assert.h>
 #include "Support.h"
 #include "Kernel.h"
 
@@ -35,15 +34,6 @@ extern C void destructors()
         (*dtor)();
     }
 }
-
-#ifdef __ASSERT__
-
-extern C void __assertFailure(const char *fmt, ...)
-{
-    for (;;) ;
-}
-
-#endif /* __ASSERT__ */
 
 extern C void __cxa_pure_virtual()
 {

@@ -18,15 +18,9 @@
 #ifndef __ASSERT_H
 #define __ASSERT_H
 
-#if defined(__ASSERT__) && !defined(__HOST__)
+#if defined(__ASSERT__)
 
-#include "Macros.h"
-#include "Types.h"
-
-#ifdef __SERVER__
-#include <LogMessage.h>
-#include <stdlib.h>
-#endif /* __SERVER__ */
+#include "Log.h"
 
 /**
  * @addtogroup lib
@@ -37,43 +31,9 @@
  */
 
 /**
- * @name Runtime assertion
- * @{
- */
-
-/**
- * Function which prints a message, and then terminates itself.
- *
- * @param fmt Formatted message.
- * @param ... Argument list.
- */
-extern C void __assertFailure(const char *fmt, ...);
-
-/**
- * @}
- */
-
-/**
  * @name Preprocessor assertion
  * @{
  */
-
-/**
- * Invokes __assertFailure for applications, and log() + exit() for servers.
- *
- * @param fmt Formatted string.
- * @param ... Argument list.
- *
- * @return Never.
- */
-#ifdef __SERVER__
-#define raiseFailure(fmt, ...) \
-    log(fmt, ##__VA_ARGS__); \
-    exit(1);
-#else
-#define raiseFailure(fmt, ...) \
-    __assertFailure(fmt, ##__VA_ARGS__);
-#endif
 
 /**
  * Verify that a given expression evaluates to true.
@@ -83,8 +43,7 @@ extern C void __assertFailure(const char *fmt, ...);
 #define assert(exp) \
     if (!(exp)) \
     { \
-        raiseFailure("[%s:%d]: *** Assertion `%s' failed ***\n", \
-                     __FILE__, __LINE__, #exp); \
+        FATAL("*** Assertion `" << QUOTE(#exp) << "' failed ***"); \
     }
 
 /**
@@ -114,5 +73,5 @@ extern C void __assertFailure(const char *fmt, ...);
  * @}
  */
 
-#endif /* defined(__ASSERT__) && !defined(__HOST__) */
+#endif /* defined(__ASSERT__) */
 #endif /* __ASSERT_H */
