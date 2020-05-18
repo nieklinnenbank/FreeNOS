@@ -24,6 +24,7 @@ env.UseLibraries([ 'libtest', 'libstd', 'libarch' ], 'host')
 env.UseServers(['memory'])
 
 env.TargetHostProgram('BitArrayTest', 'BitArrayTest.cpp')
+env.TargetHostProgram('AssertTest', 'AssertTest.cpp')
 env.TargetHostProgram('ArrayTest', 'ArrayTest.cpp')
 env.TargetHostProgram('HashTableTest', 'HashTableTest.cpp')
 env.TargetHostProgram('HashIteratorTest', 'HashIteratorTest.cpp')
