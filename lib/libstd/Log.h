@@ -20,7 +20,6 @@
 
 #include "Singleton.h"
 #include "Macros.h"
-#include "String.h"
 
 /**
  * @addtogroup lib
@@ -101,6 +100,11 @@
  */
 class Log : public Singleton<Log>
 {
+  private:
+
+    /** Size of the log buffer in bytes */
+    static const Size LogBufferSize = 512;
+
   public:
 
     /** Logging level values */
@@ -176,8 +180,11 @@ class Log : public Singleton<Log>
     /** Identity */
     const char *m_ident;
 
-    /** Buffered output */
-    String m_outputBuffer;
+    /** Output line is stored here until written using write() */
+    char m_outputBuffer[LogBufferSize];
+
+    /** Number of characters written in the output buffer */
+    Size m_outputBufferWritten;
 };
 
 /**
