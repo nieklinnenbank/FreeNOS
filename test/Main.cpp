@@ -22,11 +22,13 @@
 #include <TestRunner.h>
 #include <TestReporter.h>
 #include <DirectoryScanner.h>
+#include <StdioLog.h>
 
 int main(int argc, char **argv)
 {
     char path[255], tmp[255];
     int iterations = 1, r;
+    StdioLog log;
     DirectoryScanner scanner(argc, argv);
     TestRunner runner(argc, argv);
 
