@@ -18,6 +18,7 @@
 #ifndef __LIBTEST_TESTMAIN_H
 #define __LIBTEST_TESTMAIN_H
 
+#include <StdioLog.h>
 #include "TestRunner.h"
 #include "TestSuite.h"
 
@@ -39,6 +40,7 @@
  */
 int main(int argc, char **argv)
 {
+    StdioLog log;
     TestRunner tests(argc, argv);
     return tests.run();
 }
