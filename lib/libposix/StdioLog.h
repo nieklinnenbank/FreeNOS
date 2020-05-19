@@ -18,16 +18,7 @@
 #ifndef __LIBARCH_STDIOLOG_H
 #define __LIBARCH_STDIOLOG_H
 
-#ifndef __HOST__
-
-#include "stdlib.h"
-
-#ifdef FATAL_ACTION
-#undef FATAL_ACTION
-#endif /* FATAL_ACTION */
-#define FATAL_ACTION ::exit(EXIT_FAILURE);
-
-#include "Log.h"
+#include <Log.h>
 
 /**
  * @addtogroup lib
@@ -55,6 +46,11 @@ class StdioLog : public Log
      * @param str String to write
      */
     virtual void write(const char *str);
+
+    /**
+     * Terminate the program using exit()
+     */
+    virtual void terminate() const;
 };
 
 /**
@@ -62,5 +58,4 @@ class StdioLog : public Log
  * @}
  */
 
-#endif /* __HOST__ */
 #endif /* __LIBARCH_STDIOLOG_H */

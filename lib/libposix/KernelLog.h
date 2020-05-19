@@ -19,14 +19,6 @@
 #define __LIBARCH_KERNELLOG_H
 
 #ifndef __HOST__
-
-#include "stdlib.h"
-
-#ifdef FATAL_ACTION
-#undef FATAL_ACTION
-#endif /* FATAL_ACTION */
-#define FATAL_ACTION ::exit(EXIT_FAILURE);
-
 #include "Log.h"
 
 /**
@@ -53,6 +45,11 @@ class KernelLog : public Log
      * Write using PrivExec()
      */
     virtual void write(const char *str);
+
+    /**
+     * Terminate the program using exit()
+     */
+    virtual void terminate() const;
 };
 
 /**

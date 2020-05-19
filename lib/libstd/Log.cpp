@@ -66,6 +66,11 @@ void Log::append(const char *str)
     }
 }
 
+void Log::terminate() const
+{
+    for (;;);
+}
+
 Log & operator << (Log &log, const char *str)
 {
     log.append(str);

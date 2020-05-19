@@ -15,9 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __HOST__
-#include <FreeNOS/System.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include "StdioLog.h"
@@ -31,4 +30,7 @@ void StdioLog::write(const char *str)
     ::write(1, str, strlen(str));
 }
 
-#endif /* __HOST__ */
+void StdioLog::terminate() const
+{
+    ::exit(EXIT_FAILURE);
+}

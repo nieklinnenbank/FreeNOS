@@ -42,11 +42,6 @@
         (*Log::instance) << "[" typestr "] " << __FILE__ ":" <<  __LINE__ << " " << __FUNCTION__ << " -- " << msg << "\r\n"; \
     }
 
-/** Action to take after printing a fatal error message */
-#ifndef FATAL_ACTION
-#define FATAL_ACTION for (;;);
-#endif /* FATAL_ACTION */
-
 /**
  * Output a critical message and terminate program immediatly.
  *
@@ -55,7 +50,7 @@
 #define FATAL(msg) \
     { \
         MAKE_LOG(Log::Emergency, "Emergency", msg); \
-        { FATAL_ACTION } \
+        if (Log::instance) Log::instance->terminate(); \
     }
 
 /**
@@ -164,6 +159,11 @@ class Log : public Singleton<Log>
      * @return Log identity
      */
     const char * getIdent() const;
+
+    /**
+     * Terminate the program immediately.
+     */
+    virtual void terminate() const;
 
   protected:
 
