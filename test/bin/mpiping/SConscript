@@ -19,6 +19,6 @@ Import('build_env')
 
 env = build_env.Clone()
 env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libtest',
-                   'libexec', 'libarch', 'libipc', 'librt' ])
+                   'libexec', 'libarch', 'libipc', 'librt', 'libapp' ])
 
 env.TargetProgram('MpiPingTest', 'MpiPingTest.cpp')

@@ -15,24 +15,47 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/Config.h>
-#include "stdlib.h"
-#include "string.h"
-#include "unistd.h"
-#include "POSIXApplication.h"
+#ifndef __LIBAPP_STDIOLOG_H
+#define __LIBAPP_STDIOLOG_H
 
-POSIXApplication::POSIXApplication(int argc, char **argv)
-    : Application(argc, argv)
-{
-    setVersion(VERSION);
-}
+#include <Log.h>
 
-POSIXApplication::~POSIXApplication()
-{
-}
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libposix
+ * @{
+ */
 
-POSIXApplication::Result POSIXApplication::output(const char *string) const
+/**
+ * Log to standard output.
+ */
+class StdioLog : public Log
 {
-    printf("%s", string);
-    return Success;
-}
+  public:
+
+    /**
+     * Constructor
+     */
+    StdioLog();
+
+    /**
+     * Write to the standard output.
+     *
+     * @param str String to write
+     */
+    virtual void write(const char *str);
+
+    /**
+     * Terminate the program using exit()
+     */
+    virtual void terminate() const;
+};
+
+/**
+ * @}
+ * @}
+ */
+
+#endif /* __LIBAPP_STDIOLOG_H */

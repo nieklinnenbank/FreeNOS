@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBPOSIX_POSIXAPPLICATION_H
-#define __LIBPOSIX_POSIXAPPLICATION_H
+#ifndef __LIBAPP_POSIXAPPLICATION_H
+#define __LIBAPP_POSIXAPPLICATION_H
 
 #include <Application.h>
 
@@ -65,4 +65,4 @@ class POSIXApplication : public Application
  * @}
  */
 
-#endif /* __LIBPOSIX_POSIXAPPLICATION_H */
+#endif /* __LIBAPP_POSIXAPPLICATION_H */

@@ -19,8 +19,9 @@ Import('build_env')
 
 env = build_env.Clone()
 env.Append(CPPDEFINES = { 'private' : 'public', 'protected' : 'public' })
-env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libtest', 'libexec', 'libarch', 'libipc', 'librt' ])
-env.UseLibraries([ 'libtest', 'libstd', 'libarch' ], 'host')
+env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libtest',
+                   'libexec', 'libarch', 'libipc', 'librt', 'libapp' ])
+env.UseLibraries([ 'libtest', 'libstd', 'libarch', 'libapp' ], 'host')
 env.UseServers(['memory'])
 
 env.TargetHostProgram('BitArrayTest', 'BitArrayTest.cpp')
