@@ -19,6 +19,7 @@
 #define __LIBAPP_POSIXAPPLICATION_H
 
 #include <Application.h>
+#include "StdioLog.h"
 
 /**
  * @addtogroup lib
@@ -58,6 +59,11 @@ class POSIXApplication : public Application
      * @return Result code.
      */
     virtual Result output(const char *string) const;
+
+  private:
+
+    /** Logs to standard output */
+    StdioLog m_log;
 };
 
 /**

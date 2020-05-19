@@ -15,12 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <StdioLog.h>
 #include "Remove.h"
 
 int main(int argc, char **argv)
 {
-    StdioLog log;
     Remove app(argc, argv);
     return app.run();
 }

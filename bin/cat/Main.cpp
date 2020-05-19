@@ -15,12 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <StdioLog.h>
 #include "Cat.h"
 
 int main(int argc, char **argv)
 {
-    StdioLog log;
     Cat app(argc, argv);
     return app.run();
 }
