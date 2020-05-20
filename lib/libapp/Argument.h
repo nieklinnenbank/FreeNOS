@@ -18,14 +18,14 @@
 #ifndef __LIBSTD_ARGUMENT_H
 #define __LIBSTD_ARGUMENT_H
 
-#include "Types.h"
-#include "String.h"
+#include <Types.h>
+#include <String.h>
 
 /**
  * @addtogroup lib
  * @{
  *
- * @addtogroup libstd
+ * @addtogroup libapp
  * @{
  */
 
@@ -161,4 +161,4 @@ class Argument
  * @}
  */
 
-#endif /* __LIBSTD_ARGUMENT_H */
+#endif /* __LIBAPP_ARGUMENT_H */

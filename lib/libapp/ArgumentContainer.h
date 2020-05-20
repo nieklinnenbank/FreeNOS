@@ -15,22 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBSTD_ARGUMENTCONTAINER_H
-#define __LIBSTD_ARGUMENTCONTAINER_H
+#ifndef __LIBAPP_ARGUMENTCONTAINER_H
+#define __LIBAPP_ARGUMENTCONTAINER_H
 
-#include "Types.h"
-#include "Macros.h"
-#include "String.h"
-#include "HashTable.h"
-#include "HashIterator.h"
-#include "Vector.h"
+#include <Types.h>
+#include <Macros.h>
+#include <String.h>
+#include <HashTable.h>
+#include <HashIterator.h>
+#include <Vector.h>
 #include "Argument.h"
 
 /**
  * @addtogroup lib
  * @{
  *
- * @addtogroup libstd
+ * @addtogroup libapp
  * @{
  */
 
@@ -118,4 +118,4 @@ class ArgumentContainer
  * @}
  */
 
-#endif /* __LIBSTD_ARGUMENTCONTAINER_H */
+#endif /* __LIBAPP_ARGUMENTCONTAINER_H */

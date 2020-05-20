@@ -18,14 +18,14 @@
 #ifndef __LIBAPP_POSIXAPPLICATION_H
 #define __LIBAPP_POSIXAPPLICATION_H
 
-#include <Application.h>
+#include "Application.h"
 #include "StdioLog.h"
 
 /**
  * @addtogroup lib
  * @{
  *
- * @addtogroup libposix
+ * @addtogroup libapp
  * @{
  */
 

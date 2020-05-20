@@ -15,14 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBSTD_ARGUMENTPARSER_H
-#define __LIBSTD_ARGUMENTPARSER_H
+#ifndef __LIBAPP_ARGUMENTPARSER_H
+#define __LIBAPP_ARGUMENTPARSER_H
 
-#include "Types.h"
-#include "Macros.h"
-#include "String.h"
-#include "HashTable.h"
-#include "Vector.h"
+#include <Types.h>
+#include <Macros.h>
+#include <String.h>
+#include <HashTable.h>
+#include <Vector.h>
 #include "Argument.h"
 #include "ArgumentContainer.h"
 
@@ -30,7 +30,7 @@
  * @addtogroup lib
  * @{
  *
- * @addtogroup libstd
+ * @addtogroup libapp
  * @{
  */
 
@@ -157,4 +157,4 @@ class ArgumentParser
  * @}
  */
 
-#endif /* __LIBSTD_ARGUMENTPARSER_H */
+#endif /* __LIBAPP_ARGUMENTPARSER_H */

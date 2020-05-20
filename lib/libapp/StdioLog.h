@@ -24,7 +24,7 @@
  * @addtogroup lib
  * @{
  *
- * @addtogroup libposix
+ * @addtogroup libapp
  * @{
  */
 

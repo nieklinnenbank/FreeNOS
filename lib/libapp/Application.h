@@ -15,12 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBSTD_APPLICATION_H
-#define __LIBSTD_APPLICATION_H
+#ifndef __LIBAPP_APPLICATION_H
+#define __LIBAPP_APPLICATION_H
 
-#include "Types.h"
-#include "Macros.h"
-#include "Log.h"
+#include <Types.h>
+#include <Macros.h>
+#include <Log.h>
 #include "ArgumentParser.h"
 #include "ArgumentContainer.h"
 
@@ -28,7 +28,7 @@
  * @addtogroup lib
  * @{
  *
- * @addtogroup libstd
+ * @addtogroup libapp
  * @{
  */
 
@@ -172,4 +172,4 @@ class Application
  * @}
  */
 
-#endif /* __LIBSTD_APPLICATION_H */
+#endif /* __LIBAPP_APPLICATION_H */
