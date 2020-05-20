@@ -31,12 +31,14 @@ extern C int kernel_main(CoreInfo *info)
     coreInfo.heapSize    = MegaByte(1);
     Kernel::heap(coreInfo.heapAddress, coreInfo.heapSize);
 
-    // Start kernel debug serial console
+    // Start serial console as the default output Log
+    IntelSerial *console = new IntelSerial(0x3f8);
+
+    // Only the boot core outputs notifications
     if (info->coreId == 0)
-    {
-        IntelSerial *serial = new IntelSerial(0x3f8);
-        serial->setMinimumLogLevel(Log::Notice);
-    }
+        console->setMinimumLogLevel(Log::Notice);
+    else
+        console->setMinimumLogLevel(Log::Warning);
 
     // Run all constructors first
     constructors();

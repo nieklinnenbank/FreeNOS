@@ -93,15 +93,16 @@ extern C int kernel_main(void)
     // Run all constructors first
     constructors();
 
-    // Boot core opens the serial console as default Log
-    if (read_core_id() == 0)
-    {
-        NS16550 *uart = new NS16550(UART0_IRQ);
-        uart->initialize();
+    // Open serial console as default Log
+    NS16550 *uart = new NS16550(UART0_IRQ);
+    uart->initialize();
+    DeviceLog *console = new DeviceLog(*uart);
 
-        DeviceLog *console = new DeviceLog(*uart);
+    // Only the boot core outputs notifications
+    if (read_core_id() == 0)
         console->setMinimumLogLevel(Log::Notice);
-    }
+    else
+        console->setMinimumLogLevel(Log::Warning);
 
     // Create the kernel
     SunxiKernel *kernel = new SunxiKernel(&coreInfo);
