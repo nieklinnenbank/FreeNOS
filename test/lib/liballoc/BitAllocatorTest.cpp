@@ -27,17 +27,18 @@ TestCase(BitConstruct)
     TestInt<uint> addresses(UINT_MIN, UINT_MAX);
     TestInt<uint> sizes(PAGESIZE, PAGESIZE * 16);
 
-    const Allocator::Range range = { addresses.random(), sizes.random(), sizeof(u32) };
+    const Address allocBase = addresses.random() & PAGEMASK;
+    const Allocator::Range range = { allocBase, sizes.random(), sizeof(u32) };
     const Size chunkSize = 64;
     BitAllocator ba(range, chunkSize);
 
     // Verify initial state of the object
     testAssert(ba.m_chunkSize == chunkSize);
     testAssert(ba.available() == (sizes[0] / chunkSize) * chunkSize);
-    testAssert(ba.base() == addresses[0]);
+    testAssert(ba.base() == allocBase);
     testAssert(ba.size() == sizes[0]);
     testAssert(ba.alignment() == sizeof(u32));
-    testAssert(!ba.isAllocated(addresses[0]));
+    testAssert(!ba.isAllocated(allocBase));
 
     return OK;
 }
@@ -48,7 +49,8 @@ TestCase(BitAllocateChunks)
 
     const Size chunkSize = 32;
     const Size rangeSize = chunkSize * 64;
-    const Allocator::Range range = { addresses.random(), rangeSize, sizeof(u32) };
+    const Address allocBase = addresses.random() & PAGEMASK;
+    const Allocator::Range range = { allocBase, rangeSize, sizeof(u32) };
 
     BitAllocator ba(range, chunkSize);
 
@@ -58,21 +60,21 @@ TestCase(BitAllocateChunks)
         Allocator::Range args = { 0, chunkSize, 0 };
 
         testAssert(ba.allocate(args, 0) == Allocator::Success);
-        testAssert(args.address == addresses[0] + (chunkSize * i));
+        testAssert(args.address == allocBase + (chunkSize * i));
         testAssert(args.size == chunkSize);
-        testAssert(ba.isAllocated(addresses[0] + (chunkSize * i)));
+        testAssert(ba.isAllocated(allocBase + (chunkSize * i)));
     }
 
-    // All bytes up to the ten chunks are allocated, the rest is free
-    for (Size i = 0; i < rangeSize; i++)
+    // The ten chunks are allocated, the rest is free
+    for (Size i = 0; i < rangeSize; i += chunkSize)
     {
         if (i < (chunkSize * 10))
         {
-            testAssert(ba.isAllocated(addresses[0] + i));
+            testAssert(ba.isAllocated(allocBase + i));
         }
         else
         {
-            testAssert(!ba.isAllocated(addresses[0] + i));
+            testAssert(!ba.isAllocated(allocBase + i));
         }
     }
 
@@ -85,7 +87,8 @@ TestCase(BitAllocateBytes)
 
     const Size chunkSize = 32;
     const Size rangeSize = chunkSize * 256;
-    const Allocator::Range range = { addresses.random(), rangeSize, sizeof(u32) };
+    const Address allocBase = addresses.random() & PAGEMASK;
+    const Allocator::Range range = { allocBase, rangeSize, sizeof(u32) };
 
     BitAllocator ba(range, chunkSize);
 
@@ -96,27 +99,27 @@ TestCase(BitAllocateBytes)
         Allocator::Range args = { 0, i, 0 };
 
         testAssert(ba.allocate(args, 0) == Allocator::Success);
-        testAssert(args.address == addresses[0] + (chunkSize * (i-1)));
+        testAssert(args.address == allocBase + (chunkSize * (i-1)));
         testAssert(args.size == i);
-        testAssert(ba.isAllocated(addresses[0] + (chunkSize * (i-1))));
+        testAssert(ba.isAllocated(allocBase + (chunkSize * (i-1))));
     }
 
     // We should now have 32 chunks allocated, the rest is free
-    for (Size i = 0; i < rangeSize; i++)
+    for (Size i = 0; i < rangeSize; i += chunkSize)
     {
         if (i < (chunkSize * chunkSize))
         {
-            testAssert(ba.isAllocated(addresses[0] + i));
+            testAssert(ba.isAllocated(allocBase + i));
         }
         else
         {
-            testAssert(!ba.isAllocated(addresses[0] + i));
+            testAssert(!ba.isAllocated(allocBase + i));
         }
     }
 
     // Repeat allocating with bytes above the chunkSize.
     // Now for each allocation, more than one chunk needs to be used.
-    Address allocAddr = addresses[0] + (chunkSize * chunkSize);
+    Address allocAddr = allocBase + (chunkSize * chunkSize);
 
     for (Size i = chunkSize + 1; i <= (chunkSize * 3); i++)
     {
@@ -135,7 +138,7 @@ TestCase(BitAllocateBytes)
     }
 
     // Everything up to allocAddress should be allocated, the rest is free.
-    for (Address i = addresses[0]; i < addresses[0] + rangeSize; i++)
+    for (Address i = allocBase; i < allocBase + rangeSize; i += chunkSize)
     {
         if (i < allocAddr)
         {
@@ -196,22 +199,23 @@ TestCase(BitAllocateStartFrom)
 
     const Size chunkSize = 32;
     const Size rangeSize = chunkSize * 64;
-    const Allocator::Range range = { addresses.random(), rangeSize, sizeof(u32) };
+    const Address allocBase = addresses.random() & PAGEMASK;
+    const Allocator::Range range = { allocBase, rangeSize, sizeof(u32) };
 
     BitAllocator ba(range, chunkSize);
     Allocator::Range args = { 0, chunkSize, 0 };
 
     // Allocate one chunk, start searching at the 2nd chunk address
     testAssert(ba.allocate(args, chunkSize) == Allocator::Success);
-    testAssert(args.address == addresses[0] + chunkSize);
+    testAssert(args.address == allocBase + chunkSize);
     testAssert(args.size == chunkSize);
-    testAssert(ba.isAllocated(addresses[0] + chunkSize));
+    testAssert(ba.isAllocated(allocBase + chunkSize));
 
     // Allocate one chunk, start searching just after the 2nd chunk address
     testAssert(ba.allocate(args, chunkSize + 1) == Allocator::Success);
-    testAssert(args.address == addresses[0] + (chunkSize * 2));
+    testAssert(args.address == allocBase + (chunkSize * 2));
     testAssert(args.size == chunkSize);
-    testAssert(ba.isAllocated(addresses[0] + (chunkSize * 2)));
+    testAssert(ba.isAllocated(allocBase + (chunkSize * 2)));
 
     return OK;
 }
@@ -222,27 +226,28 @@ TestCase(BitAllocateSpecific)
 
     const Size chunkSize = 32;
     const Size rangeSize = chunkSize * 256;
-    const Allocator::Range range = { addresses.random(), rangeSize, sizeof(u32) };
+    const Address allocBase = addresses.random() & PAGEMASK;
+    const Allocator::Range range = { allocBase, rangeSize, sizeof(u32) };
 
     BitAllocator ba(range, chunkSize);
 
     // Make allocations with explicit addresses
     for (Size i = 1; i <= chunkSize; i++)
     {
-        testAssert(ba.allocate(addresses[0] + (chunkSize * (i-1))) == Allocator::Success);
-        testAssert(ba.isAllocated(addresses[0] + (chunkSize * (i-1))));
+        testAssert(ba.allocate(allocBase + (chunkSize * (i-1))) == Allocator::Success);
+        testAssert(ba.isAllocated(allocBase + (chunkSize * (i-1))));
     }
 
     // We should now have 32 chunks allocated, the rest is free
-    for (Size i = 0; i < rangeSize; i++)
+    for (Size i = 0; i < rangeSize; i += chunkSize)
     {
         if (i < (chunkSize * chunkSize))
         {
-            testAssert(ba.isAllocated(addresses[0] + i));
+            testAssert(ba.isAllocated(allocBase + i));
         }
         else
         {
-            testAssert(!ba.isAllocated(addresses[0] + i));
+            testAssert(!ba.isAllocated(allocBase + i));
         }
     }
 

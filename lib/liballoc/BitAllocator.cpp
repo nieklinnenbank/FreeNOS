@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <Assert.h>
 #include "BitAllocator.h"
 
 BitAllocator::BitAllocator(const Allocator::Range range, const Size chunkSize)
@@ -67,8 +68,7 @@ Allocator::Result BitAllocator::allocate(Allocator::Range & args,
 
 Allocator::Result BitAllocator::allocate(const Address addr)
 {
-    if (addr < base() || isAllocated(addr))
-        return InvalidAddress;
+    assert(!isAllocated(addr));
 
     m_array.set((addr - base()) / m_chunkSize);
     return Success;
@@ -76,16 +76,16 @@ Allocator::Result BitAllocator::allocate(const Address addr)
 
 bool BitAllocator::isAllocated(const Address addr) const
 {
-    if (addr < base())
-        return false;
-    else
-        return m_array.isSet((addr - base()) / m_chunkSize);
+    assert(addr >= base());
+    assert(addr < base() + size());
+    assert(((addr - base()) % m_chunkSize) == 0);
+
+    return m_array.isSet((addr - base()) / m_chunkSize);
 }
 
 Allocator::Result BitAllocator::release(const Address addr)
 {
-    if (addr < base())
-        return InvalidAddress;
+    assert(isAllocated(addr));
 
     m_array.unset((addr - base()) / m_chunkSize);
     return Success;
