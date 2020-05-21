@@ -26,16 +26,12 @@ ProcessShares::ProcessShares(ProcessID pid)
 {
     m_pid    = pid;
     m_memory = ZERO;
-    m_kernelChannel = new MemoryChannel;
 }
 
 ProcessShares::~ProcessShares()
 {
     ProcessManager *procs = Kernel::instance->getProcessManager();
     List<ProcessID> pids;
-
-    // Cleanup members
-    delete m_kernelChannel;
 
     // Make a list of unique process IDs which
     // have a share with this Process
