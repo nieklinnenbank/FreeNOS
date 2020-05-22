@@ -78,9 +78,15 @@ SECTIONS
     . = ALIGN(4096); /* align to page size */
     __bss_end = .;
 
-    __bootimg = .;
-    .bootimg :
+    .heap 0x00400000 :
     {
+        __heap_start = .;
+    }
+
+    .bootimg 0x00500000 :
+    {
+        __heap_end = .;
+        __bootimg = .;
         KEEP (*(.bootimg))
         LONG(0)
     }

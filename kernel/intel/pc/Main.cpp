@@ -24,11 +24,13 @@
 #include <Macros.h>
 #include <Log.h>
 
+extern Address __heap_start, __heap_end;
+
 extern C int kernel_main(CoreInfo *info)
 {
-    // Initialize heap at 3MB offset
-    coreInfo.heapAddress = MegaByte(3);
-    coreInfo.heapSize    = MegaByte(1);
+    // Initialize heap
+    coreInfo.heapAddress = (Address) &__heap_start;
+    coreInfo.heapSize    = (Size) ((Address) &__heap_end - (Address)&__heap_start);
     Kernel::heap(coreInfo.heapAddress, coreInfo.heapSize);
 
     // Start serial console as the default output Log

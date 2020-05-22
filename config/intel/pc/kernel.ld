@@ -77,7 +77,12 @@ SECTIONS
 
         . += 4;
         kernelEnd = .;
+    }
 
-        . = 0x00400000;
+    .heap 0x00400000 :
+    {
+        __heap_start = .;
+        . += (1024 * 1024);
+        __heap_end = .;
     }
 }

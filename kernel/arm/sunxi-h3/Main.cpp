@@ -28,7 +28,7 @@
 #include <SunxiCoreServer.h>
 #include "SunxiKernel.h"
 
-extern Address __bootimg, __bss_start, __bss_end;
+extern Address __bootimg, __bss_start, __bss_end, __heap_start, __heap_end;
 
 static u32 ALIGN(16 * 1024) SECTION(".data") tmpPageDir[4096];
 
@@ -72,6 +72,7 @@ extern C int kernel_main(void)
         coreInfo.kernel.size      = MegaByte(4);
         coreInfo.memory.phys      = RAM_ADDR;
         coreInfo.memory.size      = RAM_SIZE;
+        coreInfo.coreChannelAddress = coreInfo.bootImageAddress + coreInfo.bootImageSize;
     }
     // Copy CoreInfo prepared by the CoreServer
     else
@@ -83,11 +84,9 @@ extern C int kernel_main(void)
     // Clear BSS
     MemoryBlock::set(&__bss_start, 0, &__bss_end - &__bss_start);
 
-    // Initialize heap at the end of the kernel (and after embedded boot image)
-    coreInfo.heapAddress = ((Address) &__bss_end) + coreInfo.bootImageSize;
-    coreInfo.heapAddress &= PAGEMASK;
-    coreInfo.heapAddress += PAGESIZE;
-    coreInfo.heapSize = MegaByte(1);
+    // Initialize heap
+    coreInfo.heapAddress = (Address) &__heap_start;
+    coreInfo.heapSize    = (Size) ((Address) &__heap_end - (Address)&__heap_start);
     Kernel::heap(coreInfo.heapAddress, coreInfo.heapSize);
 
     // Run all constructors first

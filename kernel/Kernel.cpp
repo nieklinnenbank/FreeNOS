@@ -39,18 +39,25 @@ Kernel::Kernel(CoreInfo *info)
         Log::instance->append(COPYRIGHT "\r\n");
     }
 
-    // Initialize members
-    Arch::MemoryMap map;
-    Memory::Range kernelData = map.range(MemoryMap::KernelData);
-
+    // Setup physical memory allocator
+    const Arch::MemoryMap map;
+    const Memory::Range kernelData = map.range(MemoryMap::KernelData);
     const Allocator::Range physRange = { info->memory.phys, info->memory.size, 0 };
     const Allocator::Range virtRange = { kernelData.virt, kernelData.size, 0 };
     m_alloc  = new SplitAllocator(physRange, virtRange, PAGESIZE);
+
+    // Initialize other class members
     m_procs  = new ProcessManager();
     m_api    = new API();
     m_coreInfo   = info;
     m_intControl = ZERO;
     m_timer      = ZERO;
+
+    // Verify coreInfo memory ranges
+    assert(info->kernel.phys >= info->memory.phys);
+    assert(m_alloc->toPhysical(m_coreInfo->heapAddress) >= info->kernel.phys + info->kernel.size);
+    assert(m_alloc->toPhysical(m_coreInfo->heapAddress) + m_coreInfo->heapSize <= m_coreInfo->bootImageAddress);
+    assert(m_coreInfo->coreChannelAddress >= m_coreInfo->bootImageAddress + m_coreInfo->bootImageSize);
 
     // Mark all kernel memory used
     for (Size i = 0; i < info->kernel.size; i += PAGESIZE)

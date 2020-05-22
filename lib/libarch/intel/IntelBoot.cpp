@@ -48,4 +48,6 @@ void multibootToCoreInfo(MultibootInfo *info)
             break;
         }
     }
+
+    coreInfo.coreChannelAddress = coreInfo.bootImageAddress + coreInfo.bootImageSize;
 }
