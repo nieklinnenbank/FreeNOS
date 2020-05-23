@@ -48,6 +48,10 @@ ARMKernel::ARMKernel(CoreInfo *info)
     ctrl.unset(ARMControl::AlignmentCorrect);
     ctrl.unset(ARMControl::BigEndian);
 #endif
+
+    // Allocate physical memory for the temporary stack
+    for (Size i = 0; i < (PAGESIZE*4); i += PAGESIZE)
+        m_alloc->allocate(TMPSTACKADDR + i);
 }
 
 void ARMKernel::interrupt(CPUState state)

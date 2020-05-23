@@ -37,7 +37,7 @@
 
 #define RAM_ADDR        (0x40000000)
 #define RAM_SIZE        (1024 * 1024 * 256)
-#define TMPSTACKADDR    (RAM_ADDR + (1024 * 1024))
+#define TMPSTACKADDR    (RAM_ADDR + (1024 * 1024 * 32))
 
 #define SYSTEM_FREQ     24000000
 
