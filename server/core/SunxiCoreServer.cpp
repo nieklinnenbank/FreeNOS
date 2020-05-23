@@ -68,8 +68,15 @@ SunxiCoreServer::Result SunxiCoreServer::initialize()
 
 SunxiCoreServer::Result SunxiCoreServer::bootCore(uint coreId, CoreInfo *info)
 {
-    // Copy the CoreInfo structure for the secondary core
+    // Calculate the memory location of the CoreInfo structure passed to the
+    // secondary core. Note that the location is relative to the info->memory.phys address
+    const Address secondaryCoreInfoRelAddr = info->memory.phys + SecondaryCoreInfoOffset;
+
+    // Copy the CoreInfo structure as input for the secondary core.
+    // The first copy is used when setting up the early-MMU and the
+    // second copy is passed as input to the kernel.
     VMCopy(SELF, API::Write, (Address) info, SecondaryCoreInfoAddress, sizeof(*info));
+    VMCopy(SELF, API::Write, (Address) info, secondaryCoreInfoRelAddr, sizeof(*info));
 
     // Reset the secondary core
     if (m_cpuConfig.boot(info) != SunxiCpuConfig::Success)
@@ -83,7 +90,7 @@ SunxiCoreServer::Result SunxiCoreServer::bootCore(uint coreId, CoreInfo *info)
     {
         CoreInfo check;
 
-        VMCopy(SELF, API::Read, (Address) &check, SecondaryCoreInfoAddress, sizeof(check));
+        VMCopy(SELF, API::Read, (Address) &check, secondaryCoreInfoRelAddr, sizeof(check));
 
         if (check.booted)
             break;

@@ -21,6 +21,7 @@
 #include <CoreInfo.h>
 #include <arm/ARMException.h>
 #include <arm/ARMConstant.h>
+#include <SunxiCoreServer.h>
 #include "SunxiKernel.h"
 
 SunxiKernel::SunxiKernel(CoreInfo *info)
@@ -47,6 +48,9 @@ SunxiKernel::SunxiKernel(CoreInfo *info)
     m_timer = &m_armTimer;
     m_armTimer.setFrequency(100);
     m_intControl->enable(ARMTIMER_IRQ);
+
+    // Allocate physical memory pages for secondary CoreInfo structure
+    m_alloc->allocate(SunxiCoreServer::SecondaryCoreInfoAddress);
 }
 
 void SunxiKernel::interrupt(volatile CPUState state)
