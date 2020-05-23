@@ -317,9 +317,9 @@ Insert the SD card in the target board with the UART console connected and enter
 in the U-Boot interactive console to load and start FreeNOS:
 
     => setenv bootm_boot_mode sec
-    => fatload mmc 0:1 0x41ffffc0 kernel.ub
+    => fatload mmc 0:1 0x400fffc0 kernel.ub
     14757888 bytes read in 670 ms (21 MiB/s)
-    => bootm 0x41ffffc0
+    => bootm 0x400fffc0
 
 ### U-Boot on SPI Flash ###
 
@@ -360,8 +360,8 @@ The following commands can be used to download the FreeNOS image via TFTP and bo
     ...
     => setenv bootm_boot_mode sec
     => dhcp
-    => tftp 0x41ffffc0 build/arm/sunxi-h3/kernel/arm/sunxi-h3/kernel.ub
-    => bootm 0x41ffffc0
+    => tftp 0x400fffc0 build/arm/sunxi-h3/kernel/arm/sunxi-h3/kernel.ub
+    => bootm 0x400fffc0
 
 Using FreeNOS
 =============
