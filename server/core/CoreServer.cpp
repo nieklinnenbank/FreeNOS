@@ -409,7 +409,8 @@ CoreServer::Result CoreServer::prepareCoreInfo()
             info->memory.size = memPerCore - PAGESIZE;
             info->kernel.phys = info->memory.phys;
             info->kernel.size = MegaByte(4);
-            info->bootImageAddress = info->kernel.phys + info->kernel.size;
+            info->heapSize = MegaByte(1);
+            info->bootImageAddress = info->kernel.phys + info->kernel.size + info->heapSize;
             info->bootImageSize    = sysInfo.bootImageSize;
             info->coreChannelAddress = info->bootImageAddress + info->bootImageSize;
             info->coreChannelAddress += PAGESIZE - (info->bootImageSize % PAGESIZE);
