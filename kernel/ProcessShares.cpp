@@ -263,7 +263,7 @@ ProcessShares::Result ProcessShares::releaseShare(MemoryShare *s, Size idx)
             }
         }
     }
-    else
+    else if (s->pid != KERNEL_PID)
     {
         // Only release physical memory pages if the other
         // process already detached earlier
