@@ -156,7 +156,12 @@ MemoryContext::Result IntelPageDirectory::releaseRange(Memory::Range range,
                 {
                     if (table->translate(range.virt + i + j, &phys) == MemoryContext::Success)
                     {
-                        alloc->release(phys);
+                        // Note that some pages may have double mappings.
+                        // Avoid attempting to release the same page twice or more.
+                        if (alloc->isAllocated(phys))
+                        {
+                            alloc->release(phys);
+                        }
                     }
                 }
             }

@@ -116,6 +116,13 @@ class SplitAllocator : public Allocator
      */
     Address toPhysical(const Address virt) const;
 
+    /**
+     * Check if a physical page is allocated.
+     *
+     * @return True if allocated, false otherwise.
+     */
+    bool isAllocated(const Address page) const;
+
   private:
 
     /** Physical memory allocator. */

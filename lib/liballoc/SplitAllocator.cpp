@@ -73,3 +73,8 @@ Address SplitAllocator::toPhysical(const Address virt) const
     const Size mappingDiff = base() - m_virtRange.address;
     return virt + mappingDiff;
 }
+
+bool SplitAllocator::isAllocated(const Address page) const
+{
+    return m_alloc.isAllocated(page);
+}
