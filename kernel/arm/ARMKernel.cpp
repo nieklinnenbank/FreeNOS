@@ -49,9 +49,13 @@ ARMKernel::ARMKernel(CoreInfo *info)
     ctrl.unset(ARMControl::BigEndian);
 #endif
 
-    // Allocate physical memory for the temporary stack
-    for (Size i = 0; i < (PAGESIZE*4); i += PAGESIZE)
-        m_alloc->allocate(TMPSTACKADDR + i);
+    // Allocate physical memory for the temporary stack.
+    // Temporary only allocate on boot core, since on secondary
+    // cores its not within the memory.phys area anyway.
+    if (m_coreInfo->coreId == 0) {
+        for (Size i = 0; i < (PAGESIZE*4); i += PAGESIZE)
+            m_alloc->allocate(TMPSTACKADDR + i);
+    }
 }
 
 void ARMKernel::interrupt(CPUState state)

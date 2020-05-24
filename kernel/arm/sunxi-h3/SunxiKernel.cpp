@@ -50,7 +50,9 @@ SunxiKernel::SunxiKernel(CoreInfo *info)
     m_intControl->enable(ARMTIMER_IRQ);
 
     // Allocate physical memory pages for secondary CoreInfo structure
-    m_alloc->allocate(SunxiCoreServer::SecondaryCoreInfoAddress);
+    if (m_coreInfo->coreId == 0) {
+        m_alloc->allocate(SunxiCoreServer::SecondaryCoreInfoAddress);
+    }
 }
 
 void SunxiKernel::interrupt(volatile CPUState state)
