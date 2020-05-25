@@ -256,6 +256,15 @@ MemoryContext::Result ARMFirstTable::releaseRange(Memory::Range range,
                 {
                     if (table->translate(range.virt + i + j, &phys) == MemoryContext::Success)
                     {
+                        // Some pages that are part of the boot core's memory region
+                        // are mapped on secondary cores. They can't be released there.
+                        const Address allocBase = alloc->base();
+                        const Size allocSize = alloc->size();
+                        if (phys < allocBase || phys > allocBase + allocSize)
+                        {
+                            continue;
+                        }
+
                         // Note that some pages may have double mappings.
                         // Avoid attempting to release the same page twice or more.
                         if (alloc->isAllocated(phys))
