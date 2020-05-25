@@ -20,15 +20,18 @@
 
 #include <Macros.h>
 #include <Types.h>
+#include <Vector.h>
+#include <List.h>
 #include <Singleton.h>
 #include <BootImage.h>
 #include <Memory.h>
 #include <CoreInfo.h>
-#include "ProcessManager.h"
 
 /** Forward declarations. */
 class API;
+class MemoryContext;
 class Process;
+class ProcessManager;
 class SplitAllocator;
 class IntController;
 class Timer;

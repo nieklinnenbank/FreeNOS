@@ -21,6 +21,7 @@
 #include <ListIterator.h>
 #include <SplitAllocator.h>
 #include "ProcessEvent.h"
+#include "ProcessManager.h"
 
 ProcessShares::ProcessShares(ProcessID pid)
 {

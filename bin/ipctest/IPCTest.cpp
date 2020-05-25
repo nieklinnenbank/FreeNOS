@@ -16,6 +16,7 @@
  */
 
 #include <FreeNOS/System.h>
+#include <FreeNOS/ProcessManager.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

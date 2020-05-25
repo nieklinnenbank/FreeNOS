@@ -16,6 +16,7 @@
  */
 
 #include <FreeNOS/System.h>
+#include <FreeNOS/ProcessManager.h>
 #include <Types.h>
 #include <Macros.h>
 #include <stdio.h>

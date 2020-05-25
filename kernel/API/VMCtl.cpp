@@ -16,6 +16,7 @@
  */
 
 #include <FreeNOS/System.h>
+#include <FreeNOS/ProcessManager.h>
 #include <SplitAllocator.h>
 #include "VMCtl.h"
 #include "ProcessID.h"
