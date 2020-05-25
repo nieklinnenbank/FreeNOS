@@ -18,6 +18,7 @@
 #include <FreeNOS/System.h>
 #include <Log.h>
 #include <ListIterator.h>
+#include "Scheduler.h"
 #include "ProcessEvent.h"
 #include "ProcessManager.h"
 
@@ -27,6 +28,7 @@ ProcessManager::ProcessManager()
 {
     DEBUG("m_procs = " << MAX_PROCS);
 
+    m_scheduler = new Scheduler();
     m_current   = ZERO;
     m_idle      = ZERO;
     m_interruptNotifyList.fill(ZERO);
@@ -35,6 +37,10 @@ ProcessManager::ProcessManager()
 
 ProcessManager::~ProcessManager()
 {
+    if (m_scheduler != NULL)
+    {
+        delete m_scheduler;
+    }
 }
 
 Process * ProcessManager::create(Address entry,
@@ -52,7 +58,7 @@ Process * ProcessManager::create(Address entry,
         if (readyToRun)
         {
             proc->wakeup(true);
-            m_scheduler.enqueue(proc);
+            m_scheduler->enqueue(proc);
         }
 
         if (m_current != 0)
@@ -88,7 +94,7 @@ void ProcessManager::remove(Process *proc, uint exitStatus)
         {
             m_procs[i]->setWaitResult(exitStatus);
             m_procs[i]->wakeup(true);
-            m_scheduler.enqueue(m_procs[i]);
+            m_scheduler->enqueue(m_procs[i]);
         }
     }
 
@@ -97,7 +103,7 @@ void ProcessManager::remove(Process *proc, uint exitStatus)
 
     // Remove process from administration and schedule
     m_procs[proc->getID()] = ZERO;
-    m_scheduler.dequeue(proc, true);
+    m_scheduler->dequeue(proc, true);
 
     // Free the process memory
     delete proc;
@@ -108,7 +114,7 @@ ProcessManager::Result ProcessManager::schedule()
     Timer *timer = Kernel::instance->getTimer();
 
     // Let the scheduler select a new process
-    Process *proc = m_scheduler.select();
+    Process *proc = m_scheduler->select();
 
     // If no process ready, let us idle
     if (!proc)
@@ -163,7 +169,7 @@ Process * ProcessManager::current()
 void ProcessManager::setIdle(Process *proc)
 {
     m_idle = proc;
-    m_scheduler.dequeue(proc, true);
+    m_scheduler->dequeue(proc, true);
 }
 
 Vector<Process *> * ProcessManager::getProcessTable()
@@ -179,7 +185,7 @@ ProcessManager::Result ProcessManager::wait(Process *proc)
         return IOError;
     }
 
-    if (m_scheduler.dequeue(m_current) != Scheduler::Success)
+    if (m_scheduler->dequeue(m_current) != Scheduler::Success)
     {
         ERROR("process ID " << m_current->getID() << " not removed from Scheduler");
         return IOError;
@@ -205,7 +211,7 @@ ProcessManager::Result ProcessManager::sleep(const Timer::Info *timer, bool igno
             return WakeupPending;
 
         case Process::Success:
-            if (m_scheduler.dequeue(m_current) != Scheduler::Success)
+            if (m_scheduler->dequeue(m_current) != Scheduler::Success)
             {
                 ERROR("process ID " << m_current->getID() << " not removed from Scheduler");
                 return IOError;
@@ -240,7 +246,7 @@ ProcessManager::Result ProcessManager::wakeup(Process *proc)
 
     if (state != Process::Ready)
     {
-        if (m_scheduler.enqueue(proc) != Scheduler::Success)
+        if (m_scheduler->enqueue(proc) != Scheduler::Success)
         {
             ERROR("process ID " << proc->getID() << " not added to Scheduler");
             return IOError;
@@ -264,7 +270,7 @@ ProcessManager::Result ProcessManager::raiseEvent(Process *proc, struct ProcessE
 
     if (state != Process::Ready)
     {
-        if (m_scheduler.enqueue(proc) != Scheduler::Success)
+        if (m_scheduler->enqueue(proc) != Scheduler::Success)
         {
             ERROR("process ID " << proc->getID() << " not added to Scheduler");
             return IOError;

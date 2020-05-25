@@ -24,6 +24,9 @@
 #include <List.h>
 #include "Process.h"
 
+/* Forward declarations */
+class Scheduler;
+
 /**
  * Maximum number of processes.
  *
@@ -31,13 +34,10 @@
  */
 #define MAX_PROCS 1024
 
-#include "Scheduler.h"
-
 /**
  * @addtogroup kernel
  * @{
  */
-
 
 /**
  * Represents a process which may run on the host.
@@ -197,7 +197,7 @@ class ProcessManager
     Vector<Process *> m_procs;
 
     /** Object which selects processes to run. */
-    Scheduler m_scheduler;
+    Scheduler *m_scheduler;
 
     /** Currently executing process */
     Process *m_current;
