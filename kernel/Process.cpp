@@ -35,13 +35,16 @@ Process::Process(ProcessID id, Address entry, bool privileged, const MemoryMap &
     m_entry         = entry;
     m_privileged    = privileged;
     m_memoryContext = ZERO;
-    m_kernelChannel = new MemoryChannel;
+    m_kernelChannel = ZERO;
     MemoryBlock::set(&m_sleepTimer, 0, sizeof(m_sleepTimer));
 }
 
 Process::~Process()
 {
-    delete m_kernelChannel;
+    if (m_kernelChannel)
+    {
+        delete m_kernelChannel;
+    }
 
     if (m_memoryContext)
     {
@@ -141,6 +144,14 @@ Process::Result Process::initialize()
     Arch::Cache cache;
     Allocator::Range allocPhys, allocVirt;
 
+    // Create new kernel event channel object
+    m_kernelChannel = new MemoryChannel;
+    if (!m_kernelChannel)
+    {
+        ERROR("failed to allocate kernel event channel object");
+        return OutOfMemory;
+    }
+
     // Allocate two pages for the kernel event channel
     allocPhys.address = 0;
     allocPhys.size = PAGESIZE * 2;
@@ -148,7 +159,7 @@ Process::Result Process::initialize()
 
     if (Kernel::instance->getAllocator()->allocate(allocPhys, allocVirt) != Allocator::Success)
     {
-        ERROR("failed to allocate kernel event channel");
+        ERROR("failed to allocate kernel event channel pages");
         return OutOfMemory;
     }
 
