@@ -24,11 +24,11 @@
 #include <BootImage.h>
 #include <Memory.h>
 #include <CoreInfo.h>
-#include "Process.h"
 #include "ProcessManager.h"
 
 /** Forward declarations. */
 class API;
+class Process;
 class SplitAllocator;
 class IntController;
 class Timer;
