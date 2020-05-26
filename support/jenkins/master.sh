@@ -101,6 +101,7 @@ mkdir -p $JENKINS_HOME/jobs
 mkdir -p $JENKINS_HOME/jobs/FreeNOS-ubuntu1804
 mkdir -p $JENKINS_HOME/jobs/FreeNOS-ubuntu1804-loop
 mkdir -p $JENKINS_HOME/jobs/FreeNOS-freebsd12
+mkdir -p $JENKINS_HOME/jobs/FreeNOS-freebsd12-loop
 mkdir -p $JENKINS_HOME/nodes
 mkdir -p $JENKINS_HOME/nodes/ubuntu1804
 mkdir -p $JENKINS_HOME/nodes/freebsd12
@@ -112,6 +113,7 @@ mv ~vagrant/ubuntu1804.job.xml $JENKINS_HOME/jobs/FreeNOS-ubuntu1804/config.xml
 mv ~vagrant/ubuntu1804-loop.job.xml $JENKINS_HOME/jobs/FreeNOS-ubuntu1804-loop/config.xml
 mv ~vagrant/ubuntu1804.node.xml $JENKINS_HOME/nodes/ubuntu1804/config.xml
 mv ~vagrant/freebsd12.job.xml $JENKINS_HOME/jobs/FreeNOS-freebsd12/config.xml
+mv ~vagrant/freebsd12-loop.job.xml $JENKINS_HOME/jobs/FreeNOS-freebsd12-loop/config.xml
 mv ~vagrant/freebsd12.node.xml $JENKINS_HOME/nodes/freebsd12/config.xml
 
 # Ensure permissions are set properly for jenkins
