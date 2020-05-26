@@ -79,3 +79,6 @@ env.Targets(qemu_debugs = build_env['QEMUCMD'] + ' -kernel ' + build_env['BUILDR
 
 env.AutoTester(qemu_test = build_env['QEMUCMD'] + ' -kernel ' + build_env['BUILDROOT'] +
                            '/kernel/arm/' + build_env['SYSTEM'] + '/kernel -nographic')
+
+env.AutoTesterLoop(qemu_loop = build_env['QEMUCMD'] + ' -kernel ' + build_env['BUILDROOT'] +
+                              '/kernel/arm/' + build_env['SYSTEM'] + '/kernel -nographic')

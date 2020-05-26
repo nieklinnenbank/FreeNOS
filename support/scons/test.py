@@ -72,7 +72,7 @@ def runTester(target, source, env):
 
     # Launch a timeout process which will send a SIGTERM
     # to the process after a certain amount of time
-    ch = multiprocessing.Process(target = timeoutChecker, args=(proc, 60 * 7))
+    ch = multiprocessing.Process(target = timeoutChecker, args=(proc, env['TESTTIMEOUT']))
     ch.start()
 
     # When running from the FreeNOS interactive console, first wait for
@@ -91,13 +91,15 @@ def runTester(target, source, env):
 
             if env['TESTPROMPT'] in output:
                 time.sleep(1)
-                proc.stdin.write("root\n/test/run /test --xml\n")
+                proc.stdin.write("root\n/test/run /test --xml --iterations " + \
+                                 str(env['TESTITERATIONS']) + "\n")
                 proc.stdin.flush()
                 break
 
     # Buffer XML output
     xml_data=""
     xml_testname=""
+    iterations = 0
 
     while True:
         line = proc.stdout.readline()
@@ -110,13 +112,17 @@ def runTester(target, source, env):
         sys.stdout.flush()
 
         if line.startswith('<!-- Completed'):
-            proc.terminate()
-            ch.terminate()
+            iterations += 1
 
             if line.startswith('<!-- Completed OK'):
-                return
+                if iterations == env['TESTITERATIONS']:
+                    proc.terminate()
+                    ch.terminate()
+                    return
             else:
                 print "Terminated with failures"
+                proc.terminate()
+                ch.terminate()
                 sys.exit(1)
 
         elif "<!-- Start" in line:
@@ -162,11 +168,19 @@ def setupTester(env, **kw):
 # Run the FreeNOS autotester inside qemu
 #
 def AutoTester(env, **kw):
-    if not env:
-        env = DefaultEnvironment()
-    else:
-        env = env.Clone()
+    env = env.Clone()
+    env.SetDefault(TESTTIMEOUT=60*7)
+    env.SetDefault(TESTITERATIONS=1)
+    env.SetDefault(TESTPROMPT="\nlogin: ")
+    setupTester(env, **kw)
 
+#
+# Run the FreeNOS autotester inside qemu, with many iterations
+#
+def AutoTesterLoop(env, **kw):
+    env = env.Clone()
+    env.SetDefault(TESTTIMEOUT=60*40)
+    env.SetDefault(TESTITERATIONS=75)
     env.SetDefault(TESTPROMPT="\nlogin: ")
     setupTester(env, **kw)
 
@@ -174,11 +188,9 @@ def AutoTester(env, **kw):
 # Run FreeNOS autotester in a host OS local process
 #
 def LocalTester(env, **kw):
-    if not env:
-        env = DefaultEnvironment()
-    else:
-        env = env.Clone()
-
+    env = env.Clone()
+    env.SetDefault(TESTTIMEOUT=60*7)
+    env.SetDefault(TESTITERATIONS=1)
     setupTester(env, **kw)
 
 #
@@ -186,6 +198,7 @@ def LocalTester(env, **kw):
 #
 def generate(env):
     env.AddMethod(AutoTester)
+    env.AddMethod(AutoTesterLoop)
     env.AddMethod(LocalTester)
 
 #
