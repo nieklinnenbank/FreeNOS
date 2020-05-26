@@ -99,6 +99,7 @@ fi
 # Add configuration files to jenkins
 mkdir -p $JENKINS_HOME/jobs
 mkdir -p $JENKINS_HOME/jobs/FreeNOS-ubuntu1804
+mkdir -p $JENKINS_HOME/jobs/FreeNOS-ubuntu1804-loop
 mkdir -p $JENKINS_HOME/jobs/FreeNOS-freebsd12
 mkdir -p $JENKINS_HOME/nodes
 mkdir -p $JENKINS_HOME/nodes/ubuntu1804
@@ -108,6 +109,7 @@ mv ~vagrant/master.key $JENKINS_HOME/secrets/
 mv ~vagrant/hudson.util.Secret $JENKINS_HOME/secrets/
 mv ~vagrant/credentials.xml $JENKINS_HOME/
 mv ~vagrant/ubuntu1804.job.xml $JENKINS_HOME/jobs/FreeNOS-ubuntu1804/config.xml
+mv ~vagrant/ubuntu1804-loop.job.xml $JENKINS_HOME/jobs/FreeNOS-ubuntu1804-loop/config.xml
 mv ~vagrant/ubuntu1804.node.xml $JENKINS_HOME/nodes/ubuntu1804/config.xml
 mv ~vagrant/freebsd12.job.xml $JENKINS_HOME/jobs/FreeNOS-freebsd12/config.xml
 mv ~vagrant/freebsd12.node.xml $JENKINS_HOME/nodes/freebsd12/config.xml
