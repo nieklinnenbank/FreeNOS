@@ -47,7 +47,12 @@ Allocator::Result PageAllocator::allocate(Allocator::Range & args)
     range.access = Memory::User | Memory::Readable | Memory::Writable;
     range.virt   = base() + m_allocated;
     range.phys   = ZERO;
-    VMCtl(SELF, Map, &range);
+    const API::Result r = VMCtl(SELF, Map, &range);
+    if (r != API::Success)
+    {
+        ERROR("failed to allocate memory using VMCtl(): " << (int)r);
+        return Allocator::OutOfMemory;
+    }
 
     // Clear the pages
     MemoryBlock::set((void *) range.virt, 0, range.size);
