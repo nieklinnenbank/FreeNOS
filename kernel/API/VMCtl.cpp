@@ -25,6 +25,7 @@ API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *ra
 {
     ProcessManager *procs = Kernel::instance->getProcessManager();
     Process *proc = ZERO;
+    MemoryContext::Result memResult = MemoryContext::Success;
     Error ret = API::Success;
 
     DEBUG("");
@@ -44,25 +45,54 @@ API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *ra
     switch (op)
     {
         case LookupVirtual:
-            if (mem->lookup(range->virt, &range->phys) != MemoryContext::Success)
+            memResult = mem->lookup(range->virt, &range->phys);
+            if (memResult != MemoryContext::Success)
+            {
+                ERROR("failed to lookup virtual address " << (void *) range->virt <<
+                      ": " << (int) memResult);
                 return API::AccessViolation;
+            }
             break;
 
         case Map:
             if (!range->virt)
             {
-                mem->findFree(range->size, MemoryMap::UserPrivate, &range->virt);
+                memResult = mem->findFree(range->size, MemoryMap::UserPrivate, &range->virt);
+                if (memResult != MemoryContext::Success)
+                {
+                    ERROR("failed to find free virtual address in UserPrivate: " <<
+                         (int) memResult);
+                    return API::IOError;
+                }
                 range->virt += range->phys & ~PAGEMASK;
             }
-            mem->mapRange(range);
+            memResult = mem->mapRange(range);
+            if (memResult != MemoryContext::Success)
+            {
+                ERROR("failed to map memory range " << (void *)range->virt << "->" <<
+                     (void *) range->phys << ": " << (int) memResult);
+                return API::IOError;
+            }
             break;
 
         case UnMap:
-            mem->unmapRange(range);
+            memResult = mem->unmapRange(range);
+            if (memResult != MemoryContext::Success)
+            {
+                ERROR("failed to unmap range at virtual address " << (void *)range->virt <<
+                      ": " << (int) memResult);
+                return API::IOError;
+            }
             break;
 
         case Release:
-            mem->releaseRange(range);
+            memResult = mem->releaseRange(range);
+            if (memResult != MemoryContext::Success)
+            {
+                ERROR("failed to release range at virtual address " << (void *)range->virt <<
+                      ": " << (int) memResult);
+                return API::IOError;
+            }
             break;
 
         case CacheClean: {
