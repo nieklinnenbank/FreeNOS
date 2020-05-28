@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <Assert.h>
 #include <File.h>
 #include <Directory.h>
 #include "SysInfoFileSystem.h"
@@ -24,7 +25,15 @@
 SysInfoFileSystem::SysInfoFileSystem(const char *path)
     : FileSystem(path)
 {
-    setRoot(new Directory);
-    registerFile(new MountsFile, "mounts");
-    registerFile(new MountWaitFile, "mountwait");
+    Directory *dir = new Directory;
+    assert(dir != NULL);
+    setRoot(dir);
+
+    MountsFile *mountsFile = new MountsFile;
+    assert(mountsFile != NULL);
+    registerFile(mountsFile, "mounts");
+
+    MountWaitFile *mountWait = new MountWaitFile;
+    assert(mountWait != NULL);
+    registerFile(mountWait, "mountwait");
 }

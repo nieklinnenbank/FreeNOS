@@ -44,11 +44,13 @@ int main(int argc, char **argv)
     {
         NOTICE("file storage: " << argv[1] << " at offset " << atoi(argv[2]));
         storage    = new FileStorage(argv[1], atoi(argv[2]));
+        assert(storage != NULL);
         path       = argv[3];
     }
     else
     {
         BootImageStorage *bm = new BootImageStorage(LINNFS_ROOTFS_FILE);
+        assert(bm != NULL);
         if (bm->load())
         {
             NOTICE("boot image: " << LINNFS_ROOTFS_FILE);
@@ -91,6 +93,7 @@ LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
     }
     // Create groups vector.
     groups = new Vector<LinnGroup *>(LINN_GROUP_COUNT(&super));
+    assert(groups != NULL);
     groups->fill(ZERO);
 
     // Read out group descriptors.
@@ -98,6 +101,7 @@ LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
     {
         // Allocate buffer.
         group  = new LinnGroup;
+        assert(group != NULL);
         offset = (super.groupsTable * super.blockSize) +
                  (sizeof(LinnGroup)  * i);
 
@@ -118,7 +122,9 @@ LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
 
     // Read out the root directory.
     rootInode = getInode(LINN_INODE_ROOT);
-    setRoot(new LinnDirectory(this, rootInode));
+    LinnDirectory *dir = new LinnDirectory(this, rootInode);
+    assert(dir != NULL);
+    setRoot(dir);
 
     // Filesystem writes are not supported
     addIPCHandler(CreateFile, (IPCHandlerFunction) &LinnFileSystem::notSupportedHandler, false);
@@ -153,6 +159,7 @@ LinnInode * LinnFileSystem::getInode(u32 inodeNum)
     }
     // Allocate inode buffer.
     inode  = new LinnInode;
+    assert(inode != NULL);
     offset = (group->inodeTable * super.blockSize) +
                 ((inodeNum % super.inodesPerGroup) * sizeof(LinnInode));
 
