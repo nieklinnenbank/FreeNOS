@@ -16,6 +16,7 @@
  */
 
 #include <Types.h>
+#include <Assert.h>
 #include <KernelLog.h>
 #include <FileStorage.h>
 #include <BootImageStorage.h>
@@ -180,8 +181,10 @@ LinnGroup * LinnFileSystem::getGroupByInode(u32 inodeNum)
 u64 LinnFileSystem::getOffset(LinnInode *inode, u32 blk)
 {
     u64 numPerBlock = LINN_SUPER_NUM_PTRS(&super), offset;
-    u32 *block = ZERO;
+    static u32 block[LINN_MAX_BLOCK_SIZE / sizeof(u32)];
     Size depth = ZERO, remain = 1;
+
+    assert(LINN_SUPER_NUM_PTRS(&super) <= sizeof(block) / sizeof(u32));
 
     // Direct blocks.
     if (blk < LINN_INODE_DIR_BLOCKS)
@@ -203,7 +206,6 @@ u64 LinnFileSystem::getOffset(LinnInode *inode, u32 blk)
         depth = 3;
 
     // Allocate temporary block.
-    block   = new u32[LINN_SUPER_NUM_PTRS(&super)];
     offset  = inode->block[(LINN_INODE_DIR_BLOCKS + depth - 1)];
     offset *= super.blockSize;
 
@@ -213,7 +215,6 @@ u64 LinnFileSystem::getOffset(LinnInode *inode, u32 blk)
         // Fetch block.
         if (storage->read(offset, block, super.blockSize) < 0)
         {
-            delete block;
             return 0;
         }
         // Calculate the number of blocks remaining per entry.
@@ -238,7 +239,6 @@ u64 LinnFileSystem::getOffset(LinnInode *inode, u32 blk)
     offset *= super.blockSize;
 
     // All done.
-    delete block;
     return offset;
 }
 

@@ -16,6 +16,7 @@
  */
 
 #include <FreeNOS/System.h>
+#include "LinnFileSystem.h"
 #include "LinnFile.h"
 #include <string.h>
 
@@ -35,13 +36,13 @@ Error LinnFile::read(IOBuffer & buffer, Size size, Size offset)
     LinnSuperBlock *sb;
     Size bytes = 0, blockNr = 0;
     u64 storageOffset, copyOffset = offset;
-    u8 *block;
+    static u8 block[LINN_MAX_BLOCK_SIZE];
     Size total = 0;
     Error e;
 
     // Initialize variables.
     sb     = fs->getSuperBlock();
-    block  = new u8[sb->blockSize];
+    assert(sb->blockSize <= LINN_MAX_BLOCK_SIZE);
 
     // Skip ahead blocks.
     while ((sb->blockSize * (blockNr + 1)) <= copyOffset)
@@ -61,7 +62,6 @@ Error LinnFile::read(IOBuffer & buffer, Size size, Size offset)
         // Fetch the next block.
         if (fs->getStorage()->read(storageOffset, block, sb->blockSize) < 0)
         {
-            delete block;
             return EIO;
         }
         // Calculate the number of bytes to copy.
@@ -80,7 +80,6 @@ Error LinnFile::read(IOBuffer & buffer, Size size, Size offset)
         // Copy into the buffer.
         if ((e = buffer.write(block + copyOffset, bytes, total)) < 0)
         {
-            delete block;
             return e;
         }
         // Update state.
@@ -89,6 +88,5 @@ Error LinnFile::read(IOBuffer & buffer, Size size, Size offset)
         blockNr++;
     }
     // Success.
-    delete block;
     return (Error) total;
 }
