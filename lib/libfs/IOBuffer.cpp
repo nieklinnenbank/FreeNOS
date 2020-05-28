@@ -15,15 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <Assert.h>
 #include "IOBuffer.h"
 
 IOBuffer::IOBuffer(const FileSystemMessage *msg)
     : m_message(msg)
 {
     if (msg->action == ReadFile || msg->action == WriteFile)
+    {
         m_buffer = new u8[msg->size];
+        assert(m_buffer != NULL);
+    }
     else
+    {
         m_buffer = 0;
+    }
 
     m_size   = msg->size;
     m_count  = 0;
@@ -61,7 +67,10 @@ Error IOBuffer::bufferedWrite(const void *buffer, Size size)
     Size i = 0;
 
     if (!m_buffer)
+    {
         m_buffer = new u8[m_message->size];
+        assert(m_buffer != NULL);
+    }
 
     for (i = 0; i < size && m_count < m_size; i++)
     {

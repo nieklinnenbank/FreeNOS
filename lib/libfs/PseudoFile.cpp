@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <Assert.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -33,6 +34,7 @@ PseudoFile::PseudoFile(const char *str)
     m_access = OwnerRW;
     m_size   = strlen(str);
     m_buffer = new char[m_size + 1];
+    assert(m_buffer != NULL);
     strlcpy(m_buffer, str, m_size + 1);
 }
 
@@ -43,6 +45,7 @@ PseudoFile::PseudoFile(const char *format, ...)
 
     // Allocate buffer
     m_buffer = new char[512];
+    assert(m_buffer != NULL);
 
     // Format the input
     va_start(args, format);
@@ -79,6 +82,7 @@ Error PseudoFile::write(IOBuffer & buffer, Size size, Size offset)
     {
         // Allocate a new buffer and copy the old data
         char *new_buffer = new char[size+offset];
+        assert(new_buffer != NULL);
         memset(new_buffer, 0, sizeof(size+offset));
 
         // Inherit from the old buffer, if needed

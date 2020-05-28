@@ -74,18 +74,24 @@ void FileSystemPath::parse(const char *p, char sep)
     m_separator  = sep;
     m_fullLength = strlen((char *)cur);
     m_fullPath   = new String(cur);
+    assert(m_fullPath != NULL);
     String str(p);
 
     // Split the path into parts
     List<String> parts = str.split(sep);
     for (ListIterator<String> i(parts); i.hasCurrent(); i++)
-        m_path.append(new String(i.current()));
+    {
+        String *s = new String(i.current());
+        assert(s != NULL);
+        m_path.append(s);
+    }
 
     // Create parent, if any
     if (m_path.head() && m_path.head()->next)
     {
         // Allocate buffer
         parentStr  = new char[strlen(p)];
+        assert(parentStr != NULL);
         memset(parentStr, 0, strlen(p));
 
         // Construct parent path
@@ -97,6 +103,7 @@ void FileSystemPath::parse(const char *p, char sep)
         }
         // Save the path, then release buffer
         m_parentPath = new String(parentStr);
+        assert(m_parentPath != NULL);
         delete parentStr;
     }
 }
