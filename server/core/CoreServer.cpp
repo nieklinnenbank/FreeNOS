@@ -77,17 +77,33 @@ void CoreServer::createProcess(FileSystemMessage *msg)
 {
     char cmd[128];
     Memory::Range range;
+    API::Result result = API::Success;
 
     if (m_info.coreId == 0)
     {
+        // Find physical address for program buffer
         range.virt = (Address) msg->buffer;
-        VMCtl(msg->from, LookupVirtual, &range);
+        if ((result = VMCtl(msg->from, LookupVirtual, &range)) != API::Success)
+        {
+            ERROR("failed to lookup virtual address at " <<
+                  (void *) msg->buffer << ": " << (int)result);
+            msg->result = EBADF;
+            return;
+        }
         msg->buffer = (char *) range.phys;
 
+        // Find physical address for command
         range.virt = (Address) msg->path;
-        VMCtl(msg->from, LookupVirtual, &range);
+        if ((result = VMCtl(msg->from, LookupVirtual, &range)) != API::Success)
+        {
+            ERROR("failed to lookup virtual address at " <<
+                  (void *) msg->buffer << ": " << (int)result);
+            msg->result = EBADF;
+            return;
+        }
         msg->path = (char *) range.phys;
 
+        // Forward message to slave core
         if (sendToSlave(msg->size, msg) != Success)
         {
             ERROR("failed to write channel on core"<<msg->size);
@@ -96,6 +112,7 @@ void CoreServer::createProcess(FileSystemMessage *msg)
         }
         DEBUG("creating program at phys " << (void *) msg->buffer << " on core" << msg->size);
 
+        // Wait until the slave created the program
         if (receiveFromSlave(msg->size, msg) != Success)
         {
             ERROR("failed to read channel on core" << msg->size);
@@ -103,29 +120,49 @@ void CoreServer::createProcess(FileSystemMessage *msg)
             return;
         }
         DEBUG("program created with result " << (int)msg->result << " at core" << msg->size);
-
-        msg->result = ESUCCESS;
         ChannelClient::instance->syncSendTo(msg, msg->from);
     }
     else
     {
-        VMCopy(SELF, API::ReadPhys, (Address) cmd, (Address) msg->path, sizeof(cmd));
+        // Copy the program command
+        if (VMCopy(SELF, API::ReadPhys, (Address) cmd,
+                  (Address) msg->path, sizeof(cmd)) != sizeof(cmd))
+        {
+            ERROR("failed to copy program command");
+            msg->result = EINVAL;
+            sendToMaster(msg);
+            return;
+        }
 
+        // Map the program buffer
         range.phys   = (Address) msg->buffer;
         range.virt   = 0;
         range.access = Memory::Readable | Memory::User;
         range.size   = msg->offset;
-        VMCtl(SELF, Map, &range);
+        if ((result = VMCtl(SELF, Map, &range)) != API::Success)
+        {
+            ERROR("failed to map program data: " << (int)result);
+            msg->result = EINVAL;
+            sendToMaster(msg);
+            return;
+        }
 
-        pid_t pid = spawn(range.virt, msg->offset, cmd);
-        int status;
+        int pid = spawn(range.virt, msg->offset, cmd);
+        if (pid == -1)
+        {
+            ERROR("failed to spawn() program: " << pid);
+            msg->result = EIO;
+            sendToMaster(msg);
+            return;
+        }
 
         // reply to master before calling waitpid()
         msg->result = ESUCCESS;
         sendToMaster(msg);
 
         // Wait until the spawned process completes
-        waitpid(pid, &status, 0);
+        int status;
+        waitpid((pid_t)pid, &status, 0);
     }
 }
 
