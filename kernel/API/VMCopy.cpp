@@ -49,7 +49,7 @@ API::Result VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
         else if (remote->lookup(theirs, &paddr) != MemoryContext::Success)
             return API::AccessViolation;
 
-        paddr &= PAGEMASK;
+        assert(!(paddr & ~PAGEMASK));
         pageOff = theirs & ~PAGEMASK;
         bytes   = (PAGESIZE - pageOff) < (sz - total) ?
                   (PAGESIZE - pageOff) : (sz - total);

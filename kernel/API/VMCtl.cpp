@@ -53,6 +53,8 @@ API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *ra
                       ": " << (int) memResult);
                 return API::AccessViolation;
             }
+            assert(!(range->phys & ~PAGEMASK));
+
             // Add offset within the page
             range->phys += range->virt & ~PAGEMASK;
             break;

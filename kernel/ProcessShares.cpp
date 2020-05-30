@@ -115,6 +115,7 @@ ProcessShares::Result ProcessShares::createShare(ProcessID pid,
         delete share;
         return MemoryMapError;
     }
+    assert(!(share->range.phys & ~PAGEMASK));
 
     // Retrieve memory access permissions
     if ((result = m_memory->access(share->range.virt, &share->range.access)) != MemoryContext::Success)
