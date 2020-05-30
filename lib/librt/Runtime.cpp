@@ -113,7 +113,12 @@ void setupHeap()
     range.access = Memory::User | Memory::Readable | Memory::Writable;
     range.virt   = heap.virt;
     range.phys   = ZERO;
-    VMCtl(SELF, Map, &range);
+    const API::Result result = VMCtl(SELF, Map, &range);
+    if (result != API::Success)
+    {
+        PrivExec(WriteConsole, (Address) ("failed to allocate pages for heap: terminating"));
+        ProcessCtl(SELF, KillPID);
+    }
 
     // Allocate instance copy on vm pages itself
     pageAlloc = new (heap.virt) PageAllocator(pageRange);
