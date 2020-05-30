@@ -45,6 +45,7 @@ API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *ra
     switch (op)
     {
         case LookupVirtual:
+            // Translate virtual address to physical address (page boundary)
             memResult = mem->lookup(range->virt, &range->phys);
             if (memResult != MemoryContext::Success)
             {
@@ -52,6 +53,8 @@ API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *ra
                       ": " << (int) memResult);
                 return API::AccessViolation;
             }
+            // Add offset within the page
+            range->phys += range->virt & ~PAGEMASK;
             break;
 
         case Map:

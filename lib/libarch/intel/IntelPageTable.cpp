@@ -59,7 +59,7 @@ MemoryContext::Result IntelPageTable::translate(Address virt, Address *phys) con
     if (!(m_pages[ TABENTRY(virt) ] & PAGE_PRESENT))
         return MemoryContext::InvalidAddress;
 
-    *phys = (m_pages[ TABENTRY(virt) ] & PAGEMASK) + (virt & ~PAGEMASK);
+    *phys = (m_pages[ TABENTRY(virt) ] & PAGEMASK);
     return MemoryContext::Success;
 }
 

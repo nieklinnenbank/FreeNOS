@@ -200,7 +200,10 @@ MemoryContext::Result ARMFirstTable::translate(Address virt,
     {
         if (m_tables[DIRENTRY(virt)] & PAGE1_SECTION)
         {
-            *phys = (m_tables[DIRENTRY(virt)] & SECTIONMASK) + ((virt % MegaByte(1)) & SECTIONMASK);
+            const Address offsetInSection = virt % MegaByte(1);
+
+            *phys = (m_tables[DIRENTRY(virt)] & SECTIONMASK) +
+                    ((offsetInSection / PAGESIZE) * PAGESIZE);
             return MemoryContext::Success;
         }
         return MemoryContext::InvalidAddress;

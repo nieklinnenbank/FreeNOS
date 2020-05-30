@@ -107,7 +107,10 @@ MemoryContext::Result IntelPageDirectory::translate(Address virt,
     {
         if (m_tables[DIRENTRY(virt)] & PAGE_SECTION)
         {
-            *phys = (m_tables[DIRENTRY(virt)] & PAGEMASK) + ((virt % MegaByte(4)) & PAGEMASK);
+            const Address offsetInSection = virt % MegaByte(4);
+
+            *phys = (m_tables[DIRENTRY(virt)] & SECTIONMASK) +
+                    ((offsetInSection / PAGESIZE) * PAGESIZE);
             return MemoryContext::Success;
         }
         return MemoryContext::InvalidAddress;
