@@ -29,6 +29,7 @@ def timeoutChecker(proc, timeout):
     time.sleep(timeout)
     print "Timeout occured (" + str(timeout) + " sec) -- aborting"
     proc.terminate()
+    proc.kill()
     sys.exit(1)
 
 def writeXml(testname, data, env):
@@ -45,6 +46,34 @@ def writeXml(testname, data, env):
     f = open(outfile, 'w')
     f.write(data)
     f.close()
+
+def stopTester(testproc, timeoutproc, reason, exitCode = 1):
+    """
+    Print stop message, terminates the test and timeout processes and exits the program.
+    """
+    print("Stopping test: " + reason)
+    testproc.poll()
+    print("proc.returncode = " + str(testproc.returncode))
+
+    if testproc.returncode is None:
+        print("Killing test process with PID " + str(testproc.pid))
+        testproc.terminate()
+        testproc.kill()
+
+    try:
+        print("Sending SIGTERM to timeout process with PID " + str(timeoutproc.pid))
+        timeoutproc.terminate()
+    except:
+        pass
+
+    try:
+        print("Sending SIGKILL to timeout process with PID " + str(timeoutproc.pid))
+        os.kill(timeoutproc.pid, signal.SIGKILL)
+    except:
+        pass
+
+    if exitCode != 0:
+        sys.exit(exitCode)
 
 def runTester(target, source, env):
     """
@@ -103,7 +132,7 @@ def runTester(target, source, env):
 
     while True:
         line = proc.stdout.readline()
-        if line == '':
+        if line == '' and proc.poll() is not None:
             break
 
         line = line.strip()
@@ -116,14 +145,10 @@ def runTester(target, source, env):
 
             if line.startswith('<!-- Completed OK'):
                 if iterations == env['TESTITERATIONS']:
-                    proc.terminate()
-                    ch.terminate()
+                    stopTester(proc, ch, "Success", 0)
                     return
             else:
-                print "Terminated with failures"
-                proc.terminate()
-                ch.terminate()
-                sys.exit(1)
+                stopTester(proc, ch, "Test terminated with failures")
 
         elif "<!-- Start" in line:
             xml_testname=line.split(' ')[2]
@@ -149,10 +174,7 @@ def runTester(target, source, env):
         else:
             xml_data += line + "\n"
 
-    print "Unexpected end of test output: returncode = " + str(proc.returncode)
-    proc.terminate()
-    ch.terminate()
-    sys.exit(1)
+    stopTester(proc, ch, "Unexpected end of test output")
 
 def setupTester(env, **kw):
 
