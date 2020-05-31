@@ -149,7 +149,7 @@ def runTester(target, source, env):
         else:
             xml_data += line + "\n"
 
-    print "Unexpected end of test output"
+    print "Unexpected end of test output: returncode = " + str(proc.returncode)
     proc.terminate()
     ch.terminate()
     sys.exit(1)
