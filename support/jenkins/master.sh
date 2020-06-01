@@ -128,7 +128,7 @@ sleep 30
 run_command_retry "wget -q http://localhost:$HTTP_PORT/jnlpJars/jenkins-cli.jar -O jenkins-cli.jar"
 
 # Jenkins plugin list
-JENKINS_PLUGINS=( git matrix-project matrix-combinations-parameter nodelabelparameter ws-cleanup junit ssh-slaves )
+JENKINS_PLUGINS=( git matrix-project matrix-combinations-parameter nodelabelparameter ws-cleanup junit ssh-slaves timestamper )
 JENKINS_URL="http://localhost:$HTTP_PORT"
 JENKINS_USER="admin"
 JENKINS_PASS="admin"
