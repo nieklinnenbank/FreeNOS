@@ -54,7 +54,7 @@ end
 if ENV.has_key?('SLAVE_MEMORY')
     slave_memory = ENV['SLAVE_MEMORY']
 else
-    slave_memory = 2048
+    slave_memory = 4096
 end
 
 # Contains the URL for cloning GIT archive with Qemu source
