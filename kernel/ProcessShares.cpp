@@ -87,6 +87,7 @@ ProcessShares::Result ProcessShares::createShare(ProcessID pid,
                                                  Size size)
 {
     MemoryShare *share = ZERO;
+    MemoryContext::Result result = MemoryContext::Success;
 
     if (size == 0 || size % PAGESIZE)
         return InvalidArgument;
@@ -105,8 +106,24 @@ ProcessShares::Result ProcessShares::createShare(ProcessID pid,
     share->tagId      = tagId;
     share->range.virt = virt;
     share->range.size = size;
-    m_memory->lookup(share->range.virt, &share->range.phys);
-    m_memory->access(share->range.virt, &share->range.access);
+
+    // Translate to physical address
+    if ((result = m_memory->lookup(share->range.virt, &share->range.phys)) != MemoryContext::Success)
+    {
+        ERROR("failed to translate share virtual address at " <<
+             (void *)share->range.virt << ": " << (int)result);
+        delete share;
+        return MemoryMapError;
+    }
+
+    // Retrieve memory access permissions
+    if ((result = m_memory->access(share->range.virt, &share->range.access)) != MemoryContext::Success)
+    {
+        ERROR("failed to retrieve share access permissions for virtual address " <<
+             (void *)share->range.virt << ": " << (int)result);
+        delete share;
+        return MemoryMapError;
+    }
 
     // insert into shares list
     m_shares.insert(*share);
