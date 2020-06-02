@@ -92,6 +92,9 @@ ProcessShares::Result ProcessShares::createShare(ProcessID pid,
     if (size == 0 || size % PAGESIZE)
         return InvalidArgument;
 
+    // This code currently does not support intra-core IPC
+    assert(coreId == coreInfo.coreId);
+
     // Allocate MemoryShare objects
     share  = new MemoryShare;
     if (!share)
@@ -255,6 +258,8 @@ ProcessShares::Result ProcessShares::removeShares(ProcessID pid)
 
 ProcessShares::Result ProcessShares::releaseShare(MemoryShare *s, Size idx)
 {
+    assert(s->coreId == coreInfo.coreId);
+
     // Only release physical memory if both processes have detached.
     // Note that in case all memory shares for a certain ProcessID have
     // been detached but not yet released, and due to a very unlikely race
@@ -274,10 +279,14 @@ ProcessShares::Result ProcessShares::releaseShare(MemoryShare *s, Size idx)
             for (Size i = 0; i < size; i++)
             {
                 MemoryShare *otherShare = (MemoryShare *) shares.m_shares.get(i);
-                if (otherShare && otherShare->pid == m_pid
-                               && otherShare->coreId == s->coreId)
+                if (otherShare)
                 {
-                    otherShare->attached = false;
+                    assert(otherShare->coreId == coreInfo.coreId);
+
+                    if (otherShare->pid == m_pid && otherShare->coreId == s->coreId)
+                    {
+                        otherShare->attached = false;
+                    }
                 }
             }
         }
@@ -309,6 +318,8 @@ ProcessShares::Result ProcessShares::readShare(MemoryShare *share)
     {
         if ((s = m_shares.get(i)) != ZERO)
         {
+            assert(s->coreId == coreInfo.coreId);
+
             if (s->pid == share->pid &&
                 s->coreId == share->coreId &&
                 s->tagId == share->tagId)
