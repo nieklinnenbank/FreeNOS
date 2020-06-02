@@ -55,6 +55,8 @@ TestCase(FactoryCreate)
 
     testAssert(obj != NULL);
     testAssert(obj->val == 1234);
+    delete obj;
+
     return OK;
 }
 
@@ -64,5 +66,7 @@ TestCase(AbstractFactoryCreate)
 
     testAssert(obj != NULL);
     testAssert(obj->val == 4567);
+    delete obj;
+
     return OK;
 }
