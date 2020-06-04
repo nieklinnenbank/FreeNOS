@@ -444,6 +444,10 @@ commands to install libvirt, KVM and Vagrant libvirt support:
 
     $ sudo apt-get install vagrant-libvirt libvirt-bin libvirt-dev qemu-kvm qemu-utils qemu
 
+On Ubuntu 20.04:
+
+    $ sudo apt-get install libvirt-clients libvirt-daemon-system qemu-kvm vagrant-libvirt
+
 Add yourself to the libvirt usergroup in order to use the libvirt installation:
 
     $ sudo usermod -a -G libvirt my_userid
