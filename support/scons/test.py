@@ -27,7 +27,7 @@ import xml.etree.ElementTree as XmlParser
 
 def timeoutChecker(proc, timeout):
     time.sleep(timeout)
-    print "Timeout occured (" + str(timeout) + " sec) -- aborting"
+    print("Timeout occured (" + str(timeout) + " sec) -- aborting")
     proc.terminate()
     proc.kill()
     sys.exit(1)
@@ -82,22 +82,23 @@ def runTester(target, source, env):
 
     # Needed to workaround SCons problem with the pickle module.
     # See: http://stackoverflow.com/questions/24453387/scons-attributeerror-builtin-function-or-method-object-has-no-attribute-disp
-    import imp
+    if 'pickle' in sys.modules and 'cPickle' in sys.modules:
+        import imp
 
-    del sys.modules['pickle']
-    del sys.modules['cPickle']
+        del sys.modules['pickle']
+        del sys.modules['cPickle']
 
-    sys.modules['pickle'] = imp.load_module('pickle', *imp.find_module('pickle'))
-    sys.modules['cPickle'] = imp.load_module('cPickle', *imp.find_module('cPickle'))
+        sys.modules['pickle'] = imp.load_module('pickle', *imp.find_module('pickle'))
+        sys.modules['cPickle'] = imp.load_module('cPickle', *imp.find_module('cPickle'))
 
-    import pickle
-    import cPickle
+        import pickle
+        import cPickle
 
     cmd = str(env['TESTCMD'])
     cmd = env.subst(cmd)
 
     # Launch process
-    proc = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+    proc = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stdin=subprocess.PIPE, bufsize=0)
 
     # Launch a timeout process which will send a SIGTERM
     # to the process after a certain amount of time
@@ -110,8 +111,8 @@ def runTester(target, source, env):
     if 'TESTPROMPT' in env:
         output=""
         while True:
-            c = proc.stdout.read(1)
-            if c == '':
+            c = proc.stdout.read(1).decode('ascii', 'ignore')
+            if c == '' and proc.poll() is not None:
                 break
 
             sys.stdout.write(c)
@@ -120,8 +121,8 @@ def runTester(target, source, env):
 
             if env['TESTPROMPT'] in output:
                 time.sleep(1)
-                proc.stdin.write("root\n/test/run /test --xml --iterations " + \
-                                 str(env['TESTITERATIONS']) + "\n")
+                proc.stdin.write(("root\n/test/run /test --xml --iterations " + \
+                                  str(env['TESTITERATIONS']) + "\n").encode('utf-8'))
                 proc.stdin.flush()
                 break
 
@@ -131,7 +132,7 @@ def runTester(target, source, env):
     iterations = 0
 
     while True:
-        line = proc.stdout.readline()
+        line = proc.stdout.readline().decode('ascii', 'ignore')
         if line == '' and proc.poll() is not None:
             break
 

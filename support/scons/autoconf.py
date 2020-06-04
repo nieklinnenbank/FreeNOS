@@ -28,9 +28,9 @@ def TryCompileC(context):
 
     # Use the simpelest C program possible.
     source_file = "int main(int argc, char **argv)" \
-		  "{" \
-		  "    return 0;" \
-		  "}\n"
+                  "{" \
+                  "    return 0;" \
+                  "}\n"
 
     # Try to compile and link it.
     result = context.TryLink(source_file, '.c')
@@ -52,20 +52,20 @@ def CheckCCFlags(env):
     # Loop all CFLAGS.
     for flag in cflags:
 
-	# Setup a temporary environment.
+        # Setup a temporary environment.
         conf = Configure(env.Clone(),
-    			 custom_tests = { 'TryCompileC' : TryCompileC })
+                         custom_tests = { 'TryCompileC' : TryCompileC })
         conf.env['CCFLAGS'].append(flag)
         conf.env.Replace(TRYFLAG = flag)
 
-	# Try to link a dummy program.
-	result = conf.TryCompileC()
+        # Try to link a dummy program.
+        result = conf.TryCompileC()
 
-	# If success, append to CFLAGS
+        # If success, append to CFLAGS
         if result:
-	    env['CCFLAGS'].append(flag)
+            env['CCFLAGS'].append(flag)
 
-	# Done. Try next.
+        # Done. Try next.
         conf.Finish()
 
 #
@@ -78,9 +78,9 @@ def TryCompileCXX(context):
 
     # Use the simpelest C program possible.
     source_file = "int main(int argc, char **argv)" \
-		  "{" \
-		  "    return 0;" \
-		  "}\n"
+                  "{" \
+                  "    return 0;" \
+                  "}\n"
 
     # Try to compile and link it.
     result = context.TryCompile(source_file, '.cpp')
@@ -102,18 +102,18 @@ def CheckCXXFlags(env):
     # Loop all CPPFLAGS.
     for flag in cppflags:
 
-	# Setup a temporary environment.
+        # Setup a temporary environment.
         conf = Configure(env.Clone(),
-    			 custom_tests = { 'TryCompileCXX' : TryCompileCXX })
+                         custom_tests = { 'TryCompileCXX' : TryCompileCXX })
         conf.env['CXXFLAGS'].append(flag)
         conf.env.Replace(TRYFLAG = flag)
 
-	# Try to link a dummy program.
-	result = conf.TryCompileCXX()
+        # Try to link a dummy program.
+        result = conf.TryCompileCXX()
 
-	# If success, append it to CXXFLAGS
+        # If success, append it to CXXFLAGS
         if result:
-	    env['CXXFLAGS'].append(flag)
+            env['CXXFLAGS'].append(flag)
 
-	# Done. Try next.
+        # Done. Try next.
         conf.Finish()
