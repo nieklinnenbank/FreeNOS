@@ -153,16 +153,25 @@ void CoreServer::createProcess(FileSystemMessage *msg)
             ERROR("failed to spawn() program: " << pid);
             msg->result = EIO;
             sendToMaster(msg);
-            return;
+        }
+        else
+        {
+            // reply to master before calling waitpid()
+            msg->result = ESUCCESS;
+            sendToMaster(msg);
         }
 
-        // reply to master before calling waitpid()
-        msg->result = ESUCCESS;
-        sendToMaster(msg);
+        if ((result = VMCtl(SELF, UnMap, &range)) != API::Success)
+        {
+            ERROR("failed to unmap program data: " << (int)result);
+        }
 
         // Wait until the spawned process completes
-        int status;
-        waitpid((pid_t)pid, &status, 0);
+        if (pid != -1)
+        {
+            int status;
+            waitpid((pid_t)pid, &status, 0);
+        }
     }
 }
 
