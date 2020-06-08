@@ -54,10 +54,14 @@ int main(int argc, char **argv)
                         argv[0], i);
                 return EXIT_FAILURE;
             }
-            if (buf == pong)
-                printf("%s: pong from core%d\n", argv[0], i);
-            else
+
+            if (buf != pong)
+            {
                 printf("%s: invalid message %d from core%d\n", argv[0], buf, i);
+                return EXIT_FAILURE;
+            }
+
+            printf("%s: pong from core%d\n", argv[0], i);
         }
     }
     else
