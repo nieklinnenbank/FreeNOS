@@ -63,28 +63,36 @@ void ARMKernel::interrupt(CPUState state)
 {
     ARMCore core;
     core.logException(&state);
-    FATAL("unhandled IRQ in procId = " << Kernel::instance->getProcessManager()->current()->getID());
+
+    FATAL("core" << coreInfo.coreId << ": unhandled IRQ in procId = " <<
+           Kernel::instance->getProcessManager()->current()->getID());
 }
 
 void ARMKernel::undefinedInstruction(CPUState state)
 {
     ARMCore core;
     core.logException(&state);
-    FATAL("procId = " << Kernel::instance->getProcessManager()->current()->getID());
+
+    FATAL("core" << coreInfo.coreId << ": procId = " <<
+           Kernel::instance->getProcessManager()->current()->getID());
 }
 
 void ARMKernel::prefetchAbort(CPUState state)
 {
     ARMCore core;
     core.logException(&state);
-    FATAL("procId = " << Kernel::instance->getProcessManager()->current()->getID());
+
+    FATAL("core" << coreInfo.coreId << ": procId = " <<
+           Kernel::instance->getProcessManager()->current()->getID());
 }
 
 void ARMKernel::dataAbort(CPUState state)
 {
     ARMCore core;
     core.logException(&state);
-    FATAL("procId = " << Kernel::instance->getProcessManager()->current()->getID());
+
+    FATAL("core" << coreInfo.coreId << ": procId = " <<
+           Kernel::instance->getProcessManager()->current()->getID());
 }
 
 
@@ -92,7 +100,9 @@ void ARMKernel::reserved(CPUState state)
 {
     ARMCore core;
     core.logException(&state);
-    FATAL("procId = " << Kernel::instance->getProcessManager()->current()->getID());
+
+    FATAL("core" << coreInfo.coreId << ": procId = " <<
+           Kernel::instance->getProcessManager()->current()->getID());
 }
 
 void ARMKernel::trap(volatile CPUState state)
@@ -101,7 +111,7 @@ void ARMKernel::trap(volatile CPUState state)
     ARMProcess *proc = (ARMProcess *) mgr->current(), *proc2;
     ProcessID procId = proc->getID();
 
-    DEBUG("procId = " << procId << " api = " << state.r0);
+    DEBUG("coreId = " << coreInfo.coreId << " procId = " << procId << " api = " << state.r0);
 
     // Execute the kernel call
     u32 r = Kernel::instance->getAPI()->invoke(

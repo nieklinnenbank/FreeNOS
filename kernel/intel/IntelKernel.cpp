@@ -151,7 +151,7 @@ void IntelKernel::exception(CPUState *state, ulong param, ulong vector)
     ProcessManager *procs = Kernel::instance->getProcessManager();
 
     core.logException(state);
-    FATAL("Exception in Process: " << procs->current()->getID());
+    FATAL("core" << coreInfo.coreId << ": Exception in Process: " << procs->current()->getID());
 
     assert(procs->current() != ZERO);
     procs->remove(procs->current());
