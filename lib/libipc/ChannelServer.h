@@ -263,6 +263,7 @@ template <class Base, class MsgType> class ChannelServer
         if (!m_registry->getConsumer(pid))
         {
             MemoryChannel *consumer = new MemoryChannel;
+            assert(consumer != NULL);
             consumer->setMode(Channel::Consumer);
             consumer->setMessageSize(sizeof(MsgType));
             consumer->setVirtual(range.virt, range.virt + PAGESIZE);
@@ -272,6 +273,7 @@ template <class Base, class MsgType> class ChannelServer
         if (!m_registry->getProducer(pid))
         {
             MemoryChannel *producer = new MemoryChannel;
+            assert(producer != NULL);
             producer->setMode(Channel::Producer);
             producer->setMessageSize(sizeof(MsgType));
             producer->setVirtual(range.virt + (PAGESIZE*2),
@@ -290,6 +292,7 @@ template <class Base, class MsgType> class ChannelServer
     Result readKernelEvents()
     {
         ProcessEvent event;
+        ChannelRegistry::Result result = ChannelRegistry::Success;
 
         // Try to read a message on the kernel event channel
         while (m_kernelEvent.read(&event) == Channel::Success)
@@ -317,15 +320,31 @@ template <class Base, class MsgType> class ChannelServer
                 case ProcessTerminated:
                 {
                     DEBUG(m_self << ": process terminated: PID " << event.number);
-                    m_registry->unregisterConsumer(event.number);
-                    m_registry->unregisterProducer(event.number);
+                    result = m_registry->unregisterConsumer(event.number);
+                    if (result != ChannelRegistry::Success)
+                    {
+                        ERROR("failed to unregister consumer for PID " <<
+                               event.number << ": " << (int)result);
+                    }
+
+                    result = m_registry->unregisterProducer(event.number);
+                    if (result != ChannelRegistry::Success)
+                    {
+                        ERROR("failed to unregister producer for PID " <<
+                               event.number << ": " << (int)result);
+                    }
 
                     // cleanup the VMShare area now for that process
-                    VMShare(event.number, API::Delete, ZERO);
+                    API::Result shareResult = VMShare(event.number, API::Delete, ZERO);
+                    if (shareResult != API::Success)
+                    {
+                        ERROR("failed to remove shares with VMShare for PID " <<
+                               event.number << ": " << (int)shareResult);
+                    }
                     break;
                 }
                 default:
-                    DEBUG(m_self << ": ???\n");
+                    WARNING(m_self << ": unknown event.type: "  << event.type);
                     break;
             }
         }
