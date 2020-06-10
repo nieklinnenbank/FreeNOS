@@ -31,13 +31,21 @@ Size PageAllocator::available() const
 
 Allocator::Result PageAllocator::allocate(Allocator::Range & args)
 {
+    Arch::MemoryMap map;
+    Memory::Range heapRange = map.range(MemoryMap::UserHeap);
     Memory::Range range;
+    Size bytes  = args.size > MinimumAllocationSize ?
+                  args.size : MinimumAllocationSize;
+
+    // Check for heap overflow
+    if (m_allocated + bytes >= heapRange.size)
+    {
+        ERROR("cannot allocate beyond maximum heap size " << heapRange.size);
+        return Allocator::OutOfMemory;
+    }
 
     // Set return address
     args.address = base() + m_allocated;
-
-    Size bytes  = args.size > MinimumAllocationSize ?
-                  args.size : MinimumAllocationSize;
 
     // Align to pagesize
     bytes = aligned(bytes, PAGESIZE);
