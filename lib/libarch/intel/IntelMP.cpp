@@ -100,7 +100,10 @@ IntelMP::Result IntelMP::boot(CoreInfo *info)
 
     // Send inter-processor-interrupt to wakeup the processor
     if (m_apic.sendStartupIPI(info->coreId, MPEntryAddr) != IntController::Success)
+    {
+        ERROR("failed to send startup IPI via APIC");
         return IOError;
+    }
 
     // Wait until the core raises the 'booted' flag in CoreInfo
     while (1)
