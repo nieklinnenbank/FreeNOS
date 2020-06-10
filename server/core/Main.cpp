@@ -16,6 +16,7 @@
  */
 
 #include <Factory.h>
+#include <KernelLog.h>
 #include <StdioLog.h>
 #include <Runtime.h>
 #include <fcntl.h>
@@ -24,21 +25,19 @@
 
 int main(int argc, char **argv)
 {
-    StdioLog log;
+    KernelLog log;
     SystemInformation info;
-
     const char *consolePath = "/dev/serial/serial0/io";
     const char *consoleMount = "/dev/serial";
 
     log.setMinimumLogLevel(Log::Notice);
 
-    // Is this the master core?
+    // On the master core, wait for the serial device driver and re-open I/O
     if (info.coreId == 0)
     {
         close(0);
         close(1);
         close(2);
-
         waitMount(consoleMount);
 
         while (open(consolePath, O_RDWR) == -1);
