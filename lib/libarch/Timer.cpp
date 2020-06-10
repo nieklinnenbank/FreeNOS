@@ -79,5 +79,5 @@ bool Timer::isExpired(const Timer::Info & info) const
     if (!info.frequency)
         return false;
 
-    return m_info.ticks > info.ticks;
+    return m_info.ticks >= info.ticks;
 }
