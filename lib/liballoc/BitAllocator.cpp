@@ -63,6 +63,8 @@ Allocator::Result BitAllocator::allocate(Allocator::Range & args,
         return OutOfMemory;
 
     args.address = base() + (bit * m_chunkSize);
+
+    assert(isAllocated(args.address));
     return Success;
 }
 
