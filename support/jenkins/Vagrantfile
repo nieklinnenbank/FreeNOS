@@ -28,7 +28,9 @@ File.open("src.tar", "wb") do |file|
                 next
             end
 
-            if FileTest.symlink?(path)
+            if FileTest.socket?(path)
+                next
+            elsif FileTest.symlink?(path)
                 tar.add_symlink(filename, File.readlink(path), File.stat(path).mode)
             elsif FileTest.directory?(path)
                 tar.mkdir(filename, 0755)
