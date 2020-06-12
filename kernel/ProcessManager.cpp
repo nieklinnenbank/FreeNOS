@@ -144,7 +144,7 @@ ProcessManager::Result ProcessManager::schedule()
                 }
                 else if (procTimer.ticks < m_nextSleepTimer.ticks || !m_nextSleepTimer.ticks)
                 {
-                    MemoryBlock::copy(&m_nextSleepTimer, &procTimer, sizeof(m_nextSleepTimer));
+                    m_nextSleepTimer = procTimer;
                 }
             }
         }
@@ -219,7 +219,7 @@ ProcessManager::Result ProcessManager::sleep(const Timer::Info *timer, bool igno
 
             if (timer && (timer->ticks < m_nextSleepTimer.ticks || !m_nextSleepTimer.ticks))
             {
-                MemoryBlock::copy(&m_nextSleepTimer, timer, sizeof(m_nextSleepTimer));
+                m_nextSleepTimer = *timer;
             }
             break;
 
