@@ -58,20 +58,20 @@ env.Command('kernel.img', 'kernel', env['OBJCOPY'] + ' -O binary ' +
             env['BUILDROOT'] + '/kernel/arm/' + env['SYSTEM'] + '/kernel ' +
             env['BUILDROOT'] + '/kernel/arm/' + env['SYSTEM'] + '/kernel.img')
 
+# First part of the Qemu command arguments
+qemu_args = build_env['QEMUCMD'] + ' -kernel ' + build_env['BUILDROOT'] + \
+            '/kernel/arm/' + build_env['SYSTEM'] + '/kernel ' + \
+            '-chardev socket,id=charmonitor,path=monitor.dev,server,nowait -monitor chardev:charmonitor '
+
 #
 # Qemu targets
 #
-env.Targets(qemu = build_env['QEMUCMD'] + ' -kernel ' + build_env['BUILDROOT'] +
-                   '/kernel/arm/' + build_env['SYSTEM'] + '/kernel -nographic')
+env.Targets(qemu = qemu_args + '-nographic')
 
-env.Targets(qemu_debug = build_env['QEMUCMD'] + ' -kernel ' + build_env['BUILDROOT'] +
-                         '/kernel/arm/' + build_env['SYSTEM'] + '/kernel -nographic -s -S')
+env.Targets(qemu_debug = qemu_args + '-nographic -s -S')
 
-env.Targets(qemu_debugs = build_env['QEMUCMD'] + ' -kernel ' + build_env['BUILDROOT'] +
-                          '/kernel/arm/' + build_env['SYSTEM'] + '/kernel -nographic -s -S -d int,cpu_reset')
+env.Targets(qemu_debugs = qemu_args + '-nographic -s -S -d int,cpu_reset')
 
-env.AutoTester(qemu_test = build_env['QEMUCMD'] + ' -kernel ' + build_env['BUILDROOT'] +
-                           '/kernel/arm/' + build_env['SYSTEM'] + '/kernel -nographic')
+env.AutoTester(qemu_test = qemu_args + '-nographic')
 
-env.AutoTesterLoop(qemu_loop = build_env['QEMUCMD'] + ' -kernel ' + build_env['BUILDROOT'] +
-                               '/kernel/arm/' + build_env['SYSTEM'] + '/kernel -nographic')
+env.AutoTesterLoop(qemu_loop = qemu_args + '-nographic')

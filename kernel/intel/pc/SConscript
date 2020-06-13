@@ -44,16 +44,20 @@ cd = env.ISO('#${BUILDROOT}/boot.iso',
 # Shortcut to build the ISO.
 Alias('iso', cd)
 
+# First part of the Qemu command arguments
+qemu_args = build_env['QEMUCMD'] + ' -cdrom ' + build_env['BUILDROOT'] + '/boot.iso ' + \
+            '-chardev socket,id=charmonitor,path=monitor.dev,server,nowait -monitor chardev:charmonitor '
+
 #
 # Qemu targets
 #
-env.Targets(qemu        = build_env['QEMUCMD'] + ' -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -nographic')
-env.Targets(qemu_sdl    = build_env['QEMUCMD'] + ' -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -sdl')
-env.Targets(qemu_curses = build_env['QEMUCMD'] + ' -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -curses')
-env.Targets(qemu_debug  = build_env['QEMUCMD'] + ' -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -nographic -s -S')
+env.Targets(qemu        = qemu_args + '-nographic')
+env.Targets(qemu_sdl    = qemu_args + '-sdl')
+env.Targets(qemu_curses = qemu_args + '-curses')
+env.Targets(qemu_debug  = qemu_args + '-nographic -s -S')
 
 #
 # Autotester in Qemu
 #
-env.AutoTester(qemu_test = build_env['QEMUCMD'] + ' -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -nographic')
-env.AutoTesterLoop(qemu_loop = build_env['QEMUCMD'] + ' -cdrom ' + build_env['BUILDROOT'] + '/boot.iso -nographic')
+env.AutoTester(qemu_test = qemu_args + '-nographic')
+env.AutoTesterLoop(qemu_loop = qemu_args + '-nographic')
