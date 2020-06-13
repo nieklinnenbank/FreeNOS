@@ -10,31 +10,32 @@ Visit the project website at http://www.FreeNOS.org for more information.
 Features
 ========
 
-* Intel x86 (PC) and ARMv6/ARMv7 architectures (Raspberry Pi 1,2,3 and Orange Pi Zero/PC)
+* Intel x86 (PC) and ARMv6/ARMv7 architectures (Raspberry Pi 1,2,3, Allwinner H2+/H3)
 * Virtual memory
 * Simple task scheduling
 * Inter Process Communication (IPC)
-* Symmetric Multi Processing with MPI support (Intel x86 only)
+* Symmetric Multi Processing with MPI support
 * Devices:
-    * VGA/Keyboard consoles
+    * VGA/Keyboard consoles (also supported by Ed's libteken http://80386.nl/projects/libteken/)
     * i8250 serial UART
     * PCI host controller
     * CMOS RTC clock
     * ATA host controller
-    * USB controller and roothub (Raspberry Pi 1 only)
-    * Loopback network and SMSC95xx ethernet (Raspberry Pi 1 only)
+    * USB controller and (root)hub (Raspberry Pi only)
+    * Loopback network and SMSC95xx ethernet (Raspberry Pi only)
 * Filesystems:
     * Virtual file system (VFS)
     * Temporary file system (TmpFS)
     * Linnenbank file system (LinnFS)
-* Networking (IP, UDP, ICMP, for Raspberry Pi 1 only)
+* Networking (IP, UDP, ICMP, for Raspberry pi 1 only)
 * POSIX, ANSI C libraries
 * Dynamic and Shared memory
 * Fully automatic autotester
-* All sources documented with Doxygen (http://www.doxygen.org)
+* Automated continuous integration using jenkins (http://www.jenkins.io) and Vagrant (http://www.vagrantup.com)
+* All sources documented with Doxygen (http://www.doxygen.org/)
 * User and kernel code written from scratch in C++
 * Very small microkernel (~2K lines of C++ code including a tiny part in assembly)
-* Builds with recent GCC (http://gcc.gnu.org), LLVM (http://www.llvm.org) and SCons (http://www.scons.org) versions on POSIX systems
+* Builds with recent GCC (http://gcc.gnu.org/), LLVM (http://www.llvm.org/) and SCons (http://www.scons.org/) versions on POSIX systems
 
 Host Setup
 ==========
