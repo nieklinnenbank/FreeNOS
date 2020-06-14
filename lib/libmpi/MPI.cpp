@@ -74,6 +74,7 @@ int MPI_Init(int *argc, char ***argv)
             return MPI_ERR_BAD_FILE;
         }
         programBuffer = new u8[st.st_size];
+        assert(programBuffer != NULL);
         MemoryBlock::set(programBuffer, 0, st.st_size);
 
         // Read ELF program
@@ -119,6 +120,7 @@ int MPI_Init(int *argc, char ***argv)
         for (Size i = 1; i < coreCount; i++)
         {
             char *cmd = new char[MPI_PROG_CMDLEN];
+            assert(cmd != NULL);
             snprintf(cmd, MPI_PROG_CMDLEN, "%s -a %x -c %d",
                      programPath, memChannelBase.phys, coreCount);
 
@@ -181,12 +183,15 @@ int MPI_Init(int *argc, char ***argv)
 
     // Create MemoryChannels
     readChannel  = new Index<MemoryChannel>(coreCount);
+    assert(readChannel != NULL);
     writeChannel = new Index<MemoryChannel>(coreCount);
+    assert(writeChannel != NULL);
 
     // Fill read channels
     for (Size i = 0; i < coreCount; i++)
     {
         MemoryChannel *ch = new MemoryChannel();
+        assert(ch != NULL);
         ch->setMode(MemoryChannel::Consumer);
         ch->setMessageSize(sizeof(MPIMessage));
         ch->setPhysical(MEMBASE(info.coreId) + (PAGESIZE * 2 * i),
@@ -206,6 +211,7 @@ int MPI_Init(int *argc, char ***argv)
     for (Size i = 0; i < coreCount; i++)
     {
         MemoryChannel *ch = new MemoryChannel();
+        assert(ch != NULL);
         ch->setMode(MemoryChannel::Producer);
         ch->setMessageSize(sizeof(MPIMessage));
         ch->setPhysical(MEMBASE(i) + (PAGESIZE * 2 * info.coreId),
