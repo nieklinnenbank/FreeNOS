@@ -121,7 +121,7 @@ NetCat::Result NetCat::exec()
 
 NetCat::Result NetCat::printLine()
 {
-    printf("%s\n", m_lineBuf);
+    printf("%s\r\n", m_lineBuf);
     m_lineBuf[0] = 0;
     m_lineLen = 0;
     return Success;

@@ -81,7 +81,7 @@ NetReceive::Result NetReceive::receiveArp()
 
         if (be16_to_cpu(ether->type) == Ethernet::ARP)
         {
-            printf("ARP: hw=%u proto=%u hwlen=%u protolen=%u op=%u\n",
+            printf("ARP: hw=%u proto=%u hwlen=%u protolen=%u op=%u\r\n",
                     be16_to_cpu(arp->hardwareType),
                     be16_to_cpu(arp->protocolType),
                     arp->hardwareLength,
@@ -96,13 +96,13 @@ NetReceive::Result NetReceive::receiveArp()
             for (int i = 1; i < 6; i++)
                 printf(":%x", arp->etherTarget.addr[i]);
             
-            printf("\n");
+            printf("\r\n");
 
-            printf("ARP: ip src=%x ip dst=%x\n", be32_to_cpu(arp->ipSender), be32_to_cpu(arp->ipTarget));
+            printf("ARP: ip src=%x ip dst=%x\r\n", be32_to_cpu(arp->ipSender), be32_to_cpu(arp->ipTarget));
             return Success;
         }
         else
-            printf("skipped (not ARP, type %x)\n", be16_to_cpu(ether->type));
+            printf("skipped (not ARP, type %x)\r\n", be16_to_cpu(ether->type));
     }
     return Success;
 }
@@ -119,22 +119,22 @@ NetReceive::Result NetReceive::receivePacket(u8 *packet, Size size)
 
     if (fd < 0)
     {
-        printf("failed to open device '%s': %s\n", device, strerror(errno));
+        printf("failed to open device '%s': %s\r\n", device, strerror(errno));
         exit(EXIT_FAILURE);
     }
-    printf("receiving on device: %s\n", device);
+    printf("receiving on device: %s\r\n", device);
 
     if ((result = read(fd, packet, size)) <= 0)
     {
-        printf("failed to receive packet on device '%s': %s\n",
+        printf("failed to receive packet on device '%s': %s\r\n",
                 device, strerror(errno));
         return IOError;
     }
-    printf("received %d bytes\n", result);
+    printf("received %d bytes\r\n", result);
 
     for (int i = 0; i < result; i++)
         printf("%x ", packet[i]);
-    printf("\n");
+    printf("\r\n");
 
     // Done
     close(fd);

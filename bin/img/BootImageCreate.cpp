@@ -64,7 +64,7 @@ Size BootImageCreate::readBootSymbols(const char *conf_file,
     // Open configuration file
     if ((fp = fopen(conf_file, "r")) == NULL)
     {
-        fprintf(stderr, "%s: failed to open `%s': %s\n",
+        fprintf(stderr, "%s: failed to open `%s': %s\r\n",
                 prog, conf_file, strerror(errno));
         exit(EXIT_FAILURE);
     }
@@ -90,7 +90,7 @@ Size BootImageCreate::readBootSymbols(const char *conf_file,
             entry->symbol.type = BootData;
             symbolname = line + 9;
         } else {
-            fprintf(stderr, "%s: symbol type unknown in line: %s\n",
+            fprintf(stderr, "%s: symbol type unknown in line: %s\r\n",
                     prog, line);
             exit(EXIT_FAILURE);
         }
@@ -112,7 +112,7 @@ Size BootImageCreate::readBootSymbols(const char *conf_file,
         struct stat st;
         if (stat(symbolname, &st) == -1)
         {
-            fprintf(stderr, "%s: failed to stat `%s': %s\n",
+            fprintf(stderr, "%s: failed to stat `%s': %s\r\n",
                     prog, symbolname, strerror(errno));
             exit(EXIT_FAILURE);
         }
@@ -123,13 +123,13 @@ Size BootImageCreate::readBootSymbols(const char *conf_file,
         FILE *entry_fd = fopen(symbolname, "r");
         if (!entry_fd)
         {
-            fprintf(stderr, "%s: failed to open `%s': %s\n",
+            fprintf(stderr, "%s: failed to open `%s': %s\r\n",
                     prog, symbolname, strerror(errno));
             exit(EXIT_FAILURE);
         }
         if (fread(buffer, st.st_size, 1, entry_fd) != 1)
         {
-            fprintf(stderr, "%s: failed to fread `%s': %s\n",
+            fprintf(stderr, "%s: failed to fread `%s': %s\r\n",
                     prog, symbolname, strerror(errno));
             exit(EXIT_FAILURE);
         }
@@ -140,14 +140,14 @@ Size BootImageCreate::readBootSymbols(const char *conf_file,
         {
             if (ExecutableFormat::find(buffer, st.st_size, &format) != ExecutableFormat::Success)
             {
-                fprintf(stderr, "%s: failed to parse executable image format in `%s': %s\n",
+                fprintf(stderr, "%s: failed to parse executable image format in `%s': %s\r\n",
                             prog, symbolname, strerror(errno));
                 exit(EXIT_FAILURE);
             }
             // Extract memory regions
             if (format->regions(entry->regions, &num) != ExecutableFormat::Success || num <= 0)
             {
-                fprintf(stderr, "%s: failed to extract memory regions from `%s': %s\n",
+                fprintf(stderr, "%s: failed to extract memory regions from `%s': %s\r\n",
                             prog, symbolname, strerror(errno));
                 exit(EXIT_FAILURE);
             }
@@ -166,7 +166,7 @@ Size BootImageCreate::readBootSymbols(const char *conf_file,
             entry->regions[0].size = st.st_size;
             entry->regions[0].data = buffer;
         } else {
-            fprintf(stderr, "%s: unknown boot symbol type: %d\n",
+            fprintf(stderr, "%s: unknown boot symbol type: %d\r\n",
                     prog, (uint) entry->symbol.type);
             exit(EXIT_FAILURE);
         }
@@ -177,7 +177,7 @@ Size BootImageCreate::readBootSymbols(const char *conf_file,
         // Debug out memory sections
         for (Size i = 0; i < entry->numRegions; i++)
         {
-            printf("%s[%u]: vaddr=%x size=%u\n",
+            printf("%s[%u]: vaddr=%x size=%u\r\n",
                     symbolname, i, (uint) entry->regions[i].virt,
                     entry->regions[i].size);
             totalBytes += entry->regions[i].size;
@@ -187,7 +187,7 @@ Size BootImageCreate::readBootSymbols(const char *conf_file,
     fclose(fp);
 
     // All done
-    printf("%d entries, %d bytes total\n", totalEntries, totalBytes);
+    printf("%d entries, %d bytes total\r\n", totalEntries, totalBytes);
     return totalEntries;
 }
 
@@ -208,7 +208,7 @@ BootImageCreate::Result BootImageCreate::exec()
     // Read boot symbols
     if (readBootSymbols(conf_file, prefix, &input) == 0)
     {
-        fprintf(stderr, "%s: failed to read boot symbols\n", prog);
+        fprintf(stderr, "%s: failed to read boot symbols\r\n", prog);
         return IOError;
     }
 
@@ -276,7 +276,7 @@ BootImageCreate::Result BootImageCreate::exec()
     // Open boot image for writing
     if ((fp = fopen(out_file, "w")) == NULL)
     {
-        fprintf(stderr, "%s: failed to open `%s': %s\n",
+        fprintf(stderr, "%s: failed to open `%s': %s\r\n",
                 prog, out_file, strerror(errno));
         return IOError;
     }
@@ -286,7 +286,7 @@ BootImageCreate::Result BootImageCreate::exec()
         fwrite( symbols,  sizeof(BootSymbol)  * input.count(),  1, fp) <= 0 ||
         fwrite( segments, sizeof(BootSegment) * numSegments, 1, fp) <= 0)
     {
-        fprintf(stderr, "%s: failed to write BootImage headers to `%s': %s\n",
+        fprintf(stderr, "%s: failed to write BootImage headers to `%s': %s\r\n",
                 prog, out_file, strerror(errno));
         return IOError;
     }
@@ -301,7 +301,7 @@ BootImageCreate::Result BootImageCreate::exec()
             if (fseek(fp, segments[symbols[i].segmentsOffset].offset,
                       SEEK_SET) == -1)
             {
-                fprintf(stderr, "%s: failed to seek to BootSegment contents in `%s': %s\n",
+                fprintf(stderr, "%s: failed to seek to BootSegment contents in `%s': %s\r\n",
                         prog, out_file, strerror(errno));
                 return IOError;
             }
@@ -310,7 +310,7 @@ BootImageCreate::Result BootImageCreate::exec()
             if (fwrite(input[i]->regions[j].data,
                        input[i]->regions[j].size, 1, fp) <= 0)
             {
-                fprintf(stderr, "%s: failed to write BootSegment contents to `%s': %s\n",
+                fprintf(stderr, "%s: failed to write BootSegment contents to `%s': %s\r\n",
                         prog, out_file, strerror(errno));
                 return IOError;
             }

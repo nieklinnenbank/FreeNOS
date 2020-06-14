@@ -112,18 +112,18 @@ NetSend::Result NetSend::arpRequest(IPV4::Address ipAddr,
     int fd = open(device, O_RDWR);
     if (fd < 0)
     {
-        printf("failed to open device '%s': %s\n", device, strerror(errno));
+        printf("failed to open device '%s': %s\r\n", device, strerror(errno));
         exit(EXIT_FAILURE);
     }
-    printf("sending on device: %s\n", device);
+    printf("sending on device: %s\r\n", device);
     Error r = write(fd, packet, sizeof(packet));
     if (r < 0)
     {
-        printf("failed to send packet on device '%s': %s\n",
+        printf("failed to send packet on device '%s': %s\r\n",
                 device, strerror(errno));
         exit(EXIT_FAILURE);
     }
-    printf("send %d bytes\n", r);
+    printf("send %d bytes\r\n", r);
 #endif
     // Done
     return Success;

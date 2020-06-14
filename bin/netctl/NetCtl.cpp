@@ -106,6 +106,6 @@ NetCtl::Result NetCtl::showDevice(const char *deviceName)
         close(fd);
     }
 
-    printf("%s\n", *out);
+    printf("%s\r\n", *out);
     return Success;
 }
