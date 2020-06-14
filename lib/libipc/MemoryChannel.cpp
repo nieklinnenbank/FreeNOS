@@ -49,11 +49,19 @@ MemoryChannel::Result MemoryChannel::setVirtual(Address data, Address feedback)
 
 MemoryChannel::Result MemoryChannel::setPhysical(Address data, Address feedback)
 {
-    if (m_data.map(data, PAGESIZE) != IO::Success)
+    IO::Result result = m_data.map(data, PAGESIZE);
+    if (result != IO::Success)
+    {
+        ERROR("failed to map data physical address " << (void*)data << ": " << (int)result);
         return IOError;
+    }
 
-    if (m_feedback.map(feedback, PAGESIZE) != IO::Success)
+    result = m_feedback.map(feedback, PAGESIZE);
+    if (result != IO::Success)
+    {
+        ERROR("failed to map feedback physical address " << (void*)feedback << ": " << (int)result);
         return IOError;
+    }
 
     return Success;
 }
