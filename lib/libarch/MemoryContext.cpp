@@ -39,7 +39,7 @@ MemoryContext * MemoryContext::getCurrent()
 MemoryContext::Result MemoryContext::mapRange(Memory::Range *range)
 {
     Result r = Success;
-    Allocator::Arguments alloc_args;
+    Allocator::Range alloc_args;
 
     // Allocate physical pages, if needed.
     if (!range->phys)

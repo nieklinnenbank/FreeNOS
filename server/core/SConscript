@@ -19,5 +19,16 @@ Import('build_env')
 
 env = build_env.Clone()
 env.UseServers(['log', 'core', 'filesystem'])
-env.UseLibraries(['libposix', 'liballoc', 'libexec', 'libstd', 'libarch', 'libipc', 'libfs' ])
-env.TargetProgram('server', [ Glob('*.cpp') ])
+env.UseLibraries(['libposix', 'liballoc', 'libexec', 'libstd',
+                  'libarch', 'libipc', 'libfs', 'librt', 'libapp' ])
+
+src = [ 'Main.cpp', 'CoreServer.cpp' ]
+
+if env['ARCH'] == 'intel':
+    src += [ 'IntelCoreServer.cpp' ]
+elif env['ARCH'] == 'arm' and env['SYSTEM'].startswith('sunxi'):
+    src += [ 'SunxiCoreServer.cpp' ]
+else:
+    src += [ 'SingleCoreServer.cpp' ]
+
+env.TargetProgram('server', src)

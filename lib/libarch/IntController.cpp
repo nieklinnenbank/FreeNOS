@@ -36,3 +36,8 @@ bool IntController::isTriggered(uint irq)
 {
     return false;
 }
+
+IntController::Result IntController::send(const uint targetCoreId, const uint irq)
+{
+    return IOError;
+}

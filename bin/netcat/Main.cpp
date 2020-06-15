@@ -16,12 +16,10 @@
  */
 
 #include <Log.h>
-#include <StdioLog.h>
 #include "NetCat.h"
 
 int main(int argc, char **argv)
 {
-    StdioLog log;
     NetCat app(argc, argv);
     return app.run();
 }

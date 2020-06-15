@@ -23,5 +23,5 @@ env.UseLibraries(['libstd', 'libfs' ], 'host')
 env.HostProgram('create', [ 'LinnCreate.cpp' ])
 env.HostProgram('dump', [ 'LinnDump.cpp' ])
 
-env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libarch', 'libexec', 'libfs', 'libipc' ])
+env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libarch', 'libexec', 'libfs', 'libipc', 'librt' ])
 env.TargetProgram('server', [ 'LinnDirectory.cpp', 'LinnFile.cpp', 'LinnFileSystem.cpp' ])

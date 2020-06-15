@@ -18,6 +18,7 @@
 #ifndef __LIB_LIBFS_DEVICE_H
 #define __LIB_LIBFS_DEVICE_H
 
+#include <String.h>
 #include "File.h"
 
 /**

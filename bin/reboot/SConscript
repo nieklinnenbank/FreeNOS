@@ -18,5 +18,5 @@
 Import('build_env')
 
 env = build_env.Clone()
-env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libexec', 'libarch', 'libipc' ])
+env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libexec', 'libarch', 'libipc', 'librt' ])
 env.TargetProgram('reboot', 'Main.cpp', env['bin'])

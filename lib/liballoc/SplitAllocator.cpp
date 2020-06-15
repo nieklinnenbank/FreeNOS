@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -15,83 +15,66 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
 #include "SplitAllocator.h"
 
-SplitAllocator::SplitAllocator(Memory::Range low, Memory::Range high)
-    : Allocator()
-    , m_low(low)
-    , m_high(high)
+SplitAllocator::SplitAllocator(const Allocator::Range physRange,
+                               const Allocator::Range virtRange,
+                               const Size pageSize)
+    : Allocator(physRange)
+    , m_alloc(physRange, pageSize)
+    , m_virtRange(virtRange)
+    , m_pageSize(pageSize)
 {
-    Memory::Range mem = low;
-    mem.size += high.size;
-
-    m_alloc = new BitAllocator(mem, PAGESIZE);
-}
-
-SplitAllocator::~SplitAllocator()
-{
-    delete m_alloc;
-}
-
-Size SplitAllocator::size() const
-{
-    return m_alloc->size();
 }
 
 Size SplitAllocator::available() const
 {
-    return m_alloc->available();
+    return m_alloc.available();
 }
 
-Allocator::Result SplitAllocator::allocate(Allocator::Arguments & args)
+Allocator::Result SplitAllocator::allocate(Allocator::Range & args)
 {
-    Allocator::Result r;
-
-    if ((r = allocateLow(args)) == Success)
-        return r;
-    else
-        return allocateHigh(args);
+    return m_alloc.allocate(args, 0);
 }
 
-Allocator::Result SplitAllocator::allocate(Address addr)
+Allocator::Result SplitAllocator::allocate(Allocator::Range & phys,
+                                           Allocator::Range & virt)
 {
-    return m_alloc->allocate(addr);
+    Result r = m_alloc.allocate(phys, 0);
+
+    if (r == Success)
+    {
+        virt.address   = toVirtual(phys.address);
+        virt.size      = phys.size;
+        virt.alignment = phys.alignment;
+    }
+
+    return r;
 }
 
-Allocator::Result SplitAllocator::allocateLow(Allocator::Arguments & args)
+Allocator::Result SplitAllocator::allocate(const Address addr)
 {
-    return m_alloc->allocate(args, 0);
+    return m_alloc.allocate(addr);
 }
 
-Allocator::Result SplitAllocator::allocateHigh(Allocator::Arguments & args)
+Allocator::Result SplitAllocator::release(const Address addr)
 {
-    return m_alloc->allocate(args, m_high.phys - m_alloc->base());
+    return m_alloc.release(addr);
 }
 
-Allocator::Result SplitAllocator::release(Address addr)
+Address SplitAllocator::toVirtual(const Address phys) const
 {
-    return m_alloc->release(addr);
+    const Size mappingDiff = base() - m_virtRange.address;
+    return phys - mappingDiff;
 }
 
-#ifdef ARM
-void * SplitAllocator::toVirtual(Address phys) const
+Address SplitAllocator::toPhysical(const Address virt) const
 {
-    return (void *)phys;
+    const Size mappingDiff = base() - m_virtRange.address;
+    return virt + mappingDiff;
 }
 
-void * SplitAllocator::toPhysical(Address virt) const
+bool SplitAllocator::isAllocated(const Address page) const
 {
-    return (void *)virt;
+    return m_alloc.isAllocated(page);
 }
-#else
-void * SplitAllocator::toVirtual(Address phys) const
-{
-    return (void *) (phys - m_low.phys);
-}
-
-void * SplitAllocator::toPhysical(Address virt) const
-{
-    return (void *) (virt + m_low.phys);
-}
-#endif /* ARM */

@@ -19,6 +19,7 @@
 #include <SplitAllocator.h>
 #include <MemoryBlock.h>
 #include <Log.h>
+#include "CoreInfo.h"
 #include "ARMCore.h"
 #include "ARMControl.h"
 #include "ARMPaging.h"
@@ -27,36 +28,16 @@
 ARMPaging::ARMPaging(MemoryMap *map, SplitAllocator *alloc)
     : MemoryContext(map, alloc)
 {
-    Allocator::Arguments alloc_args;
-    alloc_args.address = 0;
-    alloc_args.size = sizeof(ARMFirstTable);
-    alloc_args.alignment = sizeof(ARMFirstTable);
+    Allocator::Range phys, virt;
+    phys.address = 0;
+    phys.size = sizeof(ARMFirstTable);
+    phys.alignment = sizeof(ARMFirstTable);
 
-    // Allocate page directory from low physical memory.
-    if (alloc->allocateLow(alloc_args) == Allocator::Success)
+    // Allocate page directory
+    if (alloc->allocate(phys, virt) == Allocator::Success)
     {
-        m_firstTableAddr = alloc_args.address;
-        m_firstTable = (ARMFirstTable *) alloc->toVirtual(m_firstTableAddr);
-
-        // Initialize the page directory
-        MemoryBlock::set(m_firstTable, 0, sizeof(ARMFirstTable));
-
-        // Map the kernel. The kernel has permanently mapped 1GB of
-        // physical memory (i.e. the "low memory" in SplitAllocator). The low
-        // memory starts at its physical base address offset (varies per core).
-        m_firstTable->mapLarge( m_map->range(MemoryMap::KernelData), m_alloc );
-
-        // Unmap I/O zone
-        for (Size i = 0; i < IO_SIZE; i += MegaByte(1))
-            m_firstTable->unmap(IO_BASE + i, m_alloc);
-
-        // Map the I/O zone as Device / Uncached memory.
-        Memory::Range io;
-        io.phys = IO_BASE;
-        io.virt = IO_BASE;
-        io.size = IO_SIZE;
-        io.access = Memory::Readable | Memory::Writable | Memory::Device;
-        m_firstTable->mapLarge(io, m_alloc);
+        m_firstTable = (ARMFirstTable *) virt.address;
+        setupFirstTable(map, phys.address, coreInfo.kernel.phys);
     }
 }
 
@@ -64,6 +45,56 @@ ARMPaging::~ARMPaging()
 {
     for (Size i = 0; i < sizeof(ARMFirstTable); i += PAGESIZE)
         m_alloc->release(m_firstTableAddr + i);
+}
+
+ARMPaging::ARMPaging(MemoryMap *map,
+                     Address firstTableAddress,
+                     Address kernelBaseAddress)
+    : MemoryContext(map, ZERO)
+{
+    m_firstTable = (ARMFirstTable *) firstTableAddress;
+    setupFirstTable(map, firstTableAddress, kernelBaseAddress);
+}
+
+void ARMPaging::setupFirstTable(MemoryMap *map,
+                                Address firstTableAddress,
+                                Address kernelBaseAddress)
+{
+    m_firstTableAddr = firstTableAddress;
+
+    // Initialize the page directory
+    MemoryBlock::set(m_firstTable, 0, sizeof(ARMFirstTable));
+
+    // Map the kernel. The kernel has permanently mapped 1GB of
+    // physical memory. This 1GiB memory region starts at its physical
+    // base address offset which varies per core.
+    Memory::Range kernelRange = m_map->range(MemoryMap::KernelData);
+    kernelRange.phys = kernelBaseAddress;
+    m_firstTable->mapLarge(kernelRange, m_alloc);
+
+#ifndef BCM2835
+    // Temporary stack is used for kernel initialization code
+    // and for SMP the temporary stack is shared between cores.
+    // This is needed in order to perform early-MMU enable.
+    m_firstTable->unmap(TMPSTACKADDR, m_alloc);
+
+    const Memory::Range tmpStackRange = {
+        TMPSTACKADDR, TMPSTACKADDR, MegaByte(1), Memory::Readable|Memory::Writable
+    };
+    m_firstTable->mapLarge(tmpStackRange, m_alloc);
+#endif /* BCM2835 */
+
+    // Unmap I/O zone
+    for (Size i = 0; i < IO_SIZE; i += MegaByte(1))
+        m_firstTable->unmap(IO_BASE + i, m_alloc);
+
+    // Map the I/O zone as Device / Uncached memory.
+    Memory::Range io;
+    io.phys = IO_BASE;
+    io.virt = IO_BASE;
+    io.size = IO_SIZE;
+    io.access = Memory::Readable | Memory::Writable | Memory::Device;
+    m_firstTable->mapLarge(io, m_alloc);
 }
 
 #ifdef ARMV6
@@ -93,7 +124,6 @@ MemoryContext::Result ARMPaging::enableMMU()
 
     // Enable the MMU. This re-enables instruction and data cache too.
     ctrl.set(ARMControl::MMUEnabled);
-    NOTICE("MMUEnabled = " << (ctrl.read(ARMControl::SystemControl) & ARMControl::MMUEnabled));
     tlb_flush_all();
 
     // Reactivate both caches and branch prediction
@@ -103,6 +133,7 @@ MemoryContext::Result ARMPaging::enableMMU()
 
     return Success;
 }
+
 #elif defined(ARMV7)
 
 MemoryContext::Result ARMPaging::enableMMU()
@@ -140,8 +171,6 @@ MemoryContext::Result ARMPaging::enableMMU()
     ctrl.write(ARMControl::SystemControl, nControl);
     isb();
 
-    NOTICE("MMUEnabled = " << (ctrl.read(ARMControl::SystemControl) & ARMControl::MMUEnabled));
-
     // Need to enable alignment faults separately of the MMU,
     // otherwise QEMU will hard reset the CPU
     ctrl.set(ARMControl::AlignmentFaults);
@@ -154,12 +183,12 @@ MemoryContext::Result ARMPaging::enableMMU()
 }
 #endif /* ARMV7 */
 
-MemoryContext::Result ARMPaging::activate()
+MemoryContext::Result ARMPaging::activate(bool initializeMMU)
 {
     ARMControl ctrl;
 
     // Do we need to (re)enable the MMU?
-    if (!(ctrl.read(ARMControl::SystemControl) & ARMControl::MMUEnabled))
+    if (initializeMMU)
     {
         enableMMU();
     }

@@ -17,6 +17,7 @@
 
 #include <FreeNOS/System.h>
 #include <FreeNOS/ProcessEvent.h>
+#include <FreeNOS/ProcessManager.h>
 #include <MemoryBlock.h>
 #include "VMShare.h"
 #include "ProcessID.h"

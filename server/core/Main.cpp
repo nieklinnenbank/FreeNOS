@@ -15,38 +15,40 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <Factory.h>
 #include <KernelLog.h>
 #include <StdioLog.h>
+#include <Runtime.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include "CoreServer.h"
 
 int main(int argc, char **argv)
 {
-#if defined(INTEL) && defined(STDIO_LOGGING)
-    StdioLog log;
+    KernelLog log;
     SystemInformation info;
+    const char *consolePath = "/dev/serial/serial0/io";
+    const char *consoleMount = "/dev/serial";
 
-    // Is this the master core?
+    log.setMinimumLogLevel(Log::Notice);
+
+    // On the master core, wait for the serial device driver and re-open I/O
     if (info.coreId == 0)
     {
         close(0);
         close(1);
         close(2);
+        waitMount(consoleMount);
 
-        while (open("/console/tty0", O_RDWR) == -1);
-        open("/console/tty0", O_RDWR);
-        open("/console/tty0", O_RDWR);
+        while (open(consolePath, O_RDWR) == -1);
+        open(consolePath, O_RDWR);
+        open(consolePath, O_RDWR);
+
+        NOTICE("initializing on core0");
     }
-#else
-    KernelLog log;
-#endif
 
-    log.setMinimumLogLevel(Log::Notice);
-    NOTICE("initializing on core0");
-
-    CoreServer server;
-    server.initialize();
-    server.test();
-    return server.runCore();
+    CoreServer* server = CoreServer::create();
+    server->initialize();
+    server->test();
+    return server->runCore();
 }

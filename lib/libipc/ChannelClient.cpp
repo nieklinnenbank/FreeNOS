@@ -162,7 +162,9 @@ ChannelClient::Result ChannelClient::sendRequest(ProcessID pid,
     if (!req || req->active)
     {
         req = new Request;
+        assert(req != NULL);
         req->message = (ChannelMessage *) new u8[ch->getMessageSize()];
+        assert(req->message != NULL);
         identifier   = m_requests.insert(*req);
     }
     // Fill request object

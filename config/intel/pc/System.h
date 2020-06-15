@@ -22,6 +22,8 @@
 #define PC
 #define __SYSTEM
 
+#define RAM_ADDR (0x0)
+
 #include <intel/IntelConstant.h>
 
 #ifndef __HOST__

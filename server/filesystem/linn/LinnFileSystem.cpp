@@ -16,6 +16,7 @@
  */
 
 #include <Types.h>
+#include <Assert.h>
 #include <KernelLog.h>
 #include <FileStorage.h>
 #include <BootImageStorage.h>
@@ -43,11 +44,13 @@ int main(int argc, char **argv)
     {
         NOTICE("file storage: " << argv[1] << " at offset " << atoi(argv[2]));
         storage    = new FileStorage(argv[1], atoi(argv[2]));
+        assert(storage != NULL);
         path       = argv[3];
     }
     else
     {
         BootImageStorage *bm = new BootImageStorage(LINNFS_ROOTFS_FILE);
+        assert(bm != NULL);
         if (bm->load())
         {
             NOTICE("boot image: " << LINNFS_ROOTFS_FILE);
@@ -90,6 +93,7 @@ LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
     }
     // Create groups vector.
     groups = new Vector<LinnGroup *>(LINN_GROUP_COUNT(&super));
+    assert(groups != NULL);
     groups->fill(ZERO);
 
     // Read out group descriptors.
@@ -97,6 +101,7 @@ LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
     {
         // Allocate buffer.
         group  = new LinnGroup;
+        assert(group != NULL);
         offset = (super.groupsTable * super.blockSize) +
                  (sizeof(LinnGroup)  * i);
 
@@ -117,7 +122,9 @@ LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
 
     // Read out the root directory.
     rootInode = getInode(LINN_INODE_ROOT);
-    setRoot(new LinnDirectory(this, rootInode));
+    LinnDirectory *dir = new LinnDirectory(this, rootInode);
+    assert(dir != NULL);
+    setRoot(dir);
 
     // Filesystem writes are not supported
     addIPCHandler(CreateFile, (IPCHandlerFunction) &LinnFileSystem::notSupportedHandler, false);
@@ -152,6 +159,7 @@ LinnInode * LinnFileSystem::getInode(u32 inodeNum)
     }
     // Allocate inode buffer.
     inode  = new LinnInode;
+    assert(inode != NULL);
     offset = (group->inodeTable * super.blockSize) +
                 ((inodeNum % super.inodesPerGroup) * sizeof(LinnInode));
 
@@ -180,8 +188,10 @@ LinnGroup * LinnFileSystem::getGroupByInode(u32 inodeNum)
 u64 LinnFileSystem::getOffset(LinnInode *inode, u32 blk)
 {
     u64 numPerBlock = LINN_SUPER_NUM_PTRS(&super), offset;
-    u32 *block = ZERO;
+    static u32 block[LINN_MAX_BLOCK_SIZE / sizeof(u32)];
     Size depth = ZERO, remain = 1;
+
+    assert(LINN_SUPER_NUM_PTRS(&super) <= sizeof(block) / sizeof(u32));
 
     // Direct blocks.
     if (blk < LINN_INODE_DIR_BLOCKS)
@@ -203,7 +213,6 @@ u64 LinnFileSystem::getOffset(LinnInode *inode, u32 blk)
         depth = 3;
 
     // Allocate temporary block.
-    block   = new u32[LINN_SUPER_NUM_PTRS(&super)];
     offset  = inode->block[(LINN_INODE_DIR_BLOCKS + depth - 1)];
     offset *= super.blockSize;
 
@@ -213,7 +222,6 @@ u64 LinnFileSystem::getOffset(LinnInode *inode, u32 blk)
         // Fetch block.
         if (storage->read(offset, block, super.blockSize) < 0)
         {
-            delete block;
             return 0;
         }
         // Calculate the number of blocks remaining per entry.
@@ -238,7 +246,6 @@ u64 LinnFileSystem::getOffset(LinnInode *inode, u32 blk)
     offset *= super.blockSize;
 
     // All done.
-    delete block;
     return offset;
 }
 

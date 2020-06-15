@@ -40,7 +40,7 @@ TestCase(HashIteratorCurrent)
     HashTable<String, int> h;
     TestChar<char *> strings(8, 32);
     TestInt<int> ints(INT_MIN, INT_MAX);
-    TestInt<Size> sizes(32, 128);
+    TestInt<Size> sizes(32, 64);
     Size size = sizes.random();
     List<String> keys;
 
@@ -88,7 +88,7 @@ TestCase(HashIteratorNext)
     HashTable<String, int> h;
     TestChar<char *> strings(8, 32);
     TestInt<int> ints(INT_MIN, INT_MAX);
-    TestInt<Size> sizes(32, 128);
+    TestInt<Size> sizes(32, 64);
     Size size = sizes.random();
     List<String> keys;
     
@@ -129,7 +129,7 @@ TestCase(HashIteratorRemoveFirst)
     HashTable<String, int> h;
     TestChar<char *> strings(8, 32);
     TestInt<int> ints(INT_MIN, INT_MAX);
-    TestInt<Size> sizes(32, 128);
+    TestInt<Size> sizes(32, 64);
     Size size = sizes.random();
     List<String> keys;
     
@@ -178,7 +178,7 @@ TestCase(HashIteratorRemoveLast)
     HashTable<String, int> h;
     TestChar<char *> strings(8, 32);
     TestInt<int> ints(INT_MIN, INT_MAX);
-    TestInt<Size> sizes(32, 128);
+    TestInt<Size> sizes(32, 64);
     Size size = sizes.random();
     List<String> keys;
     
@@ -235,7 +235,7 @@ TestCase(HashIteratorRemoveSingle)
     HashTable<String, int> h;
     TestChar<char *> strings(8, 32);
     TestInt<int> ints(INT_MIN, INT_MAX);
-    TestInt<Size> sizes(32, 128);
+    TestInt<Size> sizes(32, 64);
     Size size = sizes.random();
     Size position = size/2;
     
@@ -289,7 +289,7 @@ TestCase(HashIteratorRemoveAll)
     HashTable<String, int> h;
     TestChar<char *> strings(8, 32);
     TestInt<int> ints(INT_MIN, INT_MAX);
-    TestInt<Size> sizes(32, 128);
+    TestInt<Size> sizes(32, 64);
     Size size = sizes.random();
     
     // Generate unique keys
@@ -322,9 +322,9 @@ TestCase(HashIteratorReset)
     HashTable<String, int> h;
     TestChar<char *> strings(8, 32);
     TestInt<int> ints(INT_MIN, INT_MAX);
-    TestInt<Size> sizes(32, 128);
+    TestInt<Size> sizes(32, 64);
     Size size = sizes.random();
-    Size rounds = sizes.random();
+    const Size rounds = 10;
 
     // Generate unique keys
     strings.unique(size);

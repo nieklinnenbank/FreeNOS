@@ -90,6 +90,7 @@ int forkexec(const char *path, const char *argv[])
         delete fmt;
         delete image;
         errno = ENOEXEC;
+        ProcessCtl(pid, KillPID);
         return -1;
     }
 
@@ -113,11 +114,18 @@ int forkexec(const char *path, const char *argv[])
         if (VMCtl(pid, Map, &range) != 0)
         {
             errno = EFAULT;
+            ProcessCtl(pid, KillPID);
             return -1;
         }
+
         // Copy bytes
-        VMCopy(pid, API::Write, (Address) regions[i].data,
-               regions[i].virt, regions[i].size);
+        if (VMCopy(pid, API::Write, (Address) regions[i].data,
+                   regions[i].virt, regions[i].size) < 0)
+        {
+            errno = EFAULT;
+            ProcessCtl(pid, KillPID);
+            return -1;
+        }
 
         // Release buffer
         delete regions[i].data;
@@ -127,7 +135,12 @@ int forkexec(const char *path, const char *argv[])
     range = map.range(MemoryMap::UserArgs);
     range.phys = ZERO;
     range.access = Memory::User | Memory::Readable | Memory::Writable;
-    VMCtl(pid, Map, &range);
+    if (VMCtl(pid, Map, &range) != API::Success)
+    {
+        errno = EFAULT;
+        ProcessCtl(pid, KillPID);
+        return -1;
+    }
 
     // Allocate arguments and current working directory
     char *arguments = new char[PAGESIZE*2];

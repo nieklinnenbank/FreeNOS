@@ -39,6 +39,9 @@ class ARMGenericInterrupt : public IntController
 {
   private:
 
+    /** Total number of software generated interrupts (SGI) */
+    static const Size NumberOfSoftwareInterrupts = 16;
+
     /**
      * Distributor register interface
      */
@@ -55,6 +58,8 @@ class ARMGenericInterrupt : public IntController
         GICD_IPRIORITYR = 0x0400,
         GICD_ITARGETSR  = 0x0800,
         GICD_ICFGR      = 0x0C00,
+        GICD_SGIR       = 0x0F00,
+        GICD_CPENDSGIR  = 0x0F10,
         GICD_ID2        = 0x0FE8
     };
 
@@ -90,7 +95,7 @@ class ARMGenericInterrupt : public IntController
 
     enum CpuIrqAckFlags
     {
-        CpuIrqAckMask = (0x3ff)
+        CpuIrqAckMask  = (0x3ff),
     };
 
   public:
@@ -103,6 +108,25 @@ class ARMGenericInterrupt : public IntController
      */
     ARMGenericInterrupt(Address distRegisterBase,
                         Address cpuRegisterBase);
+
+    /**
+     * Initialize the controller.
+     *
+     * @param performReset If true resets the controller with all IRQs disabled.
+     *
+     * @return Result code.
+     */
+    Result initialize(bool performReset = true);
+
+    /**
+     * Raise a software generated interrupt (SGI).
+     *
+     * @param targetCoreId Target processor that will receive the interrupt
+     * @param irq Interrupt number for the software interrupt
+     *
+     * @return Result code
+     */
+    virtual Result send(const uint targetCoreId, const uint irq);
 
     /**
      * Enable hardware interrupt (IRQ).
@@ -164,6 +188,13 @@ class ARMGenericInterrupt : public IntController
      */
     Size numRegisters(Size bits) const;
 
+    /**
+     * Check if the given IRQ is an SGI.
+     *
+     * @return True if the IRQ is a Software Generated Interrupt (SGI)
+     */
+    bool isSoftwareInterrupt(const uint irq) const;
+
   private:
 
     /** ARM Generic Interrupt Controller Distributor Interface */
@@ -174,6 +205,9 @@ class ARMGenericInterrupt : public IntController
 
     /** Number of interrupts supported */
     Size m_numIrqs;
+
+    /** Saved value of the Interrupt-Acknowledge register */
+    u32 m_savedIrqAck;
 };
 
 /**

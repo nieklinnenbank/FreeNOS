@@ -18,6 +18,5 @@
 Import('build_env')
 
 env = build_env.Clone()
-env.UseLibraries(['liballoc', 'libarch'])
 env.Append(CPPPATH = [ '.' ])
 env.Library('libstd', [ Glob('*.cpp') ])

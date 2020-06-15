@@ -177,7 +177,7 @@ class IntelACPI : public CoreManager
      *
      * @return Result code.
      */
-    Result initialize();
+    virtual Result initialize();
 
     /**
      * Discover processors.

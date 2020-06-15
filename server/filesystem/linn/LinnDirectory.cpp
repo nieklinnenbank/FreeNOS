@@ -16,6 +16,7 @@
  */
 
 #include <FreeNOS/System.h>
+#include <Assert.h>
 #include "LinnDirectory.h"
 #include "LinnFile.h"
 
@@ -96,11 +97,17 @@ File * LinnDirectory::lookup(const char *name)
     // Create the appropriate in-memory file.
     switch ((FileType)inode->type)
     {
-        case DirectoryFile:
-            return new LinnDirectory(fs, inode);
+        case DirectoryFile: {
+            LinnDirectory *dir = new LinnDirectory(fs, inode);
+            assert(dir != NULL);
+            return dir;
+        }
 
-        case RegularFile:
-            return new LinnFile(fs, inode);
+        case RegularFile: {
+            LinnFile *file = new LinnFile(fs, inode);
+            assert(file != NULL);
+            return file;
+        }
 
         default:
             return ZERO;

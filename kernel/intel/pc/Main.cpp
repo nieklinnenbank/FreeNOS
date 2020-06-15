@@ -24,19 +24,23 @@
 #include <Macros.h>
 #include <Log.h>
 
+extern Address __heap_start, __heap_end;
+
 extern C int kernel_main(CoreInfo *info)
 {
-    // Initialize heap at 3MB offset
-    coreInfo.heapAddress = MegaByte(3);
-    coreInfo.heapSize    = MegaByte(1);
+    // Initialize heap
+    coreInfo.heapAddress = (Address) &__heap_start;
+    coreInfo.heapSize    = (Size) ((Address) &__heap_end - (Address)&__heap_start);
     Kernel::heap(coreInfo.heapAddress, coreInfo.heapSize);
 
-    // Start kernel debug serial console
+    // Start serial console as the default output Log
+    IntelSerial *console = new IntelSerial(0x3f8);
+
+    // Only the boot core outputs notifications
     if (info->coreId == 0)
-    {
-        IntelSerial *serial = new IntelSerial(0x3f8);
-        serial->setMinimumLogLevel(Log::Notice);
-    }
+        console->setMinimumLogLevel(Log::Notice);
+    else
+        console->setMinimumLogLevel(Log::Warning);
 
     // Run all constructors first
     constructors();

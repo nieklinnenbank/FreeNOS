@@ -28,10 +28,21 @@
 
 #define __unused __attribute((unused))
 #include <sys/types.h>
-#include <Assert.h>
+#include <Config.h>
 #include <stdio.h>
 #include <string.h>
-#define	teken_assert(x)		assert(x)
+#include <unistd.h>
+
+#ifdef DEBUG
+#define teken_assert(x) \
+    if (!((x))) { \
+        printf("%s:%d *** assertion `%s' failed\n", __FILE__, __FUNC__, #x); \
+        exit(EXIT_FAILURE); \
+    }
+#else
+#define teken_assert(x)
+#endif /* DEBUG */
+
 #define	teken_printf(x,...)	do { \
 	if (df != NULL) \
 		printf(x, ## __VA_ARGS__); \

@@ -1,0 +1,147 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<matrix-project plugin="matrix-project@1.14">
+  <actions/>
+  <description>Runs the FreeNOS tester many times in a loop on FreeBSD 12</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <org.jvnet.jenkins.plugins.nodelabelparameter.LabelParameterDefinition plugin="nodelabelparameter@1.7.2">
+          <name>freebsd12</name>
+          <description></description>
+          <defaultValue>freebsd12</defaultValue>
+          <allNodesMatchingLabel>false</allNodesMatchingLabel>
+          <triggerIfResult>allCases</triggerIfResult>
+          <nodeEligibility class="org.jvnet.jenkins.plugins.nodelabelparameter.node.AllNodeEligibility"/>
+        </org.jvnet.jenkins.plugins.nodelabelparameter.LabelParameterDefinition>
+        <hudson.plugins.matrix__configuration__parameter.MatrixCombinationsParameterDefinition plugin="matrix-combinations-parameter@1.3.1">
+          <name>matrixfilter</name>
+          <description></description>
+          <shortcutList>
+            <hudson.plugins.matrix__configuration__parameter.shortcut.ResultShortcut>
+              <name>Successful</name>
+              <exact>false</exact>
+              <resultsToCheck>
+                <string>SUCCESS</string>
+              </resultsToCheck>
+            </hudson.plugins.matrix__configuration__parameter.shortcut.ResultShortcut>
+            <hudson.plugins.matrix__configuration__parameter.shortcut.ResultShortcut>
+              <name>Failed</name>
+              <exact>false</exact>
+              <resultsToCheck>
+                <string>FAILURE</string>
+              </resultsToCheck>
+            </hudson.plugins.matrix__configuration__parameter.shortcut.ResultShortcut>
+            <hudson.plugins.matrix__configuration__parameter.shortcut.MatrixCombinationsShortcut_-All/>
+            <hudson.plugins.matrix__configuration__parameter.shortcut.MatrixCombinationsShortcut_-None/>
+          </shortcutList>
+        </hudson.plugins.matrix__configuration__parameter.MatrixCombinationsParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@4.2.2">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>/home/vagrant/FreeNOS</url>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>*/master</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <submoduleCfg class="list"/>
+    <extensions/>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <authToken>FreeNOS-freebsd12-loop-JobToken</authToken>
+  <triggers>
+    <jenkins.triggers.ReverseBuildTrigger>
+      <spec></spec>
+      <upstreamProjects>FreeNOS-freebsd12</upstreamProjects>
+      <threshold>
+        <name>SUCCESS</name>
+        <ordinal>0</ordinal>
+        <color>BLUE</color>
+        <completeBuild>true</completeBuild>
+      </threshold>
+    </jenkins.triggers.ReverseBuildTrigger>
+  </triggers>
+  <concurrentBuild>true</concurrentBuild>
+  <axes>
+    <hudson.matrix.TextAxis>
+      <name>sysargs</name>
+      <values>
+        <string>ARCH=arm SYSTEM=raspberry COMPILER=gcc CROSS_COMPILE=arm-none-eabi- VERSION_SUFFIX=</string>
+        <string>ARCH=arm SYSTEM=raspberry COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=10</string>
+        <string>ARCH=arm SYSTEM=raspberry2 COMPILER=gcc CROSS_COMPILE=arm-none-eabi- VERSION_SUFFIX=</string>
+        <string>ARCH=arm SYSTEM=raspberry2 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=10</string>
+        <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=gcc CROSS_COMPILE=arm-none-eabi- VERSION_SUFFIX=</string>
+        <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=10</string>
+        <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=9</string>
+        <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=10</string>
+      </values>
+    </hudson.matrix.TextAxis>
+  </axes>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>#!/usr/local/bin/bash
+set -x
+export $sysargs
+
+# Unfortunately Clang does not ship with its own linker and libgcc equivalent.
+# Therefore, re-use those from the GCC compiler
+if [ &quot;$ARCH&quot; == &quot;arm&quot; ] &amp;&amp; [ &quot;$COMPILER&quot; == &quot;clang&quot; ] ; then
+  OBJCOPY=&apos;arm-none-eabi-objcopy&apos;
+  ARM_GCC_VERSION=&quot;`ls /usr/local/lib/gcc/arm-none-eabi|head -n 1`&quot;
+  LINKEXTRA=&quot;[&apos;-L/usr/local/lib/gcc/arm-none-eabi/$ARM_GCC_VERSION/&apos;]&quot;
+  EXTRA=&quot;OBJCOPY=$OBJCOPY LINKEXTRA=$LINKEXTRA&quot;
+else
+  EXTRA=&quot;&quot;
+fi
+
+scons DEBUG=False VERBOSE=True QEMU_BUILD=True $EXTRA
+scons DEBUG=False KVMFLAGS=&quot;&quot; QEMU_BUILD=True $EXTRA qemu_loop
+</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.tasks.junit.JUnitResultArchiver plugin="junit@1.29">
+      <testResults>build/**/*.xml</testResults>
+      <keepLongStdio>false</keepLongStdio>
+      <healthScaleFactor>1.0</healthScaleFactor>
+      <allowEmptyResults>false</allowEmptyResults>
+    </hudson.tasks.junit.JUnitResultArchiver>
+    <hudson.plugins.ws__cleanup.WsCleanup plugin="ws-cleanup@0.38">
+      <patterns class="empty-list"/>
+      <deleteDirs>false</deleteDirs>
+      <skipWhenFailed>false</skipWhenFailed>
+      <cleanWhenSuccess>true</cleanWhenSuccess>
+      <cleanWhenUnstable>true</cleanWhenUnstable>
+      <cleanWhenFailure>true</cleanWhenFailure>
+      <cleanWhenNotBuilt>true</cleanWhenNotBuilt>
+      <cleanWhenAborted>true</cleanWhenAborted>
+      <notFailBuild>false</notFailBuild>
+      <cleanupMatrixParent>false</cleanupMatrixParent>
+      <externalDelete></externalDelete>
+      <disableDeferredWipeout>false</disableDeferredWipeout>
+    </hudson.plugins.ws__cleanup.WsCleanup>
+  </publishers>
+  <buildWrappers>
+    <hudson.plugins.ws__cleanup.PreBuildCleanup plugin="ws-cleanup@0.38">
+      <deleteDirs>false</deleteDirs>
+      <cleanupParameter></cleanupParameter>
+      <externalDelete></externalDelete>
+      <disableDeferredWipeout>false</disableDeferredWipeout>
+    </hudson.plugins.ws__cleanup.PreBuildCleanup>
+    <hudson.plugins.timestamper.TimestamperBuildWrapper plugin="timestamper@1.11.3"/>
+  </buildWrappers>
+  <executionStrategy class="hudson.matrix.DefaultMatrixExecutionStrategyImpl">
+    <runSequentially>false</runSequentially>
+  </executionStrategy>
+</matrix-project>

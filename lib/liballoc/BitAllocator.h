@@ -20,7 +20,6 @@
 
 #include <BitArray.h>
 #include <Types.h>
-#include <Memory.h>
 #include "Allocator.h"
 
 /**
@@ -45,10 +44,11 @@ class BitAllocator : public Allocator
     /**
      * Constructor function.
      *
-     * @param range Contigeous range of memory to manage.
-     * @param chunkSize Total memory will be divided into chunks.
+     * @param range Block of continguous memory to manage.
+     * @param chunkSize The input memory range will be divided into equally sized chunks.
+     *                  The chunkSize must be greater than zero.
      */
-    BitAllocator(Memory::Range range, Size chunkSize);
+    BitAllocator(const Range range, const Size chunkSize);
 
     /**
      * Get chunk size.
@@ -58,13 +58,6 @@ class BitAllocator : public Allocator
     Size chunkSize() const;
 
     /**
-     * Get total size.
-     *
-     * @return Total size.
-     */
-    virtual Size size() const;
-
-    /**
      * Get available memory.
      *
      * @return Available memory.
@@ -72,35 +65,27 @@ class BitAllocator : public Allocator
     virtual Size available() const;
 
     /**
-     * Get base memory address.
-     */
-    Address base() const;
-
-    /**
-     * Get allocation BitArray.
-     *
-     * @return BitArray object pointer.
-     */
-    BitArray * getBitArray();
-
-    /**
      * Allocate memory.
      *
-     * @param args Allocator arguments containing the requested size, address and alignment.
+     * @param args Contains the requested size and alignment on input.
+     *             The alignment value must be a multiple of the chunk size.
+     *             On output, contains the actual allocated address.
      *
      * @return Result value.
      */
-    virtual Result allocate(Arguments & args);
+    virtual Result allocate(Range & args);
 
     /**
      * Allocate memory from defined starting address.
      *
-     * @param args Allocator arguments containing the requested size, address and alignment.
+     * @param args Contains the requested size and alignment on input.
+     *             The alignment value must be a multiple of the chunk size.
+     *             On output, contains the actual allocated address.
      * @param allocStart Allocation address to start searching at.
      *
      * @return Result value.
      */
-    Result allocate(Arguments & args, Address allocStart = 0);
+    Result allocate(Range & args, const Address allocStart = 0);
 
     /**
      * Allocate a specific address.
@@ -109,14 +94,14 @@ class BitAllocator : public Allocator
      *
      * @return Result value.
      */
-    Result allocate(Address addr);
+    Result allocate(const Address addr);
 
     /**
      * Check if a chunk is allocated.
      *
      * @return True if allocated, false otherwise.
      */
-    bool isAllocated(Address page) const;
+    bool isAllocated(const Address page) const;
 
     /**
      * Release memory chunk.
@@ -124,18 +109,15 @@ class BitAllocator : public Allocator
      * @param chunk The memory chunk to release.
      * @return Result value.
      */
-    virtual Result release(Address chunk);
+    virtual Result release(const Address chunk);
 
   private:
 
     /** Marks which chunks are (un)used. */
     BitArray m_array;
 
-    /** Start of memory region. */
-    Address m_base;
-
     /** Size of each chunk. */
-    Size m_chunkSize;
+    const Size m_chunkSize;
 };
 
 /**

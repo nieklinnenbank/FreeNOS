@@ -31,7 +31,7 @@
  */
 
 /**
- * Allocator which separates kernel mapped low-memory and higher memory.
+ * Allocator which separates kernel mapped memory at virtual and physical addresses.
  */
 class SplitAllocator : public Allocator
 {
@@ -40,22 +40,13 @@ class SplitAllocator : public Allocator
     /**
      * Class constructor.
      *
-     * @param low Lower physical memory.
-     * @param high Higher physical memory.
+     * @param physRange Block of physical continguous memory to be managed.
+     * @param virtRange Same block of memory in the virtual address space.
+     * @param pageSize Size of a single memory page.
      */
-    SplitAllocator(Memory::Range low, Memory::Range high);
-
-    /**
-     * Class destructor.
-     */
-    virtual ~SplitAllocator();
-
-    /**
-     * Get memory size.
-     *
-     * @return Size of memory owned by the Allocator.
-     */
-    virtual Size size() const;
+    SplitAllocator(const Range physRange,
+                   const Range virtRange,
+                   const Size pageSize);
 
     /**
      * Get memory available.
@@ -65,72 +56,83 @@ class SplitAllocator : public Allocator
     virtual Size available() const;
 
     /**
-     * Allocate memory.
+     * Allocate physical memory.
      *
-     * @param args Allocator arguments containing the requested size, address and alignment.
-     *
-     * @return Result value.
-     */
-    virtual Result allocate(Arguments & args);
-
-    /**
-     * Allocate address.
-     *
-     * @param addr Allocate a specific address.
+     * @param args Contains the requested size and alignment on input.
+     *             The alignment value must be a multiple of the pageSize.
+     *             On output, contains the actual allocated address.
      *
      * @return Result value.
      */
-    Result allocate(Address addr);
+    virtual Result allocate(Range & args);
 
     /**
-     * Allocate from lower memory.
+     * Allocate physical/virtual memory.
      *
-     * @param args Allocator arguments containing the requested size, address and alignment.
+     * @param phys Contains the requested size and alignment on input.
+     *             The alignment value must be a multiple of the pageSize.
+     *             On output, contains the actual allocated physical address.
+     * @param virt Contains the allocated memory translated for virtual addressing.
      *
      * @return Result code
      */
-    Result allocateLow(Arguments & args);
+    Result allocate(Range & phys, Range & virt);
 
     /**
-     * Allocate from high memory.
+     * Allocate one physical memory page.
      *
-     * @param args Allocator arguments containing the requested size, address and alignment.
+     * @param addr Physical memory page address
      *
      * @return Result code
      */
-    Result allocateHigh(Arguments & args);
+    Result allocate(const Address addr);
 
     /**
-     * Release memory.
+     * Release memory page.
      *
-     * @param addr Points to memory previously returned by allocate().
+     * @param addr Physical memory address of page to release.
      *
      * @return Result value.
      *
      * @see allocate
      */
-    virtual Result release(Address addr);
+    virtual Result release(const Address addr);
 
     /**
-     * Convert the given physical address to lower virtual accessible address.
+     * Convert Address to virtual pointer.
+     *
+     * @param phys Physical address
+     *
+     * @return Virtual address
      */
-    void * toVirtual(Address phys) const;
+    Address toVirtual(const Address phys) const;
 
     /**
-     * Convert lower virtual address back to system level physical address.
+     * Convert Address to physical pointer.
+     *
+     * @param virt Virtual address
+     *
+     * @return Physical address
      */
-    void * toPhysical(Address virt) const;
+    Address toPhysical(const Address virt) const;
+
+    /**
+     * Check if a physical page is allocated.
+     *
+     * @return True if allocated, false otherwise.
+     */
+    bool isAllocated(const Address page) const;
 
   private:
 
     /** Physical memory allocator. */
-    BitAllocator *m_alloc;
+    BitAllocator m_alloc;
 
-    /** Low memory */
-    Memory::Range m_low;
+    /** Virtual memory range to manage. */
+    const Range m_virtRange;
 
-    /** High memory */
-    Memory::Range m_high;
+    /** Size of a memory page. */
+    const Size m_pageSize;
 };
 
 /**

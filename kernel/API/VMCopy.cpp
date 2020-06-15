@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/ProcessManager.h>
 #include <MemoryBlock.h>
 #include <SplitAllocator.h>
 #include "VMCopy.h"
@@ -26,6 +27,7 @@ API::Result VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
     Process *proc;
     Address paddr, vaddr;
     Size bytes = 0, pageOff, total = 0;
+    MemoryContext::Result memResult = MemoryContext::Success;
 
     DEBUG("");
 
@@ -47,7 +49,7 @@ API::Result VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
         else if (remote->lookup(theirs, &paddr) != MemoryContext::Success)
             return API::AccessViolation;
 
-        paddr &= PAGEMASK;
+        assert(!(paddr & ~PAGEMASK));
         pageOff = theirs & ~PAGEMASK;
         bytes   = (PAGESIZE - pageOff) < (sz - total) ?
                   (PAGESIZE - pageOff) : (sz - total);
@@ -59,7 +61,12 @@ API::Result VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
         if (local->findFree(PAGESIZE, MemoryMap::KernelPrivate, &vaddr) != MemoryContext::Success)
             return API::RangeError;
 
-        local->map(vaddr, paddr, Memory::Readable | Memory::Writable);
+        if ((memResult = local->map(vaddr, paddr,
+                                    Memory::Readable | Memory::Writable)) != MemoryContext::Success)
+        {
+            ERROR("failed to map physical address " << (void *)paddr << ": " << (int)memResult);
+            return API::IOError;
+        }
 
         // Process the action appropriately
         switch (how)
@@ -77,8 +84,9 @@ API::Result VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
                 ;
         }
 
-        // Unmap
-        local->unmap(vaddr);
+        // Unmap, which must always succeed
+        memResult = local->unmap(vaddr);
+        assert(memResult == MemoryContext::Success);
 
         // Update counters
         ours   += bytes;

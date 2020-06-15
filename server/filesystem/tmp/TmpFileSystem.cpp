@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <Assert.h>
 #include <File.h>
 #include <PseudoFile.h>
 #include <Directory.h>
@@ -23,7 +24,9 @@
 TmpFileSystem::TmpFileSystem(const char *path)
     : FileSystem(path)
 {
-    setRoot(new Directory);
+    Directory *dir = new Directory;
+    assert(dir != NULL);
+    setRoot(dir);
 }
 
 File * TmpFileSystem::createFile(FileType type, DeviceID deviceID)
@@ -31,11 +34,17 @@ File * TmpFileSystem::createFile(FileType type, DeviceID deviceID)
     // Create the appropriate file type
     switch (type)
     {
-        case RegularFile:
-            return new PseudoFile;
+        case RegularFile: {
+            PseudoFile *file = new PseudoFile;
+            assert(file != NULL);
+            return file;
+        }
 
-        case DirectoryFile:
-            return new Directory;
+        case DirectoryFile: {
+            Directory *dir = new Directory;
+            assert(dir != NULL);
+            return dir;
+        }
 
         default:
             return ZERO;

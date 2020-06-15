@@ -94,6 +94,9 @@
 /** Mask to find the page. */
 #define PAGEMASK        0xfffff000
 
+/** Mask for large 4MiB mappings. */
+#define SECTIONMASK     0xffc00000
+
 /** Memory address alignment. */
 #define MEMALIGN        4
 

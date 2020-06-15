@@ -19,8 +19,10 @@
 #include "String.h"
 
 Log::Log() : Singleton<Log>(this)
+    , m_minimumLogLevel(Notice)
+    , m_ident(ZERO)
+    , m_outputBufferWritten(0)
 {
-    setMinimumLogLevel(Notice);
 }
 
 Log::~Log()
@@ -49,13 +51,24 @@ void Log::setIdent(const char *ident)
 
 void Log::append(const char *str)
 {
-    m_outputBuffer << str;
-
-    if (m_outputBuffer.endsWith("\n"))
+    // Copy input. Note that we need to reserve 1 byte for the NULL-terminator
+    while (m_outputBufferWritten < LogBufferSize-1 && *str)
     {
-        write(*m_outputBuffer);
-        m_outputBuffer = "";
+        m_outputBuffer[m_outputBufferWritten++] = *str;
+        str++;
     }
+
+    if (m_outputBufferWritten > 0 && m_outputBuffer[m_outputBufferWritten-1] == '\n')
+    {
+        m_outputBuffer[m_outputBufferWritten] = 0;
+        write(m_outputBuffer);
+        m_outputBufferWritten = 0;
+    }
+}
+
+void Log::terminate() const
+{
+    for (;;);
 }
 
 Log & operator << (Log &log, const char *str)

@@ -20,7 +20,7 @@
 
 int main(int argc, char **argv)
 {
-    KernelLog log;
     Init app(argc, argv);
+    KernelLog log;
     return app.run();
 }

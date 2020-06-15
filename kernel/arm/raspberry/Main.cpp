@@ -19,16 +19,20 @@
 #include <FreeNOS/Support.h>
 #include <FreeNOS/System.h>
 #include <Macros.h>
+#include <MemoryBlock.h>
 #include <arm/ARMControl.h>
+#include <arm/ARMPaging.h>
 #include <arm/broadcom/BroadcomInterrupt.h>
 #include <arm/broadcom/BroadcomTimer.h>
 #include <PL011.h>
 #include <DeviceLog.h>
 #include "RaspberryKernel.h"
 
-extern Address __bootimg;
+extern Address __bootimg, __bss_start, __bss_end, __heap_start, __heap_end;
 
-extern C int kernel_main(u32 r0, u32 r1, u32 r2)
+static u32 ALIGN(16 * 1024) SECTION(".data") tmpPageDir[4096];
+
+extern C int kernel_main(void)
 {
     // Invalidate all caches now
     Arch::Cache cache;
@@ -40,11 +44,8 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
     ctrl.set(ARMControl::SMPBit);
 #endif
 
-    // Create local objects needed for the kernel
-    Arch::MemoryMap mem;
-    BootImage *bootimage = (BootImage *) &__bootimg;
-
     // Fill coreInfo
+    BootImage *bootimage = (BootImage *) &__bootimg;
     MemoryBlock::set(&coreInfo, 0, sizeof(CoreInfo));
     coreInfo.bootImageAddress = (Address) (bootimage);
     coreInfo.bootImageSize    = bootimage->bootImageSize;
@@ -52,12 +53,21 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
     coreInfo.kernel.size      = MegaByte(4);
     coreInfo.memory.phys      = RAM_ADDR;
     coreInfo.memory.size      = RAM_SIZE;
+    coreInfo.coreChannelAddress = coreInfo.bootImageAddress + coreInfo.bootImageSize;
+
+    // Prepare early page tables
+    Arch::MemoryMap mem;
+    ARMPaging paging(&mem, (Address) &tmpPageDir, RAM_ADDR);
+
+    // Activate MMU
+    paging.activate(true);
+
+    // Clear BSS
+    MemoryBlock::set(&__bss_start, 0, &__bss_end - &__bss_start);
 
     // Initialize heap at the end of the kernel (and after embedded boot image)
-    coreInfo.heapAddress = coreInfo.bootImageAddress + coreInfo.bootImageSize;
-    coreInfo.heapAddress &= PAGEMASK;
-    coreInfo.heapAddress += PAGESIZE;
-    coreInfo.heapSize = MegaByte(1);
+    coreInfo.heapAddress = (Address) &__heap_start;
+    coreInfo.heapSize    = (Size) ((Address) &__heap_end - (Address)&__heap_start);
     Kernel::heap(coreInfo.heapAddress, coreInfo.heapSize);
 
     // Run all constructors first

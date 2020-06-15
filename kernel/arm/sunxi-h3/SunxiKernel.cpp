@@ -16,11 +16,13 @@
  */
 
 #include <FreeNOS/System.h>
+#include <FreeNOS/ProcessManager.h>
 #include <Log.h>
 #include <SplitAllocator.h>
 #include <CoreInfo.h>
 #include <arm/ARMException.h>
 #include <arm/ARMConstant.h>
+#include <SunxiCoreServer.h>
 #include "SunxiKernel.h"
 
 SunxiKernel::SunxiKernel(CoreInfo *info)
@@ -31,6 +33,13 @@ SunxiKernel::SunxiKernel(CoreInfo *info)
 
     NOTICE("");
 
+    // Initialize the IRQ controller
+    ARMGenericInterrupt::Result r = m_gic.initialize(info->coreId == 0);
+    if (r != ARMGenericInterrupt::Success)
+    {
+        FATAL("failed to initialize the GIC: " << (uint) r);
+    }
+
     // Setup interrupt callbacks
     m_intControl = &m_gic;
     m_exception.install(ARMException::IRQ, interrupt);
@@ -40,6 +49,11 @@ SunxiKernel::SunxiKernel(CoreInfo *info)
     m_timer = &m_armTimer;
     m_armTimer.setFrequency(100);
     m_intControl->enable(ARMTIMER_IRQ);
+
+    // Allocate physical memory pages for secondary CoreInfo structure
+    if (m_coreInfo->coreId == 0) {
+        m_alloc->allocate(SunxiCoreServer::SecondaryCoreInfoAddress);
+    }
 }
 
 void SunxiKernel::interrupt(volatile CPUState state)

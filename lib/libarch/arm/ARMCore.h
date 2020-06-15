@@ -121,6 +121,30 @@
 #define vbar_set(addr) \
     mcr(p15, 0, 0, c12, c0, (addr))
 
+/**
+ * Read System Control register
+ */
+#define sysctrl_read() \
+    (mrc(p15, 0, 0, c1, c0))
+
+/**
+ * Write System Control register
+ */
+#define sysctrl_write(val) \
+    mcr(p15, 0, 0, c1, c0, (val))
+
+/**
+ * Read unique core identifier.
+ *
+ * This function reads the Multi-Processor Affinity Register (MPIDR)
+ * to determine the unique identifier of the processor. Note that only
+ * the most significant affinity level 0 is used and others are ignored.
+ *
+ * @return Value of affinity level 0
+ */
+#define read_core_id() \
+    (mrc(p15, 0, 5, c0, c0) & 0xff)
+
 #ifdef ARMV6
 /**
  * Flush the entire Translation Lookaside Buffer.

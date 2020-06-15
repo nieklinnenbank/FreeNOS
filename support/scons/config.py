@@ -58,17 +58,17 @@ def initialize(target, host, params):
     cmd_items = params
 
     if not os.path.exists('build.conf'):
-	shutil.copyfile('config/' + params.get('ARCH', 'intel') + '/'
-				  + params.get('SYSTEM', 'pc') + '/'
-			          + params.get('CONF', 'build') + '.conf', 'build.conf')
+        shutil.copyfile('config/' + params.get('ARCH', 'intel') + '/'
+                                  + params.get('SYSTEM', 'pc') + '/'
+                                  + params.get('CONF', 'build') + '.conf', 'build.conf')
 
     if not os.path.exists('build.host.conf'):
-	shutil.copyfile('config/host/build.conf', 'build.host.conf')
+        shutil.copyfile('config/host/build.conf', 'build.host.conf')
 
     # Apply commandline arguments for use in build.conf's
     for key in params:
-	if not key.startswith('HOST:'):
-	    set_value(local_dict, key, params[key])
+        if not key.startswith('HOST:'):
+            set_value(local_dict, key, params[key])
 
     local_dict.lock(True)
     apply_file('build.conf', target)
@@ -77,8 +77,8 @@ def initialize(target, host, params):
     local_dict.lock(False, "HOST:")
 
     for key in params:
-	if key.startswith('HOST:'):
-	    set_value(local_dict, key[5:], params[key])
+        if key.startswith('HOST:'):
+            set_value(local_dict, key[5:], params[key])
 
     local_dict.lock(True, "HOST:")
     apply_file('build.host.conf', host)
@@ -115,7 +115,7 @@ def write_header(env, filename = None):
     out = open(filename, "w")
     name, ext = os.path.splitext(filename)
     name = name.replace('/', '_')
-    
+
     out.write('#ifndef __' + name.upper().replace('-', '_') + '_H\n')
     out.write('#define __' + name.upper().replace('-', '_') + '_H\n\n')
     out.write('#define VERSION_GET_CODE(a,b,c) (((a) << 16) + ((b) << 8) + (c))\n')
@@ -126,16 +126,16 @@ def write_header(env, filename = None):
     out.write('#define BANNER "FreeNOS " RELEASE " [" ARCH "/" SYSTEM "] (" BUILDUSER "@" BUILDHOST ") (" COMPILER_VERSION ") " DATETIME "\\r\\n" \n');
 
     for item in env.items():
-	if type(item[1]) is str:
-	    out.write("#define " + item[0].upper() + ' "' + escape(item[1]) + '"\n')
-	elif type(item[1]) is int:
-	    out.write("#define " + item[0].upper() + ' ' + str(item[1]) + '\n')
-	elif type(item[1]) is list:
-	    out.write("#define " + item[0].upper() + ' "')
-	    for subitem in item[1]:
-		if type(subitem) is str:
-		    out.write(escape(subitem) + ' ')
-	    out.write('"\n')
+        if type(item[1]) is str:
+            out.write("#define " + item[0].upper() + ' "' + escape(item[1]) + '"\n')
+        elif type(item[1]) is int:
+            out.write("#define " + item[0].upper() + ' ' + str(item[1]) + '\n')
+        elif type(item[1]) is list:
+            out.write("#define " + item[0].upper() + ' "')
+            for subitem in item[1]:
+                if type(subitem) is str:
+                    out.write(escape(subitem) + ' ')
+            out.write('"\n')
 
     out.write('#endif\n\n')
     out.close()
@@ -155,8 +155,8 @@ def set_default_variables(env):
 
     # Calculate version code.
     for v in version:
-	versionCode  += int(v) * pow(2, versionPower)
-	versionPower -= 8
+        versionCode  += int(v) * pow(2, versionPower)
+        versionPower -= 8
 
     env['VERSIONCODE'] = versionCode
 
@@ -218,12 +218,12 @@ def apply_file(conf_file, env):
     result = parse_file(conf_file)
 
     for item in result:
-	if type(result[item]) is list:
-	    env[item] = eval_list(result[item], result)
-	elif type(result[item]) is str:
-	    env[item] = eval_string(result[item], result)
-	else:
-	    env[item] = result[item]
+        if type(result[item]) is list:
+            env[item] = eval_list(result[item], result)
+        elif type(result[item]) is str:
+            env[item] = eval_string(result[item], result)
+        else:
+            env[item] = result[item]
 
 def parse_file(conf_file):
     """
@@ -235,7 +235,7 @@ def parse_file(conf_file):
     global_dict = { 'Include' : parse_file }
     config_file = eval_string(conf_file)
 
-    execfile(config_file, global_dict, local_dict)
+    exec(open(config_file).read(), global_dict, local_dict)
     return local_dict
 
 def eval_list(lst, replace_dict = None):
@@ -245,7 +245,7 @@ def eval_list(lst, replace_dict = None):
     new_lst = []
 
     for item in lst:
-	new_lst.append(eval_string(item, replace_dict))
+        new_lst.append(eval_string(item, replace_dict))
 
     return new_lst
 
@@ -256,20 +256,20 @@ def eval_string(string, replace_dict = None):
     global local_dict
 
     if not replace_dict:
-	replace_dict = local_dict
+        replace_dict = local_dict
 
     split_string = string.split('}')
     final_string = ''
 
     for substr in split_string:
-	idx = substr.find('${')
-	if idx == -1:
-	    final_string += substr
-	else:
-	    final_string += substr[0:idx]
-	    var_name = substr[idx+2:]
+        idx = substr.find('${')
+        if idx == -1:
+            final_string += substr
+        else:
+            final_string += substr[0:idx]
+            var_name = substr[idx+2:]
 
-	    if var_name in replace_dict:
-		final_string += str(replace_dict[var_name])
+            if var_name in replace_dict:
+                final_string += str(replace_dict[var_name])
 
     return final_string

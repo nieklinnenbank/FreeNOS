@@ -60,6 +60,13 @@ TestRunner::TestRunner(int argc, char **argv)
 TestRunner::~TestRunner()
 {
     delete m_reporter;
+
+    // Release all resources in the TestSuite
+    if (TestSuite::instance)
+    {
+        delete TestSuite::instance;
+        TestSuite::instance = ZERO;
+    }
 }
 
 TestReporter * TestRunner::getReporter()

@@ -15,27 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
 #include "PoolAllocator.h"
 #include <MemoryBlock.h>
 
-PoolAllocator::PoolAllocator()
-    : Allocator()
+PoolAllocator::PoolAllocator(const Allocator::Range range)
+    : Allocator(range)
 {
     MemoryBlock::set(m_pools, 0, sizeof(m_pools));
 }
 
-Size PoolAllocator::size() const
-{
-    return m_parent ? m_parent->size() : ZERO;
-}
-
-Size PoolAllocator::available() const
-{
-    return m_parent ? m_parent->available() : ZERO;
-}
-
-Allocator::Result PoolAllocator::allocate(Allocator::Arguments & args)
+Allocator::Result PoolAllocator::allocate(Allocator::Range & args)
 {
     Size index, nPools = 1;
     MemoryPool *pool = ZERO;
@@ -47,7 +36,7 @@ Allocator::Result PoolAllocator::allocate(Allocator::Arguments & args)
     }
 
     // Do we need to allocate an initial pool?
-    if (!m_pools[index] && m_parent)
+    if (!m_pools[index] && parent())
     {
         pool = m_pools[index] = newPool(index, POOL_MIN_COUNT(args.size));
     }
@@ -82,7 +71,7 @@ Allocator::Result PoolAllocator::allocate(Allocator::Arguments & args)
 MemoryPool * PoolAllocator::newPool(Size index, Size cnt)
 {
     MemoryPool *pool = 0;
-    Allocator::Arguments alloc_args;
+    Allocator::Range alloc_args;
 
     // Prepare amount to allocate from m_parent
     alloc_args.address = 0;
@@ -90,14 +79,14 @@ MemoryPool * PoolAllocator::newPool(Size index, Size cnt)
     alloc_args.size  = cnt * (1 << (index + 1));
     alloc_args.size += sizeof(MemoryPool);
     alloc_args.size += BITMAP_NUM_BYTES(cnt);
-    alloc_args.size += MEMALIGN;
+    alloc_args.size += alignment();
 
     // Ask m_parent for memory, then fill in the pool
-    if (m_parent->allocate(alloc_args) == Allocator::Success)
+    if (parent()->allocate(alloc_args) == Allocator::Success)
     {
         pool = (MemoryPool *) alloc_args.address;
         pool->count  = cnt;
-        pool->addr   = aligned( ((Address) (pool + 1)) + BITMAP_NUM_BYTES(pool->count), MEMALIGN );
+        pool->addr   = aligned( ((Address) (pool + 1)) + BITMAP_NUM_BYTES(pool->count), alignment() );
         pool->next   = m_pools[index];
         pool->free   = pool->count;
         pool->size   = (1 << (index + 1));
@@ -107,7 +96,7 @@ MemoryPool * PoolAllocator::newPool(Size index, Size cnt)
     return pool;
 }
 
-Allocator::Result PoolAllocator::release(Address addr)
+Allocator::Result PoolAllocator::release(const Address addr)
 {
     for (Size i = POOL_MIN_POWER - 1; i < POOL_MAX_POWER; i++)
     {

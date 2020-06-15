@@ -25,10 +25,10 @@
 
 NAME="freebsd12"
 JENKINS_PACKAGES="git openjdk11 bash"
-COMPILER_PACKAGES="gcc gcc48 gcc6 gcc7 gcc8 gcc9 \
-                   llvm60 llvm70 llvm80 llvm90 \
+COMPILER_PACKAGES="gcc gcc7 gcc8 gcc9 \
+                   llvm60 llvm70 llvm80 llvm90 llvm10 \
                    arm-none-eabi-gcc"
-MISC_PACKAGES="scons cdrkit-genisoimage xorriso"
+MISC_PACKAGES="scons cdrkit-genisoimage xorriso u-boot-tools"
 PACKAGES="$JENKINS_PACKAGES $COMPILER_PACKAGES $MISC_PACKAGES"
 RELEASE="`uname -r|cut -f 1,2 -d -`"
 CHROOT="freebsd32"
@@ -48,7 +48,7 @@ hostname -s $NAME
 
 # Update system to latest patches
 run_command_retry "freebsd-update -F --not-running-from-cron fetch"
-run_command_retry "freebsd-update -F --not-running-from-cron install"
+run_command_retry "freebsd-update -F --not-running-from-cron install" 2
 /usr/sbin/pkg || true
 run_command_retry "pkg update -f"
 run_command_retry "pkg upgrade -y"
@@ -102,7 +102,7 @@ export ASSUME_ALWAYS_YES=yes
 
 # Update chroot to latest patches
 run_command_retry "freebsd-update -F --not-running-from-cron fetch"
-run_command_retry "freebsd-update -F --not-running-from-cron install"
+run_command_retry "freebsd-update -F --not-running-from-cron install" 2
 ASSUME_ALWAYS_YES=yes /usr/sbin/pkg || true
 run_command_retry "pkg update -f"
 run_command_retry "pkg upgrade -y"
@@ -111,23 +111,26 @@ run_command_retry "pkg upgrade -y"
 run_command_retry "pkg install -y $PACKAGES"
 
 # Use Qemu from PKG if not provided
-if [ ! -e ~vagrant/qemu-src.tar.gz ] ; then
+if [ -z "$QEMU_URL" ] ; then
     run_command_retry "pkg install -y qemu"
 elif [ ! -e /usr/local/bin/qemu-system-arm ] ; then
     # Compile Qemu from source
     run_command_retry "pkg install -y python pkgconf gmake bison flex gettext glib pixman"
 
-    tar zxf ~vagrant/qemu-src.tar.gz -C ~vagrant
-    rm ~vagrant/qemu-src.tar.gz
-    cd ~vagrant/qemu-* && ./configure --prefix=/usr/local --target-list=arm-softmmu,i386-softmmu
+    rm -rf qemu-git
+    git clone --depth=1 -b $QEMU_BRANCH $QEMU_URL qemu-git
+    cd qemu-git
+    ./configure --prefix=/usr/local --target-list=arm-softmmu,i386-softmmu
 
     if [ ! -z "$SLAVE_CPUS" ] ; then
-        cd ~vagrant/qemu-* && gmake -j$SLAVE_CPUS
+        gmake -j$SLAVE_CPUS
     else
-        cd ~vagrant/qemu-* && gmake -j5
+        gmake -j5
     fi
-    cd ~vagrant/qemu-* && gmake install
-    rm -rf ~vagrant/qemu-*
+    gmake install
+    gmake clean
+    cd ..
+    rm -rf qemu-git
 fi
 
 # Disable the FreeBSD linker, use the GNU linker

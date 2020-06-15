@@ -52,13 +52,17 @@ def UseServers(env, servers = []):
 
 def HostProgram(env, target, source):
     if env['ARCH'] == 'host':
-	env.Program(target, source)
+        env.Program(target, source)
 
 def TargetProgram(env, target, source, install_dir = None):
     if env['ARCH'] != 'host':
-	env.Program(target, source)
+        env.Program(target, source)
         if install_dir is not False:
-	    env.TargetInstall(target, install_dir)
+            if install_dir is None:
+                install_dir = '${ROOTFS}/' + Dir('.').srcnode().path
+
+            env.Strip(install_dir + os.sep + os.path.basename(str(target)), target)
+            rootfs_files.append(install_dir + os.sep + os.path.basename(str(target)))
 
 def TargetHostProgram(env, target, source, install_dir = None):
     HostProgram(env, target, source)
@@ -66,7 +70,7 @@ def TargetHostProgram(env, target, source, install_dir = None):
 
 def TargetLibrary(env, lib, source):
     if env['ARCH'] != 'host':
-	env.Library(lib, source)
+        env.Library(lib, source)
 
 def CopyStrFunc(target, source, env):
     return "  " + env.subst_target_source("COPY $SOURCE => $TARGET", 0, target, source)
@@ -76,24 +80,30 @@ def DirStrFunc(target):
 
 def TargetInstall(env, source, target = None):
     if env['ARCH'] != 'host':
-	SCons.Tool.install.install_action.strfunction = CopyStrFunc
+        SCons.Tool.install.install_action.strfunction = CopyStrFunc
 
-	if target is None:
-	    target = '${ROOTFS}/' + Dir('.').srcnode().path
+        if target is None:
+            target = '${ROOTFS}/' + Dir('.').srcnode().path
 
-	env.Install(target, source)
-	rootfs_files.append(str(target) + os.sep + os.path.basename(source))
+        env.Install(target, source)
+        rootfs_files.append(str(target) + os.sep + os.path.basename(source))
+
+def TargetInstallAs(env, source, target):
+    if env['ARCH'] != 'host':
+        SCons.Tool.install.install_action.strfunction = CopyStrFunc
+        env.InstallAs(target, source)
+        rootfs_files.append(target)
 
 def SubDirectories():
     dir_list = []
     dir_src  = Dir('.').srcnode().abspath
 
     if dir_src:
-	for f in os.listdir(dir_src):
-	    if os.path.isdir(dir_src + os.sep + f):
-		dir_list.append(f)
+        for f in os.listdir(dir_src):
+            if os.path.isdir(dir_src + os.sep + f):
+                dir_list.append(f)
 
-	SConscript( dirs = dir_list )
+        SConscript( dirs = dir_list )
 
 #
 # Reduce maximum number of open files resource limit.
@@ -124,7 +134,7 @@ Export('SubDirectories')
 
 # Create target, host and kernel environments.
 host = Environment(tools    = ["default", "phony", "test"],
-		   toolpath = ["support/scons"])
+                   toolpath = ["support/scons"])
 host.AddMethod(HostProgram, "HostProgram")
 host.AddMethod(TargetProgram, "TargetProgram")
 host.AddMethod(TargetHostProgram, "TargetHostProgram")
@@ -132,17 +142,18 @@ host.AddMethod(TargetLibrary, "TargetLibrary")
 host.AddMethod(UseLibraries, "UseLibraries")
 host.AddMethod(UseServers, "UseServers")
 host.AddMethod(TargetInstall, "TargetInstall")
+host.AddMethod(TargetInstallAs, "TargetInstallAs")
 host.Append(ROOTFS = '#${BUILDROOT}/rootfs')
 host.Append(ROOTFS_FILES = [])
 host.Append(bin     = '${ROOTFS}/bin',
-	    etc     = '${ROOTFS}/etc',
-	    server  = '${ROOTFS}/server',
+            etc     = '${ROOTFS}/etc',
+            server  = '${ROOTFS}/server',
             boot    = '${ROOTFS}/boot')
 host.Append(QEMU    = 'qemu-system')
 host.Append(QEMUCMD = '${QEMU} ${QEMUFLAGS}')
 host.Append(QEMUFLAGS = '')
 
-target = host.Clone(tools    = ["default", "bootimage", "iso", "binary", "linn", "phony", "test", "compress"],
+target = host.Clone(tools    = ["default", "bootimage", "iso", "binary", "linn", "phony", "strip", "test", "compress"],
                     toolpath = ["support/scons"])
 
 # Configuration build variables may come from, in order of priority:
@@ -150,8 +161,13 @@ target = host.Clone(tools    = ["default", "bootimage", "iso", "binary", "linn",
 #
 # For the OS environment: ensure the 'ENV' environment variable does not exist,
 # to avoid internal SCons exception while running the autoconf tests.
-if 'ENV' in os.environ:
-   del os.environ['ENV']
+#
+# Additionally, remove the PWD and OLDPWD variables since they can change when
+# using scons -u, which causes an undesirable (near) full rebuild.
+#
+for i in [ 'ENV', 'PWD', 'OLDPWD' ]:
+    if i in os.environ:
+        del os.environ[i]
 
 args = os.environ.copy()
 args.update(ARGUMENTS)

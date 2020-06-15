@@ -18,7 +18,8 @@
 Import('build_env')
 
 env = build_env.Clone()
-env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libtest', 'libexec', 'libarch', 'libipc' ])
+env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libtest',
+                   'libexec', 'libarch', 'libipc', 'librt', 'libapp' ])
 env.Append(CPPPATH = [ '#lib/libposix' ])
 
 env.TargetProgram('AbsTest', 'AbsTest.cpp')

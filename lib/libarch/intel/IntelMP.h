@@ -146,6 +146,13 @@ class IntelMP : public CoreManager
     IntelMP(IntelAPIC & apic);
 
     /**
+     * Perform initialization.
+     *
+     * @return Result code.
+     */
+    virtual Result initialize();
+
+    /**
      * Discover processors.
      *
      * @return Result code.

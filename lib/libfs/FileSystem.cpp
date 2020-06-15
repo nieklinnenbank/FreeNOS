@@ -16,6 +16,7 @@
  */
 
 #include <FreeNOS/System.h>
+#include <Assert.h>
 #include <Vector.h>
 #include <HashTable.h>
 #include <HashIterator.h>
@@ -136,6 +137,7 @@ void FileSystem::pathHandler(FileSystemMessage *msg)
 {
     // Copy the request
     FileSystemRequest *req = new FileSystemRequest(msg);
+    assert(req != NULL);
 
     // Process the request.
     if (processRequest(req) == EAGAIN)
@@ -341,6 +343,7 @@ FileCache * FileSystem::lookupFile(FileSystemPath *path)
             }
             /* Insert into the FileCache. */
             c = new FileCache(file, **i.current(), c);
+            assert(c != NULL);
         }
         /* Move to the next entry. */
         else
@@ -383,7 +386,9 @@ FileCache * FileSystem::insertFileCache(File *file, const char *pathFormat, va_l
         return ZERO;
     }
     /* Create new cache. */
-    return new FileCache(file, **path.base(), parent);
+    FileCache *c = new FileCache(file, **path.base(), parent);
+    assert(c != NULL);
+    return c;
 }
 
 FileCache * FileSystem::findFileCache(char *path)

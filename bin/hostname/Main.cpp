@@ -15,12 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <StdioLog.h>
 #include "Hostname.h"
 
 int main(int argc, char **argv)
 {
-    StdioLog log;
     Hostname app(argc, argv);
     return app.run();
 }

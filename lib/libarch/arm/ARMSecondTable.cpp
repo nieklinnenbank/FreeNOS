@@ -111,7 +111,7 @@ MemoryContext::Result ARMSecondTable::map(Address virt,
         return MemoryContext::AlreadyExists;
 
     // Insert mapping
-    m_pages[ TABENTRY(virt) ] = phys | PAGE2_PRESENT | flags(access);
+    m_pages[ TABENTRY(virt) ] = (phys & PAGEMASK) | PAGE2_PRESENT | flags(access);
     cache.cleanData(&m_pages[TABENTRY(virt)]);
     return MemoryContext::Success;
 }
@@ -130,7 +130,7 @@ MemoryContext::Result ARMSecondTable::translate(Address virt, Address *phys) con
     if (!(m_pages[ TABENTRY(virt) ] & PAGE2_PRESENT))
         return MemoryContext::InvalidAddress;
 
-    *phys = (m_pages[ TABENTRY(virt) ] & PAGEMASK) + (virt & ~PAGEMASK) ;
+    *phys = (m_pages[ TABENTRY(virt) ] & PAGEMASK);
     return MemoryContext::Success;
 }
 

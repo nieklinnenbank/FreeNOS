@@ -20,15 +20,18 @@
 
 #include <Macros.h>
 #include <Types.h>
+#include <Vector.h>
+#include <List.h>
 #include <Singleton.h>
 #include <BootImage.h>
 #include <Memory.h>
 #include <CoreInfo.h>
-#include "Process.h"
-#include "ProcessManager.h"
 
 /** Forward declarations. */
 class API;
+class MemoryContext;
+class Process;
+class ProcessManager;
 class SplitAllocator;
 class IntController;
 class Timer;
@@ -96,7 +99,8 @@ class Kernel : public Singleton<Kernel>
     {
         Success,
         InvalidBootImage,
-        ProcessError
+        ProcessError,
+        IOError
     };
 
     /**
@@ -172,6 +176,16 @@ class Kernel : public Singleton<Kernel>
      * @param enabled True to enable, and false to disable.
      */
     virtual void enableIRQ(u32 irq, bool enabled);
+
+    /**
+     * Send a inter-processor-interrupt (IPI) to another core.
+     *
+     * @param coreId Target Core to deliver the interrupt to.
+     * @param irq Interrupt number to deliver
+     *
+     * @return Result code
+     */
+    virtual Result sendIRQ(const uint coreId, const uint irq);
 
     /**
      * Hooks a function to an hardware interrupt.

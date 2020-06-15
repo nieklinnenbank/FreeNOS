@@ -19,14 +19,20 @@
 #include <FreeNOS/Support.h>
 #include <FreeNOS/System.h>
 #include <Macros.h>
+#include <MemoryBlock.h>
+#include <arm/ARMPaging.h>
 #include <arm/ARMControl.h>
+#include <arm/ARMCore.h>
 #include <NS16550.h>
 #include <DeviceLog.h>
+#include <SunxiCoreServer.h>
 #include "SunxiKernel.h"
 
-extern Address __bootimg;
+extern Address __bootimg, __bss_start, __bss_end, __heap_start, __heap_end;
 
-extern C int kernel_main(u32 r0, u32 r1, u32 r2)
+static u32 ALIGN(16 * 1024) SECTION(".data") tmpPageDir[4096];
+
+extern C int kernel_main(void)
 {
     // Invalidate all caches now
     Arch::Cache cache;
@@ -38,39 +44,68 @@ extern C int kernel_main(u32 r0, u32 r1, u32 r2)
     ctrl.set(ARMControl::SMPBit);
 #endif
 
-    // Create local objects needed for the kernel
+    // Setup memory map with kernel base physical memory address
     Arch::MemoryMap mem;
-    BootImage *bootimage = (BootImage *) &__bootimg;
+    Address kernelBaseAddr = RAM_ADDR;
 
-    // Fill coreInfo
-    MemoryBlock::set(&coreInfo, 0, sizeof(CoreInfo));
-    coreInfo.bootImageAddress = (Address) (bootimage);
-    coreInfo.bootImageSize    = bootimage->bootImageSize;
-    coreInfo.kernel.phys      = RAM_ADDR;
-    coreInfo.kernel.size      = MegaByte(4);
-    coreInfo.memory.phys      = RAM_ADDR;
-    coreInfo.memory.size      = RAM_SIZE;
+    if (read_core_id() != 0) {
+        CoreInfo tmpInfo;
+        MemoryBlock::copy((void *)&tmpInfo,
+            (void *)SunxiCoreServer::SecondaryCoreInfoAddress, sizeof(coreInfo));
+        kernelBaseAddr = tmpInfo.kernel.phys;
+    }
 
-    // Initialize heap at the end of the kernel (and after embedded boot image)
-    coreInfo.heapAddress = coreInfo.bootImageAddress + coreInfo.bootImageSize;
-    coreInfo.heapAddress &= PAGEMASK;
-    coreInfo.heapAddress += PAGESIZE;
-    coreInfo.heapSize = MegaByte(1);
+    // Prepare early page tables and re-map the temporary stack
+    ARMPaging paging(&mem, (Address) &tmpPageDir, kernelBaseAddr);
+
+    // Activate MMU
+    paging.activate(true);
+
+    // Fill coreInfo for boot core
+    if (read_core_id() == 0)
+    {
+        BootImage *bootimage = (BootImage *) &__bootimg;
+        MemoryBlock::set(&coreInfo, 0, sizeof(CoreInfo));
+        coreInfo.bootImageAddress = (Address) (bootimage);
+        coreInfo.bootImageSize    = bootimage->bootImageSize;
+        coreInfo.kernel.phys      = RAM_ADDR;
+        coreInfo.kernel.size      = MegaByte(4);
+        coreInfo.memory.phys      = RAM_ADDR;
+        coreInfo.memory.size      = RAM_SIZE;
+        coreInfo.coreChannelAddress = coreInfo.bootImageAddress + coreInfo.bootImageSize;
+    }
+    // Copy CoreInfo prepared by the CoreServer
+    else
+    {
+        MemoryBlock::copy((void *)&coreInfo,
+            (void *)SunxiCoreServer::SecondaryCoreInfoAddress, sizeof(coreInfo));
+    }
+
+    // Clear BSS
+    MemoryBlock::set(&__bss_start, 0, &__bss_end - &__bss_start);
+
+    // Initialize heap
+    coreInfo.heapAddress = (Address) &__heap_start;
+    coreInfo.heapSize    = (Size) ((Address) &__heap_end - (Address)&__heap_start);
     Kernel::heap(coreInfo.heapAddress, coreInfo.heapSize);
 
     // Run all constructors first
     constructors();
 
-    // Open the serial console as default Log
-    NS16550 uart(UART0_IRQ);
-    uart.initialize();
+    // Open serial console as default Log
+    NS16550 *uart = new NS16550(UART0_IRQ);
+    uart->initialize();
+    DeviceLog *console = new DeviceLog(*uart);
 
-    DeviceLog console(uart);
-    console.setMinimumLogLevel(Log::Notice);
+    // Only the boot core outputs notifications
+    if (read_core_id() == 0)
+        console->setMinimumLogLevel(Log::Notice);
+    else
+        console->setMinimumLogLevel(Log::Warning);
 
     // Create the kernel
-    SunxiKernel kernel(&coreInfo);
+    SunxiKernel *kernel = new SunxiKernel(&coreInfo);
 
     // Run the kernel
-    return kernel.run();
+    return kernel->run();
 }

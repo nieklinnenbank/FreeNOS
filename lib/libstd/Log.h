@@ -20,7 +20,6 @@
 
 #include "Singleton.h"
 #include "Macros.h"
-#include "String.h"
 
 /**
  * @addtogroup lib
@@ -43,11 +42,6 @@
         (*Log::instance) << "[" typestr "] " << __FILE__ ":" <<  __LINE__ << " " << __FUNCTION__ << " -- " << msg << "\r\n"; \
     }
 
-/** Action to take after printing a fatal error message */
-#ifndef FATAL_ACTION
-#define FATAL_ACTION for (;;);
-#endif /* FATAL_ACTION */
-
 /**
  * Output a critical message and terminate program immediatly.
  *
@@ -56,7 +50,7 @@
 #define FATAL(msg) \
     { \
         MAKE_LOG(Log::Emergency, "Emergency", msg); \
-        { FATAL_ACTION } \
+        if (Log::instance) Log::instance->terminate(); \
     }
 
 /**
@@ -101,6 +95,11 @@
  */
 class Log : public Singleton<Log>
 {
+  private:
+
+    /** Size of the log buffer in bytes */
+    static const Size LogBufferSize = 512;
+
   public:
 
     /** Logging level values */
@@ -161,6 +160,11 @@ class Log : public Singleton<Log>
      */
     const char * getIdent() const;
 
+    /**
+     * Terminate the program immediately.
+     */
+    virtual void terminate() const;
+
   protected:
 
     /**
@@ -176,8 +180,11 @@ class Log : public Singleton<Log>
     /** Identity */
     const char *m_ident;
 
-    /** Buffered output */
-    String m_outputBuffer;
+    /** Output line is stored here until written using write() */
+    char m_outputBuffer[LogBufferSize];
+
+    /** Number of characters written in the output buffer */
+    Size m_outputBufferWritten;
 };
 
 /**

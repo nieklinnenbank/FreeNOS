@@ -67,23 +67,23 @@ MemoryContext::Result IntelPageDirectory::map(Address virt,
                                               SplitAllocator *alloc)
 {
     IntelPageTable *table = getPageTable(virt, alloc);
-    Allocator::Arguments alloc_args;
+    Allocator::Range allocPhys, allocVirt;
 
     // Check if the page table is present.
     if (!table)
     {
-        alloc_args.address = 0;
-        alloc_args.size = sizeof(IntelPageTable);
-        alloc_args.alignment = PAGESIZE;
+        allocPhys.address = 0;
+        allocPhys.size = sizeof(IntelPageTable);
+        allocPhys.alignment = PAGESIZE;
 
         // Allocate a new page table
-        if (alloc->allocateLow(alloc_args) != Allocator::Success)
+        if (alloc->allocate(allocPhys, allocVirt) != Allocator::Success)
             return MemoryContext::OutOfMemory;
 
-        MemoryBlock::set(alloc->toVirtual(alloc_args.address), 0, sizeof(IntelPageTable));
+        MemoryBlock::set((void *)allocVirt.address, 0, sizeof(IntelPageTable));
 
         // Assign to the page directory
-        m_tables[ DIRENTRY(virt) ] = alloc_args.address | PAGE_PRESENT | PAGE_WRITE | flags(access);
+        m_tables[ DIRENTRY(virt) ] = allocPhys.address | PAGE_PRESENT | PAGE_WRITE | flags(access);
         table = getPageTable(virt, alloc);
     }
     return table->map(virt, phys, access);
@@ -107,7 +107,10 @@ MemoryContext::Result IntelPageDirectory::translate(Address virt,
     {
         if (m_tables[DIRENTRY(virt)] & PAGE_SECTION)
         {
-            *phys = (m_tables[DIRENTRY(virt)] & PAGEMASK) + ((virt % MegaByte(4)) & PAGEMASK);
+            const Address offsetInSection = virt % MegaByte(4);
+
+            *phys = (m_tables[DIRENTRY(virt)] & SECTIONMASK) +
+                    ((offsetInSection / PAGESIZE) * PAGESIZE);
             return MemoryContext::Success;
         }
         return MemoryContext::InvalidAddress;
@@ -156,7 +159,21 @@ MemoryContext::Result IntelPageDirectory::releaseRange(Memory::Range range,
                 {
                     if (table->translate(range.virt + i + j, &phys) == MemoryContext::Success)
                     {
-                        alloc->release(phys);
+                        // Some pages that are part of the boot core's memory region
+                        // are mapped on secondary cores. They can't be released there.
+                        const Address allocBase = alloc->base();
+                        const Size allocSize = alloc->size();
+                        if (phys < allocBase || phys > allocBase + allocSize)
+                        {
+                            continue;
+                        }
+
+                        // Note that some pages may have double mappings.
+                        // Avoid attempting to release the same page twice or more.
+                        if (alloc->isAllocated(phys))
+                        {
+                            alloc->release(phys);
+                        }
                     }
                 }
             }

@@ -28,7 +28,13 @@ void multibootToCoreInfo(MultibootInfo *info)
     coreInfo.kernel.phys = 0;
     coreInfo.kernel.size = MegaByte(4);
     coreInfo.memory.phys = 0;
-    coreInfo.memory.size = (info->memUpper * 1024) + MegaByte(1);
+
+    // Limit maximum supported memory to 1GiB
+    if (info->memUpper <= (1024 * 1024)) {
+        coreInfo.memory.size = (info->memUpper * 1024) + MegaByte(1);
+    } else {
+        coreInfo.memory.size = 1024 * 1024 * 1024;
+    }
 
     // Fill the kernel command line
     MemoryBlock::copy(coreInfo.kernelCommand, (void *)info->cmdline, KERNEL_PATHLEN);
@@ -48,4 +54,6 @@ void multibootToCoreInfo(MultibootInfo *info)
             break;
         }
     }
+
+    coreInfo.coreChannelAddress = coreInfo.bootImageAddress + coreInfo.bootImageSize;
 }

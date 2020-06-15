@@ -21,21 +21,18 @@
 #include <ListIterator.h>
 #include <SplitAllocator.h>
 #include "ProcessEvent.h"
+#include "ProcessManager.h"
 
 ProcessShares::ProcessShares(ProcessID pid)
 {
     m_pid    = pid;
     m_memory = ZERO;
-    m_kernelChannel = new MemoryChannel;
 }
 
 ProcessShares::~ProcessShares()
 {
     ProcessManager *procs = Kernel::instance->getProcessManager();
     List<ProcessID> pids;
-
-    // Cleanup members
-    delete m_kernelChannel;
 
     // Make a list of unique process IDs which
     // have a share with this Process
@@ -90,9 +87,13 @@ ProcessShares::Result ProcessShares::createShare(ProcessID pid,
                                                  Size size)
 {
     MemoryShare *share = ZERO;
+    MemoryContext::Result result = MemoryContext::Success;
 
     if (size == 0 || size % PAGESIZE)
         return InvalidArgument;
+
+    // This code currently does not support intra-core IPC
+    assert(coreId == coreInfo.coreId);
 
     // Allocate MemoryShare objects
     share  = new MemoryShare;
@@ -108,8 +109,25 @@ ProcessShares::Result ProcessShares::createShare(ProcessID pid,
     share->tagId      = tagId;
     share->range.virt = virt;
     share->range.size = size;
-    m_memory->lookup(share->range.virt, &share->range.phys);
-    m_memory->access(share->range.virt, &share->range.access);
+
+    // Translate to physical address
+    if ((result = m_memory->lookup(share->range.virt, &share->range.phys)) != MemoryContext::Success)
+    {
+        ERROR("failed to translate share virtual address at " <<
+             (void *)share->range.virt << ": " << (int)result);
+        delete share;
+        return MemoryMapError;
+    }
+    assert(!(share->range.phys & ~PAGEMASK));
+
+    // Retrieve memory access permissions
+    if ((result = m_memory->access(share->range.virt, &share->range.access)) != MemoryContext::Success)
+    {
+        ERROR("failed to retrieve share access permissions for virtual address " <<
+             (void *)share->range.virt << ": " << (int)result);
+        delete share;
+        return MemoryMapError;
+    }
 
     // insert into shares list
     m_shares.insert(*share);
@@ -123,9 +141,8 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
     MemoryShare *remoteShare = ZERO;
     MemoryContext *localMem  = m_memory;
     MemoryContext *remoteMem = instance.getMemoryContext();
-    Address paddr, vaddr;
     Arch::Cache cache;
-    Allocator::Arguments alloc_args;
+    Allocator::Range allocPhys, allocVirt;
 
     if (share->range.size == 0)
         return InvalidArgument;
@@ -152,28 +169,26 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
     }
 
     // Allocate actual pages
-    alloc_args.address = 0;
-    alloc_args.size = share->range.size;
-    alloc_args.alignment = PAGESIZE;
+    allocPhys.address = 0;
+    allocPhys.size = share->range.size;
+    allocPhys.alignment = PAGESIZE;
 
-    if (Kernel::instance->getAllocator()->allocateLow(alloc_args) != Allocator::Success)
+    if (Kernel::instance->getAllocator()->allocate(allocPhys, allocVirt) != Allocator::Success)
     {
         ERROR("failed to allocate pages for MemoryShare");
         return OutOfMemory;
     }
-    paddr = alloc_args.address;
 
     // Zero out the pages
-    vaddr = (Address) Kernel::instance->getAllocator()->toVirtual(paddr);
-    MemoryBlock::set((void *)vaddr, 0, share->range.size);
+    MemoryBlock::set((void *) allocVirt.address, 0, share->range.size);
     for (Size i = 0; i < share->range.size; i+=PAGESIZE)
-        cache.cleanData(vaddr + i);
+        cache.cleanData(allocVirt.address + i);
 
     // Fill the local share object
     localShare->pid        = instance.getProcessID();
     localShare->coreId     = Kernel::instance->getCoreInfo()->coreId;
     localShare->tagId      = share->tagId;
-    localShare->range.phys = paddr;
+    localShare->range.phys = allocPhys.address;
     localShare->range.size = share->range.size;
     localShare->range.access = Memory::User | share->range.access;
     localShare->attached   = true;
@@ -243,6 +258,8 @@ ProcessShares::Result ProcessShares::removeShares(ProcessID pid)
 
 ProcessShares::Result ProcessShares::releaseShare(MemoryShare *s, Size idx)
 {
+    assert(s->coreId == coreInfo.coreId);
+
     // Only release physical memory if both processes have detached.
     // Note that in case all memory shares for a certain ProcessID have
     // been detached but not yet released, and due to a very unlikely race
@@ -262,15 +279,19 @@ ProcessShares::Result ProcessShares::releaseShare(MemoryShare *s, Size idx)
             for (Size i = 0; i < size; i++)
             {
                 MemoryShare *otherShare = (MemoryShare *) shares.m_shares.get(i);
-                if (otherShare && otherShare->pid == m_pid
-                               && otherShare->coreId == s->coreId)
+                if (otherShare)
                 {
-                    otherShare->attached = false;
+                    assert(otherShare->coreId == coreInfo.coreId);
+
+                    if (otherShare->pid == m_pid && otherShare->coreId == s->coreId)
+                    {
+                        otherShare->attached = false;
+                    }
                 }
             }
         }
     }
-    else
+    else if (s->pid != KERNEL_PID)
     {
         // Only release physical memory pages if the other
         // process already detached earlier
@@ -297,6 +318,8 @@ ProcessShares::Result ProcessShares::readShare(MemoryShare *share)
     {
         if ((s = m_shares.get(i)) != ZERO)
         {
+            assert(s->coreId == coreInfo.coreId);
+
             if (s->pid == share->pid &&
                 s->coreId == share->coreId &&
                 s->tagId == share->tagId)

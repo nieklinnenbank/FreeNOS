@@ -34,28 +34,21 @@ def binary_func(target, source, env):
 
     # Output header.
     fout.write("/*\n" +
-	       " * This file is auto-generated from " + str(source[0]) + "\n" +
-	       " */\n"
-	       "\n"
-	       "unsigned char __attribute__((aligned(4096))) " +
-	                     "__attribute__((__section__(\".binary\"))) " +
-	        symbol + "[] = { ")
+               " * This file is auto-generated from " + str(source[0]) + "\n" +
+               " */\n"
+               "\n"
+               "unsigned char __attribute__((aligned(4096))) " +
+                             "__attribute__((__section__(\".binary\"))) " +
+                symbol + "[] = { ")
 
     # Loop data.
     i = 0
     while i < len(data):
-	fout.write("0x" + data[i] + data[i+1])
+        fout.write("0x" + data[i] + data[i+1])
 
-	if i < len(data) - 2:
-	    fout.write(",")
-	i += 2
-
-    #for i in range(0, len(data)):
-#
-#	fout.write(data[i])
-#
-#	if i < len(data) - 1:
-#	    fout.write(",")
+        if i < len(data) - 2:
+            fout.write(",")
+        i += 2
 
     # Output footer.
     fout.write("};\n\n")

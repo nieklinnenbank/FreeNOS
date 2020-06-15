@@ -35,8 +35,11 @@
 #define UART0_IRQ       32
 #define ARMTIMER_IRQ    29
 
-#define RAM_ADDR (0x40000000)
-#define RAM_SIZE (1024 * 1024 * 256)
+#define RAM_ADDR        (0x40000000)
+#define RAM_SIZE        (1024 * 1024 * 256)
+#define TMPSTACKADDR    (RAM_ADDR + (1024 * 1024 * 32))
+
+#define SYSTEM_FREQ     24000000
 
 #include <arm/ARMConstant.h>
 

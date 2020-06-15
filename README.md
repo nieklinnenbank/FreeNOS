@@ -10,13 +10,13 @@ Visit the project website at http://www.FreeNOS.org for more information.
 Features
 ========
 
-* Intel x86 (PC) and ARMv6/ARMv7 architectures (Raspberry Pi 1,2,3)
+* Intel x86 (PC) and ARMv6/ARMv7 architectures (Raspberry Pi 1,2,3, Allwinner H2+/H3)
 * Virtual memory
 * Simple task scheduling
 * Inter Process Communication (IPC)
-* Symmetric Multi Processing with MPI support (Intel x86 only)
+* Symmetric Multi Processing with MPI support
 * Devices:
-    * VGA/Keyboard consoles (also supported by Ed's libteken (http://80386.nl/projects/libteken/)
+    * VGA/Keyboard consoles (also supported by Ed's libteken http://80386.nl/projects/libteken/)
     * i8250 serial UART
     * PCI host controller
     * CMOS RTC clock
@@ -31,23 +31,25 @@ Features
 * POSIX, ANSI C libraries
 * Dynamic and Shared memory
 * Fully automatic autotester
-* All sources documented with Doxygen (http://www.doxygen.org)
+* Automated continuous integration using jenkins (http://www.jenkins.io) and Vagrant (http://www.vagrantup.com)
+* All sources documented with Doxygen (http://www.doxygen.org/)
 * User and kernel code written from scratch in C++
 * Very small microkernel (~2K lines of C++ code including a tiny part in assembly)
-* Builds with recent GCC (http://gcc.gnu.org), LLVM (http://www.llvm.org) and SCons (http://www.scons.org) versions on POSIX systems
+* Builds with recent GCC (http://gcc.gnu.org/), LLVM (http://www.llvm.org/) and SCons (http://www.scons.org/) versions on POSIX systems
 
 Host Setup
 ==========
 
-First install all required build dependencies. FreeNOS needs SCons, an C++ compiler and for Intel targets a tool to generate ISO images.
-Follow the instructions below to install the build dependencies on your host OS.
+First install all required build dependencies. FreeNOS needs SCons, an C++ compiler and
+for Intel targets a tool to generate ISO images. Follow the instructions below to install
+the build dependencies on your host OS.
 
 *Ubuntu*
 
 Update your system repository cache and install the required development tools using:
 
     $ sudo apt-get update
-    $ sudo apt-get install build-essential scons genisoimage xorriso qemu-system binutils-multiarch
+    $ sudo apt-get install build-essential scons genisoimage xorriso qemu-system binutils-multiarch u-boot-tools
 
 If your Ubuntu host is 64-bit, you need to install the GCC multilib package
 to cross compile for the 32-bit architecture:
@@ -64,7 +66,7 @@ Update your system repository cache and install the required development tools u
 
     % su -
     # pkg update
-    # pkg install qemu scons cdrkit-genisoimage xorriso gcc
+    # pkg install qemu scons cdrkit-genisoimage xorriso gcc u-boot-tools
 
 On FreeBSD, make sure that the latest version of the GNU linker (from pkg) is used:
 
@@ -135,7 +137,17 @@ use the following command:
 
     $ scons qemu
 
-To debug FreeNOS using GDB, you need to have build using the DEBUG=False build variable.
+To debug FreeNOS using GDB, you need to build with the build variable DEBUG=True.
+Debugging symbols must available in the compiled programs which the debugger needs to
+translate between source code, CPU instructions and vice versa. Compiler optimizations
+are disabled with DEBUG=True, which gives reduced performance but improved
+debugging experience. By default, the DEBUG build variable is already set to True.
+
+In case you have configured your build.conf with DEBUG=False, you can pass it on
+the commandline (or edit your build.conf to set DEBUG to True):
+
+    $ scons DEBUG=True
+
 Ensure that your host OS has GDB available for debugging the target architecture (Intel or ARM).
 For Ubuntu:
 
@@ -261,6 +273,96 @@ file to ensure the first UART is available on GPIO pins 8 and 10:
     dtoverlay=pi3-miniuart-bt
     enable_uart=1
 
+arm/sunxi-h3
+------------
+
+### U-Boot on SD Card ###
+
+FreeNOS has support for ARM boards with Allwinner H3 System-on-chips such as the Orange Pi PC
+and Orange Pi Zero (H2+ is a H3 variant). To build FreeNOS for the Allwinner H3, copy the
+provided configuration file:
+
+    $ cp config/arm/sunxi-h3/build.conf .
+    $ scons
+
+The kernel image in U-Boot format can be copied to an SD card with U-Boot installed:
+
+    $ cp build/arm/sunxi-h3/kernel/arm/sunxi-h3/kernel.ub /media/sdcard/kernel.ub
+
+To install U-Boot mainline on the SD-card, clone the source and select the proper
+configuration for your board (Orange Pi PC: orangepi_pc_defconfig, Orange Pi Zero: orangepi_zero_defconfig):
+
+    $ git clone https://gitlab.denx.de/u-boot/u-boot u-boot-git
+    $ cd u-boot-git
+    $ ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- make mrproper
+    $ ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- make orangepi_pc_defconfig
+
+To change the default configuration, enter the Kconfig interactive editor using:
+
+    $ ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- make menuconfig
+
+Before building, you need to select the following configuration item:
+
+    Device Tree Control > Provider for DTB for DT Control > Embedded DTB
+
+To build the U-Boot binary, simply use make without any arguments:
+
+    $ ARCH=arm CROSS_COMPILE=arm-linux-gnueabi- make
+
+The file u-boot-sunxi-with-spl.bin is now ready to be written to the SD card:
+
+    $ sudo dd if=u-boot-sunxi-with-spl.bin of=/dev/sdXXX bs=1024 seek=8 conv=notrunc
+
+Insert the SD card in the target board with the UART console connected and enter the following commands
+in the U-Boot interactive console to load and start FreeNOS:
+
+    => setenv bootm_boot_mode sec
+    => fatload mmc 0:1 0x400fffc0 kernel.ub
+    14757888 bytes read in 670 ms (21 MiB/s)
+    => bootm 0x400fffc0
+
+### U-Boot on SPI Flash ###
+
+Alternatively, the Orange Pi Zero board contains a small SPI flash which can also be used to install U-Boot.
+This can be done using the Allwinner Sunxi Tools via a special FEL mode via USB. First clone and build the sunxi-tools:
+
+    $ git clone https://github.com/linux-sunxi/sunxi-tools
+    $ cd sunxi-tools
+
+Connect your board via USB-cable to your PC and verify that FEL mode works:
+
+    $ sunxi-fel ver
+
+When you have build U-Boot using the previous steps, write the U-Boot binary to the flash with:
+
+    $ ./sunxi-fel -v -p spiflash-write 0 ../u-boot/u-boot-sunxi-with-spl.bin
+
+With this change the board will not enter FEL mode anymore. In order to re-write the SPI flash, you can erase
+the flash using Armbian. Download the latest Armbian image for Orange Pi Zero at https://www.armbian.com/orange-pi-zero/.
+Mount the image and edit the file /boot/armbianEnv.txt. Add the following entries to enable /dev/mtd0:
+
+    spi-jedec-nor
+    param_spinor_spi_bus=0
+
+Start the board from the modified Armbian image and run the following commands to erase the SPI flash:
+
+    $ sudo apt-get install mtd-utils
+    $ sudo flash_erase /dev/mtd0 0 0200000
+
+### U-Boot on Qemu/TFTP ###
+
+An alternative for testing the boot process using U-Boot is with Qemu. You can start U-Boot via Qemu as the kernel
+to be loaded using -kernel and provide tftp= argument for -netdev to enable the integrated TFTP server in Qemu.
+The following commands can be used to download the FreeNOS image via TFTP and boot it:
+
+    $ qemu-system-arm -M orangepi-pc -kernel /path/to/u-boot/u-boot -nographic \
+         -net nic,id=net0 -netdev user,id=hub0port0,tftp=/path/to/FreeNOS/
+    ...
+    => setenv bootm_boot_mode sec
+    => dhcp
+    => tftp 0x400fffc0 build/arm/sunxi-h3/kernel/arm/sunxi-h3/kernel.ub
+    => bootm 0x400fffc0
+
 Using FreeNOS
 =============
 
@@ -319,13 +421,85 @@ where it computes the same number of primes:
 Jenkins Continuous Integration
 ==============================
 
-Master Setup
-------------
+Automated with Vagrant
+----------------------
+The installation and configuration of continuous integration for FreeNOS is fully automated
+using Vagrant (https://www.vagrantup.com/). Vagrant is an open source program which automates
+the creation and configuration of virtual machines of various types of backends, for example
+Virtual Box and libvirt / KVM. FreeNOS provides a few script files which can be used by Vagrant
+to create the Jenkins master and slave nodes automatically, configure them and start build jobs.
 
-$ sudo apt-get install vagrant vagrant-libvirt libvirt-bin qemu-kvm
+Install Vagrant from the official website at https://www.vagrantup.com/ or via your OS package
+manager. For example, on Ubuntu Linux:
 
-Install Jenkins on your host OS using your favorite package manager or from the official website (https://jenkins.io/).
-Follow the installation wizard instructions and after installation go to the Jenkins web interface at: http://localhost:8080
+    $ sudo apt-get install vagrant
+
+Vagrant must have a backend virtual machine hypervisor to run the actual VM's. This can be
+done using any of the supported backend, for example VirtualBox or libvirt/KVM. For full details
+on how to setup Vagrant for your VM backend, please visit: https://www.vagrantup.com/docs/installation/.
+
+To install and use libvirt / KVM using Vagrant on Ubuntu Linux, first ensure that hardware virtualization
+extensions for your processor is enabled in the BIOS of your computer. After that, use the following
+commands to install libvirt, KVM and Vagrant libvirt support:
+
+    $ sudo apt-get install vagrant-libvirt libvirt-bin libvirt-dev qemu-kvm qemu-utils qemu
+
+On Ubuntu 20.04:
+
+    $ sudo apt-get install libvirt-clients libvirt-daemon-system qemu-kvm vagrant-libvirt
+
+Add yourself to the libvirt usergroup in order to use the libvirt installation:
+
+    $ sudo usermod -a -G libvirt my_userid
+
+Test if libvirt with KVM is working properly:
+
+    $ virsh list
+
+If you do not get any errors, libvirt with KVM should be working.
+
+To bring up the master machine, install it and start jenkins, use:
+
+    $ cd /path/to/FreeNOS
+    $ cd support/jenkins
+    $ vagrant up master
+
+After installation completes, open your webbrowser at http://localhost:8888/ to use Jenkins.
+The default username and password are: admin, admin.
+
+To bring up the Ubuntu slave use:
+
+    $ vagrant up ubuntu1804
+
+Similarly, bring up the FreeBSD 12.0 slave with:
+
+    $ vagrant up freebsd12
+
+When you wish to automatically bring up all the machines, install and configure them and also
+automatically run the jobs, simply use the following command. Note that this will consume
+lots of CPU and RAM:
+
+    $ vagrant up
+
+After making changes to the FreeNOS code, it is possible to re-run the jenkins jobs by
+provisioning the slaves again with:
+
+    $ vagrant provision freebsd12
+    $ vagrant provision ubuntu1804
+
+This will ensure the slaves are fully updated to the latest OS and compilers and runs
+the Jenkins jobs for all available configurations.
+
+Note for windows users with Vagrant: do not set core.autocrlf to true in git, as otherwise the
+source files will get \r\n characters added, leading to errors in the bash scripts.
+
+Jenkins Master (Manual Install)
+-------------------------------
+
+The following sections describe how to install Jenkins manually on your host OS for continuous
+integration of FreeNOS. Install Jenkins on your host OS using your favorite package manager or
+from the official website (https://jenkins.io/). Follow the installation wizard instructions and
+after installation go to the Jenkins web interface at: http://localhost:8080
 
 After installation, navigate to: Manage Jenkins > Manage Plugins
 Make sure the following plugins are installed. Choose the plugins from the 'Available' tab to find the plugins
@@ -395,8 +569,8 @@ are started, for example:
 Also visit the following page for more details on this automatic DNS setup for KVM:
 https://liquidat.wordpress.com/2017/03/03/howto-automated-dns-resolution-for-kvmlibvirt-guests-with-a-local-domain/
 
-FreeBSD 12.0 Slave
-------------------
+FreeBSD 12.0 Slave (Manual Install)
+-----------------------------------
 
 Run the example installation script in ./support/jenkins/freebsd-12.sh from the FreeNOS sources
 to setup the KVM guest with FreeBSD 12.0. Also see the comments in the installation script for more info:

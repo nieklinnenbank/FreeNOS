@@ -29,6 +29,7 @@ RETRIES=10
 #
 # Arguments:
 #  $1 : command to run
+#  $2 : error exit code to ignore and treat as a success (optional)
 #
 function run_command_retry
 {
@@ -36,8 +37,14 @@ function run_command_retry
         if $1; then
             return
         else
-            echo "Command '$1' failed (retry #$i)"
-            sleep $WAITTIME
+            err=$?
+            if test $# -gt 1 && test $err -eq $2; then
+                echo "Command '$1' exited with code $err: ignored"
+                return
+            else
+                echo "Command '$1' failed (retry #$i)"
+                sleep $WAITTIME
+            fi
         fi
     done
 

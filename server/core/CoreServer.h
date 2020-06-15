@@ -15,15 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CORE_CORESERVER_H
-#define __CORE_CORESERVER_H
+#ifndef __SERVER_CORE_CORESERVER_H
+#define __SERVER_CORE_CORESERVER_H
 
 #include <FreeNOS/System.h>
-#include <FreeNOS/API.h>
 #include <ChannelServer.h>
 #include <List.h>
-#include <ListIterator.h>
-#include <String.h>
 #include <Types.h>
 #include <Macros.h>
 #include <Index.h>
@@ -31,12 +28,8 @@
 #include <MemoryChannel.h>
 #include <FileSystemMessage.h>
 #include <CoreInfo.h>
-
-#ifdef INTEL
-#include <intel/IntelAPIC.h>
-#include <intel/IntelMP.h>
-#include <intel/IntelACPI.h>
-#endif /* INTEL */
+#include <Factory.h>
+#include <CoreManager.h>
 
 /**
  * @addtogroup server
@@ -51,17 +44,11 @@
  *
  * Each core in a system will run its own instance of CoreServer.
  * CoreServers will communicate and collaborate together to implement functionality.
- *
- * @note Multiprocessor support is only implemented for the Intel architecture
- *
- * @see IntelMP
  */
 class CoreServer : public ChannelServer<CoreServer, FileSystemMessage>
+                 , public AbstractFactory<CoreServer>
 {
   private:
-
-    /** Inter-Processor-Interrupt vector number */
-    static const uint IPIVector = 50;
 
     /** Number of times to busy wait on receiving a message */
     static const Size MaxMessageRetry = 128;
@@ -93,14 +80,63 @@ class CoreServer : public ChannelServer<CoreServer, FileSystemMessage>
     CoreServer();
 
     /**
+     * Run a ping-pong test
+     *
+     * @return Result code
+     */
+    Result test();
+
+    /**
+     * Routine for the slave processor core
+     *
+     * @return Exit code
+     */
+    int runCore();
+
+    /**
      * Initialize the server
      *
      * @return Result code
      */
-    Result initialize();
+    virtual Result initialize();
+
+  private:
 
     /**
      * Boot a processor core
+     *
+     * @param coreId Core identifier number
+     * @param info CoreInfo pointer containing specific core information
+     *
+     * @return Result code
+     */
+    virtual Result bootCore(uint coreId, CoreInfo *info) = 0;
+
+    /**
+     * Discover processor cores
+     *
+     * @return Result code
+     */
+    virtual Result discoverCores() = 0;
+
+    /**
+     * Wait for Inter-Processor-Interrupt
+     */
+    virtual void waitIPI() const = 0;
+
+    /**
+     * Send Inter-Processor-Interrupt
+     *
+     * @param coreId Core identifier number
+     *
+     * @return Result code
+     */
+    virtual Result sendIPI(uint coreId) = 0;
+
+  private:
+
+    /**
+     * Prepare processor core for booting
      *
      * @param coreId Core identifier number
      * @param info CoreInfo pointer containing specific core information
@@ -108,14 +144,14 @@ class CoreServer : public ChannelServer<CoreServer, FileSystemMessage>
      *
      * @return Result code
      */
-    Result bootCore(uint coreId, CoreInfo *info, ExecutableFormat::Region *regions);
+    Result prepareCore(uint coreId, CoreInfo *info, ExecutableFormat::Region *regions);
 
     /**
-     * Discover processor cores
+     * Prepare the CoreInfo array
      *
      * @return Result code
      */
-    Result discover();
+    Result prepareCoreInfo();
 
     /**
      * Load operating system kernel
@@ -130,22 +166,6 @@ class CoreServer : public ChannelServer<CoreServer, FileSystemMessage>
      * @return Result code
      */
     Result bootAll();
-
-    /**
-     * Run a ping-pong test
-     *
-     * @return Result code
-     */
-    Result test();
-
-    /**
-     * Routine for the slave processor core
-     *
-     * @return Exit code
-     */
-    int runCore();
-
-  private:
 
     /**
      * Setup communication channels between CoreServers
@@ -220,14 +240,11 @@ class CoreServer : public ChannelServer<CoreServer, FileSystemMessage>
      */
     Result sendToSlave(uint coreId, FileSystemMessage *msg);
 
-  private:
+  protected:
 
-#ifdef INTEL
-    IntelAPIC m_apic;
-    IntelMP m_mp;
-    IntelACPI m_acpi;
     CoreManager *m_cores;
-#endif /* INTEL */
+
+  private:
 
     ExecutableFormat *m_kernel;
     u8 *m_kernelImage;
@@ -251,4 +268,4 @@ class CoreServer : public ChannelServer<CoreServer, FileSystemMessage>
  * @}
  */
 
-#endif /* __CORE_CORESERVER_H */
+#endif /* __SERVER_CORE_CORESERVER_H */

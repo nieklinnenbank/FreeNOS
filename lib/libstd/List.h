@@ -110,7 +110,6 @@ template <class T> class List : public Sequence<T>
      */
     void prepend(T t)
     {
-        assertRead(t);
 
         // Create a new node with the item.
         Node *node = new Node(t);
@@ -139,7 +138,6 @@ template <class T> class List : public Sequence<T>
      */
     void append(T t)
     {
-        assertRead(t);
 
         Node *node = new Node(t);
         node->prev = m_tail;
@@ -169,7 +167,6 @@ template <class T> class List : public Sequence<T>
      */
     virtual int remove(T t)
     {
-        assertRead(t);
 
         Node *node = m_head;
         Node *next;
@@ -224,7 +221,6 @@ template <class T> class List : public Sequence<T>
      */
     virtual bool contains(const T t) const
     {
-        assertRead(t);
 
         for (Node *i = m_head; i; i = i->next)
             if (i->data == t)

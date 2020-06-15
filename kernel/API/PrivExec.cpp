@@ -16,6 +16,7 @@
  */
 
 #include <Log.h>
+#include <FreeNOS/ProcessManager.h>
 #include "PrivExec.h"
 
 API::Result PrivExecHandler(PrivOperation op, Address addr)

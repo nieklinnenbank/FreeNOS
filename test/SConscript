@@ -20,8 +20,9 @@ Import('*')
 SubDirectories()
 
 env = build_env.Clone()
-env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libexec', 'libarch', 'libtest', 'libipc' ])
-env.UseLibraries([ 'libtest', 'libstd' ], 'host')
+env.UseLibraries([ 'libposix', 'libapp', 'liballoc', 'libstd',
+                   'libexec', 'libarch', 'libtest', 'libipc', 'librt' ])
+env.UseLibraries([ 'libtest', 'libapp', 'libstd' ], 'host')
 env.UseServers([ 'terminal', 'filesystem' ])
 
 env.TargetHostProgram('run', ['Main.cpp'])

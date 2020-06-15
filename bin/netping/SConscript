@@ -18,6 +18,7 @@
 Import('build_env')
 
 env = build_env.Clone()
-env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libexec', 'libarch', 'libnet', 'libipc', 'libfs' ])
+env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libexec',
+                   'libarch', 'libnet', 'libipc', 'libfs', 'librt', 'libapp' ])
 env.UseServers(['core'])
 env.TargetProgram('netping', Glob('*.cpp'), env['bin'])

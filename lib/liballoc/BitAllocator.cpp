@@ -15,12 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <Assert.h>
 #include "BitAllocator.h"
 
-BitAllocator::BitAllocator(Memory::Range range, Size chunkSize)
-    : Allocator()
+BitAllocator::BitAllocator(const Allocator::Range range, const Size chunkSize)
+    : Allocator(range)
     , m_array(range.size / chunkSize)
-    , m_base(range.phys)
     , m_chunkSize(chunkSize)
 {
 }
@@ -30,78 +30,65 @@ Size BitAllocator::chunkSize() const
     return m_chunkSize;
 }
 
-Size BitAllocator::size() const
-{
-    return m_array.size() * m_chunkSize;
-}
-
 Size BitAllocator::available() const
 {
     return m_array.count(false) * m_chunkSize;
 }
 
-Address BitAllocator::base() const
-{
-    return m_base;
-}
-
-BitArray * BitAllocator::getBitArray()
-{
-    return &m_array;
-}
-
-Allocator::Result BitAllocator::allocate(Allocator::Arguments & args)
+Allocator::Result BitAllocator::allocate(Allocator::Range & args)
 {
     return allocate(args, 0);
 }
 
-Allocator::Result BitAllocator::allocate(Allocator::Arguments & args,
-                                         Address allocStart)
+Allocator::Result BitAllocator::allocate(Allocator::Range & args,
+                                         const Address allocStart)
 {
     Size num = (args.size) / m_chunkSize;
     BitArray::Result result;
-    Size bit;
+    Size bit, alignment = 1;
 
     if ((args.size) % m_chunkSize)
         num++;
 
-    if (!args.alignment)
-        args.alignment = 1;
-    else if (args.alignment % m_chunkSize)
-        return InvalidAlignment;
-    else
-        args.alignment /= m_chunkSize;
+    if (args.alignment)
+    {
+        if (args.alignment % m_chunkSize)
+            return InvalidAlignment;
+        else
+            alignment = args.alignment / m_chunkSize;
+    }
 
-    result = m_array.setNext(&bit, num, allocStart / m_chunkSize, args.alignment);
+    result = m_array.setNext(&bit, num, allocStart / m_chunkSize, alignment);
     if (result != BitArray::Success)
         return OutOfMemory;
 
-    args.address = m_base + (bit * m_chunkSize);
+    args.address = base() + (bit * m_chunkSize);
+
+    assert(isAllocated(args.address));
     return Success;
 }
 
-Allocator::Result BitAllocator::allocate(Address addr)
+Allocator::Result BitAllocator::allocate(const Address addr)
 {
-    if (addr < m_base || isAllocated(addr))
-        return InvalidAddress;
+    assert(!isAllocated(addr));
 
-    m_array.set((addr - m_base) / m_chunkSize);
+    m_array.set((addr - base()) / m_chunkSize);
     return Success;
 }
 
-bool BitAllocator::isAllocated(Address addr) const
+bool BitAllocator::isAllocated(const Address addr) const
 {
-    if (addr < m_base)
-        return false;
-    else
-        return m_array.isSet((addr - m_base) / m_chunkSize);
+    assert(addr >= base());
+    assert(addr < base() + size());
+    assert(((addr - base()) % m_chunkSize) == 0);
+
+    return m_array.isSet((addr - base()) / m_chunkSize);
 }
 
-Allocator::Result BitAllocator::release(Address addr)
+Allocator::Result BitAllocator::release(const Address addr)
 {
-    if (addr < m_base)
-        return InvalidAddress;
+    assert(isAllocated(addr));
 
-    m_array.unset((addr - m_base) / m_chunkSize);
+    m_array.unset((addr - base()) / m_chunkSize);
     return Success;
 }

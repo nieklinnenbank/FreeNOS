@@ -16,6 +16,7 @@
  */
 
 #include <FreeNOS/System.h>
+#include <FreeNOS/ProcessManager.h>
 #include <Log.h>
 #include <SplitAllocator.h>
 #include <CoreInfo.h>

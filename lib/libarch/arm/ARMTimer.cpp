@@ -16,49 +16,49 @@
  */
 
 #include <FreeNOS/System.h>
-#include <Log.h>
 #include "ARMCore.h"
 #include "ARMTimer.h"
 
-/** Timer enable. Set to enable timer. */
-#define CNTP_CTL_ENABLE  (1 << 0)
-
 ARMTimer::ARMTimer()
-    : m_frequency(0)
+    : m_initialTimerCounter(0)
 {
     m_int = ARMTIMER_IRQ;
 }
 
 u32 ARMTimer::getSystemFrequency(void) const
 {
-    return mrc(p15, 0, 0, c14, c0);
+    u32 f = mrc(p15, 0, 0, c14, c0);
+
+#ifdef SYSTEM_FREQ
+    if (f == 0)
+    {
+        f = SYSTEM_FREQ;
+    }
+#endif /* SYSTEM_FREQ */
+
+    return f;
 }
 
-void ARMTimer::setPL1Control(u32 value)
-{
-    mcr(p15, 0, 0, c14, c1, value);
-}
-
-void ARMTimer::setPL1PhysicalTimerValue(u32 value)
+void ARMTimer::setPL1PhysicalTimerValue(const u32 value)
 {
     mcr(p15, 0, 0, c14, c2, value);
 }
 
-void ARMTimer::setPL1PhysicalTimerControl(u32 value)
+void ARMTimer::setPL1PhysicalTimerControl(const u32 value)
 {
     mcr(p15, 0, 1, c14, c2, value);
 }
 
-ARMTimer::Result ARMTimer::setFrequency(Size hertz)
+ARMTimer::Result ARMTimer::setFrequency(const Size hertz)
 {
-    m_frequency = hertz;
+    m_initialTimerCounter = getSystemFrequency() / hertz;
     tick();
     return Success;
 }
 
 ARMTimer::Result ARMTimer::tick()
 {
-    setPL1PhysicalTimerValue(getSystemFrequency() / m_frequency);
-    setPL1PhysicalTimerControl(CNTP_CTL_ENABLE);
+    setPL1PhysicalTimerValue(m_initialTimerCounter);
+    setPL1PhysicalTimerControl(TimerControlEnable);
     return Success;
 }

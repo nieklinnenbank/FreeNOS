@@ -33,7 +33,7 @@ ARMProcess::ARMProcess(ProcessID id, Address entry, bool privileged, const Memor
 Process::Result ARMProcess::initialize()
 {
     Memory::Range range;
-    Allocator::Arguments alloc_args;
+    Allocator::Range alloc_args;
 
     // Create MMU context
     m_memoryContext = new ARMPaging(&m_map, Kernel::instance->getAllocator());
@@ -99,7 +99,7 @@ void ARMProcess::setWaitResult(uint result)
 
 void ARMProcess::execute(Process *previous)
 {
-    // Activate the memory context of this process
+    // Activates memory context of this process
     m_memoryContext->activate();
 
     // First process starts from loadCoreState0

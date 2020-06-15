@@ -25,12 +25,17 @@ IntelMP::IntelMP(IntelAPIC & apic)
     : CoreManager()
     , m_apic(apic)
 {
+}
+
+IntelMP::Result IntelMP::initialize()
+{
     SystemInformation info;
 
     m_bios.map(MPAreaAddr, MPAreaSize);
     m_lastMemory.map(info.memorySize - MegaByte(1), MegaByte(1));
-
     m_apic.getIO().map(IntelAPIC::IOBase, PAGESIZE);
+
+    return Success;
 }
 
 IntelMP::MPConfig * IntelMP::scanMemory(Address addr)
@@ -95,7 +100,10 @@ IntelMP::Result IntelMP::boot(CoreInfo *info)
 
     // Send inter-processor-interrupt to wakeup the processor
     if (m_apic.sendStartupIPI(info->coreId, MPEntryAddr) != IntController::Success)
+    {
+        ERROR("failed to send startup IPI via APIC");
         return IOError;
+    }
 
     // Wait until the core raises the 'booted' flag in CoreInfo
     while (1)

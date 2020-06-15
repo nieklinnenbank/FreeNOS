@@ -71,6 +71,7 @@ void Directory::insert(FileType type, const char *name, ...)
 
         // Create an fill entry object
         d = new Dirent;
+        assert(d != NULL);
         strlcpy(d->name, path, DIRENT_LEN);
         d->type = type;
         entries.append(d);

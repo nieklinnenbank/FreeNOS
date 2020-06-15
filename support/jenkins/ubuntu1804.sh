@@ -28,11 +28,12 @@ COMPILER_PACKAGES="gcc-4.8 gcc-4.8-multilib g++-4.8 g++-4.8-multilib \
                    clang-6.0 \
                    clang-7 \
                    clang-8 \
+                   clang-9 \
                    gcc-5-arm-linux-gnueabi g++-5-arm-linux-gnueabi \
                    gcc-6-arm-linux-gnueabi g++-6-arm-linux-gnueabi \
                    gcc-7-arm-linux-gnueabi g++-7-arm-linux-gnueabi \
                    gcc-8-arm-linux-gnueabi g++-8-arm-linux-gnueabi"
-MISC_PACKAGES="build-essential scons genisoimage xorriso binutils-multiarch"
+MISC_PACKAGES="build-essential scons genisoimage xorriso binutils-multiarch u-boot-tools"
 PACKAGES="$JENKINS_PACKAGES $COMPILER_PACKAGES $MISC_PACKAGES"
 
 # Include common functions
@@ -58,14 +59,14 @@ run_command_retry "apt-get update"
 run_command_retry "apt-get dist-upgrade -y"
 
 # Use Qemu from APT if not provided
-if [ ! -e qemu-src.tar.gz ] ; then
+if [ -z "$QEMU_URL" ] ; then
   PACKAGES="$PACKAGES qemu-system"
 elif [ ! -e /usr/local/bin/qemu-system-arm ] ; then
     # Compile Qemu from source
     run_command_retry "apt-get install -y build-essential pkg-config libglib2.0-dev libpixman-1-dev bison flex"
-    tar zxf qemu-src.tar.gz
-    rm qemu-src.tar.gz
-    cd qemu-*
+    rm -rf qemu-git
+    git clone --depth=1 -b $QEMU_BRANCH $QEMU_URL qemu-git
+    cd qemu-git
     ./configure --prefix=/usr/local --target-list=arm-softmmu,i386-softmmu
 
     if [ ! -z "$SLAVE_CPUS" ] ; then
@@ -74,8 +75,9 @@ elif [ ! -e /usr/local/bin/qemu-system-arm ] ; then
         make -j5
     fi
     make install
+    make clean
     cd ..
-    rm -rf qemu-*
+    rm -rf qemu-git
 fi
 
 # Extract generated source archive

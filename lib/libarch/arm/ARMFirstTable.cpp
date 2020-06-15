@@ -122,11 +122,7 @@ MemoryContext::Result ARMFirstTable::map(Address virt,
 {
     ARMSecondTable *table = getSecondTable(virt, alloc);
     Arch::Cache cache;
-    Allocator::Arguments alloc_args;
-
-    // Input addresses must be aligned on pagesize boundary
-    if ((phys & ~PAGEMASK) || (virt & ~PAGEMASK))
-        return MemoryContext::InvalidAddress;
+    Allocator::Range allocPhys, allocVirt;
 
     // Check if the page table is present.
     if (!table)
@@ -136,17 +132,17 @@ MemoryContext::Result ARMFirstTable::map(Address virt,
             return MemoryContext::AlreadyExists;
 
         // Allocate a new page table
-        alloc_args.address = 0;
-        alloc_args.size = sizeof(ARMSecondTable);
-        alloc_args.alignment = PAGESIZE;
+        allocPhys.address = 0;
+        allocPhys.size = sizeof(ARMSecondTable);
+        allocPhys.alignment = PAGESIZE;
 
-        if (alloc->allocateLow(alloc_args) != Allocator::Success)
+        if (alloc->allocate(allocPhys, allocVirt) != Allocator::Success)
             return MemoryContext::OutOfMemory;
 
-        MemoryBlock::set(alloc->toVirtual(alloc_args.address), 0, PAGESIZE);
+        MemoryBlock::set((void *)allocVirt.address, 0, PAGESIZE);
 
         // Assign to the page directory. Do not assign permission flags (only for direct sections).
-        m_tables[ DIRENTRY(virt) ] = alloc_args.address | PAGE1_TABLE;
+        m_tables[ DIRENTRY(virt) ] = allocPhys.address | PAGE1_TABLE;
         cache.cleanData(&m_tables[DIRENTRY(virt)]);
         table = getSecondTable(virt, alloc);
     }
@@ -201,7 +197,17 @@ MemoryContext::Result ARMFirstTable::translate(Address virt,
 {
     ARMSecondTable *table = getSecondTable(virt, alloc);
     if (!table)
+    {
+        if (m_tables[DIRENTRY(virt)] & PAGE1_SECTION)
+        {
+            const Address offsetInSection = virt % MegaByte(1);
+
+            *phys = (m_tables[DIRENTRY(virt)] & SECTIONMASK) +
+                    ((offsetInSection / PAGESIZE) * PAGESIZE);
+            return MemoryContext::Success;
+        }
         return MemoryContext::InvalidAddress;
+    }
     else
         return table->translate(virt, phys);
 }
@@ -253,7 +259,21 @@ MemoryContext::Result ARMFirstTable::releaseRange(Memory::Range range,
                 {
                     if (table->translate(range.virt + i + j, &phys) == MemoryContext::Success)
                     {
-                        alloc->release(phys);
+                        // Some pages that are part of the boot core's memory region
+                        // are mapped on secondary cores. They can't be released there.
+                        const Address allocBase = alloc->base();
+                        const Size allocSize = alloc->size();
+                        if (phys < allocBase || phys > allocBase + allocSize)
+                        {
+                            continue;
+                        }
+
+                        // Note that some pages may have double mappings.
+                        // Avoid attempting to release the same page twice or more.
+                        if (alloc->isAllocated(phys))
+                        {
+                            alloc->release(phys);
+                        }
                     }
                 }
             }

@@ -44,7 +44,7 @@ run_command_retry "apt-get install -y git default-jre daemon"
 # Add jenkins repository
 run_command_retry "wget -q -O jenkins.io.key http://pkg.jenkins.io/debian/jenkins.io.key"
 apt-key add jenkins.io.key
-echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list
+echo deb http://pkg.jenkins.io/debian binary/ > /etc/apt/sources.list.d/jenkins.list
 run_command_retry "apt-get update"
 
 # Prevent automatic start of jenkins
@@ -59,9 +59,10 @@ run_command_retry "apt-get install -y jenkins"
 # Restore daemon program
 mv /usr/bin/daemon.bak /usr/bin/daemon
 
-# Disable the setup wizard
+# Disable the setup wizard and strict anti-CSRF session ID matching
 if [ "`grep runSetupWizard /etc/default/jenkins|wc -l`" -eq "0" ] ; then
    echo 'JAVA_ARGS="$JAVA_ARGS -Djenkins.install.runSetupWizard=false"' >> /etc/default/jenkins
+   echo 'JAVA_ARGS="$JAVA_ARGS -Dhudson.security.csrf.DefaultCrumbIssuer.EXCLUDE_SESSION_ID=true"' >> /etc/default/jenkins
 fi
 
 source /etc/default/jenkins
@@ -98,7 +99,9 @@ fi
 # Add configuration files to jenkins
 mkdir -p $JENKINS_HOME/jobs
 mkdir -p $JENKINS_HOME/jobs/FreeNOS-ubuntu1804
+mkdir -p $JENKINS_HOME/jobs/FreeNOS-ubuntu1804-loop
 mkdir -p $JENKINS_HOME/jobs/FreeNOS-freebsd12
+mkdir -p $JENKINS_HOME/jobs/FreeNOS-freebsd12-loop
 mkdir -p $JENKINS_HOME/nodes
 mkdir -p $JENKINS_HOME/nodes/ubuntu1804
 mkdir -p $JENKINS_HOME/nodes/freebsd12
@@ -107,8 +110,10 @@ mv ~vagrant/master.key $JENKINS_HOME/secrets/
 mv ~vagrant/hudson.util.Secret $JENKINS_HOME/secrets/
 mv ~vagrant/credentials.xml $JENKINS_HOME/
 mv ~vagrant/ubuntu1804.job.xml $JENKINS_HOME/jobs/FreeNOS-ubuntu1804/config.xml
+mv ~vagrant/ubuntu1804-loop.job.xml $JENKINS_HOME/jobs/FreeNOS-ubuntu1804-loop/config.xml
 mv ~vagrant/ubuntu1804.node.xml $JENKINS_HOME/nodes/ubuntu1804/config.xml
 mv ~vagrant/freebsd12.job.xml $JENKINS_HOME/jobs/FreeNOS-freebsd12/config.xml
+mv ~vagrant/freebsd12-loop.job.xml $JENKINS_HOME/jobs/FreeNOS-freebsd12-loop/config.xml
 mv ~vagrant/freebsd12.node.xml $JENKINS_HOME/nodes/freebsd12/config.xml
 
 # Ensure permissions are set properly for jenkins
@@ -122,14 +127,28 @@ sleep 30
 # Download jenkins client library
 run_command_retry "wget -q http://localhost:$HTTP_PORT/jnlpJars/jenkins-cli.jar -O jenkins-cli.jar"
 
-# Install jenkins plugins
-run_command_retry "java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin git"
-run_command_retry "java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin matrix-project"
-run_command_retry "java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin matrix-combinations-parameter"
-run_command_retry "java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin nodelabelparameter"
-run_command_retry "java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin ws-cleanup"
-run_command_retry "java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin junit"
-run_command_retry "java -jar jenkins-cli.jar -s http://localhost:$HTTP_PORT/ -auth admin:admin install-plugin ssh-slaves"
+# Jenkins plugin list
+JENKINS_PLUGINS=( git matrix-project matrix-combinations-parameter nodelabelparameter ws-cleanup junit ssh-slaves timestamper )
+JENKINS_URL="http://localhost:$HTTP_PORT"
+JENKINS_USER="admin"
+JENKINS_PASS="admin"
+
+# Install plugins and their dependencies
+for p in "${JENKINS_PLUGINS[@]}"
+do
+    run_command_retry "java -jar jenkins-cli.jar -s $JENKINS_URL -auth $JENKINS_USER:$JENKINS_PASS install-plugin $p"
+
+    CRUMB="`curl -v -X GET $JENKINS_URL/crumbIssuer/api/json --user $JENKINS_USER:$JENKINS_PASS | cut -d , -f 2 | cut -d : -f 2`"
+    CRUMB="`echo $CRUMB | sed s/\\"//g`"
+    echo "CRUMB: $CRUMB"
+
+    curl -XPOST --user $JENKINS_USER:$JENKINS_PASS --data "<jenkins><install plugin='$p@latest' /></jenkins>" \
+        --header "Jenkins-Crumb: $CRUMB" --header 'Content-Type: text/xml' \
+        $JENKINS_URL/pluginManager/installNecessaryPlugins
+done
+
+# Wait for plugin dependencies to be installed (background task)
+sleep 60
 
 # Restart jenkins to load the new plugins
 /etc/init.d/jenkins stop

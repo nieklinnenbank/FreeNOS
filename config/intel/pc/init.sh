@@ -20,9 +20,13 @@ stdio /console/tty0 /console/tty0
 #
 /server/serial/server &
 write /sys/mountwait /dev/serial
-/bin/login /dev/serial/serial0/io /dev/serial/serial0/io &
+
+# This ensures we wait until all cores
+# are booted by the CoreServer.
+/bin/sysinfo
 
 #
 # Login prompt
 #
+/bin/login /dev/serial/serial0/io /dev/serial/serial0/io &
 /bin/login /console/tty0 /console/tty0

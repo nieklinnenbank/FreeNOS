@@ -142,31 +142,20 @@ class PoolAllocator : public Allocator
 
     /**
      * Constructor
-     */
-    PoolAllocator();
-
-    /**
-     * Get memory size.
      *
-     * @return Size of memory owned by the Allocator.
+     * @param range Block of continguous memory to be managed.
      */
-    virtual Size size() const;
-
-    /**
-     * Get memory available.
-     *
-     * @return Size of memory available by the Allocator.
-     */
-    virtual Size available() const;
+    PoolAllocator(const Range range);
 
     /**
      * Allocate memory.
      *
-     * @param args Allocator arguments containing the requested size, address and alignment.
+     * @param args Contains the requested size and alignment on input.
+     *             On output, contains the actual allocated address.
      *
      * @return Result value.
      */
-    virtual Result allocate(Arguments & args);
+    virtual Result allocate(Range & args);
 
     /**
      * Release memory.
@@ -177,7 +166,7 @@ class PoolAllocator : public Allocator
      *
      * @see allocate
      */
-    virtual Result release(Address addr);
+    virtual Result release(const Address addr);
 
   private:
 

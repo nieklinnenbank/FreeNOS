@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/wait.h>
 #include "Init.h"
 
 Init::Init(int argc, char **argv)
@@ -39,6 +40,7 @@ Init::Result Init::exec()
     const char *script = arguments().get("script") ?
                          arguments().get("script") : "/etc/init.sh";
     const char *av[] = { "/bin/sh", script, ZERO };
+    int pid, status;
     SystemInformation info;
 
     // Only run on core0
@@ -48,11 +50,14 @@ Init::Result Init::exec()
     NOTICE("Starting init script: " << script);
 
     // Execute the run commands file
-    if (forkexec("/bin/sh", av) == -1)
+    if ((pid = forkexec("/bin/sh", av)) == -1)
     {
         ERROR("forkexec() failed for /bin/sh: " <<
               strerror(errno));
         return IOError;
     }
+
+    // Wait for the command to finish before terminating
+    waitpid(pid, &status, 0);
     return Success;
 }

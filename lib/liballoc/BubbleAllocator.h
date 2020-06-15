@@ -39,17 +39,9 @@ class BubbleAllocator : public Allocator
     /**
      * Class constructor.
      *
-     * @param start Memory address to start allocating from.
-     * @param size Maximum size of the memory region to allocate from.
+     * @param range Block of continguous memory to be managed.
      */
-    BubbleAllocator(Address start, Size size);
-
-    /**
-     * Get memory size.
-     *
-     * @return Size of memory owned by the Allocator.
-     */
-    virtual Size size() const;
+    BubbleAllocator(const Range range);
 
     /**
      * Get memory available.
@@ -61,11 +53,15 @@ class BubbleAllocator : public Allocator
     /**
      * Allocate memory.
      *
-     * @param args Allocator arguments containing the requested size, address and alignment.
+     * @param args Contains the requested size and alignment on input.
+     *             On output, contains the actual allocated address.
      *
      * @return Result value.
+     *
+     * @note The alignment field in args is ignored. Only the alignment
+     *       value passed to the constructor is used.
      */
-    virtual Result allocate(Arguments & args);
+    virtual Result allocate(Range & args);
 
     /**
      * Release memory.
@@ -76,18 +72,12 @@ class BubbleAllocator : public Allocator
      *
      * @see allocate
      */
-    virtual Result release(Address addr);
+    virtual Result release(const Address addr);
 
   private:
 
-    /** Memory region to allocate from. */
-    u8 *m_start;
-
-    /** Current "top" of the growing bubble. */
-    u8 *m_current;
-
-    /** Size of the memory region. */
-    Size m_size;
+    /** Number of bytes allocated. */
+    Size m_allocated;
 };
 
 /**

@@ -46,7 +46,8 @@ class CoreManager
     {
         Success,
         IOError,
-        NotFound
+        NotFound,
+        InvalidArgument
     };
 
     /**
@@ -60,6 +61,13 @@ class CoreManager
      * @return List of core identities.
      */
     List<uint> & getCores();
+
+    /**
+     * Initialize the CoreManager.
+     *
+     * @return Result code.
+     */
+    virtual Result initialize() = 0;
 
     /**
      * Discover processors.

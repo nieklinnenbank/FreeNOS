@@ -29,18 +29,18 @@ def boot_image_emitter(target, source, env):
     # Loop all lines.
     for line in f.readlines():
 
-	# Skip comments, empty lines and subtrees.
-	if len(line.strip()) <= 0 or \
-	       line.find('=') != -1 or \
-	       line[0] == '{' or \
-	       line[0] == '}' or \
-	       line[0] == '#':
-	    continue
+        # Skip comments, empty lines and subtrees.
+        if len(line.strip()) <= 0 or \
+               line.find('=') != -1 or \
+               line[0] == '{' or \
+               line[0] == '}' or \
+               line[0] == '#':
+            continue
 
         symboltype, symbolname = line.strip().split(' ')
 
-	# Make us depend on the program/file.
-	source.append('#' + env['BUILDROOT'] + '/' + symbolname)
+        # Make us depend on the program/file.
+        source.append('#' + env['BUILDROOT'] + '/' + symbolname)
 
     # We also depend on the mkimage utility.
     source.append('#' + build.host['BUILDROOT'] + '/bin/img/img')
@@ -80,7 +80,7 @@ def boot_image_str(target, source, env):
 def generate(env):
 
     builder =  env.Builder(action  = env.Action(boot_image_func, boot_image_str),
-			   emitter = boot_image_emitter)
+                           emitter = boot_image_emitter)
     env.Append(BUILDERS = { 'BootImage' : builder })
 
 #

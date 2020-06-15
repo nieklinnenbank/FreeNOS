@@ -20,6 +20,7 @@
 #include <FreeNOS/Config.h>
 #include <FreeNOS/Process.h>
 #include <FreeNOS/ProcessEvent.h>
+#include <FreeNOS/ProcessManager.h>
 #include <Log.h>
 #include "ProcessCtl.h"
 
@@ -81,9 +82,9 @@ API::Result ProcessCtlHandler(ProcessID procID,
         break;
 
     case WatchIRQ:
-        if (procs->registerInterruptNotify(proc, IRQ(addr)) != ProcessManager::Success)
+        if (procs->registerInterruptNotify(proc, addr) != ProcessManager::Success)
         {
-            ERROR("failed to register IRQ #" << IRQ(addr) << " to process ID " << proc->getID());
+            ERROR("failed to register IRQ #" << addr << " to process ID " << proc->getID());
             return API::IOError;
         }
         break;
@@ -94,6 +95,10 @@ API::Result ProcessCtlHandler(ProcessID procID,
 
     case DisableIRQ:
         Kernel::instance->enableIRQ(addr, false);
+        break;
+
+    case SendIRQ:
+        Kernel::instance->sendIRQ(addr >> 16, addr & 0xffff);
         break;
 
     case InfoPID:

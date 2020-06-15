@@ -32,28 +32,34 @@
 Kernel::Kernel(CoreInfo *info)
     : Singleton<Kernel>(this), m_interrupts(256)
 {
-    // Output log banners
-    if (Log::instance)
+    // Output log banners on the boot core
+    if (info->coreId == 0)
     {
         Log::instance->append(BANNER);
         Log::instance->append(COPYRIGHT "\r\n");
     }
 
-    // Compute lower & higher memory
-    Memory::Range highMem;
-    Arch::MemoryMap map;
-    MemoryBlock::set(&highMem, 0, sizeof(highMem));
-    highMem.phys = info->memory.phys + map.range(MemoryMap::KernelData).size;
+    // Setup physical memory allocator
+    const Arch::MemoryMap map;
+    const Memory::Range kernelData = map.range(MemoryMap::KernelData);
+    const Allocator::Range physRange = { info->memory.phys, info->memory.size, 0 };
+    const Allocator::Range virtRange = { kernelData.virt, kernelData.size, 0 };
+    m_alloc  = new SplitAllocator(physRange, virtRange, PAGESIZE);
 
-    // Initialize members
-    m_alloc  = new SplitAllocator(info->memory, highMem);
+    // Initialize other class members
     m_procs  = new ProcessManager();
     m_api    = new API();
     m_coreInfo   = info;
     m_intControl = ZERO;
     m_timer      = ZERO;
 
-    // Mark kernel memory used (first 4MB in phys memory)
+    // Verify coreInfo memory ranges
+    assert(info->kernel.phys >= info->memory.phys);
+    assert(m_alloc->toPhysical(m_coreInfo->heapAddress) >= info->kernel.phys + info->kernel.size);
+    assert(m_alloc->toPhysical(m_coreInfo->heapAddress) + m_coreInfo->heapSize <= m_coreInfo->bootImageAddress);
+    assert(m_coreInfo->coreChannelAddress >= m_coreInfo->bootImageAddress + m_coreInfo->bootImageSize);
+
+    // Mark all kernel memory used
     for (Size i = 0; i < info->kernel.size; i += PAGESIZE)
         m_alloc->allocate(info->kernel.phys + i);
 
@@ -63,7 +69,7 @@ Kernel::Kernel(CoreInfo *info)
 
     // Mark heap memory used
     for (Size i = 0; i < m_coreInfo->heapSize; i += PAGESIZE)
-        m_alloc->allocate(m_coreInfo->heapAddress + i);
+        m_alloc->allocate(m_alloc->toPhysical(m_coreInfo->heapAddress + i));
 
     // Reserve CoreChannel memory
     for (Size i = 0; i < m_coreInfo->coreChannelSize; i += PAGESIZE)
@@ -75,15 +81,17 @@ Kernel::Kernel(CoreInfo *info)
 
 Error Kernel::heap(Address base, Size size)
 {
+    Size metaData = sizeof(BubbleAllocator) + sizeof(PoolAllocator);
     Allocator *bubble, *pool;
-    Size meta = sizeof(BubbleAllocator) + sizeof(PoolAllocator);
+    const Allocator::Range bubbleRange = { base + metaData, size - metaData, sizeof(u32) };
+    const Allocator::Range poolRange   = { 0, size - metaData, sizeof(u32) };
 
     // Clear the heap first
     MemoryBlock::set((void *) base, 0, size);
 
     // Setup the dynamic memory heap
-    bubble = new (base) BubbleAllocator(base + meta, size - meta);
-    pool   = new (base + sizeof(BubbleAllocator)) PoolAllocator();
+    bubble = new (base) BubbleAllocator(bubbleRange);
+    pool   = new (base + sizeof(BubbleAllocator)) PoolAllocator(poolRange);
     pool->setParent(bubble);
 
     // Set default allocator
@@ -132,6 +140,21 @@ void Kernel::enableIRQ(u32 irq, bool enabled)
     }
 }
 
+Kernel::Result Kernel::sendIRQ(const uint coreId, const uint irq)
+{
+    if (m_intControl)
+    {
+        IntController::Result r = m_intControl->send(coreId, irq);
+        if (r != IntController::Success)
+        {
+            ERROR("failed to send IPI to core" << coreId << ": " << (uint) r);
+            return IOError;
+        }
+    }
+
+    return Success;
+}
+
 void Kernel::hookIntVector(u32 vec, InterruptHandler h, ulong p)
 {
     InterruptHook hook(h, p);
@@ -166,8 +189,10 @@ void Kernel::executeIntVector(u32 vec, CPUState *state)
         }
     }
 
-    // Raise any interrupt notifications for processes
-    if (m_procs->interruptNotify(vec) != ProcessManager::Success)
+    // Raise any interrupt notifications for processes. Note that the IRQ
+    // base should be subtracted, since userspace doesn't know about re-mapped
+    // IRQ's, such as is done for the PIC on intel
+    if (m_procs->interruptNotify(vec - m_intControl->getBase()) != ProcessManager::Success)
     {
         FATAL("failed to raise interrupt notification for IRQ #" << vec);
     }
@@ -204,7 +229,7 @@ Kernel::Result Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Siz
     char *vaddr;
     Arch::MemoryMap map;
     Memory::Range argRange;
-    Allocator::Arguments alloc_args;
+    Allocator::Range alloc_args;
 
     // Point to the program and segments table
     program = &((BootSymbol *) (imageVAddr + image->symbolTableOffset))[index];
@@ -246,7 +271,7 @@ Kernel::Result Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Siz
     alloc_args.size = argRange.size;
     alloc_args.alignment = PAGESIZE;
 
-    if (m_alloc->allocateLow(alloc_args) != Allocator::Success)
+    if (m_alloc->allocate(alloc_args) != Allocator::Success)
     {
         FATAL("failed to allocate program arguments page");
         return ProcessError;

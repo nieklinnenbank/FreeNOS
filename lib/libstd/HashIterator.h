@@ -48,7 +48,6 @@ template <class K, class V> class HashIterator : public Iterator<V>
     HashIterator(HashTable<K, V> & hash)
         : m_hash(hash), m_keys(hash.keys()), m_iter(m_keys)
     {
-        assertRead(hash);
     }
 
     /**
