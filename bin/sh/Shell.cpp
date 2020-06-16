@@ -33,7 +33,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
+#ifndef __HOST__
 #include <Runtime.h>
+#endif /* __HOST__ */
 
 /** Maximum number of supported command arguments. */
 #define MAX_ARGV 16
@@ -49,7 +51,7 @@ Shell::Shell(int argc, char **argv)
     registerCommand(new StdioCommand());
     registerCommand(new WriteCommand());
     registerCommand(new HelpCommand(this));
-    registerCommand(new TimeCommand());
+    registerCommand(new TimeCommand(this));
 }
 
 Shell::~Shell()
@@ -63,8 +65,10 @@ Shell::Result Shell::exec()
     struct stat st;
     char *contents;
 
+#ifndef __HOST__
     // Refresh mount points
     refreshMounts(0);
+#endif /* __HOST__ */
 
     // Check if shell script was given as argument
     if (positionals.count() > 0)
@@ -158,6 +162,39 @@ Shell::Result Shell::runInteractive()
     return Success;
 }
 
+int Shell::runProgram(const char *path, char **argv)
+{
+#ifdef __HOST__
+    struct stat buf;
+    int pid;
+
+    if (stat(path, &buf) != 0)
+    {
+        return -1;
+    }
+
+    pid = fork();
+    switch (pid)
+    {
+        case 0:
+            execve(path, argv, (char * const *)NULL);
+            ERROR("execve failed for " << path);
+            exit(1);
+            break;
+
+        case -1:
+            ERROR("fork failed");
+            break;
+
+        default:
+            break;
+    }
+    return pid;
+#else
+    return forkexec(path, (const char **)argv);
+#endif
+}
+
 int Shell::executeInput(char *command)
 {
     char *argv[MAX_ARGV];
@@ -186,7 +223,7 @@ int Shell::executeInput(char *command)
     if (!(cmd = getCommand(argv[0])))
     {
         // If not, try to execute it as a file directly
-        if ((pid = forkexec(argv[0], (const char **) argv)) != -1)
+        if ((pid = runProgram(argv[0], argv)) != -1)
         {
             if (!background)
             {
@@ -198,7 +235,7 @@ int Shell::executeInput(char *command)
 
         // Try to find it on the filesystem. (temporary hardcoded PATH)
         else if (snprintf(tmp, sizeof(tmp), "/bin/%s", argv[0]) &&
-                (pid = forkexec(tmp, (const char **) argv)) != -1)
+                (pid = runProgram(tmp, argv)) != -1)
         {
             if (!background)
             {
@@ -230,6 +267,11 @@ char * Shell::getInput()
 {
     static char line[1024];
     Size total = 0;
+#ifdef __HOST__
+    const bool echo = false;
+#else
+    const bool echo = true;
+#endif /* __HOST__ */
 
     // Read a line
     while (total < sizeof(line) - 1)
@@ -243,7 +285,7 @@ char * Shell::getInput()
             // Enter
             case '\r':
             case '\n':
-                printf("\r\n");
+                if (echo) printf("\r\n");
                 line[total] = ZERO;
                 return line;
 
@@ -253,12 +295,12 @@ char * Shell::getInput()
                 if (total > 0)
                 {
                     total--;
-                    printf("\b \b");
+                    if (echo) printf("\b \b");
                 }
                 break;
 
             default:
-                printf("%c", line[total]);
+                if (echo) printf("%c", line[total]);
                 total++;
                 break;
         }
@@ -280,6 +322,9 @@ void Shell::prompt()
     // Print out the prompt
     printf(WHITE "(" GREEN "%s" WHITE ") " BLUE "%s" WHITE " # ",
            host, cwd);
+#ifdef __HOST__
+    fflush(stdout);
+#endif /* __HOST__ */
 }
 
 HashTable<String, ShellCommand *> & Shell::getCommands()

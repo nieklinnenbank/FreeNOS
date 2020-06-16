@@ -21,7 +21,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <Log.h>
+#ifndef __HOST__
 #include <Runtime.h>
+#endif /* __HOST__ */
 
 ChangeDirCommand::ChangeDirCommand()
     : ShellCommand("cd", 1)
@@ -31,7 +33,9 @@ ChangeDirCommand::ChangeDirCommand()
 
 int ChangeDirCommand::execute(Size nparams, char **params)
 {
+#ifndef __HOST__
     refreshMounts(0);
+#endif /* __HOST__ */
 
     if (chdir(params[0]) != 0)
     {
