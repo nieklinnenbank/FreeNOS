@@ -92,7 +92,7 @@ Shell::Result Shell::exec()
             contents = new char[st.st_size + 1];
 
             // Read the entire file into memory
-            if (fread(contents, st.st_size, 1, fp) != (size_t) st.st_size)
+            if (fread(contents, st.st_size, 1, fp) != (size_t) 1U)
             {
                 ERROR("failed to fread() `" << file << "': " << strerror(errno));
                 fclose(fp);

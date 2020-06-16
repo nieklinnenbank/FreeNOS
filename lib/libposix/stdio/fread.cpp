@@ -24,16 +24,19 @@
 size_t fread(void *ptr, size_t size,
              size_t nitems, FILE *stream)
 {
-    size_t num = 0, i;
+    size_t i;
     char *buf = (char *) ptr;
 
     // Read items
     for (i = 0; i < nitems; i++)
     {
-        num += read(stream->fd, buf, size);
+        ssize_t num = read(stream->fd, buf, size);
+        if (num < 0 || (size_t)num != size)
+            break;
+
         buf += size;
     }
 
     // Done
-    return num;
+    return i;
 }
