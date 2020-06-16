@@ -16,6 +16,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+#
+# This script installs the jenkins master node on Ubuntu.
+# Vagrant uses this script to automatically install and configure jenkins.
+#
+# See the README file for more details on the automated Jenkins setup.
+#
+
+JENKINS_VERSION="2.240"
+
 # Include common functions
 source common.sh
 
@@ -54,7 +63,8 @@ fi
 cp /bin/true /usr/bin/daemon
 
 # Install jenkins
-run_command_retry "apt-get install -y jenkins"
+run_command_retry "apt-get install -y jenkins=$JENKINS_VERSION"
+run_command_retry "apt-mark hold jenkins"
 
 # Restore daemon program
 mv /usr/bin/daemon.bak /usr/bin/daemon
@@ -106,6 +116,7 @@ mkdir -p $JENKINS_HOME/nodes
 mkdir -p $JENKINS_HOME/nodes/ubuntu1804
 mkdir -p $JENKINS_HOME/nodes/freebsd12
 mkdir -p $JENKINS_HOME/secrets
+mkdir -p $JENKINS_HOME/plugins
 mv ~vagrant/master.key $JENKINS_HOME/secrets/
 mv ~vagrant/hudson.util.Secret $JENKINS_HOME/secrets/
 mv ~vagrant/credentials.xml $JENKINS_HOME/
@@ -116,40 +127,34 @@ mv ~vagrant/freebsd12.job.xml $JENKINS_HOME/jobs/FreeNOS-freebsd12/config.xml
 mv ~vagrant/freebsd12-loop.job.xml $JENKINS_HOME/jobs/FreeNOS-freebsd12-loop/config.xml
 mv ~vagrant/freebsd12.node.xml $JENKINS_HOME/nodes/freebsd12/config.xml
 
+# Jenkins plugin list with its dependencies
+JENKINS_PLUGINS=(
+    git/4.2.2 workflow-scm-step/2.11 workflow-step-api/2.22 credentials/2.3.9 git-client/3.2.1
+              mailer/1.32 scm-api/2.6.3 script-security/1.73 ssh-credentials/1.18.1 structs/1.20
+              apache-httpcomponents-client-4-api/4.5.10-2.0 jsch/0.1.55.2 display-url-api/2.3.2
+    matrix-project/1.14 trilead-api/1.0.8
+    matrix-combinations-parameter/1.3.1 bouncycastle-api/2.18 command-launcher/1.4 jdk-tool/1.4 jaxb/2.3.0.1
+    nodelabelparameter/1.7.2 jquery/1.12.4-1 token-macro/2.12
+    ws-cleanup/0.38 workflow-durable-task-step/2.35 workflow-api/2.40 workflow-support/3.5 durable-task/1.34 resource-disposer/0.14
+    junit/1.29
+    ssh-slaves/1.31.2
+    timestamper/1.11.3
+)
+
+# Install plugins
+for p in "${JENKINS_PLUGINS[@]}"
+do
+    PLUGVER="`basename $p`"
+    PLUGNAME="`dirname $p`"
+
+    if [ ! -e $JENKINS_HOME/plugins/$PLUGNAME.hpi ] ; then
+        run_command_retry "wget --quiet https://updates.jenkins.io/download/plugins/$PLUGNAME/$PLUGVER/$PLUGNAME.hpi -O $JENKINS_HOME/plugins/$PLUGNAME.hpi"
+    fi
+done
+
 # Ensure permissions are set properly for jenkins
 chown -R $JENKINS_USER:$JENKINS_GROUP $JENKINS_HOME
 
-# Restart jenkins
-/etc/init.d/jenkins stop
-/etc/init.d/jenkins start
-sleep 30
-
-# Download jenkins client library
-run_command_retry "wget -q http://localhost:$HTTP_PORT/jnlpJars/jenkins-cli.jar -O jenkins-cli.jar"
-
-# Jenkins plugin list
-JENKINS_PLUGINS=( git matrix-project matrix-combinations-parameter nodelabelparameter ws-cleanup junit ssh-slaves timestamper )
-JENKINS_URL="http://localhost:$HTTP_PORT"
-JENKINS_USER="admin"
-JENKINS_PASS="admin"
-
-# Install plugins and their dependencies
-for p in "${JENKINS_PLUGINS[@]}"
-do
-    run_command_retry "java -jar jenkins-cli.jar -s $JENKINS_URL -auth $JENKINS_USER:$JENKINS_PASS install-plugin $p"
-
-    CRUMB="`curl -v -X GET $JENKINS_URL/crumbIssuer/api/json --user $JENKINS_USER:$JENKINS_PASS | cut -d , -f 2 | cut -d : -f 2`"
-    CRUMB="`echo $CRUMB | sed s/\\"//g`"
-    echo "CRUMB: $CRUMB"
-
-    curl -XPOST --user $JENKINS_USER:$JENKINS_PASS --data "<jenkins><install plugin='$p@latest' /></jenkins>" \
-        --header "Jenkins-Crumb: $CRUMB" --header 'Content-Type: text/xml' \
-        $JENKINS_URL/pluginManager/installNecessaryPlugins
-done
-
-# Wait for plugin dependencies to be installed (background task)
-sleep 60
-
-# Restart jenkins to load the new plugins
+# Restart jenkins to load the new plugins and jobs
 /etc/init.d/jenkins stop
 /etc/init.d/jenkins start
