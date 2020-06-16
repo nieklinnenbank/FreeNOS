@@ -120,7 +120,7 @@ Shell::Result Shell::exec()
             }
 
             // Cleanup
-            delete contents;
+            delete[] contents;
             fclose(fp);
         }
     }
