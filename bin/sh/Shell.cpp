@@ -56,6 +56,10 @@ Shell::Shell(int argc, char **argv)
 
 Shell::~Shell()
 {
+    for (HashIterator<String, ShellCommand *> i(m_commands); i.hasCurrent(); i++)
+    {
+        delete i.current();
+    }
 }
 
 Shell::Result Shell::exec()
