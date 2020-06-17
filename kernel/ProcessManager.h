@@ -22,6 +22,7 @@
 #include <MemoryMap.h>
 #include <Vector.h>
 #include <List.h>
+#include <Queue.h>
 #include "Process.h"
 
 /* Forward declarations */
@@ -205,8 +206,8 @@ class ProcessManager
     /** Idle process */
     Process *m_idle;
 
-    /** Next timer */
-    Timer::Info m_nextSleepTimer;
+    /** Queue with sleeping processes waiting for a Timer to expire. */
+    Queue<Process *, MAX_PROCS> m_sleepTimerQueue;
 
     /** Interrupt notification list */
     Vector<List<Process *> *> m_interruptNotifyList;

@@ -32,7 +32,6 @@ ProcessManager::ProcessManager()
     m_current   = ZERO;
     m_idle      = ZERO;
     m_interruptNotifyList.fill(ZERO);
-    MemoryBlock::set(&m_nextSleepTimer, 0, sizeof(m_nextSleepTimer));
 }
 
 ProcessManager::~ProcessManager()
@@ -104,6 +103,8 @@ void ProcessManager::remove(Process *proc, uint exitStatus)
     // Remove process from administration and schedule
     m_procs[proc->getID()] = ZERO;
     m_scheduler->dequeue(proc, true);
+    int countRemoved = m_sleepTimerQueue.remove(proc);
+    assert(countRemoved <= 1);
 
     // Free the process memory
     delete proc;
@@ -125,28 +126,20 @@ ProcessManager::Result ProcessManager::schedule()
         FATAL("no process found to run!");
     }
 
-    // Wakeup processes if the next sleeptimer expired
-    if (timer->isExpired(m_nextSleepTimer))
+    // Try to wakeup processes that are waiting for a timer to expire
+    for (Size i = 0, count = m_sleepTimerQueue.count(); i < count; i++)
     {
-        MemoryBlock::set(&m_nextSleepTimer, 0, sizeof(m_nextSleepTimer));
+        Process *p = m_sleepTimerQueue.pop();
+        const Timer::Info & procTimer = p->getSleepTimer();
 
-        // Loop all procs, wakeup() those which have their sleep timer expired
-        for (Size i = 0; i < MAX_PROCS; i++)
+        if (timer->isExpired(procTimer))
         {
-            Process *p = m_procs.at(i);
-            if (p && p->getState() == Process::Sleeping)
-            {
-                const Timer::Info & procTimer = p->getSleepTimer();
-
-                if (timer->isExpired(procTimer))
-                {
-                    wakeup(p);
-                }
-                else if (procTimer.ticks < m_nextSleepTimer.ticks || !m_nextSleepTimer.ticks)
-                {
-                    m_nextSleepTimer = procTimer;
-                }
-            }
+            Result result = wakeup(p);
+            assert(result == Success);
+        }
+        else
+        {
+            m_sleepTimerQueue.push(p);
         }
     }
 
@@ -217,9 +210,10 @@ ProcessManager::Result ProcessManager::sleep(const Timer::Info *timer, bool igno
                 return IOError;
             }
 
-            if (timer && (timer->ticks < m_nextSleepTimer.ticks || !m_nextSleepTimer.ticks))
+            if (timer)
             {
-                m_nextSleepTimer = *timer;
+                assert(!m_sleepTimerQueue.contains(m_current));
+                m_sleepTimerQueue.push(m_current);
             }
             break;
 
@@ -251,6 +245,9 @@ ProcessManager::Result ProcessManager::wakeup(Process *proc)
             ERROR("process ID " << proc->getID() << " not added to Scheduler");
             return IOError;
         }
+
+        int countRemoved = m_sleepTimerQueue.remove(proc);
+        assert(countRemoved <= 1);
     }
 
     return Success;
@@ -275,6 +272,9 @@ ProcessManager::Result ProcessManager::raiseEvent(Process *proc, struct ProcessE
             ERROR("process ID " << proc->getID() << " not added to Scheduler");
             return IOError;
         }
+
+        int countRemoved = m_sleepTimerQueue.remove(proc);
+        assert(countRemoved <= 1);
     }
 
     return Success;
