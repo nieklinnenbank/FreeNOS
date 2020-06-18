@@ -47,8 +47,11 @@ class BitAllocator : public Allocator
      * @param range Block of continguous memory to manage.
      * @param chunkSize The input memory range will be divided into equally sized chunks.
      *                  The chunkSize must be greater than zero.
+     * @param bitmap Pointer to existing bitmap array or ZERO to allocate new.
      */
-    BitAllocator(const Range range, const Size chunkSize);
+    BitAllocator(const Range range,
+                 const Size chunkSize,
+                 u8 *bitmap = ZERO);
 
     /**
      * Get chunk size.

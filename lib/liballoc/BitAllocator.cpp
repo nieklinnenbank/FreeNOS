@@ -18,9 +18,11 @@
 #include <Assert.h>
 #include "BitAllocator.h"
 
-BitAllocator::BitAllocator(const Allocator::Range range, const Size chunkSize)
+BitAllocator::BitAllocator(const Allocator::Range range,
+                           const Size chunkSize,
+                           u8 *bitmap)
     : Allocator(range)
-    , m_array(range.size / chunkSize)
+    , m_array(range.size / chunkSize, bitmap)
     , m_chunkSize(chunkSize)
 {
 }
