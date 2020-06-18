@@ -42,8 +42,8 @@ Kernel::Kernel(CoreInfo *info)
     // Setup physical memory allocator
     const Arch::MemoryMap map;
     const Memory::Range kernelData = map.range(MemoryMap::KernelData);
-    const Allocator::Range physRange = { info->memory.phys, info->memory.size, 0 };
-    const Allocator::Range virtRange = { kernelData.virt, kernelData.size, 0 };
+    const Allocator::Range physRange = { info->memory.phys, info->memory.size, PAGESIZE };
+    const Allocator::Range virtRange = { kernelData.virt, kernelData.size, PAGESIZE };
     m_alloc  = new SplitAllocator(physRange, virtRange, PAGESIZE);
 
     // Initialize other class members

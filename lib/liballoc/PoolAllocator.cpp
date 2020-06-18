@@ -75,7 +75,7 @@ MemoryPool * PoolAllocator::newPool(Size index, Size cnt)
 
     // Prepare amount to allocate from m_parent
     alloc_args.address = 0;
-    alloc_args.alignment = 0;
+    alloc_args.alignment = sizeof(u32);
     alloc_args.size  = cnt * (1 << (index + 1));
     alloc_args.size += sizeof(MemoryPool);
     alloc_args.size += BITMAP_NUM_BYTES(cnt);

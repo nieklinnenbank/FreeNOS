@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <Assert.h>
 #include <Macros.h>
 #include "Allocator.h"
 
@@ -24,10 +25,9 @@ Allocator::Allocator(const Allocator::Range range)
     : m_parent(ZERO)
     , m_range(range)
 {
-    if (m_range.alignment == 0)
-    {
-        m_range.alignment = sizeof(u32);
-    }
+    assert(m_range.alignment >= sizeof(u32));
+    assert(m_range.size >= sizeof(u32));
+    assert((m_range.size % m_range.alignment) == 0);
 }
 
 Allocator::~Allocator()

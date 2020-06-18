@@ -24,7 +24,7 @@
 
 TestCase(AllocatorConstruct)
 {
-    const Allocator::Range range = { 0, PAGESIZE, 0 };
+    const Allocator::Range range = { 0, PAGESIZE, sizeof(u32) };
     Allocator alloc(range);
 
     return OK;
@@ -32,7 +32,7 @@ TestCase(AllocatorConstruct)
 
 TestCase(AllocatorDefault)
 {
-    const Allocator::Range range = { 0, PAGESIZE, 0 };
+    const Allocator::Range range = { 0, PAGESIZE, sizeof(u32) };
     Allocator alloc(range);
 
     // Retrieve current default
@@ -52,7 +52,7 @@ TestCase(AllocatorDefault)
 
 TestCase(AllocatorParent)
 {
-    const Allocator::Range range = { 0, PAGESIZE, 0 };
+    const Allocator::Range range = { 0, PAGESIZE, sizeof(u32) };
     Allocator alloc(range);
     Allocator parent(range);
 

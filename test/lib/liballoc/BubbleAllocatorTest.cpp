@@ -25,15 +25,14 @@
 TestCase(BubbleConstruct)
 {
     TestInt<uint> addresses(UINT_MIN, UINT_MAX);
-    TestInt<uint> sizes(PAGESIZE, PAGESIZE * 16);
-
-    const Allocator::Range range = { addresses.random(), sizes.random(), sizeof(u32) };
+    const Size rangeSize = PAGESIZE * 64;
+    const Allocator::Range range = { addresses.random(), rangeSize, sizeof(u32) };
     BubbleAllocator ba(range);
 
     // Verify initial state of the object
     testAssert(ba.m_allocated == 0);
     testAssert(ba.base() == addresses[0]);
-    testAssert(ba.size() == sizes[0]);
+    testAssert(ba.size() == rangeSize);
     testAssert(ba.alignment() == sizeof(u32));
 
     return OK;

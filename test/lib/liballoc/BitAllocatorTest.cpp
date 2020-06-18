@@ -25,18 +25,19 @@
 TestCase(BitConstruct)
 {
     TestInt<uint> addresses(UINT_MIN, UINT_MAX);
-    TestInt<uint> sizes(PAGESIZE, PAGESIZE * 16);
 
+    const Size chunkSize = 32;
+    const Size rangeSize = chunkSize * 64;
     const Address allocBase = addresses.random() & PAGEMASK;
-    const Allocator::Range range = { allocBase, sizes.random(), sizeof(u32) };
-    const Size chunkSize = 64;
+    const Allocator::Range range = { allocBase, rangeSize, sizeof(u32) };
+
     BitAllocator ba(range, chunkSize);
 
     // Verify initial state of the object
     testAssert(ba.m_chunkSize == chunkSize);
-    testAssert(ba.available() == (sizes[0] / chunkSize) * chunkSize);
+    testAssert(ba.available() == rangeSize);
     testAssert(ba.base() == allocBase);
-    testAssert(ba.size() == sizes[0]);
+    testAssert(ba.size() == rangeSize);
     testAssert(ba.alignment() == sizeof(u32));
     testAssert(!ba.isAllocated(allocBase));
 
