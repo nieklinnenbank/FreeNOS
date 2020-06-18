@@ -193,3 +193,46 @@ TestCase(QueueContains)
 
     return OK;
 }
+
+TestCase(QueueRemove)
+{
+    Queue<int, 64> q;
+    TestInt<int> ints(0, 1024);
+
+    // Generate unique random values
+    ints.unique(q.size());
+
+    // Fill the queue
+    for (Size i = 0; i < 64; i++)
+    {
+        q.push(ints[i]);
+        testAssert(q.count() == (i + 1));
+        testAssert(q.size() == 64);
+    }
+
+    // Remove each value, one-by-one
+    for (Size i = 0; i < 64; i++)
+    {
+        testAssert(q.contains(ints[i]));
+        testAssert(q.remove(ints[i]) == 1);
+        testAssert(!q.contains(ints[i]));
+    }
+
+    // Add ten identical values
+    for (Size i = 0; i < 10; i++)
+    {
+        q.push(ints[0]);
+    }
+
+    // Try to remove non-existing values
+    testAssert(q.remove(ints[1]) == 0);
+
+    // Remove all at once
+    testAssert(q.remove(ints[0]) == 10);
+
+    // Queue must be empty now
+    testAssert(q.count() == 0);
+    testAssert(q.size() == 64);
+
+    return OK;
+}

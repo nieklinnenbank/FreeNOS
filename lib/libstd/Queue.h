@@ -101,6 +101,31 @@ template <class T, Size N> class Queue : public Container
     }
 
     /**
+     * Remove all items with the given value.
+     *
+     * @param value Value to remove.
+     *
+     * @return Number of items removed.
+     */
+    Size remove(T value)
+    {
+        const Size numItems = m_count;
+        Size numRemoved = 0;
+
+        for (Size i = 0; i < numItems; i++)
+        {
+            T & item = pop();
+
+            if (item != value)
+                push(item);
+            else
+                numRemoved++;
+        }
+
+        return numRemoved;
+    }
+
+    /**
      * Removes all items from the Queue.
      */
     virtual void clear()
