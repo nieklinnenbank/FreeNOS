@@ -72,7 +72,12 @@ class Allocator
   public:
 
     /**
-     * Class constructor.
+     * Default class constructor.
+     */
+    Allocator();
+
+    /**
+     * Class constructor with Range input.
      *
      * @param range Block of continguous memory to manage.
      */
