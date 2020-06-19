@@ -192,12 +192,12 @@ class Allocator
     Range m_range;
 };
 
-#ifndef __HOST__
-
 /**
  * @name Dynamic memory allocation.
  * @{
  */
+
+#ifndef __HOST__
 
 /**
  * Allocate new memory.
@@ -255,6 +255,8 @@ inline void operator delete[] (void *mem)
     Allocator::getDefault()->release((Address)mem);
 }
 
+#endif /* __HOST__ */
+
 /**
  * Let the new() operator return the given memory address.
  *
@@ -269,8 +271,6 @@ inline void * operator new(__SIZE_TYPE__ sz, Address addr)
 /**
  * @}
  */
-
-#endif /* __HOST__ */
 
 /**
  * @}
