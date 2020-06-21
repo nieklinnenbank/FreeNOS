@@ -18,11 +18,11 @@
 #include "BitArray.h"
 #include "MemoryBlock.h"
 
-BitArray::BitArray(Size size, u8 *array)
+BitArray::BitArray(const Size bitCount, u8 *array)
 {
-    m_array = array ? array : new u8[BITS_TO_BYTES(size)];
+    m_array = array ? array : new u8[BITS_TO_BYTES(bitCount)];
     m_allocated = array == ZERO;
-    m_size  = size;
+    m_bitCount  = bitCount;
     m_set   = 0;
     clear();
 }
@@ -35,19 +35,19 @@ BitArray::~BitArray()
 
 Size BitArray::size() const
 {
-    return m_size;
+    return m_bitCount;
 }
 
 Size BitArray::count(bool on) const
 {
-    return on ? m_set : m_size - m_set;
+    return on ? m_set : m_bitCount - m_set;
 }
 
 void BitArray::set(Size bit, bool value)
 {
 
     // Check if the bit is inside the array
-    if (bit >= m_size)
+    if (bit >= m_bitCount)
         return;
 
     // Check current value
@@ -76,7 +76,7 @@ void BitArray::unset(Size bit)
 
 bool BitArray::isSet(Size bit) const
 {
-    assert(bit < m_size);
+    assert(bit < m_bitCount);
 
     return m_array[bit / 8] & (1 << (bit % 8));
 }
@@ -92,7 +92,7 @@ BitArray::Result BitArray::setNext(Size *bit, Size count, Size start, Size bound
     Size from = 0, found = 0;
 
     // Loop BitArray for unset bits
-    for (Size i = start; i < m_size; i++)
+    for (Size i = start; i < m_bitCount; i++)
     {
         if (!isSet(i))
         {
@@ -129,11 +129,11 @@ u8 * BitArray::array() const
     return m_array;
 }
 
-void BitArray::setArray(u8 *map, Size size)
+void BitArray::setArray(u8 *map, Size bitCount)
 {
     // Set bits count
-    if (size)
-        m_size = size;
+    if (bitCount)
+        m_bitCount = bitCount;
 
     // Cleanup old array, if needed
     if (m_array && m_allocated)
@@ -145,7 +145,7 @@ void BitArray::setArray(u8 *map, Size size)
     m_set   = 0;
 
     // Recalculate set bits
-    for (Size i = 0; i < m_size; i++)
+    for (Size i = 0; i < m_bitCount; i++)
         if (isSet(i))
             m_set++;
 }
@@ -153,7 +153,7 @@ void BitArray::setArray(u8 *map, Size size)
 void BitArray::clear()
 {
     // Zero it
-    MemoryBlock::set(m_array, 0, BITS_TO_BYTES(m_size));
+    MemoryBlock::set(m_array, 0, BITS_TO_BYTES(m_bitCount));
 
     // Reset set count
     m_set = 0;

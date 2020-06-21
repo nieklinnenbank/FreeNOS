@@ -55,10 +55,10 @@ class BitArray
     /**
      * Class constructor.
      *
-     * @param bits Number of bits.
-     * @param array Pointer to the bits array to manage.
+     * @param bitCount Number of bits to manage.
+     * @param array Optional pointer to pre-allocated bits array to manage.
      */
-    BitArray(Size size, u8 *array = ZERO);
+    BitArray(const Size bitCount, u8 *array = ZERO);
 
     /**
      * Class destructor.
@@ -141,9 +141,9 @@ class BitArray
      * Use the given pointer as the BitArray buffer.
      *
      * @param array New bits array pointer.
-     * @param size New number of bits. ZERO to keep the old value.
+     * @param bitCount New number of bits. ZERO to keep the old value.
      */
-    void setArray(u8 *array, Size size = ZERO);
+    void setArray(u8 *array, Size bitCount = ZERO);
 
     /**
      * Retrieve the value of the given bit.
@@ -166,7 +166,7 @@ class BitArray
   private:
 
     /** Total number of bits in the array. */
-    Size m_size;
+    Size m_bitCount;
 
     /** Set bits in the array. */
     Size m_set;
