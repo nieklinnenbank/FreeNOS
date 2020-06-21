@@ -41,12 +41,12 @@ Size BitArray::size() const
     return m_bitCount;
 }
 
-Size BitArray::count(bool on) const
+Size BitArray::count(const bool on) const
 {
     return on ? m_set : m_bitCount - m_set;
 }
 
-void BitArray::set(Size bit, bool value)
+void BitArray::set(const Size bit, const bool value)
 {
     // Check if the bit is inside the array
     if (bit >= m_bitCount)
@@ -73,19 +73,19 @@ void BitArray::set(Size bit, bool value)
     }
 }
 
-void BitArray::unset(Size bit)
+void BitArray::unset(const Size bit)
 {
     set(bit, false);
 }
 
-bool BitArray::isSet(Size bit) const
+bool BitArray::isSet(const Size bit) const
 {
     assert(bit < m_bitCount);
 
     return m_array[bit / 8] & (1 << (bit % 8));
 }
 
-void BitArray::setRange(Size from, Size to)
+void BitArray::setRange(const Size from, const Size to)
 {
     for (Size i = from; i <= to; i++)
     {
@@ -93,7 +93,10 @@ void BitArray::setRange(Size from, Size to)
     }
 }
 
-BitArray::Result BitArray::setNext(Size *bit, Size count, Size start, Size boundary)
+BitArray::Result BitArray::setNext(Size *bit,
+                                   const Size count,
+                                   const Size start,
+                                   const Size boundary)
 {
     Size from = 0, found = 0;
 
@@ -139,7 +142,7 @@ u8 * BitArray::array() const
     return m_array;
 }
 
-void BitArray::setArray(u8 *map, Size bitCount)
+void BitArray::setArray(u8 *map, const Size bitCount)
 {
     // Set bits count
     if (bitCount)
@@ -177,12 +180,12 @@ void BitArray::clear()
     m_set = 0;
 }
 
-bool BitArray::operator[](Size bit) const
+bool BitArray::operator[](const Size bit) const
 {
     return isSet(bit);
 }
 
-bool BitArray::operator[](int bit) const
+bool BitArray::operator[](const int bit) const
 {
     return isSet(bit);
 }

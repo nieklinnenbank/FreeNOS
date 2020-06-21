@@ -79,7 +79,7 @@ class BitArray
      *
      * @return Number of bits with the given value.
      */
-    Size count(bool on) const;
+    Size count(const bool on) const;
 
     /**
      * Sets the given bit to the given value.
@@ -87,7 +87,7 @@ class BitArray
      * @param bit Bit number to set.
      * @param value Value to set.
      */
-    void set(Size bit, bool value = true);
+    void set(const Size bit, const bool value = true);
 
     /**
      * Set a range of bits inside the map to 1.
@@ -95,7 +95,7 @@ class BitArray
      * @param from Bit to start with.
      * @param to End bit (inclusive).
      */
-    void setRange(Size from, Size to);
+    void setRange(const Size from, const Size to);
 
     /**
      * Sets the next unset bit(s).
@@ -107,14 +107,17 @@ class BitArray
      *
      * @return Result code.
      */
-    Result setNext(Size *bit, Size count = 1, Size offset = 0, Size boundary = 1);
+    Result setNext(Size *bit,
+                   const Size count = 1,
+                   const Size offset = 0,
+                   const Size boundary = 1);
 
     /**
      * Sets the given bit to zero.
      *
      * @param bit Bit number to unset.
      */
-    void unset(Size bit);
+    void unset(const Size bit);
 
     /**
      * Set all bits to zero.
@@ -128,7 +131,7 @@ class BitArray
      *
      * @return True if marked, false otherwise.
      */
-    bool isSet(Size bit) const;
+    bool isSet(const Size bit) const;
 
     /**
      * Retrieve a pointer to the internal BitArray.
@@ -143,7 +146,7 @@ class BitArray
      * @param array New bits array pointer.
      * @param bitCount New number of bits. ZERO to keep the old value.
      */
-    void setArray(u8 *array, Size bitCount = ZERO);
+    void setArray(u8 *array, const Size bitCount = ZERO);
 
     /**
      * Retrieve the value of the given bit.
@@ -152,7 +155,7 @@ class BitArray
      *
      * @return True if set, false otherwise
      */
-    bool operator[](Size bit) const;
+    bool operator[](const Size bit) const;
 
     /**
      * Retrieve the value of the given bit
@@ -161,7 +164,7 @@ class BitArray
      *
      * @return True if set, false otherwise
      */
-    bool operator[](int bit) const;
+    bool operator[](const int bit) const;
 
   private:
 
