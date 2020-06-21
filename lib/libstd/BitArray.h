@@ -30,9 +30,6 @@
  * @{
  */
 
-/** Macro to convert number of bits to bytes */
-#define BITS_TO_BYTES(bits) ((bits / 8) + ((bits % 8) ? 1 : 0))
-
 /**
  * Represents an array of bits.
  */
@@ -165,6 +162,17 @@ class BitArray
      * @return True if set, false otherwise
      */
     bool operator[](const int bit) const;
+
+  private:
+
+    /**
+     * Calculate required size of bitmap array in bytes.
+     *
+     * @param bitCount Minimum number of bits needed to store.
+     *
+     * @return Size of bitmap array in bytes
+     */
+    Size calculateBitmapSize(const Size bitCount) const;
 
   private:
 

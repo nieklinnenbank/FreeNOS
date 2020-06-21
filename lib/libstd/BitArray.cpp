@@ -20,7 +20,7 @@
 
 BitArray::BitArray(const Size bitCount, u8 *array)
 {
-    m_array = array ? array : new u8[BITS_TO_BYTES(bitCount)];
+    m_array = array ? array : new u8[calculateBitmapSize(bitCount)];
     m_allocated = (array == ZERO);
     m_bitCount  = bitCount;
     m_set = 0;
@@ -174,7 +174,7 @@ void BitArray::setArray(u8 *map, const Size bitCount)
 void BitArray::clear()
 {
     // Zero it
-    MemoryBlock::set(m_array, 0, BITS_TO_BYTES(m_bitCount));
+    MemoryBlock::set(m_array, 0, calculateBitmapSize(m_bitCount));
 
     // Reset set count
     m_set = 0;
@@ -188,4 +188,14 @@ bool BitArray::operator[](const Size bit) const
 bool BitArray::operator[](const int bit) const
 {
     return isSet(bit);
+}
+
+inline Size BitArray::calculateBitmapSize(const Size bitCount) const
+{
+    const Size bytes = bitCount / 8;
+
+    if (bitCount % 8)
+        return bytes + 1;
+    else
+        return bytes;
 }
