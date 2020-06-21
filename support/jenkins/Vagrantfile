@@ -145,7 +145,8 @@ Vagrant.configure("2") do |config|
     ubuntu1804.vm.provision "shell", path: "ubuntu1804.sh", env: { "SLAVE_CPUS" => slave_cpus,
                                                                    "QEMU_URL" => qemu_url,
                                                                    "QEMU_BRANCH" => qemu_branch }
-    ubuntu1804.vm.provision "shell", path: "schedule-job.sh", args: "FreeNOS-ubuntu1804"
+    ubuntu1804.vm.provision "shell", path: "schedule-job.sh", args: "FreeNOS-ubuntu1804",
+                                                              env: { "JOB_COUNT" => ENV['JOB_COUNT'] }
   end
 
   config.vm.define "freebsd12" do |freebsd12|
@@ -173,7 +174,8 @@ Vagrant.configure("2") do |config|
     freebsd12.vm.provision "shell", path: "freebsd12.sh", env: { "SLAVE_CPUS" => slave_cpus,
                                                                   "QEMU_URL" => qemu_url,
                                                                   "QEMU_BRANCH" => qemu_branch }
-    freebsd12.vm.provision "shell", path: "schedule-job.sh", args: "FreeNOS-freebsd12"
+    freebsd12.vm.provision "shell", path: "schedule-job.sh", args: "FreeNOS-freebsd12",
+                                                              env: { "JOB_COUNT" => ENV['JOB_COUNT'] }
   end
 
 end

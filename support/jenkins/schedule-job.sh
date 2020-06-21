@@ -22,27 +22,36 @@ JENKINS_PASS="admin"
 WAITTIME=30
 RETRIES=20
 
+# Number of jobs to submit
+if [ -z "$JOB_COUNT" ] ; then
+    JOB_COUNT=1
+fi
+
 # Trace execution and stop on errors
 set -e
 set -x
 
-# Start a retry loop
-for i in $(seq 0 $RETRIES) ; do
+for i in $(seq 1 $JOB_COUNT) ; do
+    for j in $(seq 0 $RETRIES) ; do
 
-    # Fetch the crumb: a token to prevent cross site request forgery
-    CRUMB="`curl -v -X GET $JENKINS_URL/crumbIssuer/api/json --user $JENKINS_USER:$JENKINS_PASS | cut -d , -f 2 | cut -d : -f 2`"
-    CRUMB="`echo $CRUMB | sed s/\\"//g`"
-    echo "Using Jenkins crumb for Job request: $CRUMB"
+        # Fetch the crumb: a token to prevent cross site request forgery
+        CRUMB="`curl --silent -X GET $JENKINS_URL/crumbIssuer/api/json --user $JENKINS_USER:$JENKINS_PASS | cut -d , -f 2 | cut -d : -f 2`"
+        CRUMB="`echo $CRUMB | sed s/\\"//g`"
+        echo "Using Jenkins crumb for Job request: $CRUMB"
 
-    # Just fetch the jenkins URL with the given build token (configured per job)
-    if curl -XPOST --silent --show-error $JENKINS_URL/job/$1/buildWithParameters?token=$1-JobToken --user $JENKINS_USER:$JENKINS_PASS -H "Jenkins-Crumb: $CRUMB"; then
-        echo "Job $1 started via master at $JENKINS_URL"
-        exit 0
-    fi
+        # Just fetch the jenkins URL with the given build token (configured per job)
+        if curl -XPOST --silent --show-error $JENKINS_URL/job/$1/buildWithParameters?token=$1-JobToken --user $JENKINS_USER:$JENKINS_PASS -H "Jenkins-Crumb: $CRUMB"; then
+            echo "Job $1 started via master at $JENKINS_URL"
+            sleep $WAITTIME
+            break
+        fi
 
-    # Wait before retrying
-    sleep $WAITTIME
+        # Wait before retrying
+        if [ $j -lt $RETRIES ] ; then
+            sleep $WAITTIME
+        else
+            echo "Failed to trigger build job $1 (tried $RETRIES times)"
+            exit 1
+        fi
+    done
 done
-
-echo "Failed to trigger build job $1 (tried $RETRIES times)"
-exit 1
