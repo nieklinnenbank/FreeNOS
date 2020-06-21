@@ -21,16 +21,19 @@
 BitArray::BitArray(const Size bitCount, u8 *array)
 {
     m_array = array ? array : new u8[BITS_TO_BYTES(bitCount)];
-    m_allocated = array == ZERO;
+    m_allocated = (array == ZERO);
     m_bitCount  = bitCount;
-    m_set   = 0;
+    m_set = 0;
+
     clear();
 }
 
 BitArray::~BitArray()
 {
     if (m_allocated)
+    {
         delete[] m_array;
+    }
 }
 
 Size BitArray::size() const
@@ -45,10 +48,11 @@ Size BitArray::count(bool on) const
 
 void BitArray::set(Size bit, bool value)
 {
-
     // Check if the bit is inside the array
     if (bit >= m_bitCount)
+    {
         return;
+    }
 
     // Check current value
     bool current = m_array[bit / 8] & (1 << (bit % 8));
@@ -84,7 +88,9 @@ bool BitArray::isSet(Size bit) const
 void BitArray::setRange(Size from, Size to)
 {
     for (Size i = from; i <= to; i++)
+    {
         set(i, true);
+    }
 }
 
 BitArray::Result BitArray::setNext(Size *bit, Size count, Size start, Size boundary)
@@ -100,12 +106,16 @@ BitArray::Result BitArray::setNext(Size *bit, Size count, Size start, Size bound
             if (!found)
             {
                 if (i % boundary)
+                {
                     continue;
+                }
                 from  = i;
                 found = 1;
             }
             else
+            {
                 found++;
+            }
 
             // Are there enough contigious bits?
             if (found >= count)
@@ -133,11 +143,15 @@ void BitArray::setArray(u8 *map, Size bitCount)
 {
     // Set bits count
     if (bitCount)
+    {
         m_bitCount = bitCount;
+    }
 
     // Cleanup old array, if needed
     if (m_array && m_allocated)
+    {
         delete[] m_array;
+    }
 
     // Reassign to the new map
     m_array = map;
@@ -146,8 +160,12 @@ void BitArray::setArray(u8 *map, Size bitCount)
 
     // Recalculate set bits
     for (Size i = 0; i < m_bitCount; i++)
+    {
         if (isSet(i))
+        {
             m_set++;
+        }
+    }
 }
 
 void BitArray::clear()
