@@ -166,39 +166,6 @@ Shell::Result Shell::runInteractive()
     return Success;
 }
 
-int Shell::runProgram(const char *path, char **argv)
-{
-#ifdef __HOST__
-    struct stat buf;
-    int pid;
-
-    if (stat(path, &buf) != 0)
-    {
-        return -1;
-    }
-
-    pid = fork();
-    switch (pid)
-    {
-        case 0:
-            execve(path, argv, (char * const *)NULL);
-            ERROR("execve failed for " << path);
-            exit(1);
-            break;
-
-        case -1:
-            ERROR("fork failed");
-            break;
-
-        default:
-            break;
-    }
-    return pid;
-#else
-    return forkexec(path, (const char **)argv);
-#endif
-}
-
 int Shell::executeInput(const Size argc, char **argv, const bool background)
 {
     char tmp[128];
@@ -218,7 +185,7 @@ int Shell::executeInput(const Size argc, char **argv, const bool background)
     if (!(cmd = getCommand(argv[0])))
     {
         // If not, try to execute it as a file directly
-        if ((pid = runProgram(argv[0], argv)) != -1)
+        if ((pid = runProgram(argv[0], (const char **)argv)) != -1)
         {
             if (!background)
             {
@@ -230,7 +197,7 @@ int Shell::executeInput(const Size argc, char **argv, const bool background)
 
         // Try to find it on the filesystem. (temporary hardcoded PATH)
         else if (snprintf(tmp, sizeof(tmp), "/bin/%s", argv[0]) &&
-                (pid = runProgram(tmp, argv)) != -1)
+                (pid = runProgram(tmp, (const char **)argv)) != -1)
         {
             if (!background)
             {

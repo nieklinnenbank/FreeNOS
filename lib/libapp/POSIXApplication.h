@@ -60,6 +60,16 @@ class POSIXApplication : public Application
      */
     virtual Result output(const char *string) const;
 
+    /**
+     * Runs an external program
+     *
+     * @param path Full path to the program to run
+     * @param argv Array with arguments
+     *
+     * @return Program ID on success or -1 on failure
+     */
+    int runProgram(const char *path, const char **argv);
+
   private:
 
     /** Logs to standard output */

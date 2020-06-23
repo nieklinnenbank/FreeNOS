@@ -98,16 +98,6 @@ class Shell : public POSIXApplication
   private:
 
     /**
-     * Runs an external program
-     *
-     * @param path Full path to the program to run
-     * @param argv Array with arguments
-     *
-     * @return Program ID on success or -1 on failure
-     */
-    int runProgram(const char *path, char **argv);
-
-    /**
      * Executes the Shell by entering an infinite loop.
      *
      * @return Result code
