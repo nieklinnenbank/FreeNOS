@@ -50,29 +50,17 @@ int TimeCommand::execute(Size nparams, char **params)
 {
     struct timeval t1, t2;
     struct timezone zone;
-    int pid;
-    int status;
-    char tmp[128];
 
     // Get timestamp before
     gettimeofday(&t1, &zone);
 
-    // If not, try to execute it as a file directly. */
-    if ((pid = m_shell->runProgram(params[0], params)) != -1)
+    // Run command
+    int result = m_shell->executeInput(nparams, params, false);
+    if (result != EXIT_SUCCESS)
     {
-        waitpid(pid, &status, 0);
+        return result;
     }
-    // Try to find it on the livecd filesystem. (temporary hardcoded PATH)
-    else if (snprintf(tmp, sizeof(tmp), "/bin/%s", params[0]) &&
-            (pid = m_shell->runProgram(tmp, params)) != -1)
-    {
-        waitpid(pid, &status, 0);
-    }
-    else
-    {
-        ERROR("forkexec `" << params[0] << "' failed: " << strerror(errno));
-        return EXIT_FAILURE;
-    }
+
     // Get timestamp after
     gettimeofday(&t2, &zone);
 
@@ -80,5 +68,5 @@ int TimeCommand::execute(Size nparams, char **params)
     printf("\r\nTime: ");
     local_printtimediff(&t1, &t2);
     printf("\r\n");
-    return 0;
+    return result;
 }

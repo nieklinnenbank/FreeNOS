@@ -77,6 +77,27 @@ class Shell : public POSIXApplication
     void registerCommand(ShellCommand *command);
 
     /**
+     * Executes the given input.
+     *
+     * @param argc Argument count
+     * @param argv Argument values
+     * @param background True to run program without waiting for termination
+     *
+     * @return Exit status of the command.
+     */
+    int executeInput(const Size argc, char **argv, const bool background);
+
+    /**
+     * Executes the given input.
+     *
+     * @param cmdline Full commandline input to execute.
+     * @return Exit status of the command.
+     */
+    int executeInput(char *cmdline);
+
+  private:
+
+    /**
      * Runs an external program
      *
      * @param path Full path to the program to run
@@ -86,22 +107,12 @@ class Shell : public POSIXApplication
      */
     int runProgram(const char *path, char **argv);
 
-  private:
-
     /**
      * Executes the Shell by entering an infinite loop.
      *
      * @return Result code
      */
     Result runInteractive();
-
-    /**
-     * Executes the given input.
-     *
-     * @param cmdline Input to execute.
-     * @return Exit status of the command.
-     */
-    int executeInput(char *cmdline);
 
     /**
      * Fetch a command text from standard input.

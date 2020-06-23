@@ -199,25 +199,16 @@ int Shell::runProgram(const char *path, char **argv)
 #endif
 }
 
-int Shell::executeInput(char *command)
+int Shell::executeInput(const Size argc, char **argv, const bool background)
 {
-    char *argv[MAX_ARGV];
     char tmp[128];
     ShellCommand *cmd;
-    Size argc;
     int pid, status;
-    bool background;
 
-    // Valid argument?
-    if (!strlen(command))
+    for (Size i = 0; i < argc; i++)
     {
-        return EXIT_SUCCESS;
+        DEBUG("argv[" << i << "] = " << argv[i]);
     }
-
-    DEBUG("command = '" << command << "'");
-
-    // Attempt to extract arguments
-    argc = parse(command, argv, MAX_ARGV, &background);
 
     // Ignore comments
     if (argv[0][0] == '#')
@@ -250,7 +241,7 @@ int Shell::executeInput(char *command)
         }
         else
         {
-            ERROR("forkexec `" << argv[0] << "' failed: " << strerror(errno));
+            ERROR("exec `" << argv[0] << "' failed: " << strerror(errno));
         }
     }
     // Enough arguments given?
@@ -265,6 +256,25 @@ int Shell::executeInput(char *command)
     }
     // Not successful
     return EXIT_FAILURE;
+}
+
+int Shell::executeInput(char *command)
+{
+    char *argv[MAX_ARGV];
+    Size argc;
+    bool background;
+
+    // Valid argument?
+    if (!strlen(command))
+    {
+        return EXIT_SUCCESS;
+    }
+
+    // Attempt to extract arguments
+    argc = parse(command, argv, MAX_ARGV, &background);
+
+    // Run command
+    return executeInput(argc, argv, background);
 }
 
 char * Shell::getInput()
