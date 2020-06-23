@@ -112,7 +112,7 @@ Shell::Result Shell::exec()
             // Parse it into lines
             String contentString(contents);
             List<String> lines = contentString.split('\n');
-    
+
             // Execute each command
             for (ListIterator<String> i(lines); i.hasCurrent(); i++)
             {
@@ -149,10 +149,10 @@ Shell::Result Shell::runInteractive()
     {
         // Print the prompt
         prompt();
-        
+
         // Wait for a command string
         cmdStr = getInput();
-        
+
         // Enough input?
         if (strlen(cmdStr) == 0)
         {
@@ -166,7 +166,7 @@ Shell::Result Shell::runInteractive()
     return Success;
 }
 
-int Shell::executeInput(const Size argc, char **argv, const bool background)
+int Shell::executeInput(const Size argc, const char **argv, const bool background)
 {
     char tmp[128];
     ShellCommand *cmd;
@@ -185,7 +185,7 @@ int Shell::executeInput(const Size argc, char **argv, const bool background)
     if (!(cmd = getCommand(argv[0])))
     {
         // If not, try to execute it as a file directly
-        if ((pid = runProgram(argv[0], (const char **)argv)) != -1)
+        if ((pid = runProgram(argv[0], argv)) != -1)
         {
             if (!background)
             {
@@ -197,7 +197,7 @@ int Shell::executeInput(const Size argc, char **argv, const bool background)
 
         // Try to find it on the filesystem. (temporary hardcoded PATH)
         else if (snprintf(tmp, sizeof(tmp), "/bin/%s", argv[0]) &&
-                (pid = runProgram(tmp, (const char **)argv)) != -1)
+                (pid = runProgram(tmp, argv)) != -1)
         {
             if (!background)
             {
@@ -241,10 +241,10 @@ int Shell::executeInput(char *command)
     argc = parse(command, argv, MAX_ARGV, &background);
 
     // Run command
-    return executeInput(argc, argv, background);
+    return executeInput(argc, (const char **)argv, background);
 }
 
-char * Shell::getInput()
+char * Shell::getInput() const
 {
     static char line[1024];
     Size total = 0;
@@ -290,19 +290,20 @@ char * Shell::getInput()
     return line;
 }
 
-void Shell::prompt()
+void Shell::prompt() const
 {
     char host[128], cwd[128];
-    
+
     // Retrieve current hostname
     gethostname(host, sizeof(host));
-    
+
     // Retrieve current working directory
     getcwd(cwd, sizeof(cwd));
-    
+
     // Print out the prompt
     printf(WHITE "(" GREEN "%s" WHITE ") " BLUE "%s" WHITE " # ",
            host, cwd);
+
 #ifdef __HOST__
     fflush(stdout);
 #endif /* __HOST__ */
@@ -328,7 +329,7 @@ Size Shell::parse(char *cmdline, char **argv, Size maxArgv, bool *background)
     Size argc;
 
     *background = false;
-    
+
     for (argc = 0; argc < maxArgv && *cmdline; argc++)
     {
         while (*cmdline && *cmdline == ' ')

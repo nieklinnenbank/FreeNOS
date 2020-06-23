@@ -45,7 +45,7 @@ class ShellCommand
      * @param name Unique name of the command.
      * @param minParams Minimum number of parameters required by this command.
      */
-    ShellCommand(const char *name, Size minParams = 0);
+    ShellCommand(const char *name, const Size minParams = 0);
 
     /**
      * Destructor.
@@ -80,7 +80,7 @@ class ShellCommand
      * @param params Array of parameters.
      * @return Error code or zero on success.
      */
-    virtual int execute(Size nparams, char **params) = 0;
+    virtual int execute(const Size nparams, const char **params) = 0;
 
   protected:
 
@@ -91,7 +91,7 @@ class ShellCommand
     const char *m_help;
 
     /** Minimum number of parameters required. */
-    Size m_minParams;
+    const Size m_minParams;
 };
 
 /**

@@ -50,7 +50,7 @@ class TimeCommand : public ShellCommand
      * @param params Array of parameters.
      * @return Error code or zero on success.
      */
-    virtual int execute(Size nparams, char **params);
+    virtual int execute(const Size nparams, const char **params);
 
   private:
 

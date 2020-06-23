@@ -24,7 +24,7 @@ StdioCommand::StdioCommand() : ShellCommand("stdio", 2)
     m_help = "Change standard I/O of the shell";
 }
 
-int StdioCommand::execute(Size nparams, char **params)
+int StdioCommand::execute(const Size nparams, const char **params)
 {
     // Close current standard I/O
     close(0);

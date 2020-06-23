@@ -34,7 +34,8 @@ TimeCommand::TimeCommand(Shell *shell)
     m_help = "Measure the execution time of a program";
 }
 
-static int local_printtimediff(struct timeval *t1, struct timeval *t2)
+static int local_printtimediff(const struct timeval *t1,
+                               const struct timeval *t2)
 {
     u64 usec1 = (t1->tv_sec * 1000000) + (t1->tv_usec);
     u64 usec2 = (t2->tv_sec * 1000000) + (t2->tv_usec);
@@ -46,7 +47,7 @@ static int local_printtimediff(struct timeval *t1, struct timeval *t2)
     return 0;
 }
 
-int TimeCommand::execute(Size nparams, char **params)
+int TimeCommand::execute(const Size nparams, const char **params)
 {
     struct timeval t1, t2;
     struct timezone zone;

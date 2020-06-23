@@ -28,7 +28,7 @@ HelpCommand::HelpCommand(Shell *shell)
     m_help  = "Print the help message";
 }
 
-int HelpCommand::execute(Size nparams, char **params)
+int HelpCommand::execute(const Size nparams, const char **params)
 {
     printf("List of builtin Shell commands:\r\n\r\n");
 

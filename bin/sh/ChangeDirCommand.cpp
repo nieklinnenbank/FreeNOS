@@ -31,7 +31,7 @@ ChangeDirCommand::ChangeDirCommand()
     m_help = "Change the current working directory";
 }
 
-int ChangeDirCommand::execute(Size nparams, char **params)
+int ChangeDirCommand::execute(const Size nparams, const char **params)
 {
 #ifndef __HOST__
     refreshMounts(0);

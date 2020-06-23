@@ -85,7 +85,7 @@ class Shell : public POSIXApplication
      *
      * @return Exit status of the command.
      */
-    int executeInput(const Size argc, char **argv, const bool background);
+    int executeInput(const Size argc, const char **argv, const bool background);
 
     /**
      * Executes the given input.
@@ -108,12 +108,12 @@ class Shell : public POSIXApplication
      * Fetch a command text from standard input.
      * @return Pointer to a command text.
      */
-    char * getInput();
+    char * getInput() const;
 
     /**
      * Output a prompt.
      */
-    void prompt();
+    void prompt() const;
 
     /**
      * Parses an input string into separate pieces.
