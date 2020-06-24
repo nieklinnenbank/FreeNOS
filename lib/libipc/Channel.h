@@ -18,6 +18,8 @@
 #ifndef __LIBIPC_CHANNEL_H
 #define __LIBIPC_CHANNEL_H
 
+#include <Types.h>
+
 /**
  * @addtogroup lib
  * @{
