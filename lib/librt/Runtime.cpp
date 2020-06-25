@@ -294,7 +294,7 @@ extern C void SECTION(".entry") _entry()
 
     // Allocate buffer for arguments
     argc = 0;
-    argv = (char **) new char[ARGV_COUNT];
+    argv = new char*[ARGV_COUNT];
     arguments = (char *) map.range(MemoryMap::UserArgs).virt;
 
     // Fill in arguments list
