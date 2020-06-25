@@ -144,7 +144,7 @@ int forkexec(const char *path, const char *argv[])
 
     // Allocate arguments and current working directory
     char *arguments = new char[PAGESIZE*2];
-    memset(arguments, 0, PAGESIZE);
+    memset(arguments, 0, PAGESIZE*2);
 
     // Fill in arguments
     while (argv[count] && count < PAGESIZE / ARGV_SIZE)
