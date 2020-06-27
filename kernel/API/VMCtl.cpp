@@ -115,16 +115,25 @@ API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *ra
             break;
         }
 
-        case ReserveMem: {
-            Allocator::Range alloc_args;
-            alloc_args.address = range->phys;
-            alloc_args.size    = range->size;
-            alloc_args.alignment = PAGESIZE;
+        case ReserveMem:
+        {
+            SplitAllocator *alloc = Kernel::instance->getAllocator();
+            Allocator::Result allocResult = Allocator::Success;
 
-            if (Kernel::instance->getAllocator()->allocate(alloc_args) != Allocator::Success)
+            for (Size i = 0; i < range->size; i += PAGESIZE)
             {
-                ERROR("address " << (void *) (range->phys) << " already allocated");
-                return API::OutOfMemory;
+                const Address addr = range->phys + i;
+
+                if (alloc->isAllocated(addr))
+                {
+                    ERROR("address " << (void *)addr << " is already allocated");
+                    return API::InvalidArgument;
+                }
+                else if ((allocResult = alloc->allocate(addr)) != Allocator::Success)
+                {
+                    ERROR("failed to allocate " << (void *)addr << ", result = " << (int)allocResult);
+                    return API::IOError;
+                }
             }
             break;
         }
