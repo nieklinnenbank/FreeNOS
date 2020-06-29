@@ -117,13 +117,6 @@ class Allocator
     Allocator * parent();
 
     /**
-     * Get memory size.
-     *
-     * @return Size of memory owned by the Allocator.
-     */
-    Size size() const;
-
-    /**
      * Get memory base address for allocations.
      *
      * @return Memory address used as base address
@@ -136,6 +129,13 @@ class Allocator
      * @return Memory alignment value in bytes
      */
     Size alignment() const;
+
+    /**
+     * Get memory size.
+     *
+     * @return Size of memory owned by the Allocator.
+     */
+    virtual Size size() const;
 
     /**
      * Get memory available.
