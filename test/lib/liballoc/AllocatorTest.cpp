@@ -65,3 +65,26 @@ TestCase(AllocatorParent)
 
     return OK;
 }
+
+TestCase(AllocatorAligned)
+{
+    const Allocator::Range range = { 0, PAGESIZE, sizeof(u32) };
+    Allocator alloc(range);
+
+    // Address zero is always aligned to itself
+    testAssert(alloc.aligned(0, sizeof(u8)) == 0);
+    testAssert(alloc.aligned(0, sizeof(u32)) == 0);
+    testAssert(alloc.aligned(0, PAGESIZE) == 0);
+
+    // Test for 32-bit alignments
+    testAssert(alloc.aligned(0x100, sizeof(u32)) == 0x100);
+    testAssert(alloc.aligned(31, sizeof(u32)) == 32);
+    testAssert(alloc.aligned(1, sizeof(u32)) == 4);
+
+    // Test for PAGESIZE alignments
+    testAssert(alloc.aligned(PAGESIZE-1, PAGESIZE) == PAGESIZE);
+    testAssert(alloc.aligned(PAGESIZE, PAGESIZE) == PAGESIZE);
+    testAssert(alloc.aligned(PAGESIZE+1, PAGESIZE) == PAGESIZE * 2);
+
+    return OK;
+}

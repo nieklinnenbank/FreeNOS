@@ -23,6 +23,9 @@ env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libtest',
 env.UseLibraries([ 'libtest', 'liballoc', 'libarch', 'libstd', 'libapp' ], 'host')
 env.Append(CPPPATH = [ '#lib/liballoc' ])
 
+if env['ARCH'] != 'host':
+    env.Prepend(CXXFLAGS = '-Dprotected=public')
+
 env.TargetHostProgram('AllocatorTest', 'AllocatorTest.cpp')
 env.TargetHostProgram('BitAllocatorTest', 'BitAllocatorTest.cpp')
 env.TargetHostProgram('BubbleAllocatorTest', 'BubbleAllocatorTest.cpp')
