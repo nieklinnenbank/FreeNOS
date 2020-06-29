@@ -29,4 +29,5 @@ if env['ARCH'] != 'host':
 env.TargetHostProgram('AllocatorTest', 'AllocatorTest.cpp')
 env.TargetHostProgram('BitAllocatorTest', 'BitAllocatorTest.cpp')
 env.TargetHostProgram('BubbleAllocatorTest', 'BubbleAllocatorTest.cpp')
+env.TargetHostProgram('PoolAllocatorTest', 'PoolAllocatorTest.cpp')
 env.TargetHostProgram('SplitAllocatorTest', 'SplitAllocatorTest.cpp')
