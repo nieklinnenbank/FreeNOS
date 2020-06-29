@@ -21,6 +21,7 @@
 #include <Types.h>
 #include <Macros.h>
 #include "Allocator.h"
+#include "BitAllocator.h"
 
 /**
  * @addtogroup lib
@@ -30,122 +31,87 @@
  * @{
  */
 
-/** Minimum power of two for a pool size. */
-#define POOL_MIN_POWER 2
-
-/** Maximum power of two size a pool can be. */
-#define POOL_MAX_POWER 32
-
 /**
- * Allocate this many blocks per default for the given size.
+ * Memory allocator which uses pools that each manage same-sized objects.
  *
- * @param size Size of each block.
- */
-#define POOL_MIN_COUNT(size) \
-    (64 / (((size) / 1024 ) + 1)) > 0 ? \
-    (64 / (((size) / 1024 ) + 1)) : 1
-
-/**
- * @brief Calculates the number of bytes needed in a bitmap,
- *        to hold the specified number of elements.
- * @param count Number of elements to hold in the bitmap.
- */
-#define BITMAP_NUM_BYTES(count) \
-    ((count / 8) + 1)
-
-/**
- * Memory pool contains pre-allocated blocks of a certain size (power of two).
- */
-typedef struct MemoryPool
-{
-    /**
-     * Marks the appropriate bits in the free and used block bitmap.
-     *
-     * @return Pointer to the next available block, if any.
-     */
-    Address allocate()
-    {
-        Address *ptr;
-        Size num = count / sizeof(Address);
-
-        // At least one
-        if (!num) num++;
-
-        // Scan bitmap as fast as possible
-        for (Size i = 0; i < num; i++)
-        {
-            // Point to the correct offset
-            ptr = (Address *) (&blocks) + i;
-
-            // Any blocks free?
-            if (*ptr != (Address) ~ZERO)
-            {
-                // Find the first free bit
-                for (Size bit = 0; bit < sizeof(Address) * 8; bit++)
-                {
-                    if (!(*ptr & 1 << bit))
-                    {
-                        *ptr |= (1 << bit);
-                        free--;
-                        return addr + (((i * sizeof(Address) * 8) + bit) * size);
-                    }
-                }
-            }
-        }
-        // Out of memory
-        return ZERO;
-    }
-
-    /**
-     * Unmarks the appropriate bit for the given address.
-     *
-     * @param a Address to unmark.
-     */
-    void release(Address a)
-    {
-        Size index = (a - addr) / size / 8;
-        Size bit   = (a - addr) / size % 8;
-
-        free++;
-        blocks[index] &= ~(1 << bit);
-    }
-
-    /** Points to the next pool of this size (if any). */
-    MemoryPool *next;
-
-    /** Memory address allocated to this pool. */
-    Address addr;
-
-    /** Size of each object in the pool. */
-    Size size;
-
-    /** Number of blocks in the pool. */
-    Size count;
-
-    /** Free blocks left. */
-    Size free;
-
-    /** Bitmap which represents free and used blocks. */
-    u8 blocks[];
-}
-MemoryPool;
-
-/**
- * Memory allocator which uses pools.
- *
- * Allocates memory from pools the size of a power of two.
+ * Allocates memory from pools each having the size of a power of two.
  * Each pool is pre-allocated and has a bitmap representing free blocks.
  */
 class PoolAllocator : public Allocator
 {
+  private:
+
+    /** Minimum power of two for a pool size. */
+    static const Size MinimumPoolSize = 2;
+
+    /** Maximum power of two size a pool can be (128MiB). */
+    static const Size MaximumPoolSize = 27;
+
+    /** Signature value is used to detect object corruption/overflows */
+    static const u32 ObjectSignature = 0xF7312A56;
+
+    /**
+     * Allocates same-sized objects from a contiguous block of memory.
+     */
+    typedef struct Pool : public BitAllocator
+    {
+        Pool(const Range & range,
+             const Size objectSize,
+             const Size bitmapSize,
+             u8 *bitmap)
+        : BitAllocator(range, objectSize, bitmap)
+        , prev(ZERO)
+        , next(ZERO)
+        , index(0)
+        , bitmapSize(bitmapSize)
+        {
+        }
+
+        Pool *prev;            /**< Points to the previous pool of this size (if any). */
+        Pool *next;            /**< Points to the next pool of this size (if any). */
+        Size index;            /**< Index number in the m_pools array where this Pool is stored. */
+        const Size bitmapSize; /**< Size in bytes of the bitmap array. */
+    } Pool;
+
+    /**
+     * This data structure is prepended in memory before each object
+     */
+    typedef struct ObjectPrefix
+    {
+        u32 signature;  /**< Filled with a fixed value to detect corruption/overflows */
+        Pool *pool;     /**< Points to the Pool instance where this object belongs to */
+    } ObjectPrefix;
+
+    /**
+     * Appended in memory after each object
+     */
+    typedef struct ObjectPostfix
+    {
+        u32 signature;  /**< Filled with a fixed value to detect corruption/overflows */
+    } ObjectPostfix;
+
   public:
 
     /**
      * Constructor
      *
-     * @param range Block of continguous memory to be managed.
+     * @param parent Allocator for obtaining new memory to manage
      */
-    PoolAllocator(const Range range);
+    PoolAllocator(Allocator *parent);
+
+    /**
+     * Get memory size.
+     *
+     * @return Size of memory owned by the PoolAllocator.
+     */
+    virtual Size size() const;
+
+    /**
+     * Get memory available.
+     *
+     * @return Size of memory available by the PoolAllocator.
+     */
+    virtual Size available() const;
 
     /**
      * Allocate memory.
@@ -171,19 +137,63 @@ class PoolAllocator : public Allocator
   private:
 
     /**
-     * Creates a new MemoryPool instance.
+     * Calculate object size given the Pool index number.
      *
-     * @param index Index in the pools array.
-     * @param cnt Allocate for this many of blocks from our parent.
+     * @param index Index number in m_pools
      *
-     * @return Pointer to a MemoryPool object on success, ZERO on failure.
+     * @return Size in bytes
      */
-    MemoryPool * newPool(Size index, Size cnt);
+    Size calculateObjectSize(const Size index) const;
+
+    /**
+     * Calculate minimum object count for a Pool.
+     *
+     * @param objectSize Size per-object in bytes
+     *
+     * @return Minimum number of objects to allocate
+     */
+    Size calculateObjectCount(const Size objectSize) const;
+
+    /**
+     * Determine total memory usage.
+     *
+     * @param totalSize Total memory in bytes owned by the PoolAllocator.
+     * @param totalUsed Total memory in bytes actually used.
+     */
+    void calculateUsage(Size & totalSize, Size & totalUsed) const;
+
+    /**
+     * Find a Pool of sufficient size.
+     *
+     * @param inputSize Requested size of object to store
+     *
+     * @return Pool object pointer on success or NULL on failure.
+     */
+    Pool * retrievePool(const Size inputSize);
+
+    /**
+     * Creates a new Pool instance.
+     *
+     * @param index Index in the Pools array
+     * @param objectCount Allocate for this many of blocks from our parent.
+     *
+     * @return Pointer to a Pool object on success, ZERO on failure.
+     */
+    Pool * allocatePool(const uint index, const Size objectCount);
+
+    /**
+     * Release Pool instance memory.
+     *
+     * @param pool Pool object pointer
+     *
+     * @return Result value.
+     */
+    Result releasePool(Pool *pool);
 
   private:
 
     /** Array of memory pools. Index represents the power of two. */
-    MemoryPool *m_pools[POOL_MAX_POWER];
+    Pool *m_pools[MaximumPoolSize + 1];
 };
 
 /**
