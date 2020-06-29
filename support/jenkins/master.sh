@@ -127,6 +127,11 @@ mv ~vagrant/freebsd12.job.xml $JENKINS_HOME/jobs/FreeNOS-freebsd12/config.xml
 mv ~vagrant/freebsd12-loop.job.xml $JENKINS_HOME/jobs/FreeNOS-freebsd12-loop/config.xml
 mv ~vagrant/freebsd12.node.xml $JENKINS_HOME/nodes/freebsd12/config.xml
 
+# Apply proper GIT branch to job files
+if [ ! -z "$GIT_BRANCH" ] ; then
+    sed -i "s/<name>\*\/master<\/name>/<name>refs\/heads\/$GIT_BRANCH<\/name>/g" `find $JENKINS_HOME/jobs -maxdepth 2 -name 'config.xml'`
+fi
+
 # Jenkins plugin list with its dependencies
 JENKINS_PLUGINS=(
     git/4.2.2 workflow-scm-step/2.11 workflow-step-api/2.22 credentials/2.3.9 git-client/3.2.1
