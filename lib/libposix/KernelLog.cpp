@@ -32,6 +32,7 @@ void KernelLog::write(const char *str)
 
 void KernelLog::terminate() const
 {
+    PrivExec(Panic);
     ::exit(EXIT_FAILURE);
 }
 

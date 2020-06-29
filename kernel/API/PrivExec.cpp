@@ -46,6 +46,10 @@ API::Result PrivExecHandler(PrivOperation op, Address addr)
         }
         return API::Success;
 
+    case Panic:
+        FATAL("panic in PID " << Kernel::instance->getProcessManager()->current()->getID());
+        return API::Success;
+
     default:
         ;
     }
