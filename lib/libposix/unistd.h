@@ -144,12 +144,12 @@ extern C int forkexec(const char *path, const char *argv[]);
  *
  * @param program In-memory executable to run
  * @param programSize number of bytes of the executable
- * @param command Command line to pass to the program
+ * @param argv Argument list pointer.
  *
  * @return New process ID on success and -1 on failure.
  * @note  Errno is set with the appropriate error code on failure.
  */
-extern C int spawn(Address program, Size programSize, const char *command);
+extern C int spawn(Address program, Size programSize, const char *argv[]);
 
 /**
  * @brief Get name of current host.

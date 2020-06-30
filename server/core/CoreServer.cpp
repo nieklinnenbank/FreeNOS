@@ -75,9 +75,11 @@ int CoreServer::runCore()
 
 void CoreServer::createProcess(FileSystemMessage *msg)
 {
-    char cmd[128];
+    const Size maximumArguments = 64;
+    char cmd[128], *argv[maximumArguments], *arg = ZERO;
     Memory::Range range;
     API::Result result = API::Success;
+    Size argc = 0;
 
     if (m_info.coreId == 0)
     {
@@ -133,6 +135,26 @@ void CoreServer::createProcess(FileSystemMessage *msg)
             sendToMaster(msg);
             return;
         }
+        // First argument points to start of command
+        arg = cmd;
+
+        // Translate space separated command to argv[]
+        for (Size i = 0; i < sizeof(cmd) && argc < maximumArguments - 1; i++)
+        {
+            if (cmd[i] == ' ')
+            {
+                cmd[i] = 0;
+                argv[argc++] = arg;
+                arg = &cmd[i+1];
+            }
+            else if (cmd[i] == 0)
+            {
+                argv[argc++] = arg;
+                break;
+            }
+        }
+        // Mark end of the argument list
+        argv[argc] = 0;
 
         // Map the program buffer
         range.phys   = (Address) msg->buffer;
@@ -147,7 +169,7 @@ void CoreServer::createProcess(FileSystemMessage *msg)
             return;
         }
 
-        int pid = spawn(range.virt, msg->offset, cmd);
+        int pid = spawn(range.virt, msg->offset, (const char **)argv);
         if (pid == -1)
         {
             ERROR("failed to spawn() program: " << pid);
