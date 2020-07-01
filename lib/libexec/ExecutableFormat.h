@@ -80,7 +80,7 @@ class ExecutableFormat
      * @param image Pointer to program image.
      * @param size Size of the program image.
      */
-    ExecutableFormat(const u8 *image, Size size);
+    ExecutableFormat(const u8 *image, const Size size);
 
     /**
      * Class destructor.
@@ -114,7 +114,7 @@ class ExecutableFormat
      * @param fmt ExecutableFormat object pointer on output.
      * @return Result code.
      */
-    static Result find(const u8 *image, Size size, ExecutableFormat **fmt);
+    static Result find(const u8 *image, const Size size, ExecutableFormat **fmt);
 
   protected:
 

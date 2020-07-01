@@ -25,7 +25,7 @@
 #include <MemoryBlock.h>
 #include "ELF.h"
 
-ELF::ELF(const u8 *image, Size size)
+ELF::ELF(const u8 *image, const Size size)
     : ExecutableFormat(image, size)
 {
 }
@@ -34,9 +34,9 @@ ELF::~ELF()
 {
 }
 
-ELF::Result ELF::detect(const u8 *image, Size size, ExecutableFormat **fmt)
+ELF::Result ELF::detect(const u8 *image, const Size size, ExecutableFormat **fmt)
 {
-    ELFHeader *header = (ELFHeader *) image;
+    const ELFHeader *header = (const ELFHeader *) image;
 
     // Verify ELF magic bytes
     if (header->ident[ELF_INDEX_MAGIC0] == ELF_MAGIC0 &&
@@ -58,9 +58,10 @@ ELF::Result ELF::detect(const u8 *image, Size size, ExecutableFormat **fmt)
 
 ELF::Result ELF::regions(ELF::Region *regions, Size *count) const
 {
-    ELFSegment *segments;
-    ELFHeader *header = (ELFHeader *) m_image;
-    Size max = *count, num = header->programHeaderEntryCount, c = 0;
+    const ELFHeader *header = (const ELFHeader *) m_image;
+    const ELFSegment *segments = (const ELFSegment *) (m_image + header->programHeaderOffset);
+    const Size numSegments = header->programHeaderEntryCount;
+    Size max = *count, c = 0;
 
     // Must be of the same sizes
     if (!(header->programHeaderEntrySize == sizeof(ELFSegment) &&
@@ -69,12 +70,8 @@ ELF::Result ELF::regions(ELF::Region *regions, Size *count) const
         return InvalidFormat;
     }
 
-    // Point to the program segments
-    segments = (ELFSegment *) (m_image + header->programHeaderOffset);
-    (*count) = 0;
-
     // Fill in the memory regions
-    for (Size i = 0; c < max && i < num; i++)
+    for (Size i = 0; c < max && i < numSegments; i++)
     {
         // We are only interested in loadable segments
         if (segments[i].type != ELF_SEGMENT_LOAD)
@@ -105,7 +102,7 @@ ELF::Result ELF::regions(ELF::Region *regions, Size *count) const
 
 ELF::Result ELF::entry(Address *entry) const
 {
-    ELFHeader *header = (ELFHeader *) m_image;
+    const ELFHeader *header = (const ELFHeader *) m_image;
     *entry = header->entry;
     return Success;
 }
