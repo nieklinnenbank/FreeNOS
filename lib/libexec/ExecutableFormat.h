@@ -55,9 +55,10 @@ class ExecutableFormat
     typedef struct Region
     {
         Address virt;
-        Size size;
+        Address dataOffset;
+        Size dataSize;
+        Size memorySize;
         Memory::Access access;
-        u8 *data;
     }
     Region;
 

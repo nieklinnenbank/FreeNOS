@@ -117,7 +117,7 @@ Size BootImageCreate::readBootSymbols(const char *conf_file,
             exit(EXIT_FAILURE);
         }
         // Allocate buffer
-        u8 *buffer = new u8[st.st_size];
+        entry->data = new u8[st.st_size];
 
         // Read the file
         FILE *entry_fd = fopen(symbolname, "r");
@@ -127,7 +127,7 @@ Size BootImageCreate::readBootSymbols(const char *conf_file,
                     prog, symbolname, strerror(errno));
             exit(EXIT_FAILURE);
         }
-        if (fread(buffer, st.st_size, 1, entry_fd) != 1)
+        if (fread(entry->data, st.st_size, 1, entry_fd) != 1)
         {
             fprintf(stderr, "%s: failed to fread `%s': %s\r\n",
                     prog, symbolname, strerror(errno));
@@ -138,7 +138,7 @@ Size BootImageCreate::readBootSymbols(const char *conf_file,
         // Parse as BootProgram using libexec.
         if (entry->symbol.type == BootProgram || entry->symbol.type == BootPrivProgram)
         {
-            if (ExecutableFormat::find(buffer, st.st_size, &format) != ExecutableFormat::Success)
+            if (ExecutableFormat::find(entry->data, st.st_size, &format) != ExecutableFormat::Success)
             {
                 fprintf(stderr, "%s: failed to parse executable image format in `%s': %s\r\n",
                             prog, symbolname, strerror(errno));
@@ -163,8 +163,9 @@ Size BootImageCreate::readBootSymbols(const char *conf_file,
             entry->numRegions  = 1;
             entry->regions[0].virt = 0;
             entry->regions[0].access = Memory::User | Memory::Readable | Memory::Writable;
-            entry->regions[0].size = st.st_size;
-            entry->regions[0].data = buffer;
+            entry->regions[0].dataSize = st.st_size;
+            entry->regions[0].memorySize = st.st_size;
+            entry->regions[0].dataOffset = 0;
         } else {
             fprintf(stderr, "%s: unknown boot symbol type: %d\r\n",
                     prog, (uint) entry->symbol.type);
@@ -179,8 +180,8 @@ Size BootImageCreate::readBootSymbols(const char *conf_file,
         {
             printf("%s[%u]: vaddr=%x size=%u\r\n",
                     symbolname, i, (uint) entry->regions[i].virt,
-                    entry->regions[i].size);
-            totalBytes += entry->regions[i].size;
+                    entry->regions[i].memorySize);
+            totalBytes += entry->regions[i].memorySize;
         }
     }
     // Close config file
@@ -257,7 +258,7 @@ BootImageCreate::Result BootImageCreate::exec()
         {
             // Fill in the segment
             segments[segCount].virtualAddress = input[i]->regions[j].virt;
-            segments[segCount].size           = input[i]->regions[j].size;
+            segments[segCount].size           = input[i]->regions[j].memorySize;
             segments[segCount].offset         = dataOffset;
             
             // Increment total segments size
@@ -307,8 +308,8 @@ BootImageCreate::Result BootImageCreate::exec()
             }
 
             // Write segment contents
-            if (fwrite(input[i]->regions[j].data,
-                       input[i]->regions[j].size, 1, fp) <= 0)
+            if (fwrite(input[i]->data + input[i]->regions[j].dataOffset,
+                       input[i]->regions[j].memorySize, 1, fp) <= 0)
             {
                 fprintf(stderr, "%s: failed to write BootSegment contents to `%s': %s\r\n",
                         prog, out_file, strerror(errno));

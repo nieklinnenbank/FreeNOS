@@ -72,16 +72,13 @@ int spawn(Address program, Size programSize, const char *argv[])
     // Map program regions into virtual memory of the new process
     for (Size i = 0; i < numRegions; i++)
     {
-        // Copy executable memory from this region
+        // Setup memory range to copy region data
         range.virt   = regions[i].virt;
         range.phys   = ZERO;
-        range.size   = regions[i].size;
-        range.access = Memory::User |
-                       Memory::Readable |
-                       Memory::Writable |
-                       Memory::Executable;
+        range.size   = regions[i].memorySize;
+        range.access = regions[i].access;
 
-        // Create mapping first
+        // Create mapping first in the new process
         if (VMCtl(pid, Map, &range) != API::Success)
         {
             errno = EFAULT;
@@ -89,17 +86,33 @@ int spawn(Address program, Size programSize, const char *argv[])
             return -1;
         }
 
-        // Copy bytes
-        if (VMCopy(pid, API::Write, (Address) regions[i].data,
-                   regions[i].virt, regions[i].size) < 0)
+        // Map inside our process
+        range.virt = ZERO;
+        if (VMCtl(SELF, Map, &range) != API::Success)
         {
             errno = EFAULT;
             ProcessCtl(pid, KillPID);
             return -1;
         }
 
-        // Release data buffer
-        delete regions[i].data;
+        // Copy data bytes
+        MemoryBlock::copy((void *)range.virt, (const void *)(program + regions[i].dataOffset),
+                          regions[i].dataSize);
+
+        // Nulify remaining space
+        if (regions[i].memorySize > regions[i].dataSize)
+        {
+            MemoryBlock::set((void *)(range.virt + regions[i].dataSize), 0,
+                             regions[i].memorySize - regions[i].dataSize);
+        }
+
+        // Remove temporary mapping
+        if (VMCtl(SELF, UnMap, &range) != API::Success)
+        {
+            errno = EFAULT;
+            ProcessCtl(pid, KillPID);
+            return -1;
+        }
     }
 
     // Create mapping for command-line arguments

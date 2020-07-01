@@ -364,7 +364,7 @@ CoreServer::Result CoreServer::prepareCore(uint coreId, CoreInfo *info,
         Memory::Range range;
         range.phys = info->kernel.phys + (regions[i].virt - RAM_ADDR);
         range.virt = 0;
-        range.size = regions[i].size;
+        range.size = regions[i].dataSize;
         range.access = Memory::Readable | Memory::Writable |
                        Memory::User;
 
@@ -380,12 +380,12 @@ CoreServer::Result CoreServer::prepareCore(uint coreId, CoreInfo *info,
 #pragma GCC diagnostic ignored "-Wsign-compare"
 
         // Copy the kernel to the target core's memory
-        r = VMCopy(SELF, API::Write, (Address) regions[i].data,
-                   range.virt, regions[i].size);
-        if ((Size)r != regions[i].size)
+        r = VMCopy(SELF, API::Write, ((Address) m_kernelImage) + regions[i].dataOffset,
+                   range.virt, regions[i].dataSize);
+        if ((Size)r != regions[i].dataSize)
         {
-            ERROR("VMCopy failed for kernel regions[" << i << "].data" <<
-                  " at " << (void *)regions[i].data << ": result " << (int) r);
+            ERROR("VMCopy failed for kernel regions[" << i << "].dataOffset" <<
+                  " at " << (void *)regions[i].dataOffset << ": result " << (int) r);
             return MemoryError;
         }
 

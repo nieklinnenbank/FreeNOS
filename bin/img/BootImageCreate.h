@@ -38,6 +38,9 @@ typedef struct BootEntry
     /** BootSymbol definition */
     BootSymbol symbol;
 
+    /** Input data buffer read from the original file */
+    u8 *data;
+
     /** Memory regions for this symbol */
     ExecutableFormat::Region regions[BOOTENTRY_MAX_REGIONS];
 

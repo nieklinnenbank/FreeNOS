@@ -60,8 +60,9 @@ ELF::Result ELF::regions(ELF::Region *regions, Size *count) const
 {
     const ELFHeader *header = (const ELFHeader *) m_image;
     const ELFSegment *segments = (const ELFSegment *) (m_image + header->programHeaderOffset);
-    const Size numSegments = header->programHeaderEntryCount;
-    Size max = *count, c = 0;
+    const Size maxSegments = header->programHeaderEntryCount;
+    const Size maxRegions = *count;
+    Size numRegions = 0, numSegments = 0;
 
     // Must be of the same sizes
     if (!(header->programHeaderEntrySize == sizeof(ELFSegment) &&
@@ -71,32 +72,22 @@ ELF::Result ELF::regions(ELF::Region *regions, Size *count) const
     }
 
     // Fill in the memory regions
-    for (Size i = 0; c < max && i < numSegments; i++)
+    for (;numRegions < maxRegions && numSegments < maxSegments; numSegments++)
     {
         // We are only interested in loadable segments
-        if (segments[i].type != ELF_SEGMENT_LOAD)
+        if (segments[numSegments].type != ELF_SEGMENT_LOAD)
             continue;
 
-        regions[c].virt   = segments[i].virtualAddress;
-        regions[c].size   = segments[i].memorySize;
-        regions[c].access = Memory::User | Memory::Readable | Memory::Writable;
-        regions[c].data   = new u8[segments[i].memorySize];
-
-        // Read segment contents from file
-        MemoryBlock::copy(regions[c].data, m_image + segments[i].offset,
-                          segments[i].fileSize);
-
-        // Nulify remaining space
-        if (segments[i].memorySize > segments[i].fileSize)
-        {
-            memset(regions[c].data + segments[i].fileSize, 0,
-                   segments[i].memorySize - segments[i].fileSize);
-        }
-        c++;
+        // Fill the region structure
+        regions[numRegions].virt       = segments[numSegments].virtualAddress;
+        regions[numRegions].dataOffset = segments[numSegments].offset;
+        regions[numRegions].dataSize   = segments[numSegments].fileSize;
+        regions[numRegions].memorySize = segments[numSegments].memorySize;
+        regions[numRegions++].access   = Memory::User | Memory::Readable | Memory::Writable | Memory::Executable;
     }
 
     // All done
-    (*count) = c;
+    (*count) = numRegions;
     return Success;
 }
 
