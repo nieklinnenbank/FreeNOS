@@ -16,9 +16,7 @@
  */
 
 #include <FreeNOS/System.h>
-#include <ExecutableFormat.h>
 #include <Types.h>
-#include <Runtime.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <errno.h>
@@ -27,9 +25,9 @@
 
 int forkexec(const char *path, const char *argv[])
 {
-    int fd;
+    int fd, ret = 0;
     struct stat st;
-    u8 *image;
+    Memory::Range range;
 
     // Find program image
     if (stat(path, &st) != 0)
@@ -39,20 +37,37 @@ int forkexec(const char *path, const char *argv[])
     if ((fd = open(path, O_RDONLY)) < 0)
         return -1;
 
-    // Read the program image
-    image = new u8[st.st_size];
-    if (read(fd, image, st.st_size) != st.st_size)
+    // Map memory buffer for the program image
+    range.virt   = ZERO;
+    range.phys   = ZERO;
+    range.size   = st.st_size;
+    range.access = Memory::User|Memory::Readable|Memory::Writable;
+
+    // Create mapping
+    if (VMCtl(SELF, Map, &range) != API::Success)
     {
-        delete image;
-        close(fd);
+        errno = EFAULT;
         return -1;
     }
+
+    // Read the program image
+    ret = read(fd, (void *)range.virt, st.st_size);
+
+    // Close file handle
     close(fd);
 
     // Spawn the new program
-    int ret = spawn((Address)image, st.st_size, argv);
+    if (ret == st.st_size)
+    {
+        ret = spawn(range.virt, st.st_size, argv);
+    }
 
-    // Cleanup resources
-    delete image;
+    // Cleanup program buffer
+    if (VMCtl(SELF, Release, &range) != API::Success)
+    {
+        errno = EFAULT;
+        return -1;
+    }
+
     return ret;
 }
