@@ -124,8 +124,21 @@ int spawn(Address program, Size programSize, const char *argv[])
         count++;
     }
 
+    // Fill in the current working directory
+    strlcpy(arguments + PAGESIZE, **(getCurrentDirectory()), PATH_MAX);
+
     // Copy argc/argv into the new process
     if ((VMCopy(pid, API::Write, (Address) arguments, range.virt, PAGESIZE * 2)) < 0)
+    {
+        delete[] arguments;
+        errno = EFAULT;
+        ProcessCtl(pid, KillPID);
+        return -1;
+    }
+
+    // Copy fds into the new process.
+    if ((VMCopy(pid, API::Write, (Address) getFiles(),
+                range.virt + (PAGESIZE * 2), range.size - (PAGESIZE * 2))) < 0)
     {
         delete[] arguments;
         errno = EFAULT;
