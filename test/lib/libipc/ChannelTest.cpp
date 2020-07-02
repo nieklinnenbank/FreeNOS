@@ -21,18 +21,9 @@
 #include <TestMain.h>
 #include <Channel.h>
 
-class DummyChannel : public Channel
-{
-  public:
-    DummyChannel(const Channel::Mode m, const Size sz) : Channel(m, sz) { }
-    virtual Channel::Result read(void *buffer) { return Channel::IOError; }
-    virtual Channel::Result write(const void *buffer) { return Channel::IOError; }
-    virtual Channel::Result flush() { return Channel::IOError; }
-};
-
 TestCase(ChannelConstruct)
 {
-    DummyChannel ch(Channel::Consumer, sizeof(u32));
+    Channel ch(Channel::Consumer, sizeof(u32));
 
     testAssert(ch.m_mode == Channel::Consumer);
     testAssert(ch.m_messageSize == sizeof(u32));
@@ -42,7 +33,7 @@ TestCase(ChannelConstruct)
 
 TestCase(ChannelMessageSize)
 {
-    DummyChannel ch(Channel::Consumer, sizeof(u32));
+    Channel ch(Channel::Consumer, sizeof(u32));
 
     testAssert(ch.getMessageSize() == sizeof(u32));
 

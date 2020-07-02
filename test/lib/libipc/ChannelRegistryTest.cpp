@@ -24,15 +24,6 @@
 #include <Channel.h>
 #include <ChannelRegistry.h>
 
-class DummyChannel : public Channel
-{
-  public:
-    DummyChannel(const Channel::Mode m, const Size sz) : Channel(m, sz) { }
-    virtual Channel::Result read(void *buffer) { return Channel::IOError; }
-    virtual Channel::Result write(const void *buffer) { return Channel::IOError; }
-    virtual Channel::Result flush() { return Channel::IOError; }
-};
-
 TestCase(ChannelRegistryConstruct)
 {
     ChannelRegistry reg;
@@ -46,8 +37,8 @@ TestCase(ChannelRegistryConstruct)
 TestCase(ChannelRegistryConsumer)
 {
     ChannelRegistry reg;
-    DummyChannel *cons1 = new DummyChannel(Channel::Consumer, sizeof(u32));
-    DummyChannel *cons2 = new DummyChannel(Channel::Consumer, sizeof(u32));
+    Channel *cons1 = new Channel(Channel::Consumer, sizeof(u32));
+    Channel *cons2 = new Channel(Channel::Consumer, sizeof(u32));
 
     // Initially we should be empty
     testAssert(reg.getConsumers().count() == 0);
@@ -96,8 +87,8 @@ TestCase(ChannelRegistryConsumer)
 TestCase(ChannelRegistryProducer)
 {
     ChannelRegistry reg;
-    DummyChannel *prod1 = new DummyChannel(Channel::Producer, sizeof(u32));
-    DummyChannel *prod2 = new DummyChannel(Channel::Producer, sizeof(u32));
+    Channel *prod1 = new Channel(Channel::Producer, sizeof(u32));
+    Channel *prod2 = new Channel(Channel::Producer, sizeof(u32));
 
     // Initially we should be empty
     testAssert(reg.getProducers().count() == 0);

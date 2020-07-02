@@ -46,7 +46,8 @@ class Channel
         InvalidSize,
         IOError,
         ChannelFull,
-        NotFound
+        NotFound,
+        NotSupported
     };
 
     /**
@@ -87,7 +88,7 @@ class Channel
      *
      * @return Result code.
      */
-    virtual Result read(void *buffer) = 0;
+    virtual Result read(void *buffer);
 
     /**
      * Write a message.
@@ -96,7 +97,7 @@ class Channel
      *
      * @return Result code.
      */
-    virtual Result write(const void *buffer) = 0;
+    virtual Result write(const void *buffer);
 
     /**
      * Flush message buffers.
@@ -105,7 +106,7 @@ class Channel
      *
      * @return Result code.
      */
-    virtual Result flush() = 0;
+    virtual Result flush();
 
   protected:
 

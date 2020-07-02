@@ -31,3 +31,18 @@ const Size Channel::getMessageSize() const
 {
     return m_messageSize;
 }
+
+Channel::Result Channel::read(void *buffer)
+{
+    return NotSupported;
+}
+
+Channel::Result Channel::write(const void *buffer)
+{
+    return NotSupported;
+}
+
+Channel::Result Channel::flush()
+{
+    return NotSupported;
+}
