@@ -29,7 +29,7 @@ MemoryChannel::~MemoryChannel()
 {
 }
 
-MemoryChannel::Result MemoryChannel::setMessageSize(Size size)
+MemoryChannel::Result MemoryChannel::setMessageSize(const Size size)
 {
     if (size < sizeof(RingHead) || size > (PAGESIZE / 2))
         return InvalidArgument;
@@ -40,14 +40,14 @@ MemoryChannel::Result MemoryChannel::setMessageSize(Size size)
     return Success;
 }
 
-MemoryChannel::Result MemoryChannel::setVirtual(Address data, Address feedback)
+MemoryChannel::Result MemoryChannel::setVirtual(const Address data, const Address feedback)
 {
     m_data.setBase(data);
     m_feedback.setBase(feedback);
     return Success;
 }
 
-MemoryChannel::Result MemoryChannel::setPhysical(Address data, Address feedback)
+MemoryChannel::Result MemoryChannel::setPhysical(const Address data, const Address feedback)
 {
     IO::Result result = m_data.map(data, PAGESIZE);
     if (result != IO::Success)
@@ -88,7 +88,7 @@ MemoryChannel::Result MemoryChannel::read(void *buffer)
     return Success;
 }
 
-MemoryChannel::Result MemoryChannel::write(void *buffer)
+MemoryChannel::Result MemoryChannel::write(const void *buffer)
 {
     RingHead reader;
 

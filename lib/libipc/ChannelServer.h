@@ -43,18 +43,20 @@ template <class Func> struct MessageHandler
     /**
      * Constructor function.
      *
-     * @param f Function to execute.
-     * @param r Send a reply?
+     * @param func Function to execute.
+     * @param reply True to send a reply for this message
      */
-    MessageHandler(Func f, bool r) : exec(f), sendReply(r)
+    MessageHandler(const Func func, const bool reply)
+        : exec(func)
+        , sendReply(reply)
     {
     }
 
     /** Handler function. */
-    Func exec;
+    const Func exec;
 
     /** Whether to send a reply or not. */
-    bool sendReply;
+    const bool sendReply;
 };
 
 /**
@@ -90,8 +92,9 @@ template <class Base, class MsgType> class ChannelServer
      *
      * @param num Number of message handlers to support.
      */
-    ChannelServer(Base *inst, Size num = 32)
-        : m_sendReply(true), m_instance(inst)
+    ChannelServer(Base *inst, const Size num = 32U)
+        : m_sendReply(true)
+        , m_instance(inst)
     {
         m_self = ProcessCtl(SELF, GetPID, 0);
 
@@ -104,7 +107,7 @@ template <class Base, class MsgType> class ChannelServer
         m_irqHandlers->fill(ZERO);
 
         // Setup kernel event channel
-        SystemInformation info;
+        const SystemInformation info;
         ProcessShares::MemoryShare share;
         share.pid    = KERNEL_PID;
         share.coreId = info.coreId;
@@ -164,7 +167,7 @@ template <class Base, class MsgType> class ChannelServer
             if (m_expiry.frequency)
                 expiry = (Address) &m_expiry;
 
-            Error r = ProcessCtl(SELF, EnterSleep, expiry, (Address) &m_time);
+            const Error r = ProcessCtl(SELF, EnterSleep, expiry, (Address) &m_time);
             DEBUG("EnterSleep returned: " << (int)r);
 
             // Check for sleep timeout
@@ -193,7 +196,7 @@ template <class Base, class MsgType> class ChannelServer
      * @param h Handler to execute.
      * @param r Does the handler need to send a reply (per default) ?
      */
-    void addIPCHandler(Size slot, IPCHandlerFunction h, bool sendReply = true)
+    void addIPCHandler(const Size slot, IPCHandlerFunction h, const bool sendReply = true)
     {
         m_ipcHandlers->insert(slot, new MessageHandler<IPCHandlerFunction>(h, sendReply));
     }
@@ -204,7 +207,7 @@ template <class Base, class MsgType> class ChannelServer
      * @param slot Vector value to trigger h.
      * @param h Handler to execute.
      */
-    void addIRQHandler(Size slot, IRQHandlerFunction h)
+    void addIRQHandler(const Size slot, IRQHandlerFunction h)
     {
         m_irqHandlers->insert(slot, new MessageHandler<IRQHandlerFunction>(h, false));
     }
@@ -232,7 +235,7 @@ template <class Base, class MsgType> class ChannelServer
      *
      * @param msec Milliseconds to sleep (approximately)
      */
-    void setTimeout(uint msec)
+    void setTimeout(const uint msec)
     {
         DEBUG("msec = " << msec);
 
@@ -242,7 +245,7 @@ template <class Base, class MsgType> class ChannelServer
             return;
         }
 
-        Size msecPerTick = 1000 / m_time.frequency;
+        const Size msecPerTick = 1000 / m_time.frequency;
         m_expiry.frequency = m_time.frequency;
         m_expiry.ticks     = m_time.ticks + ((msec / msecPerTick) + 1);
     }
@@ -257,7 +260,7 @@ template <class Base, class MsgType> class ChannelServer
      *
      * @return Result code
      */
-    Result accept(ProcessID pid, Memory::Range range)
+    Result accept(const ProcessID pid, const Memory::Range range)
     {
         // Create consumer
         if (!m_registry->getConsumer(pid))
@@ -335,7 +338,7 @@ template <class Base, class MsgType> class ChannelServer
                     }
 
                     // cleanup the VMShare area now for that process
-                    API::Result shareResult = VMShare(event.number, API::Delete, ZERO);
+                    const API::Result shareResult = VMShare(event.number, API::Delete, ZERO);
                     if (shareResult != API::Success)
                     {
                         ERROR("failed to remove shares with VMShare for PID " <<

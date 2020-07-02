@@ -38,13 +38,13 @@ const Size Channel::getMaximumMessages() const
     return m_maximumMessages;
 }
 
-Channel::Result Channel::setMode(Channel::Mode mode)
+Channel::Result Channel::setMode(const Channel::Mode mode)
 {
     m_mode = mode;
     return Success;
 }
 
-Channel::Result Channel::setMessageSize(Size size)
+Channel::Result Channel::setMessageSize(const Size size)
 {
     m_messageSize = size;
     return Success;

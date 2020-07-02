@@ -79,7 +79,7 @@ class MemoryChannel : public Channel
      *
      * @return Result code.
      */
-    Result setVirtual(Address data, Address feedback);
+    Result setVirtual(const Address data, const Address feedback);
 
     /**
      * Set memory pages by physical address.
@@ -94,7 +94,7 @@ class MemoryChannel : public Channel
      *
      * @return Result code.
      */
-    Result setPhysical(Address data, Address feedback);
+    Result setPhysical(const Address data, const Address feedback);
 
     /**
      * Set message size.
@@ -103,7 +103,7 @@ class MemoryChannel : public Channel
      *
      * @return Result code.
      */
-    virtual Result setMessageSize(Size size);
+    virtual Result setMessageSize(const Size size);
 
     /**
      * Read a message.
@@ -121,7 +121,7 @@ class MemoryChannel : public Channel
      *
      * @return Result code.
      */
-    virtual Result write(void *buffer);
+    virtual Result write(const void *buffer);
 
     /**
      * Flush message buffers.

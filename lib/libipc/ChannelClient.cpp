@@ -47,10 +47,10 @@ ChannelClient::Result ChannelClient::initialize()
     return Success;
 }
 
-ChannelClient::Result ChannelClient::connect(ProcessID pid, Size messageSize)
+ChannelClient::Result ChannelClient::connect(const ProcessID pid, const Size messageSize)
 {
     Address prodAddr, consAddr;
-    SystemInformation info;
+    const SystemInformation info;
 
     // Allocate consumer
     MemoryChannel *cons = new MemoryChannel;
@@ -82,7 +82,7 @@ ChannelClient::Result ChannelClient::connect(ProcessID pid, Size messageSize)
     share.range.access = Memory::User | Memory::Readable | Memory::Writable;
 
     // Create shared memory mapping
-    Error r = VMShare(pid, API::Create, &share);
+    const Error r = VMShare(pid, API::Create, &share);
     switch (r)
     {
         case API::Success:
@@ -138,7 +138,7 @@ ChannelClient::Result ChannelClient::receiveAny(void *buffer, ProcessID *pid)
     return NotFound;
 }
 
-ChannelClient::Result ChannelClient::sendRequest(ProcessID pid,
+ChannelClient::Result ChannelClient::sendRequest(const ProcessID pid,
                                                  void *buffer,
                                                  CallbackFunction *callback)
 {
@@ -158,6 +158,7 @@ ChannelClient::Result ChannelClient::sendRequest(ProcessID pid,
             break;
         }
     }
+
     // Allocate new request object if none available
     if (!req || req->active)
     {
@@ -167,6 +168,7 @@ ChannelClient::Result ChannelClient::sendRequest(ProcessID pid,
         assert(req->message != NULL);
         identifier   = m_requests.insert(*req);
     }
+
     // Fill request object
     MemoryBlock::copy(req->message, buffer, ch->getMessageSize());
     req->pid = pid;
@@ -183,15 +185,16 @@ ChannelClient::Result ChannelClient::sendRequest(ProcessID pid,
         req->active = false;
         return IOError;
     }
+
     // Wakeup the receiver
     ProcessCtl(pid, Resume, 0);
     return Success;
 }
 
-ChannelClient::Result ChannelClient::processResponse(ProcessID pid,
+ChannelClient::Result ChannelClient::processResponse(const ProcessID pid,
                                                      ChannelMessage *msg)
 {
-    Size count = m_requests.count();
+    const Size count = m_requests.count();
 
     for (Size i = 0; i < count; i++)
     {
@@ -210,35 +213,33 @@ ChannelClient::Result ChannelClient::processResponse(ProcessID pid,
 }
 
 
-Channel * ChannelClient::findConsumer(ProcessID pid)
+Channel * ChannelClient::findConsumer(const ProcessID pid)
 {
-    Result r;
     Channel *ch = m_registry->getConsumer(pid);
     if (ch)
         return ch;
 
     // Try to connect
-    if ((r = connect(pid)) != Success)
+    if (connect(pid) != Success)
         return ZERO;
 
     return m_registry->getConsumer(pid);
 }
 
-Channel * ChannelClient::findProducer(ProcessID pid)
+Channel * ChannelClient::findProducer(const ProcessID pid)
 {
-    Result r;
     Channel *ch = m_registry->getProducer(pid);
     if (ch)
         return ch;
 
     // Try to connect
-    if ((r = connect(pid)) != Success)
+    if (connect(pid) != Success)
         return ZERO;
 
     return m_registry->getProducer(pid);
 }
 
-ChannelClient::Result ChannelClient::syncReceiveFrom(void *buffer, ProcessID pid)
+ChannelClient::Result ChannelClient::syncReceiveFrom(void *buffer, const ProcessID pid)
 {
     Channel *ch = findConsumer(pid);
     if (!ch)
@@ -250,7 +251,7 @@ ChannelClient::Result ChannelClient::syncReceiveFrom(void *buffer, ProcessID pid
     return Success;
 }
 
-ChannelClient::Result ChannelClient::syncSendTo(void *buffer, ProcessID pid)
+ChannelClient::Result ChannelClient::syncSendTo(const void *buffer, const ProcessID pid)
 {
     Channel *ch = findProducer(pid);
     if (!ch)
@@ -276,11 +277,11 @@ ChannelClient::Result ChannelClient::syncSendTo(void *buffer, ProcessID pid)
     return IOError;
 }
 
-ChannelClient::Result ChannelClient::syncSendReceive(void *buffer, ProcessID pid)
+ChannelClient::Result ChannelClient::syncSendReceive(void *buffer, const ProcessID pid)
 {
-    Result r = syncSendTo(buffer, pid);
-    if (r != Success)
-        return r;
+    const Result result = syncSendTo(buffer, pid);
+    if (result != Success)
+        return result;
 
     return syncReceiveFrom(buffer, pid);
 }

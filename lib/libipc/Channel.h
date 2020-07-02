@@ -91,7 +91,7 @@ class Channel
      *
      * @return Result code.
      */
-    Result setMode(Mode mode);
+    Result setMode(const Mode mode);
 
     /**
      * Set message size.
@@ -100,7 +100,7 @@ class Channel
      *
      * @return Result code.
      */
-    virtual Result setMessageSize(Size size);
+    virtual Result setMessageSize(const Size size);
 
     /**
      * Read a message.
@@ -118,7 +118,7 @@ class Channel
      *
      * @return Result code.
      */
-    virtual Result write(void *buffer) = 0;
+    virtual Result write(const void *buffer) = 0;
 
     /**
      * Flush message buffers.

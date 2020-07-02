@@ -27,7 +27,7 @@
 class DummyChannel : public Channel
 {
     virtual Channel::Result read(void *buffer) { return Channel::IOError; }
-    virtual Channel::Result write(void *buffer) { return Channel::IOError; }
+    virtual Channel::Result write(const void *buffer) { return Channel::IOError; }
     virtual Channel::Result flush() { return Channel::IOError; }
 };
 

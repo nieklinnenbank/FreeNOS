@@ -152,7 +152,7 @@ class IntelIO : public IO
      * @param count Number of bytes to write.
      * @param buf Input buffer.
      */
-    inline void write(Address addr, Size count, void *buf)
+    inline void write(Address addr, Size count, const void *buf)
     {
         for (Size i = 0; i < count; i+= sizeof(u32))
         {

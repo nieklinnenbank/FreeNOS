@@ -124,7 +124,7 @@ class ChannelClient : public Singleton<ChannelClient>
      *
      * @return Result code
      */
-    virtual Result connect(ProcessID pid, Size msgSize = sizeof(FileSystemMessage));
+    virtual Result connect(const ProcessID pid, const Size msgSize = sizeof(FileSystemMessage));
 
     /**
      * Try to receive message from any channel.
@@ -149,7 +149,7 @@ class ChannelClient : public Singleton<ChannelClient>
      *
      * @return Result code
      */
-    virtual Result sendRequest(ProcessID pid,
+    virtual Result sendRequest(const ProcessID pid,
                                void *buffer,
                                CallbackFunction *callback);
 
@@ -161,7 +161,7 @@ class ChannelClient : public Singleton<ChannelClient>
      *
      * @return Result code
      */
-    virtual Result processResponse(ProcessID pid,
+    virtual Result processResponse(const ProcessID pid,
                                    ChannelMessage *msg);
 
     /**
@@ -172,7 +172,7 @@ class ChannelClient : public Singleton<ChannelClient>
      *
      * @return Result code
      */
-    virtual Result syncReceiveFrom(void *buffer, ProcessID pid);
+    virtual Result syncReceiveFrom(void *buffer, const ProcessID pid);
 
     /**
      * Synchronous send to one process.
@@ -182,7 +182,7 @@ class ChannelClient : public Singleton<ChannelClient>
      *
      * @return Result code
      */
-    virtual Result syncSendTo(void *buffer, ProcessID pid);
+    virtual Result syncSendTo(const void *buffer, const ProcessID pid);
 
     /**
      * Synchronous send and receive to/from one process.
@@ -192,7 +192,7 @@ class ChannelClient : public Singleton<ChannelClient>
      *
      * @return Result code
      */
-    virtual Result syncSendReceive(void *buffer, ProcessID pid);
+    virtual Result syncSendReceive(void *buffer, const ProcessID pid);
 
   private:
 
@@ -203,7 +203,7 @@ class ChannelClient : public Singleton<ChannelClient>
      *
      * @return Channel object if found or ZERO otherwise.
      */
-    Channel * findConsumer(ProcessID pid);
+    Channel * findConsumer(const ProcessID pid);
 
     /**
      * Get producer for a process.
@@ -212,7 +212,7 @@ class ChannelClient : public Singleton<ChannelClient>
      *
      * @return Channel object if found or ZERO otherwise.
      */
-    Channel * findProducer(ProcessID pid);
+    Channel * findProducer(const ProcessID pid);
 
   private:
 
