@@ -53,23 +53,19 @@ ChannelClient::Result ChannelClient::connect(const ProcessID pid, const Size mes
     const SystemInformation info;
 
     // Allocate consumer
-    MemoryChannel *cons = new MemoryChannel;
+    MemoryChannel *cons = new MemoryChannel(Channel::Consumer, messageSize);
     if (!cons)
     {
         return OutOfMemory;
     }
-    cons->setMessageSize(messageSize);
-    cons->setMode(Channel::Consumer);
 
     // Allocate producer
-    MemoryChannel *prod = new MemoryChannel;
+    MemoryChannel *prod = new MemoryChannel(Channel::Producer, messageSize);
     if (!prod)
     {
         delete cons;
         return OutOfMemory;
     }
-    prod->setMessageSize(messageSize);
-    prod->setMode(Channel::Producer);
 
     // Call VMShare to create shared memory mapping for MemoryChannel.
     ProcessShares::MemoryShare share;

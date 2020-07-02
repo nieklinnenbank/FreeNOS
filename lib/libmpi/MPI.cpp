@@ -190,10 +190,8 @@ int MPI_Init(int *argc, char ***argv)
     // Fill read channels
     for (Size i = 0; i < coreCount; i++)
     {
-        MemoryChannel *ch = new MemoryChannel();
+        MemoryChannel *ch = new MemoryChannel(Channel::Consumer, sizeof(MPIMessage));
         assert(ch != NULL);
-        ch->setMode(MemoryChannel::Consumer);
-        ch->setMessageSize(sizeof(MPIMessage));
         ch->setPhysical(MEMBASE(info.coreId) + (PAGESIZE * 2 * i),
                         MEMBASE(info.coreId) + (PAGESIZE * 2 * i) + PAGESIZE);
         readChannel->insert(i, *ch);
@@ -210,10 +208,8 @@ int MPI_Init(int *argc, char ***argv)
     // Fill write channels
     for (Size i = 0; i < coreCount; i++)
     {
-        MemoryChannel *ch = new MemoryChannel();
+        MemoryChannel *ch = new MemoryChannel(Channel::Producer, sizeof(MPIMessage));
         assert(ch != NULL);
-        ch->setMode(MemoryChannel::Producer);
-        ch->setMessageSize(sizeof(MPIMessage));
         ch->setPhysical(MEMBASE(i) + (PAGESIZE * 2 * info.coreId),
                         MEMBASE(i) + (PAGESIZE * 2 * info.coreId) + PAGESIZE);
         writeChannel->insert(i, *ch);

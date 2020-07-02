@@ -145,7 +145,7 @@ Process::Result Process::initialize()
     Allocator::Range allocPhys, allocVirt;
 
     // Create new kernel event channel object
-    m_kernelChannel = new MemoryChannel;
+    m_kernelChannel = new MemoryChannel(Channel::Producer, sizeof(ProcessEvent));
     if (!m_kernelChannel)
     {
         ERROR("failed to allocate kernel event channel object");
@@ -185,8 +185,6 @@ Process::Result Process::initialize()
     m_shares.createShare(KERNEL_PID, Kernel::instance->getCoreInfo()->coreId, 0, range.virt, range.size);
 
     // Setup the kernel event channel
-    m_kernelChannel->setMode(Channel::Producer);
-    m_kernelChannel->setMessageSize(sizeof(ProcessEvent));
     m_kernelChannel->setVirtual(allocVirt.address, allocVirt.address + PAGESIZE);
 
     return Success;

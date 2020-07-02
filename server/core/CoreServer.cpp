@@ -551,17 +551,13 @@ CoreServer::Result CoreServer::setupChannels()
 
         for (Size i = 1; i < numCores; i++)
         {
-            MemoryChannel *ch = new MemoryChannel();
+            MemoryChannel *ch = new MemoryChannel(Channel::Producer, sizeof(FileSystemMessage));
             CoreInfo *coreInfo = (CoreInfo *) m_coreInfo->get(i);
-            ch->setMode(Channel::Producer);
-            ch->setMessageSize(sizeof(FileSystemMessage));
             ch->setPhysical(coreInfo->coreChannelAddress + (PAGESIZE * 2),
                             coreInfo->coreChannelAddress + (PAGESIZE * 3));
             m_toSlave->insert(i, *ch);
 
-            ch = new MemoryChannel();
-            ch->setMode(Channel::Consumer);
-            ch->setMessageSize(sizeof(FileSystemMessage));
+            ch = new MemoryChannel(Channel::Consumer, sizeof(FileSystemMessage));
             ch->setPhysical(coreInfo->coreChannelAddress,
                             coreInfo->coreChannelAddress + PAGESIZE);
             m_fromSlave->insert(i, *ch);
@@ -569,15 +565,11 @@ CoreServer::Result CoreServer::setupChannels()
     }
     else
     {
-        m_toMaster = new MemoryChannel();
-        m_toMaster->setMode(Channel::Producer);
-        m_toMaster->setMessageSize(sizeof(FileSystemMessage));
+        m_toMaster = new MemoryChannel(Channel::Producer, sizeof(FileSystemMessage));
         m_toMaster->setPhysical(info.coreChannelAddress,
                                 info.coreChannelAddress + PAGESIZE);
 
-        m_fromMaster = new MemoryChannel();
-        m_fromMaster->setMode(Channel::Consumer);
-        m_fromMaster->setMessageSize(sizeof(FileSystemMessage));
+        m_fromMaster = new MemoryChannel(Channel::Consumer, sizeof(FileSystemMessage));
         m_fromMaster->setPhysical(info.coreChannelAddress + (PAGESIZE * 2),
                                   info.coreChannelAddress + (PAGESIZE * 3));
     }

@@ -58,8 +58,11 @@ class MemoryChannel : public Channel
 
     /**
      * Constructor
+     *
+     * @param mode Channel mode is either a producer or consumer
+     * @param messageSize Size of each individual message in bytes
      */
-    MemoryChannel();
+    MemoryChannel(const Mode mode, const Size messageSize);
 
     /**
      * Destructor.
@@ -95,15 +98,6 @@ class MemoryChannel : public Channel
      * @return Result code.
      */
     Result setPhysical(const Address data, const Address feedback);
-
-    /**
-     * Set message size.
-     *
-     * @param size New message size.
-     *
-     * @return Result code.
-     */
-    virtual Result setMessageSize(const Size size);
 
     /**
      * Read a message.
@@ -143,6 +137,9 @@ class MemoryChannel : public Channel
     }
 
   private:
+
+    /** Maximum number of messages that can be stored. */
+    const Size m_maximumMessages;
 
     /** The data page */
     Arch::IO m_data;

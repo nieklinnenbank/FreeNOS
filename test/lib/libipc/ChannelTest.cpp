@@ -23,6 +23,8 @@
 
 class DummyChannel : public Channel
 {
+  public:
+    DummyChannel(const Channel::Mode m, const Size sz) : Channel(m, sz) { }
     virtual Channel::Result read(void *buffer) { return Channel::IOError; }
     virtual Channel::Result write(const void *buffer) { return Channel::IOError; }
     virtual Channel::Result flush() { return Channel::IOError; }
@@ -30,35 +32,19 @@ class DummyChannel : public Channel
 
 TestCase(ChannelConstruct)
 {
-    DummyChannel ch;
+    DummyChannel ch(Channel::Consumer, sizeof(u32));
 
     testAssert(ch.m_mode == Channel::Consumer);
-    testAssert(ch.getMessageSize() == 0);
-    testAssert(ch.getMaximumMessages() == 0);
-
-    return OK;
-}
-
-TestCase(ChannelMode)
-{
-    DummyChannel ch;
-
-    testAssert(ch.m_mode == Channel::Consumer);
-    testAssert(ch.setMode(Channel::Producer) == Channel::Success);
-    testAssert(ch.m_mode == Channel::Producer);
+    testAssert(ch.m_messageSize == sizeof(u32));
 
     return OK;
 }
 
 TestCase(ChannelMessageSize)
 {
-    DummyChannel ch;
+    DummyChannel ch(Channel::Consumer, sizeof(u32));
 
-    testAssert(ch.getMessageSize() == 0);
-    testAssert(ch.setMessageSize(32) == Channel::Success);
-    testAssert(ch.getMessageSize() == 32);
-    testAssert(ch.m_messageSize == 32);
-    testAssert(ch.m_maximumMessages == 0);
+    testAssert(ch.getMessageSize() == sizeof(u32));
 
     return OK;
 }

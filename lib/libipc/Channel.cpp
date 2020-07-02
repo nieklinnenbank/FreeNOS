@@ -17,11 +17,10 @@
 
 #include "Channel.h"
 
-Channel::Channel()
+Channel::Channel(const Channel::Mode mode, const Size messageSize)
+    : m_mode(mode)
+    , m_messageSize(messageSize)
 {
-    m_mode = Consumer;
-    m_messageSize = 0;
-    m_maximumMessages = 0;
 }
 
 Channel::~Channel()
@@ -31,21 +30,4 @@ Channel::~Channel()
 const Size Channel::getMessageSize() const
 {
     return m_messageSize;
-}
-
-const Size Channel::getMaximumMessages() const
-{
-    return m_maximumMessages;
-}
-
-Channel::Result Channel::setMode(const Channel::Mode mode)
-{
-    m_mode = mode;
-    return Success;
-}
-
-Channel::Result Channel::setMessageSize(const Size size)
-{
-    m_messageSize = size;
-    return Success;
 }

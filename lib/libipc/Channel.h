@@ -62,8 +62,11 @@ class Channel
 
     /**
      * Constructor.
+     *
+     * @param mode Channel mode is either a producer or consumer
+     * @param messageSize Size of each individual message in bytes
      */
-    Channel();
+    Channel(const Mode mode, const Size messageSize);
 
     /**
      * Destructor.
@@ -76,31 +79,6 @@ class Channel
      * @return Message size
      */
     const Size getMessageSize() const;
-
-    /**
-     * Get maximum message count.
-     *
-     * @return Maximum message count.
-     */
-    const Size getMaximumMessages() const;
-
-    /**
-     * Set mode.
-     *
-     * @param mode Channel mode.
-     *
-     * @return Result code.
-     */
-    Result setMode(const Mode mode);
-
-    /**
-     * Set message size.
-     *
-     * @param size New message size.
-     *
-     * @return Result code.
-     */
-    virtual Result setMessageSize(const Size size);
 
     /**
      * Read a message.
@@ -132,13 +110,10 @@ class Channel
   protected:
 
     /** Channel mode. */
-    Mode m_mode;
+    const Mode m_mode;
 
     /** Message size. */
-    Size m_messageSize;
-
-    /** Maximum number of message that the Channel can hold. */
-    Size m_maximumMessages;
+    const Size m_messageSize;
 };
 
 /**

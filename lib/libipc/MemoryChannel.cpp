@@ -19,25 +19,18 @@
 #include <FreeNOS/System.h>
 #include "MemoryChannel.h"
 
-MemoryChannel::MemoryChannel()
-    : Channel()
+MemoryChannel::MemoryChannel(const Channel::Mode mode, const Size messageSize)
+    : Channel(mode, messageSize)
+    , m_maximumMessages((PAGESIZE / messageSize) - 1U)
 {
+    assert(messageSize >= sizeof(RingHead));
+    assert(messageSize < (PAGESIZE / 2));
+
     MemoryBlock::set(&m_head, 0, sizeof(m_head));
 }
 
 MemoryChannel::~MemoryChannel()
 {
-}
-
-MemoryChannel::Result MemoryChannel::setMessageSize(const Size size)
-{
-    if (size < sizeof(RingHead) || size > (PAGESIZE / 2))
-        return InvalidArgument;
-
-    m_messageSize = size;
-    m_maximumMessages = (PAGESIZE / m_messageSize) - 1;
-
-    return Success;
 }
 
 MemoryChannel::Result MemoryChannel::setVirtual(const Address data, const Address feedback)

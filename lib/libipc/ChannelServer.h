@@ -93,7 +93,8 @@ template <class Base, class MsgType> class ChannelServer
      * @param num Number of message handlers to support.
      */
     ChannelServer(Base *inst, const Size num = 32U)
-        : m_sendReply(true)
+        : m_kernelEvent(Channel::Consumer, sizeof(ProcessEvent))
+        , m_sendReply(true)
         , m_instance(inst)
     {
         m_self = ProcessCtl(SELF, GetPID, 0);
@@ -119,8 +120,6 @@ template <class Base, class MsgType> class ChannelServer
         }
         else
         {
-            m_kernelEvent.setMode(Channel::Consumer);
-            m_kernelEvent.setMessageSize(sizeof(ProcessEvent));
             m_kernelEvent.setVirtual(share.range.virt,
                                      share.range.virt + PAGESIZE);
         }
@@ -265,20 +264,16 @@ template <class Base, class MsgType> class ChannelServer
         // Create consumer
         if (!m_registry->getConsumer(pid))
         {
-            MemoryChannel *consumer = new MemoryChannel;
+            MemoryChannel *consumer = new MemoryChannel(Channel::Consumer, sizeof(MsgType));
             assert(consumer != NULL);
-            consumer->setMode(Channel::Consumer);
-            consumer->setMessageSize(sizeof(MsgType));
             consumer->setVirtual(range.virt, range.virt + PAGESIZE);
             m_registry->registerConsumer(pid, consumer);
         }
         // Create producer
         if (!m_registry->getProducer(pid))
         {
-            MemoryChannel *producer = new MemoryChannel;
+            MemoryChannel *producer = new MemoryChannel(Channel::Producer, sizeof(MsgType));
             assert(producer != NULL);
-            producer->setMode(Channel::Producer);
-            producer->setMessageSize(sizeof(MsgType));
             producer->setVirtual(range.virt + (PAGESIZE*2),
                                  range.virt + (PAGESIZE*3));
             m_registry->registerProducer(pid, producer);
