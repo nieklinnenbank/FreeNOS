@@ -57,7 +57,7 @@ Process * ProcessManager::create(Address entry,
         if (readyToRun)
         {
             proc->wakeup(true);
-            m_scheduler->enqueue(proc);
+            enqueueProcess(proc);
         }
 
         if (m_current != 0)
@@ -93,7 +93,7 @@ void ProcessManager::remove(Process *proc, uint exitStatus)
         {
             m_procs[i]->setWaitResult(exitStatus);
             m_procs[i]->wakeup(true);
-            m_scheduler->enqueue(m_procs[i]);
+            enqueueProcess(m_procs[i]);
         }
     }
 
@@ -102,7 +102,9 @@ void ProcessManager::remove(Process *proc, uint exitStatus)
 
     // Remove process from administration and schedule
     m_procs[proc->getID()] = ZERO;
-    m_scheduler->dequeue(proc, true);
+    const Result result = dequeueProcess(proc, true);
+    assert(result == Success);
+
     int countRemoved = m_sleepTimerQueue.remove(proc);
     assert(countRemoved <= 1);
 
@@ -161,8 +163,10 @@ Process * ProcessManager::current()
 
 void ProcessManager::setIdle(Process *proc)
 {
+    const Result result = dequeueProcess(proc, true);
+    assert(result == Success);
+
     m_idle = proc;
-    m_scheduler->dequeue(proc, true);
 }
 
 Vector<Process *> * ProcessManager::getProcessTable()
@@ -178,13 +182,7 @@ ProcessManager::Result ProcessManager::wait(Process *proc)
         return IOError;
     }
 
-    if (m_scheduler->dequeue(m_current) != Scheduler::Success)
-    {
-        ERROR("process ID " << m_current->getID() << " not removed from Scheduler");
-        return IOError;
-    }
-
-    return Success;
+    return dequeueProcess(m_current);
 }
 
 ProcessManager::Result ProcessManager::sleep(const Timer::Info *timer, bool ignoreWakeups)
@@ -203,12 +201,9 @@ ProcessManager::Result ProcessManager::sleep(const Timer::Info *timer, bool igno
         case Process::WakeupPending:
             return WakeupPending;
 
-        case Process::Success:
-            if (m_scheduler->dequeue(m_current) != Scheduler::Success)
-            {
-                ERROR("process ID " << m_current->getID() << " not removed from Scheduler");
-                return IOError;
-            }
+        case Process::Success: {
+            const Result res = dequeueProcess(m_current);
+            assert(res == Success);
 
             if (timer)
             {
@@ -216,6 +211,7 @@ ProcessManager::Result ProcessManager::sleep(const Timer::Info *timer, bool igno
                 m_sleepTimerQueue.push(m_current);
             }
             break;
+        }
 
         default:
             ERROR("failed to sleep process ID " << m_current->getID() <<
@@ -240,17 +236,12 @@ ProcessManager::Result ProcessManager::wakeup(Process *proc)
 
     if (state != Process::Ready)
     {
-        if (m_scheduler->enqueue(proc) != Scheduler::Success)
-        {
-            ERROR("process ID " << proc->getID() << " not added to Scheduler");
-            return IOError;
-        }
-
-        int countRemoved = m_sleepTimerQueue.remove(proc);
-        assert(countRemoved <= 1);
+        return enqueueProcess(proc);
     }
-
-    return Success;
+    else
+    {
+        return Success;
+    }
 }
 
 ProcessManager::Result ProcessManager::raiseEvent(Process *proc, struct ProcessEvent *event)
@@ -267,17 +258,12 @@ ProcessManager::Result ProcessManager::raiseEvent(Process *proc, struct ProcessE
 
     if (state != Process::Ready)
     {
-        if (m_scheduler->enqueue(proc) != Scheduler::Success)
-        {
-            ERROR("process ID " << proc->getID() << " not added to Scheduler");
-            return IOError;
-        }
-
-        int countRemoved = m_sleepTimerQueue.remove(proc);
-        assert(countRemoved <= 1);
+        return enqueueProcess(proc);
     }
-
-    return Success;
+    else
+    {
+        return Success;
+    }
 }
 
 ProcessManager::Result ProcessManager::registerInterruptNotify(Process *proc, u32 vec)
@@ -330,6 +316,30 @@ ProcessManager::Result ProcessManager::interruptNotify(u32 vector)
                 return IOError;
             }
         }
+    }
+
+    return Success;
+}
+
+ProcessManager::Result ProcessManager::enqueueProcess(Process *proc, bool ignoreState)
+{
+    if (m_scheduler->enqueue(proc, ignoreState) != Scheduler::Success)
+    {
+        ERROR("process ID " << proc->getID() << " not added to Scheduler");
+        return IOError;
+    }
+
+    int countRemoved = m_sleepTimerQueue.remove(proc);
+    assert(countRemoved <= 1);
+    return Success;
+}
+
+ProcessManager::Result ProcessManager::dequeueProcess(Process *proc, bool ignoreState)
+{
+    if (m_scheduler->dequeue(proc, ignoreState) != Scheduler::Success)
+    {
+        ERROR("process ID " << proc->getID() << " not removed from Scheduler");
+        return IOError;
     }
 
     return Success;

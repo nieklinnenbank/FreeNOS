@@ -194,6 +194,28 @@ class ProcessManager
 
   private:
 
+    /**
+     * Place the given process on the Schedule queue
+     *
+     * @param proc Process pointer
+     * @param ignoreState True to not check for the Process state prior to dequeue.
+     *
+     * @return Result code
+     */
+    Result enqueueProcess(Process *proc, bool ignoreState = false);
+
+    /**
+     * Remove the given process on the Schedule queue
+     *
+     * @param proc Process pointer
+     * @param ignoreState True to not check for the Process state prior to dequeue.
+     *
+     * @return Result code
+     */
+    Result dequeueProcess(Process *proc, bool ignoreState = false);
+
+  private:
+
     /** All known Processes. */
     Vector<Process *> m_procs;
 

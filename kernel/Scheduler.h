@@ -68,7 +68,7 @@ class Scheduler
      *
      * @return Result code
      */
-    Result enqueue(Process *proc, bool ignoreState = false);
+    Result enqueue(Process *proc, bool ignoreState);
 
     /**
      * Remove a Process from the run schedule.
@@ -78,7 +78,7 @@ class Scheduler
      *
      * @return Result code
      */
-    Result dequeue(Process *proc, bool ignoreState = false);
+    Result dequeue(Process *proc, bool ignoreState);
 
     /**
      * Select the next process to run.
