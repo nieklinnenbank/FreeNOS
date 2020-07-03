@@ -107,6 +107,10 @@ template <class Base, class MsgType> class ChannelServer
         m_irqHandlers = new Vector<MessageHandler<IRQHandlerFunction> *>(num);
         m_irqHandlers->fill(ZERO);
 
+        // Reset timeout values
+        m_expiry.frequency = 0;
+        m_expiry.ticks = 0;
+
         // Setup kernel event channel
         const SystemInformation info;
         ProcessShares::MemoryShare share;
@@ -166,7 +170,7 @@ template <class Base, class MsgType> class ChannelServer
             if (m_expiry.frequency)
                 expiry = (Address) &m_expiry;
 
-            const Error r = ProcessCtl(SELF, EnterSleep, expiry, (Address) &m_time);
+            const Error r = ProcessCtl(SELF, EnterSleep, expiry, (Address) (m_expiry.frequency ? &m_time : 0));
             DEBUG("EnterSleep returned: " << (int)r);
 
             // Check for sleep timeout
