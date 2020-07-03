@@ -199,7 +199,7 @@ class Process
      *
      * @return Result code
      */
-    Result raiseEvent(struct ProcessEvent *event);
+    Result raiseEvent(const struct ProcessEvent *event);
 
     /**
      * Get sleep timer.

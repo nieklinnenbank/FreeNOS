@@ -81,10 +81,10 @@ class ProcessManager
      *
      * @return Process pointer on success or ZERO on failure
      */
-    Process * create(Address entry,
+    Process * create(const Address entry,
                      const MemoryMap &map,
-                     bool readyToRun = false,
-                     bool privileged = false);
+                     const bool readyToRun = false,
+                     const bool privileged = false);
 
     /**
      * Retrieve a Process by it's ID.
@@ -93,12 +93,12 @@ class ProcessManager
      *
      * @return Pointer to the appropriate process or ZERO if not found.
      */
-    Process * get(ProcessID id);
+    Process * get(const ProcessID id);
 
     /**
      * Remove a Process.
      */
-    void remove(Process *proc, uint exitStatus = 0);
+    void remove(Process *proc, const uint exitStatus = 0);
 
     /**
      * Schedule next process to run.
@@ -124,7 +124,7 @@ class ProcessManager
      *
      * @return Result code
      */
-    Result sleep(const Timer::Info *timer = 0, bool ignoreWakeups = false);
+    Result sleep(const Timer::Info *timer = 0, const bool ignoreWakeups = false);
 
     /**
      * Take Process out of Sleep state and mark ready for execution.
@@ -143,7 +143,7 @@ class ProcessManager
      *
      * @return Result code
      */
-    Result raiseEvent(Process *proc, struct ProcessEvent *event);
+    Result raiseEvent(Process *proc, const struct ProcessEvent *event);
 
     /**
      * Register an interrupt notification for a Process.
@@ -153,7 +153,7 @@ class ProcessManager
      *
      * @return Result code
      */
-    Result registerInterruptNotify(Process *proc, u32 vector);
+    Result registerInterruptNotify(Process *proc, const u32 vector);
 
     /**
      * Remove all interrupt notifications for a Process
@@ -171,7 +171,7 @@ class ProcessManager
      *
      * @return Result code
      */
-    Result interruptNotify(u32 vector);
+    Result interruptNotify(const u32 vector);
 
     /**
      * Set the idle process.
@@ -202,7 +202,7 @@ class ProcessManager
      *
      * @return Result code
      */
-    Result enqueueProcess(Process *proc, bool ignoreState = false);
+    Result enqueueProcess(Process *proc, const bool ignoreState = false);
 
     /**
      * Remove the given process on the Schedule queue
@@ -212,7 +212,7 @@ class ProcessManager
      *
      * @return Result code
      */
-    Result dequeueProcess(Process *proc, bool ignoreState = false);
+    Result dequeueProcess(Process *proc, const bool ignoreState = false) const;
 
   private:
 

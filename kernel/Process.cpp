@@ -127,7 +127,7 @@ Process::Result Process::wait(ProcessID id)
     return Success;
 }
 
-Process::Result Process::raiseEvent(ProcessEvent *event)
+Process::Result Process::raiseEvent(const ProcessEvent *event)
 {
     // Write the message. Be sure to flush the caches because
     // the kernel has mapped the channel pages separately in low memory.

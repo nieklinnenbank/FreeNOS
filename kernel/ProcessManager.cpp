@@ -42,10 +42,10 @@ ProcessManager::~ProcessManager()
     }
 }
 
-Process * ProcessManager::create(Address entry,
+Process * ProcessManager::create(const Address entry,
                                  const MemoryMap &map,
-                                 bool readyToRun,
-                                 bool privileged)
+                                 const bool readyToRun,
+                                 const bool privileged)
 {
     Process *proc = new Arch::Process(m_procs.count(), entry, privileged, map);
 
@@ -67,13 +67,13 @@ Process * ProcessManager::create(Address entry,
     return ZERO;
 }
 
-Process * ProcessManager::get(ProcessID id)
+Process * ProcessManager::get(const ProcessID id)
 {
     Process **p = (Process **) m_procs.get(id);
     return p ? *p : ZERO;
 }
 
-void ProcessManager::remove(Process *proc, uint exitStatus)
+void ProcessManager::remove(Process *proc, const uint exitStatus)
 {
     if (proc == m_idle)
         m_idle = ZERO;
@@ -82,7 +82,7 @@ void ProcessManager::remove(Process *proc, uint exitStatus)
         m_current = ZERO;
 
     // Wakeup any Processes which are waiting for this Process
-    Size size = m_procs.size();
+    const Size size = m_procs.size();
 
     for (Size i = 0; i < size; i++)
     {
@@ -104,8 +104,8 @@ void ProcessManager::remove(Process *proc, uint exitStatus)
     const Result result = dequeueProcess(proc, true);
     assert(result == Success);
 
-    int countRemoved = m_sleepTimerQueue.remove(proc);
-    assert(countRemoved <= 1);
+    const Size countRemoved = m_sleepTimerQueue.remove(proc);
+    assert(countRemoved <= 1U);
 
     // Free the process memory
     delete proc;
@@ -113,7 +113,8 @@ void ProcessManager::remove(Process *proc, uint exitStatus)
 
 ProcessManager::Result ProcessManager::schedule()
 {
-    Timer *timer = Kernel::instance->getTimer();
+    const Timer *timer = Kernel::instance->getTimer();
+    const Size sleepTimerCount = m_sleepTimerQueue.count();
 
     // Let the scheduler select a new process
     Process *proc = m_scheduler->select();
@@ -128,14 +129,14 @@ ProcessManager::Result ProcessManager::schedule()
     }
 
     // Try to wakeup processes that are waiting for a timer to expire
-    for (Size i = 0, count = m_sleepTimerQueue.count(); i < count; i++)
+    for (Size i = 0; i < sleepTimerCount; i++)
     {
         Process *p = m_sleepTimerQueue.pop();
         const Timer::Info & procTimer = p->getSleepTimer();
 
         if (timer->isExpired(procTimer))
         {
-            Result result = wakeup(p);
+            const Result result = wakeup(p);
             assert(result == Success);
         }
         else
@@ -184,17 +185,9 @@ ProcessManager::Result ProcessManager::wait(Process *proc)
     return dequeueProcess(m_current);
 }
 
-ProcessManager::Result ProcessManager::sleep(const Timer::Info *timer, bool ignoreWakeups)
+ProcessManager::Result ProcessManager::sleep(const Timer::Info *timer, const bool ignoreWakeups)
 {
-    Process::Result result;
-
-    if (!m_current)
-    {
-        ERROR("no current process found");
-        return InvalidArgument;
-    }
-
-    result = m_current->sleep(timer, ignoreWakeups);
+    const Process::Result result = m_current->sleep(timer, ignoreWakeups);
     switch (result)
     {
         case Process::WakeupPending:
@@ -223,10 +216,10 @@ ProcessManager::Result ProcessManager::sleep(const Timer::Info *timer, bool igno
 
 ProcessManager::Result ProcessManager::wakeup(Process *proc)
 {
-    Process::Result result;
-    Process::State state = proc->getState();
+    const Process::State state = proc->getState();
+    const Process::Result result = proc->wakeup();
 
-    if ((result = proc->wakeup()) != Process::Success)
+    if (result != Process::Success)
     {
         ERROR("failed to wakeup process ID " << proc->getID() <<
               ": result: " << (uint) result);
@@ -243,12 +236,12 @@ ProcessManager::Result ProcessManager::wakeup(Process *proc)
     }
 }
 
-ProcessManager::Result ProcessManager::raiseEvent(Process *proc, struct ProcessEvent *event)
+ProcessManager::Result ProcessManager::raiseEvent(Process *proc, const struct ProcessEvent *event)
 {
-    Process::Result result;
-    Process::State state = proc->getState();
+    const Process::State state = proc->getState();
+    const Process::Result result = proc->raiseEvent(event);
 
-    if ((result = proc->raiseEvent(event)) != Process::Success)
+    if (result != Process::Success)
     {
         ERROR("failed to raise event in process ID " << proc->getID() <<
               ": result: " << (uint) result);
@@ -265,7 +258,7 @@ ProcessManager::Result ProcessManager::raiseEvent(Process *proc, struct ProcessE
     }
 }
 
-ProcessManager::Result ProcessManager::registerInterruptNotify(Process *proc, u32 vec)
+ProcessManager::Result ProcessManager::registerInterruptNotify(Process *proc, const u32 vec)
 {
     // Create List if necessary
     if (!m_interruptNotifyList[vec])
@@ -297,7 +290,7 @@ ProcessManager::Result ProcessManager::unregisterInterruptNotify(Process *proc)
     return Success;
 }
 
-ProcessManager::Result ProcessManager::interruptNotify(u32 vector)
+ProcessManager::Result ProcessManager::interruptNotify(const u32 vector)
 {
     List<Process *> *lst = m_interruptNotifyList[vector];
     if (lst)
@@ -320,7 +313,7 @@ ProcessManager::Result ProcessManager::interruptNotify(u32 vector)
     return Success;
 }
 
-ProcessManager::Result ProcessManager::enqueueProcess(Process *proc, bool ignoreState)
+ProcessManager::Result ProcessManager::enqueueProcess(Process *proc, const bool ignoreState)
 {
     if (m_scheduler->enqueue(proc, ignoreState) != Scheduler::Success)
     {
@@ -328,12 +321,13 @@ ProcessManager::Result ProcessManager::enqueueProcess(Process *proc, bool ignore
         return IOError;
     }
 
-    int countRemoved = m_sleepTimerQueue.remove(proc);
-    assert(countRemoved <= 1);
+    const Size countRemoved = m_sleepTimerQueue.remove(proc);
+    assert(countRemoved <= 1U);
+
     return Success;
 }
 
-ProcessManager::Result ProcessManager::dequeueProcess(Process *proc, bool ignoreState)
+ProcessManager::Result ProcessManager::dequeueProcess(Process *proc, const bool ignoreState) const
 {
     if (m_scheduler->dequeue(proc, ignoreState) != Scheduler::Success)
     {
