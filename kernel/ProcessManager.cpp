@@ -56,8 +56,7 @@ Process * ProcessManager::create(Address entry,
 
         if (readyToRun)
         {
-            proc->wakeup(true);
-            enqueueProcess(proc);
+            wakeup(proc);
         }
 
         if (m_current != 0)
@@ -92,8 +91,8 @@ void ProcessManager::remove(Process *proc, uint exitStatus)
             m_procs[i]->getWait() == proc->getID())
         {
             m_procs[i]->setWaitResult(exitStatus);
-            m_procs[i]->wakeup(true);
-            enqueueProcess(m_procs[i]);
+            const Result result = wakeup(m_procs[i]);
+            assert(result == Success);
         }
     }
 

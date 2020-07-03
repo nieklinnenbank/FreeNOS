@@ -190,17 +190,13 @@ Process::Result Process::initialize()
     return Success;
 }
 
-Process::Result Process::wakeup(bool ignorePendingSleep)
+Process::Result Process::wakeup()
 {
     // This process might be just about to call sleep().
     // When another process is asking to wakeup this Process
     // such that it can receive an IPC message, we must guarantee
     // that the next sleep will be skipped.
-    if (ignorePendingSleep)
-        m_wakeups = 0;
-    else
-        m_wakeups++;
-
+    m_wakeups++;
     m_state = Ready;
     MemoryBlock::set(&m_sleepTimer, 0, sizeof(m_sleepTimer));
 
