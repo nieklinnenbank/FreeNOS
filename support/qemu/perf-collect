@@ -1,0 +1,169 @@
+#!/usr/bin/env python3
+#
+# Copyright (C) 2020 Niek Linnenbank
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+"""
+This program provides a basic performance profiler by frequently
+collecting samples of the program counters via the QEMU monitor.
+
+To run the program, start FreeNOS in QEMU using the following command.
+Also see the README.md file for more information.
+
+  $ scons qemu
+
+Then use the following command from the root of the FreeNOS
+source code to start collecting samples:
+
+  $ ./support/qemu/perf-collect monitor.dev prof.out
+
+The monitor.dev file is a UNIX domain socket for the QEMU monitor
+and the prof.out file is the output file where the samples will be written
+line-by-line in JSON format.
+"""
+
+import socket
+import sys
+import json
+import time
+import argparse
+
+class QemuMonitor(object):
+    """
+    Interacts with the Qemu monitor
+    """
+
+    def __init__(self, path):
+        """
+        Constructor
+        """
+        self.path = path
+        self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        self.sock.connect(self.path)
+        self._readlines()
+
+    def _readlines(self):
+        """
+        Reads all output lines until the QEMU prompt is presented
+        """
+        lines = []
+        line = ""
+
+        while line != "(qemu) ":
+            line += self.sock.recv(1).decode('ascii')
+
+            if line.endswith("\n"):
+                lines.append(line)
+                line = ""
+
+        return lines
+
+    def _writeline(self, line):
+        """
+        Send one command line to the monitor
+        """
+        self.sock.send(line.encode())
+
+    def command(self, cmd):
+        """
+        Execute a command on the QEMU monitor and get output lines
+        """
+        self._writeline(cmd + "\n")
+        lines = self._readlines()
+        return lines[1:]
+
+class QemuProfiler(object):
+    """
+    Basic performance profiler using the QEMU monitor as input
+    """
+
+    def __init__(self, monitor, outfile, waittime):
+        """
+        Constructor
+        """
+        self.monitor  = monitor
+        self.outfile  = open(outfile, "a")
+        self.waittime = waittime
+
+    def _get_program_name(self):
+        """
+        This function reads the argv[0] value from the memory mapped UserArgs region
+        """
+        name = ""
+
+        for line in self.monitor.command("x /16c 0xe0000000"):
+            name += line.split(':')[1]
+
+        return name.replace("'", "").replace(" ", "").replace("\r\n", "").replace("\\x00", "")
+
+    def _get_program_counters(self):
+        """
+        Get a list of program counters per CPU (or sometimes called "instruction pointer")
+        """
+        counters = []
+
+        for line in self.monitor.command("info registers -a"):
+            if line.find("R15=") != -1:
+                counters.append(hex(int(line[line.find("R15=") + 4:], 16)))
+            elif line.find("EIP=") != -1:
+                counters.append(hex(int(line[line.find("EIP=") + 4:12], 16)))
+
+        return counters
+
+    def sample(self):
+        """
+        Collect sample of instruction pointer and program name for all CPUs
+        """
+        self.monitor.command("stop")
+        counters = self._get_program_counters()
+        self.monitor.command("cpu 0")
+        names = [self._get_program_name()]
+        self.monitor.command("cpu 1")
+        names.append(self._get_program_name())
+        self.monitor.command("cpu 2")
+        names.append(self._get_program_name())
+        self.monitor.command("cpu 3")
+        names.append(self._get_program_name())
+        self.monitor.command("cont")
+
+        return [counters, names]
+
+    def run(self):
+        """
+        Runs an infinite loop to collect profiling samples
+        """
+        while True:
+            s = self.sample()
+            json.dump(s, self.outfile)
+            self.outfile.write("\n")
+
+            if self.waittime:
+                time.sleep(self.waittime)
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description='QEMU performance profile data collection script')
+    parser.add_argument('monitor', metavar='MONITOR', type=str, nargs=1, help='Path to the QEMU monitor UNIX domain socket')
+    parser.add_argument('outfile', metavar='OUTFILE', type=str, nargs=1, help='Path to the profiler output file')
+    parser.add_argument('--waittime', metavar='SECONDS', type=float, default=0.001,
+                         help='Wait time in seconds between data samples (e.g. 0.005 for 5ms)')
+    args = parser.parse_args()
+
+    mon = QemuMonitor(args.monitor[0])
+    prof = QemuProfiler(mon, args.outfile[0], args.waittime)
+    print('Connected to ' + mon.path)
+
+    prof.run()
