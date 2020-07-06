@@ -20,8 +20,11 @@ import os.path
 import shutil
 import datetime
 import platform
-from SCons.Script import *
-from autoconf import *
+import re
+try:
+    from SCons.Script import *
+except ModuleNotFoundError:
+    pass
 
 class ConfDict(dict):
 
