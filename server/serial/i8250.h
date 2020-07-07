@@ -15,12 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SERIAL_I8250_H
-#define __SERIAL_I8250_H
+#ifndef __SERVER_SERIAL_I8250_H
+#define __SERVER_SERIAL_I8250_H
 
 #include <Macros.h>
 #include <Types.h>
 #include <Device.h>
+
+class IntelIO;
 
 /**
  * @addtogroup server
@@ -63,7 +65,7 @@ class i8250 : public Device
      *
      * @param base I/O base port.
      */
-    i8250(u16 base, u16 irq);
+    i8250(const u16 base, const u16 irq);
 
     /**
      * @brief Initializes the i8250 serial UART.
@@ -105,11 +107,11 @@ class i8250 : public Device
 
   private:
 
-    /** Base I/O port. */
-    u16 base;
-
     /** Interrupt vector. */
-    u16 irq;
+    const u16 m_irq;
+
+    /** I/O instance. */
+    IntelIO m_io;
 };
 
 /**
@@ -117,4 +119,4 @@ class i8250 : public Device
  * @}
  */
 
-#endif /* __SERIAL_I8250_H */
+#endif /* __SERVER_SERIAL_I8250_H */
