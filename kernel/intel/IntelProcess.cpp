@@ -96,7 +96,7 @@ Process::Result IntelProcess::initialize()
     regs->irq.eip    = m_entry;
     regs->irq.cs     = codeSel;
     regs->irq.eflags = INTEL_EFLAGS_DEFAULT |
-                       INTEL_EFLAGS_IRQ;
+                       INTEL_EFLAGS_IRQ | (0x3 << 12);
     regs->irq.esp3   = userStack;
     regs->irq.ss3    = dataSel;
 
