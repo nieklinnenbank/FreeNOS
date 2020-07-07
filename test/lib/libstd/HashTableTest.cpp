@@ -85,7 +85,6 @@ TestCase(HashTableInsertRandom)
     HashTable<String, int> h;
     TestChar<char *> strings(8, 32);    
     TestInt<int> ints(INT_MIN, INT_MAX);
-    TestInt<Size> sizes(32, 128);
     Size size = 20U;
 
     // Generate unique keys

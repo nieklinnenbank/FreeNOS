@@ -187,7 +187,7 @@ TestCase(VectorRemoveOne)
     TestInt<uint> sizes(32, 128);
     TestInt<int> ints(INT_MIN, INT_MAX);
     Vector<int> a(sizes.random());
-    TestInt<uint> indexes(0, sizes[0]);
+    TestInt<uint> indexes(0, sizes[0] - 1);
 
     // Completely fill the vector sequentially
     for (Size i = 0; i < sizes[0]; i++)

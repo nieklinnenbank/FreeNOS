@@ -24,8 +24,8 @@
 
 TestCase(BubbleConstruct)
 {
-    TestInt<uint> addresses(UINT_MIN, UINT_MAX);
     const Size rangeSize = PAGESIZE * 64;
+    TestInt<uint> addresses(UINT_MIN, UINT_MAX - rangeSize);
     const Allocator::Range range = { addresses.random(), rangeSize, sizeof(u32) };
     BubbleAllocator ba(range);
 
@@ -40,8 +40,8 @@ TestCase(BubbleConstruct)
 
 TestCase(BubbleAllocate)
 {
-    TestInt<uint> addresses(UINT_MIN, UINT_MAX);
     const Size rangeSize = PAGESIZE * 64;
+    TestInt<uint> addresses(UINT_MIN, UINT_MAX - rangeSize);
     const Allocator::Range range = { addresses.random(), rangeSize, sizeof(u32) };
     BubbleAllocator ba(range);
     Allocator::Range args = { 0, PAGESIZE, sizeof(u32) };
@@ -132,8 +132,8 @@ TestCase(BubbleFull)
 
 TestCase(BubbleRelease)
 {
-    TestInt<uint> addresses(UINT_MIN, UINT_MAX);
     const Size rangeSize = PAGESIZE * 64;
+    TestInt<uint> addresses(UINT_MIN, UINT_MAX - rangeSize);
     const Allocator::Range range = { addresses.random(), rangeSize, sizeof(u32) };
     BubbleAllocator ba(range);
     Allocator::Range args = { 0, PAGESIZE, sizeof(u32) };
