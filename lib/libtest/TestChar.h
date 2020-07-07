@@ -121,36 +121,35 @@ template<> char * TestChar<char *>::random(Size count)
 
 template<> char * TestChar<char *>::unique(Size count)
 {
-    TestInt<uint> sizes(m_min, m_max);
-    TestInt<uint> chars(32, 126); /* ' ' till '~' */
-    Size len = m_min;
-    char buf[m_max+1], *value = ZERO;
+    const Size charMin = 32, charMax = 126;  /* ' ' till '~' */
+    TestInt<uint> chars(charMin, charMax);
+    char value[m_max + 1];
 
-    // Generate minimum length prefix string.
-    for (Size i = 0; i < m_max; i++)
-        buf[i] = (char) chars.random();
-
-    // Null terminator
-    buf[m_max] = 0;
+    // Clear string buffer
+    MemoryBlock::set(value, 0, sizeof(value));
 
     // Generate 'count' unique strings using the prefix.
-    for (Size i = len; i < m_max && count; i++)
+    for (Size i = 0; i < count; i++)
     {
-        for (Size j = 32; j < 126 && count; j++)
+        const Size len = (i + 1) < m_max ? (i + 1) : m_max;
+        char *buf = new char[sizeof(value)];
+
+        // String is filled by incrementing characters
+        const Size numToAdd = i < m_min ? m_min : 1;
+
+        for (Size j = 0; j < numToAdd; j++)
         {
-            value = new char[len+i+1];
-            MemoryBlock::copy(value, buf, len);
-
-            for (Size z = len-1; z < len+i; z++)
-                value[z] = (char) chars.random();
-
-            value[len+i] = ZERO;
-            m_values.insert(value);
-            m_lengths.insert(len+i);
-            count--;
+            const char c = (char) ((i / (sizeof(value) - 1)) + charMin);
+            value[i % (sizeof(value) - 1)] = c;
         }
+        MemoryBlock::copy(buf, value, sizeof(value));
+
+        // Add to administration
+        m_values.insert(buf);
+        m_lengths.insert(len);
     }
-    return value;
+
+    return m_values[0];
 }
 
 /**
