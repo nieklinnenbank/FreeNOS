@@ -35,7 +35,6 @@
 #include <intel/IntelMap.h>
 #include <intel/IntelKernel.h>
 #include <intel/IntelProcess.h>
-#include <intel/IntelSerial.h>
 
 #include <FreeNOS/API.h>
 #endif /* __HOST__ */
