@@ -63,14 +63,14 @@ end
 if ENV.has_key?('QEMU_URL')
     qemu_url = ENV['QEMU_URL']
 else
-    qemu_url = 'https://github.com/nieklinnenbank/qemu'
+    qemu_url = 'git://git.qemu.org/qemu.git'
 end
 
 # Contains the branch in the GIT archive with Qemu source
 if ENV.has_key?('QEMU_BRANCH')
     qemu_branch = ENV['QEMU_BRANCH']
 else
-    qemu_branch = 'orangepi-zero'
+    qemu_branch = 'v5.0.0'
 end
 
 # Retrieve the currently active GIT branch (if any)
