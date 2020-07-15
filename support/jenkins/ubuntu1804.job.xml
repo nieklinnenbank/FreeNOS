@@ -121,9 +121,9 @@
   <builders>
     <hudson.tasks.Shell>
       <command>#!/bin/bash
-scons $sysargs $debugging VERBOSE=True HOST:VERBOSE=True QEMU_BUILD=True KVMFLAGS=&quot;&quot; || exit 1
-scons $sysargs $debugging VERBOSE=True HOST:VERBOSE=True QEMU_BUILD=True KVMFLAGS=&quot;&quot; xml_test || exit 1
-scons $sysargs $debugging VERBOSE=True HOST:VERBOSE=True QEMU_BUILD=True KVMFLAGS=&quot;&quot; qemu_test || exit 1
+scons $sysargs $debugging VERBOSE=True HOST:VERBOSE=True QEMU_BUILD=True QEMU_KVM=False || exit 1
+scons $sysargs $debugging VERBOSE=True HOST:VERBOSE=True QEMU_BUILD=True QEMU_KVM=False xml_test || exit 1
+scons $sysargs $debugging VERBOSE=True HOST:VERBOSE=True QEMU_BUILD=True QEMU_KVM=False qemu_test || exit 1
 </command>
     </hudson.tasks.Shell>
   </builders>

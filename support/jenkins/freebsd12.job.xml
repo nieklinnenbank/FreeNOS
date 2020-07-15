@@ -119,9 +119,9 @@ else
   EXTRA=&quot;&quot;
 fi
 
-scons VERBOSE=True QEMU_BUILD=True $EXTRA
-scons QEMU_BUILD=True $EXTRA xml_test
-scons KVMFLAGS=&quot;&quot; QEMU_BUILD=True $EXTRA qemu_test
+scons VERBOSE=True HOST:VERBOSE=True QEMU_BUILD=True QEMU_KVM=False $EXTRA
+scons VERBOSE=True HOST:VERBOSE=True QEMU_BUILD=True QEMU_KVM=False $EXTRA xml_test
+scons VERBOSE=True HOST:VERBOSE=True QEMU_BUILD=True QEMU_KVM=False $EXTRA qemu_test
 </command>
     </hudson.tasks.Shell>
   </builders>
