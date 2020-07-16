@@ -42,14 +42,28 @@ MemoryChannel::Result MemoryChannel::setVirtual(const Address data, const Addres
 
 MemoryChannel::Result MemoryChannel::setPhysical(const Address data, const Address feedback)
 {
-    IO::Result result = m_data.map(data, PAGESIZE);
+    Memory::Access dataAccess = Memory::User | Memory::Readable;
+    Memory::Access feedAccess = Memory::User | Memory::Readable;
+
+    switch (m_mode)
+    {
+        case Consumer:
+            feedAccess |= Memory::Writable;
+            break;
+
+        case Producer:
+            dataAccess |= Memory::Writable;
+            break;
+    }
+
+    IO::Result result = m_data.map(data, PAGESIZE, dataAccess);
     if (result != IO::Success)
     {
         ERROR("failed to map data physical address " << (void*)data << ": " << (int)result);
         return IOError;
     }
 
-    result = m_feedback.map(feedback, PAGESIZE);
+    result = m_feedback.map(feedback, PAGESIZE, feedAccess);
     if (result != IO::Success)
     {
         ERROR("failed to map feedback physical address " << (void*)feedback << ": " << (int)result);
