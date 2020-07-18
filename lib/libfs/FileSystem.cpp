@@ -271,17 +271,11 @@ void FileSystem::sendResponse(FileSystemMessage *msg)
     ProcessCtl(msg->from, Resume, 0);
 }
 
-void FileSystem::timeout()
-{
-    DEBUG("");
-
-    while (retryRequests());
-}
-
 bool FileSystem::retryRequests()
 {
-    DEBUG("");
     bool restartNeeded = false;
+
+    DEBUG("");
 
     for (ListIterator<FileSystemRequest *> i(m_requests); i.hasCurrent(); i++)
     {
@@ -292,15 +286,8 @@ bool FileSystem::retryRequests()
             i.remove();
             restartNeeded = true;
         }
-        /*Error set = ret < 0 ? -ret : ret;
-        
-        if (set & (ERESTART))
-        {
-            DEBUG("ERESTART set: " << (int)ret << " : " << (int)set);
-            restartNeeded = true;
-        }*/
     }
-    DEBUG("done");
+
     return restartNeeded;
 }
 
@@ -335,7 +322,7 @@ FileCache * FileSystem::lookupFile(FileSystemPath *path)
                 return ZERO;
             }
             dir = (Directory *) c->file;
-            
+
             /* Fetch the file, if possible. */
             if (!(file = dir->lookup(**i.current())))
             {

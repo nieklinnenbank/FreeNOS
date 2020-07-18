@@ -221,6 +221,8 @@ template <class Base, class MsgType> class ChannelServer
     virtual void timeout()
     {
         DEBUG("");
+
+        retryAllRequests();
     }
 
     /**
@@ -251,6 +253,15 @@ template <class Base, class MsgType> class ChannelServer
         const Size msecPerTick = 1000 / m_time.frequency;
         m_expiry.frequency = m_time.frequency;
         m_expiry.ticks     = m_time.ticks + ((msec / msecPerTick) + 1);
+    }
+
+    /**
+     * Keep retrying requests until all served
+     */
+    void retryAllRequests()
+    {
+        while (m_instance->retryRequests())
+            ;
     }
 
   private:
@@ -408,15 +419,6 @@ template <class Base, class MsgType> class ChannelServer
             }
         }
         return Success;
-    }
-
-    /**
-     * Keep retrying requests until all served
-     */
-    void retryAllRequests()
-    {
-        while (m_instance->retryRequests())
-            ;
     }
 
   protected:

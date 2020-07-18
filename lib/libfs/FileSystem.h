@@ -147,13 +147,6 @@ class FileSystem : public ChannelServer<FileSystem, FileSystemMessage>
     void pathHandler(FileSystemMessage *msg);
 
     /**
-     * Called when a sleep timeout is expired
-     *
-     * This function does a retry on all FileSystemRequests
-     */
-    virtual void timeout();
-
-    /**
      * Retry any pending requests
      *
      * @return True if retry is needed again, false if all requests processed

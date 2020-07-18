@@ -78,6 +78,7 @@ void DeviceServer::interruptHandler(Size vector)
             i.current()->interrupt(vector);
         }
     }
+
     // Keep retrying any pending requests, if any
-    while (retryRequests());
+    retryAllRequests();
 }
