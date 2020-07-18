@@ -42,11 +42,6 @@ class FileSystemRequest
     FileSystemRequest(FileSystemMessage *msg);
 
     /**
-     * Destructor
-     */
-    virtual ~FileSystemRequest();
-
-    /**
      * Get message.
      *
      * @return FileSystemMessage pointer
@@ -66,7 +61,7 @@ class FileSystemRequest
     FileSystemMessage m_msg;
 
     /** Wrapper for doing I/O on the FileSystemMessage buffer. */
-    IOBuffer *m_ioBuffer;
+    IOBuffer m_ioBuffer;
 };
 
 /**

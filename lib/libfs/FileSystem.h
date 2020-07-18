@@ -161,7 +161,7 @@ class FileSystem : public ChannelServer<FileSystem, FileSystemMessage>
      * @return EAGAIN if the request cannot be completed yet or
      *         any other error code if processed.
      */
-    Error processRequest(FileSystemRequest *req);
+    Error processRequest(FileSystemRequest &req);
 
     /**
      * Send response for a FileSystemMessage

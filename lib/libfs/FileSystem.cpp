@@ -135,27 +135,28 @@ Error FileSystem::registerFile(File *file, const char *path, va_list args)
 
 void FileSystem::pathHandler(FileSystemMessage *msg)
 {
-    // Copy the request
-    FileSystemRequest *req = new FileSystemRequest(msg);
-    assert(req != NULL);
+    // Prepare request
+    FileSystemRequest req(msg);
 
     // Process the request.
     if (processRequest(req) == EAGAIN)
-        m_requests->append(req);
-    else
-        delete req;
+    {
+        FileSystemRequest *reqCopy = new FileSystemRequest(msg);
+        assert(reqCopy != NULL);
+        m_requests->append(reqCopy);
+    }
 }
 
-Error FileSystem::processRequest(FileSystemRequest *req)
+Error FileSystem::processRequest(FileSystemRequest &req)
 {
     char buf[PATHLEN];
     FileSystemPath path;
-    FileCache *cache = ZERO; 
+    FileCache *cache = ZERO;
     File *file = ZERO;
     Directory *parent;
-    FileSystemMessage *msg = req->getMessage();
+    FileSystemMessage *msg = req.getMessage();
     Error ret;
-    
+
     // Copy the file path
     if ((msg->result = VMCopy(msg->from, API::Read, (Address) buf,
                     (Address) msg->path, PATHLEN)) <= 0)
@@ -201,7 +202,7 @@ Error FileSystem::processRequest(FileSystemRequest *req)
                 {
                     const char *p = **path.full();
                     insertFileCache(file, "%s", p);
-            
+
                     /* Add directory entry to our parent. */
                     if (path.parent())
                     {
@@ -237,19 +238,19 @@ Error FileSystem::processRequest(FileSystemRequest *req)
 
         case ReadFile:
             {
-                msg->result = file->read(req->getBuffer(), msg->size, msg->offset);
-                if (req->getBuffer().getCount())
-                    req->getBuffer().flush();
+                msg->result = file->read(req.getBuffer(), msg->size, msg->offset);
+                if (req.getBuffer().getCount())
+                    req.getBuffer().flush();
             }
             DEBUG(m_self << ": read = " << (int)msg->result);
             break;
-        
+
         case WriteFile:
             {
-                if (!req->getBuffer().getCount())
-                    req->getBuffer().bufferedRead();
+                if (!req.getBuffer().getCount())
+                    req.getBuffer().bufferedRead();
 
-                msg->result = file->write(req->getBuffer(), msg->size, msg->offset);
+                msg->result = file->write(req.getBuffer(), msg->size, msg->offset);
             }
             DEBUG(m_self << ": write = " << (int)msg->result);
             break;
@@ -279,7 +280,7 @@ bool FileSystem::retryRequests()
 
     for (ListIterator<FileSystemRequest *> i(m_requests); i.hasCurrent(); i++)
     {
-        Error ret = processRequest(i.current());
+        Error ret = processRequest(*i.current());
         if (ret != EAGAIN)
         {
             delete i.current();

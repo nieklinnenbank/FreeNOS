@@ -18,14 +18,9 @@
 #include "FileSystemRequest.h"
 
 FileSystemRequest::FileSystemRequest(FileSystemMessage *msg)
+    : m_msg(*msg)
+    , m_ioBuffer(&m_msg)
 {
-    m_msg = msg;
-    m_ioBuffer = new IOBuffer(&m_msg);
-}
-
-FileSystemRequest::~FileSystemRequest()
-{
-    delete m_ioBuffer;
 }
 
 FileSystemMessage * FileSystemRequest::getMessage()
@@ -35,5 +30,5 @@ FileSystemMessage * FileSystemRequest::getMessage()
 
 IOBuffer & FileSystemRequest::getBuffer()
 {
-    return *m_ioBuffer;
+    return m_ioBuffer;
 }
