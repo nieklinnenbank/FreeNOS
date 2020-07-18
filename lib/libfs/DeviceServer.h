@@ -28,9 +28,6 @@
  * @{
  */
 
-/** Maximum number of devices handled simultaneously by a DeviceServer. */
-#define DEVICE_MAX 32
-
 /**
  * @brief Device driver server.
  *
