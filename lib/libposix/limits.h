@@ -20,6 +20,7 @@
 
 #include <Macros.h>
 #include <sys/types.h>
+#include <FileSystemPath.h>
 
 /**
  * @addtogroup lib
@@ -33,7 +34,7 @@
 #define CHAR_BIT  8
 
 /** Maximum file path length. */
-#define PATH_MAX  64
+#define PATH_MAX  PATHLEN
 
 /**
  * @}
