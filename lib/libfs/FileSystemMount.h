@@ -15,11 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __FILESYSTEM_FILE_SYSTEM_MOUNT_H
-#define __FILESYSTEM_FILE_SYSTEM_MOUNT_H
+#ifndef __LIB_LIBFS_FILESYSTEMMOUNT_H
+#define __LIB_LIBFS_FILESYSTEMMOUNT_H
 
 #include <Types.h>
-#include "limits.h"
+#include "FileSystemPath.h"
 
 /**
  * @addtogroup lib
@@ -38,7 +38,7 @@
 typedef struct FileSystemMount
 {
     /** Path of the mount. */
-    char path[PATH_MAX];
+    char path[PATHLEN];
 
     /** Server which is responsible for the mount. */
     ProcessID procID;
@@ -53,4 +53,4 @@ FileSystemMount;
  * @}
  */
 
-#endif /* __FILESYSTEM_FILE_SYSTEM_MOUNT_H */
+#endif /* __LIB_LIBFS_FILESYSTEMMOUNT_H */
