@@ -36,7 +36,7 @@ int mkdir(const char *path, mode_t mode)
     // Ask the FileSystem to create it
     if (mnt)
     {
-        ChannelClient::instance->syncSendReceive(&msg, mnt);
+        ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), mnt);
 
         // Set errno
         errno = msg.result;

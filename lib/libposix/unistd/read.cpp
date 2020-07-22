@@ -48,7 +48,7 @@ ssize_t read(int fildes, void *buf, size_t nbyte)
     msg.offset = files[fildes].position;
     msg.from   = SELF;
     msg.deviceID.minor = files[fildes].identifier;
-    ChannelClient::instance->syncSendReceive(&msg, files[fildes].mount);
+    ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), files[fildes].mount);
 
     // Did we read something?
     if (msg.result >= 0)

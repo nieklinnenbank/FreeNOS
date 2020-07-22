@@ -39,7 +39,7 @@ int mknod(const char *path, mode_t mode, dev_t dev)
     // Ask FileSystem to create the file for us
     if (mnt)
     {
-        ChannelClient::instance->syncSendReceive(&msg, mnt);
+        ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), mnt);
 
         // Set errno
         errno = msg.result;

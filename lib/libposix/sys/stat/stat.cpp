@@ -53,7 +53,7 @@ int stat(const char *path, struct stat *buf)
     // Ask the FileSystem for the information
     if (mnt)
     {
-        ChannelClient::instance->syncSendReceive(&msg, mnt);
+        ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), mnt);
 
         // Copy information into buf
         if (msg.result == ESUCCESS)

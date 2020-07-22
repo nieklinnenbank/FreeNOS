@@ -121,8 +121,10 @@ ChannelClient::Result ChannelClient::connect(const ProcessID pid, const Size mes
     return Success;
 }
 
-ChannelClient::Result ChannelClient::receiveAny(void *buffer, ProcessID *pid)
+ChannelClient::Result ChannelClient::receiveAny(void *buffer, const Size msgSize, ProcessID *pid)
 {
+    assert(msgSize > 0);
+
     for (HashIterator<ProcessID, Channel *> i(m_registry->getConsumers()); i.hasCurrent(); i++)
     {
         if (i.current()->read(buffer) == Channel::Success)
@@ -136,11 +138,12 @@ ChannelClient::Result ChannelClient::receiveAny(void *buffer, ProcessID *pid)
 
 ChannelClient::Result ChannelClient::sendRequest(const ProcessID pid,
                                                  void *buffer,
+                                                 const Size msgSize,
                                                  CallbackFunction *callback)
 {
     Request *req = 0;
     Size identifier = 0;
-    Channel *ch  = findProducer(pid);
+    Channel *ch = findProducer(pid, msgSize);
     if (!ch)
         return NotFound;
 
@@ -209,35 +212,35 @@ ChannelClient::Result ChannelClient::processResponse(const ProcessID pid,
 }
 
 
-Channel * ChannelClient::findConsumer(const ProcessID pid)
+Channel * ChannelClient::findConsumer(const ProcessID pid, const Size msgSize)
 {
     Channel *ch = m_registry->getConsumer(pid);
     if (ch)
         return ch;
 
     // Try to connect
-    if (connect(pid) != Success)
+    if (connect(pid, msgSize) != Success)
         return ZERO;
 
     return m_registry->getConsumer(pid);
 }
 
-Channel * ChannelClient::findProducer(const ProcessID pid)
+Channel * ChannelClient::findProducer(const ProcessID pid, const Size msgSize)
 {
     Channel *ch = m_registry->getProducer(pid);
     if (ch)
         return ch;
 
     // Try to connect
-    if (connect(pid) != Success)
+    if (connect(pid, msgSize) != Success)
         return ZERO;
 
     return m_registry->getProducer(pid);
 }
 
-ChannelClient::Result ChannelClient::syncReceiveFrom(void *buffer, const ProcessID pid)
+ChannelClient::Result ChannelClient::syncReceiveFrom(void *buffer, const Size msgSize, const ProcessID pid)
 {
-    Channel *ch = findConsumer(pid);
+    Channel *ch = findConsumer(pid, msgSize);
     if (!ch)
         return NotFound;
 
@@ -247,9 +250,9 @@ ChannelClient::Result ChannelClient::syncReceiveFrom(void *buffer, const Process
     return Success;
 }
 
-ChannelClient::Result ChannelClient::syncSendTo(const void *buffer, const ProcessID pid)
+ChannelClient::Result ChannelClient::syncSendTo(const void *buffer, const Size msgSize, const ProcessID pid)
 {
-    Channel *ch = findProducer(pid);
+    Channel *ch = findProducer(pid, msgSize);
     if (!ch)
         return NotFound;
 
@@ -273,11 +276,11 @@ ChannelClient::Result ChannelClient::syncSendTo(const void *buffer, const Proces
     return IOError;
 }
 
-ChannelClient::Result ChannelClient::syncSendReceive(void *buffer, const ProcessID pid)
+ChannelClient::Result ChannelClient::syncSendReceive(void *buffer, const Size msgSize, const ProcessID pid)
 {
-    const Result result = syncSendTo(buffer, pid);
+    const Result result = syncSendTo(buffer, msgSize, pid);
     if (result != Success)
         return result;
 
-    return syncReceiveFrom(buffer, pid);
+    return syncReceiveFrom(buffer, msgSize, pid);
 }

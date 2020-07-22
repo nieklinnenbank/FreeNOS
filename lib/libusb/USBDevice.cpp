@@ -393,7 +393,7 @@ Error USBDevice::beginTransfer(
         fs.offset = (Size) buffer;
         fs.from   = SELF;
         fs.deviceID.minor = fd->identifier;
-        if (ChannelClient::instance->sendRequest(fd->mount, &fs, callback) == ChannelClient::Success)
+        if (ChannelClient::instance->sendRequest(fd->mount, &fs, sizeof(fs), callback) == ChannelClient::Success)
             return ESUCCESS;
     }
     return EIO;

@@ -46,7 +46,7 @@ int unlink(const char *path)
         msg.action = DeleteFile;
         msg.path   = fullpath;
         msg.from   = SELF;
-        ChannelClient::instance->syncSendReceive(&msg, mnt);
+        ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), mnt);
 
         // Set error number
         errno = msg.result;

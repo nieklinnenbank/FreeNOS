@@ -52,7 +52,7 @@ int open(const char *path, int oflag, ...)
     // Ask the FileSystem for the file.
     if (mnt && files != NULL)
     {
-        ChannelClient::instance->syncSendReceive(&msg, mnt);
+        ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), mnt);
 
         // Refresh mounts and retry, in case the file did not exist
         if (msg.result == ENOENT)
@@ -60,7 +60,7 @@ int open(const char *path, int oflag, ...)
             refreshMounts(0);
             mnt = findMount(path);
             msg.type = ChannelMessage::Request;
-            ChannelClient::instance->syncSendReceive(&msg, mnt);
+            ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), mnt);
         }
 
         // Set errno

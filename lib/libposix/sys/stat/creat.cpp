@@ -53,7 +53,7 @@ int creat(const char *path, mode_t mode)
     // Ask FileSystem to create the file for us
     if (mnt)
     {
-        ChannelClient::instance->syncSendReceive(&msg, mnt);
+        ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), mnt);
 
         // Set errno
         errno = msg.result;

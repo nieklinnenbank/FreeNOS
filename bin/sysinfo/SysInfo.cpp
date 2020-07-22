@@ -47,7 +47,7 @@ SysInfo::Result SysInfo::exec()
     msg.type   = ChannelMessage::Request;
     msg.action = ReadFile;
     msg.from = SELF;
-    ChannelClient::instance->syncSendReceive(&msg, CORESRV_PID);
+    ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), CORESRV_PID);
 
     // Retrieve scheduler timer info from the kernel
     ProcessCtl(SELF, InfoTimer, (Address) &timer);

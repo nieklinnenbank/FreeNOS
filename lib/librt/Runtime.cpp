@@ -233,7 +233,7 @@ void refreshMounts(const char *path)
     msg.size   = sizeof(FileSystemMount) * FILESYSTEM_MAXMOUNTS;
     msg.offset = 0;
     msg.from   = SELF;
-    ChannelClient::instance->syncSendReceive(&msg, SYSFS_PID);
+    ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), SYSFS_PID);
 }
 
 ProcessID findMount(int fildes)
@@ -256,7 +256,7 @@ void waitMount(const char *path)
     msg.size   = strlen(path);
     msg.offset = 0;
     msg.from   = SELF;
-    ChannelClient::instance->syncSendReceive(&msg, SYSFS_PID);
+    ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), SYSFS_PID);
 }
 
 FileSystemMount * getMounts()

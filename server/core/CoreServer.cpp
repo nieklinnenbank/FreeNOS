@@ -122,7 +122,7 @@ void CoreServer::createProcess(FileSystemMessage *msg)
             return;
         }
         DEBUG("program created with result " << (int)msg->result << " at core" << msg->size);
-        ChannelClient::instance->syncSendTo(msg, msg->from);
+        ChannelClient::instance->syncSendTo(msg, sizeof(*msg), msg->from);
     }
     else
     {

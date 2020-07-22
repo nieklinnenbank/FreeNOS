@@ -54,7 +54,7 @@ int MPI_Init(int *argc, char ***argv)
         msg.type   = ChannelMessage::Request;
         msg.action = ReadFile;
         msg.from = SELF;
-        ChannelClient::instance->syncSendReceive(&msg, CORESRV_PID);
+        ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), CORESRV_PID);
 
         // provide -n COUNT, --help and other stuff in here too.
         // to influence the launching of more MPI programs
@@ -136,7 +136,7 @@ int MPI_Init(int *argc, char ***argv)
             msg.buffer = (char *) programBuffer;
             msg.offset = st.st_size;
             msg.path   = cmd;
-            ChannelClient::instance->syncSendReceive(&msg, CORESRV_PID);
+            ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), CORESRV_PID);
 
             if (msg.result != ESUCCESS)
             {
