@@ -26,6 +26,7 @@
 #include <FileDescriptor.h>
 #include <MemoryMap.h>
 #include <Core.h>
+#include <KernelLog.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -49,6 +50,9 @@ static FileDescriptor *files = (FileDescriptor *) NULL;
 
 /** Current Directory String */
 String *currentDirectory = (String *) NULL;
+
+/** Initial logging instance */
+static KernelLog log;
 
 void * __dso_handle = 0;
 
