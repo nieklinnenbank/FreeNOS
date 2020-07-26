@@ -87,9 +87,6 @@ typedef struct FileSystemMessage : public ChannelMessage
                this->action == m->action;
     }
 
-    /** Source of the message */
-    ProcessID from;
-
     /** Action to perform. */
     FileSystemAction action;
 

@@ -49,6 +49,9 @@ class ChannelMessage
 
     /** Optional request identifier */
     Size identifier:31;
+
+    /** Source process of the message */
+    ProcessID from;
 };
 
 /**
