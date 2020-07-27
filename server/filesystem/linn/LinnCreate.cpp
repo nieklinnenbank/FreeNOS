@@ -423,12 +423,6 @@ int LinnCreate::create(Size blockSize, Size blockNum, Size inodeNum)
     // Create special inodes
     createInode(LINN_INODE_ROOT, FileSystem::DirectoryFile,
                 FileSystem::OwnerRWX | FileSystem::GroupRX | FileSystem::OtherRX);
-    createInode(LINN_INODE_LOADER, FileSystem::RegularFile,
-                FileSystem::OwnerRWX | FileSystem::GroupRX | FileSystem::OtherRX);
-    createInode(LINN_INODE_BAD, FileSystem::RegularFile,
-                FileSystem::OwnerRW | FileSystem::GroupR | FileSystem::OtherR);
-    createInode(LINN_INODE_JOURNAL, FileSystem::RegularFile,
-                FileSystem::OwnerRW | FileSystem::GroupR | FileSystem::OtherR);
 
     // Insert into directory contents, if set
     if (input)

@@ -36,18 +36,6 @@
 /** Root inode. */
 #define LINN_INODE_ROOT         0
 
-/** Boot loader inode. */
-#define LINN_INODE_LOADER       1
-
-/** Bad blocks inode. */
-#define LINN_INODE_BAD          2
-
-/** Journal inode. */
-#define LINN_INODE_JOURNAL      3
-
-/** First non-reserved inode. */
-#define LINN_INODE_FIRST        4
-
 /**
  * @}
  */
