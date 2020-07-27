@@ -26,7 +26,7 @@
 int stat(const char *path, struct stat *buf)
 {
     FileSystemMessage msg;
-    FileStat st;
+    FileSystem::FileStat st;
     ProcessID mnt = findMount(path);
     char fullpath[PATH_MAX];
 

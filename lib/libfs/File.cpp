@@ -47,7 +47,7 @@ Error File::write(IOBuffer & buffer, Size size, Size offset)
 
 Error File::status(FileSystemMessage *msg)
 {
-    FileStat st;
+    FileSystem::FileStat st;
     Error e;
 
     // Fill in the status structure

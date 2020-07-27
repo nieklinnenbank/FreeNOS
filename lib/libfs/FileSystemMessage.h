@@ -22,7 +22,6 @@
 #include <Types.h>
 #include "ChannelMessage.h"
 #include "FileMode.h"
-#include "FileStat.h"
 #include "FileSystem.h"
 
 /**
@@ -102,7 +101,7 @@ typedef struct FileSystemMessage : public ChannelMessage
     FileModes mode;
 
     /** File Statistics. */
-    FileStat *stat;
+    FileSystem::FileStat *stat;
 
     /** Device major/minor numbers. */
     DeviceID deviceID;

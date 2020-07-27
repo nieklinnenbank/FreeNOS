@@ -18,6 +18,9 @@
 #ifndef __LIB_LIBFS_FILESYSTEM_H
 #define __LIB_LIBFS_FILESYSTEM_H
 
+#include <Types.h>
+#include "FileMode.h"
+
 /**
  * @addtogroup lib
  * @{
@@ -97,6 +100,19 @@ namespace FileSystem
         FIFOFile            = 5,
         SocketFile          = 6,
         UnknownFile         = 7,
+    };
+
+    /**
+     * Contains file information.
+     */
+    struct FileStat
+    {
+        FileType type;      /**< File type. */
+        FileModes access;   /**< File access permission bits. */
+        Size size;          /**< Size of the file in bytes. */
+        UserID userID;      /**< User identity. */
+        GroupID groupID;    /**< Group identity. */
+        DeviceID deviceID;  /**< Device identity. */
     };
 };
 

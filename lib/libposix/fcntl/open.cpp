@@ -28,7 +28,7 @@ int open(const char *path, int oflag, ...)
     FileSystemMessage msg;
     ProcessID mnt = findMount(path);
     FileDescriptor *files = getFiles();
-    FileStat st;
+    FileSystem::FileStat st;
     char fullpath[PATH_MAX];
 
     // Relative or absolute?

@@ -20,7 +20,6 @@
 
 #include <FileSystem.h>
 #include <FileMode.h>
-#include <FileStat.h>
 #include <Macros.h>
 #include <errno.h>
 #include <time.h>
@@ -170,7 +169,7 @@ struct stat
      * Instantiates the structure given an FileStat object.
      * @param stat FileStat pointer to copy from.
      */
-    void fromFileStat(FileStat *stat)
+    void fromFileStat(FileSystem::FileStat *stat)
     {
         this->st_mode  = stat->access;
         this->st_mode |= stat->type << FILEMODE_BITS;
