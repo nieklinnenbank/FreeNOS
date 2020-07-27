@@ -18,7 +18,7 @@
 #ifndef __FILESYSTEM_SYSINFOFILESYSTEM_H
 #define __FILESYSTEM_SYSINFOFILESYSTEM_H
 
-#include <FileSystem.h>
+#include <FileSystemServer.h>
 #include <FileSystemMessage.h>
 #include <FileSystemPath.h>
 #include <Types.h>
@@ -37,7 +37,7 @@
  * Provides generic information about the current hardware and software
  * of the running system. For example, SysFS provides the list of mounted filesystems.
  */
-class SysInfoFileSystem : public FileSystem
+class SysInfoFileSystem : public FileSystemServer
 {
   public:
 

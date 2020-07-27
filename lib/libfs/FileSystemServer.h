@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __FILESYSTEM_FILESYSTEM_H
-#define __FILESYSTEM_FILESYSTEM_H
+#ifndef __LIB_LIBFS_FILESYSTEMSERVER_H
+#define __LIB_LIBFS_FILESYSTEMSERVER_H
 
 #include <FreeNOS/System.h>
 #include <ChannelServer.h>
@@ -40,7 +40,7 @@
 /**
  * Abstract filesystem class.
  */
-class FileSystem : public ChannelServer<FileSystem, FileSystemMessage>
+class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessage>
 {
   public:
 
@@ -49,12 +49,12 @@ class FileSystem : public ChannelServer<FileSystem, FileSystemMessage>
      *
      * @param p Path to which we are mounted.
      */
-    FileSystem(const char *path);
+    FileSystemServer(const char *path);
 
     /**
      * Destructor function.
      */
-    virtual ~FileSystem();
+    virtual ~FileSystemServer();
 
     /**
      * Get mount path
@@ -258,4 +258,4 @@ class FileSystem : public ChannelServer<FileSystem, FileSystemMessage>
  * @}
  */
 
-#endif /* __LIB_LIBFS_FILESYSTEM_H */
+#endif /* __LIB_LIBFS_FILESYSTEMSERVER_H */

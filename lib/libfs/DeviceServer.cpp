@@ -18,7 +18,7 @@
 #include "DeviceServer.h"
 
 DeviceServer::DeviceServer(const char *path)
-    : FileSystem(path)
+    : FileSystemServer(path)
 {
     m_interrupts.fill(ZERO);
 }
@@ -39,7 +39,7 @@ void DeviceServer::registerDevice(Device *dev, const char *path, ...)
     va_list args;
 
     va_start(args, path);
-    FileSystem::registerFile(dev, path, args);
+    FileSystemServer::registerFile(dev, path, args);
     va_end(args);
 
     // Add to the list of Devices

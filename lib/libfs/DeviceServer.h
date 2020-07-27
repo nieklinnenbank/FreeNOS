@@ -18,7 +18,7 @@
 #ifndef __LIB_LIBFS_DEVICESERVER_H
 #define __LIB_LIBFS_DEVICESERVER_H
 
-#include "FileSystem.h"
+#include "FileSystemServer.h"
 
 /**
  * @addtogroup lib
@@ -35,10 +35,10 @@
  * FileSystemMessages and invokes Device functions appropriately.
  *
  * @see Device
- * @see FileSystem
+ * @see FileSystemServer
  * @see FileSystemMessage
  */
-class DeviceServer : public FileSystem
+class DeviceServer : public FileSystemServer
 {
   public:
 

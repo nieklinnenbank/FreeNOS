@@ -22,7 +22,7 @@
 #include "TmpFileSystem.h"
 
 TmpFileSystem::TmpFileSystem(const char *path)
-    : FileSystem(path)
+    : FileSystemServer(path)
 {
     Directory *dir = new Directory;
     assert(dir != NULL);

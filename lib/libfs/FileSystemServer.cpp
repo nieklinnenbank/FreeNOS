@@ -24,10 +24,10 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include "FileSystem.h"
+#include "FileSystemServer.h"
 
-FileSystem::FileSystem(const char *path)
-    : ChannelServer<FileSystem, FileSystemMessage>(this)
+FileSystemServer::FileSystemServer(const char *path)
+    : ChannelServer<FileSystemServer, FileSystemMessage>(this)
 {
     // Set members
     m_root      = 0;
@@ -35,30 +35,30 @@ FileSystem::FileSystem(const char *path)
     m_requests  = new List<FileSystemRequest *>();
         
     // Register message handlers
-    addIPCHandler(CreateFile, &FileSystem::pathHandler, false);
-    addIPCHandler(StatFile,   &FileSystem::pathHandler, false);
-    addIPCHandler(DeleteFile, &FileSystem::pathHandler, false);
-    addIPCHandler(ReadFile,   &FileSystem::pathHandler, false);
-    addIPCHandler(WriteFile,  &FileSystem::pathHandler, false);
+    addIPCHandler(CreateFile, &FileSystemServer::pathHandler, false);
+    addIPCHandler(StatFile,   &FileSystemServer::pathHandler, false);
+    addIPCHandler(DeleteFile, &FileSystemServer::pathHandler, false);
+    addIPCHandler(ReadFile,   &FileSystemServer::pathHandler, false);
+    addIPCHandler(WriteFile,  &FileSystemServer::pathHandler, false);
 }
 
-FileSystem::~FileSystem()
+FileSystemServer::~FileSystemServer()
 {
     if (m_requests)
         delete m_requests;
 }
 
-const char * FileSystem::getMountPath() const
+const char * FileSystemServer::getMountPath() const
 {
     return m_mountPath;
 }
 
-Directory * FileSystem::getRoot()
+Directory * FileSystemServer::getRoot()
 {
     return (Directory *) m_root->file;
 }
 
-Error FileSystem::mount()
+Error FileSystemServer::mount()
 {
     pid_t pid = ProcessCtl(SELF, GetPID);
     FileSystemMount mnt;
@@ -95,12 +95,12 @@ Error FileSystem::mount()
     return ESUCCESS;
 }
 
-File * FileSystem::createFile(FileType type, DeviceID deviceID)
+File * FileSystemServer::createFile(FileType type, DeviceID deviceID)
 {
     return (File *) ZERO;
 }
 
-Error FileSystem::registerFile(File *file, const char *path, ...)
+Error FileSystemServer::registerFile(File *file, const char *path, ...)
 {
     va_list args;
     Error r;
@@ -112,7 +112,7 @@ Error FileSystem::registerFile(File *file, const char *path, ...)
     return r;
 }
 
-Error FileSystem::registerFile(File *file, const char *path, va_list args)
+Error FileSystemServer::registerFile(File *file, const char *path, va_list args)
 {
     char buf[PATHLEN];
 
@@ -133,7 +133,7 @@ Error FileSystem::registerFile(File *file, const char *path, va_list args)
     return ESUCCESS;
 }
 
-void FileSystem::pathHandler(FileSystemMessage *msg)
+void FileSystemServer::pathHandler(FileSystemMessage *msg)
 {
     // Prepare request
     FileSystemRequest req(msg);
@@ -147,7 +147,7 @@ void FileSystem::pathHandler(FileSystemMessage *msg)
     }
 }
 
-Error FileSystem::processRequest(FileSystemRequest &req)
+Error FileSystemServer::processRequest(FileSystemRequest &req)
 {
     char buf[PATHLEN];
     FileSystemPath path;
@@ -265,14 +265,14 @@ Error FileSystem::processRequest(FileSystemRequest &req)
     return ret;
 }
 
-void FileSystem::sendResponse(FileSystemMessage *msg)
+void FileSystemServer::sendResponse(FileSystemMessage *msg)
 {
     msg->type = ChannelMessage::Response;
     m_registry->getProducer(msg->from)->write(msg);
     ProcessCtl(msg->from, Resume, 0);
 }
 
-bool FileSystem::retryRequests()
+bool FileSystemServer::retryRequests()
 {
     bool restartNeeded = false;
 
@@ -292,14 +292,14 @@ bool FileSystem::retryRequests()
     return restartNeeded;
 }
 
-void FileSystem::setRoot(Directory *newRoot)
+void FileSystemServer::setRoot(Directory *newRoot)
 {
     m_root = new FileCache(newRoot, "/", ZERO);
     insertFileCache(newRoot, ".");
     insertFileCache(newRoot, "..");
 }
 
-FileCache * FileSystem::lookupFile(FileSystemPath *path)
+FileCache * FileSystemServer::lookupFile(FileSystemPath *path)
 {
     List<String *> *entries = path->split();
     FileCache *c = ZERO;
@@ -341,7 +341,7 @@ FileCache * FileSystem::lookupFile(FileSystemPath *path)
     return c;
 }
 
-FileCache * FileSystem::insertFileCache(File *file, const char *pathFormat, ...)
+FileCache * FileSystemServer::insertFileCache(File *file, const char *pathFormat, ...)
 {
     va_list args;
 
@@ -352,7 +352,7 @@ FileCache * FileSystem::insertFileCache(File *file, const char *pathFormat, ...)
     return c;
 }
 
-FileCache * FileSystem::insertFileCache(File *file, const char *pathFormat, va_list args)
+FileCache * FileSystemServer::insertFileCache(File *file, const char *pathFormat, va_list args)
 {
     char pathStr[PATHLEN];
     FileSystemPath path;
@@ -379,18 +379,18 @@ FileCache * FileSystem::insertFileCache(File *file, const char *pathFormat, va_l
     return c;
 }
 
-FileCache * FileSystem::findFileCache(char *path)
+FileCache * FileSystemServer::findFileCache(char *path)
 {
     FileSystemPath p(path);
     return findFileCache(&p);
 }
 
-FileCache * FileSystem::findFileCache(String *path)
+FileCache * FileSystemServer::findFileCache(String *path)
 {
     return path ? findFileCache(**path) : ZERO;
 }
 
-FileCache * FileSystem::findFileCache(FileSystemPath *p)
+FileCache * FileSystemServer::findFileCache(FileSystemPath *p)
 {
     List<String *> *entries = p->split();
     FileCache *c = m_root;
@@ -417,12 +417,12 @@ FileCache * FileSystem::findFileCache(FileSystemPath *p)
     return c && c->valid ? c : ZERO;
 }
 
-FileCache * FileSystem::cacheHit(FileCache *cache)
+FileCache * FileSystemServer::cacheHit(FileCache *cache)
 {
     return cache;
 }
 
-void FileSystem::clearFileCache(FileCache *cache)
+void FileSystemServer::clearFileCache(FileCache *cache)
 {
     /* Start from root? */
     if (!cache)

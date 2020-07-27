@@ -23,7 +23,7 @@
 #include "MountWaitFile.h"
 
 SysInfoFileSystem::SysInfoFileSystem(const char *path)
-    : FileSystem(path)
+    : FileSystemServer(path)
 {
     Directory *dir = new Directory;
     assert(dir != NULL);

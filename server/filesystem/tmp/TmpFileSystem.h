@@ -18,7 +18,7 @@
 #ifndef __FILESYSTEM_TMPFILESYSTEM_H
 #define __FILESYSTEM_TMPFILESYSTEM_H
 
-#include <FileSystem.h>
+#include <FileSystemServer.h>
 #include <FileSystemMessage.h>
 #include <FileSystemPath.h>
 #include <Types.h>
@@ -34,7 +34,7 @@
 /**
  * Temporary filesystem (TmpFS). Maps files into virtual memory.
  */
-class TmpFileSystem : public FileSystem
+class TmpFileSystem : public FileSystemServer
 {
   public:
 

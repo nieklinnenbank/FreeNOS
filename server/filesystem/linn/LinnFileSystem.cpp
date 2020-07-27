@@ -71,7 +71,7 @@ int main(int argc, char **argv)
 }
 
 LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
-    : FileSystem(p), storage(s), groups(ZERO)
+    : FileSystemServer(p), storage(s), groups(ZERO)
 {
     LinnInode *rootInode;
     LinnGroup *group;
