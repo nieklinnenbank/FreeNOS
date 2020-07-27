@@ -39,6 +39,21 @@ namespace FileSystem
         StatFile,
         DeleteFile
     };
+
+    /**
+     * Result code for filesystem Actions.
+     */
+    enum Result
+    {
+        Success,
+        InvalidArgument,
+        NotFound,
+        RetryAgain,
+        IOError,
+        PermissionDenied,
+        AlreadyExists,
+        NotSupported
+    };
 };
 
 /**

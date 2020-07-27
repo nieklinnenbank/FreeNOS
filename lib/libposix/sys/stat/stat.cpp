@@ -56,16 +56,21 @@ int stat(const char *path, struct stat *buf)
         ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), mnt);
 
         // Copy information into buf
-        if (msg.result == ESUCCESS)
+        if (msg.result == FileSystem::Success)
         {
             buf->fromFileStat(&st);
+            errno = ESUCCESS;
         }
-        // Set errno
-        errno = msg.result;
+        else
+        {
+            errno = EIO;
+        }
     }
     else
-        errno = msg.result = ENOENT;
+    {
+        errno = ENOENT;
+    }
 
     // Success
-    return msg.result == ESUCCESS ? 0 : -1;
+    return errno == ESUCCESS ? 0 : -1;
 }

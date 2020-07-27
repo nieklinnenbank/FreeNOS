@@ -49,7 +49,10 @@ int unlink(const char *path)
         ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), mnt);
 
         // Set error number
-        errno = msg.result;
+        if (msg.result == FileSystem::Success)
+            errno = ESUCCESS;
+        else
+            errno = EIO;
     }
     else
         errno = ENOENT;

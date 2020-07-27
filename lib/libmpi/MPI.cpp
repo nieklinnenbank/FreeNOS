@@ -138,7 +138,7 @@ int MPI_Init(int *argc, char ***argv)
             msg.path   = cmd;
             ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), CORESRV_PID);
 
-            if (msg.result != ESUCCESS)
+            if (msg.result != FileSystem::Success)
             {
                 printf("%s: failed to create process on core%d\n",
                         programName, i);

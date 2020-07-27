@@ -58,14 +58,16 @@ Directory * FileSystemServer::getRoot()
     return (Directory *) m_root->file;
 }
 
-Error FileSystemServer::mount()
+FileSystem::Result FileSystemServer::mount()
 {
     pid_t pid = ProcessCtl(SELF, GetPID);
     FileSystemMount mnt;
 
     // The rootfs server and sysfs server have a fixed mount
     if (pid == ROOTFS_PID || pid == SYSFS_PID)
-        return ESUCCESS;
+    {
+        return FileSystem::Success;
+    }
 
     // Fill the mount structure
     mnt.procID = pid;
@@ -77,7 +79,7 @@ Error FileSystemServer::mount()
     if (fd < 0)
     {
         ERROR("failed to open mount '" << m_mountPath << "': " << strerror(errno));
-        return errno;
+        return FileSystem::IOError;
     }
 
     // write the mount structure to the SysFS mounts file
@@ -85,14 +87,14 @@ Error FileSystemServer::mount()
     {
         ERROR("failed to write mount '" << m_mountPath << "': " << strerror(errno));
         close(fd);
-        return errno;
+        return FileSystem::IOError;
     }
 
     // Close it
     close(fd);
 
     // Done
-    return ESUCCESS;
+    return FileSystem::Success;
 }
 
 File * FileSystemServer::createFile(FileType type, DeviceID deviceID)
@@ -100,10 +102,10 @@ File * FileSystemServer::createFile(FileType type, DeviceID deviceID)
     return (File *) ZERO;
 }
 
-Error FileSystemServer::registerFile(File *file, const char *path, ...)
+FileSystem::Result FileSystemServer::registerFile(File *file, const char *path, ...)
 {
     va_list args;
-    Error r;
+    FileSystem::Result r;
 
     va_start(args, path);
     r = registerFile(file, path, args);
@@ -112,7 +114,7 @@ Error FileSystemServer::registerFile(File *file, const char *path, ...)
     return r;
 }
 
-Error FileSystemServer::registerFile(File *file, const char *path, va_list args)
+FileSystem::Result FileSystemServer::registerFile(File *file, const char *path, va_list args)
 {
     char buf[PATHLEN];
 
@@ -130,7 +132,7 @@ Error FileSystemServer::registerFile(File *file, const char *path, va_list args)
         parent = (Directory *) m_root->file;
 
     parent->insert(file->getType(), **p.base());
-    return ESUCCESS;
+    return FileSystem::Success;
 }
 
 void FileSystemServer::pathHandler(FileSystemMessage *msg)
@@ -139,7 +141,7 @@ void FileSystemServer::pathHandler(FileSystemMessage *msg)
     FileSystemRequest req(msg);
 
     // Process the request.
-    if (processRequest(req) == EAGAIN)
+    if (processRequest(req) == FileSystem::RetryAgain)
     {
         FileSystemRequest *reqCopy = new FileSystemRequest(msg);
         assert(reqCopy != NULL);
@@ -147,7 +149,7 @@ void FileSystemServer::pathHandler(FileSystemMessage *msg)
     }
 }
 
-Error FileSystemServer::processRequest(FileSystemRequest &req)
+FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
 {
     char buf[PATHLEN];
     FileSystemPath path;
@@ -158,13 +160,13 @@ Error FileSystemServer::processRequest(FileSystemRequest &req)
     Error ret;
 
     // Copy the file path
-    if ((msg->result = VMCopy(msg->from, API::Read, (Address) buf,
+    if ((ret = VMCopy(msg->from, API::Read, (Address) buf,
                     (Address) msg->path, PATHLEN)) <= 0)
     {
-        ERROR("path missing: result = " << (int)msg->result << " from = " << msg->from <<
-              " addr = " << (void *) msg->path << " action = " << (int) msg->action << " stat = " << (void *) msg->stat);
+        ERROR("VMCopy failed: result = " << (int)ret << " from = " << msg->from <<
+              " addr = " << (void *) msg->path << " action = " << (int) msg->action);
         msg->type = ChannelMessage::Response;
-        msg->result = EACCES;
+        msg->result = FileSystem::IOError;
         m_registry->getProducer(msg->from)->write(msg);
         return msg->result;
     }
@@ -183,7 +185,7 @@ Error FileSystemServer::processRequest(FileSystemRequest &req)
     {
         DEBUG(m_self << ": not found");
         msg->type = ChannelMessage::Response;
-        msg->result = ENOENT;
+        msg->result = FileSystem::NotFound;
         m_registry->getProducer(msg->from)->write(msg);
         ProcessCtl(msg->from, Resume, 0);
         return msg->result;
@@ -194,7 +196,7 @@ Error FileSystemServer::processRequest(FileSystemRequest &req)
     {
         case FileSystem::CreateFile:
             if (cache)
-                msg->result = EEXIST;
+                msg->result = FileSystem::AlreadyExists;
             else
             {
                 /* Attempt to create the new file. */
@@ -212,10 +214,10 @@ Error FileSystemServer::processRequest(FileSystemRequest &req)
                         parent = (Directory *) m_root->file;
 
                     parent->insert(file->getType(), **path.full());
-                    msg->result = ESUCCESS;
+                    msg->result = FileSystem::Success;
                 }
                 else
-                    msg->result = EIO;
+                    msg->result = FileSystem::IOError;
             }
             DEBUG(m_self << ": create = " << (int)msg->result);
             break;
@@ -224,45 +226,75 @@ Error FileSystemServer::processRequest(FileSystemRequest &req)
             if (cache->entries.count() == 0)
             {
                 clearFileCache(cache);
-                msg->result = ESUCCESS;
+                msg->result = FileSystem::Success;
             }
             else
-                msg->result = ENOTEMPTY;
+                msg->result = FileSystem::PermissionDenied;
             DEBUG(m_self << ": delete = " << (int)msg->result);
             break;
 
         case FileSystem::StatFile:
-            msg->result = file->status(msg);
+            if (file->status(msg) == ESUCCESS)
+            {
+                msg->result = FileSystem::Success;
+            }
+            else
+            {
+                msg->result = FileSystem::IOError;
+            }
             DEBUG(m_self << ": stat = " << (int)msg->result);
             break;
 
-        case FileSystem::ReadFile:
+        case FileSystem::ReadFile: {
+            if ((ret = file->read(req.getBuffer(), msg->size, msg->offset)) >= 0)
             {
-                msg->result = file->read(req.getBuffer(), msg->size, msg->offset);
+                msg->size = ret;
+                msg->result = FileSystem::Success;
+
                 if (req.getBuffer().getCount())
                     req.getBuffer().flush();
             }
+            else if (ret == EAGAIN)
+            {
+                msg->result = FileSystem::RetryAgain;
+            }
+            else
+            {
+                msg->result = FileSystem::IOError;
+            }
             DEBUG(m_self << ": read = " << (int)msg->result);
             break;
+        }
 
-        case FileSystem::WriteFile:
+        case FileSystem::WriteFile: {
+            if (!req.getBuffer().getCount())
+                req.getBuffer().bufferedRead();
+
+            if ((ret = file->write(req.getBuffer(), msg->size, msg->offset)) >= 0)
             {
-                if (!req.getBuffer().getCount())
-                    req.getBuffer().bufferedRead();
-
-                msg->result = file->write(req.getBuffer(), msg->size, msg->offset);
+                msg->size = ret;
+                msg->result = FileSystem::Success;
+            }
+            else if (ret == EAGAIN)
+            {
+                msg->result = FileSystem::RetryAgain;
+            }
+            else
+            {
+                msg->result = FileSystem::IOError;
             }
             DEBUG(m_self << ": write = " << (int)msg->result);
             break;
+        }
     }
-    ret = msg->result;
 
-    // Only send reply if completed (not EAGAIN)
-    if (msg->result != EAGAIN)
+    // Only send reply if completed (not RetryAgain)
+    if (msg->result != FileSystem::RetryAgain)
     {
         sendResponse(msg);
     }
-    return ret;
+
+    return msg->result;
 }
 
 void FileSystemServer::sendResponse(FileSystemMessage *msg)
@@ -280,8 +312,8 @@ bool FileSystemServer::retryRequests()
 
     for (ListIterator<FileSystemRequest *> i(m_requests); i.hasCurrent(); i++)
     {
-        Error ret = processRequest(*i.current());
-        if (ret != EAGAIN)
+        FileSystem::Result result = processRequest(*i.current());
+        if (result != FileSystem::RetryAgain)
         {
             delete i.current();
             i.remove();

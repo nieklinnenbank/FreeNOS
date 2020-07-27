@@ -89,7 +89,7 @@ void CoreServer::createProcess(FileSystemMessage *msg)
         {
             ERROR("failed to lookup virtual address at " <<
                   (void *) msg->buffer << ": " << (int)result);
-            msg->result = EBADF;
+            msg->result = FileSystem::InvalidArgument;
             return;
         }
         msg->buffer = (char *) range.phys;
@@ -100,7 +100,7 @@ void CoreServer::createProcess(FileSystemMessage *msg)
         {
             ERROR("failed to lookup virtual address at " <<
                   (void *) msg->buffer << ": " << (int)result);
-            msg->result = EBADF;
+            msg->result = FileSystem::InvalidArgument;
             return;
         }
         msg->path = (char *) range.phys;
@@ -109,7 +109,7 @@ void CoreServer::createProcess(FileSystemMessage *msg)
         if (sendToSlave(msg->size, msg) != Success)
         {
             ERROR("failed to write channel on core"<<msg->size);
-            msg->result = EBADF;
+            msg->result = FileSystem::IOError;
             return;
         }
         DEBUG("creating program at phys " << (void *) msg->buffer << " on core" << msg->size);
@@ -118,7 +118,7 @@ void CoreServer::createProcess(FileSystemMessage *msg)
         if (receiveFromSlave(msg->size, msg) != Success)
         {
             ERROR("failed to read channel on core" << msg->size);
-            msg->result = EBADF;
+            msg->result = FileSystem::IOError;
             return;
         }
         DEBUG("program created with result " << (int)msg->result << " at core" << msg->size);
@@ -131,7 +131,7 @@ void CoreServer::createProcess(FileSystemMessage *msg)
                   (Address) msg->path, sizeof(cmd)) != sizeof(cmd))
         {
             ERROR("failed to copy program command");
-            msg->result = EINVAL;
+            msg->result = FileSystem::InvalidArgument;
             sendToMaster(msg);
             return;
         }
@@ -164,7 +164,7 @@ void CoreServer::createProcess(FileSystemMessage *msg)
         if ((result = VMCtl(SELF, Map, &range)) != API::Success)
         {
             ERROR("failed to map program data: " << (int)result);
-            msg->result = EINVAL;
+            msg->result = FileSystem::IOError;
             sendToMaster(msg);
             return;
         }
@@ -173,13 +173,13 @@ void CoreServer::createProcess(FileSystemMessage *msg)
         if (pid == -1)
         {
             ERROR("failed to spawn() program: " << pid);
-            msg->result = EIO;
+            msg->result = FileSystem::IOError;
             sendToMaster(msg);
         }
         else
         {
             // reply to master before calling waitpid()
-            msg->result = ESUCCESS;
+            msg->result = FileSystem::Success;
             sendToMaster(msg);
         }
 
@@ -208,10 +208,10 @@ void CoreServer::getCoreCount(FileSystemMessage *msg)
         else
             msg->size = 1;
 
-        msg->result = ESUCCESS;
+        msg->result = FileSystem::Success;
     }
     else
-        msg->result = EINVAL;
+        msg->result = FileSystem::InvalidArgument;
 }
 
 CoreServer::Result CoreServer::test()
@@ -622,14 +622,14 @@ CoreServer::Result CoreServer::sendToSlave(uint coreId, FileSystemMessage *msg)
     if (!ch)
     {
         ERROR("cannot retrieve MemoryChannel for core" << coreId);
-        msg->result = ENOENT;
+        msg->result = FileSystem::NotFound;
         return IOError;
     }
 
     if (ch->write(msg) != Channel::Success)
     {
         ERROR("failed to write channel on core" << coreId);
-        msg->result = EBADF;
+        msg->result = FileSystem::IOError;
         return IOError;
     }
 

@@ -55,7 +55,7 @@ int open(const char *path, int oflag, ...)
         ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), mnt);
 
         // Refresh mounts and retry, in case the file did not exist
-        if (msg.result == ENOENT)
+        if (msg.result == FileSystem::NotFound)
         {
             refreshMounts(0);
             mnt = findMount(path);
@@ -64,10 +64,10 @@ int open(const char *path, int oflag, ...)
         }
 
         // Set errno
-        errno = msg.result;
-
-        if (msg.result == ESUCCESS)
+        if (msg.result == FileSystem::Success)
         {
+            errno = ESUCCESS;
+
             // Insert into file descriptor table
             for (Size i = 0; i < FILE_DESCRIPTOR_MAX; i++)
             {
@@ -83,6 +83,10 @@ int open(const char *path, int oflag, ...)
             }
             // Too many open files
             errno = ENFILE;
+        }
+        else
+        {
+            errno = EIO;
         }
     }
     else

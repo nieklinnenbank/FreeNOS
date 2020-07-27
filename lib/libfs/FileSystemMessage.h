@@ -79,7 +79,7 @@ typedef struct FileSystemMessage : public ChannelMessage
     FileSystem::Action action;
 
     /** Result code. */
-    Error result;
+    FileSystem::Result result;
 
     /** Points to a buffer for I/O. */
     char *buffer;

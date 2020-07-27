@@ -50,15 +50,13 @@ ssize_t read(int fildes, void *buf, size_t nbyte)
     msg.deviceID.minor = files[fildes].identifier;
     ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), files[fildes].mount);
 
-    // Did we read something?
-    if (msg.result >= 0)
+    // Did the read succeed?
+    if (msg.result != FileSystem::Success)
     {
-        files[fildes].position += msg.result;
-        return msg.result;
+        errno = EIO;
+        return -1;
     }
 
-    // Set error code
-    errno = msg.result;
-
-    return -1;
+    files[fildes].position += msg.size;
+    return msg.size;
 }

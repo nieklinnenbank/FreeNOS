@@ -42,11 +42,14 @@ int mknod(const char *path, mode_t mode, dev_t dev)
         ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), mnt);
 
         // Set errno
-        errno = msg.result;
+        if (msg.result == FileSystem::Success)
+            errno = ESUCCESS;
+        else
+            errno = EIO;
     }
     else
         errno = ENOENT;
 
     // Report result
-    return msg.result == ESUCCESS ? 0 : -1;
+    return errno == ESUCCESS ? 0 : -1;
 }

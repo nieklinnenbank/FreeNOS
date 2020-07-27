@@ -25,6 +25,7 @@
 #include "Device.h"
 #include "File.h"
 #include "FileCache.h"
+#include "FileSystem.h"
 #include "FileSystemPath.h"
 #include "FileSystemMessage.h"
 #include "FileSystemRequest.h"
@@ -73,12 +74,11 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
     /**
      * Mount the FileSystem.
      *
-     * This function is responsible for mounting the
-     * FileSystem.
+     * This function is responsible for mounting the file system.
      *
-     * @return True if mounted successfully, false otherwise.
+     * @return Result code
      */
-    Error mount();
+    FileSystem::Result mount();
 
     /**
      * Register a new File.
@@ -86,9 +86,9 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
      * @param file File object pointer.
      * @param path The path for the File.
      *
-     * @return Error code.
+     * @return Result code
      */
-    Error registerFile(File *file, const char *path, ...);
+    FileSystem::Result registerFile(File *file, const char *path, ...);
 
     /**
      * Register a new File with variable arguments.
@@ -97,9 +97,9 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
      * @param path The path for the File.
      * @param args Variable argument list.
      *
-     * @return Error code.
+     * @return Result code
      */
-    Error registerFile(File *file, const char *path, va_list args);
+    FileSystem::Result registerFile(File *file, const char *path, va_list args);
 
     /**
      * Create a new file.
@@ -158,10 +158,10 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
     /**
      * Process a FileSystemRequest.
      *
-     * @return EAGAIN if the request cannot be completed yet or
-     *         any other error code if processed.
+     * @return Result code, where RetryAgain indicates the request cannot
+     *         be completed yet.
      */
-    Error processRequest(FileSystemRequest &req);
+    FileSystem::Result processRequest(FileSystemRequest &req);
 
     /**
      * Send response for a FileSystemMessage

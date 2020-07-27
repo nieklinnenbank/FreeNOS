@@ -39,11 +39,14 @@ int mkdir(const char *path, mode_t mode)
         ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), mnt);
 
         // Set errno
-        errno = msg.result;
+        if (msg.result == FileSystem::Success)
+            errno = ESUCCESS;
+        else
+            errno = EIO;
     }
     else
         errno = ENOENT;
 
     // Success
-    return msg.result == ESUCCESS ? 0 : -1;
+    return errno == ESUCCESS ? 0 : -1;
 }

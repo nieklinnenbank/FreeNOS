@@ -251,6 +251,6 @@ u64 LinnFileSystem::getOffset(LinnInode *inode, u32 blk)
 
 void LinnFileSystem::notSupportedHandler(FileSystemMessage *msg)
 {
-    msg->result = ENOTSUP;
+    msg->result = FileSystem::NotSupported;
     sendResponse(msg);
 }
