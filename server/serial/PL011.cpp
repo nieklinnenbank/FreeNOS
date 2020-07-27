@@ -20,7 +20,7 @@
 #include "PL011.h"
 
 PL011::PL011(u32 irq)
-    : Device(CharacterDeviceFile)
+    : Device(FileSystem::CharacterDeviceFile)
 {
     m_irq = irq;
     m_identifier << "serial0";

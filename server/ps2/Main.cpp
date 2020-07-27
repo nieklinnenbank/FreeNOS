@@ -15,11 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FileType.h>
-#include <DeviceServer.h>
-#include "Keyboard.h"
 #include <stdlib.h>
 #include <unistd.h>
+#include <DeviceServer.h>
+#include "Keyboard.h"
 
 int main(int argc, char **argv)
 {

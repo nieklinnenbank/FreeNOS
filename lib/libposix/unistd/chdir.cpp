@@ -18,6 +18,7 @@
 #include <String.h>
 #include <List.h>
 #include <FileSystemPath.h>
+#include <FileSystem.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include "Runtime.h"

@@ -26,6 +26,35 @@
  * @{
  */
 
+/** Number of bits needed to store a FileType. */
+#define FILETYPE_BITS   3
+
+/** Masker value for all FileTypes. */
+#define FILETYPE_MASK   7
+
+/**
+ * Convert from a (host system's) POSIX struct stat into a FileType.
+ * @param st struct stat pointer.
+ * @return FileType value.
+ */
+#define FILETYPE_FROM_ST(st) \
+({ \
+    FileSystem::FileType t = FileSystem::UnknownFile; \
+    \
+    switch ((st)->st_mode & S_IFMT) \
+    { \
+        case S_IFBLK:  t = FileSystem::BlockDeviceFile; break; \
+        case S_IFCHR:  t = FileSystem::CharacterDeviceFile; break; \
+        case S_IFIFO:  t = FileSystem::FIFOFile; break; \
+        case S_IFREG:  t = FileSystem::RegularFile; break; \
+        case S_IFDIR:  t = FileSystem::DirectoryFile; break; \
+        case S_IFLNK:  t = FileSystem::SymlinkFile; break; \
+        case S_IFSOCK: t = FileSystem::SocketFile; break; \
+        default: break; \
+    } \
+    t; \
+})
+
 namespace FileSystem
 {
     /**
@@ -53,6 +82,21 @@ namespace FileSystem
         PermissionDenied,
         AlreadyExists,
         NotSupported
+    };
+
+    /**
+     * All possible filetypes.
+     */
+    enum FileType
+    {
+        RegularFile         = 0,
+        DirectoryFile       = 1,
+        BlockDeviceFile     = 2,
+        CharacterDeviceFile = 3,
+        SymlinkFile         = 4,
+        FIFOFile            = 5,
+        SocketFile          = 6,
+        UnknownFile         = 7,
     };
 };
 

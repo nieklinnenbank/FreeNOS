@@ -31,7 +31,7 @@ int mkdir(const char *path, mode_t mode)
     msg.action = FileSystem::CreateFile;
     msg.path   = (char *) path;
     msg.mode   = mode;
-    msg.filetype = DirectoryFile;
+    msg.filetype = FileSystem::DirectoryFile;
 
     // Ask the FileSystem to create it
     if (mnt)

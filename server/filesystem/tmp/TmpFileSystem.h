@@ -18,6 +18,7 @@
 #ifndef __FILESYSTEM_TMPFILESYSTEM_H
 #define __FILESYSTEM_TMPFILESYSTEM_H
 
+#include <FileSystem.h>
 #include <FileSystemServer.h>
 #include <FileSystemMessage.h>
 #include <FileSystemPath.h>
@@ -57,7 +58,7 @@ class TmpFileSystem : public FileSystemServer
      * @see File
      * @see FileSystemPath
      */
-    virtual File * createFile(FileType type, DeviceID deviceID);
+    virtual File * createFile(FileSystem::FileType type, DeviceID deviceID);
 };
 
 /**

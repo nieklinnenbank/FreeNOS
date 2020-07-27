@@ -70,7 +70,7 @@ int main(int argc, char **argv)
     server.initialize();
 
     server.insertFileCache(new Directory, "/serial0");
-    server.getRoot()->insert(DirectoryFile, "serial0");
+    server.getRoot()->insert(FileSystem::DirectoryFile, "serial0");
 
     server.registerDevice(dev, "/serial0/io");
     server.registerInterrupt(dev, uarts[0].irq);

@@ -17,7 +17,7 @@
 
 #include "File.h"
 
-File::File(FileType type, UserID uid, GroupID gid)
+File::File(FileSystem::FileType type, UserID uid, GroupID gid)
     : m_type(type)
     , m_uid(uid)
     , m_gid(gid)
@@ -30,7 +30,7 @@ File::~File()
 {
 }
 
-FileType File::getType() const
+FileSystem::FileType File::getType() const
 {
     return m_type;
 }

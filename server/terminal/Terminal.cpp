@@ -42,7 +42,7 @@ u8 tekenToVGA[] =
 
 Terminal::Terminal(const char *in, const char *out,
                    Size w, Size h)
-    : Device(CharacterDeviceFile), inputFile(in), outputFile(out), width(w), height(h)
+    : Device(FileSystem::CharacterDeviceFile), inputFile(in), outputFile(out), width(w), height(h)
 {
     m_identifier << "tty0";
     buffer = new u16[width * height];

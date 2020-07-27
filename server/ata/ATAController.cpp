@@ -32,7 +32,7 @@ int main(int argc, char **argv)
 }
 
 ATAController::ATAController()
-    : Device(BlockDeviceFile)
+    : Device(FileSystem::BlockDeviceFile)
 {
     m_identifier << "ata0";
 }

@@ -45,7 +45,7 @@ typedef struct Dirent
     char name[DIRENT_LEN];
 
     /** Type of file. */
-    FileType type;
+    FileSystem::FileType type;
 
     /**
      * Compares this Dirent with another Dirent instance.
@@ -137,7 +137,7 @@ class Directory : public File
      * @see FileSystem
      * @see Storage
      */
-    void insert(FileType type, const char *name, ...);
+    void insert(FileSystem::FileType type, const char *name, ...);
 
     /**
      * Remove a directory entry.

@@ -25,7 +25,7 @@
 #include "Time.h"
 
 Time::Time()
-    : Device(CharacterDeviceFile)
+    : Device(FileSystem::CharacterDeviceFile)
 {
     m_identifier << "time0";
 }

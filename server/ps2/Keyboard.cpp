@@ -43,7 +43,7 @@ const char Keyboard::keymap[0x3a][2] =
     /*38*/{0x0, 0x0}, {' ', ' '}
 };
 
-Keyboard::Keyboard() : Device(CharacterDeviceFile), shiftState(ZERO)
+Keyboard::Keyboard() : Device(FileSystem::CharacterDeviceFile), shiftState(ZERO)
 {
     m_identifier << "keyboard0";
 }

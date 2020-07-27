@@ -22,7 +22,7 @@
 #include <FreeNOS/API.h>
 #include <Types.h>
 #include "FileSystemMessage.h"
-#include "FileType.h"
+#include "FileSystem.h"
 #include "FileMode.h"
 #include "IOBuffer.h"
 #include <errno.h>
@@ -51,7 +51,7 @@ class File
      * @param uid User identity.
      * @param gid Group identity.
      */
-    File(FileType type = RegularFile, UserID uid = ZERO, GroupID gid = ZERO);
+    File(FileSystem::FileType type = FileSystem::RegularFile, UserID uid = ZERO, GroupID gid = ZERO);
 
     /**
      * Destructor function.
@@ -63,7 +63,7 @@ class File
      *
      * @return FileType object.
      */
-    FileType getType() const;
+    FileSystem::FileType getType() const;
 
     /**
      * @brief Read bytes from the file.
@@ -99,7 +99,7 @@ class File
   protected:
 
     /** Type of this file. */
-    FileType m_type;
+    FileSystem::FileType m_type;
 
     /** Access permissions. */
     FileModes m_access;

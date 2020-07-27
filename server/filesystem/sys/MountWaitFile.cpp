@@ -20,7 +20,7 @@
 #include "MountWaitFile.h"
 
 MountWaitFile::MountWaitFile()
-    : File(RegularFile)
+    : File(FileSystem::RegularFile)
 {
     m_access = OwnerRW;
 }

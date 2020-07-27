@@ -22,7 +22,7 @@
 #include "PseudoFile.h"
 
 PseudoFile::PseudoFile()
-    : File(RegularFile)
+    : File(FileSystem::RegularFile)
 {
     m_size   = ZERO;
     m_buffer = ZERO;

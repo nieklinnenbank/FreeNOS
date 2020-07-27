@@ -68,7 +68,7 @@ Error LinnDirectory::read(IOBuffer & buffer, Size size, Size offset)
             return EINVAL;
         }
         strlcpy(tmp.name, dent.name, LINN_DIRENT_NAME_LEN);
-        tmp.type = (FileType) dInode->type;
+        tmp.type = (FileSystem::FileType) dInode->type;
 
         // Copy to the buffer.
         if (( e = buffer.write(&tmp, sizeof(Dirent), bytes)) < 0)
@@ -95,15 +95,15 @@ File * LinnDirectory::lookup(const char *name)
         return ZERO;
 
     // Create the appropriate in-memory file.
-    switch ((FileType)inode->type)
+    switch ((FileSystem::FileType)inode->type)
     {
-        case DirectoryFile: {
+        case FileSystem::DirectoryFile: {
             LinnDirectory *dir = new LinnDirectory(fs, inode);
             assert(dir != NULL);
             return dir;
         }
 
-        case RegularFile: {
+        case FileSystem::RegularFile: {
             LinnFile *file = new LinnFile(fs, inode);
             assert(file != NULL);
             return file;

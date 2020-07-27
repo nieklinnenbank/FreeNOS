@@ -16,7 +16,7 @@
  */
 
 #include <FreeNOS/System.h>
-#include <FileType.h>
+#include <FileSystem.h>
 #include <Directory.h>
 #include <errno.h>
 #include "dirent.h"

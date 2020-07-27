@@ -17,7 +17,7 @@
 
 #include <FreeNOS/System.h>
 #include <FileSystemMessage.h>
-#include <FileType.h>
+#include <FileSystem.h>
 #include <FileMode.h>
 #include "Runtime.h"
 #include <errno.h>
@@ -47,7 +47,7 @@ int creat(const char *path, mode_t mode)
     msg.type     = ChannelMessage::Request;
     msg.action   = FileSystem::CreateFile;
     msg.path     = fullpath;
-    msg.filetype = RegularFile;
+    msg.filetype = FileSystem::RegularFile;
     msg.mode     = (FileModes) (mode & FILEMODE_MASK);
 
     // Ask FileSystem to create the file for us

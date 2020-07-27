@@ -97,7 +97,7 @@ FileSystem::Result FileSystemServer::mount()
     return FileSystem::Success;
 }
 
-File * FileSystemServer::createFile(FileType type, DeviceID deviceID)
+File * FileSystemServer::createFile(FileSystem::FileType type, DeviceID deviceID)
 {
     return (File *) ZERO;
 }
@@ -350,7 +350,7 @@ FileCache * FileSystemServer::lookupFile(FileSystemPath *path)
         if (!c->entries.contains(*i.current()))
         {
             /* If this isn't a directory, we cannot perform a lookup. */
-            if (c->file->getType() != DirectoryFile)
+            if (c->file->getType() != FileSystem::DirectoryFile)
             {
                 return ZERO;
             }

@@ -17,7 +17,7 @@
 
 #include "Device.h"
 
-Device::Device(FileType type)
+Device::Device(FileSystem::FileType type)
     : File(type)
 {
 }

@@ -18,7 +18,7 @@
 #ifndef __LIBPOSIX_STAT_H
 #define __LIBPOSIX_STAT_H
 
-#include <FileType.h>
+#include <FileSystem.h>
 #include <FileMode.h>
 #include <FileStat.h>
 #include <Macros.h>
@@ -48,25 +48,25 @@
 #define S_IFMT   (FILETYPE_MASK << FILEMODE_BITS)
 
 /** Block special. */
-#define S_IFBLK  (BlockDeviceFile << FILEMODE_BITS)
+#define S_IFBLK  (FileSystem::BlockDeviceFile << FILEMODE_BITS)
 
 /** Character special. */
-#define S_IFCHR  (CharacterDeviceFile << FILEMODE_BITS)
+#define S_IFCHR  (FileSystem::CharacterDeviceFile << FILEMODE_BITS)
 
 /** FIFO special. */
-#define S_IFIFO  (FIFOFile << FILEMODE_BITS)
+#define S_IFIFO  (FileSystem::FIFOFile << FILEMODE_BITS)
 
 /** Regular. */
-#define S_IFREG  (RegularFile << FILEMODE_BITS)
+#define S_IFREG  (FileSystem::RegularFile << FILEMODE_BITS)
 
 /** Directory. */
-#define S_IFDIR  (DirectoryFile << FILEMODE_BITS)
+#define S_IFDIR  (FileSystem::DirectoryFile << FILEMODE_BITS)
 
 /** Symbolic link. */
-#define S_IFLNK  (SymlinkFile << FILEMODE_BITS)
+#define S_IFLNK  (FileSystem::SymlinkFile << FILEMODE_BITS)
 
 /** Socket. */
-#define S_IFSOCK (SocketFile << FILEMODE_BITS)
+#define S_IFSOCK (FileSystem::SocketFile << FILEMODE_BITS)
 
 /** @} */
 

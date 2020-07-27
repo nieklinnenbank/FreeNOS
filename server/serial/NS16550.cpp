@@ -19,7 +19,7 @@
 #include "NS16550.h"
 
 NS16550::NS16550(u32 irq)
-    : Device(CharacterDeviceFile)
+    : Device(FileSystem::CharacterDeviceFile)
 {
     m_irq = irq;
     m_identifier << "serial0";

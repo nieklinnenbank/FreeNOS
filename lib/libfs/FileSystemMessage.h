@@ -21,7 +21,6 @@
 #include <FreeNOS/System.h>
 #include <Types.h>
 #include "ChannelMessage.h"
-#include "FileType.h"
 #include "FileMode.h"
 #include "FileStat.h"
 #include "FileSystem.h"
@@ -97,7 +96,7 @@ typedef struct FileSystemMessage : public ChannelMessage
     u16 userID, groupID;
 
     /** Filetype. */
-    FileType filetype;
+    FileSystem::FileType filetype;
 
     /** File mode permissions. */
     FileModes mode;

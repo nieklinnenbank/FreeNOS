@@ -19,7 +19,7 @@
 #define __FILESYSTEM_FILESTAT_H
 
 #include <Types.h>
-#include "FileType.h"
+#include "FileSystem.h"
 
 /**
  * @addtogroup lib
@@ -35,7 +35,7 @@
 typedef struct FileStat
 {
     /** File type. */
-    FileType type;
+    FileSystem::FileType type;
 
     /** File access permission bits. */
     FileModes access;

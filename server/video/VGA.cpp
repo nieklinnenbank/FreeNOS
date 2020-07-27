@@ -20,7 +20,7 @@
 #include <errno.h>
 #include "VGA.h"
 
-VGA::VGA(Size w, Size h) : Device(BlockDeviceFile), width(w), height(h)
+VGA::VGA(Size w, Size h) : Device(FileSystem::BlockDeviceFile), width(w), height(h)
 {
     m_identifier << "vga0";
 }

@@ -19,7 +19,7 @@
 #include <Runtime.h>
 #include "MountsFile.h"
 
-MountsFile::MountsFile() : File(RegularFile)
+MountsFile::MountsFile() : File(FileSystem::RegularFile)
 {
     m_access = OwnerRW;
     m_size = sizeof(FileSystemMount) * FILESYSTEM_MAXMOUNTS;

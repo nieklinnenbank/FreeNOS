@@ -23,7 +23,7 @@
 #include "i8250.h"
 
 i8250::i8250(const u16 base, const u16 irq)
-    : Device(CharacterDeviceFile)
+    : Device(FileSystem::CharacterDeviceFile)
     , m_irq(irq)
 {
     m_io.setBase(base);

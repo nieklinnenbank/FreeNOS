@@ -17,10 +17,10 @@
 
 #include "Directory.h"
 
-Directory::Directory() : File(DirectoryFile)
+Directory::Directory() : File(FileSystem::DirectoryFile)
 {
-    insert(DirectoryFile, ".");
-    insert(DirectoryFile, "..");
+    insert(FileSystem::DirectoryFile, ".");
+    insert(FileSystem::DirectoryFile, "..");
 }
 
 Directory::~Directory()
@@ -55,7 +55,7 @@ File * Directory::lookup(const char *name)
     return ZERO;
 }
 
-void Directory::insert(FileType type, const char *name, ...)
+void Directory::insert(FileSystem::FileType type, const char *name, ...)
 {
     char path[PATHLEN];
     va_list args;

@@ -109,7 +109,7 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
      *
      * @return Pointer to a new File on success or ZERO on failure.
      */
-    virtual File * createFile(FileType type, DeviceID deviceID);
+    virtual File * createFile(FileSystem::FileType type, DeviceID deviceID);
 
     /**
      * Inserts a file into the in-memory filesystem tree.
