@@ -30,7 +30,7 @@ int mknod(const char *path, mode_t mode, dev_t dev)
 
     // Fill in the message
     msg.type     = ChannelMessage::Request;
-    msg.action   = CreateFile;
+    msg.action   = FileSystem::CreateFile;
     msg.path     = (char *) path;
     msg.deviceID = dev;
     msg.filetype = (FileType) ((mode >> FILEMODE_BITS) & FILETYPE_MASK);

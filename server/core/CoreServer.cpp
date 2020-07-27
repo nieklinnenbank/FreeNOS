@@ -42,10 +42,10 @@ CoreServer::CoreServer()
     m_fromSlave = ZERO;
 
     // Register IPC handlers
-    addIPCHandler(ReadFile,  &CoreServer::getCoreCount);
+    addIPCHandler(FileSystem::ReadFile,  &CoreServer::getCoreCount);
 
     // Because of waitpid() we must send the reply manually before waitpid().
-    addIPCHandler(CreateFile, &CoreServer::createProcess, false);
+    addIPCHandler(FileSystem::CreateFile, &CoreServer::createProcess, false);
 }
 
 int CoreServer::runCore()
@@ -220,7 +220,7 @@ CoreServer::Result CoreServer::test()
     {
         FileSystemMessage msg;
         msg.type   = ChannelMessage::Request;
-        msg.action = StatFile;
+        msg.action = FileSystem::StatFile;
         msg.path = (char *)0x12345678;
         msg.size = m_info.coreId;
 
@@ -235,7 +235,7 @@ CoreServer::Result CoreServer::test()
         {
             receiveFromSlave(i, &msg);
 
-            if (msg.action == StatFile)
+            if (msg.action == FileSystem::StatFile)
             {
                 NOTICE("core" << i << " send a Ping");
             }

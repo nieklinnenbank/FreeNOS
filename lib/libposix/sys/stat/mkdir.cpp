@@ -28,7 +28,7 @@ int mkdir(const char *path, mode_t mode)
 
     // Fill message
     msg.type   = ChannelMessage::Request;
-    msg.action = CreateFile;
+    msg.action = FileSystem::CreateFile;
     msg.path   = (char *) path;
     msg.mode   = mode;
     msg.filetype = DirectoryFile;

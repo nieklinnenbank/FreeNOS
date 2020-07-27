@@ -45,7 +45,7 @@ SysInfo::Result SysInfo::exec()
 
     // Retrieve number of cores from the CoreServer
     msg.type   = ChannelMessage::Request;
-    msg.action = ReadFile;
+    msg.action = FileSystem::ReadFile;
     msg.from = SELF;
     ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), CORESRV_PID);
 

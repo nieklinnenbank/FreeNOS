@@ -43,7 +43,7 @@ int unlink(const char *path)
     if (mnt)
     {
         msg.type   = ChannelMessage::Request;
-        msg.action = DeleteFile;
+        msg.action = FileSystem::DeleteFile;
         msg.path   = fullpath;
         msg.from   = SELF;
         ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), mnt);

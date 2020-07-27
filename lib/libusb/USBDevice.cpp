@@ -386,7 +386,7 @@ Error USBDevice::beginTransfer(
         // Prepare the message. We use the offset field to remember virtual input buffer address
         FileDescriptor *fd = &files[m_transferFile];
         fs.type   = ChannelMessage::Request;
-        fs.action = WriteFile;
+        fs.action = FileSystem::WriteFile;
         fs.path   = fd->path;
         fs.buffer = (char *) msg;
         fs.size   = sizeof(*msg);

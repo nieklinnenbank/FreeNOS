@@ -41,7 +41,7 @@ ssize_t read(int fildes, void *buf, size_t nbyte)
 
     // Read the file.
     msg.type   = ChannelMessage::Request;
-    msg.action = ReadFile;
+    msg.action = FileSystem::ReadFile;
     msg.path   = files[fildes].path;
     msg.buffer = (char *) buf;
     msg.size   = nbyte;

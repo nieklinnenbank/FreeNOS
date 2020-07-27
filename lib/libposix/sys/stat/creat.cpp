@@ -45,7 +45,7 @@ int creat(const char *path, mode_t mode)
 
     // Fill in the message
     msg.type     = ChannelMessage::Request;
-    msg.action   = CreateFile;
+    msg.action   = FileSystem::CreateFile;
     msg.path     = fullpath;
     msg.filetype = RegularFile;
     msg.mode     = (FileModes) (mode & FILEMODE_MASK);

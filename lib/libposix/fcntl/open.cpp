@@ -45,7 +45,7 @@ int open(const char *path, int oflag, ...)
 
     // Fill message
     msg.type   = ChannelMessage::Request;
-    msg.action = StatFile;
+    msg.action = FileSystem::StatFile;
     msg.path   = fullpath;
     msg.stat   = &st;
 

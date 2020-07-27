@@ -44,7 +44,7 @@ int stat(const char *path, struct stat *buf)
 
     // Fill message
     msg.type   = ChannelMessage::Request;
-    msg.action = StatFile;
+    msg.action = FileSystem::StatFile;
     msg.path   = fullpath;
     msg.stat   = &st;
 

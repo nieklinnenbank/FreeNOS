@@ -227,7 +227,7 @@ void refreshMounts(const char *path)
 
     // Re-read the mounts table from SysFS.
     msg.type   = ChannelMessage::Request;
-    msg.action = ReadFile;
+    msg.action = FileSystem::ReadFile;
     msg.path   = "/sys/mounts";
     msg.buffer = (char *) &mounts;
     msg.size   = sizeof(FileSystemMount) * FILESYSTEM_MAXMOUNTS;
@@ -250,7 +250,7 @@ void waitMount(const char *path)
 
     // Send a write containing the requested path to the 'mountwait' file on SysFS
     msg.type   = ChannelMessage::Request;
-    msg.action = WriteFile;
+    msg.action = FileSystem::WriteFile;
     msg.path   = "/sys/mountwait";
     msg.buffer = (char *) path;
     msg.size   = strlen(path);

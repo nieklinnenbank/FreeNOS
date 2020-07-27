@@ -33,13 +33,13 @@ FileSystemServer::FileSystemServer(const char *path)
     m_root      = 0;
     m_mountPath = path;
     m_requests  = new List<FileSystemRequest *>();
-        
+
     // Register message handlers
-    addIPCHandler(CreateFile, &FileSystemServer::pathHandler, false);
-    addIPCHandler(StatFile,   &FileSystemServer::pathHandler, false);
-    addIPCHandler(DeleteFile, &FileSystemServer::pathHandler, false);
-    addIPCHandler(ReadFile,   &FileSystemServer::pathHandler, false);
-    addIPCHandler(WriteFile,  &FileSystemServer::pathHandler, false);
+    addIPCHandler(FileSystem::CreateFile, &FileSystemServer::pathHandler, false);
+    addIPCHandler(FileSystem::StatFile,   &FileSystemServer::pathHandler, false);
+    addIPCHandler(FileSystem::DeleteFile, &FileSystemServer::pathHandler, false);
+    addIPCHandler(FileSystem::ReadFile,   &FileSystemServer::pathHandler, false);
+    addIPCHandler(FileSystem::WriteFile,  &FileSystemServer::pathHandler, false);
 }
 
 FileSystemServer::~FileSystemServer()
@@ -179,7 +179,7 @@ Error FileSystemServer::processRequest(FileSystemRequest &req)
         file = cache->file;
     }
     // File not found
-    else if (msg->action != CreateFile)
+    else if (msg->action != FileSystem::CreateFile)
     {
         DEBUG(m_self << ": not found");
         msg->type = ChannelMessage::Response;
@@ -192,7 +192,7 @@ Error FileSystemServer::processRequest(FileSystemRequest &req)
     // Perform I/O on the file
     switch (msg->action)
     {
-        case CreateFile:
+        case FileSystem::CreateFile:
             if (cache)
                 msg->result = EEXIST;
             else
@@ -220,7 +220,7 @@ Error FileSystemServer::processRequest(FileSystemRequest &req)
             DEBUG(m_self << ": create = " << (int)msg->result);
             break;
 
-        case DeleteFile:
+        case FileSystem::DeleteFile:
             if (cache->entries.count() == 0)
             {
                 clearFileCache(cache);
@@ -231,12 +231,12 @@ Error FileSystemServer::processRequest(FileSystemRequest &req)
             DEBUG(m_self << ": delete = " << (int)msg->result);
             break;
 
-        case StatFile:
+        case FileSystem::StatFile:
             msg->result = file->status(msg);
             DEBUG(m_self << ": stat = " << (int)msg->result);
             break;
 
-        case ReadFile:
+        case FileSystem::ReadFile:
             {
                 msg->result = file->read(req.getBuffer(), msg->size, msg->offset);
                 if (req.getBuffer().getCount())
@@ -245,7 +245,7 @@ Error FileSystemServer::processRequest(FileSystemRequest &req)
             DEBUG(m_self << ": read = " << (int)msg->result);
             break;
 
-        case WriteFile:
+        case FileSystem::WriteFile:
             {
                 if (!req.getBuffer().getCount())
                     req.getBuffer().bufferedRead();

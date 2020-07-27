@@ -41,7 +41,7 @@ ssize_t write(int fildes, const void *buf, size_t nbyte)
 
     // Write the file
     msg.type   = ChannelMessage::Request;
-    msg.action = WriteFile;
+    msg.action = FileSystem::WriteFile;
     msg.path   = files[fildes].path;
     msg.buffer = (char *) buf;
     msg.size   = nbyte;

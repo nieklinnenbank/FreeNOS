@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Niek Linnenbank
+ * Copyright (C) 2020 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,25 +15,35 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string.h>
-#include "IOBuffer.h"
-#include "FileSystem.h"
-#include "DeviceLog.h"
+#ifndef __LIB_LIBFS_FILESYSTEM_H
+#define __LIB_LIBFS_FILESYSTEM_H
 
-DeviceLog::DeviceLog(Device & device)
-    : m_device(device)
+/**
+ * @addtogroup lib
+ * @{
+ *
+ * @addtogroup libfs
+ * @{
+ */
+
+namespace FileSystem
 {
-}
+    /**
+     * Actions which may be performed on a filesystem.
+     */
+    enum Action
+    {
+        CreateFile = 0,
+        ReadFile,
+        WriteFile,
+        StatFile,
+        DeleteFile
+    };
+};
 
-void DeviceLog::write(const char *str)
-{
-    Size len = strlen(str);
+/**
+ * @}
+ * @}
+ */
 
-    FileSystemMessage msg;
-    msg.action = FileSystem::WriteFile;
-    msg.size = len;
-
-    IOBuffer buffer(&msg);
-    buffer.bufferedWrite(str, len);
-    m_device.write(buffer, len, 0);
-}
+#endif /* __LIB_LIBFS_FILESYSTEM_H */

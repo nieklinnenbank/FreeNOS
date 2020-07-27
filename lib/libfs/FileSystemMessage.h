@@ -24,6 +24,7 @@
 #include "FileType.h"
 #include "FileMode.h"
 #include "FileStat.h"
+#include "FileSystem.h"
 
 /**
  * @addtogroup lib
@@ -32,19 +33,6 @@
  * @addtogroup libfs
  * @{
  */
-
-/**
- * Actions which may be performed on the filesystem.
- */
-typedef enum FileSystemAction
-{
-    CreateFile = 0,
-    ReadFile,
-    WriteFile,
-    StatFile,
-    DeleteFile
-}
-FileSystemAction;
 
 /**
  * FileSystem IPC message.
@@ -88,7 +76,7 @@ typedef struct FileSystemMessage : public ChannelMessage
     }
 
     /** Action to perform. */
-    FileSystemAction action;
+    FileSystem::Action action;
 
     /** Result code. */
     Error result;

@@ -52,7 +52,7 @@ int MPI_Init(int *argc, char ***argv)
     if (info.coreId == 0)
     {
         msg.type   = ChannelMessage::Request;
-        msg.action = ReadFile;
+        msg.action = FileSystem::ReadFile;
         msg.from = SELF;
         ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), CORESRV_PID);
 
@@ -131,7 +131,7 @@ int MPI_Init(int *argc, char ***argv)
             }
 
             msg.type   = ChannelMessage::Request;
-            msg.action = CreateFile;
+            msg.action = FileSystem::CreateFile;
             msg.size   = i;
             msg.buffer = (char *) programBuffer;
             msg.offset = st.st_size;

@@ -21,7 +21,8 @@
 IOBuffer::IOBuffer(const FileSystemMessage *msg)
     : m_message(msg)
 {
-    if (msg->action == ReadFile || msg->action == WriteFile)
+    if (msg->action == FileSystem::ReadFile ||
+        msg->action == FileSystem::WriteFile)
     {
         m_buffer = new u8[msg->size];
         assert(m_buffer != NULL);
