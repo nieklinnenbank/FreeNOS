@@ -19,7 +19,6 @@
 #define __LIB_LIBFS_FILESYSTEM_H
 
 #include <Types.h>
-#include "FileMode.h"
 
 /**
  * @addtogroup lib
@@ -37,7 +36,9 @@
 
 /**
  * Convert from a (host system's) POSIX struct stat into a FileType.
+ *
  * @param st struct stat pointer.
+ *
  * @return FileType value.
  */
 #define FILETYPE_FROM_ST(st) \
@@ -57,6 +58,22 @@
     } \
     t; \
 })
+
+/** Number of bits required for all FileModes. */
+#define FILEMODE_BITS 9
+
+/** Masker value for all FileMode values. */
+#define FILEMODE_MASK 0777
+
+/**
+ * Converts an (host system's) POSIX struct st into a FileMode.
+ *
+ * @param st struct st pointer.
+ *
+ * @return FileMode value.
+ */
+#define FILEMODE_FROM_ST(st) \
+    (FileSystem::FileMode)((st)->st_mode & FILEMODE_MASK)
 
 namespace FileSystem
 {
@@ -101,6 +118,34 @@ namespace FileSystem
         SocketFile          = 6,
         UnknownFile         = 7,
     };
+
+    /**
+     * File access permissions.
+     */
+    enum FileMode
+    {
+        OwnerR   = 0400,
+        OwnerW   = 0200,
+        OwnerX   = 0100,
+        OwnerRW  = 0600,
+        OwnerRX  = 0500,
+        OwnerRWX = 0700,
+        GroupR   = 0040,
+        GroupW   = 0020,
+        GroupX   = 0010,
+        GroupRW  = 0060,
+        GroupRX  = 0050,
+        GroupRWX = 0070,
+        OtherR   = 0004,
+        OtherW   = 0002,
+        OtherX   = 0001,
+        OtherRW  = 0006,
+        OtherRX  = 0005,
+        OtherRWX = 0007,
+    };
+
+    /** Multiple FileMode values combined. */
+    typedef u16 FileModes;
 
     /**
      * Contains file information.

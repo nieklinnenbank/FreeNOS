@@ -22,7 +22,6 @@
 #include <Types.h>
 #include <Macros.h>
 #include <FileSystem.h>
-#include <FileMode.h>
 #include "LinnCreate.h"
 #include "LinnSuperBlock.h"
 #include "LinnGroup.h"
@@ -50,7 +49,7 @@ LinnCreate::LinnCreate()
 }
 
 LinnInode * LinnCreate::createInode(le32 inodeNum, FileSystem::FileType type,
-                                    FileModes mode, UserID uid, GroupID gid)
+                                    FileSystem::FileModes mode, UserID uid, GroupID gid)
 {
     LinnGroup *group;
     LinnInode *inode;
@@ -423,13 +422,13 @@ int LinnCreate::create(Size blockSize, Size blockNum, Size inodeNum)
 
     // Create special inodes
     createInode(LINN_INODE_ROOT, FileSystem::DirectoryFile,
-                OwnerRWX | GroupRX | OtherRX);
+                FileSystem::OwnerRWX | FileSystem::GroupRX | FileSystem::OtherRX);
     createInode(LINN_INODE_LOADER, FileSystem::RegularFile,
-                OwnerRWX | GroupRX | OtherRX);
+                FileSystem::OwnerRWX | FileSystem::GroupRX | FileSystem::OtherRX);
     createInode(LINN_INODE_BAD, FileSystem::RegularFile,
-                OwnerRW | GroupR | OtherR);
+                FileSystem::OwnerRW | FileSystem::GroupR | FileSystem::OtherR);
     createInode(LINN_INODE_JOURNAL, FileSystem::RegularFile,
-                OwnerRW | GroupR | OtherR);
+                FileSystem::OwnerRW | FileSystem::GroupR | FileSystem::OtherR);
 
     // Insert into directory contents, if set
     if (input)

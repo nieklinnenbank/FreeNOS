@@ -18,7 +18,6 @@
 #include <FreeNOS/System.h>
 #include <FileSystemMessage.h>
 #include <FileSystem.h>
-#include <FileMode.h>
 #include "Runtime.h"
 #include <errno.h>
 #include "sys/stat.h"
@@ -34,7 +33,7 @@ int mknod(const char *path, mode_t mode, dev_t dev)
     msg.path     = (char *) path;
     msg.deviceID = dev;
     msg.filetype = (FileSystem::FileType) ((mode >> FILEMODE_BITS) & FILETYPE_MASK);
-    msg.mode     = (FileModes) (mode & FILEMODE_MASK);
+    msg.mode     = (FileSystem::FileModes) (mode & FILEMODE_MASK);
 
     // Ask FileSystem to create the file for us
     if (mnt)

@@ -26,12 +26,12 @@ PseudoFile::PseudoFile()
 {
     m_size   = ZERO;
     m_buffer = ZERO;
-    m_access = OwnerRW;
+    m_access = FileSystem::OwnerRW;
 }
 
 PseudoFile::PseudoFile(const char *str)
 {
-    m_access = OwnerRW;
+    m_access = FileSystem::OwnerRW;
     m_size   = strlen(str);
     m_buffer = new char[m_size + 1];
     assert(m_buffer != NULL);
@@ -53,7 +53,7 @@ PseudoFile::PseudoFile(const char *format, ...)
     va_end(args);
 
     // Set members
-    m_access = OwnerRW;
+    m_access = FileSystem::OwnerRW;
 }
 
 PseudoFile::~PseudoFile()

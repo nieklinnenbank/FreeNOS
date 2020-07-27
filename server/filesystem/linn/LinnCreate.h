@@ -161,7 +161,7 @@ class LinnCreate
      *
      * @return LinnInode pointer.
      */
-    LinnInode * createInode(le32 inodeNum, FileSystem::FileType type, FileModes mode,
+    LinnInode * createInode(le32 inodeNum, FileSystem::FileType type, FileSystem::FileModes mode,
                             UserID uid = ZERO, GroupID gid = ZERO);
 
     /**

@@ -22,7 +22,7 @@ File::File(FileSystem::FileType type, UserID uid, GroupID gid)
     , m_uid(uid)
     , m_gid(gid)
 {
-    m_access    = OwnerRWX;
+    m_access    = FileSystem::OwnerRWX;
     m_size      = 0;
 }
 

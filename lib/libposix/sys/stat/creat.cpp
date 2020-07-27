@@ -18,7 +18,6 @@
 #include <FreeNOS/System.h>
 #include <FileSystemMessage.h>
 #include <FileSystem.h>
-#include <FileMode.h>
 #include "Runtime.h"
 #include <errno.h>
 #include "sys/stat.h"
@@ -48,7 +47,7 @@ int creat(const char *path, mode_t mode)
     msg.action   = FileSystem::CreateFile;
     msg.path     = fullpath;
     msg.filetype = FileSystem::RegularFile;
-    msg.mode     = (FileModes) (mode & FILEMODE_MASK);
+    msg.mode     = (FileSystem::FileModes) (mode & FILEMODE_MASK);
 
     // Ask FileSystem to create the file for us
     if (mnt)

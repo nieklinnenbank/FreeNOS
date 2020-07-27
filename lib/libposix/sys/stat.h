@@ -19,7 +19,6 @@
 #define __LIBPOSIX_STAT_H
 
 #include <FileSystem.h>
-#include <FileMode.h>
 #include <Macros.h>
 #include <errno.h>
 #include <time.h>
@@ -83,40 +82,40 @@
  */
 
 /** Read, write, execute/search by owner. */
-#define S_IRWXU  OwnerRWX
+#define S_IRWXU  FileSystem::OwnerRWX
 
 /** Read permission, owner. */
-#define S_IRUSR  OwnerR
+#define S_IRUSR  FileSystem::OwnerR
 
 /** Write permission, owner. */
-#define S_IWUSR  OwnerW
+#define S_IWUSR  FileSystem::OwnerW
 
 /** Execute/search permission, owner. */
-#define S_IXUSR  OwnerX
+#define S_IXUSR  FileSystem::OwnerX
 
 /** Read, write, execute/search by group. */
-#define S_IRWXG  GroupRWX
+#define S_IRWXG  FileSystem::GroupRWX
 
 /** Read permission, group. */
-#define S_IRGRP  GroupR
+#define S_IRGRP  FileSystem::GroupR
 
 /** Write permission, group. */
-#define S_IWGRP  GroupW
+#define S_IWGRP  FileSystem::GroupW
 
 /** Execute/search permission, group. */
-#define S_IXGRP  GroupX
+#define S_IXGRP  FileSystem::GroupX
 
 /** Read, write, execute/search by others. */
-#define S_IRWXO  OtherRWX
+#define S_IRWXO  FileSystem::OtherRWX
 
 /** Read permission, others. */
-#define S_IROTH  OtherR
+#define S_IROTH  FileSystem::OtherR
 
 /** Write permission, others. */
-#define S_IWOTH  OtherW
+#define S_IWOTH  FileSystem::OtherW
 
 /** Execute/search permission, others. */
-#define S_IXOTH  OtherX
+#define S_IXOTH  FileSystem::OtherX
 
 /** @} */
 

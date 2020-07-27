@@ -23,7 +23,6 @@
 #include <Types.h>
 #include "FileSystemMessage.h"
 #include "FileSystem.h"
-#include "FileMode.h"
 #include "IOBuffer.h"
 #include <errno.h>
 
@@ -102,7 +101,7 @@ class File
     FileSystem::FileType m_type;
 
     /** Access permissions. */
-    FileModes m_access;
+    FileSystem::FileModes m_access;
 
     /** Size of the file, in bytes. */
     Size m_size;

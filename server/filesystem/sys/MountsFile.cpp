@@ -21,7 +21,7 @@
 
 MountsFile::MountsFile() : File(FileSystem::RegularFile)
 {
-    m_access = OwnerRW;
+    m_access = FileSystem::OwnerRW;
     m_size = sizeof(FileSystemMount) * FILESYSTEM_MAXMOUNTS;
 }
 

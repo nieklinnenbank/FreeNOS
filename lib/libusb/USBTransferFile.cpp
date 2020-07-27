@@ -23,7 +23,7 @@
 USBTransferFile::USBTransferFile(USBController *controller)
     : File()
 {
-    m_access     = OwnerRW;
+    m_access     = FileSystem::OwnerRW;
     m_controller = controller;
 }
 

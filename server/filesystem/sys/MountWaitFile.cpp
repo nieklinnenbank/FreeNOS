@@ -22,7 +22,7 @@
 MountWaitFile::MountWaitFile()
     : File(FileSystem::RegularFile)
 {
-    m_access = OwnerRW;
+    m_access = FileSystem::OwnerRW;
 }
 
 MountWaitFile::~MountWaitFile()
