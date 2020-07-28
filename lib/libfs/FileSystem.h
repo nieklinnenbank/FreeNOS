@@ -101,7 +101,8 @@ namespace FileSystem
         IOError,
         PermissionDenied,
         AlreadyExists,
-        NotSupported
+        NotSupported,
+        IpcError
     };
 
     /**

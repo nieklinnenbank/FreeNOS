@@ -17,7 +17,6 @@
 
 #include <FreeNOS/System.h>
 #include <HashIterator.h>
-#include <FileSystemMessage.h>
 #include "ChannelClient.h"
 #include "MemoryChannel.h"
 

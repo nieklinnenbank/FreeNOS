@@ -20,8 +20,6 @@
 
 #include <FileSystem.h>
 #include <FileSystemServer.h>
-#include <FileSystemMessage.h>
-#include <FileSystemPath.h>
 #include <Types.h>
 
 /**

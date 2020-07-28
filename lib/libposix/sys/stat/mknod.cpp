@@ -15,39 +15,41 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
-#include <FileSystemMessage.h>
-#include <FileSystem.h>
-#include "Runtime.h"
-#include <errno.h>
+#include <FileSystemClient.h>
+#include "errno.h"
+#include "limits.h"
+#include "unistd.h"
+#include "stdio.h"
+#include "string.h"
 #include "sys/stat.h"
 
 int mknod(const char *path, mode_t mode, dev_t dev)
 {
-    FileSystemMessage msg;
-    ProcessID mnt = findMount(path);
+    const FileSystemClient filesystem;
+    char fullpath[PATH_MAX];
 
-    // Fill in the message
-    msg.type     = ChannelMessage::Request;
-    msg.action   = FileSystem::CreateFile;
-    msg.path     = (char *) path;
-    msg.deviceID = dev;
-    msg.filetype = (FileSystem::FileType) ((mode >> FILEMODE_BITS) & FILETYPE_MASK);
-    msg.mode     = (FileSystem::FileModes) (mode & FILEMODE_MASK);
-
-    // Ask FileSystem to create the file for us
-    if (mnt)
+    // Relative or absolute?
+    if (path[0] != '/')
     {
-        ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), mnt);
+        char cwd[PATH_MAX];
 
-        // Set errno
-        if (msg.result == FileSystem::Success)
-            errno = ESUCCESS;
-        else
-            errno = EIO;
+        // What's the current working dir?
+        getcwd(cwd, PATH_MAX);
+        snprintf(fullpath, sizeof(fullpath), "%s/%s", cwd, path);
     }
     else
-        errno = ENOENT;
+        strlcpy(fullpath, path, sizeof(fullpath));
+
+    // Ask FileSystem to create the file for us
+    const FileSystem::Result result = filesystem.createFile(fullpath,
+                                                           (FileSystem::FileType) ((mode >> FILEMODE_BITS) & FILETYPE_MASK),
+                                                           (FileSystem::FileModes) (mode & FILEMODE_MASK),
+                                                            dev);
+    // Set errno
+    if (result == FileSystem::Success)
+        errno = ESUCCESS;
+    else
+        errno = EIO;
 
     // Report result
     return errno == ESUCCESS ? 0 : -1;

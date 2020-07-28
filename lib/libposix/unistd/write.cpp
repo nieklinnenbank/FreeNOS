@@ -15,15 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
-#include <FileSystemMessage.h>
-#include "Runtime.h"
-#include <errno.h>
+#include <FileSystemClient.h>
+#include <Runtime.h>
+#include "FileDescriptor.h"
+#include "errno.h"
 #include "unistd.h"
 
 ssize_t write(int fildes, const void *buf, size_t nbyte)
 {
-    FileSystemMessage msg;
     FileDescriptor *files = getFiles();
 
     if (fildes >= FILE_DESCRIPTOR_MAX || fildes < 0)
@@ -39,24 +38,24 @@ ssize_t write(int fildes, const void *buf, size_t nbyte)
         return -1;
     }
 
-    // Write the file
-    msg.type   = ChannelMessage::Request;
-    msg.action = FileSystem::WriteFile;
-    msg.path   = files[fildes].path;
-    msg.buffer = (char *) buf;
-    msg.size   = nbyte;
-    msg.offset = files[fildes].position;
-    msg.from   = SELF;
-    msg.deviceID.minor = files[fildes].identifier;
-    ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), files[fildes].mount);
+    // Write the file.
+    //
+    // Note that currently we must explicitly use the ProcessID as saved in the
+    // file descriptor. For some processes the internal mount table might not be updated yet.
+    //
+    const FileSystemClient filesystem(files[fildes].mount);
+    const FileSystem::Result result = filesystem.writeFile(files[fildes].path,
+                                                          (const char *)buf,
+                                                         &nbyte,
+                                                          files[fildes].position);
 
-    // Did the write complete?
-    if (msg.result != FileSystem::Success)
+    // Did the write succeed?
+    if (result != FileSystem::Success)
     {
         errno = EIO;
         return -1;
     }
 
-    files[fildes].position += msg.size;
-    return msg.size;
+    files[fildes].position += nbyte;
+    return nbyte;
 }

@@ -15,19 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
-#include <FileSystemMessage.h>
-#include "Runtime.h"
-#include <errno.h>
+#include <FileSystemClient.h>
 #include <Log.h>
+#include "errno.h"
 #include "unistd.h"
+#include "limits.h"
+#include "string.h"
 #include "sys/stat.h"
 
 int stat(const char *path, struct stat *buf)
 {
-    FileSystemMessage msg;
+    const FileSystemClient filesystem;
     FileSystem::FileStat st;
-    ProcessID mnt = findMount(path);
     char fullpath[PATH_MAX];
 
     // Relative or absolute?
@@ -42,33 +41,24 @@ int stat(const char *path, struct stat *buf)
     else
         strlcpy(fullpath, path, sizeof(fullpath));
 
-    // Fill message
-    msg.type   = ChannelMessage::Request;
-    msg.action = FileSystem::StatFile;
-    msg.path   = fullpath;
-    msg.stat   = &st;
-
-    DEBUG("path = " << (void *) msg.path << " stat = " << (void *) msg.stat);
+    DEBUG("path = " << fullpath);
 
     // Ask the FileSystem for the information
-    if (mnt)
-    {
-        ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), mnt);
+    const FileSystem::Result result = filesystem.statFile(fullpath, &st);
 
-        // Copy information into buf
-        if (msg.result == FileSystem::Success)
-        {
+    // Copy information into buf
+    switch (result)
+    {
+        case FileSystem::Success:
             buf->fromFileStat(&st);
             errno = ESUCCESS;
-        }
-        else
-        {
+            break;
+        case FileSystem::NotFound:
+            errno = ENOENT;
+            break;
+        default:
             errno = EIO;
-        }
-    }
-    else
-    {
-        errno = ENOENT;
+            break;
     }
 
     // Success

@@ -16,7 +16,7 @@
  */
 
 #include <FreeNOS/System.h>
-#include <FileSystemMessage.h>
+#include <FileSystemClient.h>
 #include "Runtime.h"
 #include "errno.h"
 #include "fcntl.h"
@@ -25,8 +25,7 @@
 
 int open(const char *path, int oflag, ...)
 {
-    FileSystemMessage msg;
-    ProcessID mnt = findMount(path);
+    const FileSystemClient filesystem;
     FileDescriptor *files = getFiles();
     FileSystem::FileStat st;
     char fullpath[PATH_MAX];
@@ -43,28 +42,20 @@ int open(const char *path, int oflag, ...)
     else
         strlcpy(fullpath, path, sizeof(fullpath));
 
-    // Fill message
-    msg.type   = ChannelMessage::Request;
-    msg.action = FileSystem::StatFile;
-    msg.path   = fullpath;
-    msg.stat   = &st;
-
     // Ask the FileSystem for the file.
-    if (mnt && files != NULL)
+    if (files != NULL)
     {
-        ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), mnt);
+        FileSystem::Result result = filesystem.statFile(fullpath, &st);
 
         // Refresh mounts and retry, in case the file did not exist
-        if (msg.result == FileSystem::NotFound)
+        if (result == FileSystem::NotFound)
         {
             refreshMounts(0);
-            mnt = findMount(path);
-            msg.type = ChannelMessage::Request;
-            ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), mnt);
+            result = filesystem.statFile(fullpath, &st);
         }
 
         // Set errno
-        if (msg.result == FileSystem::Success)
+        if (result == FileSystem::Success)
         {
             errno = ESUCCESS;
 
@@ -74,7 +65,7 @@ int open(const char *path, int oflag, ...)
                 if (!files[i].open)
                 {
                     files[i].open  = true;
-                    files[i].mount = mnt;
+                    files[i].mount = findMount(fullpath);
                     files[i].identifier = 0;
                     files[i].position = 0;
                     strlcpy(files[i].path, fullpath, PATH_MAX);

@@ -19,7 +19,6 @@
 #define __FILESYSTEM_LINN_DIRECTORY_H
 #ifndef __HOST__
 
-#include <FileSystemMessage.h>
 #include <Directory.h>
 #include <Types.h>
 #include "LinnDirectoryEntry.h"

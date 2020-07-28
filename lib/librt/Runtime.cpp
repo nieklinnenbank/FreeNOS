@@ -19,10 +19,10 @@
 #include <Types.h>
 #include <Macros.h>
 #include <Array.h>
+#include <FileSystemClient.h>
 #include <ChannelClient.h>
 #include <PoolAllocator.h>
 #include <FileSystemMount.h>
-#include <FileSystemMessage.h>
 #include <FileDescriptor.h>
 #include <MemoryMap.h>
 #include <Core.h>
@@ -215,8 +215,9 @@ ProcessID findMount(const char *path)
 
 void refreshMounts(const char *path)
 {
-    FileSystemMessage msg;
-    pid_t pid = getpid();
+    const ProcessID pid = getpid();
+    const FileSystemClient filesystem(SYSFS_PID);
+    Size mountsSize = sizeof(FileSystemMount) * FILESYSTEM_MAXMOUNTS;
 
     // Skip for rootfs and sysfs
     if (pid == ROOTFS_PID || pid == SYSFS_PID)
@@ -226,14 +227,9 @@ void refreshMounts(const char *path)
     MemoryBlock::set(&mounts[2], 0, sizeof(FileSystemMount) * (FILESYSTEM_MAXMOUNTS-2));
 
     // Re-read the mounts table from SysFS.
-    msg.type   = ChannelMessage::Request;
-    msg.action = FileSystem::ReadFile;
-    msg.path   = "/sys/mounts";
-    msg.buffer = (char *) &mounts;
-    msg.size   = sizeof(FileSystemMount) * FILESYSTEM_MAXMOUNTS;
-    msg.offset = 0;
-    msg.from   = SELF;
-    ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), SYSFS_PID);
+    const FileSystem::Result result = filesystem.readFile("/sys/mounts",
+                                                          &mounts, &mountsSize, 0U);
+    assert(result == FileSystem::Success);
 }
 
 ProcessID findMount(int fildes)
@@ -246,17 +242,12 @@ ProcessID findMount(int fildes)
 
 void waitMount(const char *path)
 {
-    FileSystemMessage msg;
+    const FileSystemClient filesystem(SYSFS_PID);
+    Size len = strlen(path);
 
     // Send a write containing the requested path to the 'mountwait' file on SysFS
-    msg.type   = ChannelMessage::Request;
-    msg.action = FileSystem::WriteFile;
-    msg.path   = "/sys/mountwait";
-    msg.buffer = (char *) path;
-    msg.size   = strlen(path);
-    msg.offset = 0;
-    msg.from   = SELF;
-    ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), SYSFS_PID);
+    const FileSystem::Result result = filesystem.writeFile("/sys/mountwait", path, &len, 0U);
+    assert(result == FileSystem::Success);
 }
 
 FileSystemMount * getMounts()

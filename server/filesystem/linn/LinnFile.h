@@ -20,7 +20,6 @@
 #ifndef __HOST__
 
 #include <File.h>
-#include <FileSystemMessage.h>
 #include <Types.h>
 #include "LinnFileSystem.h"
 #include "LinnInode.h"

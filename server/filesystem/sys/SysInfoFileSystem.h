@@ -19,8 +19,6 @@
 #define __FILESYSTEM_SYSINFOFILESYSTEM_H
 
 #include <FileSystemServer.h>
-#include <FileSystemMessage.h>
-#include <FileSystemPath.h>
 #include <Types.h>
 
 /**

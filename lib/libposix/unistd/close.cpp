@@ -15,10 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
-#include <FileSystemMessage.h>
-#include "Runtime.h"
-#include <errno.h>
+#include <Runtime.h>
+#include "FileDescriptor.h"
+#include "errno.h"
 #include "unistd.h"
 
 int close(int fildes)
