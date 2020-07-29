@@ -71,7 +71,8 @@ SECTIONS
     {
         __bss_start = .;
         *(.bss)
-        *(.bss.*)
+        *(*.bss)
+        *(.bss*)
         __bss_end = .;
         *(COMMON)
 
