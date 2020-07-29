@@ -28,7 +28,7 @@
 #include <DeviceLog.h>
 #include "RaspberryKernel.h"
 
-extern Address __bootimg, __bss_start, __bss_end, __heap_start, __heap_end;
+extern Address __bootimg, __heap_start, __heap_end;
 
 static u32 ALIGN(16 * 1024) SECTION(".data") tmpPageDir[4096];
 
@@ -63,7 +63,7 @@ extern C int kernel_main(void)
     paging.activate(true);
 
     // Clear BSS
-    MemoryBlock::set(&__bss_start, 0, &__bss_end - &__bss_start);
+    clearBSS();
 
     // Initialize heap at the end of the kernel (and after embedded boot image)
     coreInfo.heapAddress = (Address) &__heap_start;
