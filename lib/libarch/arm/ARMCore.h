@@ -20,7 +20,7 @@
 
 #include <Types.h>
 #include <Macros.h>
-#include <Core.h>
+#include "Endian.h"
 #include "ARMControl.h"
 
 /**

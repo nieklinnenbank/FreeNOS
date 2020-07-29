@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBARCH_CORE_H
-#define __LIBARCH_CORE_H
+#ifndef __LIBARCH_ENDIAN_H
+#define __LIBARCH_ENDIAN_H
 
 #include <Macros.h>
 #include <Types.h>
@@ -162,4 +162,4 @@
  * @}
  */
 
-#endif /* __LIBARCH_CORE_H */
+#endif /* __LIBARCH_ENDIAN_H */
