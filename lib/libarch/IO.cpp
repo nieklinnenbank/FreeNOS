@@ -17,7 +17,7 @@
 
 #include <FreeNOS/System.h>
 #include "MemoryContext.h"
-#include "Core.h"
+#include "CoreInfo.h"
 #include "IO.h"
 
 IO::IO()

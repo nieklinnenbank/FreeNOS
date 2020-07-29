@@ -29,8 +29,6 @@
  * @{
  */
 
-extern C uint isKernel;
-
 #define swab16(x) ((u16)(                                   \
         (((u16)(x) & (u16)0x00ffU) << 8) |                  \
         (((u16)(x) & (u16)0xff00U) >> 8)))

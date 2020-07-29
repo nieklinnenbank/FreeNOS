@@ -17,7 +17,7 @@
 
 #include <Log.h>
 #include <MemoryContext.h>
-#include <Core.h>
+#include <CoreInfo.h>
 #include <FreeNOS/System.h>
 #include "IntelPIT.h"
 #include "IntelAPIC.h"
