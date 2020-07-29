@@ -158,21 +158,6 @@
 #endif /* CPU_LITTLE_ENDIAN */
 
 /**
- * Generic Core implementation.
- */
-class Core
-{
-  public:
-
-    /* empty */
-};
-
-/**
- * Generic function to clear the BSS memory section to zero
- */
-extern C void clearBSS();
-
-/**
  * @}
  * @}
  */

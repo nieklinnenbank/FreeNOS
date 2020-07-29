@@ -25,7 +25,7 @@
 #include <FileSystemMount.h>
 #include <FileDescriptor.h>
 #include <MemoryMap.h>
-#include <Core.h>
+#include <Memory.h>
 #include <KernelLog.h>
 #include <stdlib.h>
 #include <string.h>

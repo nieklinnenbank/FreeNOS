@@ -246,7 +246,7 @@ ALIGN(4) CPUState;
 /**
  * Class representing an ARM processor core
  */
-class ARMCore : public Core
+class ARMCore
 {
   public:
 

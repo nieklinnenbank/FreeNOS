@@ -16,7 +16,7 @@
  */
 
 #include <MemoryBlock.h>
-#include "Core.h"
+#include "Memory.h"
 
 void clearBSS()
 {

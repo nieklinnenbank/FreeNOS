@@ -254,7 +254,7 @@ CPUState;
 /**
  * Intel CPU Core.
  */
-class IntelCore : public Core
+class IntelCore
 {
   public:
 
