@@ -16,9 +16,8 @@
  */
 
 #include <FreeNOS/System.h>
-#include <FileSystemMessage.h>
 #include <Timer.h>
-#include <ChannelClient.h>
+#include <CoreClient.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -38,16 +37,15 @@ SysInfo::~SysInfo()
 SysInfo::Result SysInfo::exec()
 {
     SystemInformation info;
-    FileSystemMessage msg;
+    const CoreClient coreClient;
+    Size numCores = 1U;
     Timer::Info timer;
     struct timeval tv;
     struct timezone tz;
 
     // Retrieve number of cores from the CoreServer
-    msg.type   = ChannelMessage::Request;
-    msg.action = FileSystem::ReadFile;
-    msg.from = SELF;
-    ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), CORESRV_PID);
+    const Core::Result result = coreClient.getCoreCount(numCores);
+    assert(result == Core::Success);
 
     // Retrieve scheduler timer info from the kernel
     ProcessCtl(SELF, InfoTimer, (Address) &timer);
@@ -61,7 +59,7 @@ SysInfo::Result SysInfo::exec()
            "Uptime:           %l.%us\r\n",
             info.memorySize / 1024,
             info.memoryAvail / 1024,
-            msg.size,
+            numCores,
             (u32) timer.ticks,
             timer.frequency,
             (u32) tv.tv_sec, tv.tv_usec);

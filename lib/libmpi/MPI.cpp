@@ -16,11 +16,10 @@
  */
 
 #include <FreeNOS/System.h>
-#include <FileSystemMessage.h>
-#include "MPIMessage.h"
 #include <MemoryChannel.h>
-#include <ChannelClient.h>
+#include <CoreClient.h>
 #include <Index.h>
+#include <String.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -28,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include "MPIMessage.h"
 #include "mpi.h"
 
 #define MPI_PROG_CMDLEN 512
@@ -40,7 +40,7 @@ Index<MemoryChannel> *writeChannel = 0;
 int MPI_Init(int *argc, char ***argv)
 {
     SystemInformation info;
-    FileSystemMessage msg;
+    const CoreClient coreClient;
     struct stat st;
     char *programName = (*argv)[0];
     char programPath[64];
@@ -51,14 +51,10 @@ int MPI_Init(int *argc, char ***argv)
     // If we are master (node 0):
     if (info.coreId == 0)
     {
-        msg.type   = ChannelMessage::Request;
-        msg.action = FileSystem::ReadFile;
-        msg.from = SELF;
-        ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), CORESRV_PID);
-
         // provide -n COUNT, --help and other stuff in here too.
         // to influence the launching of more MPI programs
-        coreCount = msg.size;
+        const Core::Result result = coreClient.getCoreCount(coreCount);
+        assert(result == Core::Success);
 
         // Read our own ELF program to a buffer and pass it to CoreServer
         // for creating new programs on the remote core.
@@ -100,7 +96,7 @@ int MPI_Init(int *argc, char ***argv)
         // Allocate memory space on the local processor for the whole
         // UniChannel array, NxN communication with MPI.
         // Then pass the channel offset physical address as an argument -addr 0x.... to spawn()
-        memChannelBase.size = (PAGESIZE * 2) * (msg.size * msg.size);
+        memChannelBase.size = (PAGESIZE * 2) * (coreCount * coreCount);
         memChannelBase.phys = 0;
         memChannelBase.virt = 0;
         memChannelBase.access = Memory::Readable | Memory::Writable | Memory::User;
@@ -130,18 +126,12 @@ int MPI_Init(int *argc, char ***argv)
                 strcat(cmd, (*argv)[j]);
             }
 
-            msg.type   = ChannelMessage::Request;
-            msg.action = FileSystem::CreateFile;
-            msg.size   = i;
-            msg.buffer = (char *) programBuffer;
-            msg.offset = st.st_size;
-            msg.path   = cmd;
-            ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), CORESRV_PID);
-
-            if (msg.result != FileSystem::Success)
+            const Core::Result result = coreClient.createProcess(i, (const Address) programBuffer,
+                                                                 st.st_size, cmd);
+            if (result != Core::Success)
             {
-                printf("%s: failed to create process on core%d\n",
-                        programName, i);
+                printf("%s: failed to create process on core%d: result = %d\n",
+                        programName, i, (int) result);
                 return MPI_ERR_SPAWN;
             }
         }

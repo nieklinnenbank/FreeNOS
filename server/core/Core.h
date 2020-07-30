@@ -15,42 +15,52 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
-#include <FreeNOS/API.h>
-#include <Log.h>
-#include <Factory.h>
-#include "SingleCoreServer.h"
+#ifndef __SERVER_CORE_CORE_H
+#define __SERVER_CORE_CORE_H
 
-template<> CoreServer* AbstractFactory<CoreServer>::create()
-{
-    return new SingleCoreServer();
-}
+#include <Types.h>
 
-SingleCoreServer::SingleCoreServer()
-    : CoreServer()
-{
-}
+/**
+ * @addtogroup server
+ * @{
+ *
+ * @addtogroup core
+ * @{
+ */
 
-SingleCoreServer::Result SingleCoreServer::initialize()
+namespace Core
 {
-    return Success;
-}
+    /**
+     * Actions which may be performed on the CoreServer
+     */
+    enum Action
+    {
+        GetCoreCount = 0,
+        CreateProcess,
+        PingRequest,
+        PongResponse
+    };
 
-Core::Result SingleCoreServer::bootCore(uint coreId, CoreInfo *info)
-{
-    return coreId == 0 ? Core::Success : Core::BootError;
-}
+    /**
+     * Result code for Actions.
+     */
+    enum Result
+    {
+        Success,
+        InvalidArgument,
+        NotFound,
+        BootError,
+        ExecError,
+        OutOfMemory,
+        IOError,
+        MemoryError,
+        IpcError
+    };
+};
 
-Core::Result SingleCoreServer::discoverCores()
-{
-    return Core::Success;
-}
+/**
+ * @}
+ * @}
+ */
 
-void SingleCoreServer::waitIPI() const
-{
-}
-
-Core::Result SingleCoreServer::sendIPI(uint coreId)
-{
-    return Core::IOError;
-}
+#endif /* __SERVER_CORE_CORE_H */

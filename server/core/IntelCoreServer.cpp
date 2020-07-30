@@ -46,20 +46,20 @@ IntelCoreServer::Result IntelCoreServer::initialize()
     return CoreServer::initialize();
 }
 
-IntelCoreServer::Result IntelCoreServer::bootCore(uint coreId, CoreInfo *info)
+Core::Result IntelCoreServer::bootCore(uint coreId, CoreInfo *info)
 {
     // Signal the core to boot
     if (m_mp.boot(info) != IntelMP::Success)
     {
         ERROR("failed to boot core" << coreId);
-        return BootError;
+        return Core::BootError;
     }
 
     NOTICE("core" << coreId << " started");
-    return Success;
+    return Core::Success;
 }
 
-IntelCoreServer::Result IntelCoreServer::discoverCores()
+Core::Result IntelCoreServer::discoverCores()
 {
     m_mp.initialize();
 
@@ -77,10 +77,10 @@ IntelCoreServer::Result IntelCoreServer::discoverCores()
     else
     {
         ERROR("no CoreManager found (ACPI or MPTable)");
-        return NotFound;
+        return Core::NotFound;
     }
 
-    return Success;
+    return Core::Success;
 }
 
 void IntelCoreServer::waitIPI() const
@@ -90,14 +90,14 @@ void IntelCoreServer::waitIPI() const
     ProcessCtl(SELF, EnterSleep, 0, 0);
 }
 
-IntelCoreServer::Result IntelCoreServer::sendIPI(uint coreId)
+Core::Result IntelCoreServer::sendIPI(uint coreId)
 {
     // Send IPI to ensure the slave wakes up for the message
     if (m_apic.sendIPI(coreId, IPIVector) != IntController::Success)
     {
         ERROR("failed to send IPI to core" << coreId);
-        return IOError;
+        return Core::IOError;
     }
 
-    return Success;
+    return Core::Success;
 }

@@ -66,7 +66,7 @@ SunxiCoreServer::Result SunxiCoreServer::initialize()
     return CoreServer::initialize();
 }
 
-SunxiCoreServer::Result SunxiCoreServer::bootCore(uint coreId, CoreInfo *info)
+Core::Result SunxiCoreServer::bootCore(uint coreId, CoreInfo *info)
 {
     // Calculate the memory location of the CoreInfo structure passed to the
     // secondary core. Note that the location is relative to the info->memory.phys address
@@ -82,7 +82,7 @@ SunxiCoreServer::Result SunxiCoreServer::bootCore(uint coreId, CoreInfo *info)
     if (m_cpuConfig.boot(info) != SunxiCpuConfig::Success)
     {
         ERROR("failed to boot coreId" << coreId);
-        return BootError;
+        return Core::BootError;
     }
 
     // Wait until the core raises the 'booted' flag in CoreInfo
@@ -96,18 +96,18 @@ SunxiCoreServer::Result SunxiCoreServer::bootCore(uint coreId, CoreInfo *info)
             break;
     }
 
-    return Success;
+    return Core::Success;
 }
 
-SunxiCoreServer::Result SunxiCoreServer::discoverCores()
+Core::Result SunxiCoreServer::discoverCores()
 {
     if (m_cpuConfig.discover() != SunxiCpuConfig::Success)
     {
         ERROR("failed to discover cores");
-        return IOError;
+        return Core::IOError;
     }
 
-    return Success;
+    return Core::Success;
 }
 
 void SunxiCoreServer::waitIPI() const
@@ -117,14 +117,14 @@ void SunxiCoreServer::waitIPI() const
     ProcessCtl(SELF, EnterSleep, 0, 0);
 }
 
-SunxiCoreServer::Result SunxiCoreServer::sendIPI(uint coreId)
+Core::Result SunxiCoreServer::sendIPI(uint coreId)
 {
     API::Result r = ProcessCtl(SELF, SendIRQ, (coreId << 16) | SoftwareInterruptNumber);
     if (r != API::Success)
     {
         ERROR("failed to send IPI to core" << coreId << ": " << (uint)r);
-        return IOError;
+        return Core::IOError;
     }
 
-    return Success;
+    return Core::Success;
 }
