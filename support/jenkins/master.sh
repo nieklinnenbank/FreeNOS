@@ -43,6 +43,12 @@ mv /etc/netplan/01-netcfg.yaml.new /etc/netplan/01-netcfg.yaml
 netplan apply
 sleep 5
 
+# Ensure GRUB will not complain about out-of-sync installed bootloaders
+firstdisk="`readlink -f /dev/disk/by-uuid/* | sort | head -n 1`"
+echo "grub-pc grub-pc/install_devices multiselect $firstdisk" > /tmp/input.txt
+debconf-set-selections /tmp/input.txt
+rm -f /tmp/input.txt
+
 # Update system to latest patches
 run_command_retry "apt-get update"
 run_command_retry "apt-get dist-upgrade -y"
