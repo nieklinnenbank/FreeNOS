@@ -15,12 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <DeviceServer.h>
-#include "Terminal.h"
-#include <stdlib.h>
-#include <unistd.h>
 #include <Runtime.h>
 #include <KernelLog.h>
+#include <DeviceServer.h>
+#include <FileSystemClient.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include "Terminal.h"
 
 int main(int argc, char **argv)
 {
@@ -28,9 +29,10 @@ int main(int argc, char **argv)
     log.setMinimumLogLevel(Log::Notice);
 
     // Wait for the input/output devices to become available
-    waitMount("/dev/ps2");
-    waitMount("/dev/video");
-    refreshMounts(0);
+    FileSystemClient filesystem;
+    filesystem.waitMount("/dev/ps2");
+    filesystem.waitMount("/dev/video");
+    filesystem.refreshMounts(0);
 
     // Register our device
     DeviceServer server("/console");

@@ -24,6 +24,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include "FileSystemMount.h"
 #include "FileSystemServer.h"
 
 FileSystemServer::FileSystemServer(const char *path)

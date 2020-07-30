@@ -42,9 +42,6 @@ extern void (*CTOR_LIST)();
 /** List of destructors. */
 extern void (*DTOR_LIST)();
 
-/** FileSystem mounts table */
-static FileSystemMount mounts[FILESYSTEM_MAXMOUNTS];
-
 /** Table with FileDescriptors. */
 static FileDescriptor *files = (FileDescriptor *) NULL;
 
@@ -148,8 +145,14 @@ void setupChannels()
 
 void setupMappings()
 {
+    FileSystemClient filesystem;
+    Size numberOfMounts = 0;
+
     // Fill the mounts table
-    memset(mounts, 0, sizeof(FileSystemMount) * FILESYSTEM_MAXMOUNTS);
+    FileSystemMount *mounts = filesystem.getMounts(numberOfMounts);
+    assert(mounts != NULL);
+    assert(numberOfMounts >= 2);
+
     strlcpy(mounts[0].path, "/sys", PATH_MAX);
     strlcpy(mounts[1].path, "/", PATH_MAX);
     mounts[0].procID  = SYSFS_PID;
@@ -175,84 +178,6 @@ void setupMappings()
         memset(files, 0, argRange.size - (PAGESIZE * 2));
         (*currentDirectory) = "/";
     }
-}
-
-ProcessID findMount(const char *path)
-{
-    FileSystemMount *m = ZERO;
-    Size length = 0, len;
-    char tmp[PATH_MAX];
-
-    // Is the path relative?
-    if (path[0] != '/')
-    {
-        getcwd(tmp, sizeof(tmp));
-        snprintf(tmp, sizeof(tmp), "%s/%s", tmp, path);
-    }
-    else
-        strlcpy(tmp, path, PATH_MAX);
-
-    // Find the longest match
-    for (Size i = 0; i < FILESYSTEM_MAXMOUNTS; i++)
-    {
-        if (mounts[i].path[0])
-        {
-            len = strlen(mounts[i].path);
-
-            // Only choose this mount, if it matches,
-            // and is longer than the last match.
-            if (strncmp(tmp, mounts[i].path, len) == 0 && len > length)
-            {
-                length = len;
-                m = &mounts[i];
-            }
-        }
-    }
-
-    // All done
-    return m ? m->procID : ZERO;
-}
-
-void refreshMounts(const char *path)
-{
-    const ProcessID pid = getpid();
-    const FileSystemClient filesystem(SYSFS_PID);
-    Size mountsSize = sizeof(FileSystemMount) * FILESYSTEM_MAXMOUNTS;
-
-    // Skip for rootfs and sysfs
-    if (pid == ROOTFS_PID || pid == SYSFS_PID)
-        return;
-
-    // Clear mounts table
-    MemoryBlock::set(&mounts[2], 0, sizeof(FileSystemMount) * (FILESYSTEM_MAXMOUNTS-2));
-
-    // Re-read the mounts table from SysFS.
-    const FileSystem::Result result = filesystem.readFile("/sys/mounts",
-                                                          &mounts, &mountsSize, 0U);
-    assert(result == FileSystem::Success);
-}
-
-ProcessID findMount(int fildes)
-{
-    if (files != NULL)
-        return files[fildes].open ? files[fildes].mount : ZERO;
-    else
-        return ZERO;
-}
-
-void waitMount(const char *path)
-{
-    const FileSystemClient filesystem(SYSFS_PID);
-    Size len = strlen(path);
-
-    // Send a write containing the requested path to the 'mountwait' file on SysFS
-    const FileSystem::Result result = filesystem.writeFile("/sys/mountwait", path, &len, 0U);
-    assert(result == FileSystem::Success);
-}
-
-FileSystemMount * getMounts()
-{
-    return mounts;
 }
 
 FileDescriptor * getFiles(void)

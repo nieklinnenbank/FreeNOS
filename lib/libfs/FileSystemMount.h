@@ -29,9 +29,6 @@
  * @{
  */
 
-/** Maximum number of mounted filesystems. */
-#define FILESYSTEM_MAXMOUNTS 16
-
 /**
  * Represents a mounted filesystem.
  */

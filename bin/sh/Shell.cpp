@@ -34,7 +34,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #ifndef __HOST__
-#include <Runtime.h>
+#include <FileSystemClient.h>
 #endif /* __HOST__ */
 
 /** Maximum number of supported command arguments. */
@@ -70,8 +70,9 @@ Shell::Result Shell::exec()
     char *contents;
 
 #ifndef __HOST__
-    // Refresh mount points
-    refreshMounts(0);
+    // Refresh current filesystem mount points
+    FileSystemClient filesystem;
+    filesystem.refreshMounts(0);
 #endif /* __HOST__ */
 
     // Check if shell script was given as argument

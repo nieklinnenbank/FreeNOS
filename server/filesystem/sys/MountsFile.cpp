@@ -15,14 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FileSystemClient.h>
 #include <FileSystemMount.h>
-#include <Runtime.h>
+#include <string.h>
 #include "MountsFile.h"
 
 MountsFile::MountsFile() : File(FileSystem::RegularFile)
 {
     m_access = FileSystem::OwnerRW;
-    m_size = sizeof(FileSystemMount) * FILESYSTEM_MAXMOUNTS;
+
+    FileSystemClient filesystem;
+    Size numberOfMounts = 0;
+    filesystem.getMounts(numberOfMounts);
+
+    m_size = sizeof(FileSystemMount) * numberOfMounts;
 }
 
 MountsFile::~MountsFile()
@@ -31,7 +37,9 @@ MountsFile::~MountsFile()
 
 Error MountsFile::read(IOBuffer & buffer, Size size, Size offset)
 {
-    FileSystemMount *mounts = getMounts();
+    FileSystemClient filesystem;
+    Size numberOfMounts = 0;
+    FileSystemMount *mounts = filesystem.getMounts(numberOfMounts);
 
     // Bounds checking
     if (offset > 0 || size < m_size)
@@ -44,7 +52,9 @@ Error MountsFile::read(IOBuffer & buffer, Size size, Size offset)
 Error MountsFile::write(IOBuffer & buffer, Size size, Size offset)
 {
     FileSystemMount fs;
-    FileSystemMount *mounts = getMounts();
+    FileSystemClient filesystem;
+    Size numberOfMounts = 0;
+    FileSystemMount *mounts = filesystem.getMounts(numberOfMounts);
     Error r;
 
     // Input must be exactly one FileSystemMount struct
@@ -56,7 +66,7 @@ Error MountsFile::write(IOBuffer & buffer, Size size, Size offset)
         return r;
 
     // Append to our filesystem mounts table
-    for (Size i = 0; i < FILESYSTEM_MAXMOUNTS; i++)
+    for (Size i = 0; i < numberOfMounts; i++)
     {
         if (!mounts[i].path[0])
         {

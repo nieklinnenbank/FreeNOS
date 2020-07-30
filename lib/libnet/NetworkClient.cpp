@@ -15,11 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <fcntl.h>
-#include <unistd.h>
 #include <Log.h>
 #include <String.h>
 #include <Runtime.h>
+#include <FileSystemClient.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include "NetworkClient.h"
 #include "ARP.h"
 #include "ARPSocket.h"
@@ -35,14 +36,17 @@ NetworkClient::~NetworkClient()
 
 NetworkClient::Result NetworkClient::initialize()
 {
+    FileSystemClient filesystem;
+    Size numberOfMounts = 0;
+
     // Get a list of mounts
-    refreshMounts(0);
-    FileSystemMount *mounts = ::getMounts();
+    filesystem.refreshMounts(0);
+    FileSystemMount *mounts = filesystem.getMounts(numberOfMounts);
     FileSystemMount *match = 0;
     Size matchLen = 0;
 
     // Find closest matching device
-    for (Size i = 0; i < FILESYSTEM_MAXMOUNTS; i++)
+    for (Size i = 0; i < numberOfMounts; i++)
     {
         if (mounts[i].path[0] && strncmp(mounts[i].path, "/network/", 9) == 0)
         {

@@ -25,7 +25,7 @@
 
 int open(const char *path, int oflag, ...)
 {
-    const FileSystemClient filesystem;
+    FileSystemClient filesystem;
     FileDescriptor *files = getFiles();
     FileSystem::FileStat st;
     char fullpath[PATH_MAX];
@@ -50,7 +50,7 @@ int open(const char *path, int oflag, ...)
         // Refresh mounts and retry, in case the file did not exist
         if (result == FileSystem::NotFound)
         {
-            refreshMounts(0);
+            filesystem.refreshMounts(0);
             result = filesystem.statFile(fullpath, &st);
         }
 
@@ -65,7 +65,7 @@ int open(const char *path, int oflag, ...)
                 if (!files[i].open)
                 {
                     files[i].open  = true;
-                    files[i].mount = findMount(fullpath);
+                    files[i].mount = filesystem.findMount(fullpath);
                     files[i].identifier = 0;
                     files[i].position = 0;
                     strlcpy(files[i].path, fullpath, PATH_MAX);

@@ -15,10 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/System.h>
 #include <Runtime.h>
 #include <ChannelClient.h>
+#include <string.h>
+#include <unistd.h>
 #include "FileSystemMessage.h"
 #include "FileSystemClient.h"
+
+FileSystemMount FileSystemClient::m_mounts[MaximumFileSystemMounts] = {};
 
 FileSystemClient::FileSystemClient(const ProcessID pid)
     : m_pid(pid)
@@ -38,6 +43,82 @@ inline FileSystem::Result FileSystemClient::request(const char *path,
     {
         return FileSystem::IpcError;
     }
+}
+
+FileSystemMount * FileSystemClient::getMounts(Size &numberOfMounts)
+{
+    numberOfMounts = MaximumFileSystemMounts;
+    return m_mounts;
+}
+
+ProcessID FileSystemClient::findMount(const char *path) const
+{
+    FileSystemMount *m = ZERO;
+    Size length = 0, len;
+    char tmp[PATH_MAX];
+
+    // Is the path relative?
+    if (path[0] != '/')
+    {
+        getcwd(tmp, sizeof(tmp));
+        snprintf(tmp, sizeof(tmp), "%s/%s", tmp, path);
+    }
+    else
+        strlcpy(tmp, path, PATH_MAX);
+
+    // Find the longest match
+    for (Size i = 0; i < MaximumFileSystemMounts; i++)
+    {
+        if (m_mounts[i].path[0])
+        {
+            len = strlen(m_mounts[i].path);
+
+            // Only choose this mount, if it matches,
+            // and is longer than the last match.
+            if (strncmp(tmp, m_mounts[i].path, len) == 0 && len > length)
+            {
+                length = len;
+                m = &m_mounts[i];
+            }
+        }
+    }
+
+    // All done
+    return m ? m->procID : ZERO;
+}
+
+FileSystem::Result FileSystemClient::refreshMounts(const char *path)
+{
+    const ProcessID pid = ProcessCtl(SELF, GetPID);
+    Size mountsSize = sizeof(FileSystemMount) * MaximumFileSystemMounts;
+
+    // Skip for rootfs and sysfs
+    if (pid == ROOTFS_PID || pid == SYSFS_PID)
+        return FileSystem::InvalidArgument;
+
+    // Clear mounts table
+    MemoryBlock::set(&m_mounts[2], 0, sizeof(FileSystemMount) * (MaximumFileSystemMounts - 2));
+
+    // Re-read the mounts table from SysFS.
+    const ProcessID savedPid = m_pid;
+    m_pid = SYSFS_PID;
+    const FileSystem::Result result = readFile("/sys/mounts", &m_mounts, &mountsSize, 0U);
+    m_pid = savedPid;
+
+    return result;
+}
+
+FileSystem::Result FileSystemClient::waitMount(const char *path)
+{
+    Size len = strlen(path);
+
+    // Send a write containing the requested path to the 'mountwait' file on SysFS
+    const ProcessID savedPid = m_pid;
+    m_pid = SYSFS_PID;
+    const FileSystem::Result result = writeFile("/sys/mountwait", path, &len, 0U);
+    m_pid = savedPid;
+
+    return result;
 }
 
 FileSystem::Result FileSystemClient::createFile(const char *path,

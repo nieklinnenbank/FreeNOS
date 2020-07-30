@@ -15,7 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Runtime.h>
+#include <FileSystemClient.h>
+#include <FileSystemPath.h>
 #include <string.h>
 #include "MountWaitFile.h"
 
@@ -31,11 +32,11 @@ MountWaitFile::~MountWaitFile()
 
 Error MountWaitFile::write(IOBuffer & buffer, Size size, Size offset)
 {
-    char path[PATH_MAX];
+    char path[PATHLEN];
     Error r;
 
     // Check for input size
-    if (size >= PATH_MAX)
+    if (size >= PATHLEN)
         return EIO;
 
     // Copy the input path
@@ -50,8 +51,10 @@ Error MountWaitFile::write(IOBuffer & buffer, Size size, Size offset)
     str.trim();
 
     // Search for a mounted filesystem with the given mount path
-    FileSystemMount *mounts = getMounts();
-    for (Size i = 0; i < FILESYSTEM_MAXMOUNTS; i++)
+    FileSystemClient filesystem;
+    Size numberOfMounts = 0;
+    FileSystemMount *mounts = filesystem.getMounts(numberOfMounts);
+    for (Size i = 0; i < numberOfMounts; i++)
     {
         if (mounts[i].path[0] && strcmp(mounts[i].path, *str) == 0)
             return size;

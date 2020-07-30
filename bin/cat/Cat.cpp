@@ -16,6 +16,7 @@
  */
 
 #include <FreeNOS/System.h>
+#include <FileSystemClient.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,7 +24,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <Runtime.h>
 #include "Cat.h"
 
 Cat::Cat(int argc, char **argv)
@@ -72,8 +72,9 @@ Cat::Result Cat::cat(const char *file) const
 
     DEBUG("file = " << file);
 
-    // Retrieve fresh list of mountpoints
-    refreshMounts(0);
+    // Refresh current filesystem mount points
+    FileSystemClient filesystem;
+    filesystem.refreshMounts(0);
 
     // Stat the file
     if (stat(file, &st) != 0)

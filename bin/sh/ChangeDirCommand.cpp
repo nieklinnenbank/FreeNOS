@@ -22,7 +22,7 @@
 #include <unistd.h>
 #include <Log.h>
 #ifndef __HOST__
-#include <Runtime.h>
+#include <FileSystemClient.h>
 #endif /* __HOST__ */
 
 ChangeDirCommand::ChangeDirCommand()
@@ -34,7 +34,9 @@ ChangeDirCommand::ChangeDirCommand()
 int ChangeDirCommand::execute(const Size nparams, const char **params)
 {
 #ifndef __HOST__
-    refreshMounts(0);
+    // Refresh current filesystem mount points
+    FileSystemClient filesystem;
+    filesystem.refreshMounts(0);
 #endif /* __HOST__ */
 
     if (chdir(params[0]) != 0)

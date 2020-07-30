@@ -16,8 +16,8 @@
  */
 
 #include <FreeNOS/System.h>
+#include <FileSystemClient.h>
 #include <FileSystemMount.h>
-#include <Runtime.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,20 +36,25 @@ Mount::~Mount()
 
 Mount::Result Mount::exec()
 {
+    FileSystemClient filesystem;
     FileSystemMount *mounts;
     Arch::MemoryMap map;
     Memory::Range range = map.range(MemoryMap::UserArgs);
     char cmd[PAGESIZE];
+    Size numberOfMounts = 0;
 
     // First refresh mounted filesystems
-    refreshMounts(0);
-    mounts = getMounts();
+    FileSystem::Result result = filesystem.refreshMounts(0);
+    assert(result == FileSystem::Success);
+
+    mounts = filesystem.getMounts(numberOfMounts);
+    assert(mounts != NULL);
 
     // Print header
     printf("PATH                 FILESYSTEM\r\n");
 
     // Print out
-    for (Size i = 0; i < FILESYSTEM_MAXMOUNTS; i++)
+    for (Size i = 0; i < numberOfMounts; i++)
     {
         if (mounts[i].path[0])
         {

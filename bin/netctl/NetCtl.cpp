@@ -27,7 +27,7 @@
 #include <NetworkSocket.h>
 #include <IPV4.h>
 #include <ICMP.h>
-#include <Runtime.h>
+#include <FileSystemClient.h>
 #include "NetCtl.h"
 
 NetCtl::NetCtl(int argc, char **argv)
@@ -49,15 +49,18 @@ NetCtl::Result NetCtl::initialize()
 
 NetCtl::Result NetCtl::exec()
 {
+    Size numberOfMounts = 0;
+
     DEBUG("");
 
     // Make a list of network devices
     // Get a list of mounts
-    refreshMounts(0);
-    FileSystemMount *mounts = ::getMounts();
+    FileSystemClient filesystem;
+    filesystem.refreshMounts(0);
+    FileSystemMount *mounts = filesystem.getMounts(numberOfMounts);
 
     // Find closest matching device
-    for (Size i = 0; i < FILESYSTEM_MAXMOUNTS; i++)
+    for (Size i = 0; i < numberOfMounts; i++)
     {
         if (mounts[i].path[0] && strncmp(mounts[i].path, "/network/", 9) == 0)
         {

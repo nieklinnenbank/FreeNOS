@@ -20,7 +20,7 @@
 #include <string.h>
 #include <errno.h>
 #include <sys/stat.h>
-#include <Runtime.h>
+#include <FileSystemClient.h>
 #include <Log.h>
 #include "CreateFile.h"
 
@@ -41,8 +41,9 @@ CreateFile::Result CreateFile::exec()
     Result result = Success;
     Result ret = Success;
 
-    // Refresh mounted file systems
-    refreshMounts(0);
+    // Refresh current filesystem mount points
+    FileSystemClient filesystem;
+    filesystem.refreshMounts(0);
 
     // Perform a stat for each file
     for (Size i = 0; i < positionals.count(); i++)
@@ -55,7 +56,7 @@ CreateFile::Result CreateFile::exec()
         {
             ret = result;
         }
-    }    
+    }
 
     // Done
     return ret;
