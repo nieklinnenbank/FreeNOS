@@ -25,6 +25,8 @@
 
 FileSystemMount FileSystemClient::m_mounts[MaximumFileSystemMounts] = {};
 
+String * FileSystemClient::m_currentDirectory = (String *) NULL;
+
 FileSystemClient::FileSystemClient(const ProcessID pid)
     : m_pid(pid)
 {
@@ -34,6 +36,15 @@ inline FileSystem::Result FileSystemClient::request(const char *path,
                                                     FileSystemMessage &msg) const
 {
     const ProcessID mnt = m_pid == ANY ? findMount(path) : m_pid;
+    char fullpath[PATHLEN];
+
+    // Use the current directory as prefix for relative paths
+    if (path[0] != '/' && m_currentDirectory != NULL)
+        snprintf(fullpath, sizeof(fullpath), "%s/%s", **m_currentDirectory, path);
+    else
+        strlcpy(fullpath, path, sizeof(fullpath));
+
+    msg.path = fullpath;
 
     if (ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), mnt) == ChannelClient::Success)
     {
@@ -119,6 +130,29 @@ FileSystem::Result FileSystemClient::waitMount(const char *path)
     m_pid = savedPid;
 
     return result;
+}
+
+const String * FileSystemClient::getCurrentDirectory() const
+{
+    return m_currentDirectory;
+}
+
+void FileSystemClient::setCurrentDirectory(const String &directory)
+{
+    assert(m_currentDirectory != NULL);
+    *m_currentDirectory = directory;
+}
+
+void FileSystemClient::setCurrentDirectory(String *directory)
+{
+    if (m_currentDirectory != NULL)
+    {
+        *m_currentDirectory = *directory;
+    }
+    else
+    {
+        m_currentDirectory = directory;
+    }
 }
 
 FileSystem::Result FileSystemClient::createFile(const char *path,

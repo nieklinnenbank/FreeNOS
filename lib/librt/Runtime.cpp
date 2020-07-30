@@ -45,9 +45,6 @@ extern void (*DTOR_LIST)();
 /** Table with FileDescriptors. */
 static FileDescriptor *files = (FileDescriptor *) NULL;
 
-/** Current Directory String */
-String *currentDirectory = (String *) NULL;
-
 /** Initial logging instance */
 static KernelLog log;
 
@@ -166,7 +163,7 @@ void setupMappings()
 
     // First page is the argc+argv (skip here)
     // Second page is the current working directory
-    currentDirectory = new String((char *) argRange.virt + PAGESIZE, false);
+    filesystem.setCurrentDirectory(new String((char *) argRange.virt + PAGESIZE, false));
 
     // Third page and above contain the file descriptors table
     files = (FileDescriptor *) (argRange.virt + (PAGESIZE * 2));
@@ -176,18 +173,13 @@ void setupMappings()
     if (getppid() == 0)
     {
         memset(files, 0, argRange.size - (PAGESIZE * 2));
-        (*currentDirectory) = "/";
+        filesystem.setCurrentDirectory(String("/"));
     }
 }
 
 FileDescriptor * getFiles(void)
 {
     return files;
-}
-
-String * getCurrentDirectory()
-{
-    return currentDirectory;
 }
 
 extern C void SECTION(".entry") _entry()

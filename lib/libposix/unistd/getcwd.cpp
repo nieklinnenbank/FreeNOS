@@ -15,15 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <Assert.h>
+#include <FileSystemClient.h>
 #include <string.h>
 #include <errno.h>
-#include "Runtime.h"
 #include "unistd.h"
 
 char *getcwd(char *buf, size_t size)
 {
+    const FileSystemClient filesystem;
+    const String *currentDirectory = filesystem.getCurrentDirectory();
+
     // Copy our current working directory
-    memcpy(buf, **getCurrentDirectory(), size);
+    assert(currentDirectory != NULL);
+    memcpy(buf, **currentDirectory, size);
 
     // Set errno
     errno = ESUCCESS;

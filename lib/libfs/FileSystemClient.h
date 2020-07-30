@@ -95,6 +95,30 @@ class FileSystemClient
     FileSystem::Result waitMount(const char *path);
 
     /**
+     * Get current directory String.
+     *
+     * @return String pointer containing current directory
+     */
+    const String * getCurrentDirectory() const;
+
+    /**
+     * Set new current directory.
+     *
+     * @param directory String reference to use as current directory.
+     */
+    void setCurrentDirectory(const String &directory);
+
+    /**
+     * Set new current directory.
+     *
+     * @param directory String to use as current directory.
+     *
+     * @note If the current directory was already set before, the internal String
+     *       object will be overwritten using the value given by the String input.
+     */
+    void setCurrentDirectory(String *directory);
+
+    /**
      * Create a new file.
      *
      * @param path Path to the file
@@ -174,6 +198,9 @@ class FileSystemClient
 
     /** FileSystem mounts table */
     static FileSystemMount m_mounts[MaximumFileSystemMounts];
+
+    /** Current directory path is prefixed to relative path inputs */
+    static String *m_currentDirectory;
 
     /** ProcessID of the target file system or ANY to lookup in mounts table */
     ProcessID m_pid;

@@ -20,7 +20,6 @@
 #include "Runtime.h"
 #include "errno.h"
 #include "fcntl.h"
-#include "unistd.h"
 #include "sys/stat.h"
 
 int open(const char *path, int oflag, ...)
@@ -28,30 +27,17 @@ int open(const char *path, int oflag, ...)
     FileSystemClient filesystem;
     FileDescriptor *files = getFiles();
     FileSystem::FileStat st;
-    char fullpath[PATH_MAX];
-
-    // Relative or absolute?
-    if (path[0] != '/')
-    {
-        char cwd[PATH_MAX];
-
-        // What's the current working dir?
-        getcwd(cwd, PATH_MAX);
-        snprintf(fullpath, sizeof(fullpath), "%s/%s", cwd, path);
-    }
-    else
-        strlcpy(fullpath, path, sizeof(fullpath));
 
     // Ask the FileSystem for the file.
     if (files != NULL)
     {
-        FileSystem::Result result = filesystem.statFile(fullpath, &st);
+        FileSystem::Result result = filesystem.statFile(path, &st);
 
         // Refresh mounts and retry, in case the file did not exist
         if (result == FileSystem::NotFound)
         {
             filesystem.refreshMounts(0);
-            result = filesystem.statFile(fullpath, &st);
+            result = filesystem.statFile(path, &st);
         }
 
         // Set errno
@@ -65,10 +51,10 @@ int open(const char *path, int oflag, ...)
                 if (!files[i].open)
                 {
                     files[i].open  = true;
-                    files[i].mount = filesystem.findMount(fullpath);
+                    files[i].mount = filesystem.findMount(path);
                     files[i].identifier = 0;
                     files[i].position = 0;
-                    strlcpy(files[i].path, fullpath, PATH_MAX);
+                    strlcpy(files[i].path, path, PATH_MAX);
                     return i;
                 }
             }

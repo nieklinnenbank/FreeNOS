@@ -16,15 +16,17 @@
  */
 
 #include <FreeNOS/System.h>
+#include <FileSystemClient.h>
 #include <ExecutableFormat.h>
 #include <Types.h>
 #include <Runtime.h>
-#include <string.h>
-#include <errno.h>
+#include "string.h"
+#include "errno.h"
 #include "unistd.h"
 
 int spawn(Address program, Size programSize, const char *argv[])
 {
+    const FileSystemClient filesystem;
     ExecutableFormat *fmt;
     ExecutableFormat::Region regions[16];
     Arch::MemoryMap map;
@@ -138,7 +140,7 @@ int spawn(Address program, Size programSize, const char *argv[])
     }
 
     // Fill in the current working directory
-    strlcpy(arguments + PAGESIZE, **(getCurrentDirectory()), PATH_MAX);
+    strlcpy(arguments + PAGESIZE, **filesystem.getCurrentDirectory(), PATH_MAX);
 
     // Copy argc/argv into the new process
     if ((VMCopy(pid, API::Write, (Address) arguments, range.virt, PAGESIZE * 2)) < 0)

@@ -18,7 +18,6 @@
 #include <FileSystemClient.h>
 #include "errno.h"
 #include "limits.h"
-#include "unistd.h"
 #include "stdio.h"
 #include "string.h"
 #include "sys/stat.h"
@@ -26,22 +25,9 @@
 int mknod(const char *path, mode_t mode, dev_t dev)
 {
     const FileSystemClient filesystem;
-    char fullpath[PATH_MAX];
-
-    // Relative or absolute?
-    if (path[0] != '/')
-    {
-        char cwd[PATH_MAX];
-
-        // What's the current working dir?
-        getcwd(cwd, PATH_MAX);
-        snprintf(fullpath, sizeof(fullpath), "%s/%s", cwd, path);
-    }
-    else
-        strlcpy(fullpath, path, sizeof(fullpath));
 
     // Ask FileSystem to create the file for us
-    const FileSystem::Result result = filesystem.createFile(fullpath,
+    const FileSystem::Result result = filesystem.createFile(path,
                                                            (FileSystem::FileType) ((mode >> FILEMODE_BITS) & FILETYPE_MASK),
                                                            (FileSystem::FileModes) (mode & FILEMODE_MASK),
                                                             dev);

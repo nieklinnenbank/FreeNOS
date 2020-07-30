@@ -24,22 +24,9 @@
 int unlink(const char *path)
 {
     const FileSystemClient filesystem;
-    char fullpath[PATH_MAX];
-
-    // Relative or absolute?
-    if (path[0] != '/')
-    {
-        char cwd[PATH_MAX];
-
-        // What's the current working dir?
-        getcwd(cwd, PATH_MAX);
-        snprintf(fullpath, sizeof(fullpath), "%s/%s", cwd, path);
-    }
-    else
-        strlcpy(fullpath, path, sizeof(fullpath));
 
     // Ask for the unlink
-    const FileSystem::Result result = filesystem.deleteFile(fullpath);
+    const FileSystem::Result result = filesystem.deleteFile(path);
 
     // Set error number
     if (result == FileSystem::Success)

@@ -18,7 +18,6 @@
 #include <FileSystemClient.h>
 #include "errno.h"
 #include "limits.h"
-#include "unistd.h"
 #include "stdio.h"
 #include "string.h"
 #include "sys/stat.h"
@@ -26,22 +25,9 @@
 int creat(const char *path, mode_t mode)
 {
     const FileSystemClient filesystem;
-    char fullpath[PATH_MAX];
-
-    // Relative or absolute?
-    if (path[0] != '/')
-    {
-        char cwd[PATH_MAX];
-
-        // What's the current working dir?
-        getcwd(cwd, PATH_MAX);
-        snprintf(fullpath, sizeof(fullpath), "%s/%s", cwd, path);
-    }
-    else
-        strlcpy(fullpath, path, sizeof(fullpath));
 
     // Ask FileSystem to create the file for us
-    const FileSystem::Result result = filesystem.createFile(fullpath,
+    const FileSystem::Result result = filesystem.createFile(path,
                                                             FileSystem::RegularFile,
                                                            (FileSystem::FileModes) (mode & FILEMODE_MASK),
                                                             DeviceID());

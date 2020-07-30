@@ -20,9 +20,6 @@
 
 #include <Macros.h>
 #include <Types.h>
-#include <Array.h>
-#include <String.h>
-#include <ChannelClient.h>
 #include <FileDescriptor.h>
 
 /**
@@ -55,13 +52,6 @@ int main(int argc, char **argv);
  * @return FileDescriptor array pointer
  */
 FileDescriptor * getFiles();
-
-/**
- * Get current directory String.
- *
- * @return String pointer containing current directory
- */
-String * getCurrentDirectory();
 
 /**
  * @}

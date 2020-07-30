@@ -18,7 +18,6 @@
 #include <FileSystemClient.h>
 #include <Log.h>
 #include "errno.h"
-#include "unistd.h"
 #include "limits.h"
 #include "string.h"
 #include "sys/stat.h"
@@ -27,24 +26,11 @@ int stat(const char *path, struct stat *buf)
 {
     const FileSystemClient filesystem;
     FileSystem::FileStat st;
-    char fullpath[PATH_MAX];
 
-    // Relative or absolute?
-    if (path[0] != '/')
-    {
-        char cwd[PATH_MAX];
-
-        // What's the current working dir?
-        getcwd(cwd, PATH_MAX);
-        snprintf(fullpath, sizeof(fullpath), "%s/%s", cwd, path);
-    }
-    else
-        strlcpy(fullpath, path, sizeof(fullpath));
-
-    DEBUG("path = " << fullpath);
+    DEBUG("path = " << path);
 
     // Ask the FileSystem for the information
-    const FileSystem::Result result = filesystem.statFile(fullpath, &st);
+    const FileSystem::Result result = filesystem.statFile(path, &st);
 
     // Copy information into buf
     switch (result)
