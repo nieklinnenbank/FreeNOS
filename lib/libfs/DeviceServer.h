@@ -66,10 +66,9 @@ class DeviceServer : public FileSystemServer
      * be able to process requests for the Device later on.
      *
      * @param dev New device to add
-     * @param path Path format to the device
-     * @param ... Path format arguments
+     * @param path Path to the device
      */
-    void registerDevice(Device *dev, const char *path, ...);
+    void registerDevice(Device *dev, const char *path);
 
     /**
      * @brief Register an interrupt vector for the given device.

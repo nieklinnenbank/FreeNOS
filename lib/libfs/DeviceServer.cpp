@@ -34,13 +34,9 @@ Error DeviceServer::initialize()
     return ESUCCESS;
 }
 
-void DeviceServer::registerDevice(Device *dev, const char *path, ...)
+void DeviceServer::registerDevice(Device *dev, const char *path)
 {
-    va_list args;
-
-    va_start(args, path);
-    FileSystemServer::registerFile(dev, path, args);
-    va_end(args);
+    FileSystemServer::registerFile(dev, path);
 
     // Add to the list of Devices
     m_devices.insert(dev);

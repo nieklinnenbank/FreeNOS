@@ -20,7 +20,6 @@
 
 #include <FreeNOS/System.h>
 #include <List.h>
-#include <stdarg.h>
 #include "File.h"
 #include "FileSystemPath.h"
 
@@ -119,14 +118,13 @@ class Directory : public File
      * the underlying Storage.
      *
      * @param type File type.
-     * @param name Formatted name of the entry to add.
-     * @param ... Argument list.
+     * @param name Name of the entry to add.
      *
      * @note Entry names must be unique within the same Directory.
      * @see FileSystem
      * @see Storage
      */
-    void insert(FileSystem::FileType type, const char *name, ...);
+    void insert(FileSystem::FileType type, const char *name);
 
     /**
      * Remove a directory entry.

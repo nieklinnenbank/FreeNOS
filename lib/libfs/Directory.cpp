@@ -16,7 +16,6 @@
  */
 
 #include <MemoryBlock.h>
-#include <stdio.h>
 #include "Directory.h"
 
 Directory::Directory() : File(FileSystem::DirectoryFile)
@@ -57,24 +56,17 @@ File * Directory::lookup(const char *name)
     return ZERO;
 }
 
-void Directory::insert(FileSystem::FileType type, const char *name, ...)
+void Directory::insert(FileSystem::FileType type, const char *name)
 {
-    char path[PATHLEN];
-    va_list args;
     Dirent *d;
 
     // Only insert if not already in
     if (!get(name))
     {
-        // Format the path variable
-        va_start(args, name);
-        vsnprintf(path, sizeof(path), name, args);
-        va_end(args);
-
         // Create an fill entry object
         d = new Dirent;
         assert(d != NULL);
-        MemoryBlock::copy(d->name, path, DIRENT_LEN);
+        MemoryBlock::copy(d->name, name, DIRENT_LEN);
         d->type = type;
         entries.append(d);
         m_size += sizeof(*d);

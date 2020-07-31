@@ -84,28 +84,13 @@ File * FileSystemServer::createFile(FileSystem::FileType type, DeviceID deviceID
     return (File *) ZERO;
 }
 
-FileSystem::Result FileSystemServer::registerFile(File *file, const char *path, ...)
+FileSystem::Result FileSystemServer::registerFile(File *file, const char *path)
 {
-    va_list args;
-    FileSystem::Result r;
-
-    va_start(args, path);
-    r = registerFile(file, path, args);
-    va_end(args);
-
-    return r;
-}
-
-FileSystem::Result FileSystemServer::registerFile(File *file, const char *path, va_list args)
-{
-    char buf[PATHLEN];
-
     // Add to the filesystem cache
-    vsnprintf(buf, sizeof(buf), path, args);
-    insertFileCache(file, path, args);
+    insertFileCache(file, path);
 
     // Also add to the parent directory
-    FileSystemPath p((char *)buf);
+    FileSystemPath p((char *) path);
     Directory *parent;
 
     if (p.parent())
@@ -184,8 +169,7 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
                 /* Attempt to create the new file. */
                 if ((file = createFile(msg->filetype, msg->deviceID)))
                 {
-                    const char *p = **path.full();
-                    insertFileCache(file, "%s", p);
+                    insertFileCache(file, **path.full());
 
                     /* Add directory entry to our parent. */
                     if (path.parent())
@@ -355,30 +339,15 @@ FileCache * FileSystemServer::lookupFile(FileSystemPath *path)
     return c;
 }
 
-FileCache * FileSystemServer::insertFileCache(File *file, const char *pathFormat, ...)
+FileCache * FileSystemServer::insertFileCache(File *file, const char *pathStr)
 {
-    va_list args;
-
-    va_start(args, pathFormat);
-    FileCache *c = insertFileCache(file, pathFormat, args);
-    va_end(args);
-
-    return c;
-}
-
-FileCache * FileSystemServer::insertFileCache(File *file, const char *pathFormat, va_list args)
-{
-    char pathStr[PATHLEN];
     FileSystemPath path;
     FileCache *parent = ZERO;
-        
-    // Format the path first
-    vsnprintf(pathStr, sizeof(pathStr), pathFormat, args);
 
-    /* Interpret the given path. */
+    // Interpret the given path
     path.parse(pathStr);
-        
-    /* Lookup our parent. */
+
+    // Lookup our parent
     if (!(path.parent()))
     {
         parent = m_root;

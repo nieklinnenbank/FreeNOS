@@ -21,7 +21,6 @@
 #include <FreeNOS/System.h>
 #include <ChannelServer.h>
 #include <Vector.h>
-#include <stdarg.h>
 #include "Directory.h"
 #include "Device.h"
 #include "File.h"
@@ -89,18 +88,7 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
      *
      * @return Result code
      */
-    FileSystem::Result registerFile(File *file, const char *path, ...);
-
-    /**
-     * Register a new File with variable arguments.
-     *
-     * @param file File object pointer.
-     * @param path The path for the File.
-     * @param args Variable argument list.
-     *
-     * @return Result code
-     */
-    FileSystem::Result registerFile(File *file, const char *path, va_list args);
+    FileSystem::Result registerFile(File *file, const char *path);
 
     /**
      * Create a new file.
@@ -116,23 +104,11 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
      * Inserts a file into the in-memory filesystem tree.
      *
      * @param file File to insert.
-     * @param pathFormat Formatted full path to the file to insert.
-     * @param ... Argument list.
+     * @param pathFormat Full path to the file to insert.
      *
      * @return Pointer to the newly created FileCache, or NULL on failure.
      */
-    FileCache * insertFileCache(File *file, const char *pathFormat, ...);
-
-    /**
-     * Inserts a file into the in-memory filesystem tree.
-     *
-     * @param file File to insert.
-     * @param pathFormat Formatted full path to the file to insert.
-     * @param args Argument list.
-     *
-     * @return Pointer to the newly created FileCache, or NULL on failure.
-     */
-    FileCache * insertFileCache(File *file, const char *pathFormat, va_list args);
+    FileCache * insertFileCache(File *file, const char *pathFormat);
 
     /**
      * Process an incoming filesystem request using a path.
