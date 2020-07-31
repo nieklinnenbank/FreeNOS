@@ -52,18 +52,6 @@ typedef struct FileCache
         }
     }
 
-    /**
-     * Comparision operator.
-     *
-     * @param fc Instance to compare us with.
-     *
-     * @return True if equal, false otherwise.
-     */
-    bool operator == (FileCache *fc)
-    {
-        return file == fc->file;
-    }
-
     /** File pointer. */
     File *file;
 

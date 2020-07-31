@@ -36,42 +36,6 @@
  */
 typedef struct FileSystemMessage : public ChannelMessage
 {
-    /**
-     * Assignment operator.
-     * @param m FileSystemMessage pointer to copy from.
-     */
-    void operator = (FileSystemMessage *m)
-    {
-        type        = m->type;
-        identifier  = m->identifier;
-        from        = m->from;
-        action      = m->action;
-        result      = m->result;
-        buffer      = m->buffer;
-        size        = m->size;
-        offset      = m->offset;
-        userID      = m->userID;
-        groupID     = m->groupID;
-        deviceID    = m->deviceID;
-        mode        = m->mode;
-        stat        = m->stat;
-        path        = m->path;
-        filetype    = m->filetype;
-    }
-
-    /**
-     * Comparison operator.
-     *
-     * @param m Other FileSystemMessage to compare with.
-     *
-     * @return True if equal, false otherwise.
-     */
-    bool operator == (FileSystemMessage *m)
-    {
-        return this->from   == m->from &&
-               this->action == m->action;
-    }
-
     /** Action to perform. */
     FileSystem::Action action;
 

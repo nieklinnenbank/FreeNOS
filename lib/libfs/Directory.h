@@ -45,17 +45,6 @@ typedef struct Dirent
 
     /** Type of file. */
     FileSystem::FileType type;
-
-    /**
-     * Compares this Dirent with another Dirent instance.
-     * @param dir Instance to compare with.
-     * @return True if equal, false otherwise.
-     */
-    bool operator == (struct Dirent *dir)
-    {
-        String str(name, false);
-        return str.compareTo(dir->name) == 0;
-    }
 }
 Dirent;
 
