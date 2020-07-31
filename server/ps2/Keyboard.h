@@ -65,7 +65,7 @@ class Keyboard : public Device
      *
      * @return Error status code.
      */
-    virtual Error interrupt(Size vector);
+    virtual FileSystem::Error interrupt(Size vector);
 
     /**
      * @brief Read a character from the keyboard.
@@ -76,7 +76,7 @@ class Keyboard : public Device
      *
      * @return Number of bytes read or error code on failure.
      */
-    virtual Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
 
   private:
 

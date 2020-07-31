@@ -49,7 +49,7 @@ USBDevice::~USBDevice()
     delete m_config;
 }
 
-Error USBDevice::initialize()
+FileSystem::Error USBDevice::initialize()
 {
     DEBUG("");
 
@@ -72,20 +72,20 @@ Error USBDevice::initialize()
     // First retrieve the device descriptor in 8-bytes packet only
     // This is to figure out the maxPacketSize which is needed for transfers
     DEBUG("getting max packet size");
-    if (getDeviceDescriptor(m_device, 8) != ESUCCESS)
+    if (getDeviceDescriptor(m_device, 8) != FileSystem::Success)
     {
         ERROR("failed to get max packet size");
-        return EIO;
+        return FileSystem::IOError;
     }
 
     DEBUG("maxPacketSize = " << m_device->maxPacketSize);
 
     // Retrieve device descriptor
     DEBUG("getting device descriptor");
-    if (getDeviceDescriptor(m_device) != ESUCCESS)
+    if (getDeviceDescriptor(m_device) != FileSystem::Success)
     {
         ERROR("failed to get device descriptor");
-        return EIO;
+        return FileSystem::IOError;
     }
 
     DEBUG("got descriptor: vendorId=" << m_device->vendorId <<
@@ -96,30 +96,30 @@ Error USBDevice::initialize()
                         " protocol=" << m_device->deviceProtocol);
 
     // Retrieve configuration descriptor
-    if (getConfigDescriptor(m_config) != ESUCCESS)
+    if (getConfigDescriptor(m_config) != FileSystem::Success)
     {
         ERROR("failed to get configuration descriptor");
-        return EIO;
+        return FileSystem::IOError;
     }
     // Check configuration length
     if (m_config->totalLength < sizeof(USBDescriptor::Configuration))
     {
         ERROR("invalid size for configuration descriptor: " << m_config->totalLength);
-        return EIO;
+        return FileSystem::IOError;
     }
 
     // Set address of the USB device.
-    if (setAddress(actualId) != ESUCCESS)
+    if (setAddress(actualId) != FileSystem::Success)
     {
         ERROR("failed to set address to: " << actualId);
-        return EIO;
+        return FileSystem::IOError;
     }
 
     // Activate the first configuration on the USB device.
-    if (setConfiguration(m_config->configurationValue) != ESUCCESS)
+    if (setConfiguration(m_config->configurationValue) != FileSystem::Success)
     {
         ERROR("failed to activate configurationValue: " << m_config->configurationValue);
-        return EIO;
+        return FileSystem::IOError;
     }
 
     // Retrieve the full configuration descriptor, which
@@ -129,12 +129,12 @@ Error USBDevice::initialize()
     if (!desc)
     {
         ERROR("failed to allocate descriptors buffer");
-        return EIO;
+        return FileSystem::IOError;
     }
-    if (getConfigDescriptor((USBDescriptor::Configuration *) desc, m_config->totalLength) != ESUCCESS)
+    if (getConfigDescriptor((USBDescriptor::Configuration *) desc, m_config->totalLength) != FileSystem::Success)
     {
         ERROR("failed to get full configuration descriptors");
-        return EIO;
+        return FileSystem::IOError;
     }
 
     // Parse all descriptors received
@@ -187,10 +187,10 @@ Error USBDevice::initialize()
             }
         }
     }
-    return ESUCCESS;
+    return FileSystem::Success;
 }
 
-Error USBDevice::getDeviceDescriptor(USBDescriptor::Device *desc, Size size)
+FileSystem::Error USBDevice::getDeviceDescriptor(USBDescriptor::Device *desc, Size size)
 {
     DEBUG("");
 
@@ -202,7 +202,7 @@ Error USBDevice::getDeviceDescriptor(USBDescriptor::Device *desc, Size size)
                           desc, size);
 }
 
-Error USBDevice::getConfigDescriptor(USBDescriptor::Configuration *desc, Size size)
+FileSystem::Error USBDevice::getConfigDescriptor(USBDescriptor::Configuration *desc, Size size)
 {
     DEBUG("");
 
@@ -214,7 +214,7 @@ Error USBDevice::getConfigDescriptor(USBDescriptor::Configuration *desc, Size si
                           desc, size);
 }
 
-Error USBDevice::getInterfaceDescriptor(USBDescriptor::Interface *desc)
+FileSystem::Error USBDevice::getInterfaceDescriptor(USBDescriptor::Interface *desc)
 {
     DEBUG("");
 
@@ -226,7 +226,7 @@ Error USBDevice::getInterfaceDescriptor(USBDescriptor::Interface *desc)
                           desc, sizeof(*desc));
 }
 
-Error USBDevice::getEndpointDescriptor(u8 endpointId, USBDescriptor::Endpoint *desc)
+FileSystem::Error USBDevice::getEndpointDescriptor(u8 endpointId, USBDescriptor::Endpoint *desc)
 {
     DEBUG("endpointId = " << endpointId);
 
@@ -238,25 +238,25 @@ Error USBDevice::getEndpointDescriptor(u8 endpointId, USBDescriptor::Endpoint *d
                           desc, sizeof(*desc));
 }
 
-Error USBDevice::setAddress(u8 address)
+FileSystem::Error USBDevice::setAddress(u8 address)
 {
     DEBUG("address =" << address);
 
     // Send the request
-    Error r = controlMessage(USBTransfer::SetAddress,
+    FileSystem::Error r = controlMessage(USBTransfer::SetAddress,
                              USBTransfer::Out,
                              USBTransfer::Standard,
                              USBTransfer::Device,
                              address, 0, 0, 0);
 
     // Set member, which is word aligned.
-    if (r == ESUCCESS)
+    if (r == FileSystem::Success)
         m_id = address;
 
     return r;
 }
 
-Error USBDevice::setConfiguration(u8 configId)
+FileSystem::Error USBDevice::setConfiguration(u8 configId)
 {
     DEBUG("configId =" << configId);
     return controlMessage(USBTransfer::SetConfiguration,
@@ -266,7 +266,7 @@ Error USBDevice::setConfiguration(u8 configId)
                           configId, 0, 0, 0);
 }
 
-Error USBDevice::controlMessage(u8 request,
+FileSystem::Error USBDevice::controlMessage(u8 request,
                                 const USBTransfer::Direction direction,
                                 const USBTransfer::RequestType type,
                                 const USBTransfer::Recipient recipient,
@@ -311,7 +311,7 @@ Error USBDevice::controlMessage(u8 request,
     return submit(msg);
 }
 
-Error USBDevice::transfer(const USBTransfer::Type type,
+FileSystem::Error USBDevice::transfer(const USBTransfer::Type type,
                           const USBTransfer::Direction direction,
                           Address endpointId,
                           void *buffer,
@@ -345,7 +345,7 @@ Error USBDevice::transfer(const USBTransfer::Type type,
     return submit(msg);
 }
 
-Error USBDevice::beginTransfer(
+FileSystem::Error USBDevice::beginTransfer(
     const USBTransfer::Type type,
     const USBTransfer::Direction direction,
     Address endpointId,
@@ -395,12 +395,12 @@ Error USBDevice::beginTransfer(
         fs.from   = SELF;
         fs.deviceID.minor = fd->identifier;
         if (ChannelClient::instance->sendRequest(fd->mount, &fs, sizeof(fs), callback) == ChannelClient::Success)
-            return ESUCCESS;
+            return FileSystem::Success;
     }
-    return EIO;
+    return FileSystem::IOError;
 }
 
-Error USBDevice::finishTransfer(FileSystemMessage *msg)
+FileSystem::Error USBDevice::finishTransfer(FileSystemMessage *msg)
 {
     DEBUG("");
 
@@ -411,10 +411,10 @@ Error USBDevice::finishTransfer(FileSystemMessage *msg)
 
     // Release buffer
     delete msg->buffer;
-    return ESUCCESS;
+    return FileSystem::Success;
 }
 
-Error USBDevice::submit(USBMessage & msg)
+FileSystem::Error USBDevice::submit(USBMessage & msg)
 {
     DEBUG("");
 
@@ -422,10 +422,10 @@ Error USBDevice::submit(USBMessage & msg)
     if (::write(m_transferFile, &msg, sizeof(msg)) != sizeof(msg))
     {
         ERROR("failed to write USB transfer file: " << strerror(errno));
-        return EIO;
+        return FileSystem::IOError;
     }
     // Note that the USB controller will also implicitely write the
     // result of the transfer to the USBMessage buffer.
     DEBUG("transfer completed. USBMessage.state =" << (int)msg.state);
-    return ESUCCESS;
+    return FileSystem::Success;
 }

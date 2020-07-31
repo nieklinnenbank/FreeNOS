@@ -34,27 +34,27 @@ Loopback::~Loopback()
     DEBUG("");
 }
 
-Error Loopback::initialize()
+FileSystem::Error Loopback::initialize()
 {
     DEBUG("");
     return NetworkDevice::initialize();
 }
 
-Error Loopback::getAddress(Ethernet::Address *address)
+FileSystem::Error Loopback::getAddress(Ethernet::Address *address)
 {
     DEBUG("");
     MemoryBlock::copy(address, &m_address, sizeof(Ethernet::Address));
-    return ESUCCESS;
+    return FileSystem::Success;
 }
 
-Error Loopback::setAddress(Ethernet::Address *address)
+FileSystem::Error Loopback::setAddress(Ethernet::Address *address)
 {
     DEBUG("");
     MemoryBlock::copy(&m_address, address, sizeof(Ethernet::Address));
-    return ESUCCESS;
+    return FileSystem::Success;
 }
 
-Error Loopback::transmit(NetworkQueue::Packet *pkt)
+FileSystem::Error Loopback::transmit(NetworkQueue::Packet *pkt)
 {
     DEBUG("size = " << pkt->size);
 
@@ -64,7 +64,7 @@ Error Loopback::transmit(NetworkQueue::Packet *pkt)
     // Release packet buffer
     m_transmit.release(pkt);
 
-    // Restart error flag triggers a restart of all other requests.
+    // TODO: Restart FileSystem::Error flag triggers a restart of all other requests.
     // This is required because we need to retry all read requests.
-    return pkt->size | ERESTART;
+    return pkt->size;
 }

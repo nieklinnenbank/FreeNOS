@@ -18,8 +18,6 @@
 #include <FreeNOS/System.h>
 #include <KernelLog.h>
 #include <DeviceServer.h>
-#include <stdlib.h>
-#include <unistd.h>
 
 #ifdef ARM
 #include "PL011.h"

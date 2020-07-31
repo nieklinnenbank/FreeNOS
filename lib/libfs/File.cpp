@@ -37,12 +37,12 @@ FileSystem::FileType File::getType() const
 
 Error File::read(IOBuffer & buffer, Size size, Size offset)
 {
-    return ENOTSUP;
+    return FileSystem::NotSupported;
 }
 
 Error File::write(IOBuffer & buffer, Size size, Size offset)
 {
-    return ENOTSUP;
+    return FileSystem::NotSupported;
 }
 
 Error File::status(FileSystemMessage *msg)
@@ -63,8 +63,10 @@ Error File::status(FileSystemMessage *msg)
     if ((e = VMCopy(msg->from, API::Write, (Address) &st,
                    (Address) msg->stat, sizeof(st)) > 0))
     {
-        return ESUCCESS;
+        return FileSystem::Success;
     }
     else
+    {
         return e;
+    }
 }

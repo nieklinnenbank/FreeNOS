@@ -30,14 +30,14 @@ MountWaitFile::~MountWaitFile()
 {
 }
 
-Error MountWaitFile::write(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error MountWaitFile::write(IOBuffer & buffer, Size size, Size offset)
 {
     char path[PATHLEN];
     Error r;
 
     // Check for input size
     if (size >= PATHLEN)
-        return EIO;
+        return FileSystem::InvalidArgument;
 
     // Copy the input path
     if ((r = buffer.read(path, size)) <= 0)
@@ -61,5 +61,5 @@ Error MountWaitFile::write(IOBuffer & buffer, Size size, Size offset)
     }
 
     // Not yet available
-    return EAGAIN;
+    return FileSystem::RetryAgain;
 }

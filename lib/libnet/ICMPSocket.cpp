@@ -16,6 +16,7 @@
  */
 
 #include <FreeNOS/System.h>
+#include <errno.h>
 #include "Ethernet.h"
 #include "IPV4.h"
 #include "ICMP.h"
@@ -44,7 +45,7 @@ Error ICMPSocket::read(IOBuffer & buffer, Size size, Size offset)
     DEBUG("");
 
     if (!m_gotReply)
-        return EAGAIN;
+        return FileSystem::RetryAgain;
 
     m_gotReply = false;
     buffer.write(&m_reply, sizeof(m_reply));

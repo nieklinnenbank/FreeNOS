@@ -30,12 +30,12 @@ Time::Time()
     m_identifier << "time0";
 }
 
-Error Time::initialize()
+FileSystem::Error Time::initialize()
 {
-    return ESUCCESS;
+    return FileSystem::Success;
 }
 
-Error Time::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error Time::read(IOBuffer & buffer, Size size, Size offset)
 {
     unsigned int year, month, day, hour, min, sec = 0, time;
     char tmp[16];

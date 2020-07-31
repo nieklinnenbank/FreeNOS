@@ -32,7 +32,7 @@ Directory::~Directory()
     entries.clear();
 }
 
-Error Directory::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error Directory::read(IOBuffer & buffer, Size size, Size offset)
 {
     Size bytes = 0;
 

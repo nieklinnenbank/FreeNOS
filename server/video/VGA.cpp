@@ -26,7 +26,7 @@ VGA::VGA(Size w, Size h) : Device(FileSystem::BlockDeviceFile), width(w), height
     m_identifier << "vga0";
 }
 
-Error VGA::initialize()
+FileSystem::Error VGA::initialize()
 {
     Memory::Range range;
 
@@ -53,24 +53,24 @@ Error VGA::initialize()
     WriteByte(VGA_IODATA, 1 << 5);
 
     // Successfull
-    return ESUCCESS;
+    return FileSystem::Success;
 }
 
-Error VGA::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error VGA::read(IOBuffer & buffer, Size size, Size offset)
 {
     if (offset + size > width * height * sizeof(u16))
     {
-        return EFAULT;
+        return FileSystem::InvalidArgument;
     }
     buffer.write(vga + (offset / sizeof(u16)), size);
     return size;
 }
 
-Error VGA::write(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error VGA::write(IOBuffer & buffer, Size size, Size offset)
 {
     if (offset + size > width * height * sizeof(u16))
     {
-        return EFAULT;
+        return FileSystem::InvalidArgument;
     }
     memcpy(vga + (offset / sizeof(u16)), buffer.getBuffer(), size);
     return size;

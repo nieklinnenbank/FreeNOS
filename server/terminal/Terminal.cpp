@@ -25,7 +25,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
-#include <errno.h>
 
 u8 tekenToVGA[] =
 {
@@ -48,7 +47,7 @@ Terminal::Terminal(const char *in, const char *out,
     buffer = new u16[width * height];
 }
 
-Error Terminal::initialize()
+FileSystem::Error Terminal::initialize()
 {
     teken_pos_t winsz;
 
@@ -61,7 +60,7 @@ Error Terminal::initialize()
     {
         printf("failed to open `%s': %s\r\n",
                 inputFile, strerror(errno));
-        exit(EXIT_FAILURE);
+        return FileSystem::IOError;
     }
 
     // Then open the output file.
@@ -69,7 +68,7 @@ Error Terminal::initialize()
     {
         printf("failed to open `%s': %s\r\n",
                 outputFile, strerror(errno));
-        exit(EXIT_FAILURE);
+        return FileSystem::IOError;
     }
 
     // Fill in function pointers
@@ -101,7 +100,7 @@ Error Terminal::initialize()
     write(io, io.getCount(), 0);
 
     // Done
-    return ESUCCESS;
+    return FileSystem::Success;
 }
 
 Terminal::~Terminal()
@@ -141,7 +140,7 @@ u16 * Terminal::getCursorValue()
     return &cursorValue;
 }
 
-Error Terminal::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error Terminal::read(IOBuffer & buffer, Size size, Size offset)
 {
     char tmp[255];
     int n;

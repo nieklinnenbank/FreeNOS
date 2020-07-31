@@ -20,7 +20,6 @@
 #include <Vector.h>
 #include <HashTable.h>
 #include <HashIterator.h>
-#include <stdio.h>
 #include "FileSystemClient.h"
 #include "FileSystemMount.h"
 #include "FileSystemServer.h"
@@ -200,7 +199,7 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
             break;
 
         case FileSystem::StatFile:
-            if (file->status(msg) == ESUCCESS)
+            if (file->status(msg) == FileSystem::Success)
             {
                 msg->result = FileSystem::Success;
             }
@@ -220,7 +219,7 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
                 if (req.getBuffer().getCount())
                     req.getBuffer().flush();
             }
-            else if (ret == EAGAIN)
+            else if (ret == FileSystem::RetryAgain)
             {
                 msg->result = FileSystem::RetryAgain;
             }
@@ -241,7 +240,7 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
                 msg->size = ret;
                 msg->result = FileSystem::Success;
             }
-            else if (ret == EAGAIN)
+            else if (ret == FileSystem::RetryAgain)
             {
                 msg->result = FileSystem::RetryAgain;
             }

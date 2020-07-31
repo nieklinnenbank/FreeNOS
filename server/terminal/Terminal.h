@@ -126,7 +126,7 @@ class Terminal : public Device
      *
      * @return Error result code.
      */
-    virtual Error initialize();
+    virtual FileSystem::Error initialize();
 
     /**
      * Read bytes from the Terminal.
@@ -137,7 +137,7 @@ class Terminal : public Device
      *
      * @return Number of bytes read or error code on failure.
      */
-    virtual Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
 
     /**
      * Write bytes to the Terminal (vga memory).
@@ -148,7 +148,7 @@ class Terminal : public Device
      *
      * @return Number of bytes written or error code on failure.
      */
-    virtual Error write(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Error write(IOBuffer & buffer, Size size, Size offset);
 
   private:
 

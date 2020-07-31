@@ -20,6 +20,7 @@
 
 #include <FreeNOS/System.h>
 #include <List.h>
+#include "FileSystem.h"
 #include "File.h"
 #include "FileSystemPath.h"
 
@@ -90,7 +91,7 @@ class Directory : public File
      * @see Storage
      * @see Dirent
      */
-    virtual Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
 
     /**
      * Retrieve a File from storage.

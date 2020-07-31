@@ -65,7 +65,7 @@ class PseudoFile : public File
      *
      * @see IOBuffer
      */
-    virtual Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
 
     /**
      * Write bytes to the file.
@@ -76,7 +76,7 @@ class PseudoFile : public File
      *
      * @return Number of bytes written on success, Error on failure.
      */
-    virtual Error write(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Error write(IOBuffer & buffer, Size size, Size offset);
 
   private:
 

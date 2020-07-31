@@ -59,7 +59,7 @@ class MountsFile : public File
      *
      * @return Number of bytes read on success, Error on failure.
      */
-    virtual Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
 
     /**
      * Write bytes to the file.
@@ -70,7 +70,7 @@ class MountsFile : public File
      *
      * @return Number of bytes written on success, Error on failure.
      */
-    virtual Error write(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Error write(IOBuffer & buffer, Size size, Size offset);
 };
 
 /**

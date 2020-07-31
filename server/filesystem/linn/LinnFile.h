@@ -24,7 +24,6 @@
 #include "LinnFileSystem.h"
 #include "LinnInode.h"
 #include "IOBuffer.h"
-#include <errno.h>
 
 /**
  * @addtogroup server
@@ -64,7 +63,7 @@ class LinnFile : public File
      *
      * @see IOBuffer
      */
-    virtual Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
 
   private:
 

@@ -50,32 +50,32 @@ class Loopback : public NetworkDevice
     /**
      * Perform initialization
      */
-    virtual Error initialize();
+    virtual FileSystem::Error initialize();
 
     /**
      * Read ethernet address.
      *
      * @param address Ethernet address reference for output
      *
-     * @return Error code
+     * @return FileSystem::Error code
      */
-    virtual Error getAddress(Ethernet::Address *address);
+    virtual FileSystem::Error getAddress(Ethernet::Address *address);
 
     /**
      * Set ethernet address
      *
      * @param address New ethernet address to set
      *
-     * @return Error code
+     * @return FileSystem::Error code
      */
-    virtual Error setAddress(Ethernet::Address *address);
+    virtual FileSystem::Error setAddress(Ethernet::Address *address);
 
     /**
      * Transmit one network packet
      *
      * @param pkt Network packet buffer
      */
-    virtual Error transmit(NetworkQueue::Packet *pkt);
+    virtual FileSystem::Error transmit(NetworkQueue::Packet *pkt);
 
   private:
 

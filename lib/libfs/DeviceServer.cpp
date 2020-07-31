@@ -31,7 +31,7 @@ Error DeviceServer::initialize()
 {
     setRoot(new Directory());
     mount();
-    return ESUCCESS;
+    return ChannelServer::Success;
 }
 
 void DeviceServer::registerDevice(Device *dev, const char *path)

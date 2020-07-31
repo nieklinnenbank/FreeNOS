@@ -17,7 +17,6 @@
 
 #include <FreeNOS/System.h>
 #include <Macros.h>
-#include <errno.h>
 #include "Keyboard.h"
 
 /**
@@ -48,20 +47,20 @@ Keyboard::Keyboard() : Device(FileSystem::CharacterDeviceFile), shiftState(ZERO)
     m_identifier << "keyboard0";
 }
 
-Error Keyboard::initialize()
+FileSystem::Error Keyboard::initialize()
 {
-    return ESUCCESS;
+    return FileSystem::Success;
 }
 
-Error Keyboard::interrupt(Size vector)
+FileSystem::Error Keyboard::interrupt(Size vector)
 {
     pending = true;
-    return ESUCCESS;
+    return FileSystem::Success;
 }
 
-Error Keyboard::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error Keyboard::read(IOBuffer & buffer, Size size, Size offset)
 {
-    Error ret = EAGAIN;
+    FileSystem::Error ret = FileSystem::RetryAgain;
 
     // Do we have any new key events?
     if (pending)
@@ -87,5 +86,6 @@ Error Keyboard::read(IOBuffer & buffer, Size size, Size offset)
         // Re-enable interrupt
         ProcessCtl(SELF, EnableIRQ, PS2_IRQ);
     }
+
     return ret;
 }

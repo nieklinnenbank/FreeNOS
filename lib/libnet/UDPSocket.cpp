@@ -16,6 +16,7 @@
  */
 
 #include <stdlib.h>
+#include <errno.h>
 #include "Ethernet.h"
 #include "UDP.h"
 #include "UDPSocket.h"
@@ -43,7 +44,7 @@ Error UDPSocket::read(IOBuffer & buffer, Size size, Size offset)
 
     NetworkQueue::Packet *pkt = m_queue.pop();
     if (!pkt)
-        return EAGAIN;
+        return FileSystem::RetryAgain;
 
     IPV4::Header *ipHdr = (IPV4::Header *)(pkt->data + sizeof(Ethernet::Header));
     UDP::Header *udpHdr = (UDP::Header *)(pkt->data + sizeof(Ethernet::Header) + sizeof(IPV4::Header));

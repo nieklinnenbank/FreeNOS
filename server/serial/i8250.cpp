@@ -19,7 +19,6 @@
 #include <FreeNOS/Config.h>
 #include <Macros.h>
 #include <Types.h>
-#include <string.h>
 #include "i8250.h"
 
 i8250::i8250(const u16 base, const u16 irq)
@@ -30,7 +29,7 @@ i8250::i8250(const u16 base, const u16 irq)
     m_identifier << "serial0";
 }
 
-Error i8250::initialize()
+FileSystem::Error i8250::initialize()
 {
     // 8bit Words, no parity
     m_io.outb(LINECONTROL, 3);
@@ -51,16 +50,16 @@ Error i8250::initialize()
     m_io.outb(LINECONTROL, m_io.inb(LINECONTROL) & ~(DLAB));
 
     // Done
-    return ESUCCESS;
+    return FileSystem::Success;
 }
 
-Error i8250::interrupt(Size vector)
+FileSystem::Error i8250::interrupt(Size vector)
 {
     ProcessCtl(SELF, EnableIRQ, m_irq);
-    return ESUCCESS;
+    return FileSystem::Success;
 }
 
-Error i8250::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error i8250::read(IOBuffer & buffer, Size size, Size offset)
 {
     Size bytes = 0;
     u8 byte;
@@ -72,10 +71,14 @@ Error i8250::read(IOBuffer & buffer, Size size, Size offset)
         buffer.bufferedWrite(&byte, 1);
         bytes++;
     }
-    return bytes ? (Error) bytes : EAGAIN;
+
+    if (bytes)
+        return (FileSystem::Error) bytes;
+    else
+        return FileSystem::RetryAgain;
 }
 
-Error i8250::write(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error i8250::write(IOBuffer & buffer, Size size, Size offset)
 {
     Size bytes = 0;
 
@@ -84,5 +87,9 @@ Error i8250::write(IOBuffer & buffer, Size size, Size offset)
     {
         m_io.outb(TRANSMIT, buffer[bytes++]);
     }
-    return bytes ? (Error) bytes : EAGAIN;
+
+    if (bytes)
+        return (FileSystem::Error) bytes;
+    else
+        return FileSystem::RetryAgain;
 }

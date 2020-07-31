@@ -58,7 +58,7 @@ class USBDevice : public Device
      *
      * @return Result code
      */
-    virtual Error initialize();
+    virtual FileSystem::Error initialize();
 
   protected:
 
@@ -67,7 +67,7 @@ class USBDevice : public Device
      *
      * @return Result code
      */
-    Error getDeviceDescriptor(USBDescriptor::Device *desc,
+    FileSystem::Error getDeviceDescriptor(USBDescriptor::Device *desc,
                               Size size = sizeof(USBDescriptor::Device));
 
     /**
@@ -75,7 +75,7 @@ class USBDevice : public Device
      *
      * @return Result code
      */
-    Error getConfigDescriptor(USBDescriptor::Configuration *desc,
+    FileSystem::Error getConfigDescriptor(USBDescriptor::Configuration *desc,
                               Size size = sizeof(USBDescriptor::Configuration));
 
     /**
@@ -83,35 +83,35 @@ class USBDevice : public Device
      *
      * @return Result code
      */
-    Error getInterfaceDescriptor(USBDescriptor::Interface *desc);
+    FileSystem::Error getInterfaceDescriptor(USBDescriptor::Interface *desc);
 
     /**
      * Get endpoint descriptor.
      *
      * @return Result code
      */
-    Error getEndpointDescriptor(u8 endpointId, USBDescriptor::Endpoint *desc);
+    FileSystem::Error getEndpointDescriptor(u8 endpointId, USBDescriptor::Endpoint *desc);
 
     /**
      * Set device address.
      *
      * @return Result code
      */
-    Error setAddress(u8 address);
+    FileSystem::Error setAddress(u8 address);
 
     /**
      * Activate a configuration.
      *
      * @return Result code
      */
-    Error setConfiguration(u8 configId);
+    FileSystem::Error setConfiguration(u8 configId);
 
     /**
      * Send a control message.
      *
      * @return Result code
      */
-    Error controlMessage(u8 request,
+    FileSystem::Error controlMessage(u8 request,
                          const USBTransfer::Direction direction,
                          const USBTransfer::RequestType type,
                          const USBTransfer::Recipient recipient,
@@ -125,7 +125,7 @@ class USBDevice : public Device
      *
      * @return Result code
      */
-    Error transfer(const USBTransfer::Type type,
+    FileSystem::Error transfer(const USBTransfer::Type type,
                    const USBTransfer::Direction direction,
                    Address endpointId,
                    void *buffer,
@@ -137,7 +137,7 @@ class USBDevice : public Device
      *
      * @return Result code
      */
-    Error beginTransfer(const USBTransfer::Type type,
+    FileSystem::Error beginTransfer(const USBTransfer::Type type,
                         const USBTransfer::Direction direction,
                         Address endpointId,
                         void *buffer,
@@ -150,14 +150,14 @@ class USBDevice : public Device
      *
      * @return Result code
      */
-    Error finishTransfer(FileSystemMessage *msg);
+    FileSystem::Error finishTransfer(FileSystemMessage *msg);
 
     /**
      * Submit a USB transfer to the Host controller.
      *
      * @return Result code
      */
-    Error submit(USBMessage & msg);
+    FileSystem::Error submit(USBMessage & msg);
 
   protected:
 

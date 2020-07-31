@@ -25,7 +25,7 @@ NS16550::NS16550(u32 irq)
     m_identifier << "serial0";
 }
 
-Error NS16550::initialize()
+FileSystem::Error NS16550::initialize()
 {
     if (!isKernel)
     {
@@ -34,7 +34,7 @@ Error NS16550::initialize()
                      Memory::User | Memory::Readable | Memory::Writable | Memory::Device)
             != IO::Success)
         {
-            return EINVAL;
+            return FileSystem::IOError;
         }
 
         // Disable receiving interrupts
@@ -69,17 +69,18 @@ Error NS16550::initialize()
         m_io.write(InterruptEnable, ReceiveDataInterrupt);
         ProcessCtl(SELF, EnableIRQ, m_irq);
     }
-    return 0;
+
+    return FileSystem::Success;
 }
 
-Error NS16550::interrupt(u32 vector)
+FileSystem::Error NS16550::interrupt(u32 vector)
 {
     // Mask interrupt until FIFOs are empty
     m_io.write(InterruptEnable, 0);
-    return ESUCCESS;
+    return FileSystem::Success;
 }
 
-Error NS16550::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error NS16550::read(IOBuffer & buffer, Size size, Size offset)
 {
     Size bytes = 0;
 
@@ -100,10 +101,14 @@ Error NS16550::read(IOBuffer & buffer, Size size, Size offset)
             ProcessCtl(SELF, EnableIRQ, m_irq);
         }
     }
-    return buffer.getCount() ? (Error) buffer.getCount() : EAGAIN;
+
+    if (buffer.getCount())
+        return (FileSystem::Error) buffer.getCount();
+    else
+        return FileSystem::RetryAgain;
 }
 
-Error NS16550::write(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error NS16550::write(IOBuffer & buffer, Size size, Size offset)
 {
     Size bytes = 0;
 
@@ -119,7 +124,11 @@ Error NS16550::write(IOBuffer & buffer, Size size, Size offset)
 
         m_io.write(TransmitHolding, buffer[bytes++]);
     }
-    return bytes ? (Error) bytes : EAGAIN;
+
+    if (bytes)
+        return (FileSystem::Error) bytes;
+    else
+        return FileSystem::RetryAgain;
 }
 
 void NS16550::delay(s32 count) const

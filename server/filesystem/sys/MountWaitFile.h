@@ -60,7 +60,7 @@ class MountWaitFile : public File
      *
      * @return Number of bytes written on success, Error on failure.
      */
-    virtual Error write(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Error write(IOBuffer & buffer, Size size, Size offset);
 };
 
 /**

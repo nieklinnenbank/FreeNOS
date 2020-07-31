@@ -18,13 +18,14 @@
 #include <DeviceServer.h>
 #include "ATAController.h"
 #include <Types.h>
-#include <stdlib.h>
-#include <errno.h>
 
 int main(int argc, char **argv)
 {
     DeviceServer server("/dev/ata");
-    server.initialize();
+    if (server.initialize() != FileSystem::Success)
+    {
+        return 1;
+    }
 
     // Start serving requests
     server.registerDevice(new ATAController, "ata0");
@@ -37,14 +38,14 @@ ATAController::ATAController()
     m_identifier << "ata0";
 }
 
-Error ATAController::initialize()
+FileSystem::Error ATAController::initialize()
 {
     ATADrive *drive;
 
     // Detect ATA Controller
     if (ReadByte(ATA_BASE_CMD0 + ATA_REG_STATUS) == 0xff)
     {
-        exit(EXIT_FAILURE);
+        return FileSystem::NotSupported;
     }
     pollReady(true);
 
@@ -87,10 +88,11 @@ Error ATAController::initialize()
                " SECTORS=" << drive->identity.sectors28);
         break;
     }
-    return ESUCCESS;
+
+    return FileSystem::Success;
 }
 
-Error ATAController::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error ATAController::read(IOBuffer & buffer, Size size, Size offset)
 {
     u8 sectors = CEIL(size, 512);
     u16 block[256];
@@ -100,7 +102,7 @@ Error ATAController::read(IOBuffer & buffer, Size size, Size offset)
     // Verify LBA
     if (drives.isEmpty() || drives.first()->identity.sectors28 < lba)
     {
-        return EIO;
+        return FileSystem::IOError;
     }
 
     // Perform ATA Read Command
@@ -134,13 +136,14 @@ Error ATAController::read(IOBuffer & buffer, Size size, Size offset)
         result += bytes;
         offset += bytes;
     }
+
     return result;
 }
 
-Error ATAController::interrupt(Size vector)
+FileSystem::Error ATAController::interrupt(Size vector)
 {
     INFO("ATA interrupted on IRQ " << vector);
-    return ESUCCESS;
+    return FileSystem::Success;
 }
 
 void ATAController::pollReady(bool noData)

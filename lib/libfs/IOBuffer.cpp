@@ -75,13 +75,13 @@ const u8 * IOBuffer::getBuffer() const
     return m_buffer;
 }
 
-Error IOBuffer::bufferedRead()
+FileSystem::Error IOBuffer::bufferedRead()
 {
     m_count = read(m_buffer, m_message->size, 0);
     return m_count;
 }
 
-Error IOBuffer::bufferedWrite(const void *buffer, Size size)
+FileSystem::Error IOBuffer::bufferedWrite(const void *buffer, Size size)
 {
     Size i = 0;
 
@@ -98,21 +98,21 @@ Error IOBuffer::bufferedWrite(const void *buffer, Size size)
     return i;
 }
 
-Error IOBuffer::read(void *buffer, Size size, Size offset) const
+FileSystem::Error IOBuffer::read(void *buffer, Size size, Size offset) const
 {
     return VMCopy(m_message->from, API::Read,
                  (Address) buffer,
                  (Address) m_message->buffer + offset, size);
 }
 
-Error IOBuffer::write(void *buffer, Size size, Size offset) const
+FileSystem::Error IOBuffer::write(void *buffer, Size size, Size offset) const
 {
     return VMCopy(m_message->from, API::Write,
                  (Address) buffer,
                  (Address) m_message->buffer + offset, size);
 }
 
-Error IOBuffer::flush() const
+FileSystem::Error IOBuffer::flush() const
 {
     return write(m_buffer, m_count, 0);
 }

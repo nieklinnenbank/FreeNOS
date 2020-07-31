@@ -166,8 +166,8 @@ class SynopsisController : public USBController
      *
      * @return Result code
      */
-    virtual Error transfer(const FileSystemMessage *msg,
-                           USBMessage *usb);
+    virtual FileSystem::Error transfer(const FileSystemMessage *msg,
+                                       USBMessage *usb);
 
   private:
 

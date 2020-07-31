@@ -35,7 +35,7 @@ MountsFile::~MountsFile()
 {
 }
 
-Error MountsFile::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error MountsFile::read(IOBuffer & buffer, Size size, Size offset)
 {
     FileSystemClient filesystem;
     Size numberOfMounts = 0;
@@ -43,23 +43,23 @@ Error MountsFile::read(IOBuffer & buffer, Size size, Size offset)
 
     // Bounds checking
     if (offset > 0 || size < m_size)
-        return EIO;
+        return FileSystem::InvalidArgument;
 
     // Copy the entire mounts table
     return buffer.write(mounts, m_size);
 }
 
-Error MountsFile::write(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error MountsFile::write(IOBuffer & buffer, Size size, Size offset)
 {
     FileSystemMount fs;
     FileSystemClient filesystem;
     Size numberOfMounts = 0;
     FileSystemMount *mounts = filesystem.getMounts(numberOfMounts);
-    Error r;
+    FileSystem::Error r;
 
     // Input must be exactly one FileSystemMount struct
     if (size != sizeof(fs))
-        return EIO;
+        return FileSystem::InvalidArgument;
 
     // Copy the input mount struct
     if ((r = buffer.read(&fs, sizeof(fs))) <= 0)
@@ -77,5 +77,5 @@ Error MountsFile::write(IOBuffer & buffer, Size size, Size offset)
     }
 
     // Mounts table is full
-    return ENOBUFS;
+    return FileSystem::IOError;
 }

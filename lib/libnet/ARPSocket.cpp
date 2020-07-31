@@ -16,6 +16,7 @@
  */
 
 #include <FreeNOS/System.h>
+#include <errno.h>
 #include "Ethernet.h"
 #include "IPV4.h"
 #include "ARP.h"

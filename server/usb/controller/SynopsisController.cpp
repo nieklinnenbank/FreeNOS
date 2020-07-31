@@ -33,7 +33,7 @@ Error SynopsisController::initialize()
 {
     Error r = USBController::initialize();
 
-    if (r != ESUCCESS)
+    if (r != ChannelServer::Success)
         return r;
 
     // Map USB host controller registers
@@ -41,14 +41,14 @@ Error SynopsisController::initialize()
                  Memory::User|Memory::Readable|Memory::Writable|Memory::Device) != IO::Success)
     {
         ERROR("failed to map I/O registers");
-        return EIO;
+        return ChannelServer::IOError;
     }
 
     // Check device ID
     if (m_io.read(VendorId) != DefaultVendorId)
     {
         ERROR("incompatible vendorId: " << m_io.read(VendorId) << " != " << DefaultVendorId);
-        return EIO;
+        return ChannelServer::IOError;
     }
 
     DEBUG("UserId: " << m_io.read(UserId) << " VendorId: " << m_io.read(VendorId));
@@ -58,13 +58,13 @@ Error SynopsisController::initialize()
     if (m_power.initialize() != BroadcomPower::Success)
     {
         ERROR("failed to initialize power manager");
-        return EIO;
+        return ChannelServer::IOError;
     }
     // Power on the USB subsystem
     if (m_power.enable(BroadcomPower::USB) != BroadcomPower::Success)
     {
         ERROR("failed to power on the USB subsystem");
-        return EIO;
+        return ChannelServer::IOError;
     }
     DEBUG("powered on");
 
@@ -121,7 +121,7 @@ Error SynopsisController::initialize()
         m_channels[i].initialize();
 
     // Done.
-    return ESUCCESS;
+    return ChannelServer::Success;
 }
 
 void SynopsisController::interruptHandler(Size vector)
@@ -216,14 +216,14 @@ SynopsisChannel * SynopsisController::getChannel(const FileSystemMessage *msg,
     return ZERO;
 }
 
-Error SynopsisController::transfer(const FileSystemMessage *msg,
-                                   USBMessage *usb)
+FileSystem::Error SynopsisController::transfer(const FileSystemMessage *msg,
+                                               USBMessage *usb)
 {
     DEBUG("");
 
     SynopsisChannel *ch = getChannel(msg, usb);
     if (!ch)
-        return EAGAIN;
+        return FileSystem::RetryAgain;
 
     switch (usb->state)
     {
@@ -233,21 +233,22 @@ Error SynopsisController::transfer(const FileSystemMessage *msg,
 
             switch (ch->transfer(msg, usb))
             {
-                case SynopsisChannel::TransferStarted: return EAGAIN;
-                case SynopsisChannel::Success:         return ESUCCESS;
-                default:                               return EIO;
+                case SynopsisChannel::TransferStarted: return FileSystem::RetryAgain;
+                case SynopsisChannel::Success:         return FileSystem::Success;
+                default:                               return FileSystem::IOError;
             }
             break;
 
         case USBMessage::Success:
-            return ESUCCESS;
+            return FileSystem::Success;
 
         case USBMessage::Failure:
-            return EIO;
+            return FileSystem::IOError;
 
         default:
             ERROR("unhandled USBMessage.state = " << (int) usb->state);
             break;
     }
-    return ENOTSUP;
+
+    return FileSystem::NotSupported;
 }

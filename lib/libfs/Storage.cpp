@@ -16,7 +16,6 @@
  */
 
 #include <Types.h>
-#include <errno.h>
 #include "Storage.h"
 
 Storage::Storage()
@@ -27,12 +26,12 @@ Storage::~Storage()
 {
 }
 
-Error Storage::read(u64 offset, void *buffer, Size size)
+FileSystem::Error Storage::read(u64 offset, void *buffer, Size size)
 {
-    return ENOTSUP;
+    return FileSystem::NotSupported;
 }
 
-Error Storage::write(u64 offset, void *buffer, Size size)
+FileSystem::Error Storage::write(u64 offset, void *buffer, Size size)
 {
-    return ENOTSUP;
+    return FileSystem::NotSupported;
 }

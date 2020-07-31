@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <errno.h>
 #include "NetworkClient.h"
 #include "NetworkServer.h"
 #include "NetworkDevice.h"
@@ -100,7 +101,7 @@ Error ARP::lookupAddress(IPV4::Address *ipAddr,
 
     // Make sure we are called again in about 500msec
     m_server->setTimeout(500);
-    return EAGAIN;
+    return FileSystem::RetryAgain;
 }
 
 Error ARP::sendRequest(IPV4::Address address)
@@ -131,7 +132,7 @@ Error ARP::sendRequest(IPV4::Address address)
         Ethernet::ARP
     );
     if (!pkt)
-        return EAGAIN;
+        return FileSystem::RetryAgain;
 
     Ethernet::Header *ether = (Ethernet::Header *) (pkt->data + pkt->size - sizeof(Ethernet::Header));
     ARP::Header *arp = (ARP::Header *) (pkt->data + pkt->size);
@@ -168,7 +169,7 @@ Error ARP::sendReply(const Ethernet::Address *ethAddr, const IPV4::Address ipAdd
         Ethernet::ARP
     );
     if (!pkt)
-        return EAGAIN;
+        return FileSystem::RetryAgain;
 
     if (!m_ip)
         return EINVAL;

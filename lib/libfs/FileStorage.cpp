@@ -24,7 +24,7 @@ FileStorage::FileStorage(const char *path, const Size offset)
     m_file.statFile(path, &m_stat);
 }
 
-Error FileStorage::read(u64 offset, void *buffer, Size size)
+FileSystem::Error FileStorage::read(u64 offset, void *buffer, Size size)
 {
     const FileSystem::Result result = m_file.readFile(m_path, buffer, &size, m_offset + offset);
 
@@ -38,7 +38,7 @@ Error FileStorage::read(u64 offset, void *buffer, Size size)
     }
 }
 
-Error FileStorage::write(u64 offset, void *buffer, Size size)
+FileSystem::Error FileStorage::write(u64 offset, void *buffer, Size size)
 {
     const FileSystem::Result result = m_file.writeFile(m_path, buffer, &size, m_offset + offset);
 

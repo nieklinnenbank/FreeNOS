@@ -19,8 +19,6 @@
 #include <KernelLog.h>
 #include <DeviceServer.h>
 #include <FileSystemClient.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include "Terminal.h"
 
 int main(int argc, char **argv)
@@ -36,7 +34,10 @@ int main(int argc, char **argv)
 
     // Register our device
     DeviceServer server("/console");
-    server.initialize();
+    if (server.initialize() != FileSystem::Success)
+    {
+        return 1;
+    }
 
     // Start serving requests.
     server.registerDevice(new Terminal("/dev/ps2/keyboard0", "/dev/video/vga0"), "tty0");

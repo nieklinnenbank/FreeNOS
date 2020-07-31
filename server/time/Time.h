@@ -104,7 +104,7 @@ class Time : public Device
      *
      * @return Error status code.
      */
-    virtual Error initialize();
+    virtual FileSystem::Error initialize();
 
     /**
      * @brief Read the system time.
@@ -115,7 +115,7 @@ class Time : public Device
      *
      * @return Number of bytes on success and ZERO on failure.
      */
-    virtual Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
 
   private:
 

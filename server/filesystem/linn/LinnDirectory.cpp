@@ -30,13 +30,13 @@ LinnDirectory::LinnDirectory(LinnFileSystem *f,
     m_access = inode->mode;
 }
 
-Error LinnDirectory::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error LinnDirectory::read(IOBuffer & buffer, Size size, Size offset)
 {
     LinnSuperBlock *sb = fs->getSuperBlock();
     LinnDirectoryEntry dent;
     LinnInode *dInode;
     Size bytes = ZERO, blk;
-    Error e;
+    FileSystem::Error e;
     Dirent tmp;
 
     // Read directory entries
@@ -56,17 +56,19 @@ Error LinnDirectory::read(IOBuffer & buffer, Size size, Size offset)
         if (fs->getStorage()->read(off, &dent,
                                    sizeof(LinnDirectoryEntry)) < 0)
         {
-            return EACCES;
+            return FileSystem::PermissionDenied;
         }
+
         // Can we read another entry?
         if (bytes + sizeof(Dirent) > size)
         {
-            return EFAULT;
+            return FileSystem::InvalidArgument;
         }
+
         // Fill in the Dirent.
         if (!(dInode = fs->getInode(dent.inode)))
         {
-            return EINVAL;
+            return FileSystem::NotFound;
         }
         strlcpy(tmp.name, dent.name, LINN_DIRENT_NAME_LEN);
         tmp.type = (FileSystem::FileType) dInode->type;

@@ -24,7 +24,6 @@
 #include "FileSystemMessage.h"
 #include "FileSystem.h"
 #include "IOBuffer.h"
-#include <errno.h>
 
 /**
  * @addtogroup lib
@@ -73,7 +72,7 @@ class File
      *
      * @return Number of bytes read on success, Error on failure.
      */
-    virtual Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
 
     /**
      * Write bytes to the file.
@@ -84,7 +83,7 @@ class File
      *
      * @return Number of bytes written on success, Error on failure.
      */
-    virtual Error write(IOBuffer & buffer, Size size, Size offset);
+    virtual  FileSystem::Error write(IOBuffer & buffer, Size size, Size offset);
 
     /**
      * Retrieve file statistics.
@@ -93,7 +92,7 @@ class File
      *
      * @return Error code
      */
-    virtual Error status(FileSystemMessage *msg);
+    virtual FileSystem::Error status(FileSystemMessage *msg);
 
   protected:
 

@@ -107,18 +107,18 @@ class NS16550 : public Device
     /**
      * @brief Initializes the UART.
      *
-     * @return Error status code.
+     * @return FileSystem::Error status code.
      */
-    virtual Error initialize();
+    virtual FileSystem::Error initialize();
 
     /**
      * Called when an interrupt has been triggered for this device.
      *
      * @param vector Vector number of the interrupt.
      *
-     * @return Error result code.
+     * @return FileSystem::Error result code.
      */
-    virtual Error interrupt(Size vector);
+    virtual FileSystem::Error interrupt(Size vector);
 
     /**
      * Read bytes from the UART.
@@ -129,7 +129,7 @@ class NS16550 : public Device
      *
      * @return Number of bytes on success and ZERO on failure. 
      */
-    virtual Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
 
     /**
      * Write bytes to the device.
@@ -140,7 +140,7 @@ class NS16550 : public Device
      *
      * @return Number of bytes on success and ZERO on failure.
      */
-    virtual Error write(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Error write(IOBuffer & buffer, Size size, Size offset);
 
   private:
 

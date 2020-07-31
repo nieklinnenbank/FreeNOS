@@ -56,7 +56,7 @@ class FileStorage : public Storage
      *
      * @return Result code
      */
-    virtual Error read(u64 offset, void *buffer, Size size);
+    virtual FileSystem::Error read(u64 offset, void *buffer, Size size);
 
     /**
      * Write a contiguous set of data.
@@ -67,7 +67,7 @@ class FileStorage : public Storage
      *
      * @return Result code
      */
-    virtual Error write(u64 offset, void *buffer, Size size);
+    virtual FileSystem::Error write(u64 offset, void *buffer, Size size);
 
     /**
      * Retrieve maximum storage capacity.

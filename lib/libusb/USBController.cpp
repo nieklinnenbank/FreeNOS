@@ -27,9 +27,9 @@ Error USBController::initialize()
 {
     Error r = DeviceServer::initialize();
 
-    if (r != ESUCCESS)
+    if (r != ChannelServer::Success)
         return r;
 
     registerFile(new USBTransferFile(this), "/transfer");
-    return ESUCCESS;
+    return ChannelServer::Success;
 }

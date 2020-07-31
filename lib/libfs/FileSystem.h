@@ -94,16 +94,19 @@ namespace FileSystem
      */
     enum Result
     {
-        Success,
-        InvalidArgument,
-        NotFound,
-        RetryAgain,
-        IOError,
-        PermissionDenied,
-        AlreadyExists,
-        NotSupported,
-        IpcError
+        Success          =  0,
+        InvalidArgument  = -1,
+        NotFound         = -2,
+        RetryAgain       = -3,
+        IOError          = -4,
+        PermissionDenied = -5,
+        AlreadyExists    = -6,
+        NotSupported     = -7,
+        IpcError         = -8
     };
+
+    /** May contain a byte count or Result code with an error. */
+    typedef slong Error;
 
     /**
      * All possible filetypes.

@@ -31,12 +31,12 @@ const String & Device::getIdentifier() const
     return m_identifier;
 }
 
-Error Device::initialize()
+FileSystem::Error Device::initialize()
 {
-    return ESUCCESS;
+    return FileSystem::Success;
 }
 
-Error Device::interrupt(Size vector)
+FileSystem::Error Device::interrupt(Size vector)
 {
-    return ESUCCESS;
+    return FileSystem::Success;
 }

@@ -67,7 +67,7 @@ bool BootImageStorage::load()
     return false;
 }
 
-Error BootImageStorage::read(u64 offset, void *buffer, Size size)
+FileSystem::Error BootImageStorage::read(u64 offset, void *buffer, Size size)
 {
     MemoryBlock::copy(buffer, m_data + offset, size);
     return size;

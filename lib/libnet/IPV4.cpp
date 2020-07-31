@@ -19,6 +19,7 @@
 #include <String.h>
 #include <List.h>
 #include <ListIterator.h>
+#include <errno.h>
 #include "NetworkServer.h"
 #include "NetworkDevice.h"
 #include "IPV4.h"

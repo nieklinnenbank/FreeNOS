@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <errno.h>
 #include "NetworkDevice.h"
 
 NetworkDevice::NetworkDevice(NetworkServer *server)

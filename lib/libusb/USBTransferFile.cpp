@@ -35,7 +35,7 @@ Error USBTransferFile::write(IOBuffer & buffer, Size size, Size offset)
     if (size != sizeof(USBMessage))
     {
         ERROR("invalid size " << size << " != sizeof(USBMessage)");
-        return EIO;
+        return FileSystem::IOError;
     }
 
     switch (usb->state)
@@ -50,11 +50,12 @@ Error USBTransferFile::write(IOBuffer & buffer, Size size, Size offset)
             return size;
 
         case USBMessage::Failure:
-            return EIO;
+            return FileSystem::IOError;
 
         default:
             ERROR("invalid unknown USBMessage state: " << (int) usb->state);
             break;
     }
-    return EIO;
+
+    return FileSystem::IOError;
 }

@@ -111,7 +111,7 @@ class VGA : public Device
      *
      * @return Error status code.
      */
-    virtual Error initialize();
+    virtual FileSystem::Error initialize();
 
     /**
      * @brief Read from VGA video memory.
@@ -125,7 +125,7 @@ class VGA : public Device
      *
      * @return An error code describing the status of the operation.
      */
-    virtual Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
 
     /**
      * @brief Write to VGA video memory.
@@ -139,7 +139,7 @@ class VGA : public Device
      *
      * @return An error code describing the status of the operation.
      */
-    virtual Error write(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Error write(IOBuffer & buffer, Size size, Size offset);
 
   private:
 

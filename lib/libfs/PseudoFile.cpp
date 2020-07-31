@@ -43,7 +43,7 @@ PseudoFile::~PseudoFile()
         delete m_buffer;
 }
 
-Error PseudoFile::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error PseudoFile::read(IOBuffer & buffer, Size size, Size offset)
 {
     // Bounds checking
     if (offset >= m_size)
@@ -56,7 +56,7 @@ Error PseudoFile::read(IOBuffer & buffer, Size size, Size offset)
     return buffer.write(m_buffer + offset, bytes);
 }
 
-Error PseudoFile::write(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error PseudoFile::write(IOBuffer & buffer, Size size, Size offset)
 {
     // Check for the buffer size
     if (!m_buffer || m_size < (size + offset))
