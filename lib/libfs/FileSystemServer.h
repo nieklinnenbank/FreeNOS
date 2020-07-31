@@ -21,6 +21,7 @@
 #include <FreeNOS/System.h>
 #include <ChannelServer.h>
 #include <Vector.h>
+#include <stdarg.h>
 #include "Directory.h"
 #include "Device.h"
 #include "File.h"

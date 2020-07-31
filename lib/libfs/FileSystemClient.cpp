@@ -16,10 +16,7 @@
  */
 
 #include <FreeNOS/System.h>
-#include <Runtime.h>
 #include <ChannelClient.h>
-#include <string.h>
-#include <unistd.h>
 #include "FileSystemMessage.h"
 #include "FileSystemClient.h"
 
@@ -40,9 +37,16 @@ inline FileSystem::Result FileSystemClient::request(const char *path,
 
     // Use the current directory as prefix for relative paths
     if (path[0] != '/' && m_currentDirectory != NULL)
-        snprintf(fullpath, sizeof(fullpath), "%s/%s", **m_currentDirectory, path);
+    {
+        const Size copied = MemoryBlock::copy(fullpath, **m_currentDirectory, sizeof(fullpath));
+
+        if (copied < sizeof(fullpath))
+            MemoryBlock::copy(fullpath + copied, path, sizeof(fullpath) - copied);
+    }
     else
-        strlcpy(fullpath, path, sizeof(fullpath));
+    {
+        MemoryBlock::copy(fullpath, path, sizeof(fullpath));
+    }
 
     msg.path = fullpath;
 
@@ -65,28 +69,33 @@ FileSystemMount * FileSystemClient::getMounts(Size &numberOfMounts)
 ProcessID FileSystemClient::findMount(const char *path) const
 {
     FileSystemMount *m = ZERO;
-    Size length = 0, len;
-    char tmp[PATH_MAX];
+    Size length = 0;
+    char fullpath[PATHLEN];
 
-    // Is the path relative?
-    if (path[0] != '/')
+    // Use the current directory as prefix for relative paths
+    if (path[0] != '/' && m_currentDirectory != NULL)
     {
-        getcwd(tmp, sizeof(tmp));
-        snprintf(tmp, sizeof(tmp), "%s/%s", tmp, path);
+        const Size copied = MemoryBlock::copy(fullpath, **m_currentDirectory, sizeof(fullpath));
+
+        if (copied < sizeof(fullpath))
+            MemoryBlock::copy(fullpath + copied, path, sizeof(fullpath) - copied);
     }
     else
-        strlcpy(tmp, path, PATH_MAX);
+    {
+        MemoryBlock::copy(fullpath, path, sizeof(fullpath));
+    }
 
     // Find the longest match
     for (Size i = 0; i < MaximumFileSystemMounts; i++)
     {
         if (m_mounts[i].path[0])
         {
-            len = strlen(m_mounts[i].path);
+            String str(m_mounts[i].path, false);
+            Size len = str.length();
 
             // Only choose this mount, if it matches,
             // and is longer than the last match.
-            if (strncmp(tmp, m_mounts[i].path, len) == 0 && len > length)
+            if (str.compareTo(fullpath, true, len) == 0 && len > length)
             {
                 length = len;
                 m = &m_mounts[i];
@@ -121,7 +130,7 @@ FileSystem::Result FileSystemClient::refreshMounts(const char *path)
 
 FileSystem::Result FileSystemClient::waitMount(const char *path)
 {
-    Size len = strlen(path);
+    Size len = String::length(path);
 
     // Send a write containing the requested path to the 'mountwait' file on SysFS
     const ProcessID savedPid = m_pid;

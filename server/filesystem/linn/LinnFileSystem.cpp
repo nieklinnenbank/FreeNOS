@@ -20,6 +20,7 @@
 #include <KernelLog.h>
 #include <FileStorage.h>
 #include <BootImageStorage.h>
+#include <string.h>
 #include "LinnFileSystem.h"
 #include "LinnInode.h"
 #include "LinnFile.h"

@@ -16,14 +16,14 @@
  */
 
 #include <FreeNOS/System.h>
-#include <string.h>
+#include <MemoryBlock.h>
 #include "BootImageStorage.h"
 
 BootImageStorage::BootImageStorage(const char *name)
+    : m_name(name)
+    , m_data(ZERO)
+    , m_size(0)
 {
-    m_name   = name;
-    m_data   = ZERO;
-    m_size   = 0;
 }
 
 bool BootImageStorage::load()
@@ -53,7 +53,7 @@ bool BootImageStorage::load()
         symbol = (BootSymbol *) (base + image->symbolTableOffset);
         symbol += i;
 
-        if (strcmp(symbol->name, m_name) == 0)
+        if (m_name.compareTo(symbol->name) == 0)
         {
             m_size   = symbol->segmentsTotalSize;
             segment = (BootSegment *) (base + image->segmentsTableOffset +
@@ -69,7 +69,7 @@ bool BootImageStorage::load()
 
 Error BootImageStorage::read(u64 offset, void *buffer, Size size)
 {
-    memcpy(buffer, m_data + offset, size);
+    MemoryBlock::copy(buffer, m_data + offset, size);
     return size;
 }
 

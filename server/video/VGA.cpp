@@ -18,6 +18,7 @@
 #include <FreeNOS/System.h>
 #include <Types.h>
 #include <errno.h>
+#include <string.h>
 #include "VGA.h"
 
 VGA::VGA(Size w, Size h) : Device(FileSystem::BlockDeviceFile), width(w), height(h)

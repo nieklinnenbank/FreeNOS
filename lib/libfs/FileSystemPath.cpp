@@ -15,7 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string.h>
+#include <String.h>
+#include <MemoryBlock.h>
 #include "FileSystemPath.h"
 
 /** Shortcut to the separator field. */
@@ -63,8 +64,7 @@ FileSystemPath::~FileSystemPath()
 
 void FileSystemPath::parse(const char *p, char sep)
 {
-    const char *cur   = p;
-    char *parentStr   = ZERO;
+    const char *cur = p;
 
     // Skip heading separators
     while (*cur && *cur == sep) cur++;
@@ -72,7 +72,7 @@ void FileSystemPath::parse(const char *p, char sep)
     // Save parameters
     p            = (char *) cur;
     m_separator  = sep;
-    m_fullLength = strlen((char *)cur);
+    m_fullLength = String::length((char *)cur);
     m_fullPath   = new String(cur);
     assert(m_fullPath != NULL);
     String str(p);
@@ -90,21 +90,20 @@ void FileSystemPath::parse(const char *p, char sep)
     if (m_path.head() && m_path.head()->next)
     {
         // Allocate buffer
-        parentStr  = new char[strlen(p)];
-        assert(parentStr != NULL);
-        memset(parentStr, 0, strlen(p));
+        m_parentPath = new String();
+        assert(m_parentPath != NULL);
 
         // Construct parent path
         for (List<String *>::Node *l = m_path.head(); l && l->next; l = l->next)
         {
-            strcat(parentStr, **l->data);
+            (*m_parentPath) << **l->data;
+
             if (l->next && l->next->next)
-                strncat(parentStr, &m_separator, 1);
+            {
+                char tmp[2] = { m_separator, ZERO };
+                (*m_parentPath) << &tmp;
+            }
         }
-        // Save the path, then release buffer
-        m_parentPath = new String(parentStr);
-        assert(m_parentPath != NULL);
-        delete parentStr;
     }
 }
 

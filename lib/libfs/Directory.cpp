@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <MemoryBlock.h>
+#include <stdio.h>
 #include "Directory.h"
 
 Directory::Directory() : File(FileSystem::DirectoryFile)
@@ -72,7 +74,7 @@ void Directory::insert(FileSystem::FileType type, const char *name, ...)
         // Create an fill entry object
         d = new Dirent;
         assert(d != NULL);
-        strlcpy(d->name, path, DIRENT_LEN);
+        MemoryBlock::copy(d->name, path, DIRENT_LEN);
         d->type = type;
         entries.append(d);
         m_size += sizeof(*d);
@@ -81,9 +83,11 @@ void Directory::insert(FileSystem::FileType type, const char *name, ...)
 
 void Directory::remove(const char *name)
 {
+    const String str(name, false);
+
     for (ListIterator<Dirent *> i(&entries); i.hasCurrent(); i++)
     {
-        if (strcmp(i.current()->name, name) == 0)
+        if (str.compareTo(i.current()->name) == 0)
         {
             delete i.current();
             i.remove();
@@ -103,9 +107,11 @@ void Directory::clear()
 
 Dirent * Directory::get(const char *name)
 {
+    const String str(name, false);
+
     for (ListIterator<Dirent *> i(&entries); i.hasCurrent(); i++)
     {
-        if (strcmp(i.current()->name, name) == 0)
+        if (str.compareTo(i.current()->name) == 0)
         {
             return i.current();
         }

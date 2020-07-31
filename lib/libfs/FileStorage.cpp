@@ -15,56 +15,44 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Types.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <errno.h>
 #include "FileStorage.h"
 
-FileStorage::FileStorage(const char *path, Size offset)
+FileStorage::FileStorage(const char *path, const Size offset)
+    : m_path(path)
+    , m_offset(offset)
 {
-    m_file   = open(path, O_RDWR);
-    m_offset = offset;
-    stat(path, &m_stat);
-}
-
-FileStorage::~FileStorage()
-{
-    close(m_file);
+    m_file.statFile(path, &m_stat);
 }
 
 Error FileStorage::read(u64 offset, void *buffer, Size size)
 {
-    int result;
+    const FileSystem::Result result = m_file.readFile(m_path, buffer, &size, m_offset + offset);
 
-    if (m_file >= 0)
+    if (result == FileSystem::Success)
     {
-        lseek(m_file, m_offset + offset, SEEK_SET);
-        result = ::read(m_file, buffer, size);
-
-        return result >= 0 ? result : errno;
+        return size;
     }
     else
-        return errno;
+    {
+        return result;
+    }
 }
 
 Error FileStorage::write(u64 offset, void *buffer, Size size)
 {
-    int result;
+    const FileSystem::Result result = m_file.writeFile(m_path, buffer, &size, m_offset + offset);
 
-    if (m_file >= 0)
+    if (result == FileSystem::Success)
     {
-        lseek(m_file, m_offset + offset, SEEK_SET);
-        result = ::write(m_file, buffer, size);
-
-        return result >= 0 ? result : errno;
+        return size;
     }
     else
-        return errno;
+    {
+        return result;
+    }
 }
 
 u64 FileStorage::capacity() const
 {
-    return m_stat.st_size;
+    return m_stat.size;
 }

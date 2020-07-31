@@ -20,10 +20,9 @@
 
 #include <FreeNOS/System.h>
 #include <List.h>
+#include <stdarg.h>
 #include "File.h"
 #include "FileSystemPath.h"
-#include <stdio.h>
-#include <string.h>
 
 /**
  * @addtogroup lib
@@ -54,7 +53,8 @@ typedef struct Dirent
      */
     bool operator == (struct Dirent *dir)
     {
-        return strcmp(name, dir->name) == 0;
+        String str(name, false);
+        return str.compareTo(dir->name) == 0;
     }
 }
 Dirent;

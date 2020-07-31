@@ -17,6 +17,7 @@
 
 #include <FreeNOS/System.h>
 #include <Assert.h>
+#include <string.h>
 #include "LinnDirectory.h"
 #include "LinnFile.h"
 

@@ -50,14 +50,6 @@ class PseudoFile : public File
     PseudoFile(const char *str);
 
     /**
-     * Constructor with formatted input.
-     *
-     * @param format Format string.
-     * @param ... Argument list.
-     */
-    PseudoFile(const char *format, ...);
-
-    /**
      * Destructor.
      */
     virtual ~PseudoFile();

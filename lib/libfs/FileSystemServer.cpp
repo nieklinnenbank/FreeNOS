@@ -20,10 +20,8 @@
 #include <Vector.h>
 #include <HashTable.h>
 #include <HashIterator.h>
-#include <Runtime.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/stat.h>
+#include <stdio.h>
+#include "FileSystemClient.h"
 #include "FileSystemMount.h"
 #include "FileSystemServer.h"
 
@@ -61,7 +59,7 @@ Directory * FileSystemServer::getRoot()
 
 FileSystem::Result FileSystemServer::mount()
 {
-    pid_t pid = ProcessCtl(SELF, GetPID);
+    ProcessID pid = ProcessCtl(SELF, GetPID);
     FileSystemMount mnt;
 
     // The rootfs server and sysfs server have a fixed mount
@@ -73,29 +71,12 @@ FileSystem::Result FileSystemServer::mount()
     // Fill the mount structure
     mnt.procID = pid;
     mnt.options = 0;
-    strlcpy(mnt.path, m_mountPath, PATH_MAX);
+    MemoryBlock::copy(mnt.path, m_mountPath, PATHLEN);
 
-    // Open the mounts file in SysFS
-    int fd = open("/sys/mounts", O_WRONLY);
-    if (fd < 0)
-    {
-        ERROR("failed to open mount '" << m_mountPath << "': " << strerror(errno));
-        return FileSystem::IOError;
-    }
-
-    // write the mount structure to the SysFS mounts file
-    if (write(fd, &mnt, sizeof(mnt)) != sizeof(mnt))
-    {
-        ERROR("failed to write mount '" << m_mountPath << "': " << strerror(errno));
-        close(fd);
-        return FileSystem::IOError;
-    }
-
-    // Close it
-    close(fd);
-
-    // Done
-    return FileSystem::Success;
+    // Write the mounts file in SysFS
+    const FileSystemClient sysfs(SYSFS_PID);
+    Size size = sizeof(mnt);
+    return sysfs.writeFile("/sys/mounts", &mnt, &size, 0);
 }
 
 File * FileSystemServer::createFile(FileSystem::FileType type, DeviceID deviceID)
@@ -173,7 +154,7 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
     }
     DEBUG(m_self << ": path = " << buf << " action = " << msg->action);
 
-    path.parse(buf + strlen(m_mountPath));
+    path.parse(buf + String::length(m_mountPath));
 
     // Do we have this file cached?
     if ((cache = findFileCache(&path)) ||

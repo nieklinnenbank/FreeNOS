@@ -18,8 +18,30 @@
 #include <Assert.h>
 #include "IOBuffer.h"
 
+IOBuffer::IOBuffer()
+    : m_message(ZERO)
+    , m_buffer(ZERO)
+    , m_size(0)
+    , m_count(0)
+{
+}
+
 IOBuffer::IOBuffer(const FileSystemMessage *msg)
     : m_message(msg)
+    , m_buffer(ZERO)
+    , m_size(0)
+    , m_count(0)
+{
+    setMessage(msg);
+}
+
+IOBuffer::~IOBuffer()
+{
+    if (m_buffer)
+        delete m_buffer;
+}
+
+void IOBuffer::setMessage(const FileSystemMessage *msg)
 {
     if (msg->action == FileSystem::ReadFile ||
         msg->action == FileSystem::WriteFile)
@@ -29,17 +51,13 @@ IOBuffer::IOBuffer(const FileSystemMessage *msg)
     }
     else
     {
+        assert(m_buffer == NULL);
         m_buffer = 0;
     }
 
+    m_message = msg;
     m_size   = msg->size;
     m_count  = 0;
-}
-
-IOBuffer::~IOBuffer()
-{
-    if (m_buffer)
-        delete m_buffer;
 }
 
 Size IOBuffer::getCount() const

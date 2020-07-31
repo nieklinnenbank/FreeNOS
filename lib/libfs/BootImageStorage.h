@@ -19,6 +19,7 @@
 #define __FILESYSTEM_BOOTIMAGESTORAGE_H
 
 #include <Types.h>
+#include <String.h>
 #include <BootImage.h>
 #include "Storage.h"
 
@@ -72,7 +73,7 @@ class BootImageStorage : public Storage
   private:
 
     /** Name of the BootSymbol */
-    const char *m_name;
+    const String m_name;
 
     /** Data pointer */
     u8 *m_data;

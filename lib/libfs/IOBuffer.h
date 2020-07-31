@@ -38,6 +38,11 @@ class IOBuffer
   public:
 
     /**
+     * Default empty constructor
+     */
+    IOBuffer();
+
+    /**
      * Constructor.
      *
      * @param msg Describes the request being processed.
@@ -55,6 +60,13 @@ class IOBuffer
      * @return Byte count of the internal buffer.
      */
     Size getCount() const;
+
+    /**
+     * Set filesystem message
+     *
+     * @param msg FileSystemMessage pointer
+     */
+    void setMessage(const FileSystemMessage *msg);
 
     /**
      * Get filesystem message.

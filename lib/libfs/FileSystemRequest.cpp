@@ -18,9 +18,9 @@
 #include "FileSystemRequest.h"
 
 FileSystemRequest::FileSystemRequest(FileSystemMessage *msg)
-    : m_msg(*msg)
-    , m_ioBuffer(&m_msg)
 {
+    MemoryBlock::copy(&m_msg, msg, sizeof(m_msg));
+    m_ioBuffer.setMessage(&m_msg);
 }
 
 FileSystemMessage * FileSystemRequest::getMessage()
