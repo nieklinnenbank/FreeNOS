@@ -22,5 +22,4 @@ if build_env['ARCH'] == 'intel':
     env.Append(CCFLAGS = [ '-DTEKEN_XTERM' ])
     env.UseLibraries(['libposix', 'libstd'])
     env.UseLibraries(['libstd'], 'host')
-    env.UseServers([ 'terminal', 'process' ])
     env.Library('libteken', [ Glob('*.c') ])

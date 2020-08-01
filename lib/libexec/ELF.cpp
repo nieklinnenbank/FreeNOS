@@ -16,12 +16,6 @@
  */
 
 #include <FreeNOS/System.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
-#include <sys/types.h>
 #include <MemoryBlock.h>
 #include "ELF.h"
 

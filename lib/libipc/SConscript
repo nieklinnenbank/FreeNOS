@@ -18,7 +18,7 @@
 Import('build_env')
 
 env = build_env.Clone()
-env.UseLibraries(['libstd', 'libarch', 'libfs', 'libipc'])
+env.UseLibraries(['libstd', 'libarch'])
 env.UseLibraries(['libstd'], 'host')
 
 if env['ARCH'] == 'host':
