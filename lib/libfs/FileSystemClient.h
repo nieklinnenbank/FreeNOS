@@ -24,7 +24,7 @@
 #include "FileSystem.h"
 #include "FileSystemMount.h"
 
-class FileSystemMessage;
+struct FileSystemMessage;
 
 /**
  * @addtogroup lib
