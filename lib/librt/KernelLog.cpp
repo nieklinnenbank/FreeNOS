@@ -17,7 +17,6 @@
 
 #ifndef __HOST__
 #include <FreeNOS/System.h>
-#include "stdlib.h"
 #include "KernelLog.h"
 
 KernelLog::KernelLog()
@@ -33,7 +32,7 @@ void KernelLog::write(const char *str)
 void KernelLog::terminate() const
 {
     PrivExec(Panic);
-    ::exit(EXIT_FAILURE);
+    ProcessCtl(SELF, KillPID, 1);
 }
 
 #endif /* __HOST__ */

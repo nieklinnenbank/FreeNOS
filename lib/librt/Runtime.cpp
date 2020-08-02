@@ -26,12 +26,6 @@
 #include <FileDescriptor.h>
 #include <MemoryMap.h>
 #include <Memory.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <libgen.h>
-#include <fcntl.h>
-#include <dirent.h>
 #include "PageAllocator.h"
 #include "KernelLog.h"
 #include "Runtime.h"
@@ -141,8 +135,8 @@ void setupMappings()
     assert(mounts != NULL);
     assert(numberOfMounts >= 2);
 
-    strlcpy(mounts[0].path, "/sys", PATH_MAX);
-    strlcpy(mounts[1].path, "/", PATH_MAX);
+    MemoryBlock::copy(mounts[0].path, "/sys", PATHLEN);
+    MemoryBlock::copy(mounts[1].path, "/", PATHLEN);
     mounts[0].procID  = SYSFS_PID;
     mounts[0].options = ZERO;
     mounts[1].procID  = ROOTFS_PID;
@@ -161,9 +155,9 @@ void setupMappings()
 
     // Inherit file descriptors table from parent (if any).
     // Without a parent, just clear the file descriptors
-    if (getppid() == 0)
+    if (ProcessCtl(SELF, GetParent) == 0)
     {
-        memset(files, 0, argRange.size - (PAGESIZE * 2));
+        MemoryBlock::set(files, 0, argRange.size - (PAGESIZE * 2));
         filesystem.setCurrentDirectory(String("/"));
     }
 }
@@ -208,5 +202,5 @@ extern C void SECTION(".entry") _entry()
 
     // Terminate execution
     runDestructors();
-    exit(ret);
+    ProcessCtl(SELF, KillPID, ret);
 }
