@@ -36,9 +36,6 @@ extern void (*CTOR_LIST)();
 /** List of destructors. */
 extern void (*DTOR_LIST)();
 
-/** Table with FileDescriptors. */
-static FileDescriptor *files = (FileDescriptor *) NULL;
-
 /** Initial logging instance */
 static KernelLog log;
 
@@ -151,20 +148,15 @@ void setupMappings()
     filesystem.setCurrentDirectory(new String((char *) argRange.virt + PAGESIZE, false));
 
     // Third page and above contain the file descriptors table
-    files = (FileDescriptor *) (argRange.virt + (PAGESIZE * 2));
+    setFiles((FileDescriptor *) (argRange.virt + (PAGESIZE * 2)));
 
     // Inherit file descriptors table from parent (if any).
     // Without a parent, just clear the file descriptors
     if (ProcessCtl(SELF, GetParent) == 0)
     {
-        MemoryBlock::set(files, 0, argRange.size - (PAGESIZE * 2));
+        MemoryBlock::set(getFiles(), 0, argRange.size - (PAGESIZE * 2));
         filesystem.setCurrentDirectory(String("/"));
     }
-}
-
-FileDescriptor * getFiles(void)
-{
-    return files;
 }
 
 extern C void SECTION(".entry") _entry()

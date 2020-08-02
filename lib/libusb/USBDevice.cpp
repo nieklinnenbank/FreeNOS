@@ -21,7 +21,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
-#include <Runtime.h>
 #include <ChannelClient.h>
 #include <FileDescriptor.h>
 #include "USBDevice.h"

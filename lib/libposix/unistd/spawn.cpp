@@ -17,9 +17,11 @@
 
 #include <FreeNOS/System.h>
 #include <FileSystemClient.h>
+#include <FileDescriptor.h>
 #include <ExecutableFormat.h>
 #include <Types.h>
 #include <Runtime.h>
+#include "limits.h"
 #include "string.h"
 #include "errno.h"
 #include "unistd.h"

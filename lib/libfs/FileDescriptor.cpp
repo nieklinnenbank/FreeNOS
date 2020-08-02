@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2020 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,26 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FileDescriptor.h>
-#include "errno.h"
-#include "unistd.h"
+#include "FileDescriptor.h"
 
-int close(int fildes)
+/** Table with FileDescriptors. */
+static FileDescriptor *files = (FileDescriptor *) NULL;
+
+FileDescriptor * getFiles(void)
 {
-    FileDescriptor *files = getFiles();
+    return files;
+}
 
-    if (fildes >= FILE_DESCRIPTOR_MAX || fildes < 0)
-    {
-        errno = ERANGE;
-        return -1;
-    }
-
-    if (!files[fildes].open)
-    {
-        errno = ENOENT;
-        return -1;
-    }
-
-    files[fildes].open = false;
-    return 0;
+void setFiles(FileDescriptor *f)
+{
+    files = f;
 }

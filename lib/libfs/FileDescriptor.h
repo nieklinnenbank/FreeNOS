@@ -21,8 +21,8 @@
 #include <Types.h>
 #include <Macros.h>
 #include <String.h>
-#include <string.h>
-#include "limits.h"
+#include <MemoryBlock.h>
+#include "FileSystemPath.h"
 
 /**
  * @addtogroup lib
@@ -54,17 +54,19 @@ class FileDescriptor
         mount    = fd.mount;
         position = fd.position;
         open     = fd.open;
-        strlcpy(path, fd.path, PATH_MAX);
+        MemoryBlock::copy(path, fd.path, PATHLEN);
     }
 
     bool operator == (const FileDescriptor & fd) const
     {
-        return fd.mount == mount && strcmp(path, fd.path) == 0;
+        const String str(path, false);
+        return fd.mount == mount && str.equals(fd.path);
     }
 
     bool operator != (const FileDescriptor & fd) const
     {
-        return !(fd.mount == mount && strcmp(path, fd.path) == 0);
+        const String str(path, false);
+        return !(fd.mount == mount && str.equals(fd.path));
     }
 
     /** Filesystem or device server on which this file was opened. */
@@ -74,7 +76,7 @@ class FileDescriptor
     Address identifier;
 
     /** Path to the file. */
-    char path[PATH_MAX];
+    char path[PATHLEN];
 
     /** Current position indicator. */
     Size position;
@@ -82,6 +84,20 @@ class FileDescriptor
     /** State of the file descriptor. */
     bool open;
 };
+
+/**
+ * Get File Descriptors table.
+ *
+ * @return FileDescriptor array pointer
+ */
+FileDescriptor * getFiles();
+
+/**
+ * Set a new FileDescriptor table.
+ *
+ * @param files FileDescriptor array pointer to use
+ */
+void setFiles(FileDescriptor *files);
 
 /**
  * @}

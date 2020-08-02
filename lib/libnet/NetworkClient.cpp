@@ -17,10 +17,11 @@
 
 #include <Log.h>
 #include <String.h>
-#include <Runtime.h>
 #include <FileSystemClient.h>
+#include <FileDescriptor.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <string.h>
 #include "NetworkClient.h"
 #include "ARP.h"
 #include "ARPSocket.h"

@@ -17,7 +17,9 @@
 
 #include <FreeNOS/System.h>
 #include <FileSystemClient.h>
-#include "Runtime.h"
+#include <FileDescriptor.h>
+#include "limits.h"
+#include "string.h"
 #include "errno.h"
 #include "fcntl.h"
 #include "sys/stat.h"

@@ -20,7 +20,6 @@
 
 #include <Macros.h>
 #include <Types.h>
-#include <FileDescriptor.h>
 
 /**
  * @addtogroup lib
@@ -45,13 +44,6 @@
  * @return Exit status.
  */
 int main(int argc, char **argv);
-
-/**
- * Get File Descriptors table.
- *
- * @return FileDescriptor array pointer
- */
-FileDescriptor * getFiles();
 
 /**
  * @}
