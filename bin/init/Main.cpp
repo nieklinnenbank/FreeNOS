@@ -17,7 +17,6 @@
 
 #ifndef __HOST__
 #include <FreeNOS/System.h>
-#include <KernelLog.h>
 #endif /* __HOST__ */
 
 #include "Init.h"
@@ -27,7 +26,6 @@ int main(int argc, char **argv)
     Init app(argc, argv);
 
 #ifndef __HOST__
-    KernelLog log;
     SystemInformation info;
 
     // Only run on core0

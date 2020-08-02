@@ -26,15 +26,15 @@
 #include <FileDescriptor.h>
 #include <MemoryMap.h>
 #include <Memory.h>
-#include <KernelLog.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <libgen.h>
 #include <fcntl.h>
 #include <dirent.h>
-#include "Runtime.h"
 #include "PageAllocator.h"
+#include "KernelLog.h"
+#include "Runtime.h"
 
 /** List of constructors. */
 extern void (*CTOR_LIST)();
