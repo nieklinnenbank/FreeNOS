@@ -19,7 +19,6 @@
 #include <Assert.h>
 #include <FileStorage.h>
 #include <BootImageStorage.h>
-#include <stdlib.h>
 #include "LinnFileSystem.h"
 
 int main(int argc, char **argv)
@@ -30,13 +29,15 @@ int main(int argc, char **argv)
 
     // Only run on core0
     if (info.coreId != 0)
-        return EXIT_SUCCESS;
+        return 0;
 
     // Mount the given file, or try to use the BootImage embedded rootfs
     if (argc > 3)
     {
-        NOTICE("file storage: " << argv[1] << " at offset " << atoi(argv[2]));
-        storage = new FileStorage(argv[1], atoi(argv[2]));
+        const String offsetStr(argv[2], false);
+        const Size offset = offsetStr.toLong();
+        NOTICE("file storage: " << argv[1] << " at offset " << offset);
+        storage = new FileStorage(argv[1], offset);
         assert(storage != NULL);
         path = argv[3];
     }
@@ -64,5 +65,5 @@ int main(int argc, char **argv)
     }
 
     ERROR("no usable storage found");
-    return EXIT_FAILURE;
+    return 1;
 }

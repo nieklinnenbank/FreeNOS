@@ -17,7 +17,8 @@
 
 #include <FreeNOS/System.h>
 #include <Assert.h>
-#include <string.h>
+#include <MemoryBlock.h>
+#include <String.h>
 #include "LinnDirectory.h"
 #include "LinnFile.h"
 
@@ -70,7 +71,7 @@ FileSystem::Error LinnDirectory::read(IOBuffer & buffer, Size size, Size offset)
         {
             return FileSystem::NotFound;
         }
-        strlcpy(tmp.name, dent.name, LINN_DIRENT_NAME_LEN);
+        MemoryBlock::copy(tmp.name, dent.name, LINN_DIRENT_NAME_LEN);
         tmp.type = (FileSystem::FileType) dInode->type;
 
         // Copy to the buffer.
@@ -120,6 +121,7 @@ File * LinnDirectory::lookup(const char *name)
 bool LinnDirectory::getLinnDirectoryEntry(LinnDirectoryEntry *dent,
                                           const char *name)
 {
+    const String nameStr(name, false);
     LinnSuperBlock *sb = fs->getSuperBlock();
     u64 offset;
 
@@ -139,13 +141,15 @@ bool LinnDirectory::getLinnDirectoryEntry(LinnDirectoryEntry *dent,
             {
                 return false;
             }
+
             // Is it the entry we are looking for?
-            if (strcmp(name, dent->name) == 0)
+            if (nameStr.equals(dent->name))
             {
                 return true;
             }
         }
     }
+
     // Not found.
     return false;
 }
