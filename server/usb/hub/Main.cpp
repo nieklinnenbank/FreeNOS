@@ -26,8 +26,15 @@ int main(int argc, char **argv)
     log.setMinimumLogLevel(Log::Notice);
 
     DeviceServer server("/usbhub");
-    server.initialize();
     server.registerDevice(new USBHub(1), "roothub");
+
+    // Initialize
+    const FileSystem::Result result = server.initialize();
+    if (result != FileSystem::Success)
+    {
+        ERROR("failed to initialize: result = " << (int) result);
+        return 1;
+    }
 
     // Start serving requests
     return server.run();

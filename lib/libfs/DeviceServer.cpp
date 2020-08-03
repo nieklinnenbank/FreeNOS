@@ -21,17 +21,40 @@ DeviceServer::DeviceServer(const char *path)
     : FileSystemServer(path)
 {
     m_interrupts.fill(ZERO);
+    setRoot(new Directory());
 }
 
 DeviceServer::~DeviceServer()
 {
 }
 
-Error DeviceServer::initialize()
+FileSystem::Result DeviceServer::initialize()
 {
-    setRoot(new Directory());
-    mount();
-    return ChannelServer::Success;
+    // Initialize all devices
+    for (Size i = 0; i < m_devices.count(); i++)
+    {
+        Device *dev = m_devices[i];
+        if (dev != ZERO)
+        {
+            const FileSystem::Error result = dev->initialize();
+            if (result != FileSystem::Success)
+            {
+                ERROR("failed to initialize device " << (*dev->getIdentifier()) <<
+                      ": result = " << (int)result);
+                return FileSystem::IOError;
+            }
+        }
+    }
+
+    // Mount on the root file system
+    const FileSystem::Result result = mount();
+    if (result != FileSystem::Success)
+    {
+        ERROR("failed to mount to path " << m_mountPath << ": result = " << (int)result);
+        return result;
+    }
+
+    return FileSystem::Success;
 }
 
 void DeviceServer::registerDevice(Device *dev, const char *path)
@@ -40,9 +63,6 @@ void DeviceServer::registerDevice(Device *dev, const char *path)
 
     // Add to the list of Devices
     m_devices.insert(dev);
-
-    // Initialize the device
-    dev->initialize();
 }
 
 void DeviceServer::registerInterrupt(Device *dev, Size vector)

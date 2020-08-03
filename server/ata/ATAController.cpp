@@ -22,13 +22,17 @@
 int main(int argc, char **argv)
 {
     DeviceServer server("/dev/ata");
-    if (server.initialize() != FileSystem::Success)
+    server.registerDevice(new ATAController, "ata0");
+
+    // Initialize
+    const FileSystem::Result result = server.initialize();
+    if (result != FileSystem::Success)
     {
+        ERROR("failed to initialize: result = " << (int) result);
         return 1;
     }
 
     // Start serving requests
-    server.registerDevice(new ATAController, "ata0");
     return server.run();
 }
 

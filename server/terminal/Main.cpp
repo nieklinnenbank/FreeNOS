@@ -34,12 +34,16 @@ int main(int argc, char **argv)
 
     // Register our device
     DeviceServer server("/console");
-    if (server.initialize() != FileSystem::Success)
+    server.registerDevice(new Terminal("/dev/ps2/keyboard0", "/dev/video/vga0"), "tty0");
+
+    // Initialize
+    const FileSystem::Result result = server.initialize();
+    if (result != FileSystem::Success)
     {
+        ERROR("failed to initialize: result = " << (int) result);
         return 1;
     }
 
     // Start serving requests.
-    server.registerDevice(new Terminal("/dev/ps2/keyboard0", "/dev/video/vga0"), "tty0");
     return server.run();
 }

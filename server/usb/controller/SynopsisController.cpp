@@ -29,11 +29,11 @@ SynopsisController::SynopsisController(const char *path)
         m_channels.insert(i, *(new SynopsisChannel(i, &m_io)));
 }
 
-Error SynopsisController::initialize()
+FileSystem::Result SynopsisController::initialize()
 {
-    Error r = USBController::initialize();
+    const FileSystem::Result r = USBController::initialize();
 
-    if (r != ChannelServer::Success)
+    if (r != FileSystem::Success)
         return r;
 
     // Map USB host controller registers
@@ -41,14 +41,14 @@ Error SynopsisController::initialize()
                  Memory::User|Memory::Readable|Memory::Writable|Memory::Device) != IO::Success)
     {
         ERROR("failed to map I/O registers");
-        return ChannelServer::IOError;
+        return FileSystem::IOError;
     }
 
     // Check device ID
     if (m_io.read(VendorId) != DefaultVendorId)
     {
         ERROR("incompatible vendorId: " << m_io.read(VendorId) << " != " << DefaultVendorId);
-        return ChannelServer::IOError;
+        return FileSystem::IOError;
     }
 
     DEBUG("UserId: " << m_io.read(UserId) << " VendorId: " << m_io.read(VendorId));
@@ -58,13 +58,13 @@ Error SynopsisController::initialize()
     if (m_power.initialize() != BroadcomPower::Success)
     {
         ERROR("failed to initialize power manager");
-        return ChannelServer::IOError;
+        return FileSystem::IOError;
     }
     // Power on the USB subsystem
     if (m_power.enable(BroadcomPower::USB) != BroadcomPower::Success)
     {
         ERROR("failed to power on the USB subsystem");
-        return ChannelServer::IOError;
+        return FileSystem::IOError;
     }
     DEBUG("powered on");
 
@@ -121,7 +121,7 @@ Error SynopsisController::initialize()
         m_channels[i].initialize();
 
     // Done.
-    return ChannelServer::Success;
+    return FileSystem::Success;
 }
 
 void SynopsisController::interruptHandler(Size vector)

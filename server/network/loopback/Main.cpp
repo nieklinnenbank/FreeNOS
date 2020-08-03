@@ -25,9 +25,15 @@ int main(int argc, char **argv)
     log.setMinimumLogLevel(Log::Notice);
 
     NetworkServer server("/network/loopback");
-
-    server.initialize();
     server.registerDevice(new Loopback(&server), "io");
+
+    // Initialize
+    const FileSystem::Result result = server.initialize();
+    if (result != FileSystem::Success)
+    {
+        ERROR("failed to initialize: result = " << (int) result);
+        return 1;
+    }
 
     // Start serving requests
     return server.run();

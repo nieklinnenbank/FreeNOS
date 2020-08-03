@@ -57,7 +57,7 @@ class DeviceServer : public FileSystemServer
      *
      * @return Error code
      */
-    virtual Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
      * @brief Add a Device.
