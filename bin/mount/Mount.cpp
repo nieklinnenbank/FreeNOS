@@ -57,7 +57,13 @@ void Mount::listMounts() const
         if (mounts[i].path[0])
         {
             // Get the command
-            VMCopy(mounts[i].procID, API::Read, (Address) cmd, range.virt, PAGESIZE);
+            const API::Result result = VMCopy(mounts[i].procID, API::Read, (Address) cmd, range.virt, PAGESIZE);
+            if (result < 0)
+            {
+                ERROR("VMCopy failed for PID " << mounts[i].procID << ": result = " << (int) result);
+                MemoryBlock::copy(cmd, "???", sizeof(cmd));
+            }
+
             printf("%20s %s\r\n", mounts[i].path, cmd);
         }
     }
@@ -67,6 +73,12 @@ void Mount::waitForMount(const char *path) const
 {
     const FileSystemClient filesystem;
     const FileSystem::Result result = filesystem.waitFileSystem(path);
+
+    if (result != FileSystem::Success)
+    {
+        ERROR("failed to wait for filesystem at " << path << ": result = " << (int) result);
+        exit(1);
+    }
 
     assert(result == FileSystem::Success);
 }
