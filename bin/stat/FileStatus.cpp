@@ -20,7 +20,6 @@
 #include <string.h>
 #include <errno.h>
 #include <sys/stat.h>
-#include <FileSystemClient.h>
 #include <Log.h>
 #include "FileStatus.h"
 
@@ -40,10 +39,6 @@ FileStatus::Result FileStatus::exec()
     const Vector<Argument *> & positionals = arguments().getPositionals();
     Result result = Success;
     Result ret = Success;
-
-    // Refresh current filesystem mount points
-    FileSystemClient filesystem;
-    filesystem.refreshMounts(0);
 
     // Perform a stat for each file
     for (Size i = 0; i < positionals.count(); i++)

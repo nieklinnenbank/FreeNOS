@@ -56,8 +56,7 @@ NetCtl::Result NetCtl::exec()
     // Make a list of network devices
     // Get a list of mounts
     FileSystemClient filesystem;
-    filesystem.refreshMounts(0);
-    FileSystemMount *mounts = filesystem.getMounts(numberOfMounts);
+    FileSystemMount *mounts = filesystem.getFileSystems(numberOfMounts);
 
     // Find closest matching device
     for (Size i = 0; i < numberOfMounts; i++)

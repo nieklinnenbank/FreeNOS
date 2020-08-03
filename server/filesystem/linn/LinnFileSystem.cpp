@@ -76,11 +76,6 @@ LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
     assert(dir != NULL);
     setRoot(dir);
 
-    // Filesystem writes are not supported
-    addIPCHandler(FileSystem::CreateFile, (IPCHandlerFunction) &LinnFileSystem::notSupportedHandler, false);
-    addIPCHandler(FileSystem::DeleteFile, (IPCHandlerFunction) &LinnFileSystem::notSupportedHandler, false);
-    addIPCHandler(FileSystem::WriteFile,  (IPCHandlerFunction) &LinnFileSystem::notSupportedHandler, false);
-
     // Done.
     NOTICE("mounted at " << p);
 }

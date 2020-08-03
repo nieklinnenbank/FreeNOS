@@ -25,7 +25,6 @@
 #include <limits.h>
 #include <libgen.h>
 #include <TerminalCodes.h>
-#include <FileSystemClient.h>
 #include "ListFiles.h"
 
 ListFiles::ListFiles(int argc, char **argv)
@@ -45,10 +44,6 @@ ListFiles::Result ListFiles::exec()
 {
     const Vector<Argument *> & positionals = arguments().getPositionals();
     Result result = Success, ret = Success;
-
-    // Refresh mountpoints on the filesystem first
-    FileSystemClient filesystem;
-    filesystem.refreshMounts(0);
 
     // List files provided on the command-line, if any
     if (positionals.count() > 0)

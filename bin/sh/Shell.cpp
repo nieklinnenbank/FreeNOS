@@ -33,9 +33,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
-#ifndef __HOST__
-#include <FileSystemClient.h>
-#endif /* __HOST__ */
 
 /** Maximum number of supported command arguments. */
 #define MAX_ARGV 16
@@ -68,12 +65,6 @@ Shell::Result Shell::exec()
     FILE *fp;
     struct stat st;
     char *contents;
-
-#ifndef __HOST__
-    // Refresh current filesystem mount points
-    FileSystemClient filesystem;
-    filesystem.refreshMounts(0);
-#endif /* __HOST__ */
 
     // Check if shell script was given as argument
     if (positionals.count() > 0)

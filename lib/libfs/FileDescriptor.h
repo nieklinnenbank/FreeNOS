@@ -43,7 +43,6 @@ class FileDescriptor
 
     FileDescriptor()
     {
-        mount    = 0;
         path[0]  = ZERO;
         position = 0;
         open     = false;
@@ -51,7 +50,6 @@ class FileDescriptor
 
     FileDescriptor(const FileDescriptor & fd)
     {
-        mount    = fd.mount;
         position = fd.position;
         open     = fd.open;
         MemoryBlock::copy(path, fd.path, PATHLEN);
@@ -60,17 +58,14 @@ class FileDescriptor
     bool operator == (const FileDescriptor & fd) const
     {
         const String str(path, false);
-        return fd.mount == mount && str.equals(fd.path);
+        return str.equals(fd.path);
     }
 
     bool operator != (const FileDescriptor & fd) const
     {
         const String str(path, false);
-        return !(fd.mount == mount && str.equals(fd.path));
+        return !(str.equals(fd.path));
     }
-
-    /** Filesystem or device server on which this file was opened. */
-    ProcessID mount;
 
     /** Unique identifier, used by a device driver (minor device ID). */
     Address identifier;

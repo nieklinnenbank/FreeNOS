@@ -21,9 +21,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <Log.h>
-#ifndef __HOST__
-#include <FileSystemClient.h>
-#endif /* __HOST__ */
 
 ChangeDirCommand::ChangeDirCommand()
     : ShellCommand("cd", 1)
@@ -33,12 +30,6 @@ ChangeDirCommand::ChangeDirCommand()
 
 int ChangeDirCommand::execute(const Size nparams, const char **params)
 {
-#ifndef __HOST__
-    // Refresh current filesystem mount points
-    FileSystemClient filesystem;
-    filesystem.refreshMounts(0);
-#endif /* __HOST__ */
-
     if (chdir(params[0]) != 0)
     {
         ERROR(getName() << ": failed to change directory to `" << params[0] << "': " << strerror(errno));

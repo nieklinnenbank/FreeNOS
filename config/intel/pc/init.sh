@@ -5,7 +5,7 @@
 /server/ps2/server &
 /server/video/server &
 /server/terminal/server &
-write /sys/mountwait /console
+/bin/mount --wait=/console
 stdio /console/tty0 /console/tty0
 
 #
@@ -19,7 +19,7 @@ stdio /console/tty0 /console/tty0
 # Serial console
 #
 /server/serial/server &
-write /sys/mountwait /dev/serial
+/bin/mount --wait=/dev/serial
 
 # This ensures we wait until all cores
 # are booted by the CoreServer.

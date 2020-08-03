@@ -56,43 +56,6 @@ class FileSystemClient
      */
     FileSystemClient(const ProcessID pid = ANY);
 
-    /**
-     * Get mounts table.
-     *
-     * @param numberOfMounts Number of entries in the returned array
-     *
-     * @return FileSystemMount array pointer
-     */
-    FileSystemMount * getMounts(Size &numberOfMounts);
-
-    /**
-     * Retrieve the ProcessID of the FileSystemMount for the given path.
-     *
-     * @param path Path to lookup.
-     *
-     * @return ProcessID of the FileSystemMount on success and ZERO otherwise.
-     */
-    ProcessID findMount(const char *path) const;
-
-    /**
-     * Refresh mounted filesystems
-     *
-     * @param path Input path to refresh or NULL to refresh all mountpoints
-     *
-     * @return Result code
-     */
-    FileSystem::Result refreshMounts(const char *path);
-
-    /**
-     * Blocking wait for a mounted filesystem
-     *
-     * @param path Full path of the mounted filesystem
-     *
-     * @return Result code
-     *
-     * @note Blocks until a filesystem is mounted on the exact given input path
-     */
-    FileSystem::Result waitMount(const char *path);
 
     /**
      * Get current directory String.
@@ -117,6 +80,15 @@ class FileSystemClient
      *       object will be overwritten using the value given by the String input.
      */
     void setCurrentDirectory(String *directory);
+
+    /**
+     * Retrieve the ProcessID of the FileSystemMount for the given path.
+     *
+     * @param path Path to lookup.
+     *
+     * @return ProcessID of the FileSystemMount on success and ZERO otherwise.
+     */
+    ProcessID findMount(const char *path) const;
 
     /**
      * Create a new file.
@@ -182,17 +154,57 @@ class FileSystemClient
      */
     FileSystem::Result deleteFile(const char *path) const;
 
+    /**
+     * Mount the current process as a file system on the rootfs.
+     *
+     * @param path Absolute path for the mount point to use.
+     *
+     * @return Result code
+     */
+    FileSystem::Result mountFileSystem(const char *mountPath) const;
+
+    /**
+     * Blocking wait for a mounted filesystem
+     *
+     * @param path Full path of the mounted filesystem
+     *
+     * @return Result code
+     *
+     * @note Blocks until a filesystem is mounted on the exact given input path
+     */
+    FileSystem::Result waitFileSystem(const char *path) const;
+
+    /**
+     * Get file system mounts table.
+     *
+     * @param numberOfMounts Number of entries in the returned array
+     *
+     * @return FileSystemMount array pointer or NULL on failure
+     */
+    FileSystemMount * getFileSystems(Size &numberOfMounts) const;
+
   private:
+
 
     /**
      * Send an IPC request to the target file system
      *
-     * @param path Path to the file
+     * @param path Path to the file, can be relative or absolute.
      * @param msg Reference to the FileSystemMessage to send
      *
      * @return Result code
      */
     FileSystem::Result request(const char *path, FileSystemMessage &msg) const;
+
+    /**
+     * Send an IPC request to the target file system
+     *
+     * @param pid Process identifier of the target file system.
+     * @param msg Reference to the FileSystemMessage to send
+     *
+     * @return Result code
+     */
+    FileSystem::Result request(const ProcessID pid, FileSystemMessage &msg) const;
 
   private:
 
@@ -203,7 +215,7 @@ class FileSystemClient
     static String *m_currentDirectory;
 
     /** ProcessID of the target file system or ANY to lookup in mounts table */
-    ProcessID m_pid;
+    const ProcessID m_pid;
 };
 
 /**

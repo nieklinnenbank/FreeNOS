@@ -28,26 +28,24 @@ Mount::Mount(int argc, char **argv)
     : POSIXApplication(argc, argv)
 {
     parser().setDescription("Mount filesystems on the system");
+    parser().registerFlag('w', "wait", "Blocking wait until given filesystem path is mounted");
 }
 
 Mount::~Mount()
 {
 }
 
-Mount::Result Mount::exec()
+void Mount::listMounts() const
 {
-    FileSystemClient filesystem;
-    FileSystemMount *mounts;
-    Arch::MemoryMap map;
-    Memory::Range range = map.range(MemoryMap::UserArgs);
+    const FileSystemClient filesystem;
+    const FileSystemMount *mounts;
+    const Arch::MemoryMap map;
+    const Memory::Range range = map.range(MemoryMap::UserArgs);
     char cmd[PAGESIZE];
     Size numberOfMounts = 0;
 
-    // First refresh mounted filesystems
-    FileSystem::Result result = filesystem.refreshMounts(0);
-    assert(result == FileSystem::Success);
-
-    mounts = filesystem.getMounts(numberOfMounts);
+    // Get mounted filesystems
+    mounts = filesystem.getFileSystems(numberOfMounts);
     assert(mounts != NULL);
 
     // Print header
@@ -63,7 +61,25 @@ Mount::Result Mount::exec()
             printf("%20s %s\r\n", mounts[i].path, cmd);
         }
     }
+}
 
-    // Done
+void Mount::waitForMount(const char *path) const
+{
+    const FileSystemClient filesystem;
+    const FileSystem::Result result = filesystem.waitFileSystem(path);
+
+    assert(result == FileSystem::Success);
+}
+
+Mount::Result Mount::exec()
+{
+    const char *waitPath = arguments().get("wait") ?
+                           arguments().get("wait") : ZERO;
+
+    if (waitPath != ZERO)
+        waitForMount(waitPath);
+    else
+        listMounts();
+
     return Success;
 }

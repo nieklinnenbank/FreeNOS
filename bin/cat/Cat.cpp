@@ -16,7 +16,6 @@
  */
 
 #include <FreeNOS/System.h>
-#include <FileSystemClient.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -52,7 +51,7 @@ Cat::Result Cat::exec()
     {
         // Perform cat. */
         result = cat(*(positionals[i]->getValue()));
-    
+
         // Update exit code if needed
         if (result != Success)
         {
@@ -71,10 +70,6 @@ Cat::Result Cat::cat(const char *file) const
     const char *name = *(parser().name());
 
     DEBUG("file = " << file);
-
-    // Refresh current filesystem mount points
-    FileSystemClient filesystem;
-    filesystem.refreshMounts(0);
 
     // Stat the file
     if (stat(file, &st) != 0)

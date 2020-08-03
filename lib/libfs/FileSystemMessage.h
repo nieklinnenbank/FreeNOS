@@ -36,38 +36,18 @@
  */
 typedef struct FileSystemMessage : public ChannelMessage
 {
-    /** Action to perform. */
-    FileSystem::Action action;
-
-    /** Result code. */
-    FileSystem::Result result;
-
-    /** Points to a buffer for I/O. */
-    char *buffer;
-
-    /** Size of the buffer. */
-    Size size;
-
-    /** Offset in the file for I/O. */
-    Size offset;
-
-    /** Path name of the file. */
-    char *path;
-
-    /** User ID and group ID. */
-    u16 userID, groupID;
-
-    /** Filetype. */
-    FileSystem::FileType filetype;
-
-    /** File mode permissions. */
-    FileSystem::FileModes mode;
-
-    /** File Statistics. */
-    FileSystem::FileStat *stat;
-
-    /** Device major/minor numbers. */
-    DeviceID deviceID;
+    FileSystem::Action action;     /**< Action to perform. */
+    FileSystem::Result result;     /**< Result code. */
+    char *buffer;                  /**< Points to a buffer for I/O. */
+    Size size;                     /**< Size of the buffer. */
+    Size offset;                   /**< Offset in the file for I/O. */
+    char *path;                    /**< Path name of the file. */
+    FileSystem::FileType filetype; /**< Filetype. */
+    FileSystem::FileModes mode;    /**< File mode permissions. */
+    FileSystem::FileStat *stat;    /**< File Statistics. */
+    DeviceID deviceID;             /**< Device major/minor numbers. */
+    ProcessID pid;                 /**< Process identifier (used for redirection) */
+    Size pathMountLength;          /**< Length of the mounted path (used for redirection) */
 }
 FileSystemMessage;
 

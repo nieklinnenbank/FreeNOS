@@ -170,6 +170,9 @@ class USBDevice : public Device
     /** USB transfer I/O file. */
     int m_transferFile;
 
+    /** USB transfer I/O file path. */
+    String m_transferFilePath;
+
     /** USB bus path. */
     String m_busPath;
 

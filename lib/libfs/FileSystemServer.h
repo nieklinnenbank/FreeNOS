@@ -29,6 +29,7 @@
 #include "FileSystemPath.h"
 #include "FileSystemMessage.h"
 #include "FileSystemRequest.h"
+#include "FileSystemMount.h"
 
 /**
  * @addtogroup lib
@@ -43,6 +44,11 @@
  */
 class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessage>
 {
+  private:
+
+    /** Maximum number of supported file system mount entries */
+    static const Size MaximumFileSystemMounts = 32;
+
   public:
 
     /**
@@ -124,6 +130,20 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
     void pathHandler(FileSystemMessage *msg);
 
     /**
+     * Process a filesystem mount request message.
+     *
+     * @param msg FileSystemMessage pointer with the requested mount path
+     */
+    void mountHandler(FileSystemMessage *msg);
+
+    /**
+     * Read the file system mounts table.
+     *
+     * @param msg FileSystemMessage pointer
+     */
+    void getFileSystemsHandler(FileSystemMessage *msg);
+
+    /**
      * Retry any pending requests
      *
      * @return True if retry is needed again, false if all requests processed
@@ -146,6 +166,16 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
      * @param msg The FileSystemMessage to send response for
      */
     void sendResponse(FileSystemMessage *msg);
+
+    /**
+     * Try to forward the given FileSystemMessage to a mount file system.
+     *
+     * @param path Path to access in the request
+     * @param msg FileSystemMessage pointer
+     *
+     * @return True if redirected, false otherwise
+     */
+    bool redirectRequest(const char *path, FileSystemMessage *msg);
 
     /**
      * Change the filesystem root directory.
@@ -220,11 +250,17 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
 
   protected:
 
+    /** Process identifier */
+    const ProcessID m_pid;
+
     /** Root entry of the filesystem tree. */
     FileCache *m_root;
 
-    /** Mount point. */
+    /** Mount point path. */
     const char *m_mountPath;
+
+    /** Table with mounted file systems (only used by the root file system). */
+    FileSystemMount m_mounts[MaximumFileSystemMounts];
 
     /** Contains ongoing requests */
     List<FileSystemRequest *> *m_requests;

@@ -19,8 +19,6 @@
 #include <File.h>
 #include <Directory.h>
 #include "SysInfoFileSystem.h"
-#include "MountsFile.h"
-#include "MountWaitFile.h"
 
 SysInfoFileSystem::SysInfoFileSystem(const char *path)
     : FileSystemServer(path)
@@ -28,12 +26,4 @@ SysInfoFileSystem::SysInfoFileSystem(const char *path)
     Directory *dir = new Directory;
     assert(dir != NULL);
     setRoot(dir);
-
-    MountsFile *mountsFile = new MountsFile;
-    assert(mountsFile != NULL);
-    registerFile(mountsFile, "mounts");
-
-    MountWaitFile *mountWait = new MountWaitFile;
-    assert(mountWait != NULL);
-    registerFile(mountWait, "mountwait");
 }

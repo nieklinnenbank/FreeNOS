@@ -26,11 +26,12 @@
 
 FileSystemServer::FileSystemServer(const char *path)
     : ChannelServer<FileSystemServer, FileSystemMessage>(this)
+    , m_pid(ProcessCtl(SELF, GetPID))
 {
-    // Set members
     m_root      = 0;
     m_mountPath = path;
     m_requests  = new List<FileSystemRequest *>();
+    MemoryBlock::set(m_mounts, 0, sizeof(m_mounts));
 
     // Register message handlers
     addIPCHandler(FileSystem::CreateFile, &FileSystemServer::pathHandler, false);
@@ -38,6 +39,9 @@ FileSystemServer::FileSystemServer(const char *path)
     addIPCHandler(FileSystem::DeleteFile, &FileSystemServer::pathHandler, false);
     addIPCHandler(FileSystem::ReadFile,   &FileSystemServer::pathHandler, false);
     addIPCHandler(FileSystem::WriteFile,  &FileSystemServer::pathHandler, false);
+    addIPCHandler(FileSystem::MountFileSystem, &FileSystemServer::mountHandler);
+    addIPCHandler(FileSystem::WaitFileSystem,  &FileSystemServer::pathHandler, false);
+    addIPCHandler(FileSystem::GetFileSystems,  &FileSystemServer::getFileSystemsHandler);
 }
 
 FileSystemServer::~FileSystemServer()
@@ -58,24 +62,18 @@ Directory * FileSystemServer::getRoot()
 
 FileSystem::Result FileSystemServer::mount()
 {
-    ProcessID pid = ProcessCtl(SELF, GetPID);
-    FileSystemMount mnt;
-
-    // The rootfs server and sysfs server have a fixed mount
-    if (pid == ROOTFS_PID || pid == SYSFS_PID)
+    // The rootfs server manages the mounts table and is always mounted
+    // Other file systems send a request to root file system to mount.
+    if (m_pid != ROOTFS_PID)
     {
-        return FileSystem::Success;
+        const FileSystemClient rootfs(ROOTFS_PID);
+        const FileSystem::Result result = rootfs.mountFileSystem(m_mountPath);
+
+        assert(result == FileSystem::Success);
+        return result;
     }
 
-    // Fill the mount structure
-    mnt.procID = pid;
-    mnt.options = 0;
-    MemoryBlock::copy(mnt.path, m_mountPath, PATHLEN);
-
-    // Write the mounts file in SysFS
-    const FileSystemClient sysfs(SYSFS_PID);
-    Size size = sizeof(mnt);
-    return sysfs.writeFile("/sys/mounts", &mnt, &size, 0);
+    return FileSystem::Success;
 }
 
 File * FileSystemServer::createFile(FileSystem::FileType type, DeviceID deviceID)
@@ -115,6 +113,44 @@ void FileSystemServer::pathHandler(FileSystemMessage *msg)
     }
 }
 
+bool FileSystemServer::redirectRequest(const char *path, FileSystemMessage *msg)
+{
+    Size savedMountLength = 0;
+    FileSystemMount *mnt = ZERO;
+
+    // Search for the longest matching mount
+    for (Size i = 0; i < MaximumFileSystemMounts; i++)
+    {
+        if (m_mounts[i].path[0] != ZERO)
+        {
+            const String mountStr(m_mounts[i].path, false);
+            const Size mountStrLen = mountStr.length();
+
+            if (mountStrLen > savedMountLength && mountStr.compareTo(path, true, mountStrLen) == 0)
+            {
+                savedMountLength = mountStrLen;
+                mnt = &m_mounts[i];
+            }
+        }
+    }
+
+    // If no match was found, no redirect is needed
+    if (!mnt)
+        return false;
+
+    msg->type = ChannelMessage::Response;
+
+    if (msg->action == FileSystem::WaitFileSystem)
+        msg->result = FileSystem::Success;
+    else
+        msg->result = FileSystem::RedirectRequest;
+    msg->pid = mnt->procID;
+    msg->pathMountLength = savedMountLength;
+
+    sendResponse(msg);
+    return true;
+}
+
 FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
 {
     char buf[PATHLEN];
@@ -138,6 +174,13 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
     }
     DEBUG(m_self << ": path = " << buf << " action = " << msg->action);
 
+    // Handle mounted file system paths (will result in redirect messages)
+    if (m_pid == ROOTFS_PID && redirectRequest(buf, msg))
+    {
+        DEBUG(m_self << ": redirect " << buf << " to " << msg->pid);
+        return msg->result;
+    }
+
     path.parse(buf + String::length(m_mountPath));
 
     // Do we have this file cached?
@@ -147,7 +190,7 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
         file = cache->file;
     }
     // File not found
-    else if (msg->action != FileSystem::CreateFile)
+    else if (msg->action != FileSystem::CreateFile && msg->action != FileSystem::WaitFileSystem)
     {
         DEBUG(m_self << ": not found");
         msg->type = ChannelMessage::Response;
@@ -251,6 +294,20 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
             DEBUG(m_self << ": write = " << (int)msg->result);
             break;
         }
+
+        case FileSystem::WaitFileSystem: {
+            // Do nothing here. Once the targeted file system is mounted
+            // this function will send a redirect message when called again
+            DEBUG(m_self << ": wait for " << buf);
+            msg->result = FileSystem::RetryAgain;
+            break;
+        }
+
+        default: {
+            ERROR("unhandled file I/O operation: " << (int)msg->action);
+            msg->result = FileSystem::NotSupported;
+            break;
+        }
     }
 
     // Only send reply if completed (not RetryAgain)
@@ -267,6 +324,57 @@ void FileSystemServer::sendResponse(FileSystemMessage *msg)
     msg->type = ChannelMessage::Response;
     m_registry->getProducer(msg->from)->write(msg);
     ProcessCtl(msg->from, Resume, 0);
+}
+
+void FileSystemServer::mountHandler(FileSystemMessage *msg)
+{
+    char buf[PATHLEN + 1];
+
+    // Copy the file path
+    const API::Result result = VMCopy(msg->from, API::Read, (Address) buf,
+                                     (Address) msg->path, PATHLEN);
+    if (result <= 0)
+    {
+        ERROR("failed to copy mount path: result = " << (int) result);
+        msg->result = FileSystem::IOError;
+        return;
+    }
+
+    // Null-terminate
+    buf[PATHLEN] = 0;
+
+    // Append to our filesystem mounts table
+    for (Size i = 0; i < MaximumFileSystemMounts; i++)
+    {
+        if (!m_mounts[i].path[0])
+        {
+            MemoryBlock::copy(m_mounts[i].path, buf, sizeof(m_mounts[i].path));
+            m_mounts[i].procID = msg->from;
+            m_mounts[i].options = ZERO;
+            NOTICE("mounted " << m_mounts[i].path);
+            msg->result = FileSystem::Success;
+            return;
+        }
+    }
+
+    // Not space left
+    msg->result = FileSystem::IOError;
+}
+
+void FileSystemServer::getFileSystemsHandler(FileSystemMessage *msg)
+{
+    // Copy mounts table to the requesting process
+    const Size numBytes = msg->size < sizeof(m_mounts) ? msg->size : sizeof(m_mounts);
+    const API::Result result = VMCopy(msg->from, API::Write, (Address) m_mounts,
+                                     (Address) msg->buffer, numBytes);
+    if (result <= 0)
+    {
+        ERROR("failed to copy mount table: result = " << (int) result);
+        msg->result = FileSystem::IOError;
+        return;
+    }
+
+    msg->result = FileSystem::Success;
 }
 
 bool FileSystemServer::retryRequests()

@@ -27,10 +27,9 @@ int main(int argc, char **argv)
     log.setMinimumLogLevel(Log::Notice);
 
     // Wait for the input/output devices to become available
-    FileSystemClient filesystem;
-    filesystem.waitMount("/dev/ps2");
-    filesystem.waitMount("/dev/video");
-    filesystem.refreshMounts(0);
+    const FileSystemClient filesystem;
+    filesystem.waitFileSystem("/dev/ps2");
+    filesystem.waitFileSystem("/dev/video");
 
     // Register our device
     DeviceServer server("/console");

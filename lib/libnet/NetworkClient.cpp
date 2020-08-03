@@ -41,8 +41,7 @@ NetworkClient::Result NetworkClient::initialize()
     Size numberOfMounts = 0;
 
     // Get a list of mounts
-    filesystem.refreshMounts(0);
-    FileSystemMount *mounts = filesystem.getMounts(numberOfMounts);
+    FileSystemMount *mounts = filesystem.getFileSystems(numberOfMounts);
     FileSystemMount *match = 0;
     Size matchLen = 0;
 

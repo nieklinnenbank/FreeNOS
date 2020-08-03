@@ -38,11 +38,7 @@ ssize_t read(int fildes, void *buf, size_t nbyte)
     }
 
     // Read the file.
-    //
-    // Note that currently we must explicitly use the ProcessID as saved in the
-    // file descriptor. For some processes the internal mount table might not be updated yet.
-    //
-    const FileSystemClient filesystem(files[fildes].mount);
+    const FileSystemClient filesystem;
     const FileSystem::Result result = filesystem.readFile(files[fildes].path,
                                                           (char *)buf,
                                                          &nbyte,

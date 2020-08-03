@@ -26,21 +26,14 @@
 
 int open(const char *path, int oflag, ...)
 {
-    FileSystemClient filesystem;
+    const FileSystemClient filesystem;
     FileDescriptor *files = getFiles();
     FileSystem::FileStat st;
 
     // Ask the FileSystem for the file.
     if (files != NULL)
     {
-        FileSystem::Result result = filesystem.statFile(path, &st);
-
-        // Refresh mounts and retry, in case the file did not exist
-        if (result == FileSystem::NotFound)
-        {
-            filesystem.refreshMounts(0);
-            result = filesystem.statFile(path, &st);
-        }
+        const FileSystem::Result result = filesystem.statFile(path, &st);
 
         // Set errno
         if (result == FileSystem::Success)
@@ -53,13 +46,13 @@ int open(const char *path, int oflag, ...)
                 if (!files[i].open)
                 {
                     files[i].open  = true;
-                    files[i].mount = filesystem.findMount(path);
                     files[i].identifier = 0;
                     files[i].position = 0;
                     strlcpy(files[i].path, path, PATH_MAX);
                     return i;
                 }
             }
+
             // Too many open files
             errno = ENFILE;
         }

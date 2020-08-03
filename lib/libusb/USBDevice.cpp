@@ -21,6 +21,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
+#include <FileSystemClient.h>
 #include <ChannelClient.h>
 #include <FileDescriptor.h>
 #include "USBDevice.h"
@@ -32,6 +33,8 @@ USBDevice::USBDevice(u8 deviceId, const char *busPath)
     m_id = deviceId;
     m_busPath = busPath;
     m_transferFile = -1;
+    m_transferFilePath << busPath << "/transfer";
+
     m_device = new USBDescriptor::Device;
     m_config = new USBDescriptor::Configuration;
 
@@ -52,18 +55,15 @@ FileSystem::Error USBDevice::initialize()
 {
     DEBUG("");
 
-    String usbTransfer;
     Address actualId = m_id;
 
-    usbTransfer << *m_busPath << "/transfer";
-
     // Try to open the USB transfer file on the USB host controller
-    if ((m_transferFile = ::open(*usbTransfer, O_RDWR)) < 0)
+    if ((m_transferFile = ::open(*m_transferFilePath, O_RDWR)) < 0)
     {
-        ERROR("failed to open " << *usbTransfer << ": " << strerror(errno) << "\n");
+        ERROR("failed to open " << *m_transferFilePath << ": " << strerror(errno) << "\n");
         return errno;
     }
-    DEBUG("opened: " << *usbTransfer);
+    DEBUG("opened: " << *m_transferFilePath);
 
     // Every unconfigured USB device starts with address zero
     m_id = 0;
@@ -384,6 +384,8 @@ FileSystem::Error USBDevice::beginTransfer(
     if (m_transferFile > 0 && m_transferFile < FILE_DESCRIPTOR_MAX && files[m_transferFile].open)
     {
         // Prepare the message. We use the offset field to remember virtual input buffer address
+        const FileSystemClient filesystem;
+        const ProcessID mnt = filesystem.findMount(*m_transferFilePath);
         FileDescriptor *fd = &files[m_transferFile];
         fs.type   = ChannelMessage::Request;
         fs.action = FileSystem::WriteFile;
@@ -393,7 +395,7 @@ FileSystem::Error USBDevice::beginTransfer(
         fs.offset = (Size) buffer;
         fs.from   = SELF;
         fs.deviceID.minor = fd->identifier;
-        if (ChannelClient::instance->sendRequest(fd->mount, &fs, sizeof(fs), callback) == ChannelClient::Success)
+        if (ChannelClient::instance->sendRequest(mnt, &fs, sizeof(fs), callback) == ChannelClient::Success)
             return FileSystem::Success;
     }
     return FileSystem::IOError;

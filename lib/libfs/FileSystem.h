@@ -86,7 +86,10 @@ namespace FileSystem
         ReadFile,
         WriteFile,
         StatFile,
-        DeleteFile
+        DeleteFile,
+        MountFileSystem,
+        WaitFileSystem,
+        GetFileSystems
     };
 
     /**
@@ -102,7 +105,8 @@ namespace FileSystem
         PermissionDenied = -5,
         AlreadyExists    = -6,
         NotSupported     = -7,
-        IpcError         = -8
+        RedirectRequest  = -8,
+        IpcError         = -9
     };
 
     /** May contain a byte count or Result code with an error. */

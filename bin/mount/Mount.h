@@ -51,6 +51,20 @@ class Mount : public POSIXApplication
      * @return Result code
      */
     virtual Result exec();
+
+  private:
+
+    /**
+     * Print currently mounted file systems.
+     */
+    void listMounts() const;
+
+    /**
+     * Blocking wait until the given path is mounted.
+     *
+     * @param path Absolute path to a file system mount point
+     */
+    void waitForMount(const char *path) const;
 };
 
 /**

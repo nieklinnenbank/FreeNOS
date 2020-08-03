@@ -125,19 +125,6 @@ void setupChannels()
 void setupMappings()
 {
     FileSystemClient filesystem;
-    Size numberOfMounts = 0;
-
-    // Fill the mounts table
-    FileSystemMount *mounts = filesystem.getMounts(numberOfMounts);
-    assert(mounts != NULL);
-    assert(numberOfMounts >= 2);
-
-    MemoryBlock::copy(mounts[0].path, "/sys", PATHLEN);
-    MemoryBlock::copy(mounts[1].path, "/", PATHLEN);
-    mounts[0].procID  = SYSFS_PID;
-    mounts[0].options = ZERO;
-    mounts[1].procID  = ROOTFS_PID;
-    mounts[1].options = ZERO;
 
     // Map user program arguments
     Arch::MemoryMap map;
