@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Niek Linnenbank
+ * Copyright (C) 2020 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,41 +15,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __FILESYSTEM_SYSINFOFILESYSTEM_H
-#define __FILESYSTEM_SYSINFOFILESYSTEM_H
+#ifndef __SERVER_DATASTORE_DATASTOREMESSAGE_H
+#define __SERVER_DATASTORE_DATASTOREMESSAGE_H
 
-#include <FileSystemServer.h>
 #include <Types.h>
+#include <ChannelMessage.h>
+#include "Datastore.h"
 
 /**
  * @addtogroup server
  * @{
  *
- * @addtogroup sysfs
+ * @addtogroup datastore
  * @{
  */
 
 /**
- * System information filesystem (SysFS).
- *
- * Provides generic information about the current hardware and software
- * of the running system. For example, SysFS provides the list of mounted filesystems.
+ * Datastore IPC message.
  */
-class SysInfoFileSystem : public FileSystemServer
+typedef struct DatastoreMessage : public ChannelMessage
 {
-  public:
-
-    /**
-     * Class constructor function.
-     *
-     * @param path Path to which we are mounted.
-     */
-    SysInfoFileSystem(const char *path);
-};
+    ProcessID from;           /**< Source of the message */
+    Datastore::Action action; /**< Action to perform. */
+    Datastore::Result result; /**< Result of action. */
+    char key[32];             /**< Key specifies the buffer to use */
+    Size size;                /**< Size of the buffer */
+    Address address;          /**< Address of mapped buffer inside client process */
+}
+DatastoreMessage;
 
 /**
  * @}
  * @}
  */
 
-#endif /* __FILESYSTEM_SYSINFOFILESYSTEM_H */
+#endif /* __SERVER_DATASTORE_DATASTOREMESSAGE_H */

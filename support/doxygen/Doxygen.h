@@ -199,9 +199,9 @@
  */
 
 /**
- * @defgroup sysfs SysFS
+ * @defgroup datastore Datastore
  *
- * The system information filesystem (SysFS) provides current hardware and software information.
+ * Provides a key/value in-memory based data storage that can be used system wide.
  */
 
 /**

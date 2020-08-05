@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Niek Linnenbank
+ * Copyright (C) 2020 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,15 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Assert.h>
-#include <File.h>
-#include <Directory.h>
-#include "SysInfoFileSystem.h"
+#include <FreeNOS/System.h>
+#include "DatastoreServer.h"
 
-SysInfoFileSystem::SysInfoFileSystem(const char *path)
-    : FileSystemServer(path)
+int main(int argc, char **argv)
 {
-    Directory *dir = new Directory;
-    assert(dir != NULL);
-    setRoot(dir);
+    DatastoreServer server;
+    return server.run();
 }

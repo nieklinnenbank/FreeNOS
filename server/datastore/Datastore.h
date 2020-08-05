@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Niek Linnenbank
+ * Copyright (C) 2020 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,29 +15,42 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
-#include <KernelLog.h>
-#include <stdlib.h>
-#include "SysInfoFileSystem.h"
+#ifndef __SERVER_DATASTORE_DATASTORE_H
+#define __SERVER_DATASTORE_DATASTORE_H
 
-int main(int argc, char **argv)
+/**
+ * @addtogroup server
+ * @{
+ *
+ * @addtogroup datastore
+ * @{
+ */
+
+namespace Datastore
 {
-    SystemInformation info;
-    const char *path = "/sys";
+    /**
+     * Actions which may be performed on the datastore.
+     */
+    enum Action
+    {
+        RegisterBuffer = 1
+    };
 
-    // Only run on core0
-    if (info.coreId != 0)
-        return EXIT_SUCCESS;
-
-    KernelLog log;
-    log.setMinimumLogLevel(Log::Notice);
-
-    if (argc > 1)
-        path = argv[1];
-
-    SysInfoFileSystem server(path);
-
-    // Mount, then start serving requests.
-    server.mount();
-    return server.run();
+    /**
+     * Result codes.
+     */
+    enum Result
+    {
+        Success = 0,
+        IOError,
+        InvalidArgument,
+        IpcError
+    };
 }
+
+/**
+ * @}
+ * @}
+ */
+
+#endif /* __SERVER_DATASTORE_DATASTORE_H */

@@ -19,5 +19,5 @@ Import('build_env')
 
 env = build_env.Clone()
 env.UseLibraries(['liballoc', 'libstd', 'libarch', 'libipc', 'libfs' ])
-env.UseServers([ 'filesystem', 'core', '' ])
+env.UseServers([ 'filesystem', 'core', 'datastore' ])
 env.TargetLibrary('librt', [ Glob('*.cpp') ])
