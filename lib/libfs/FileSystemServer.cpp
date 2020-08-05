@@ -20,6 +20,7 @@
 #include <Vector.h>
 #include <HashTable.h>
 #include <HashIterator.h>
+#include <DatastoreClient.h>
 #include "FileSystemClient.h"
 #include "FileSystemMount.h"
 #include "FileSystemServer.h"
@@ -31,7 +32,7 @@ FileSystemServer::FileSystemServer(const char *path)
     m_root      = 0;
     m_mountPath = path;
     m_requests  = new List<FileSystemRequest *>();
-    MemoryBlock::set(m_mounts, 0, sizeof(m_mounts));
+    m_mounts    = ZERO;
 
     // Register message handlers
     addIPCHandler(FileSystem::CreateFile, &FileSystemServer::pathHandler, false);
@@ -62,9 +63,21 @@ Directory * FileSystemServer::getRoot()
 
 FileSystem::Result FileSystemServer::mount()
 {
-    // The rootfs server manages the mounts table and is always mounted
+    // The rootfs server manages the mounts table. Retrieve it from the datastore.
+    if (m_pid == ROOTFS_PID)
+    {
+        const DatastoreClient datastore;
+        const Datastore::Result result =
+            datastore.registerBuffer("mounts", &m_mounts, sizeof(FileSystemMount) * MaximumFileSystemMounts);
+        assert(result == Datastore::Success);
+        assert(m_mounts != NULL);
+
+        // Fill the mounts table
+        MemoryBlock::set(m_mounts, 0, sizeof(FileSystemMount) * MaximumFileSystemMounts);
+        return FileSystem::Success;
+    }
     // Other file systems send a request to root file system to mount.
-    if (m_pid != ROOTFS_PID)
+    else
     {
         const FileSystemClient rootfs(ROOTFS_PID);
         const FileSystem::Result result = rootfs.mountFileSystem(m_mountPath);
@@ -73,7 +86,6 @@ FileSystem::Result FileSystemServer::mount()
         return result;
     }
 
-    return FileSystem::Success;
 }
 
 File * FileSystemServer::createFile(FileSystem::FileType type, DeviceID deviceID)
@@ -364,7 +376,8 @@ void FileSystemServer::mountHandler(FileSystemMessage *msg)
 void FileSystemServer::getFileSystemsHandler(FileSystemMessage *msg)
 {
     // Copy mounts table to the requesting process
-    const Size numBytes = msg->size < sizeof(m_mounts) ? msg->size : sizeof(m_mounts);
+    const Size mountsSize = sizeof(FileSystemMount) * MaximumFileSystemMounts;
+    const Size numBytes = msg->size < mountsSize ? msg->size : mountsSize;
     const API::Result result = VMCopy(msg->from, API::Write, (Address) m_mounts,
                                      (Address) msg->buffer, numBytes);
     if (result <= 0)

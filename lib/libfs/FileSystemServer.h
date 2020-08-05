@@ -260,7 +260,7 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
     const char *m_mountPath;
 
     /** Table with mounted file systems (only used by the root file system). */
-    FileSystemMount m_mounts[MaximumFileSystemMounts];
+    FileSystemMount *m_mounts;
 
     /** Contains ongoing requests */
     List<FileSystemRequest *> *m_requests;
