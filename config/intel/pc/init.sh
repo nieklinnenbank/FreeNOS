@@ -13,7 +13,6 @@ stdio /console/tty0 /console/tty0
 #
 /server/time/server &
 /server/filesystem/tmp/server /tmp &
-/server/network/loopback/server &
 
 #
 # Serial console
