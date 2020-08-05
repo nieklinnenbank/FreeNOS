@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
- * 
+ * Copyright (C) 2020 Niek Linnenbank
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -15,9 +15,46 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
+#ifndef __BIN_SHUTDOWN_SHUTDOWN_H
+#define __BIN_SHUTDOWN_SHUTDOWN_H
 
-int main(int argc, char **argv)
+#include <POSIXApplication.h>
+
+/**
+ * @addtogroup bin
+ * @{
+ */
+
+/**
+ * Turn off or restart the system.
+ */
+class Shutdown : public POSIXApplication
 {
-    return PrivExec(Reboot);
-}
+  public:
+
+    /**
+     * Constructor
+     *
+     * @param argc Argument count
+     * @param argv Argument values
+     */
+    Shutdown(int argc, char **argv);
+
+    /**
+     * Destructor
+     */
+    virtual ~Shutdown();
+
+    /**
+     * Execute the application.
+     *
+     * @return Result code
+     */
+    virtual Result exec();
+};
+
+/**
+ * @}
+ */
+
+#endif /* __BIN_SHUTDOWN_SHUTDOWN_H */

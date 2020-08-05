@@ -31,11 +31,11 @@ API::Result PrivExecHandler(PrivOperation op, Address addr)
         return API::Success;
     }
 
-    case Reboot:
+    case RebootSystem:
         cpu_reboot();
         while (true) ;
 
-    case Shutdown:
+    case ShutdownSystem:
         cpu_shutdown();
         return API::Success;
 

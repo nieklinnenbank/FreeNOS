@@ -19,5 +19,5 @@ Import('build_env')
 
 env = build_env.Clone()
 env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libexec',
-                   'libarch', 'libipc', 'librt', 'libfs' ])
-env.TargetProgram('shutdown', 'Main.cpp', env['bin'])
+                   'libarch', 'libipc', 'librt', 'libfs', 'libapp' ])
+env.TargetProgram('shutdown', Glob('*.cpp'), env['bin'])
