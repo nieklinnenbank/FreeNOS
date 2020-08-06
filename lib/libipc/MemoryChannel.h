@@ -138,6 +138,17 @@ class MemoryChannel : public Channel
 
   private:
 
+    /**
+     * Flush memory page.
+     *
+     * @param page Memory page to flush
+     *
+     * @return Result code.
+     */
+    Result flushPage(const Address page) const;
+
+  private:
+
     /** Maximum number of messages that can be stored. */
     const Size m_maximumMessages;
 

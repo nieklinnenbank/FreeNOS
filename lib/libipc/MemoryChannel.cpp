@@ -119,14 +119,40 @@ MemoryChannel::Result MemoryChannel::write(const void *buffer)
 
 MemoryChannel::Result MemoryChannel::flush()
 {
-    // Cannot flush caches in usermode. All usermode code
-    // should memory map without caching.
-    if (!isKernel)
-        return IOError;
+#ifndef INTEL
+    if (m_mode == Producer)
+        flushPage(m_data.getBase());
+    else if (m_mode == Consumer)
+        flushPage(m_feedback.getBase());
+#endif /* INTEL */
 
-    // Clean both pages from the cache
-    Arch::Cache cache;
-    cache.cleanData(m_data.getBase());
-    cache.cleanData(m_feedback.getBase());
+    return Success;
+}
+
+MemoryChannel::Result MemoryChannel::flushPage(const Address page) const
+{
+    // Flush caches in usermode via the kernel.
+    if (!isKernel)
+    {
+#ifndef __HOST__
+        Memory::Range range;
+        range.virt = page;
+
+        const API::Result result = VMCtl(SELF, CacheClean, &range);
+        if (result != API::Success)
+        {
+            ERROR("failed to clean data cache at " << (void *) page <<
+                  ": result = " << (int) result);
+            return IOError;
+        }
+#endif /* __HOST__ */
+    }
+    // Clean both pages from the cache directly
+    else
+    {
+        Arch::Cache cache;
+        cache.cleanData(page);
+    }
+
     return Success;
 }
