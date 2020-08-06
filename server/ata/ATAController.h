@@ -18,6 +18,7 @@
 #ifndef __ATA_ATACONTROLLER_H
 #define __ATA_ATACONTROLLER_H
 
+#include <FreeNOS/System.h>
 #include <List.h>
 #include <Device.h>
 
@@ -307,6 +308,9 @@ class ATAController : public Device
 
     /** @brief Drives detected on the ATA bus. */
     List<ATADrive *> drives;
+
+    /** Port I/O object. */
+    Arch::IO m_io;
 };
 
 /**

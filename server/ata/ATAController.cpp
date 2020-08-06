@@ -47,18 +47,18 @@ FileSystem::Error ATAController::initialize()
     ATADrive *drive;
 
     // Detect ATA Controller
-    if (ReadByte(ATA_BASE_CMD0 + ATA_REG_STATUS) == 0xff)
+    if (m_io.inb(ATA_BASE_CMD0 + ATA_REG_STATUS) == 0xff)
     {
         return FileSystem::NotSupported;
     }
     pollReady(true);
 
     // Attempt to detect first drive
-    WriteByte(ATA_BASE_CMD0 + ATA_REG_SELECT, ATA_SEL_MASTER);
+    m_io.outb(ATA_BASE_CMD0 + ATA_REG_SELECT, ATA_SEL_MASTER);
     pollReady(true);
-    WriteByte(ATA_BASE_CMD0 + ATA_REG_CMD,    ATA_CMD_IDENTIFY);
+    m_io.outb(ATA_BASE_CMD0 + ATA_REG_CMD,    ATA_CMD_IDENTIFY);
 
-    switch (ReadByte(ATA_BASE_CMD0 + ATA_REG_STATUS))
+    switch (m_io.inb(ATA_BASE_CMD0 + ATA_REG_STATUS))
     {
     case 0:
         NOTICE("No ATA drive(s) detected");
@@ -75,7 +75,7 @@ FileSystem::Error ATAController::initialize()
         // Read IDENTIFY data
         for (int i = 0; i < 256; i++)
         {
-            ((u16 *) &drive->identity)[i] = ReadWord(ATA_BASE_CMD0 + ATA_REG_DATA);
+            ((u16 *) &drive->identity)[i] = m_io.inw(ATA_BASE_CMD0 + ATA_REG_DATA);
         }
 
         // Fixup ASCII bytes
@@ -110,12 +110,12 @@ FileSystem::Error ATAController::read(IOBuffer & buffer, Size size, Size offset)
     }
 
     // Perform ATA Read Command
-    WriteByte(ATA_BASE_CMD0 + ATA_REG_SELECT, ATA_SEL_MASTER_28);
-    WriteByte(ATA_BASE_CMD0 + ATA_REG_COUNT,  sectors);
-    WriteByte(ATA_BASE_CMD0 + ATA_REG_ADDR0,  (lba) & 0xff);
-    WriteByte(ATA_BASE_CMD0 + ATA_REG_ADDR1,  (lba >> 8) & 0xff);
-    WriteByte(ATA_BASE_CMD0 + ATA_REG_ADDR2,  (lba >> 16) & 0xff);
-    WriteByte(ATA_BASE_CMD0 + ATA_REG_CMD, ATA_CMD_READ);
+    m_io.outb(ATA_BASE_CMD0 + ATA_REG_SELECT, ATA_SEL_MASTER_28);
+    m_io.outb(ATA_BASE_CMD0 + ATA_REG_COUNT,  sectors);
+    m_io.outb(ATA_BASE_CMD0 + ATA_REG_ADDR0,  (lba) & 0xff);
+    m_io.outb(ATA_BASE_CMD0 + ATA_REG_ADDR1,  (lba >> 8) & 0xff);
+    m_io.outb(ATA_BASE_CMD0 + ATA_REG_ADDR2,  (lba >> 16) & 0xff);
+    m_io.outb(ATA_BASE_CMD0 + ATA_REG_CMD,    ATA_CMD_READ);
 
     // Read out all requested sectors
     while(result < size)
@@ -126,7 +126,7 @@ FileSystem::Error ATAController::read(IOBuffer & buffer, Size size, Size offset)
         // Read out bytes
         for (int i = 0; i < 256; i++)
         {
-            block[i] = ReadWord(ATA_BASE_CMD0 + ATA_REG_DATA);
+            block[i] = m_io.inw(ATA_BASE_CMD0 + ATA_REG_DATA);
         }
 
         // Calculate maximum bytes
@@ -154,7 +154,7 @@ void ATAController::pollReady(bool noData)
 {
     while (true)
     {
-        u8 status = ReadByte(ATA_BASE_CMD0 + ATA_REG_STATUS);
+        u8 status = m_io.inb(ATA_BASE_CMD0 + ATA_REG_STATUS);
 
         if (!(status & ATA_STATUS_BUSY) &&
              (status & ATA_STATUS_DATA || noData))

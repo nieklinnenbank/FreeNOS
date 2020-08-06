@@ -15,9 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __VIDEO_VGA_SERVER_H
-#define __VIDEO_VGA_SERVER_H
+#ifndef __SERVER_VIDEO_VGA_H
+#define __SERVER_VIDEO_VGA_H
 
+#include <FreeNOS/System.h>
 #include <DeviceServer.h>
 #include <Types.h>
 
@@ -151,6 +152,9 @@ class VGA : public Device
 
     /** @brief Number of characters vertically. */
     Size height;
+
+    /** Port I/O object. */
+    Arch::IO m_io;
 };
 
 /**
@@ -158,4 +162,4 @@ class VGA : public Device
  * @}
  */
 
-#endif /* __VIDEO_VGA_SERVER_H */
+#endif /* __SERVER_VIDEO_VGA_H */

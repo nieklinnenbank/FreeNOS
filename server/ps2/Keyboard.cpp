@@ -68,7 +68,7 @@ FileSystem::Error Keyboard::read(IOBuffer & buffer, Size size, Size offset)
         pending = false;
 
         // Read byte from the keyboard.
-        u8 keycode = ReadByte(PS2_PORT);
+        u8 keycode = m_io.inb(PS2_PORT);
 
         // Update shift state
         if (keycode == 0x2a || keycode == 0xaa)

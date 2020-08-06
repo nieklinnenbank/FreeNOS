@@ -17,8 +17,7 @@
 
 #include <FreeNOS/System.h>
 #include <Types.h>
-#include <errno.h>
-#include <string.h>
+#include <MemoryBlock.h>
 #include "VGA.h"
 
 VGA::VGA(Size w, Size h) : Device(FileSystem::BlockDeviceFile), width(w), height(h)
@@ -49,8 +48,8 @@ FileSystem::Error VGA::initialize()
     }
 
     // Disable hardware cursor
-    WriteByte(VGA_IOADDR, 0x0a);
-    WriteByte(VGA_IODATA, 1 << 5);
+    m_io.outb(VGA_IOADDR, 0x0a);
+    m_io.outb(VGA_IODATA, 1 << 5);
 
     // Successfull
     return FileSystem::Success;
@@ -72,6 +71,7 @@ FileSystem::Error VGA::write(IOBuffer & buffer, Size size, Size offset)
     {
         return FileSystem::InvalidArgument;
     }
-    memcpy(vga + (offset / sizeof(u16)), buffer.getBuffer(), size);
+
+    MemoryBlock::copy(vga + (offset / sizeof(u16)), buffer.getBuffer(), size);
     return size;
 }

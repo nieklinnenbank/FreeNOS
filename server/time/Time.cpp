@@ -90,8 +90,8 @@ FileSystem::Error Time::read(IOBuffer & buffer, Size size, Size offset)
 
 unsigned char Time::readCMOS(unsigned char addr)
 {
-    WriteByte(RTC_PORT(0), addr);
-    return ReadByte(RTC_PORT(1));
+    m_io.outb(RTC_PORT(0), addr);
+    return m_io.inb(RTC_PORT(1));
 }
 
 unsigned Time::bcd2bin(unsigned char val)
