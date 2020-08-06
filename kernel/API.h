@@ -51,8 +51,7 @@ class API
         SystemInfoNumber,
         VMCopyNumber,
         VMCtlNumber,
-        VMShareNumber,
-        IOCtlNumber
+        VMShareNumber
     }
     Number;
 
@@ -137,7 +136,6 @@ Log & operator << (Log &log, API::Operation op);
 #include "API/VMCopy.h"
 #include "API/VMCtl.h"
 #include "API/VMShare.h"
-#include "API/IOCtl.h"
 #include "API/ProcessID.h"
 
 #endif /* __KERNEL_API_H */
