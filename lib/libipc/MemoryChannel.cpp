@@ -15,8 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Log.h>
 #include <FreeNOS/System.h>
+#include <Assert.h>
+#include <Log.h>
+#include <MemoryBlock.h>
 #include "MemoryChannel.h"
 
 MemoryChannel::MemoryChannel(const Channel::Mode mode, const Size messageSize)
