@@ -617,6 +617,14 @@ Core::Result CoreServer::sendToMaster(CoreMessage *msg)
     while (m_toMaster->write(msg) != Channel::Success)
         ;
 
+    const MemoryChannel::Result result = m_toMaster->flush();
+    if (result != Channel::Success)
+    {
+        ERROR("failed to flush master channel: result = " << (int) result);
+        msg->result = Core::IOError;
+        return Core::IOError;
+    }
+
     return Core::Success;
 }
 
@@ -642,9 +650,18 @@ Core::Result CoreServer::sendToSlave(uint coreId, CoreMessage *msg)
         return Core::IOError;
     }
 
-    if (ch->write(msg) != Channel::Success)
+    MemoryChannel::Result result = ch->write(msg);
+    if (result != Channel::Success)
     {
-        ERROR("failed to write channel on core" << coreId);
+        ERROR("failed to write channel on core" << coreId << ": result = " << (int)result);
+        msg->result = Core::IOError;
+        return Core::IOError;
+    }
+
+    result = ch->flush();
+    if (result != Channel::Success)
+    {
+        ERROR("failed to flush channel on core" << coreId << ": result = " << (int)result);
         msg->result = Core::IOError;
         return Core::IOError;
     }
