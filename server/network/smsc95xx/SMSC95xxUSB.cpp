@@ -174,7 +174,7 @@ void SMSC95xxUSB::writeStart()
     }
 
     // Flush L1 cache
-    VMCtl(SELF, CacheClean, 0);
+    VMCtl(SELF, CacheCleanInvalidate, 0);
 
     // Start bulk transfer
     beginTransfer(

@@ -166,7 +166,7 @@ SynopsisChannel::Result SynopsisChannel::transfer(const FileSystemMessage *msg,
 
                 // Flush the entire L1 cache to ensure setup buffer
                 // is flushed to system memory.
-                VMCtl(SELF, CacheClean, 0);
+                VMCtl(SELF, CacheCleanInvalidate, 0);
 
                 // Lookup physical address of setup buffer
                 range.virt = (Address) &m_usb->setup;

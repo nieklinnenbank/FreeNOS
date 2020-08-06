@@ -102,6 +102,12 @@ API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *ra
 
         case CacheClean: {
             Arch::Cache cache;
+            cache.cleanData(range->virt);
+            break;
+        }
+
+        case CacheCleanInvalidate: {
+            Arch::Cache cache;
             cache.cleanInvalidate(Cache::Data);
             break;
         }
