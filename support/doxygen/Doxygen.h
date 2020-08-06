@@ -97,6 +97,12 @@
  */
 
 /**
+ * @defgroup libarch_host Host
+ *
+ * Host architecture code is suitable for running on the host operating system.
+ */
+
+/**
  * @defgroup libexec libexec
  *
  * Executable formats library can parse and extract program code and data.

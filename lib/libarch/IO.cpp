@@ -37,6 +37,7 @@ void IO::setBase(const Address base)
 
 IO::Result IO::map(Address phys, Size size, Memory::Access access)
 {
+#ifndef __HOST__
     m_range.virt   = 0;
     m_range.phys   = phys;
     m_range.access = access;
@@ -62,11 +63,13 @@ IO::Result IO::map(Address phys, Size size, Memory::Access access)
             return MapFailure;
     }
     m_base = m_range.virt;
+#endif /* __HOST__ */
     return Success;
 }
 
 IO::Result IO::unmap()
 {
+#ifndef __HOST__
     if (!isKernel)
     {
         if (VMCtl(SELF, UnMap, &m_range) != API::Success)
@@ -81,5 +84,6 @@ IO::Result IO::unmap()
         if (ctx->unmapRange(&m_range) != MemoryContext::Success)
             return MapFailure;
     }
+#endif /* __HOST__ */
     return Success;
 }

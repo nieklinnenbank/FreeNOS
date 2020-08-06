@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2015 Niek Linnenbank
- * 
+ * Copyright (C) 2020 Niek Linnenbank
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -10,37 +10,29 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __INTEL_PC_SYSTEM_H
-#define __INTEL_PC_SYSTEM_H
+#include "HostCache.h"
 
-#define INTEL
-#define PC
-#define __SYSTEM
+HostCache::Result HostCache::invalidate(HostCache::Type type)
+{
+    return Success;
+}
 
-#define RAM_ADDR (0x0)
+HostCache::Result HostCache::cleanInvalidate(HostCache::Type type)
+{
+    return Success;
+}
 
-#include <intel/IntelConstant.h>
+HostCache::Result HostCache::cleanInvalidateAddress(Type type, Address addr)
+{
+    return Success;
+}
 
-#ifndef __HOST__
-#include <intel/IntelCore.h>
-#include <intel/IntelCache.h>
-#include <intel/IntelIO.h>
-#include <intel/IntelState.h>
-#include <intel/IntelPaging.h>
-#include <intel/IntelMap.h>
-#include <intel/IntelKernel.h>
-#include <intel/IntelProcess.h>
-#include <FreeNOS/API.h>
-
-#else
-#include <host/HostCore.h>
-#include <host/HostCache.h>
-#include <host/HostIO.h>
-#endif /* __HOST__ */
-
-#endif /* __INTEL_PC_SYSTEM_H */
+HostCache::Result HostCache::cleanAddress(HostCache::Type type, Address addr)
+{
+    return Success;
+}

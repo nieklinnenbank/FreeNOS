@@ -57,6 +57,11 @@
 
 #include <FreeNOS/API.h>
 #endif /* __ASSEMBLER__ */
+
+#else
+#include <host/HostCore.h>
+#include <host/HostCache.h>
+#include <host/HostIO.h>
 #endif /* __HOST__ */
 
 #endif /* __ARM_RASPBERRY_SYSTEM_H */
