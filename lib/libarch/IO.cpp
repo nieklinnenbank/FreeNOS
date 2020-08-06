@@ -25,12 +25,12 @@ IO::IO()
     m_base = 0;
 }
 
-uint IO::getBase() const
+Address IO::getBase() const
 {
     return m_base;
 }
 
-void IO::setBase(uint base)
+void IO::setBase(const Address base)
 {
     m_base = base;
 }

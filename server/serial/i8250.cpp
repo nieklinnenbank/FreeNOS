@@ -25,7 +25,7 @@ i8250::i8250(const u16 base, const u16 irq)
     : Device(FileSystem::CharacterDeviceFile)
     , m_irq(irq)
 {
-    m_io.setBase(base);
+    m_io.setPortBase(base);
     m_identifier << "serial0";
 }
 

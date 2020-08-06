@@ -40,6 +40,25 @@ class IntelIO : public IO
   public:
 
     /**
+     * Constructor
+     */
+    IntelIO()
+        : IO()
+        , m_portBase(0)
+    {
+    }
+
+    /**
+     * Set port I/O base address
+     *
+     * @param base New I/O base address.
+     */
+    void setPortBase(const u16 base)
+    {
+        m_portBase = base;
+    }
+
+    /**
      * Read a byte from a port.
      *
      * @param port The I/O port to read from.
@@ -49,7 +68,7 @@ class IntelIO : public IO
     inline u8 inb(u16 port) const
     {
         u8 b;
-        port += m_base;
+        port += m_portBase;
         asm volatile ("inb %%dx, %%al" : "=a" (b) : "d" (port));
         return b;
     }
@@ -64,7 +83,7 @@ class IntelIO : public IO
     inline u16 inw(u16 port) const
     {
         u16 w;
-        port += m_base;
+        port += m_portBase;
         asm volatile ("inw %%dx, %%ax" : "=a" (w) : "d" (port));
         return w;
     }
@@ -77,7 +96,7 @@ class IntelIO : public IO
      */
     inline void outb(u16 port, u8 byte)
     {
-        port += m_base;
+        port += m_portBase;
         asm volatile ("outb %%al,%%dx"::"a" (byte),"d" (port));
     }
 
@@ -89,7 +108,7 @@ class IntelIO : public IO
      */
     inline void outw(u16 port, u16 word)
     {
-        port += m_base;
+        port += m_portBase;
         asm volatile ("outw %%ax,%%dx"::"a" (word),"d" (port));
     }
 
@@ -101,7 +120,7 @@ class IntelIO : public IO
      */
     inline void outl(u16 port, u32 l)
     {
-        port += m_base;
+        port += m_portBase;
         asm volatile ("outl %%eax,%%dx"::"a" (l),"d" (port));
     }
 
@@ -112,10 +131,10 @@ class IntelIO : public IO
      *
      * @return 32-bit value of the register.
      */
-    inline u32 read(Address addr) const
+    inline u32 read(const Address addr) const
     {
-        addr += m_base;
-        return *(volatile u32 *) addr;
+        const volatile u32 *ptr = (const volatile u32 *)((const volatile u8 *)m_base + addr);
+        return *ptr;
     }
 
     /**
@@ -139,10 +158,10 @@ class IntelIO : public IO
      * @param addr Address of the register to write.
      * @param data 32-bit value to write in the register.
      */
-    inline void write(Address addr, u32 data)
+    inline void write(const Address addr, const u32 data)
     {
-        addr += m_base;
-        *(volatile u32 *) addr = data;
+        volatile u32 *ptr = (volatile u32 *)((volatile u8 *)m_base + addr);
+        *ptr = data;
     }
 
     /**
@@ -185,6 +204,11 @@ class IntelIO : public IO
         current &= ~(data);
         write(addr, current);
     }
+
+  private:
+
+    /** Port I/O base address */
+    u16 m_portBase;
 };
 
 namespace Arch
