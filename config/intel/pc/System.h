@@ -22,6 +22,7 @@
 #define PC
 #define __SYSTEM
 
+#define IO_BASE  (0x0)
 #define RAM_ADDR (0x0)
 
 #include <intel/IntelConstant.h>

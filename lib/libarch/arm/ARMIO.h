@@ -41,11 +41,6 @@ class ARMIO : public IO
   public:
 
     /**
-     * Constructor
-     */
-    ARMIO();
-
-    /**
      * write to memory mapped I/O register
      */
     inline void write(u32 reg, u32 data)

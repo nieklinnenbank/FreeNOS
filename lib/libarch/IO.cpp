@@ -22,7 +22,7 @@
 
 IO::IO()
 {
-    m_base = 0;
+    m_base = IO_BASE;
 }
 
 Address IO::getBase() const
