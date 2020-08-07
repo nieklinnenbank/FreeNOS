@@ -20,7 +20,8 @@ Import('build_env')
 env = build_env.Clone()
 env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libtest', 'libfs',
                    'libexec', 'libarch', 'libipc', 'librt', 'libapp' ])
-env.UseLibraries([ 'libtest', 'libapp', 'libipc', 'libstd' ], 'host')
+env.UseLibraries([ 'libtest', 'libapp', 'libipc', 'libarch', 'libstd' ], 'host')
 
 env.TargetHostProgram('ChannelTest', 'ChannelTest.cpp')
+env.TargetHostProgram('MemoryChannelTest', 'MemoryChannelTest.cpp')
 env.TargetHostProgram('ChannelRegistryTest', 'ChannelRegistryTest.cpp')
