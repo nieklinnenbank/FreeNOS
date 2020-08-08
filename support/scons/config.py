@@ -70,20 +70,20 @@ def initialize(target, host, params):
 
     # Apply commandline arguments for use in build.conf's
     for key in params:
-        if not key.startswith('HOST:'):
+        if not key.startswith('HOST_'):
             set_value(local_dict, key, params[key])
 
     local_dict.lock(True)
     apply_file('build.conf', target)
 
     local_dict = ConfDict()
-    local_dict.lock(False, "HOST:")
+    local_dict.lock(False, "HOST_")
 
     for key in params:
-        if key.startswith('HOST:'):
+        if key.startswith('HOST_'):
             set_value(local_dict, key[5:], params[key])
 
-    local_dict.lock(True, "HOST:")
+    local_dict.lock(True, "HOST_")
     apply_file('build.host.conf', host)
 
     # Apply default variables
