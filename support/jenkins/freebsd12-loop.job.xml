@@ -105,8 +105,8 @@ else
   EXTRA=&quot;&quot;
 fi
 
-scons DEBUG=False VERBOSE=True QEMU_BUILD=True $EXTRA
-scons DEBUG=False KVMFLAGS=&quot;&quot; QEMU_BUILD=True $EXTRA qemu_loop
+scons $sysargs DEBUG=False VERBOSE=True HOST_VERBOSE=True HOST_MINIMAL_BUILD=True QEMU_BUILD=True KVMFLAGS=&quot;&quot; $EXTRA || exit 1
+scons $sysargs DEBUG=False VERBOSE=True HOST_VERBOSE=True HOST_MINIMAL_BUILD=True QEMU_BUILD=True KVMFLAGS=&quot;&quot; $EXTRA qemu_loop || exit 1
 </command>
     </hudson.tasks.Shell>
   </builders>

@@ -22,6 +22,7 @@ COMPILER_PACKAGES="gcc-4.8 gcc-4.8-multilib g++-4.8 g++-4.8-multilib \
                    gcc-6 gcc-6-multilib g++-6 g++-6-multilib \
                    gcc-7 gcc-7-multilib g++-7 g++-7-multilib \
                    gcc-8 gcc-8-multilib g++-8 g++-8-multilib \
+                   clang \
                    clang-3.9 \
                    clang-4.0 \
                    clang-5.0 \

@@ -99,6 +99,8 @@
         <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=80</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=90</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=10</string>
+        <string>HOST_MINIMAL_BUILD=False COMPILER=gcc</string>
+        <string>HOST_MINIMAL_BUILD=False COMPILER=clang</string>
       </values>
     </hudson.matrix.TextAxis>
   </axes>
@@ -107,6 +109,13 @@
       <command>#!/usr/local/bin/bash
 set -x
 export $sysargs $debugging
+
+if [ ! -z &quot;$ARCH&quot; ]; then
+    export HOST_MINIMAL_BUILD=True
+    test_target=&quot;qemu_test&quot;
+else
+    test_target=&quot;xml_test&quot;
+fi
 
 # Unfortunately Clang does not ship with its own linker and libgcc equivalent.
 # Therefore, re-use those from the GCC compiler
@@ -119,9 +128,8 @@ else
   EXTRA=&quot;&quot;
 fi
 
-scons VERBOSE=True HOST:VERBOSE=True QEMU_BUILD=True QEMU_KVM=False $EXTRA
-scons VERBOSE=True HOST:VERBOSE=True QEMU_BUILD=True QEMU_KVM=False $EXTRA xml_test
-scons VERBOSE=True HOST:VERBOSE=True QEMU_BUILD=True QEMU_KVM=False $EXTRA qemu_test
+scons VERBOSE=True HOST_VERBOSE=True QEMU_BUILD=True QEMU_KVM=False $EXTRA
+scons VERBOSE=True HOST_VERBOSE=True QEMU_BUILD=True QEMU_KVM=False $EXTRA &quot;$test_target&quot;
 </command>
     </hudson.tasks.Shell>
   </builders>
