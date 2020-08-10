@@ -22,6 +22,7 @@ env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libtest', 'libfs',
                    'libexec', 'libarch', 'libipc', 'librt', 'libapp' ])
 env.UseLibraries([ 'libtest', 'libapp', 'libipc', 'libarch', 'libstd' ], 'host')
 
-env.TargetHostProgram('ChannelTest', 'ChannelTest.cpp')
 env.TargetHostProgram('MemoryChannelTest', 'MemoryChannelTest.cpp')
+env.TargetHostProgram('ChannelTest', 'ChannelTest.cpp')
 env.TargetHostProgram('ChannelRegistryTest', 'ChannelRegistryTest.cpp')
+env.TargetHostProgram('ChannelServerTest', 'ChannelServerTest.cpp')
