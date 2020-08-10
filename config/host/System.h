@@ -22,5 +22,7 @@
 #include <host/HostCore.h>
 #include <host/HostCache.h>
 #include <host/HostIO.h>
+#include <host/HostTraps.h>
+#include <FreeNOS/API.h>
 
 #endif /* __CONFIG_HOST_SYSTEM_H */

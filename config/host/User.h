@@ -19,5 +19,7 @@
 #define __CONFIG_HOST_USER_H
 
 #include "Constant.h"
+#include <host/HostTraps.h>
+#include <FreeNOS/API.h>
 
 #endif /* __CONFIG_HOST_USER_H */
