@@ -109,7 +109,7 @@ def write_header(env, filename = None):
             try:
                 os.makedirs('build/host/include')
                 os.symlink('.', 'build/host/include/FreeNOS')
-                shutil.copy(path, 'build/host/include/System.h')
+                shutil.copy('config/host/System.h', 'build/host/include/System.h')
             except:
                 pass
 

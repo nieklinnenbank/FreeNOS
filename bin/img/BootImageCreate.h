@@ -54,6 +54,11 @@ BootEntry;
  */
 class BootImageCreate : public Application
 {
+  private:
+
+    /** Size of memory pages as supported by this program. */
+    static const Size PageSize = 4096U;
+
   public:
 
     /**

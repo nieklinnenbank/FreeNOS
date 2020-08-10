@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
-#include <FreeNOS/Config.h>
 #include <Vector.h>
 #include <ExecutableFormat.h>
 #include <BootImage.h>
@@ -248,7 +246,7 @@ BootImageCreate::Result BootImageCreate::exec()
     // Point segment data after the segments table
     dataOffset  = image.segmentsTableOffset +
                   image.segmentsTableCount  * sizeof(BootSegment);
-    dataOffset += PAGESIZE - (dataOffset % PAGESIZE);
+    dataOffset += PageSize - (dataOffset % PageSize);
     
     // Fill the segments table by looping symbols
     for (Size i = 0; i < input.count(); i++)
@@ -267,7 +265,7 @@ BootImageCreate::Result BootImageCreate::exec()
             // Increment data pointer. Align on memory page boundary
             dataOffset += segments[i].size;
             lastDataOffset = dataOffset;
-            dataOffset += PAGESIZE - (dataOffset % PAGESIZE);
+            dataOffset += PageSize - (dataOffset % PageSize);
             segCount++;
         }
     }
