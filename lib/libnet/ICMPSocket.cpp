@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
+#include <MemoryBlock.h>
 #include <errno.h>
 #include "Ethernet.h"
 #include "IPV4.h"

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
+#include <FreeNOS/Constant.h>
 #include <TestRunner.h>
 #include <TestInt.h>
 #include <TestCase.h>

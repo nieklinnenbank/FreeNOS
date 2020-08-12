@@ -18,7 +18,7 @@
 #ifndef __ATA_ATACONTROLLER_H
 #define __ATA_ATACONTROLLER_H
 
-#include <FreeNOS/System.h>
+#include <FreeNOS/User.h>
 #include <List.h>
 #include <Device.h>
 

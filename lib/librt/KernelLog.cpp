@@ -16,7 +16,7 @@
  */
 
 #ifndef __HOST__
-#include <FreeNOS/System.h>
+#include <FreeNOS/User.h>
 #include "KernelLog.h"
 
 KernelLog::KernelLog()

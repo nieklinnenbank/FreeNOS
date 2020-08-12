@@ -18,10 +18,7 @@
 #ifndef __CONFIG_HOST_SYSTEM_H
 #define __CONFIG_HOST_SYSTEM_H
 
-#define IO_BASE  (0x0)
-#define RAM_ADDR (0x0)
-
-#include <host/HostConstant.h>
+#include "Constant.h"
 #include <host/HostCore.h>
 #include <host/HostCache.h>
 #include <host/HostIO.h>

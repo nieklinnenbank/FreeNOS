@@ -18,8 +18,6 @@
 #ifndef __API_PRIVEXEC_H
 #define __API_PRIVEXEC_H
 
-#include <FreeNOS/System.h>
-
 /**
  * @addtogroup kernel
  * @{

@@ -18,7 +18,6 @@
 #ifndef __LIB_LIBFS_FILESYSTEMSERVER_H
 #define __LIB_LIBFS_FILESYSTEMSERVER_H
 
-#include <FreeNOS/System.h>
 #include <ChannelServer.h>
 #include <Vector.h>
 #include "Directory.h"

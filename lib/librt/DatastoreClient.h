@@ -18,7 +18,7 @@
 #ifndef __LIB_LIBRT_DATASTORECLIENT_H
 #define __LIB_LIBRT_DATASTORECLIENT_H
 
-#include <FreeNOS/System.h>
+#include <FreeNOS/API/ProcessID.h>
 #include <Types.h>
 #include <Memory.h>
 #include <Datastore.h>

@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/User.h>
 #include "File.h"
 
 File::File(FileSystem::FileType type, UserID uid, GroupID gid)

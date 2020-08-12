@@ -18,33 +18,7 @@
 #ifndef __ARM_SUNXI_H3_SYSTEM_H
 #define __ARM_SUNXI_H3_SYSTEM_H
 
-#define __SYSTEM
-#define ARM
-#define ARMV7
-#define SUNXI
-#define SUNXI_H3
-#define SMP
-
-#define IO_BASE 0x01000000
-#define IO_SIZE (1024*1024*128)
-
-#define UART_BASE       0x01c28000
-#define GIC_DIST_BASE   0x01c81000
-#define GIC_CPU_BASE    0x01c82000
-
-#define UART0_IRQ       32
-#define ARMTIMER_IRQ    29
-
-#define RAM_ADDR        (0x40000000)
-#define RAM_SIZE        (1024 * 1024 * 256)
-#define TMPSTACKADDR    (RAM_ADDR + (1024 * 1024 * 32))
-
-#define SYSTEM_FREQ     24000000
-
-#include <arm/ARMConstant.h>
-
-#ifndef __HOST__
-#ifndef __ASSEMBLER__
+#include "Constant.h"
 #include <arm/ARMCore.h>
 #include <arm/ARMCacheV7.h>
 #include <arm/ARMIO.h>
@@ -52,14 +26,7 @@
 #include <arm/ARMMap.h>
 #include <arm/ARMKernel.h>
 #include <arm/ARMProcess.h>
-
+#include <arm/ARMTraps.h>
 #include <FreeNOS/API.h>
-#endif /* __ASSEMBLER__ */
-
-#else
-#include <host/HostCore.h>
-#include <host/HostCache.h>
-#include <host/HostIO.h>
-#endif /* __HOST__ */
 
 #endif /* __ARM_SUNXI_H3_SYSTEM_H */

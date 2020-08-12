@@ -18,7 +18,6 @@
 #ifndef __LIBUSB_USBDEVICE_H
 #define __LIBUSB_USBDEVICE_H
 
-#include <FreeNOS/System.h>
 #include <Types.h>
 #include <Device.h>
 #include <Index.h>

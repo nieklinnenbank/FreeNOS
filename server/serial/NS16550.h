@@ -18,7 +18,6 @@
 #ifndef __SERVER_SERIAL_NS16550_H
 #define __SERVER_SERIAL_NS16550_H
 
-#include <FreeNOS/API.h>
 #include <FreeNOS/System.h>
 #include <Log.h>
 #include <Types.h>

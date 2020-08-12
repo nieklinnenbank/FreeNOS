@@ -18,7 +18,8 @@
 #ifndef __API_VMCTL_H
 #define __API_VMCTL_H
 
-#include <FreeNOS/System.h>
+#include <Types.h>
+#include <Memory.h>
 
 /**
  * @addtogroup kernel

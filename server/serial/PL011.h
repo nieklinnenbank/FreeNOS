@@ -19,7 +19,6 @@
 #ifndef __SERVER_SERIAL_PL011_H
 #define __SERVER_SERIAL_PL011_H
 
-#include <FreeNOS/API.h>
 #include <FreeNOS/System.h>
 #include <Log.h>
 #include <Types.h>

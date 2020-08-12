@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/System.h>
 #include <FreeNOS/ProcessManager.h>
 #include <MemoryBlock.h>
 #include <SplitAllocator.h>

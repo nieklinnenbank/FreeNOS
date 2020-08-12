@@ -18,7 +18,6 @@
 #ifndef __FILESYSTEM_FILE_SYSTEM_MESSAGE_H
 #define __FILESYSTEM_FILE_SYSTEM_MESSAGE_H
 
-#include <FreeNOS/System.h>
 #include <Types.h>
 #include "ChannelMessage.h"
 #include "FileSystem.h"

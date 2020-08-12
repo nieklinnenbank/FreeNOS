@@ -18,7 +18,7 @@
 #ifndef __SERVER_CORE_CORESERVER_H
 #define __SERVER_CORE_CORESERVER_H
 
-#include <FreeNOS/System.h>
+#include <FreeNOS/User.h>
 #include <ChannelServer.h>
 #include <List.h>
 #include <Types.h>

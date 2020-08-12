@@ -15,8 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Log.h>
+#include <FreeNOS/System.h>
 #include <FreeNOS/ProcessManager.h>
+#include <Log.h>
 #include "PrivExec.h"
 
 API::Result PrivExecHandler(PrivOperation op, Address addr)

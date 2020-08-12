@@ -18,7 +18,6 @@
 #ifndef __LIBFS_DIRECTORY_H
 #define __LIBFS_DIRECTORY_H
 
-#include <FreeNOS/System.h>
 #include <List.h>
 #include "FileSystem.h"
 #include "File.h"

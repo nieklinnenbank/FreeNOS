@@ -16,6 +16,7 @@
  */
 
 #include <FreeNOS/System.h>
+#include <FreeNOS/Config.h>
 #include <Log.h>
 #include <ListIterator.h>
 #include <SplitAllocator.h>

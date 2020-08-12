@@ -20,6 +20,7 @@
 
 #include <Types.h>
 #include <Macros.h>
+#include <Log.h>
 #include "NetworkProtocol.h"
 
 class ARP;

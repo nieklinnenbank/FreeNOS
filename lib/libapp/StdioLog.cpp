@@ -16,7 +16,7 @@
  */
 
 #ifndef __HOST__
-#include <FreeNOS/System.h>
+#include <FreeNOS/User.h>
 #endif /* __HOST__ */
 #include <stdio.h>
 #include <stdlib.h>

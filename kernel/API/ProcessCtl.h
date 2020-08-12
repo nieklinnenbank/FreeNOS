@@ -18,7 +18,6 @@
 #ifndef __API_PROCESSCTL_H
 #define __API_PROCESSCTL_H
 
-#include <FreeNOS/System.h>
 #include <FreeNOS/Process.h>
 #include <Types.h>
 

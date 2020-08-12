@@ -21,6 +21,7 @@ import shutil
 import datetime
 import platform
 import re
+import glob
 try:
     from SCons.Script import *
 except ModuleNotFoundError:
@@ -97,19 +98,24 @@ def write_header(env, filename = None):
 
     if not filename:
         if env['ARCH'] != 'host':
-            path='config/'+env['ARCH']+'/'+env['SYSTEM']+'/System.h'
+            path='config/'+env['ARCH']+'/'+env['SYSTEM']+'/*.h'
 
             try:
                 os.makedirs(env['BUILDROOT'] + '/include')
                 os.symlink('.', env['BUILDROOT'] + '/include/FreeNOS')
-                shutil.copy(path, env['BUILDROOT'] + '/include/System.h')
+
+                for f in glob.glob(path):
+                    shutil.copy(f, env['BUILDROOT'] + '/include')
+
             except Exception as e:
                 pass
 
             try:
                 os.makedirs('build/host/include')
                 os.symlink('.', 'build/host/include/FreeNOS')
-                shutil.copy('config/host/System.h', 'build/host/include/System.h')
+
+                for f in glob.glob('config/host/*.h'):
+                    shutil.copy(f, 'build/host/include/')
             except:
                 pass
 

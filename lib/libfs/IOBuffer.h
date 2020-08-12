@@ -18,7 +18,6 @@
 #ifndef __LIB_LIBFS_IOBUFFER_H
 #define __LIB_LIBFS_IOBUFFER_H
 
-#include <FreeNOS/System.h>
 #include <Types.h>
 #include "FileSystemMessage.h"
 

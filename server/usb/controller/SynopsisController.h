@@ -18,7 +18,7 @@
 #ifndef __LIBUSB_SYNOPSISUSB_H
 #define __LIBUSB_SYNOPSISUSB_H
 
-#include <FreeNOS/System.h>
+#include <FreeNOS/User.h>
 #include <Types.h>
 #include <Index.h>
 #include <arm/broadcom/BroadcomPower.h>

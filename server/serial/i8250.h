@@ -21,8 +21,7 @@
 #include <Macros.h>
 #include <Types.h>
 #include <Device.h>
-
-class IntelIO;
+#include <intel/IntelIO.h>
 
 /**
  * @addtogroup server

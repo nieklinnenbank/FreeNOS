@@ -18,7 +18,7 @@
 #ifndef __API_VMCOPY_H
 #define __API_VMCOPY_H
 
-#include <FreeNOS/System.h>
+#include <Types.h>
 
 /**
  * @addtogroup kernel

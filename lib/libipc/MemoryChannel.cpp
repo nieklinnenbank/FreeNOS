@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
 #include <Assert.h>
 #include <Log.h>
 #include <MemoryBlock.h>

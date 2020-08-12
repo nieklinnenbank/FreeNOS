@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
 #include <ChannelClient.h>
 #include "FileSystemMessage.h"
 #include "FileSystemClient.h"

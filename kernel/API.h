@@ -18,10 +18,6 @@
 #ifndef __KERNEL_API_H
 #define __KERNEL_API_H
 
-#ifndef __SYSTEM
-#error Do not include FreeNOS/API.h directly, use FreeNOS/System.h instead
-#endif
-
 #include <Log.h>
 #include <Types.h>
 #include <Vector.h>

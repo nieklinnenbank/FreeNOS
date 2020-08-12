@@ -18,7 +18,7 @@
 #ifndef __LIBIPC_CHANNELSERVER_H
 #define __LIBIPC_CHANNELSERVER_H
 
-#include <FreeNOS/System.h>
+#include <FreeNOS/User.h>
 #include <FreeNOS/ProcessEvent.h>
 #include <FreeNOS/ProcessShares.h>
 #include <HashIterator.h>
