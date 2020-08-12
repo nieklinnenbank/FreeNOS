@@ -161,7 +161,7 @@ void CoreServer::createProcess(CoreMessage *msg)
         range.virt   = 0;
         range.access = Memory::Readable | Memory::User;
         range.size   = msg->programSize;
-        if ((result = VMCtl(SELF, Map, &range)) != API::Success)
+        if ((result = VMCtl(SELF, MapContiguous, &range)) != API::Success)
         {
             ERROR("failed to map program data: " << (int)result);
             msg->result = Core::IOError;
@@ -385,7 +385,7 @@ Core::Result CoreServer::prepareCore(uint coreId, CoreInfo *info,
                        Memory::User;
 
         // Map the target kernel's memory for regions[i].size
-        if ((r = VMCtl(SELF, Map, &range)) != 0)
+        if ((r = VMCtl(SELF, MapContiguous, &range)) != 0)
         {
             ERROR("VMCtl(Map) failed for kernel on core" << coreId <<
                   " at " << (void *)range.phys << ": result " << (int) r);
@@ -425,7 +425,7 @@ Core::Result CoreServer::prepareCore(uint coreId, CoreInfo *info,
     range.access = Memory::Readable | Memory::Writable | Memory::User;
 
     // Map BootImage buffer
-    if ((r = VMCtl(SELF, Map, &range)) != API::Success)
+    if ((r = VMCtl(SELF, MapContiguous, &range)) != API::Success)
     {
         ERROR("VMCtl(Map) failed for BootImage on core" << coreId <<
               " at " << (void *)range.phys << ": result " << (int) r);
@@ -544,7 +544,7 @@ Core::Result CoreServer::clearPages(Address addr, Size size)
     range.virt = ZERO;
     range.size = size;
     range.access = Memory::User | Memory::Readable | Memory::Writable;
-    VMCtl(SELF, Map, &range);
+    VMCtl(SELF, MapContiguous, &range);
 
     MemoryBlock::set((void *) range.virt, 0, size);
 

@@ -278,7 +278,7 @@ Kernel::Result Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Siz
     argRange.phys = alloc_args.address;
 
     // Map program arguments in the process
-    if (mem->mapRange(&argRange) != MemoryContext::Success)
+    if (mem->mapRangeContiguous(&argRange) != MemoryContext::Success)
     {
         FATAL("failed to map program arguments page");
         return ProcessError;

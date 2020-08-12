@@ -173,7 +173,7 @@ Process::Result Process::initialize()
     range.access = Memory::User | Memory::Readable;
     range.size   = PAGESIZE * 2;
     m_memoryContext->findFree(range.size, MemoryMap::UserPrivate, &range.virt);
-    m_memoryContext->mapRange(&range);
+    m_memoryContext->mapRangeContiguous(&range);
 
     // Remap the feedback page with write permissions
     m_memoryContext->unmap(range.virt + PAGESIZE);

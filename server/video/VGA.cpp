@@ -36,7 +36,7 @@ FileSystem::Error VGA::initialize()
                    Memory::Writable;
     range.virt   = ZERO;
     range.phys   = VGA_PADDR;
-    VMCtl(SELF, Map, &range);
+    VMCtl(SELF, MapContiguous, &range);
 
     // Point to the VGA mapping
     vga = (u16 *) range.virt;

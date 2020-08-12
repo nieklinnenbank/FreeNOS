@@ -58,7 +58,7 @@ Process::Result ARMProcess::initialize()
     range.phys = alloc_args.address;
 
     // Map User stack
-    if (m_memoryContext->mapRange(&range) != MemoryContext::Success)
+    if (m_memoryContext->mapRangeContiguous(&range) != MemoryContext::Success)
     {
         ERROR("failed to map user stack");
         return MemoryMapError;

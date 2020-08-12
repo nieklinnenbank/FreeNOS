@@ -41,7 +41,7 @@ bool BootImageStorage::load()
                    Memory::Readable;
     range.virt   = ZERO;
     range.phys   = info.bootImageAddress;
-    VMCtl(SELF, Map, &range);
+    VMCtl(SELF, MapContiguous, &range);
 
     // Update our state
     image = (BootImage *) range.virt;

@@ -34,7 +34,8 @@
  */
 typedef enum MemoryOperation
 {
-    Map = 0,
+    MapContiguous = 0,
+    MapSparse,
     UnMap,
     Release,
     LookupVirtual,

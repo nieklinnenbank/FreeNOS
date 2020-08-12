@@ -76,7 +76,7 @@ int MPI_Init(int *argc, char ***argv)
         progRange.phys = 0;
         progRange.size = st.st_size;
         progRange.access = Memory::User | Memory::Readable | Memory::Writable;
-        const API::Result vmResult = VMCtl(SELF, Map, &progRange);
+        const API::Result vmResult = VMCtl(SELF, MapContiguous, &progRange);
         if (vmResult != API::Success)
         {
             printf("%s: failed to allocate program buffer: result = %d\n", (int)vmResult);
@@ -114,7 +114,7 @@ int MPI_Init(int *argc, char ***argv)
         memChannelBase.phys = 0;
         memChannelBase.virt = 0;
         memChannelBase.access = Memory::Readable | Memory::Writable | Memory::User;
-        if (VMCtl(SELF, Map, &memChannelBase) != API::Success)
+        if (VMCtl(SELF, MapContiguous, &memChannelBase) != API::Success)
         {
             printf("%s: failed to allocate MemoryChannel\n",
                     programName);

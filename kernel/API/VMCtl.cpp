@@ -59,7 +59,8 @@ API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *ra
             range->phys += range->virt & ~PAGEMASK;
             break;
 
-        case Map:
+        case MapContiguous:
+        case MapSparse:
             if (!range->virt)
             {
                 memResult = mem->findFree(range->size, MemoryMap::UserPrivate, &range->virt);
@@ -71,7 +72,11 @@ API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *ra
                 }
                 range->virt += range->phys & ~PAGEMASK;
             }
-            memResult = mem->mapRange(range);
+            if (op == MapContiguous)
+                memResult = mem->mapRangeContiguous(range);
+            else
+                memResult = mem->mapRangeSparse(range);
+
             if (memResult != MemoryContext::Success)
             {
                 ERROR("failed to map memory range " << (void *)range->virt << "->" <<

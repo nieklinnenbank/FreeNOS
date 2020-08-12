@@ -48,14 +48,14 @@ Allocator::Result PageAllocator::allocate(Allocator::Range & args)
     args.address = base() + m_allocated;
 
     // Align to pagesize
-    bytes = aligned(bytes, PAGESIZE);
+    bytes = aligned(bytes, PAGESIZE * 32U);
 
     // Fill in the message
     range.size   = bytes;
     range.access = Memory::User | Memory::Readable | Memory::Writable;
     range.virt   = base() + m_allocated;
     range.phys   = ZERO;
-    const API::Result r = VMCtl(SELF, Map, &range);
+    const API::Result r = VMCtl(SELF, MapSparse, &range);
     if (r != API::Success)
     {
         ERROR("failed to allocate memory using VMCtl(): " << (int)r);

@@ -37,6 +37,35 @@ Allocator::Result SplitAllocator::allocate(Allocator::Range & args)
     return m_alloc.allocate(args);
 }
 
+Allocator::Result SplitAllocator::allocateSparse(const Allocator::Range & args,
+                                                 CallbackFunction *callback)
+{
+    const Size allocSize = m_pageSize * 8U;
+
+    if (args.size > m_alloc.available())
+    {
+        return OutOfMemory;
+    } else if (args.size % (allocSize)) {
+        return InvalidSize;
+    }
+
+    for (Size i = 0; i < args.size; i += allocSize)
+    {
+        Range alloc_args;
+        alloc_args.address = 0;
+        alloc_args.size = allocSize;
+        alloc_args.alignment = ZERO;
+
+        const Result result = static_cast<Allocator *>(&m_alloc)->allocate(alloc_args);
+        if (result != Success)
+            return result;
+
+        callback->execute(&alloc_args.address);
+    }
+
+    return Success;
+}
+
 Allocator::Result SplitAllocator::allocate(Allocator::Range & phys,
                                            Allocator::Range & virt)
 {

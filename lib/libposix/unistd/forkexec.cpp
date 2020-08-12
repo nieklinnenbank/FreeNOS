@@ -44,7 +44,7 @@ int forkexec(const char *path, const char *argv[])
     range.access = Memory::User|Memory::Readable|Memory::Writable;
 
     // Create mapping
-    if (VMCtl(SELF, Map, &range) != API::Success)
+    if (VMCtl(SELF, MapContiguous, &range) != API::Success)
     {
         errno = EFAULT;
         return -1;

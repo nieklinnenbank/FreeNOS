@@ -59,7 +59,7 @@ Process::Result IntelProcess::initialize()
     range.phys = allocPhys.address;
 
     // Map User stack
-    if (m_memoryContext->mapRange(&range) != MemoryContext::Success)
+    if (m_memoryContext->mapRangeContiguous(&range) != MemoryContext::Success) 
     {
         ERROR("failed to map user stack");
         return MemoryMapError;

@@ -99,7 +99,7 @@ void setupHeap()
     range.access = Memory::User | Memory::Readable | Memory::Writable;
     range.virt   = heap.virt;
     range.phys   = ZERO;
-    const API::Result result = VMCtl(SELF, Map, &range);
+    const API::Result result = VMCtl(SELF, MapContiguous, &range);
     if (result != API::Success)
     {
         PrivExec(WriteConsole, (Address) ("failed to allocate pages for heap: terminating"));

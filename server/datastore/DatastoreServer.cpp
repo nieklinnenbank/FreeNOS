@@ -78,7 +78,7 @@ void DatastoreServer::registerBuffer(DatastoreMessage *msg)
     }
 
     // Create mapping in the process
-    const API::Result mapResult = VMCtl(msg->from, Map, &range);
+    const API::Result mapResult = VMCtl(msg->from, MapContiguous, &range);
     if (mapResult != API::Success)
     {
         ERROR("failed to allocate buffer `" << msg->key << "' in PID " <<

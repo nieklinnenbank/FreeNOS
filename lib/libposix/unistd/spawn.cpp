@@ -83,7 +83,7 @@ int spawn(Address program, Size programSize, const char *argv[])
         range.access = regions[i].access;
 
         // Create mapping first in the new process
-        if (VMCtl(pid, Map, &range) != API::Success)
+        if (VMCtl(pid, MapContiguous, &range) != API::Success)
         {
             errno = EFAULT;
             ProcessCtl(pid, KillPID);
@@ -92,7 +92,7 @@ int spawn(Address program, Size programSize, const char *argv[])
 
         // Map inside our process
         range.virt = ZERO;
-        if (VMCtl(SELF, Map, &range) != API::Success)
+        if (VMCtl(SELF, MapContiguous, &range) != API::Success)
         {
             errno = EFAULT;
             ProcessCtl(pid, KillPID);
@@ -123,7 +123,7 @@ int spawn(Address program, Size programSize, const char *argv[])
     range = map.range(MemoryMap::UserArgs);
     range.phys = ZERO;
     range.access = Memory::User | Memory::Readable | Memory::Writable;
-    if (VMCtl(pid, Map, &range) != API::Success)
+    if (VMCtl(pid, MapContiguous, &range) != API::Success)
     {
         errno = EFAULT;
         ProcessCtl(pid, KillPID);

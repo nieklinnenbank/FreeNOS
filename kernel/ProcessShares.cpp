@@ -196,7 +196,7 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
 
     // Map in the local process
     if (localMem->findFree(localShare->range.size, MemoryMap::UserShare, &localShare->range.virt) != MemoryContext::Success ||
-        localMem->mapRange(&localShare->range) != MemoryContext::Success)
+        localMem->mapRangeContiguous(&localShare->range) != MemoryContext::Success)
     {
         ERROR("failed to map MemoryShare in local process");
         delete localShare;
@@ -214,7 +214,7 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
 
     // Map in the remote process
     if (remoteMem->findFree(remoteShare->range.size, MemoryMap::UserShare, &remoteShare->range.virt) != MemoryContext::Success ||
-        remoteMem->mapRange(&remoteShare->range) != MemoryContext::Success)
+        remoteMem->mapRangeContiguous(&remoteShare->range) != MemoryContext::Success)
     {
         ERROR("failed to map MemoryShare in remote process");
         delete localShare;

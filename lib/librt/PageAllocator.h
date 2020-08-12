@@ -38,7 +38,7 @@ class PageAllocator : public Allocator
   private:
 
     /** Minimum size required for allocations */
-    static const Size MinimumAllocationSize = PAGESIZE * 2;
+    static const Size MinimumAllocationSize = PAGESIZE * 32U;
 
   public:
 

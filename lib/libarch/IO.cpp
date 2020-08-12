@@ -45,7 +45,7 @@ IO::Result IO::map(Address phys, Size size, Memory::Access access)
 
     if (!isKernel)
     {
-        if (VMCtl(SELF, Map, &m_range) != API::Success)
+        if (VMCtl(SELF, MapContiguous, &m_range) != API::Success)
             return MapFailure;
     }
     else

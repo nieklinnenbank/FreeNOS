@@ -19,6 +19,7 @@
 #define __LIBALLOC_SPLITALLOCATOR_H
 
 #include <Types.h>
+#include <Callback.h>
 #include "Allocator.h"
 #include "BitAllocator.h"
 
@@ -65,6 +66,17 @@ class SplitAllocator : public Allocator
      * @return Result value.
      */
     virtual Result allocate(Range & args);
+
+    /**
+     * Allocate sparse (non-contiguous) physical memory.
+     *
+     * @param args Contains the requested size on input.
+     *             The alignment and address values are unused.
+     * @param function Called for each successful allocation of a page.
+     *
+     * @return Result value.
+     */
+    Result allocateSparse(const Range & range, CallbackFunction *function);
 
     /**
      * Allocate physical/virtual memory.
