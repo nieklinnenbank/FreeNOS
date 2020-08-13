@@ -16,6 +16,7 @@
  */
 
 #include <FreeNOS/System.h>
+#include <MemoryContext.h>
 #include <MemoryChannel.h>
 #include <List.h>
 #include <ListIterator.h>
