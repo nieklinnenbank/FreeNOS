@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -64,7 +63,7 @@ Cat::Result Cat::exec()
 
 Cat::Result Cat::cat(const char *file) const
 {
-    char buf[PAGESIZE];
+    char buf[1024];
     int fd, e;
     struct stat st;
     const char *name = *(parser().name());
