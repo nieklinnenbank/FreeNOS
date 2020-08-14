@@ -44,6 +44,7 @@ int MPI_Init(int *argc, char ***argv)
     struct stat st;
     char *programName = (*argv)[0];
     char programPath[64];
+    char cmd[MPI_PROG_CMDLEN];
     u8 *programBuffer;
     int fd;
     Memory::Range memChannelBase;
@@ -125,20 +126,18 @@ int MPI_Init(int *argc, char ***argv)
         // Clear channel pages
         MemoryBlock::set((void *) memChannelBase.virt, 0, memChannelBase.size);
 
+        // Format program command
+        snprintf(cmd, MPI_PROG_CMDLEN, "%s -a %x -c %d",
+                 programPath, memChannelBase.phys, coreCount);
+        for (int j = 1; j < *argc; j++)
+        {
+            strcat(cmd, " ");
+            strcat(cmd, (*argv)[j]);
+        }
+
         // now create the slaves using coreservers.
         for (Size i = 1; i < coreCount; i++)
         {
-            char *cmd = new char[MPI_PROG_CMDLEN];
-            assert(cmd != NULL);
-            snprintf(cmd, MPI_PROG_CMDLEN, "%s -a %x -c %d",
-                     programPath, memChannelBase.phys, coreCount);
-
-            for (int j = 1; j < *argc; j++)
-            {
-                strcat(cmd, " ");
-                strcat(cmd, (*argv)[j]);
-            }
-
             const Core::Result result = coreClient.createProcess(i, (const Address) programBuffer,
                                                                  st.st_size, cmd);
             if (result != Core::Success)
