@@ -69,7 +69,20 @@ int MPI_Init(int *argc, char ***argv)
                     programName, programPath, strerror(errno));
             return MPI_ERR_BAD_FILE;
         }
-        programBuffer = new u8[st.st_size];
+
+        Memory::Range progRange;
+        progRange.virt = 0;
+        progRange.phys = 0;
+        progRange.size = st.st_size;
+        progRange.access = Memory::User | Memory::Readable | Memory::Writable;
+        const API::Result vmResult = VMCtl(SELF, Map, &progRange);
+        if (vmResult != API::Success)
+        {
+            printf("%s: failed to allocate program buffer: result = %d\n", (int)vmResult);
+            return MPI_ERR_NO_MEM;
+        }
+
+        programBuffer = (u8 *) progRange.virt;
         assert(programBuffer != NULL);
         MemoryBlock::set(programBuffer, 0, st.st_size);
 
