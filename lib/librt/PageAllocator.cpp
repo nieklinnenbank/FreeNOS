@@ -62,9 +62,6 @@ Allocator::Result PageAllocator::allocate(Allocator::Range & args)
         return Allocator::OutOfMemory;
     }
 
-    // Clear the pages
-    MemoryBlock::set((void *) range.virt, 0, range.size);
-
     // Update count
     m_allocated += range.size;
 
