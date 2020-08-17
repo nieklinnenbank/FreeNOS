@@ -40,7 +40,13 @@
 #define ARMTIMER_IRQ 3
 
 #define RAM_ADDR (0x0)
-#define RAM_SIZE (1024 * 1024 * 1024)
+
+/* Unfortunately, libarch does not support RAM sizes of 1GiB and higher.
+ * The reason is that the kernel maps only 1GiB minus 128MiB of RAM,
+ * where the upper 128MiB is needed for the KernelPrivate section.
+ * Mapping more than that will not work with SplitAllocator::toVirtual().
+ * Therefore, use 128MiB less than the actual device. */
+#define RAM_SIZE (1024 * 1024 * (1024-128))
 #define TMPSTACKOFF  (1024 * 1024 * 32)
 #define TMPSTACKADDR (RAM_ADDR + TMPSTACKOFF)
 
