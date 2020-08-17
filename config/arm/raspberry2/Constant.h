@@ -41,7 +41,8 @@
 
 #define RAM_ADDR (0x0)
 #define RAM_SIZE (1024 * 1024 * 1024)
-#define TMPSTACKADDR (RAM_ADDR + (1024 * 1024 * 32))
+#define TMPSTACKOFF  (1024 * 1024 * 32)
+#define TMPSTACKADDR (RAM_ADDR + TMPSTACKOFF)
 
 #include <arm/ARMConstant.h>
 

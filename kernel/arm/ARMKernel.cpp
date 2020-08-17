@@ -51,11 +51,20 @@ ARMKernel::ARMKernel(CoreInfo *info)
 #endif
 
     // Allocate physical memory for the temporary stack.
-    // Temporary only allocate on boot core, since on secondary
-    // cores its not within the memory.phys area anyway.
+    //
+    // This is an area of 1MiB which must not be used. It is re-mapped on the
+    // secondary cores to an identity-mapped area on the boot core and is currently
+    // required in order to enable the early MMU and perform full kernel startup
+    // until the first program starts.
+    //
+    // If this area is re-used after the kernel started, the SplitAllocator::toVirtual()
+    // function will not translate properly, resulting in memory corruption.
     if (m_coreInfo->coreId == 0) {
         for (Size i = 0; i < (PAGESIZE*4); i += PAGESIZE)
             m_alloc->allocate(TMPSTACKADDR + i);
+    } else {
+        for (Size i = 0; i < MegaByte(1); i += PAGESIZE)
+            m_alloc->allocate(info->kernel.phys + TMPSTACKOFF + i);
     }
 }
 
