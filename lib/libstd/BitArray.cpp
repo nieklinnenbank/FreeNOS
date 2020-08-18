@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "Assert.h"
 #include "BitArray.h"
 #include "MemoryBlock.h"
 
@@ -101,19 +102,40 @@ BitArray::Result BitArray::setNext(Size *bit,
     Size from = 0, found = 0;
 
     // Loop BitArray for unset bits
-    for (Size i = start; i < m_bitCount; i++)
+    for (Size i = start; i < m_bitCount;)
     {
-        if (!isSet(i))
+        // Try to fast-forward 32 bits to search
+        if (((u32 *)m_array)[i / 32] == 0xffffffff)
+        {
+            from = found = 0;
+
+            if (i & 31)
+                i += (32 - (i % 32));
+            else
+                i += 32;
+            continue;
+        }
+        // Try to fast-forward 8 bits to search
+        else if (m_array[i / 8] == 0xff)
+        {
+            from = found = 0;
+
+            if (i & 7)
+                i += (8 - (i % 8));
+            else
+                i += 8;
+            continue;
+        }
+        else if (!isSet(i))
         {
             // Remember this bit
             if (!found)
             {
-                if (i % boundary)
+                if (!(i % boundary))
                 {
-                    continue;
+                    from  = i;
+                    found = 1;
                 }
-                from  = i;
-                found = 1;
             }
             else
             {
@@ -132,6 +154,9 @@ BitArray::Result BitArray::setNext(Size *bit,
         {
             from = found = 0;
         }
+
+        // Move to the next bit
+        i++;
     }
     // No unset bits left!
     return OutOfMemory;
