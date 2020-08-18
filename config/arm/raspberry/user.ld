@@ -28,6 +28,7 @@ SECTIONS
 	*(.entry)
 	*(.text)
 	*(*.text)
+        *(.text*)
 	*(.gnu.linkonce.*)
 	*(.data)
 	*(.rodata)
@@ -71,5 +72,10 @@ SECTIONS
         *(.bss*)
         . = ALIGN(4096); /* align to page size */
         __bss_end = .;
+    }
+
+    .ARM.exidx.text :
+    {
+        *(.ARM.exidx.text.*)
     }
 }

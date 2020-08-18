@@ -29,14 +29,18 @@ SECTIONS
     {
         KEEP(*(.text.boot))
         *(.text)
+        *(*.text)
+        *(.text*)
     }
     . = ALIGN(4096); /* align to page size */
     __text_end = .;
- 
+
+
     __rodata_start = .;
     .rodata :
     {
         *(.rodata)
+        *(.rodata.*)
     }
     . = ALIGN(4096); /* align to page size */
     __rodata_end = .;
@@ -94,4 +98,9 @@ SECTIONS
     }
 
     __end = .;
+
+    .ARM.exidx.text :
+    {
+        *(.ARM.exidx.text.*)
+    }
 }

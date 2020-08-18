@@ -28,6 +28,7 @@ SECTIONS
         *(.entry)
         *(.text)
         *(*.text)
+        *(.text*)
         *(.gnu.linkonce.*)
         *(.data)
         *(.rodata)

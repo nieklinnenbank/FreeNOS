@@ -26,9 +26,10 @@ SECTIONS
 
     .text :
     {
-        *(.boot)
+        KEEP (*(.boot))
         *(.text)
         *(*.text)
+        *(.text*)
         *(.gnu.linkonce.*)
         *(.rodata)
         *(.rodata.*)
