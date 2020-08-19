@@ -146,42 +146,8 @@ template <class Base, class MsgType> class ChannelServer
         // Enter loop
         while (true)
         {
-            // Reset
-            m_sendReply = true;
-
-            // Process kernel events
-            readKernelEvents();
-
-            // Process user messages
-            readChannels();
-
-            // Retry requests until all served (EAGAIN or return value)
-            retryAllRequests();
-
-            // Sleep with timeout or return in case the process is
-            // woken up by an external (wakeup) interrupt.
-            DEBUG("EnterSleep");
-            Address expiry = 0;
-
-            if (m_expiry.frequency)
-                expiry = (Address) &m_expiry;
-
-            const Error r = ProcessCtl(SELF, EnterSleep, expiry, (Address) (m_expiry.frequency ? &m_time : 0));
-            DEBUG("EnterSleep returned: " << (int)r);
-
-            // Check for sleep timeout
-            if (m_expiry.frequency)
-            {
-                if (ProcessCtl(SELF, InfoTimer, (Address) &m_time) != API::Success)
-                {
-                    ERROR("failed to retrieve system timer");
-                }
-                else if (m_expiry.ticks < m_time.ticks)
-                {
-                    m_expiry.frequency = 0;
-                    timeout();
-                }
-            }
+            processAll();
+            sleepUntilWakeup();
         }
 
         // Satify compiler
@@ -261,6 +227,55 @@ template <class Base, class MsgType> class ChannelServer
     }
 
   private:
+
+    /**
+     * Process all current events and channels.
+     */
+    inline void processAll()
+    {
+        // Reset
+        m_sendReply = true;
+
+        // Process kernel events
+        readKernelEvents();
+
+        // Process user messages
+        readChannels();
+
+        // Retry requests until all served (EAGAIN or return value)
+        retryAllRequests();
+    }
+
+    /**
+     * Let this process sleep until more events are raised.
+     */
+    inline void sleepUntilWakeup()
+    {
+        // Sleep with timeout or return in case the process is
+        // woken up by an external (wakeup) interrupt.
+        DEBUG("EnterSleep");
+        Address expiry = 0;
+
+        if (m_expiry.frequency)
+            expiry = (Address) &m_expiry;
+
+        const Error r = ProcessCtl(SELF, EnterSleep, expiry, (Address) (m_expiry.frequency ? &m_time : 0));
+        DEBUG("EnterSleep returned: " << (int)r);
+
+        // Check for sleep timeout
+        if (m_expiry.frequency)
+        {
+            if (ProcessCtl(SELF, InfoTimer, (Address) &m_time) != API::Success)
+            {
+                ERROR("failed to retrieve system timer");
+            }
+            else if (m_expiry.ticks < m_time.ticks)
+            {
+                m_expiry.frequency = 0;
+                timeout();
+            }
+        }
+    }
 
     /**
      * Accept new channel connection.
