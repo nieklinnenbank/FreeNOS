@@ -93,14 +93,12 @@ template <class Base, class MsgType> class ChannelServer
      * @param num Number of message handlers to support.
      */
     ChannelServer(Base *inst, const Size num = 32U)
-        : m_kernelEvent(Channel::Consumer, sizeof(ProcessEvent))
-        , m_sendReply(true)
-        , m_instance(inst)
+        : m_instance(inst)
+        , m_client(ChannelClient::instance)
+        , m_registry(m_client->getRegistry())
+        , m_kernelEvent(Channel::Consumer, sizeof(ProcessEvent))
     {
         m_self = ProcessCtl(SELF, GetPID, 0);
-
-        m_client   = ChannelClient::instance;
-        m_registry = m_client->getRegistry();
 
         m_ipcHandlers = new Vector<MessageHandler<IPCHandlerFunction> *>(num);
         m_ipcHandlers->fill(ZERO);
@@ -134,8 +132,6 @@ template <class Base, class MsgType> class ChannelServer
      */
     virtual ~ChannelServer()
     {
-        delete m_client;
-        delete m_registry;
         delete m_ipcHandlers;
         delete m_irqHandlers;
     }
@@ -277,21 +273,21 @@ template <class Base, class MsgType> class ChannelServer
     Result accept(const ProcessID pid, const Memory::Range range)
     {
         // Create consumer
-        if (!m_registry->getConsumer(pid))
+        if (!m_registry.getConsumer(pid))
         {
             MemoryChannel *consumer = new MemoryChannel(Channel::Consumer, sizeof(MsgType));
             assert(consumer != NULL);
             consumer->setVirtual(range.virt, range.virt + PAGESIZE);
-            m_registry->registerConsumer(pid, consumer);
+            m_registry.registerConsumer(pid, consumer);
         }
         // Create producer
-        if (!m_registry->getProducer(pid))
+        if (!m_registry.getProducer(pid))
         {
             MemoryChannel *producer = new MemoryChannel(Channel::Producer, sizeof(MsgType));
             assert(producer != NULL);
             producer->setVirtual(range.virt + (PAGESIZE*2),
                                  range.virt + (PAGESIZE*3));
-            m_registry->registerProducer(pid, producer);
+            m_registry.registerProducer(pid, producer);
         }
         // Done
         return Success;
@@ -333,14 +329,14 @@ template <class Base, class MsgType> class ChannelServer
                 case ProcessTerminated:
                 {
                     DEBUG(m_self << ": process terminated: PID " << event.number);
-                    result = m_registry->unregisterConsumer(event.number);
+                    result = m_registry.unregisterConsumer(event.number);
                     if (result != ChannelRegistry::Success)
                     {
                         ERROR("failed to unregister consumer for PID " <<
                                event.number << ": " << (int)result);
                     }
 
-                    result = m_registry->unregisterProducer(event.number);
+                    result = m_registry.unregisterProducer(event.number);
                     if (result != ChannelRegistry::Success)
                     {
                         ERROR("failed to unregister producer for PID " <<
@@ -374,7 +370,7 @@ template <class Base, class MsgType> class ChannelServer
         MsgType msg;
 
         // Try to receive message on each consumer channel
-        for (HashIterator<ProcessID, Channel *> i(m_registry->getConsumers()); i.hasCurrent(); i++)
+        for (HashIterator<ProcessID, Channel *> i(m_registry.getConsumers()); i.hasCurrent(); i++)
         {
             Channel *ch = i.current();
             DEBUG(m_self << ": trying to receive from PID " << i.key());
@@ -403,7 +399,7 @@ template <class Base, class MsgType> class ChannelServer
                     // Send reply
                     if (m_sendReply)
                     {
-                        Channel *ch = m_registry->getProducer(i.key());
+                        Channel *ch = m_registry.getProducer(i.key());
                         if (!ch)
                         {
                             ERROR(m_self << ": no producer channel found for PID: " << i.key());
@@ -423,11 +419,14 @@ template <class Base, class MsgType> class ChannelServer
 
   protected:
 
-    /** Contains registered channels */
-    ChannelRegistry *m_registry;
+    /** Server object instance. */
+    Base *m_instance;
 
     /** Client for sending replies */
     ChannelClient *m_client;
+
+    /** Contains registered channels */
+    ChannelRegistry &m_registry;
 
     /** Kernel event channel */
     MemoryChannel m_kernelEvent;
@@ -440,9 +439,6 @@ template <class Base, class MsgType> class ChannelServer
 
     /** IRQ handler functions. */
     Vector<MessageHandler<IRQHandlerFunction> *> *m_irqHandlers;
-
-    /** Server object instance. */
-    Base *m_instance;
 
     /** ProcessID of ourselves */
     ProcessID m_self;

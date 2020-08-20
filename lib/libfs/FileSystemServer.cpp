@@ -181,7 +181,7 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
               " addr = " << (void *) msg->path << " action = " << (int) msg->action);
         msg->type = ChannelMessage::Response;
         msg->result = FileSystem::IOError;
-        m_registry->getProducer(msg->from)->write(msg);
+        m_registry.getProducer(msg->from)->write(msg);
         return msg->result;
     }
     DEBUG(m_self << ": path = " << buf << " action = " << msg->action);
@@ -207,7 +207,7 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
         DEBUG(m_self << ": not found");
         msg->type = ChannelMessage::Response;
         msg->result = FileSystem::NotFound;
-        m_registry->getProducer(msg->from)->write(msg);
+        m_registry.getProducer(msg->from)->write(msg);
         ProcessCtl(msg->from, Resume, 0);
         return msg->result;
     }
@@ -334,7 +334,7 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
 void FileSystemServer::sendResponse(FileSystemMessage *msg)
 {
     msg->type = ChannelMessage::Response;
-    m_registry->getProducer(msg->from)->write(msg);
+    m_registry.getProducer(msg->from)->write(msg);
     ProcessCtl(msg->from, Resume, 0);
 }
 

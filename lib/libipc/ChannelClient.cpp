@@ -23,22 +23,15 @@
 ChannelClient::ChannelClient(const bool overwriteInstance)
     : Singleton<ChannelClient>(this, overwriteInstance)
 {
-    m_registry = 0;
 }
 
 ChannelClient::~ChannelClient()
 {
 }
 
-ChannelRegistry * ChannelClient::getRegistry()
+ChannelRegistry & ChannelClient::getRegistry()
 {
     return m_registry;
-}
-
-ChannelClient::Result ChannelClient::setRegistry(ChannelRegistry *registry)
-{
-    m_registry = registry;
-    return Success;
 }
 
 ChannelClient::Result ChannelClient::initialize()
@@ -115,8 +108,8 @@ ChannelClient::Result ChannelClient::connect(const ProcessID pid, const Size mes
     }
 
     // Register channels
-    m_registry->registerConsumer(pid, cons);
-    m_registry->registerProducer(pid, prod);
+    m_registry.registerConsumer(pid, cons);
+    m_registry.registerProducer(pid, prod);
     return Success;
 }
 
@@ -124,7 +117,7 @@ ChannelClient::Result ChannelClient::receiveAny(void *buffer, const Size msgSize
 {
     assert(msgSize > 0);
 
-    for (HashIterator<ProcessID, Channel *> i(m_registry->getConsumers()); i.hasCurrent(); i++)
+    for (HashIterator<ProcessID, Channel *> i(m_registry.getConsumers()); i.hasCurrent(); i++)
     {
         if (i.current()->read(buffer) == Channel::Success)
         {
@@ -213,7 +206,7 @@ ChannelClient::Result ChannelClient::processResponse(const ProcessID pid,
 
 Channel * ChannelClient::findConsumer(const ProcessID pid, const Size msgSize)
 {
-    Channel *ch = m_registry->getConsumer(pid);
+    Channel *ch = m_registry.getConsumer(pid);
     if (ch)
         return ch;
 
@@ -221,12 +214,12 @@ Channel * ChannelClient::findConsumer(const ProcessID pid, const Size msgSize)
     if (connect(pid, msgSize) != Success)
         return ZERO;
 
-    return m_registry->getConsumer(pid);
+    return m_registry.getConsumer(pid);
 }
 
 Channel * ChannelClient::findProducer(const ProcessID pid, const Size msgSize)
 {
-    Channel *ch = m_registry->getProducer(pid);
+    Channel *ch = m_registry.getProducer(pid);
     if (ch)
         return ch;
 
@@ -234,7 +227,7 @@ Channel * ChannelClient::findProducer(const ProcessID pid, const Size msgSize)
     if (connect(pid, msgSize) != Success)
         return ZERO;
 
-    return m_registry->getProducer(pid);
+    return m_registry.getProducer(pid);
 }
 
 ChannelClient::Result ChannelClient::syncReceiveFrom(void *buffer, const Size msgSize, const ProcessID pid)
