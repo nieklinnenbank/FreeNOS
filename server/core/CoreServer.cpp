@@ -62,10 +62,10 @@ int CoreServer::runCore()
 
         if (m_ipcHandlers->at(msg.action))
         {
-            m_sendReply = m_ipcHandlers->at(msg.action)->sendReply;
+            const bool sendReply = m_ipcHandlers->at(msg.action)->sendReply;
             (this->*(m_ipcHandlers->at(msg.action))->exec)(&msg);
 
-            if (m_sendReply)
+            if (sendReply)
             {
                 sendToMaster(&msg);
             }

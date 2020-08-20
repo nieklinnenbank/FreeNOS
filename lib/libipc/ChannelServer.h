@@ -233,9 +233,6 @@ template <class Base, class MsgType> class ChannelServer
      */
     inline void processAll()
     {
-        // Reset
-        m_sendReply = true;
-
         // Process kernel events
         readKernelEvents();
 
@@ -408,11 +405,11 @@ template <class Base, class MsgType> class ChannelServer
                 // Message is a request to us
                 else if (m_ipcHandlers->at(msg.action))
                 {
-                    m_sendReply = m_ipcHandlers->at(msg.action)->sendReply;
+                    const bool sendReply = m_ipcHandlers->at(msg.action)->sendReply;
                     (m_instance->*(m_ipcHandlers->at(msg.action))->exec) (&msg);
 
                     // Send reply
-                    if (m_sendReply)
+                    if (sendReply)
                     {
                         Channel *ch = m_registry.getProducer(i.key());
                         if (!ch)
@@ -445,9 +442,6 @@ template <class Base, class MsgType> class ChannelServer
 
     /** Kernel event channel */
     MemoryChannel m_kernelEvent;
-
-    /** Should we send a reply message? */
-    bool m_sendReply;
 
     /** IPC handler functions. */
     Vector<MessageHandler<IPCHandlerFunction> *> *m_ipcHandlers;
