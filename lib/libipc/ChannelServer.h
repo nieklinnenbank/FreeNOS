@@ -90,19 +90,20 @@ template <class Base, class MsgType> class ChannelServer
     /**
      * Constructor function.
      *
-     * @param num Number of message handlers to support.
+     * @param client Pointer to ChannelClient instance or ZERO for default.
      */
-    ChannelServer(Base *inst, const Size num = 32U)
+    ChannelServer(Base *inst,
+                  ChannelClient *client = ZERO)
         : m_instance(inst)
-        , m_client(ChannelClient::instance)
+        , m_client(client ? client : ChannelClient::instance)
         , m_registry(m_client->getRegistry())
         , m_kernelEvent(Channel::Consumer, sizeof(ProcessEvent))
     {
         m_self = ProcessCtl(SELF, GetPID, 0);
 
-        m_ipcHandlers = new Vector<MessageHandler<IPCHandlerFunction> *>(num);
+        m_ipcHandlers = new Vector<MessageHandler<IPCHandlerFunction> *>();
         m_ipcHandlers->fill(ZERO);
-        m_irqHandlers = new Vector<MessageHandler<IRQHandlerFunction> *>(num);
+        m_irqHandlers = new Vector<MessageHandler<IRQHandlerFunction> *>();
         m_irqHandlers->fill(ZERO);
 
         // Reset timeout values
@@ -123,7 +124,7 @@ template <class Base, class MsgType> class ChannelServer
         else
         {
             m_kernelEvent.setVirtual(share.range.virt,
-                                     share.range.virt + PAGESIZE);
+                                      share.range.virt + PAGESIZE);
         }
     }
 
