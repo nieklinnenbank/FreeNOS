@@ -333,9 +333,14 @@ template <class Base, class MsgType> class ChannelServer
                 {
                     DEBUG(m_self << ": interrupt: " << event.number);
 
-                    if (m_irqHandlers->at(event.number))
+                    MessageHandler<IRQHandlerFunction> * const *h = m_irqHandlers->get(event.number);
+                    if (h && *h)
                     {
-                        (m_instance->*(m_irqHandlers->at(event.number))->exec) (event.number);
+                        (m_instance->*(*h)->exec) (event.number);
+                    }
+                    else
+                    {
+                        ERROR(m_self << ": unhandled IRQ raised: " << event.number);
                     }
                     break;
                 }
@@ -404,25 +409,32 @@ template <class Base, class MsgType> class ChannelServer
                     }
                 }
                 // Message is a request to us
-                else if (m_ipcHandlers->at(msg.action))
+                else
                 {
-                    const bool sendReply = m_ipcHandlers->at(msg.action)->sendReply;
-                    (m_instance->*(m_ipcHandlers->at(msg.action))->exec) (&msg);
-
-                    // Send reply
-                    if (sendReply)
+                    MessageHandler<IPCHandlerFunction> * const *h = m_ipcHandlers->get(msg.action);
+                    if (h && *h)
                     {
-                        Channel *ch = m_registry.getProducer(i.key());
-                        if (!ch)
+                        (m_instance->*(*h)->exec) (&msg);
+
+                        // Send reply
+                        if ((*h)->sendReply)
                         {
-                            ERROR(m_self << ": no producer channel found for PID: " << i.key());
+                            Channel *ch = m_registry.getProducer(i.key());
+                            if (!ch)
+                            {
+                                ERROR(m_self << ": no producer channel found for PID: " << i.key());
+                            }
+                            else if (ch->write(&msg) != Channel::Success)
+                            {
+                                ERROR(m_self << ": failed to send reply message to PID: " << i.key());
+                            }
+                            else
+                                ProcessCtl(i.key(), Resume, 0);
                         }
-                        else if (ch->write(&msg) != Channel::Success)
-                        {
-                            ERROR(m_self << ": failed to send reply message to PID: " << i.key());
-                        }
-                        else
-                            ProcessCtl(i.key(), Resume, 0);
+                    }
+                    else
+                    {
+                        ERROR(m_self << ": invalid action " << (int)msg.action << " from PID " << i.key());
                     }
                 }
             }

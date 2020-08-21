@@ -60,15 +60,20 @@ int CoreServer::runCore()
         // wait from a message of the master core
         receiveFromMaster(&msg);
 
-        if (m_ipcHandlers->at(msg.action))
+        MessageHandler<IPCHandlerFunction> * const *h = m_ipcHandlers->get(msg.action);
+        if (h && *h)
         {
-            const bool sendReply = m_ipcHandlers->at(msg.action)->sendReply;
-            (this->*(m_ipcHandlers->at(msg.action))->exec)(&msg);
+            const bool sendReply = (*h)->sendReply;
+            (this->*(*h)->exec) (&msg);
 
             if (sendReply)
             {
                 sendToMaster(&msg);
             }
+        }
+        else
+        {
+            ERROR("invalid action " << (int)msg.action << " from master");
         }
     }
 }
