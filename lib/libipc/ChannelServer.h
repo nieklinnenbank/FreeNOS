@@ -103,6 +103,8 @@ template <class Base, class MsgType> class ChannelServer
         IOError,
     };
 
+  public:
+
     /**
      * Constructor function.
      *
@@ -169,6 +171,28 @@ template <class Base, class MsgType> class ChannelServer
     }
 
     /**
+     * Set a sleep timeout
+     *
+     * @param msec Milliseconds to sleep (approximately)
+     */
+    void setTimeout(const uint msec)
+    {
+        DEBUG("msec = " << msec);
+
+        if (ProcessCtl(SELF, InfoTimer, (Address) &m_time) != API::Success)
+        {
+            ERROR("failed to retrieve system timer info");
+            return;
+        }
+
+        const Size msecPerTick = 1000 / m_time.frequency;
+        m_expiry.frequency = m_time.frequency;
+        m_expiry.ticks     = m_time.ticks + ((msec / msecPerTick) + 1);
+    }
+
+  protected:
+
+    /**
      * Register a new IPC message action handler.
      *
      * @param slot Action value to trigger h.
@@ -209,26 +233,6 @@ template <class Base, class MsgType> class ChannelServer
     virtual bool retryRequests()
     {
         return false;
-    }
-
-    /**
-     * Set a sleep timeout
-     *
-     * @param msec Milliseconds to sleep (approximately)
-     */
-    void setTimeout(const uint msec)
-    {
-        DEBUG("msec = " << msec);
-
-        if (ProcessCtl(SELF, InfoTimer, (Address) &m_time) != API::Success)
-        {
-            ERROR("failed to retrieve system timer info");
-            return;
-        }
-
-        const Size msecPerTick = 1000 / m_time.frequency;
-        m_expiry.frequency = m_time.frequency;
-        m_expiry.ticks     = m_time.ticks + ((msec / msecPerTick) + 1);
     }
 
     /**
@@ -478,10 +482,10 @@ template <class Base, class MsgType> class ChannelServer
     /** ProcessID of ourselves */
     ProcessID m_self;
 
+  private:
+
     /** System timer value */
     Timer::Info m_time;
-
-  private:
 
     /** System timer expiration value */
     Timer::Info m_expiry;
