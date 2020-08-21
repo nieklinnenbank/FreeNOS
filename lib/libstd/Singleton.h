@@ -37,10 +37,14 @@ template <class T> class Singleton
      * Constructor
      *
      * @param instance New instance of T.
+     * @param overwrite True to overwrite current instance
      */
-    Singleton<T>(T *obj)
+    Singleton<T>(T *obj, const bool overwrite = true)
     {
-        instance = obj;
+        if (overwrite)
+        {
+            instance = obj;
+        }
     }
 
   public:

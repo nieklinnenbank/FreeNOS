@@ -81,8 +81,10 @@ class ChannelClient : public Singleton<ChannelClient>
 
     /**
      * Constructor.
+     *
+     * @param overwriteInstance True to overwrite the Singleton::instance, false skips overwrite.
      */
-    ChannelClient();
+    ChannelClient(const bool overwriteInstance = true);
 
     /**
      * Destructor
