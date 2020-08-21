@@ -23,6 +23,7 @@
 #include <FreeNOS/ProcessShares.h>
 #include <HashIterator.h>
 #include <Timer.h>
+#include <Vector.h>
 #include "MemoryChannel.h"
 #include "ChannelClient.h"
 #include "ChannelRegistry.h"
@@ -52,6 +53,16 @@ template <class Func> struct MessageHandler
     {
     }
 
+    const bool operator == (const struct MessageHandler<Func> & h) const
+    {
+        return false;
+    }
+
+    const bool operator != (const struct MessageHandler<Func> & h) const
+    {
+        return false;
+    }
+
     /** Handler function. */
     const Func exec;
 
@@ -66,6 +77,11 @@ template <class Func> struct MessageHandler
  */
 template <class Base, class MsgType> class ChannelServer
 {
+  private:
+
+    /** Maximum number of IPC/IRQ handlers. */
+    static const Size MaximumHandlerCount = 255u;
+
   protected:
 
     /** Member function pointer inside Base, to handle IPC messages. */
@@ -98,13 +114,10 @@ template <class Base, class MsgType> class ChannelServer
         , m_client(client ? client : ChannelClient::instance)
         , m_registry(m_client->getRegistry())
         , m_kernelEvent(Channel::Consumer, sizeof(ProcessEvent))
+        , m_ipcHandlers(MaximumHandlerCount)
+        , m_irqHandlers(MaximumHandlerCount)
     {
         m_self = ProcessCtl(SELF, GetPID, 0);
-
-        m_ipcHandlers = new Vector<MessageHandler<IPCHandlerFunction> *>();
-        m_ipcHandlers->fill(ZERO);
-        m_irqHandlers = new Vector<MessageHandler<IRQHandlerFunction> *>();
-        m_irqHandlers->fill(ZERO);
 
         // Reset timeout values
         m_expiry.frequency = 0;
@@ -133,8 +146,8 @@ template <class Base, class MsgType> class ChannelServer
      */
     virtual ~ChannelServer()
     {
-        delete m_ipcHandlers;
-        delete m_irqHandlers;
+        m_ipcHandlers.deleteAll();
+        m_irqHandlers.deleteAll();
     }
 
     /**
@@ -164,7 +177,7 @@ template <class Base, class MsgType> class ChannelServer
      */
     void addIPCHandler(const Size slot, IPCHandlerFunction h, const bool sendReply = true)
     {
-        m_ipcHandlers->insert(slot, new MessageHandler<IPCHandlerFunction>(h, sendReply));
+        m_ipcHandlers.insert(slot, *(new MessageHandler<IPCHandlerFunction>(h, sendReply)));
     }
 
     /**
@@ -175,7 +188,7 @@ template <class Base, class MsgType> class ChannelServer
      */
     void addIRQHandler(const Size slot, IRQHandlerFunction h)
     {
-        m_irqHandlers->insert(slot, new MessageHandler<IRQHandlerFunction>(h, false));
+        m_irqHandlers.insert(slot, *(new MessageHandler<IRQHandlerFunction>(h, false)));
     }
 
     /**
@@ -333,10 +346,10 @@ template <class Base, class MsgType> class ChannelServer
                 {
                     DEBUG(m_self << ": interrupt: " << event.number);
 
-                    MessageHandler<IRQHandlerFunction> * const *h = m_irqHandlers->get(event.number);
-                    if (h && *h)
+                    const MessageHandler<IRQHandlerFunction> *h = m_irqHandlers.get(event.number);
+                    if (h)
                     {
-                        (m_instance->*(*h)->exec) (event.number);
+                        (m_instance->*h->exec) (event.number);
                     }
                     else
                     {
@@ -411,13 +424,13 @@ template <class Base, class MsgType> class ChannelServer
                 // Message is a request to us
                 else
                 {
-                    MessageHandler<IPCHandlerFunction> * const *h = m_ipcHandlers->get(msg.action);
-                    if (h && *h)
+                    const MessageHandler<IPCHandlerFunction> *h = m_ipcHandlers.get(msg.action);
+                    if (h)
                     {
-                        (m_instance->*(*h)->exec) (&msg);
+                        (m_instance->*h->exec) (&msg);
 
                         // Send reply
-                        if ((*h)->sendReply)
+                        if (h->sendReply)
                         {
                             Channel *ch = m_registry.getProducer(i.key());
                             if (!ch)
@@ -457,10 +470,10 @@ template <class Base, class MsgType> class ChannelServer
     MemoryChannel m_kernelEvent;
 
     /** IPC handler functions. */
-    Vector<MessageHandler<IPCHandlerFunction> *> *m_ipcHandlers;
+    Index<MessageHandler<IPCHandlerFunction> > m_ipcHandlers;
 
     /** IRQ handler functions. */
-    Vector<MessageHandler<IRQHandlerFunction> *> *m_irqHandlers;
+    Index<MessageHandler<IRQHandlerFunction> > m_irqHandlers;
 
     /** ProcessID of ourselves */
     ProcessID m_self;

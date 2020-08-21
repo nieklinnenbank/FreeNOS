@@ -60,11 +60,11 @@ int CoreServer::runCore()
         // wait from a message of the master core
         receiveFromMaster(&msg);
 
-        MessageHandler<IPCHandlerFunction> * const *h = m_ipcHandlers->get(msg.action);
-        if (h && *h)
+        const MessageHandler<IPCHandlerFunction> *h = m_ipcHandlers.get(msg.action);
+        if (h)
         {
-            const bool sendReply = (*h)->sendReply;
-            (this->*(*h)->exec) (&msg);
+            const bool sendReply = h->sendReply;
+            (this->*h->exec) (&msg);
 
             if (sendReply)
             {
