@@ -35,7 +35,7 @@
 #define INDEX_DEFAULT_SIZE  64
 
 /**
- * Index is a resizable array of pointers to items.
+ * Index is a fixed size array of pointers to items.
  */
 template <class T> class Index : public Sequence<T>
 {
@@ -140,6 +140,23 @@ template <class T> class Index : public Sequence<T>
         m_array[position] = ZERO;
         m_count--;
         return true;
+    }
+
+    /**
+     * Removes and delete()'s all items.
+     */
+    void deleteAll()
+    {
+        for (Size i = 0; i < m_size; i++)
+        {
+            if (m_array[i] != ZERO)
+            {
+                delete m_array[i];
+                m_array[i] = ZERO;
+            }
+        }
+
+        m_count = 0;
     }
 
     /**
