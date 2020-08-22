@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <HashIterator.h>
 #include "Channel.h"
 #include "ChannelRegistry.h"
 
@@ -24,6 +25,11 @@ ChannelRegistry::ChannelRegistry()
 
 ChannelRegistry::~ChannelRegistry()
 {
+    for (HashIterator<ProcessID, Channel *> i(m_consumer); i.hasCurrent(); i++)
+        delete i.current();
+
+    for (HashIterator<ProcessID, Channel *> i(m_producer); i.hasCurrent(); i++)
+        delete i.current();
 }
 
 Channel * ChannelRegistry::getConsumer(const ProcessID pid)
