@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBALLOC_PAGEALLOCATOR_H
-#define __LIBALLOC_PAGEALLOCATOR_H
+#ifndef __LIB_LIBRUNTIME_PAGEALLOCATOR_H
+#define __LIB_LIBRUNTIME_PAGEALLOCATOR_H
 
 #include <FreeNOS/Constant.h>
 #include <Types.h>
@@ -26,7 +26,7 @@
  * @addtogroup lib
  * @{
  *
- * @addtogroup liballoc
+ * @addtogroup libruntime
  * @{
  */
 
@@ -87,4 +87,4 @@ class PageAllocator : public Allocator
  * @}
  */
 
-#endif /* __LIBALLOC_PAGEALLOCATOR_H */
+#endif /* __LIB_LIBRUNTIME_PAGEALLOCATOR_H */

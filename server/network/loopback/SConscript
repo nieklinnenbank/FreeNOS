@@ -22,5 +22,5 @@ env = build_env.Clone()
 if env['ARCH'] == 'arm' and env['SYSTEM'] == 'raspberry':
     env.UseServers(['log', 'filesystem', 'core'])
     env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libarch',
-                       'libexec', 'libipc', 'libfs', 'libnet', 'librt' ])
+                       'libexec', 'libipc', 'libfs', 'libnet', 'libruntime' ])
     env.TargetProgram('server', [ Glob('*.cpp') ])

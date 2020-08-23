@@ -19,6 +19,6 @@ Import('build_env')
 
 env = build_env.Clone()
 env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libexec',
-                   'libarch', 'libmpi', 'libipc', 'librt', 'libfs' ])
+                   'libarch', 'libmpi', 'libipc', 'libruntime', 'libfs' ])
 env.UseServers(['core'])
 env.TargetProgram('mpiprime', 'Main.cpp', env['bin'])

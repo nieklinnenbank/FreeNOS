@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2015 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,39 +15,45 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBPOSIX_RUNTIME_H
-#define __LIBPOSIX_RUNTIME_H
+#ifndef __LIB_LIBRUNTIME_KERNELLOG_H
+#define __LIB_LIBRUNTIME_KERNELLOG_H
 
-#include <Macros.h>
-#include <Types.h>
+#include "Log.h"
 
 /**
  * @addtogroup lib
  * @{
  *
- * @addtogroup libposix
+ * @addtogroup libruntime
  * @{
  */
 
-/** Maximum size of each argument. */
-#define ARGV_SIZE  128
-
-/** Number of arguments at maximum. */
-#define ARGV_COUNT (PAGESIZE / ARGV_SIZE)
-
 /**
- * Program entry point.
- *
- * @param argc Argument count.
- * @param argv Argument values.
- *
- * @return Exit status.
+ * Log to the kernel using PrivExec().
  */
-int main(int argc, char **argv);
+class KernelLog : public Log
+{
+  public:
+
+    /**
+     * Constructor
+     */
+    KernelLog();
+
+    /**
+     * Write using PrivExec()
+     */
+    virtual void write(const char *str);
+
+    /**
+     * Terminate the program using exit()
+     */
+    virtual void terminate() const;
+};
 
 /**
  * @}
  * @}
  */
 
-#endif /* __LIBPOSIX_RUNTIME_H */
+#endif /* __LIB_LIBRUNTIME_KERNELLOG_H */

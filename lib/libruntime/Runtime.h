@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Niek Linnenbank
+ * Copyright (C) 2009 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,45 +15,39 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIB_LIBRT_KERNELLOG_H
-#define __LIB_LIBRT_KERNELLOG_H
+#ifndef __LIB_LIBRUNTIME_RUNTIME_H
+#define __LIB_LIBRUNTIME_RUNTIME_H
 
-#include "Log.h"
+#include <Macros.h>
+#include <Types.h>
 
 /**
  * @addtogroup lib
  * @{
  *
- * @addtogroup libarch
+ * @addtogroup libruntime
  * @{
  */
 
+/** Maximum size of each argument. */
+#define ARGV_SIZE  128
+
+/** Number of arguments at maximum. */
+#define ARGV_COUNT (PAGESIZE / ARGV_SIZE)
+
 /**
- * Log to the kernel using PrivExec().
+ * Program entry point.
+ *
+ * @param argc Argument count.
+ * @param argv Argument values.
+ *
+ * @return Exit status.
  */
-class KernelLog : public Log
-{
-  public:
-
-    /**
-     * Constructor
-     */
-    KernelLog();
-
-    /**
-     * Write using PrivExec()
-     */
-    virtual void write(const char *str);
-
-    /**
-     * Terminate the program using exit()
-     */
-    virtual void terminate() const;
-};
+int main(int argc, char **argv);
 
 /**
  * @}
  * @}
  */
 
-#endif /* __LIB_LIBRT_KERNELLOG_H */
+#endif /* __LIB_LIBRUNTIME_RUNTIME_H */

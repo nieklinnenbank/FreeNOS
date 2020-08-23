@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIB_LIBRT_CORECLIENT_H
-#define __LIB_LIBRT_CORECLIENT_H
+#ifndef __LIB_LIBRUNTIME_CORECLIENT_H
+#define __LIB_LIBRUNTIME_CORECLIENT_H
 
 #include <FreeNOS/API/ProcessID.h>
 #include <Types.h>
@@ -28,7 +28,7 @@ class CoreMessage;
  * @addtogroup lib
  * @{
  *
- * @addtogroup libfs
+ * @addtogroup libruntime
  * @{
  */
 
@@ -94,4 +94,4 @@ class CoreClient
  * @}
  */
 
-#endif /* __LIB_LIBRT_CORECLIENT_H */
+#endif /* __LIB_LIBRUNTIME_CORECLIENT_H */

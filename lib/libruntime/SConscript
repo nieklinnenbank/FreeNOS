@@ -27,4 +27,4 @@ if env['ARCH'] == 'host':
 else:
     srclist = [ Glob('*.cpp') ]
 
-env.Library('librt', srclist)
+env.Library('libruntime', srclist)

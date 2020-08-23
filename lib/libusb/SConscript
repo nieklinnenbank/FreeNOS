@@ -19,5 +19,5 @@ Import('build_env')
 
 if build_env['ARCH'] == 'arm' and build_env['SYSTEM'] == 'raspberry':
     env = build_env.Clone()
-    env.UseLibraries(['libstd', 'libarch', 'libfs', 'libipc', 'libposix', 'librt' ])
+    env.UseLibraries(['libstd', 'libarch', 'libfs', 'libipc', 'libposix', 'libruntime' ])
     env.TargetLibrary('libusb', [ Glob('*.cpp') ])

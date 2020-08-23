@@ -20,7 +20,7 @@ Import('build_env')
 env = build_env.Clone()
 env.Append(CPPDEFINES = { 'private' : 'public', 'protected' : 'public' })
 env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libtest', 'libfs',
-                   'libexec', 'libarch', 'libipc', 'librt', 'libapp' ])
+                   'libexec', 'libarch', 'libipc', 'libruntime', 'libapp' ])
 env.UseLibraries([ 'libtest', 'libstd', 'libarch', 'libapp' ], 'host')
 env.UseServers(['memory'])
 

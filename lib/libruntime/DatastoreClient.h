@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIB_LIBRT_DATASTORECLIENT_H
-#define __LIB_LIBRT_DATASTORECLIENT_H
+#ifndef __LIB_LIBRUNTIME_DATASTORECLIENT_H
+#define __LIB_LIBRUNTIME_DATASTORECLIENT_H
 
 #include <FreeNOS/API/ProcessID.h>
 #include <Types.h>
@@ -27,7 +27,7 @@
  * @addtogroup lib
  * @{
  *
- * @addtogroup librt
+ * @addtogroup libruntime
  * @{
  */
 
@@ -67,4 +67,4 @@ class DatastoreClient
  * @}
  */
 
-#endif /* __LIB_LIBRT_DATASTORECLIENT_H */
+#endif /* __LIB_LIBRUNTIME_DATASTORECLIENT_H */
