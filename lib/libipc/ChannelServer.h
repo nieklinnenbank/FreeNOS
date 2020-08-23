@@ -134,7 +134,7 @@ template <class Base, class MsgType> class ChannelServer
 
         if (VMShare(SELF, API::Read, &share) != API::Success)
         {
-            ERROR("failed to get kernel event channel");
+            FATAL("failed to get kernel event channel");
         }
         else
         {
