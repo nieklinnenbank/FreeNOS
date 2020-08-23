@@ -22,15 +22,13 @@
 
 int main(int argc, char **argv)
 {
+    KernelLog log;
     SystemInformation info;
     const char *path = "/tmp";
 
     // Only run on core0
     if (info.coreId != 0)
         return EXIT_SUCCESS;
-
-    KernelLog log;
-    log.setMinimumLogLevel(Log::Notice);
 
     if (argc > 1)
         path = argv[1];

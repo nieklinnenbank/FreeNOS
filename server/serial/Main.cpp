@@ -45,11 +45,8 @@ uarts[] =
 
 int main(int argc, char **argv)
 {
+    KernelLog log;
     DeviceServer server("/dev/serial");
-
-    // Open the logging facilities
-    Log *log = new KernelLog();
-    log->setMinimumLogLevel(Log::Notice);
 
 #ifdef ARM
 #ifdef BCM2835

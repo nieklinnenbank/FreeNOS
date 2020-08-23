@@ -17,12 +17,14 @@
 
 #include <Types.h>
 #include <Assert.h>
+#include <KernelLog.h>
 #include <FileStorage.h>
 #include <BootImageStorage.h>
 #include "LinnFileSystem.h"
 
 int main(int argc, char **argv)
 {
+    KernelLog log;
     Storage *storage = ZERO;
     const char *path = "/";
     SystemInformation info;

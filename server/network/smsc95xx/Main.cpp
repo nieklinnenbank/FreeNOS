@@ -22,8 +22,6 @@
 int main(int argc, char **argv)
 {
     KernelLog log;
-    log.setMinimumLogLevel(Log::Notice);
-
     NetworkServer server("/network/smsc95xx");
     server.registerDevice(new SMSC95xx(2, "/usb", &server), "io");
 

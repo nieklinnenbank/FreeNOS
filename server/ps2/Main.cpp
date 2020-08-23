@@ -15,11 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <KernelLog.h>
 #include <DeviceServer.h>
 #include "Keyboard.h"
 
 int main(int argc, char **argv)
 {
+    KernelLog log;
     DeviceServer server("/dev/ps2");
 
     // Create a new keyboard object

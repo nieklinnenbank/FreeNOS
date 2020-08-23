@@ -36,9 +36,6 @@ extern void (*CTOR_LIST)();
 /** List of destructors. */
 extern void (*DTOR_LIST)();
 
-/** Initial logging instance */
-static KernelLog log;
-
 void * __dso_handle = 0;
 
 extern C void __aeabi_unwind_cpp_pr0()

@@ -23,8 +23,6 @@
 int main(int argc, char **argv)
 {
     KernelLog log;
-    log.setMinimumLogLevel(Log::Notice);
-
     DeviceServer server("/usbhub");
     server.registerDevice(new USBHub(1), "roothub");
 

@@ -24,8 +24,6 @@ int main(int argc, char **argv)
     KernelLog log;
     SystemInformation info;
 
-    log.setMinimumLogLevel(Log::Notice);
-
     if (info.coreId == 0)
     {
         NOTICE("initializing on core0");

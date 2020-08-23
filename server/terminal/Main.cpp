@@ -24,7 +24,6 @@
 int main(int argc, char **argv)
 {
     KernelLog log;
-    log.setMinimumLogLevel(Log::Notice);
 
     // Wait for the input/output devices to become available
     const FileSystemClient filesystem;

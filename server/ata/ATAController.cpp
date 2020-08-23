@@ -15,12 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <KernelLog.h>
 #include <DeviceServer.h>
 #include "ATAController.h"
 #include <Types.h>
 
 int main(int argc, char **argv)
 {
+    KernelLog log;
     DeviceServer server("/dev/ata");
     server.registerDevice(new ATAController, "ata0");
 
