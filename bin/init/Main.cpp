@@ -15,23 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __HOST__
 #include <FreeNOS/User.h>
-#endif /* __HOST__ */
-
 #include "Init.h"
 
 int main(int argc, char **argv)
 {
-    Init app(argc, argv);
-
-#ifndef __HOST__
     SystemInformation info;
 
     // Only run on core0
     if (info.coreId != 0)
         return 0;
-#endif /* __HOST__ */
 
+    Init app(argc, argv);
     return app.run();
 }
