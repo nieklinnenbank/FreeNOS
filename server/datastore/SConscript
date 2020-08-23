@@ -20,5 +20,5 @@ Import('build_env')
 env = build_env.Clone()
 env.UseLibraries([ 'liballoc', 'libstd', 'libarch', 'libexec',
                    'libipc', 'libfs', 'libruntime' ])
-env.UseLibraries([ 'libipc', 'libarch', 'libstd', 'libruntime' ], 'host')
+env.UseLibraries([ 'libipc', 'libarch', 'libstd', 'libruntime', 'rt' ], 'host')
 env.TargetHostProgram('server', [ Glob('*.cpp') ])

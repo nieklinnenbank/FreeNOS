@@ -17,8 +17,43 @@
 
 #include <FreeNOS/User.h>
 #include <FreeNOS/Config.h>
+#include <Log.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
+#include <errno.h>
+#include "HostShares.h"
 #include "HostTraps.h"
+
+static API::Result hostPrivExecHandler(PrivOperation op, Address addr)
+{
+    switch (op)
+    {
+        case RebootSystem:
+            ::exit(1);
+            break;
+
+        case ShutdownSystem:
+            ::exit(2);
+            break;
+
+        case WriteConsole:
+            fprintf(stdout, "%s", (char *) addr);
+            fflush(stdout);
+            break;
+
+        case Panic:
+            fprintf(stderr, "Panic\n");
+            fflush(stderr);
+            ::exit(3);
+            break;
+
+        default:
+            break;
+    }
+
+    return API::InvalidArgument;
+}
 
 static API::Result hostProcessCtlHandler(ProcessID procID,
                                          ProcessOperation action,
@@ -29,6 +64,12 @@ static API::Result hostProcessCtlHandler(ProcessID procID,
     {
         case GetPID:
             return (API::Result) getpid();
+
+        case EnterSleep:
+        {
+            usleep(100000);
+            return API::Success;
+        }
 
         default:
             break;
@@ -52,22 +93,65 @@ static API::Result hostSystemInfoHandler(SystemInformation *info)
     return API::Success;
 }
 
+static API::Result hostVMCtlHandler(ProcessID procID,
+                                    MemoryOperation op,
+                                    Memory::Range *range)
+{
+    switch (op)
+    {
+        case MapContiguous:
+        {
+            if (procID != SELF)
+                return API::Success;
+        }
+
+        default:
+            break;
+    }
+
+    return API::InvalidArgument;
+}
+
 static API::Result hostVMShareHandler(ProcessID procID,
                                       API::Operation op,
                                       ProcessShares::MemoryShare *share)
 {
-    return API::Success;
+    switch (op)
+    {
+        case API::Create:
+            return HostShareManager::instance()->createShare(procID, share);
+
+        case API::Read:
+            if (procID == SELF)
+                return HostShareManager::instance()->readShare(share->pid, share);
+            else
+                return API::NotFound;
+
+        case API::Delete:
+            return HostShareManager::instance()->deleteShares(procID);
+
+        default:
+            break;
+    }
+
+    return API::InvalidArgument;
 }
 
 static API::Result hostApiHandler(ulong api, ulong arg1, ulong arg2, ulong arg3, ulong arg4, ulong arg5)
 {
     switch (api)
     {
+        case API::PrivExecNumber:
+            return hostPrivExecHandler((PrivOperation) arg1, arg2);
+
         case API::ProcessCtlNumber:
             return hostProcessCtlHandler(arg1, (ProcessOperation) arg2, arg3, arg4);
 
         case API::SystemInfoNumber:
             return hostSystemInfoHandler((SystemInformation *) arg1);
+
+        case API::VMCtlNumber:
+            return hostVMCtlHandler(arg1, (MemoryOperation) arg2, (Memory::Range *) arg3);
 
         case API::VMShareNumber:
             return hostVMShareHandler(arg1, (API::Operation) arg2, (ProcessShares::MemoryShare *) arg3);
