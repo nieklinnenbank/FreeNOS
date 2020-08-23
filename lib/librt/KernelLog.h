@@ -15,10 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBARCH_KERNELLOG_H
-#define __LIBARCH_KERNELLOG_H
+#ifndef __LIB_LIBRT_KERNELLOG_H
+#define __LIB_LIBRT_KERNELLOG_H
 
-#ifndef __HOST__
 #include "Log.h"
 
 /**
@@ -57,5 +56,4 @@ class KernelLog : public Log
  * @}
  */
 
-#endif /* __HOST__ */
-#endif /* __LIBARCH_KERNELLOG_H */
+#endif /* __LIB_LIBRT_KERNELLOG_H */

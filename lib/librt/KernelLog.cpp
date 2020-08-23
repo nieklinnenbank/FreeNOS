@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __HOST__
 #include <FreeNOS/User.h>
 #include "KernelLog.h"
 
@@ -34,5 +33,3 @@ void KernelLog::terminate() const
     PrivExec(Panic);
     ProcessCtl(SELF, KillPID, 1);
 }
-
-#endif /* __HOST__ */
