@@ -24,7 +24,7 @@
 API::Result VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
                           Address theirs, Size sz)
 {
-    ProcessManager *procs = Kernel::instance->getProcessManager();
+    ProcessManager *procs = Kernel::instance()->getProcessManager();
     Process *proc;
     Address paddr, vaddr;
     Size bytes = 0, pageOff, total = 0;

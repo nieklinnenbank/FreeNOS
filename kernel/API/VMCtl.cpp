@@ -23,7 +23,7 @@
 
 API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range)
 {
-    ProcessManager *procs = Kernel::instance->getProcessManager();
+    ProcessManager *procs = Kernel::instance()->getProcessManager();
     Process *proc = ZERO;
     MemoryContext::Result memResult = MemoryContext::Success;
     Error ret = API::Success;
@@ -128,7 +128,7 @@ API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *ra
 
         case ReserveMem:
         {
-            SplitAllocator *alloc = Kernel::instance->getAllocator();
+            SplitAllocator *alloc = Kernel::instance()->getAllocator();
             Allocator::Result allocResult = Allocator::Success;
 
             for (Size i = 0; i < range->size; i += PAGESIZE)

@@ -88,7 +88,7 @@ InterruptHook;
 /**
  * FreeNOS kernel implementation.
  */
-class Kernel : public Singleton<Kernel>
+class Kernel : public WeakSingleton<Kernel>
 {
   public:
 

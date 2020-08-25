@@ -21,7 +21,53 @@
 #include <TestMain.h>
 #include <Singleton.h>
 
-TestCase(SingletonConstruct)
+/**
+ * Test class using a StrictSingleton
+ */
+class StrictDummy : public StrictSingleton<StrictDummy>
 {
-    return SKIP;
+  public:
+    StrictDummy()
+    {
+        constructorCount++;
+    }
+
+    static Size constructorCount;
+};
+
+Size StrictDummy::constructorCount = 0;
+
+/**
+ * Test class using a WeakSingleton
+ */
+class WeakDummy : public WeakSingleton<WeakDummy>
+{
+  public:
+    WeakDummy() : WeakSingleton<WeakDummy>(this)
+    {
+    }
+};
+
+TestCase(StrictSingletonInstance)
+{
+    // Verify that the instance is always the same
+    testAssert(StrictDummy::instance() == StrictDummy::instance());
+
+    // Object must be constructed only once
+    testAssert(StrictDummy::constructorCount == 1);
+
+    return OK;
+}
+
+TestCase(WeakSingletonInstance)
+{
+    testAssert(WeakDummy::instance() == ZERO);
+
+    WeakDummy dummy1;
+    testAssert(WeakDummy::instance() == &dummy1);
+
+    WeakDummy dummy2;
+    testAssert(WeakDummy::instance() == &dummy2);
+
+    return OK;
 }

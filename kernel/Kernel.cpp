@@ -31,13 +31,14 @@
 #include "ProcessManager.h"
 
 Kernel::Kernel(CoreInfo *info)
-    : Singleton<Kernel>(this), m_interrupts(256)
+    : WeakSingleton<Kernel>(this)
+    , m_interrupts(256)
 {
     // Output log banners on the boot core
     if (info->coreId == 0)
     {
-        Log::instance->append(BANNER);
-        Log::instance->append(COPYRIGHT "\r\n");
+        Log::instance()->append(BANNER);
+        Log::instance()->append(COPYRIGHT "\r\n");
     }
 
     // Setup physical memory allocator

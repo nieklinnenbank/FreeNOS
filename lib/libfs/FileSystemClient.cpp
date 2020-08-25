@@ -55,7 +55,7 @@ inline FileSystem::Result FileSystemClient::request(const char *path,
 inline FileSystem::Result FileSystemClient::request(const ProcessID pid,
                                                     FileSystemMessage &msg) const
 {
-    if (ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), pid) != ChannelClient::Success)
+    if (ChannelClient::instance()->syncSendReceive(&msg, sizeof(msg), pid) != ChannelClient::Success)
     {
         return FileSystem::IpcError;
     }
@@ -82,7 +82,7 @@ inline FileSystem::Result FileSystemClient::request(const ProcessID pid,
     }
 
     msg.type = ChannelMessage::Request;
-    if (ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), msg.pid) != ChannelClient::Success)
+    if (ChannelClient::instance()->syncSendReceive(&msg, sizeof(msg), msg.pid) != ChannelClient::Success)
     {
         return FileSystem::IpcError;
     }

@@ -35,7 +35,7 @@ Datastore::Result DatastoreClient::registerBuffer(const char *key,
     msg.size   = size;
     MemoryBlock::copy(msg.key, key, sizeof(msg.key));
 
-    if (ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), DATASTORE_PID) == ChannelClient::Success)
+    if (ChannelClient::instance()->syncSendReceive(&msg, sizeof(msg), DATASTORE_PID) == ChannelClient::Success)
     {
         *(Address *) buffer = msg.address;
         return msg.result;

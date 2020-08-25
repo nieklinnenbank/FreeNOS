@@ -36,7 +36,7 @@ Process::Result ARMProcess::initialize()
     Allocator::Range alloc_args;
 
     // Create MMU context
-    m_memoryContext = new ARMPaging(&m_map, Kernel::instance->getAllocator());
+    m_memoryContext = new ARMPaging(&m_map, Kernel::instance()->getAllocator());
     if (!m_memoryContext)
     {
         ERROR("failed to create memory context");
@@ -50,7 +50,7 @@ Process::Result ARMProcess::initialize()
     alloc_args.size = range.size;
     alloc_args.alignment = PAGESIZE;
 
-    if (Kernel::instance->getAllocator()->allocate(alloc_args) != Allocator::Success)
+    if (Kernel::instance()->getAllocator()->allocate(alloc_args) != Allocator::Success)
     {
         ERROR("failed to allocate user stack");
         return OutOfMemory;

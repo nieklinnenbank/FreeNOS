@@ -107,13 +107,10 @@ template <class Base, class MsgType> class ChannelServer
 
     /**
      * Constructor function.
-     *
-     * @param client Pointer to ChannelClient instance or ZERO for default.
      */
-    ChannelServer(Base *inst,
-                  ChannelClient *client = ZERO)
+    ChannelServer(Base *inst)
         : m_instance(inst)
-        , m_client(client ? client : ChannelClient::instance)
+        , m_client(ChannelClient::instance())
         , m_registry(m_client->getRegistry())
         , m_kernelEvent(Channel::Consumer, sizeof(ProcessEvent))
         , m_ipcHandlers(MaximumHandlerCount)
@@ -139,7 +136,7 @@ template <class Base, class MsgType> class ChannelServer
         else
         {
             m_kernelEvent.setVirtual(share.range.virt,
-                                      share.range.virt + PAGESIZE);
+                                     share.range.virt + PAGESIZE);
         }
     }
 

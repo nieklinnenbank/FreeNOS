@@ -113,7 +113,7 @@ void ProcessManager::remove(Process *proc, const uint exitStatus)
 
 ProcessManager::Result ProcessManager::schedule()
 {
-    const Timer *timer = Kernel::instance->getTimer();
+    const Timer *timer = Kernel::instance()->getTimer();
     const Size sleepTimerCount = m_sleepTimerQueue.count();
 
     // Let the scheduler select a new process

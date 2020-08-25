@@ -157,7 +157,7 @@ Process::Result Process::initialize()
     allocPhys.size = PAGESIZE * 2;
     allocPhys.alignment = PAGESIZE;
 
-    if (Kernel::instance->getAllocator()->allocate(allocPhys, allocVirt) != Allocator::Success)
+    if (Kernel::instance()->getAllocator()->allocate(allocPhys, allocVirt) != Allocator::Success)
     {
         ERROR("failed to allocate kernel event channel pages");
         return OutOfMemory;
@@ -182,7 +182,7 @@ Process::Result Process::initialize()
 
     // Create shares entry
     m_shares.setMemoryContext(m_memoryContext);
-    m_shares.createShare(KERNEL_PID, Kernel::instance->getCoreInfo()->coreId, 0, range.virt, range.size);
+    m_shares.createShare(KERNEL_PID, Kernel::instance()->getCoreInfo()->coreId, 0, range.virt, range.size);
 
     // Setup the kernel event channel
     m_kernelChannel->setVirtual(allocVirt.address, allocVirt.address + PAGESIZE);

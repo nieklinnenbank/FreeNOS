@@ -23,8 +23,8 @@
 
 API::Result SystemInfoHandler(SystemInformation *info)
 {
-    SplitAllocator *memory = Kernel::instance->getAllocator();
-    CoreInfo *core = Kernel::instance->getCoreInfo();
+    SplitAllocator *memory = Kernel::instance()->getAllocator();
+    CoreInfo *core = Kernel::instance()->getCoreInfo();
 
     DEBUG("");
 

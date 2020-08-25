@@ -70,8 +70,8 @@ RaspberryKernel::RaspberryKernel(CoreInfo *info)
 
 void RaspberryKernel::interrupt(volatile CPUState state)
 {
-    RaspberryKernel *kernel = (RaspberryKernel *) Kernel::instance;
-    ARMProcess *proc = (ARMProcess *) Kernel::instance->getProcessManager()->current(), *next;
+    RaspberryKernel *kernel = (RaspberryKernel *) Kernel::instance();
+    ARMProcess *proc = (ARMProcess *) Kernel::instance()->getProcessManager()->current(), *next;
     bool tick;
 
     DEBUG("procId = " << proc->getID());

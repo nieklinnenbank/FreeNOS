@@ -20,7 +20,6 @@
 #include <Macros.h>
 #include <Array.h>
 #include <FileSystemClient.h>
-#include <ChannelClient.h>
 #include <PoolAllocator.h>
 #include <FileSystemMount.h>
 #include <FileDescriptor.h>
@@ -124,12 +123,6 @@ void setupHeap()
     Allocator::setDefault(poolAlloc);
 }
 
-void setupChannels()
-{
-    ChannelClient *client = new ChannelClient();
-    (void) client;
-}
-
 void setupMappings()
 {
     FileSystemClient filesystem;
@@ -168,7 +161,6 @@ extern C void SECTION(".entry") _entry()
     // Setup the heap, C++ constructors and default mounts
     setupHeap();
     runConstructors();
-    setupChannels();
     setupMappings();
 
     // Allocate buffer for arguments

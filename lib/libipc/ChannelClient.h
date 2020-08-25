@@ -36,7 +36,7 @@
 /**
  * Client for using Channels.
  */
-class ChannelClient : public Singleton<ChannelClient>
+class ChannelClient : public StrictSingleton<ChannelClient>
 {
   private:
 
@@ -81,10 +81,8 @@ class ChannelClient : public Singleton<ChannelClient>
 
     /**
      * Constructor.
-     *
-     * @param overwriteInstance True to overwrite the Singleton::instance, false skips overwrite.
      */
-    ChannelClient(const bool overwriteInstance = true);
+    ChannelClient();
 
     /**
      * Destructor

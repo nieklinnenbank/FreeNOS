@@ -31,7 +31,7 @@
 
 extern C void executeInterrupt(CPUState state)
 {
-    Kernel::instance->executeIntVector(state.vector, &state);
+    Kernel::instance()->executeIntVector(state.vector, &state);
 }
 
 IntelKernel::IntelKernel(CoreInfo *info)
@@ -148,7 +148,7 @@ void IntelKernel::enableIRQ(u32 irq, bool enabled)
 void IntelKernel::exception(CPUState *state, ulong param, ulong vector)
 {
     IntelCore core;
-    ProcessManager *procs = Kernel::instance->getProcessManager();
+    ProcessManager *procs = Kernel::instance()->getProcessManager();
 
     core.logException(state);
     FATAL("core" << coreInfo.coreId << ": Exception in Process: " << procs->current()->getID());
@@ -160,7 +160,7 @@ void IntelKernel::exception(CPUState *state, ulong param, ulong vector)
 
 void IntelKernel::interrupt(CPUState *state, ulong param, ulong vector)
 {
-    IntelKernel *kern = (IntelKernel *) Kernel::instance;
+    IntelKernel *kern = (IntelKernel *) Kernel::instance();
 
     if (kern->m_intControl)
     {
@@ -172,7 +172,7 @@ void IntelKernel::interrupt(CPUState *state, ulong param, ulong vector)
 
 void IntelKernel::trap(CPUState *state, ulong param, ulong vector)
 {
-    state->regs.eax = Kernel::instance->getAPI()->invoke(
+    state->regs.eax = Kernel::instance()->getAPI()->invoke(
         (API::Number) state->regs.eax,
                       state->regs.ecx,
                       state->regs.ebx,
@@ -184,7 +184,7 @@ void IntelKernel::trap(CPUState *state, ulong param, ulong vector)
 
 void IntelKernel::clocktick(CPUState *state, ulong param, ulong vector)
 {
-    IntelKernel *kern = (IntelKernel *) Kernel::instance;
+    IntelKernel *kern = (IntelKernel *) Kernel::instance();
     Size irq = kern->m_timer->getInterrupt();
 
     kern->enableIRQ(irq, true);

@@ -69,8 +69,10 @@ int Application::run()
     }
 
     // Enable debug logging if specified
-    if (m_arguments.get("debug") && Log::instance)
-        Log::instance->setMinimumLogLevel(Log::Debug);
+    if (m_arguments.get("debug") && Log::instance())
+    {
+        Log::instance()->setMinimumLogLevel(Log::Debug);
+    }
 
     // Initialize the application first
     Result r = initialize();

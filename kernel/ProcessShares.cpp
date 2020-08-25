@@ -32,7 +32,7 @@ ProcessShares::ProcessShares(ProcessID pid)
 
 ProcessShares::~ProcessShares()
 {
-    ProcessManager *procs = Kernel::instance->getProcessManager();
+    ProcessManager *procs = Kernel::instance()->getProcessManager();
     List<ProcessID> pids;
 
     // Make a list of unique process IDs which
@@ -174,7 +174,7 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
     allocPhys.size = share->range.size;
     allocPhys.alignment = PAGESIZE;
 
-    if (Kernel::instance->getAllocator()->allocate(allocPhys, allocVirt) != Allocator::Success)
+    if (Kernel::instance()->getAllocator()->allocate(allocPhys, allocVirt) != Allocator::Success)
     {
         ERROR("failed to allocate pages for MemoryShare");
         return OutOfMemory;
@@ -187,7 +187,7 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
 
     // Fill the local share object
     localShare->pid        = instance.getProcessID();
-    localShare->coreId     = Kernel::instance->getCoreInfo()->coreId;
+    localShare->coreId     = Kernel::instance()->getCoreInfo()->coreId;
     localShare->tagId      = share->tagId;
     localShare->range.phys = allocPhys.address;
     localShare->range.size = share->range.size;
@@ -226,7 +226,7 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
     instance.m_shares.insert(*remoteShare);
 
     // raise event on the remote process
-    ProcessManager *procs = Kernel::instance->getProcessManager();
+    ProcessManager *procs = Kernel::instance()->getProcessManager();
     Process *proc = procs->get(instance.getProcessID());
     ProcessEvent event;
     event.type   = ShareCreated;
@@ -270,7 +270,7 @@ ProcessShares::Result ProcessShares::releaseShare(MemoryShare *s, Size idx)
     // other process.
     if (s->attached)
     {
-        Process *proc = Kernel::instance->getProcessManager()->get(s->pid);
+        Process *proc = Kernel::instance()->getProcessManager()->get(s->pid);
         if (proc)
         {
             ProcessShares & shares = proc->getShares();
@@ -296,7 +296,7 @@ ProcessShares::Result ProcessShares::releaseShare(MemoryShare *s, Size idx)
     {
         // Only release physical memory pages if the other
         // process already detached earlier
-        Allocator *alloc = Kernel::instance->getAllocator();
+        Allocator *alloc = Kernel::instance()->getAllocator();
 
         for (Size i = 0; i < s->range.size; i += PAGESIZE)
             alloc->release(s->range.phys + i);

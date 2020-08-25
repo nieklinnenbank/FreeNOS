@@ -20,8 +20,8 @@
 #include "ChannelClient.h"
 #include "MemoryChannel.h"
 
-ChannelClient::ChannelClient(const bool overwriteInstance)
-    : Singleton<ChannelClient>(this, overwriteInstance)
+ChannelClient::ChannelClient()
+    : StrictSingleton<ChannelClient>()
 {
 }
 

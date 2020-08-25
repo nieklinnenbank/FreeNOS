@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SINGLETON_H
-#define __SINGLETON_H
+#ifndef __LIB_LIBSTD_SINGLETON_H
+#define __LIB_LIBSTD_SINGLETON_H
 
 /**
  * @addtogroup lib
@@ -27,9 +27,46 @@
  */
 
 /**
- * Singleton design pattern; only one instance is allowed.
+ * Singleton design pattern: only one instance is allowed.
+ *
+ * The StrictSingleton has the following constraints:
+ *
+ * - only one instance allowed
+ * - the instance cannot be overwritten
+ * - the instance is created by the StrictSingleton on first use (lazy-instantiation)
+ * - user-class must provide a default constructor without parameters
  */
-template <class T> class Singleton
+template <class T> class StrictSingleton
+{
+  public:
+
+    /**
+     * Retrieve the instance.
+     *
+     * Note that we use a static initializer here, which makes use
+     * of the __cxa_guard_acquire and __cxa_guard_release functions
+     * in order to guarantee the object is only initialized once.
+     *
+     * @see __cxa_guard_acquire
+     * @see __cxa_guard_release
+     */
+    static inline T * instance()
+    {
+        static T obj;
+        return &obj;
+    }
+};
+
+/**
+ * Singleton design pattern: only one instance is allowed.
+ *
+ * The WeakSingleton follows weaker rules than the StrictSingleton:
+ *
+ * - only one instance allowed
+ * - the instance can be overwritten
+ * - the instance may be ZERO at any time
+ */
+template <class T> class WeakSingleton
 {
   public:
 
@@ -37,28 +74,32 @@ template <class T> class Singleton
      * Constructor
      *
      * @param instance New instance of T.
-     * @param overwrite True to overwrite current instance
      */
-    Singleton<T>(T *obj, const bool overwrite = true)
+    WeakSingleton<T>(T *obj)
     {
-        if (overwrite)
-        {
-            instance = obj;
-        }
+        m_instance = obj;
     }
 
-  public:
+    /**
+     * Retrieve the instance
+     */
+    static inline T * instance()
+    {
+        return m_instance;
+    }
+
+  private:
 
     /** One and only instance. */
-    static T *instance;
+    static T *m_instance;
 };
 
 /* Initialize the static member obj. */
-template <class T> T* Singleton<T>::instance = 0;
+template <class T> T* WeakSingleton<T>::m_instance = 0;
 
 /**
  * @}
  * @}
  */
 
-#endif /* __SINGLETON_H */
+#endif /* __LIB_LIBSTD_SINGLETON_H */

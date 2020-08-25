@@ -60,13 +60,6 @@ TestRunner::TestRunner(int argc, char **argv)
 TestRunner::~TestRunner()
 {
     delete m_reporter;
-
-    // Release all resources in the TestSuite
-    if (TestSuite::instance)
-    {
-        delete TestSuite::instance;
-        TestSuite::instance = ZERO;
-    }
 }
 
 TestReporter * TestRunner::getReporter()
@@ -77,7 +70,7 @@ TestReporter * TestRunner::getReporter()
 int TestRunner::run(void)
 {
     // Prepare for testing.
-    List<TestInstance *> *tests = TestSuite::instance->getTests();
+    List<TestInstance *> *tests = TestSuite::instance()->getTests();
     m_reporter->begin(*tests);
 
     // Execute tests. Report per-test stats.

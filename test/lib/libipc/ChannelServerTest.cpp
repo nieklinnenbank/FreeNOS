@@ -17,6 +17,7 @@
 
 #include <TestCase.h>
 #include <FreeNOS/System.h>
+#include <FreeNOS/ProcessManager.h>
 #include <TestRunner.h>
 #include <TestInt.h>
 #include <TestMain.h>
@@ -40,8 +41,8 @@ class DummyServer : public ChannelServer<DummyServer, DummyMessage>
     static const u32 DummyIpcResult  = 112233U;
 
   public:
-    DummyServer(ChannelClient *client, const Address kernelChannelAddr)
-        : ChannelServer<DummyServer, DummyMessage>(this, client)
+    DummyServer(const Address kernelChannelAddr)
+        : ChannelServer<DummyServer, DummyMessage>(this)
         , m_irqValue(0)
         , m_irqCount(0)
         , m_msgValue(0)
@@ -84,13 +85,12 @@ static Address prepareKernelChannel(MemoryChannel *producer)
 TestCase(ChannelServerConstruct)
 {
     MemoryChannel kernelProducer(Channel::Producer, sizeof(ProcessEvent));
-    ChannelClient client(false);
-    DummyServer server(&client, prepareKernelChannel(&kernelProducer));
+    DummyServer server(prepareKernelChannel(&kernelProducer));
 
     // Validate members
     testAssert(server.m_self != 0);
     testAssert(server.m_instance == &server);
-    testAssert(&server.m_registry == &client.getRegistry());
+    testAssert(&server.m_registry == &ChannelClient::instance()->getRegistry());
 
     return OK;
 }
@@ -98,11 +98,10 @@ TestCase(ChannelServerConstruct)
 TestCase(ChannelServerReadChannels)
 {
     MemoryChannel kernelProducer(Channel::Producer, sizeof(ProcessEvent));
-    ChannelClient client(false);
-    DummyServer server(&client, prepareKernelChannel(&kernelProducer));
+    DummyServer server(prepareKernelChannel(&kernelProducer));
 
     // Mask error output
-    Log::instance->setMinimumLogLevel(Log::Critical);
+    Log::instance()->setMinimumLogLevel(Log::Critical);
 
     // No channels created, thus no handlers called
     server.readChannels();
@@ -121,7 +120,7 @@ TestCase(ChannelServerReadChannels)
                               (Address) clientPages + (PAGESIZE * 3));
 
     // Raise event with a newly created share
-    const ProcessID pid = 1234;
+    const ProcessID pid = MAX_PROCS + 1234u;
     ProcessEvent event;
     event.type = ShareCreated;
     event.share.pid = pid;
@@ -133,8 +132,8 @@ TestCase(ChannelServerReadChannels)
 
     // Process all events. This should accept the incoming channels, but no new messages.
     server.processAll();
-    testAssert(client.getRegistry().getConsumer(pid) != ZERO);
-    testAssert(client.getRegistry().getProducer(pid) != ZERO);
+    testAssert(ChannelClient::instance()->getRegistry().getConsumer(pid) != ZERO);
+    testAssert(ChannelClient::instance()->getRegistry().getProducer(pid) != ZERO);
     testAssert(server.m_msgCount == 0);
     testAssert(server.m_irqCount == 0);
 
@@ -170,17 +169,27 @@ TestCase(ChannelServerReadChannels)
     // Only one response message must be send
     testAssert(clientConsumer.read(&msg) == MemoryChannel::NotFound);
 
+    // Raise event of process being terminated
+    event.type   = ProcessTerminated;
+    event.number = pid;
+    testAssert(kernelProducer.write(&event) == MemoryChannel::Success);
+    testAssert(kernelProducer.flush() == MemoryChannel::Success);
+
+    // Process the event
+    server.readKernelEvents();
+    testAssert(ChannelClient::instance()->getRegistry().getProducer(pid) == ZERO);
+    testAssert(ChannelClient::instance()->getRegistry().getConsumer(pid) == ZERO);
+
     return OK;
 }
 
 TestCase(ChannelServerShareCreated)
 {
     MemoryChannel kernelProducer(Channel::Producer, sizeof(ProcessEvent));
-    ChannelClient client(false);
-    DummyServer server(&client, prepareKernelChannel(&kernelProducer));
+    DummyServer server(prepareKernelChannel(&kernelProducer));
 
     // Raise event with a newly created share
-    const ProcessID pid = 1234;
+    const ProcessID pid = MAX_PROCS + 1234u;
     const Address addr  = 0x12340000;
     ProcessEvent event;
     event.type = ShareCreated;
@@ -193,16 +202,27 @@ TestCase(ChannelServerShareCreated)
     server.readKernelEvents();
 
     // Verify consumer channel creation
-    MemoryChannel *cons = (MemoryChannel *) client.getRegistry().getConsumer(pid);
+    MemoryChannel *cons = (MemoryChannel *) ChannelClient::instance()->getRegistry().getConsumer(pid);
     testAssert(cons != ZERO);
     testAssert(cons->m_data.m_base == addr);
     testAssert(cons->m_feedback.m_base == addr + PAGESIZE);
 
     // Verify producer channel creation
-    MemoryChannel *prod = (MemoryChannel *) client.getRegistry().getProducer(pid);
+    MemoryChannel *prod = (MemoryChannel *) ChannelClient::instance()->getRegistry().getProducer(pid);
     testAssert(prod != ZERO);
     testAssert(prod->m_data.m_base == addr + (PAGESIZE * 2));
     testAssert(prod->m_feedback.m_base == addr + (PAGESIZE * 3));
+
+    // Raise event of process being terminated
+    event.type   = ProcessTerminated;
+    event.number = pid;
+    testAssert(kernelProducer.write(&event) == MemoryChannel::Success);
+    testAssert(kernelProducer.flush() == MemoryChannel::Success);
+
+    // Process the event
+    server.readKernelEvents();
+    testAssert(ChannelClient::instance()->getRegistry().getProducer(pid) == ZERO);
+    testAssert(ChannelClient::instance()->getRegistry().getConsumer(pid) == ZERO);
 
     return OK;
 }
@@ -210,11 +230,10 @@ TestCase(ChannelServerShareCreated)
 TestCase(ChannelServerInterruptEvent)
 {
     MemoryChannel kernelProducer(Channel::Producer, sizeof(ProcessEvent));
-    ChannelClient client(false);
-    DummyServer server(&client, prepareKernelChannel(&kernelProducer));
+    DummyServer server(prepareKernelChannel(&kernelProducer));
 
     // Mask error output
-    Log::instance->setMinimumLogLevel(Log::Critical);
+    Log::instance()->setMinimumLogLevel(Log::Critical);
 
     // Without any events, no IRQs should be raised
     server.processAll();
@@ -259,11 +278,10 @@ TestCase(ChannelServerInterruptEvent)
 TestCase(ChannelServerProcessTerminated)
 {
     MemoryChannel kernelProducer(Channel::Producer, sizeof(ProcessEvent));
-    ChannelClient client(false);
-    DummyServer server(&client, prepareKernelChannel(&kernelProducer));
+    DummyServer server(prepareKernelChannel(&kernelProducer));
 
     // Raise event with a newly created share
-    const ProcessID pid = 1234;
+    const ProcessID pid = MAX_PROCS + 1234u;
     const Address addr  = 0x12340000;
     ProcessEvent event;
     event.type = ShareCreated;
@@ -274,8 +292,8 @@ TestCase(ChannelServerProcessTerminated)
 
     // Process the new channel
     server.readKernelEvents();
-    testAssert(client.getRegistry().getProducer(pid) != ZERO);
-    testAssert(client.getRegistry().getConsumer(pid) != ZERO);
+    testAssert(ChannelClient::instance()->getRegistry().getProducer(pid) != ZERO);
+    testAssert(ChannelClient::instance()->getRegistry().getConsumer(pid) != ZERO);
 
     // Raise event of process being terminated
     event.type   = ProcessTerminated;
@@ -285,8 +303,8 @@ TestCase(ChannelServerProcessTerminated)
 
     // Process the event
     server.readKernelEvents();
-    testAssert(client.getRegistry().getProducer(pid) == ZERO);
-    testAssert(client.getRegistry().getConsumer(pid) == ZERO);
+    testAssert(ChannelClient::instance()->getRegistry().getProducer(pid) == ZERO);
+    testAssert(ChannelClient::instance()->getRegistry().getConsumer(pid) == ZERO);
 
     return OK;
 }

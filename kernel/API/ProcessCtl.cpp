@@ -31,7 +31,7 @@ API::Result ProcessCtlHandler(ProcessID procID,
 {
     Process *proc = ZERO;
     ProcessInfo *info = (ProcessInfo *) addr;
-    ProcessManager *procs = Kernel::instance->getProcessManager();
+    ProcessManager *procs = Kernel::instance()->getProcessManager();
     Timer *timer;
     Arch::MemoryMap map;
 
@@ -90,15 +90,15 @@ API::Result ProcessCtlHandler(ProcessID procID,
         break;
 
     case EnableIRQ:
-        Kernel::instance->enableIRQ(addr, true);
+        Kernel::instance()->enableIRQ(addr, true);
         break;
 
     case DisableIRQ:
-        Kernel::instance->enableIRQ(addr, false);
+        Kernel::instance()->enableIRQ(addr, false);
         break;
 
     case SendIRQ:
-        Kernel::instance->sendIRQ(addr >> 16, addr & 0xffff);
+        Kernel::instance()->sendIRQ(addr >> 16, addr & 0xffff);
         break;
 
     case InfoPID:
@@ -123,7 +123,7 @@ API::Result ProcessCtlHandler(ProcessID procID,
         return procs->current()->getWaitResult();
 
     case InfoTimer:
-        if (!(timer = Kernel::instance->getTimer()))
+        if (!(timer = Kernel::instance()->getTimer()))
             return API::NotFound;
 
         timer->getCurrent((Timer::Info *) addr);

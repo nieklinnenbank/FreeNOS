@@ -26,7 +26,7 @@ CoreClient::CoreClient(const ProcessID pid)
 
 inline Core::Result CoreClient::request(CoreMessage &msg) const
 {
-    if (ChannelClient::instance->syncSendReceive(&msg, sizeof(msg), m_pid) == ChannelClient::Success)
+    if (ChannelClient::instance()->syncSendReceive(&msg, sizeof(msg), m_pid) == ChannelClient::Success)
     {
         return msg.result;
     }

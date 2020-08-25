@@ -37,7 +37,7 @@ Process::Result IntelProcess::initialize()
     u16 codeSel = m_privileged ? KERNEL_CS_SEL : USER_CS_SEL;
 
     // Create MMU context
-    m_memoryContext = new IntelPaging(&m_map, Kernel::instance->getAllocator());
+    m_memoryContext = new IntelPaging(&m_map, Kernel::instance()->getAllocator());
     if (!m_memoryContext)
     {
         ERROR("failed to create memory context");
@@ -51,7 +51,7 @@ Process::Result IntelProcess::initialize()
     allocPhys.size = range.size;
     allocPhys.alignment = PAGESIZE;
 
-    if (Kernel::instance->getAllocator()->allocate(allocPhys) != Allocator::Success)
+    if (Kernel::instance()->getAllocator()->allocate(allocPhys) != Allocator::Success)
     {
         ERROR("failed to allocate user stack");
         return OutOfMemory;
@@ -71,7 +71,7 @@ Process::Result IntelProcess::initialize()
     allocPhys.size = KernelStackSize;
     allocPhys.alignment = PAGESIZE;
 
-    if (Kernel::instance->getAllocator()->allocate(allocPhys, allocVirt) != Allocator::Success)
+    if (Kernel::instance()->getAllocator()->allocate(allocPhys, allocVirt) != Allocator::Success)
     {
         ERROR("failed to allocate kernel stack");
         return OutOfMemory;
@@ -119,7 +119,7 @@ Process::Result IntelProcess::initialize()
 IntelProcess::~IntelProcess()
 {
     // Release the kernel stack memory page
-    SplitAllocator *alloc = Kernel::instance->getAllocator();
+    SplitAllocator *alloc = Kernel::instance()->getAllocator();
     alloc->release((Address)alloc->toPhysical(m_kernelStackBase) - KernelStackSize);
 }
 

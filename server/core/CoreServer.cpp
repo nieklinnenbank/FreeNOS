@@ -127,7 +127,7 @@ void CoreServer::createProcess(CoreMessage *msg)
             return;
         }
         DEBUG("program created with result " << (int)msg->result << " at core" << msg->coreNumber);
-        ChannelClient::instance->syncSendTo(msg, sizeof(*msg), msg->from);
+        ChannelClient::instance()->syncSendTo(msg, sizeof(*msg), msg->from);
     }
     else
     {

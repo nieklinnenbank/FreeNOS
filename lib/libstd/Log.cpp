@@ -18,7 +18,8 @@
 #include "Log.h"
 #include "String.h"
 
-Log::Log() : Singleton<Log>(this)
+Log::Log()
+    : WeakSingleton<Log>(this)
     , m_minimumLogLevel(Notice)
     , m_ident(ZERO)
     , m_outputBufferWritten(0)
