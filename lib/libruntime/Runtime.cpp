@@ -42,12 +42,17 @@ extern C void __aeabi_unwind_cpp_pr0()
 {
 }
 
-extern C void __cxa_guard_acquire(void *)
+extern C int __cxa_guard_acquire(u32 *guard)
 {
+    if (*guard)
+        return 0;
+    else
+        return 1;
 }
 
-extern C void __cxa_guard_release(void *)
+extern C void __cxa_guard_release(u32 *guard)
 {
+    *guard = 1;
 }
 
 extern C int __cxa_atexit(void (*func) (void *),
