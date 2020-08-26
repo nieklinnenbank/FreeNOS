@@ -59,7 +59,9 @@ API::Result ProcessCtlHandler(ProcessID procID,
 
     case KillPID:
         procs->remove(proc, addr); // Addr contains the exit status
-        procs->schedule();
+
+        if (procID == SELF)
+            procs->schedule();
         break;
 
     case GetPID:

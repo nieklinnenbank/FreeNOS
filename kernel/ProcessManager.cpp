@@ -101,8 +101,12 @@ void ProcessManager::remove(Process *proc, const uint exitStatus)
 
     // Remove process from administration and schedule
     m_procs[proc->getID()] = ZERO;
-    const Result result = dequeueProcess(proc, true);
-    assert(result == Success);
+
+    if (proc->getState() == Process::Ready)
+    {
+        const Result result = dequeueProcess(proc, true);
+        assert(result == Success);
+    }
 
     const Size countRemoved = m_sleepTimerQueue.remove(proc);
     assert(countRemoved <= 1U);
