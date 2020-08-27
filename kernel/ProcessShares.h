@@ -170,9 +170,6 @@ class ProcessShares
     /** MemoryContext instance */
     MemoryContext *m_memory;
 
-    /** Memory channel for sending kernel events to the associated Process */
-    MemoryChannel *m_kernelChannel;
-
     /** Contains all memory shares */
     Index<MemoryShare> m_shares;
 };
