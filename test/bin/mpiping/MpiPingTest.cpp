@@ -36,7 +36,7 @@ TestCase(RunMpiPing)
 
     // Wait for it to terminate. Exit status must be zero (success)
     pid_t p = waitpid(pid, &status, 0);
-    testAssert(p == pid);
+    testAssert(p == (pid_t) pid);
     testAssert(status == 0);
 
     // Done
