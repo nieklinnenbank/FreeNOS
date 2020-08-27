@@ -22,7 +22,7 @@
 #include <Types.h>
 #include "Core.h"
 
-class CoreMessage;
+struct CoreMessage;
 
 /**
  * @addtogroup lib
