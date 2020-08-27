@@ -69,7 +69,10 @@ FileSystem::Result FileSystemServer::mount()
         const DatastoreClient datastore;
         const Datastore::Result result =
             datastore.registerBuffer("mounts", &m_mounts, sizeof(FileSystemMount) * MaximumFileSystemMounts);
-        assert(result == Datastore::Success);
+
+        if (result != Datastore::Success)
+            return FileSystem::IOError;
+
         assert(m_mounts != NULL);
 
         // Fill the mounts table
@@ -85,7 +88,6 @@ FileSystem::Result FileSystemServer::mount()
         assert(result == FileSystem::Success);
         return result;
     }
-
 }
 
 File * FileSystemServer::createFile(FileSystem::FileType type, DeviceID deviceID)
