@@ -45,7 +45,12 @@ SysInfo::Result SysInfo::exec()
 
     // Retrieve number of cores from the CoreServer
     const Core::Result result = coreClient.getCoreCount(numCores);
-    assert(result == Core::Success);
+    if (result != Core::Success)
+    {
+        printf("failed to retrieve core count from CoreServer: %d\n",
+                (int) result);
+        return IOError;
+    }
 
     // Retrieve scheduler timer info from the kernel
     ProcessCtl(SELF, InfoTimer, (Address) &timer);
