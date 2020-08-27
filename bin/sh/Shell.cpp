@@ -146,7 +146,7 @@ Shell::Result Shell::runInteractive()
         cmdStr = getInput();
 
         // Enough input?
-        if (strlen(cmdStr) == 0)
+        if (!cmdStr || strlen(cmdStr) == 0)
         {
             continue;
         }
@@ -250,7 +250,11 @@ char * Shell::getInput() const
     while (total < sizeof(line) - 1)
     {
         // Read a character
-        read(0, line + total, 1);
+        const ssize_t result = read(0, line + total, 1);
+        if (result == -1)
+        {
+            return (char *) NULL;
+        }
 
         // Process character
         switch (line[total])
@@ -290,7 +294,11 @@ void Shell::prompt() const
     gethostname(host, sizeof(host));
 
     // Retrieve current working directory
-    getcwd(cwd, sizeof(cwd));
+    if (getcwd(cwd, sizeof(cwd)) == NULL)
+    {
+        cwd[0] = '/';
+        cwd[1] = 0;
+    }
 
     // Print out the prompt
     printf(WHITE "(" GREEN "%s" WHITE ") " BLUE "%s" WHITE " # ",
