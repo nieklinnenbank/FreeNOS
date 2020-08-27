@@ -91,8 +91,12 @@ void ProcessManager::remove(Process *proc, const uint exitStatus)
             m_procs[i]->getWait() == proc->getID())
         {
             m_procs[i]->setWaitResult(exitStatus);
+
             const Result result = wakeup(m_procs[i]);
-            assert(result == Success);
+            if (result != Success)
+            {
+                FATAL("failed to wakeup PID " << m_procs[i]->getID());
+            }
         }
     }
 
@@ -105,11 +109,15 @@ void ProcessManager::remove(Process *proc, const uint exitStatus)
     if (proc->getState() == Process::Ready)
     {
         const Result result = dequeueProcess(proc, true);
-        assert(result == Success);
+        if (result != Success)
+        {
+            FATAL("failed to dequeue PID " << proc->getID());
+        }
     }
 
     const Size countRemoved = m_sleepTimerQueue.remove(proc);
     assert(countRemoved <= 1U);
+    (void) countRemoved;
 
     // Free the process memory
     delete proc;
@@ -141,7 +149,10 @@ ProcessManager::Result ProcessManager::schedule()
         if (timer->isExpired(procTimer))
         {
             const Result result = wakeup(p);
-            assert(result == Success);
+            if (result != Success)
+            {
+                FATAL("failed to wakeup PID " << p->getID());
+            }
         }
         else
         {
@@ -168,7 +179,10 @@ Process * ProcessManager::current()
 void ProcessManager::setIdle(Process *proc)
 {
     const Result result = dequeueProcess(proc, true);
-    assert(result == Success);
+    if (result != Success)
+    {
+        FATAL("failed to dequeue PID " << proc->getID());
+    }
 
     m_idle = proc;
 }
@@ -199,7 +213,10 @@ ProcessManager::Result ProcessManager::sleep(const Timer::Info *timer, const boo
 
         case Process::Success: {
             const Result res = dequeueProcess(m_current);
-            assert(res == Success);
+            if (res != Success)
+            {
+                FATAL("failed to dequeue PID " << m_current->getID());
+            }
 
             if (timer)
             {
@@ -327,6 +344,7 @@ ProcessManager::Result ProcessManager::enqueueProcess(Process *proc, const bool 
 
     const Size countRemoved = m_sleepTimerQueue.remove(proc);
     assert(countRemoved <= 1U);
+    (void) countRemoved;
 
     return Success;
 }
