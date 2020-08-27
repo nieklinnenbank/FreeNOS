@@ -55,7 +55,12 @@ int MPI_Init(int *argc, char ***argv)
         // provide -n COUNT, --help and other stuff in here too.
         // to influence the launching of more MPI programs
         const Core::Result result = coreClient.getCoreCount(coreCount);
-        assert(result == Core::Success);
+        if (result != Core::Success)
+        {
+            printf("%s: failed to retrieve core count from CoreServer: %d\n",
+                    programName, (int) result);
+            return MPI_ERR_BAD_FILE;
+        }
 
         // Read our own ELF program to a buffer and pass it to CoreServer
         // for creating new programs on the remote core.
