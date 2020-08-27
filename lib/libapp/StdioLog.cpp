@@ -30,7 +30,12 @@ StdioLog::StdioLog() : Log()
 
 void StdioLog::write(const char *str)
 {
-    ::write(1, str, strlen(str));
+    const ssize_t result = ::write(1, str, strlen(str));
+
+    // We do not really care about this result. Writing to standard
+    // output is either working or not. If this fails, a higher-level
+    // test and/or assert will catch the error.
+    (void) result;
 }
 
 void StdioLog::terminate() const
