@@ -23,7 +23,7 @@
 #define MEMALIGN8 8
 
 static bool firstProcess = true;
-extern u8 svcStack[PAGESIZE];
+extern u8 svcStack[PAGESIZE * 4];
 
 ARMProcess::ARMProcess(ProcessID id, Address entry, bool privileged, const MemoryMap &map)
     : Process(id, entry, privileged, map)
@@ -107,11 +107,12 @@ void ARMProcess::execute(Process *previous)
     {
         firstProcess = false;
 
-        CPUState *ptr = ((CPUState *) (svcStack)) - 1;
+        // Kernel stacks are currently 16KiB (see ARMBoot.S)
+        CPUState *ptr = ((CPUState *) (svcStack + sizeof(svcStack))) - 1;
         MemoryBlock::copy(ptr, &m_cpuState, sizeof(*ptr));
 
         // Switch to the actual SVC stack and switch to usermode
-        asm volatile ("ldr sp, =svcStack\n"
+        asm volatile ("ldr sp, =(svcStack + (4096*4))\n"
                       "sub sp, sp, %0\n"
                       "ldr r0, =loadCoreState0\n"
                       "bx r0\n" : : "i" (sizeof(m_cpuState) - sizeof(m_cpuState.padding)) );

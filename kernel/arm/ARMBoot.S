@@ -66,22 +66,22 @@ _start:
 
     /* Initialize stack pointers for all ARM modes */
     msr cpsr_c, #(IRQ_MODE | IRQ_BIT | FIQ_BIT) /* IRQ mode */
-    ldr sp, =irqStack
+    ldr sp, =(irqStack + STACKSIZE)
 
     msr cpsr_c, #(FIQ_MODE | IRQ_BIT | FIQ_BIT) /* FIQ mode */
-    ldr sp, =fiqStack
+    ldr sp, =(fiqStack + STACKSIZE)
 
     msr cpsr_c, #(SVC_MODE | IRQ_BIT | FIQ_BIT) /* SVC mode */
-    ldr sp, =svcStack
+    ldr sp, =(svcStack + STACKSIZE)
 
     msr cpsr_c, #(ABT_MODE | IRQ_BIT | FIQ_BIT) /* Abort mode */
-    ldr sp, =abtStack
+    ldr sp, =(abtStack + STACKSIZE)
 
     msr cpsr_c, #(UND_MODE | IRQ_BIT | FIQ_BIT) /* Undefined mode */
-    ldr sp, =undStack
+    ldr sp, =(undStack + STACKSIZE)
 
     msr cpsr_c, #(SYS_MODE | IRQ_BIT | FIQ_BIT) /* System mode */
-    ldr sp, =sysStack
+    ldr sp, =(sysStack + STACKSIZE)
 
     /* continue kernel in SVC mode, temporary stack */
     msr cpsr_c, #(SVC_MODE | IRQ_BIT | FIQ_BIT) /* SVC mode */
