@@ -17,7 +17,6 @@
 
 #include <FreeNOS/System.h>
 #include <FreeNOS/API.h>
-#include <Index.h>
 #include <MemoryBlock.h>
 #include <MemoryChannel.h>
 #include <SplitAllocator.h>

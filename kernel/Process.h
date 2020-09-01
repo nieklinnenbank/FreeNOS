@@ -23,7 +23,6 @@
 #include <List.h>
 #include <MemoryMap.h>
 #include <Timer.h>
-#include <Index.h>
 #include "ProcessShares.h"
 
 /** @see IPCMessage.h. */

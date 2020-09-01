@@ -34,8 +34,8 @@
 #define MEMBASE(id) (memChannelBase.phys + (coreCount * PAGESIZE * 2 * (id)))
 
 Size coreCount = 0;
-Index<MemoryChannel> *readChannel  = 0;
-Index<MemoryChannel> *writeChannel = 0;
+Index<MemoryChannel, MPI_MAX_CHANNELS> *readChannel  = 0;
+Index<MemoryChannel, MPI_MAX_CHANNELS> *writeChannel = 0;
 
 int MPI_Init(int *argc, char ***argv)
 {
@@ -189,9 +189,10 @@ int MPI_Init(int *argc, char ***argv)
     }
 
     // Create MemoryChannels
-    readChannel  = new Index<MemoryChannel>(coreCount);
+    assert(coreCount <= MPI_MAX_CHANNELS);
+    readChannel  = new Index<MemoryChannel, MPI_MAX_CHANNELS>();
     assert(readChannel != NULL);
-    writeChannel = new Index<MemoryChannel>(coreCount);
+    writeChannel = new Index<MemoryChannel, MPI_MAX_CHANNELS>();
     assert(writeChannel != NULL);
 
     // Fill read channels
@@ -201,7 +202,7 @@ int MPI_Init(int *argc, char ***argv)
         assert(ch != NULL);
         ch->setPhysical(MEMBASE(info.coreId) + (PAGESIZE * 2 * i),
                         MEMBASE(info.coreId) + (PAGESIZE * 2 * i) + PAGESIZE);
-        readChannel->insert(i, *ch);
+        readChannel->insertAt(i, ch);
 
         if (info.coreId == 0)
         {
@@ -219,7 +220,7 @@ int MPI_Init(int *argc, char ***argv)
         assert(ch != NULL);
         ch->setPhysical(MEMBASE(i) + (PAGESIZE * 2 * info.coreId),
                         MEMBASE(i) + (PAGESIZE * 2 * info.coreId) + PAGESIZE);
-        writeChannel->insert(i, *ch);
+        writeChannel->insertAt(i, ch);
 
         if (info.coreId == 0)
         {

@@ -40,6 +40,9 @@ class ChannelClient : public StrictSingleton<ChannelClient>
 {
   private:
 
+    /** Maximum number of concurrent outgoing requests. */
+    static const Size MaximumRequests = 32u;
+
     /**
      * Holds an outgoing request
      */
@@ -218,7 +221,7 @@ class ChannelClient : public StrictSingleton<ChannelClient>
     ChannelRegistry m_registry;
 
     /** Contains ongoing requests */
-    Index<Request> m_requests;
+    Index<Request, MaximumRequests> m_requests;
 };
 
 /**

@@ -20,7 +20,7 @@
 #include "mpi.h"
 #include "MPIMessage.h"
 
-extern Index<MemoryChannel> *writeChannel;
+extern Index<MemoryChannel, MPI_MAX_CHANNELS> *writeChannel;
 
 int MPI_Send(const void *buf,
              int count,
@@ -35,7 +35,7 @@ int MPI_Send(const void *buf,
     if (datatype != MPI_INT)
         return MPI_ERR_UNSUPPORTED_DATAREP;
 
-    if (!(ch = (MemoryChannel *) writeChannel->get(dest)))
+    if (!(ch = writeChannel->get(dest)))
         return MPI_ERR_RANK;
 
     for (int i = 0; i < count; i++)

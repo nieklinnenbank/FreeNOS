@@ -20,7 +20,7 @@
 #include "mpi.h"
 #include "MPIMessage.h"
 
-extern Index<MemoryChannel> *readChannel;
+extern Index<MemoryChannel, MPI_MAX_CHANNELS> *readChannel;
 
 int MPI_Recv(void *buf,
              int count,
@@ -36,7 +36,7 @@ int MPI_Recv(void *buf,
     if (datatype != MPI_INT)
         return MPI_ERR_UNSUPPORTED_DATAREP;
 
-    if (!(ch = (MemoryChannel *) readChannel->get(source)))
+    if (!(ch = readChannel->get(source)))
         return MPI_ERR_RANK;
 
     for (int i = 0; i < count; i++)

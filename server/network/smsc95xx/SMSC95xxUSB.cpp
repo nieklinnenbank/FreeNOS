@@ -106,10 +106,10 @@ void SMSC95xxUSB::readStart()
     FileSystem::Error err = beginTransfer(
         USBTransfer::Bulk,
         USBTransfer::In,
-        m_endpoints[0].endpointAddress & 0xf,
+        m_endpoints[0]->endpointAddress & 0xf,
         m_rxPacket->data,
         rxSize,
-        m_endpoints[0].maxPacketSize,
+        m_endpoints[0]->maxPacketSize,
         m_readFinished
     );
     if (err != FileSystem::Success)
@@ -180,10 +180,10 @@ void SMSC95xxUSB::writeStart()
     beginTransfer(
         USBTransfer::Bulk,
         USBTransfer::Out,
-        m_endpoints[1].endpointAddress & 0xf,
+        m_endpoints[1]->endpointAddress & 0xf,
         m_txPacket->data,
         m_txPacket->size,
-        m_endpoints[1].maxPacketSize,
+        m_endpoints[1]->maxPacketSize,
         m_writeFinished
     );
 }

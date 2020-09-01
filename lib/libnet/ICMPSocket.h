@@ -103,15 +103,6 @@ class ICMPSocket : public NetworkSocket
      */
     void setReply(ICMP::Header *reply);
 
-    bool operator == (const ICMPSocket & sock) const
-    {
-        return true;
-    }
-    bool operator != (const ICMPSocket & sock) const
-    {
-        return false;
-    }
-
   private:
 
     /** ICMP protocol instance */

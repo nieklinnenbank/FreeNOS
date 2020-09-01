@@ -202,7 +202,7 @@ class SynopsisController : public USBController
     BroadcomPower m_power;
 
     /** Channels. */
-    Index<SynopsisChannel> m_channels;
+    Index<SynopsisChannel, ChannelCount> m_channels;
 };
 
 /**

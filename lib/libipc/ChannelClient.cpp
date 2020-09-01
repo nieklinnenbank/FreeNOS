@@ -142,7 +142,7 @@ ChannelClient::Result ChannelClient::sendRequest(const ProcessID pid,
     // Find request object
     for (Size i = 0; i < m_requests.count(); i++)
     {
-        req = (Request *) m_requests.get(i);
+        req = m_requests.get(i);
         if (!req->active)
         {
             identifier = i;
@@ -157,7 +157,11 @@ ChannelClient::Result ChannelClient::sendRequest(const ProcessID pid,
         assert(req != NULL);
         req->message = (ChannelMessage *) new u8[ch->getMessageSize()];
         assert(req->message != NULL);
-        identifier   = m_requests.insert(*req);
+
+        if (!m_requests.insert(identifier, req))
+        {
+            return OutOfMemory;
+        }
     }
 
     // Fill request object
@@ -189,7 +193,7 @@ ChannelClient::Result ChannelClient::processResponse(const ProcessID pid,
 
     for (Size i = 0; i < count; i++)
     {
-        Request *req = (Request *) m_requests.get(i);
+        Request *req = m_requests.get(i);
 
         if (req->active &&
             req->pid == pid &&

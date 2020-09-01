@@ -49,14 +49,15 @@ Error UDP::initialize()
 
 UDPSocket * UDP::createSocket(String & path)
 {
+    Size pos = 0;
+
     DEBUG("");
 
     UDPSocket *sock = new UDPSocket(this);
     if (!sock)
         return ZERO;
 
-    int pos = m_sockets.insert(*sock);
-    if (pos == -1)
+    if (!m_sockets.insert(sock))
     {
         delete sock;
         return ZERO;

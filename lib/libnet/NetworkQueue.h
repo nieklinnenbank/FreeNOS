@@ -34,6 +34,10 @@
  */
 class NetworkQueue
 {
+  private:
+
+    static const Size MaxPackets = 128u;
+
   public:
 
     /**
@@ -99,10 +103,10 @@ class NetworkQueue
   private:
 
     /** Contains unused packets */
-    Index<Packet> m_free;
+    Index<Packet, MaxPackets> m_free;
 
     /** Contains packets with data */
-    Index<Packet> m_data;
+    Index<Packet, MaxPackets> m_data;
 
     /** Size of each packet */
     Size m_packetSize;

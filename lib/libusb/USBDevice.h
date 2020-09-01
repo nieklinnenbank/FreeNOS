@@ -40,6 +40,12 @@
  */
 class USBDevice : public Device
 {
+  private:
+
+    static const Size MaxInterfaces = 64u;
+    static const Size MaxEndpoints = 64u;
+    static const Size MaxStrings = 64u;
+
   public:
 
     /**
@@ -182,13 +188,13 @@ class USBDevice : public Device
     USBDescriptor::Configuration *m_config;
 
     /** USB interface descriptors. */
-    Index<USBDescriptor::Interface> m_interfaces;
+    Index<USBDescriptor::Interface, MaxInterfaces> m_interfaces;
 
     /** USB endpoint descriptors. */
-    Index<USBDescriptor::Endpoint> m_endpoints;
+    Index<USBDescriptor::Endpoint, MaxEndpoints> m_endpoints;
 
     /** USB string descriptor */
-    Index<USBDescriptor::String> m_strings;
+    Index<USBDescriptor::String, MaxStrings> m_strings;
 
     /**
      * Contains endpoint to saved packet id mapping.

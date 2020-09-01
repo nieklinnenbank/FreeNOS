@@ -41,6 +41,10 @@ class ARP;
  */
 class ICMP : public NetworkProtocol
 {
+  private:
+
+    static const Size MaxIcmpSockets = 128u;
+
   public:
 
     /**
@@ -125,7 +129,7 @@ class ICMP : public NetworkProtocol
 
     ICMPFactory *m_factory;
 
-    Index<ICMPSocket> m_sockets;
+    Index<ICMPSocket, MaxIcmpSockets> m_sockets;
 
     ::IPV4 *m_ipv4;
 };

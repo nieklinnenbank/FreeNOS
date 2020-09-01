@@ -38,9 +38,14 @@ class Process;
  */
 class ProcessShares
 {
+  private:
+
+    /** Maximum number of memory shares that a single process can have. */
+    static const Size MaximumMemoryShares = 32u;
+
   public:
 
-    typedef struct MemoryShare
+    struct MemoryShare
     {
         /** Remote process id for this share */
         ProcessID pid;
@@ -56,17 +61,7 @@ class ProcessShares
 
         /** True if the share is attached (used by both processes) */
         bool attached;
-
-        bool operator == (const struct MemoryShare & sh) const
-        {
-            return true;
-        }
-        bool operator != (const struct MemoryShare & sh) const
-        {
-            return false;
-        }
-    }
-    MemoryShare;
+    };
 
     enum Result
     {
@@ -171,7 +166,7 @@ class ProcessShares
     MemoryContext *m_memory;
 
     /** Contains all memory shares */
-    Index<MemoryShare> m_shares;
+    Index<MemoryShare, MaximumMemoryShares> m_shares;
 };
 
 /**

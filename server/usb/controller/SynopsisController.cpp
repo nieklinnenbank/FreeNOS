@@ -26,7 +26,7 @@ SynopsisController::SynopsisController(const char *path)
 {
     // Allocate channels
     for (Size i = 0; i < ChannelCount; i++)
-        m_channels.insert(i, *(new SynopsisChannel(i, &m_io)));
+        m_channels.insertAt(i, new SynopsisChannel(i, &m_io));
 }
 
 FileSystem::Result SynopsisController::initialize()
@@ -118,7 +118,7 @@ FileSystem::Result SynopsisController::initialize()
 
     // Initialize channels
     for (Size i = 0; i < ChannelCount; i++)
-        m_channels[i].initialize();
+        m_channels[i]->initialize();
 
     // Done.
     return FileSystem::Success;
@@ -146,7 +146,7 @@ void SynopsisController::interruptHandler(Size vector)
         for (Size i = 0; i < ChannelCount; i++)
         {
             if (channelInt & (1 << i))
-                m_channels[i].interrupt();
+                m_channels[i]->interrupt();
         }
     }
     // Re-enable IRQ in the kernel
@@ -198,7 +198,7 @@ SynopsisChannel * SynopsisController::getChannel(const FileSystemMessage *msg,
     // Check if the message is already in process inside a channel.
     for (Size i = 0; i < ChannelCount; i++)
     {
-        SynopsisChannel *ch = &m_channels[i];
+        SynopsisChannel *ch = m_channels[i];
 
         if (ch->getState() != SynopsisChannel::Idle &&
             ch->getMessage() == msg)
@@ -207,7 +207,7 @@ SynopsisChannel * SynopsisController::getChannel(const FileSystemMessage *msg,
     // Message is not in process. Try to find unused channel.
     for (Size i = 0; i < ChannelCount; i++)
     {
-        SynopsisChannel *ch = &m_channels[i];
+        SynopsisChannel *ch = m_channels[i];
 
         if (ch->getState() == SynopsisChannel::Idle)
             return ch;

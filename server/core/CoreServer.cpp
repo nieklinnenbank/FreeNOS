@@ -480,7 +480,7 @@ Core::Result CoreServer::prepareCoreInfo()
             (memPerCore / 1024 / 1024) << "MB per core");
 
     // Allocate CoreInfo for each core
-    m_coreInfo = new Index<CoreInfo>(cores.count());
+    m_coreInfo = new Index<CoreInfo, MaxCores>();
 
     // Prepare CoreInfo for each core
     for (ListIterator<uint> i(cores); i.hasCurrent(); i++)
@@ -490,7 +490,7 @@ Core::Result CoreServer::prepareCoreInfo()
         if (coreId != 0)
         {
             CoreInfo *info = new CoreInfo;
-            m_coreInfo->insert(coreId, *info);
+            m_coreInfo->insertAt(coreId, info);
             MemoryBlock::set(info, 0, sizeof(CoreInfo));
 
             info->coreId = coreId;
@@ -567,21 +567,21 @@ Core::Result CoreServer::setupChannels()
     {
         Size numCores = m_cores->getCores().count();
 
-        m_toSlave    = new Index<MemoryChannel>(numCores);
-        m_fromSlave  = new Index<MemoryChannel>(numCores);
+        m_toSlave    = new Index<MemoryChannel, MaxCores>();
+        m_fromSlave  = new Index<MemoryChannel, MaxCores>();
 
         for (Size i = 1; i < numCores; i++)
         {
             MemoryChannel *ch = new MemoryChannel(Channel::Producer, sizeof(CoreMessage));
-            CoreInfo *coreInfo = (CoreInfo *) m_coreInfo->get(i);
+            CoreInfo *coreInfo = m_coreInfo->get(i);
             ch->setPhysical(coreInfo->coreChannelAddress + (PAGESIZE * 2),
                             coreInfo->coreChannelAddress + (PAGESIZE * 3));
-            m_toSlave->insert(i, *ch);
+            m_toSlave->insertAt(i, ch);
 
             ch = new MemoryChannel(Channel::Consumer, sizeof(CoreMessage));
             ch->setPhysical(coreInfo->coreChannelAddress,
                             coreInfo->coreChannelAddress + PAGESIZE);
-            m_fromSlave->insert(i, *ch);
+            m_fromSlave->insertAt(i, ch);
         }
     }
     else
@@ -635,7 +635,7 @@ Core::Result CoreServer::sendToMaster(CoreMessage *msg)
 
 Core::Result CoreServer::receiveFromSlave(uint coreId, CoreMessage *msg)
 {
-    MemoryChannel *ch = (MemoryChannel *) m_fromSlave->get(coreId);
+    MemoryChannel *ch = m_fromSlave->get(coreId);
     if (!ch)
         return Core::IOError;
 
@@ -647,7 +647,7 @@ Core::Result CoreServer::receiveFromSlave(uint coreId, CoreMessage *msg)
 
 Core::Result CoreServer::sendToSlave(uint coreId, CoreMessage *msg)
 {
-    MemoryChannel *ch = (MemoryChannel *) m_toSlave->get(coreId);
+    MemoryChannel *ch = m_toSlave->get(coreId);
     if (!ch)
     {
         ERROR("cannot retrieve MemoryChannel for core" << coreId);

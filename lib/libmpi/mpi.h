@@ -34,6 +34,9 @@
  * @{
  */
 
+/** Maximum number of channels */
+#define MPI_MAX_CHANNELS 128u
+
 /** Communicator identifier */
 typedef uint MPI_Comm;
 

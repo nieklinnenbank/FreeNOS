@@ -113,8 +113,8 @@ template <class Base, class MsgType> class ChannelServer
         , m_client(ChannelClient::instance())
         , m_registry(m_client->getRegistry())
         , m_kernelEvent(Channel::Consumer, sizeof(ProcessEvent))
-        , m_ipcHandlers(MaximumHandlerCount)
-        , m_irqHandlers(MaximumHandlerCount)
+        , m_ipcHandlers()
+        , m_irqHandlers()
     {
         m_self = ProcessCtl(SELF, GetPID, 0);
 
@@ -198,7 +198,7 @@ template <class Base, class MsgType> class ChannelServer
      */
     void addIPCHandler(const Size slot, IPCHandlerFunction h, const bool sendReply = true)
     {
-        m_ipcHandlers.insert(slot, *(new MessageHandler<IPCHandlerFunction>(h, sendReply)));
+        m_ipcHandlers.insertAt(slot, new MessageHandler<IPCHandlerFunction>(h, sendReply));
     }
 
     /**
@@ -209,7 +209,7 @@ template <class Base, class MsgType> class ChannelServer
      */
     void addIRQHandler(const Size slot, IRQHandlerFunction h)
     {
-        m_irqHandlers.insert(slot, *(new MessageHandler<IRQHandlerFunction>(h, false)));
+        m_irqHandlers.insertAt(slot, new MessageHandler<IRQHandlerFunction>(h, false));
     }
 
     /**
@@ -471,10 +471,10 @@ template <class Base, class MsgType> class ChannelServer
     MemoryChannel m_kernelEvent;
 
     /** IPC handler functions. */
-    Index<MessageHandler<IPCHandlerFunction> > m_ipcHandlers;
+    Index<MessageHandler<IPCHandlerFunction>, MaximumHandlerCount> m_ipcHandlers;
 
     /** IRQ handler functions. */
-    Index<MessageHandler<IRQHandlerFunction> > m_irqHandlers;
+    Index<MessageHandler<IRQHandlerFunction>, MaximumHandlerCount> m_irqHandlers;
 
     /** ProcessID of ourselves */
     ProcessID m_self;

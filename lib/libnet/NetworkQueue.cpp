@@ -19,6 +19,8 @@
 
 NetworkQueue::NetworkQueue(Size packetSize, Size headerSize, Size queueSize)
 {
+    assert(queueSize <= MaxPackets);
+
     m_packetSize   = packetSize;
     m_packetHeader = headerSize;
 
@@ -27,7 +29,7 @@ NetworkQueue::NetworkQueue(Size packetSize, Size headerSize, Size queueSize)
         Packet *packet = new Packet;
         packet->size = m_packetHeader;
         packet->data = new u8[packetSize];
-        m_free.insert(*packet);
+        m_free.insertAt(i, packet);
     }
 }
 
@@ -35,7 +37,7 @@ NetworkQueue::~NetworkQueue()
 {
     for (Size i = 0; i < m_free.size(); i++)
     {
-        Packet *p = (Packet *) m_free.get(i);
+        Packet *p = m_free.get(i);
         if (p)
         {
             delete p->data;
@@ -53,7 +55,7 @@ NetworkQueue::Packet * NetworkQueue::get()
 {
     for (Size i = 0; i < m_free.size(); i++)
     {
-        Packet *p = (Packet *) m_free.get(i);
+        Packet *p = m_free.get(i);
         if (p)
         {
             p->size = m_packetHeader;
@@ -67,19 +69,19 @@ NetworkQueue::Packet * NetworkQueue::get()
 void NetworkQueue::release(NetworkQueue::Packet *packet)
 {
     packet->size = m_packetHeader;
-    m_free.insert(*packet);
+    m_free.insert(packet);
 }
 
 void NetworkQueue::push(NetworkQueue::Packet *packet)
 {
-    m_data.insert(*packet);
+    m_data.insert(packet);
 }
 
 NetworkQueue::Packet * NetworkQueue::pop()
 {
     for (Size i = 0; i < m_data.size(); i++)
     {
-        Packet *p = (Packet *) m_data.get(i);
+        Packet *p = m_data.get(i);
         if (p)
         {
             m_data.remove(i);

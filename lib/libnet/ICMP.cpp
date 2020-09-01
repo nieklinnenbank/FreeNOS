@@ -82,14 +82,15 @@ Error ICMP::process(NetworkQueue::Packet *pkt, Size offset)
 
 ICMPSocket * ICMP::createSocket(String & path)
 {
+    Size pos = 0;
+
     DEBUG("");
 
     ICMPSocket *sock = new ICMPSocket(this);
     if (!sock)
         return ZERO;
 
-    int pos = m_sockets.insert(*sock);
-    if (pos == -1)
+    if (!m_sockets.insert(pos, sock))
     {
         delete sock;
         return ZERO;

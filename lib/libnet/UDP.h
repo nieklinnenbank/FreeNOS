@@ -42,6 +42,10 @@ class ARP;
  */
 class UDP : public NetworkProtocol
 {
+  private:
+
+    static const Size MaxUdpSockets = 128u;
+
   public:
 
     /**
@@ -126,7 +130,7 @@ class UDP : public NetworkProtocol
 
     UDPFactory *m_factory;
 
-    Index<UDPSocket> m_sockets;
+    Index<UDPSocket, MaxUdpSockets> m_sockets;
 
     /** Maps UDP ports to UDP sockets */
     HashTable<u16, UDPSocket *> m_ports;

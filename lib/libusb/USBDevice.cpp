@@ -55,6 +55,7 @@ FileSystem::Error USBDevice::initialize()
 {
     DEBUG("");
 
+    Size idx = 0;
     Address actualId = m_id;
 
     // Try to open the USB transfer file on the USB host controller
@@ -155,7 +156,7 @@ FileSystem::Error USBDevice::initialize()
             case USBDescriptor::InterfaceType: {
                 DEBUG("::Interface at " << offset);
                 USBDescriptor::Interface *iface = (USBDescriptor::Interface *) (desc + offset);
-                m_interfaces.insert(*iface);
+                m_interfaces.insert(idx, iface);
                 offset += iface->length;
                 break;
             }
@@ -163,14 +164,14 @@ FileSystem::Error USBDevice::initialize()
                 USBDescriptor::Endpoint *ep = (USBDescriptor::Endpoint *) (desc + offset);
                 DEBUG("::Endpoint at " << offset << " addr = " << (ep->endpointAddress & 0xf) <<
                       " dir = " << (ep->endpointAddress >> 7) << " attr = " << ((ep->attributes) & 0x3));
-                m_endpoints.insert(*ep);
+                m_endpoints.insert(idx, ep);
                 offset += ep->length;
                 break;
             }
             case USBDescriptor::StringType: {
                 DEBUG("::String at " << offset);
                 USBDescriptor::String *str = (USBDescriptor::String *) (desc + offset);
-                m_strings.insert(*str);
+                m_strings.insert(idx, str);
                 offset += str->length;
                 break;
             }
