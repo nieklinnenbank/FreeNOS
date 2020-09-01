@@ -18,9 +18,9 @@
 #ifndef __SERVER_DATASTORE_DATASTORESERVER_H
 #define __SERVER_DATASTORE_DATASTORESERVER_H
 
+#include <FreeNOS/ProcessManager.h>
 #include <ChannelServer.h>
 #include <Types.h>
-#include <Vector.h>
 #include <HashTable.h>
 #include <String.h>
 #include "Datastore.h"
@@ -74,7 +74,7 @@ class DatastoreServer : public ChannelServer<DatastoreServer, DatastoreMessage>
   private:
 
     /** Per-process hash table with key to buffers mapping. */
-    Vector<HashTable<String, Address> *> m_buffers;
+    HashTable<ProcessID, HashTable<String, Address> *> m_buffers;
 };
 
 /**
