@@ -29,11 +29,16 @@ void multibootToCoreInfo(MultibootInfo *info)
     coreInfo.kernel.size = MegaByte(4);
     coreInfo.memory.phys = 0;
 
-    // Limit maximum supported memory to 1GiB
+    // Limit maximum supported memory to 1GiB minus 128MiB
+    // Unfortunately, libarch does not support RAM sizes of 1GiB and higher.
+    // The reason is that the kernel maps only 1GiB minus 128MiB of RAM,
+    // where the upper 128MiB is needed for the KernelPrivate section.
+    // Mapping more than that will not work with SplitAllocator::toVirtual().
+    // Therefore, use at maximum 1GiB minus 128MiB.
     if (info->memUpper <= (1024 * 1024)) {
         coreInfo.memory.size = (info->memUpper * 1024) + MegaByte(1);
     } else {
-        coreInfo.memory.size = 1024 * 1024 * 1024;
+        coreInfo.memory.size = 1024 * 1024 * (1024 - 128);
     }
 
     // Fill the kernel command line
