@@ -35,15 +35,18 @@ static u32 ALIGN(16 * 1024) SECTION(".data") tmpPageDir[4096];
 
 extern C int kernel_main(void)
 {
-    // Invalidate all caches now
-    Arch::Cache cache;
-    cache.invalidate(Cache::Unified);
-
 #ifdef ARMV7
     // Raise the SMP bit for ARMv7
     ARMControl ctrl;
     ctrl.set(ARMControl::SMPBit);
 #endif
+
+    if (read_core_id() == 0)
+    {
+        // Invalidate all caches now
+        Arch::Cache cache;
+        cache.invalidate(Cache::Unified);
+    }
 
     // Setup memory map with kernel base physical memory address
     Arch::MemoryMap mem;

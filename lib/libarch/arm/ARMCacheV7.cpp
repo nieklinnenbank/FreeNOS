@@ -58,11 +58,11 @@ ARMCacheV7::Result ARMCacheV7::cleanInvalidate(ARMCacheV7::Type type)
             // Invalidate all instruction caches to PoU.
             // Also flushes branch target cache.
             //
-            dsb();
             mcr(p15, 0, 0, c7, c5, 0);
 
             // Invalidate entire branch predictor array
             flushBranchPrediction();
+            dsb();
             isb();
             break;
 
