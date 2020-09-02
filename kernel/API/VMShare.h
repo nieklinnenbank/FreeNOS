@@ -18,7 +18,8 @@
 #ifndef __API_VMSHARE_H
 #define __API_VMSHARE_H
 
-#include <FreeNOS/System.h>
+#include <FreeNOS/ProcessShares.h>
+#include <Types.h>
 
 /**
  * @addtogroup kernel

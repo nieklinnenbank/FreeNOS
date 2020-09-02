@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
+#include <FreeNOS/User.h>
 #include <Macros.h>
 #include <Types.h>
 #include <stdio.h>
@@ -25,17 +25,17 @@
 #include "Time.h"
 
 Time::Time()
-    : Device(CharacterDeviceFile)
+    : Device(FileSystem::CharacterDeviceFile)
 {
     m_identifier << "time0";
 }
 
-Error Time::initialize()
+FileSystem::Error Time::initialize()
 {
-    return ESUCCESS;
+    return FileSystem::Success;
 }
 
-Error Time::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error Time::read(IOBuffer & buffer, Size size, Size offset)
 {
     unsigned int year, month, day, hour, min, sec = 0, time;
     char tmp[16];
@@ -90,8 +90,8 @@ Error Time::read(IOBuffer & buffer, Size size, Size offset)
 
 unsigned char Time::readCMOS(unsigned char addr)
 {
-    WriteByte(RTC_PORT(0), addr);
-    return ReadByte(RTC_PORT(1));
+    m_io.outb(RTC_PORT(0), addr);
+    return m_io.inb(RTC_PORT(1));
 }
 
 unsigned Time::bcd2bin(unsigned char val)

@@ -18,7 +18,7 @@
 #ifndef __SERVER_CORE_CORESERVER_H
 #define __SERVER_CORE_CORESERVER_H
 
-#include <FreeNOS/System.h>
+#include <FreeNOS/User.h>
 #include <ChannelServer.h>
 #include <List.h>
 #include <Types.h>
@@ -26,10 +26,11 @@
 #include <Index.h>
 #include <ExecutableFormat.h>
 #include <MemoryChannel.h>
-#include <FileSystemMessage.h>
 #include <CoreInfo.h>
 #include <Factory.h>
 #include <CoreManager.h>
+#include "Core.h"
+#include "CoreMessage.h"
 
 /**
  * @addtogroup server
@@ -45,7 +46,7 @@
  * Each core in a system will run its own instance of CoreServer.
  * CoreServers will communicate and collaborate together to implement functionality.
  */
-class CoreServer : public ChannelServer<CoreServer, FileSystemMessage>
+class CoreServer : public ChannelServer<CoreServer, CoreMessage>
                  , public AbstractFactory<CoreServer>
 {
   private:
@@ -59,22 +60,6 @@ class CoreServer : public ChannelServer<CoreServer, FileSystemMessage>
   public:
 
     /**
-     * Result codes.
-     */
-    enum Result
-    {
-        Success,
-        NotFound,
-        BootError,
-        ExecError,
-        OutOfMemory,
-        IOError,
-        MemoryError
-    };
-
-  public:
-
-    /**
      * Class constructor function.
      */
     CoreServer();
@@ -84,7 +69,7 @@ class CoreServer : public ChannelServer<CoreServer, FileSystemMessage>
      *
      * @return Result code
      */
-    Result test();
+    Core::Result test();
 
     /**
      * Routine for the slave processor core
@@ -110,14 +95,14 @@ class CoreServer : public ChannelServer<CoreServer, FileSystemMessage>
      *
      * @return Result code
      */
-    virtual Result bootCore(uint coreId, CoreInfo *info) = 0;
+    virtual Core::Result bootCore(uint coreId, CoreInfo *info) = 0;
 
     /**
      * Discover processor cores
      *
      * @return Result code
      */
-    virtual Result discoverCores() = 0;
+    virtual Core::Result discoverCores() = 0;
 
     /**
      * Wait for Inter-Processor-Interrupt
@@ -131,7 +116,7 @@ class CoreServer : public ChannelServer<CoreServer, FileSystemMessage>
      *
      * @return Result code
      */
-    virtual Result sendIPI(uint coreId) = 0;
+    virtual Core::Result sendIPI(uint coreId) = 0;
 
   private:
 
@@ -144,35 +129,35 @@ class CoreServer : public ChannelServer<CoreServer, FileSystemMessage>
      *
      * @return Result code
      */
-    Result prepareCore(uint coreId, CoreInfo *info, ExecutableFormat::Region *regions);
+    Core::Result prepareCore(uint coreId, CoreInfo *info, ExecutableFormat::Region *regions);
 
     /**
      * Prepare the CoreInfo array
      *
      * @return Result code
      */
-    Result prepareCoreInfo();
+    Core::Result prepareCoreInfo();
 
     /**
      * Load operating system kernel
      *
      * @return Result code
      */
-    Result loadKernel();
+    Core::Result loadKernel();
 
     /**
      * Boot all processor cores
      *
      * @return Result code
      */
-    Result bootAll();
+    Core::Result bootAll();
 
     /**
      * Setup communication channels between CoreServers
      *
      * @return Exit code
      */
-    Result setupChannels();
+    Core::Result setupChannels();
 
     /**
      * Clear memory pages with zeroes
@@ -182,63 +167,63 @@ class CoreServer : public ChannelServer<CoreServer, FileSystemMessage>
      *
      * @return Exit code
      */
-    Result clearPages(Address addr, Size size);
+    Core::Result clearPages(Address addr, Size size);
 
     /**
      * Get and fill the number of processor cores
      *
-     * @param msg FileSystemMessage to fill in the core count
+     * @param msg CoreMessage to fill in the core count
      *
      * @return Exit code
      */
-    void getCoreCount(FileSystemMessage *msg);
+    void getCoreCount(CoreMessage *msg);
 
     /**
      * Create a process on the current processor core
      *
-     * @param msg FileSystemMessage containing process information
+     * @param msg CoreMessage containing process information
      *
      * @return Exit code
      */
-    void createProcess(FileSystemMessage *msg);
+    void createProcess(CoreMessage *msg);
 
     /**
      * Receive message from master
      *
-     * @param msg FileSystemMessage pointer
+     * @param msg CoreMessage pointer
      *
      * @return Result code
      */
-    Result receiveFromMaster(FileSystemMessage *msg);
+    Core::Result receiveFromMaster(CoreMessage *msg);
 
     /**
      * Send message to master
      *
-     * @param msg FileSystemMessage pointer
+     * @param msg CoreMessage pointer
      *
      * @return Result code
      */
-    Result sendToMaster(FileSystemMessage *msg);
+    Core::Result sendToMaster(CoreMessage *msg);
 
     /**
      * Receive message from slave
      *
      * @param coreId Core identifier
-     * @param msg FileSystemMessage pointer
+     * @param msg CoreMessage pointer
      *
      * @return Result code
      */
-    Result receiveFromSlave(uint coreId, FileSystemMessage *msg);
+    Core::Result receiveFromSlave(uint coreId, CoreMessage *msg);
 
     /**
      * Send message to slave
      *
      * @param coreId Core identifier
-     * @param msg FileSystemMessage pointer
+     * @param msg CoreMessage pointer
      *
      * @return Result code
      */
-    Result sendToSlave(uint coreId, FileSystemMessage *msg);
+    Core::Result sendToSlave(uint coreId, CoreMessage *msg);
 
   protected:
 

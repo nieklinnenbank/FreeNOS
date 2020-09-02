@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
+#include <FreeNOS/User.h>
 #include <FreeNOS/API.h>
 #include <Log.h>
 #include <Factory.h>
@@ -36,21 +36,21 @@ SingleCoreServer::Result SingleCoreServer::initialize()
     return Success;
 }
 
-SingleCoreServer::Result SingleCoreServer::bootCore(uint coreId, CoreInfo *info)
+Core::Result SingleCoreServer::bootCore(uint coreId, CoreInfo *info)
 {
-    return coreId == 0 ? Success : BootError;
+    return coreId == 0 ? Core::Success : Core::BootError;
 }
 
-SingleCoreServer::Result SingleCoreServer::discoverCores()
+Core::Result SingleCoreServer::discoverCores()
 {
-    return Success;
+    return Core::Success;
 }
 
 void SingleCoreServer::waitIPI() const
 {
 }
 
-SingleCoreServer::Result SingleCoreServer::sendIPI(uint coreId)
+Core::Result SingleCoreServer::sendIPI(uint coreId)
 {
-    return IOError;
+    return Core::IOError;
 }

@@ -20,6 +20,7 @@
 
 #include <Types.h>
 #include <HashTable.h>
+#include <Timer.h>
 #include "Ethernet.h"
 #include "IPV4.h"
 #include "NetworkProtocol.h"

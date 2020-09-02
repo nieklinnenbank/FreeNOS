@@ -18,6 +18,7 @@
 #ifndef __ATA_ATACONTROLLER_H
 #define __ATA_ATACONTROLLER_H
 
+#include <FreeNOS/User.h>
 #include <List.h>
 #include <Device.h>
 
@@ -272,7 +273,7 @@ class ATAController : public Device
      *
      * @return Error result code.
      */
-    virtual Error initialize();
+    virtual FileSystem::Error initialize();
 
     /**
      * Read bytes from a drive attached to the ATA controller.
@@ -283,7 +284,7 @@ class ATAController : public Device
      *
      * @return Number of bytes on success and an error code on failure.
      */
-    virtual Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
 
     /**
      * @brief Process ATA interrupts.
@@ -292,7 +293,7 @@ class ATAController : public Device
      *
      * @return Error result code.
      */
-    virtual Error interrupt(Size vector);
+    virtual FileSystem::Error interrupt(Size vector);
 
   private:
 
@@ -307,6 +308,9 @@ class ATAController : public Device
 
     /** @brief Drives detected on the ATA bus. */
     List<ATADrive *> drives;
+
+    /** Port I/O object. */
+    Arch::IO m_io;
 };
 
 /**

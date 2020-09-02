@@ -15,12 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
-#include <FileSystemMessage.h>
-#include "MPIMessage.h"
+#include <FreeNOS/User.h>
 #include <MemoryChannel.h>
-#include <ChannelClient.h>
+#include <CoreClient.h>
 #include <Index.h>
+#include <String.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -28,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include "MPIMessage.h"
 #include "mpi.h"
 
 #define MPI_PROG_CMDLEN 512
@@ -40,10 +40,11 @@ Index<MemoryChannel> *writeChannel = 0;
 int MPI_Init(int *argc, char ***argv)
 {
     SystemInformation info;
-    FileSystemMessage msg;
+    const CoreClient coreClient;
     struct stat st;
     char *programName = (*argv)[0];
     char programPath[64];
+    char cmd[MPI_PROG_CMDLEN];
     u8 *programBuffer;
     int fd;
     Memory::Range memChannelBase;
@@ -51,14 +52,10 @@ int MPI_Init(int *argc, char ***argv)
     // If we are master (node 0):
     if (info.coreId == 0)
     {
-        msg.type   = ChannelMessage::Request;
-        msg.action = ReadFile;
-        msg.from = SELF;
-        ChannelClient::instance->syncSendReceive(&msg, CORESRV_PID);
-
         // provide -n COUNT, --help and other stuff in here too.
         // to influence the launching of more MPI programs
-        coreCount = msg.size;
+        const Core::Result result = coreClient.getCoreCount(coreCount);
+        assert(result == Core::Success);
 
         // Read our own ELF program to a buffer and pass it to CoreServer
         // for creating new programs on the remote core.
@@ -73,7 +70,21 @@ int MPI_Init(int *argc, char ***argv)
                     programName, programPath, strerror(errno));
             return MPI_ERR_BAD_FILE;
         }
-        programBuffer = new u8[st.st_size];
+
+        Memory::Range progRange;
+        progRange.virt = 0;
+        progRange.phys = 0;
+        progRange.size = st.st_size;
+        progRange.access = Memory::User | Memory::Readable | Memory::Writable;
+        const API::Result vmResult = VMCtl(SELF, MapContiguous, &progRange);
+        if (vmResult != API::Success)
+        {
+            printf("%s: failed to allocate program buffer: result = %d\n", (int)vmResult);
+            return MPI_ERR_NO_MEM;
+        }
+
+        programBuffer = (u8 *) progRange.virt;
+        assert(programBuffer != NULL);
         MemoryBlock::set(programBuffer, 0, st.st_size);
 
         // Read ELF program
@@ -99,11 +110,11 @@ int MPI_Init(int *argc, char ***argv)
         // Allocate memory space on the local processor for the whole
         // UniChannel array, NxN communication with MPI.
         // Then pass the channel offset physical address as an argument -addr 0x.... to spawn()
-        memChannelBase.size = (PAGESIZE * 2) * (msg.size * msg.size);
+        memChannelBase.size = (PAGESIZE * 2) * (coreCount * coreCount);
         memChannelBase.phys = 0;
         memChannelBase.virt = 0;
         memChannelBase.access = Memory::Readable | Memory::Writable | Memory::User;
-        if (VMCtl(SELF, Map, &memChannelBase) != API::Success)
+        if (VMCtl(SELF, MapContiguous, &memChannelBase) != API::Success)
         {
             printf("%s: failed to allocate MemoryChannel\n",
                     programName);
@@ -115,31 +126,24 @@ int MPI_Init(int *argc, char ***argv)
         // Clear channel pages
         MemoryBlock::set((void *) memChannelBase.virt, 0, memChannelBase.size);
 
+        // Format program command
+        snprintf(cmd, MPI_PROG_CMDLEN, "%s -a %x -c %d",
+                 programPath, memChannelBase.phys, coreCount);
+        for (int j = 1; j < *argc; j++)
+        {
+            strcat(cmd, " ");
+            strcat(cmd, (*argv)[j]);
+        }
+
         // now create the slaves using coreservers.
         for (Size i = 1; i < coreCount; i++)
         {
-            char *cmd = new char[MPI_PROG_CMDLEN];
-            snprintf(cmd, MPI_PROG_CMDLEN, "%s -a %x -c %d",
-                     programPath, memChannelBase.phys, coreCount);
-
-            for (int j = 1; j < *argc; j++)
+            const Core::Result result = coreClient.createProcess(i, (const Address) programBuffer,
+                                                                 st.st_size, cmd);
+            if (result != Core::Success)
             {
-                strcat(cmd, " ");
-                strcat(cmd, (*argv)[j]);
-            }
-
-            msg.type   = ChannelMessage::Request;
-            msg.action = CreateFile;
-            msg.size   = i;
-            msg.buffer = (char *) programBuffer;
-            msg.offset = st.st_size;
-            msg.path   = cmd;
-            ChannelClient::instance->syncSendReceive(&msg, CORESRV_PID);
-
-            if (msg.result != ESUCCESS)
-            {
-                printf("%s: failed to create process on core%d\n",
-                        programName, i);
+                printf("%s: failed to create process on core%d: result = %d\n",
+                        programName, i, (int) result);
                 return MPI_ERR_SPAWN;
             }
         }
@@ -181,14 +185,15 @@ int MPI_Init(int *argc, char ***argv)
 
     // Create MemoryChannels
     readChannel  = new Index<MemoryChannel>(coreCount);
+    assert(readChannel != NULL);
     writeChannel = new Index<MemoryChannel>(coreCount);
+    assert(writeChannel != NULL);
 
     // Fill read channels
     for (Size i = 0; i < coreCount; i++)
     {
-        MemoryChannel *ch = new MemoryChannel();
-        ch->setMode(MemoryChannel::Consumer);
-        ch->setMessageSize(sizeof(MPIMessage));
+        MemoryChannel *ch = new MemoryChannel(Channel::Consumer, sizeof(MPIMessage));
+        assert(ch != NULL);
         ch->setPhysical(MEMBASE(info.coreId) + (PAGESIZE * 2 * i),
                         MEMBASE(info.coreId) + (PAGESIZE * 2 * i) + PAGESIZE);
         readChannel->insert(i, *ch);
@@ -205,9 +210,8 @@ int MPI_Init(int *argc, char ***argv)
     // Fill write channels
     for (Size i = 0; i < coreCount; i++)
     {
-        MemoryChannel *ch = new MemoryChannel();
-        ch->setMode(MemoryChannel::Producer);
-        ch->setMessageSize(sizeof(MPIMessage));
+        MemoryChannel *ch = new MemoryChannel(Channel::Producer, sizeof(MPIMessage));
+        assert(ch != NULL);
         ch->setPhysical(MEMBASE(i) + (PAGESIZE * 2 * info.coreId),
                         MEMBASE(i) + (PAGESIZE * 2 * info.coreId) + PAGESIZE);
         writeChannel->insert(i, *ch);

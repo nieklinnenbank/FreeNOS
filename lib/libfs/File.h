@@ -18,14 +18,10 @@
 #ifndef __LIB_LIBFS_FILE_H
 #define __LIB_LIBFS_FILE_H
 
-#include <FreeNOS/System.h>
-#include <FreeNOS/API.h>
 #include <Types.h>
 #include "FileSystemMessage.h"
-#include "FileType.h"
-#include "FileMode.h"
+#include "FileSystem.h"
 #include "IOBuffer.h"
-#include <errno.h>
 
 /**
  * @addtogroup lib
@@ -51,7 +47,7 @@ class File
      * @param uid User identity.
      * @param gid Group identity.
      */
-    File(FileType type = RegularFile, UserID uid = ZERO, GroupID gid = ZERO);
+    File(FileSystem::FileType type = FileSystem::RegularFile, UserID uid = ZERO, GroupID gid = ZERO);
 
     /**
      * Destructor function.
@@ -63,7 +59,7 @@ class File
      *
      * @return FileType object.
      */
-    FileType getType() const;
+    FileSystem::FileType getType() const;
 
     /**
      * @brief Read bytes from the file.
@@ -74,7 +70,7 @@ class File
      *
      * @return Number of bytes read on success, Error on failure.
      */
-    virtual Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
 
     /**
      * Write bytes to the file.
@@ -85,7 +81,7 @@ class File
      *
      * @return Number of bytes written on success, Error on failure.
      */
-    virtual Error write(IOBuffer & buffer, Size size, Size offset);
+    virtual  FileSystem::Error write(IOBuffer & buffer, Size size, Size offset);
 
     /**
      * Retrieve file statistics.
@@ -94,15 +90,15 @@ class File
      *
      * @return Error code
      */
-    virtual Error status(FileSystemMessage *msg);
+    virtual FileSystem::Error status(FileSystemMessage *msg);
 
   protected:
 
     /** Type of this file. */
-    FileType m_type;
+    FileSystem::FileType m_type;
 
     /** Access permissions. */
-    FileModes m_access;
+    FileSystem::FileModes m_access;
 
     /** Size of the file, in bytes. */
     Size m_size;

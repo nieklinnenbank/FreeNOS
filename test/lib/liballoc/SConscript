@@ -18,12 +18,16 @@
 Import('build_env')
 
 env = build_env.Clone()
-env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libtest',
+env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libtest', 'libfs',
                    'libexec', 'libarch', 'libipc', 'librt', 'libapp' ])
 env.UseLibraries([ 'libtest', 'liballoc', 'libarch', 'libstd', 'libapp' ], 'host')
 env.Append(CPPPATH = [ '#lib/liballoc' ])
 
+if env['ARCH'] != 'host':
+    env.Prepend(CXXFLAGS = '-Dprotected=public')
+
 env.TargetHostProgram('AllocatorTest', 'AllocatorTest.cpp')
 env.TargetHostProgram('BitAllocatorTest', 'BitAllocatorTest.cpp')
 env.TargetHostProgram('BubbleAllocatorTest', 'BubbleAllocatorTest.cpp')
+env.TargetHostProgram('PoolAllocatorTest', 'PoolAllocatorTest.cpp')
 env.TargetHostProgram('SplitAllocatorTest', 'SplitAllocatorTest.cpp')

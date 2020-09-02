@@ -454,7 +454,7 @@ List<String> String::split(const String & delimiter)
     return lst;
 }
 
-long String::toLong(Number::Base base)
+long String::toLong(Number::Base base) const
 {
     const char *s = m_string;
     long acc = 0, cutoff;

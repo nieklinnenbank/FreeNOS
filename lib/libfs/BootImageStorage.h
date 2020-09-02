@@ -19,7 +19,9 @@
 #define __FILESYSTEM_BOOTIMAGESTORAGE_H
 
 #include <Types.h>
+#include <String.h>
 #include <BootImage.h>
+#include "FileSystem.h"
 #include "Storage.h"
 
 /**
@@ -60,7 +62,7 @@ class BootImageStorage : public Storage
      *
      * @return Error code
      */
-    virtual Error read(u64 offset, void *buffer, Size size);
+    virtual FileSystem::Error read(u64 offset, void *buffer, Size size);
 
     /**
      * Retrieve maximum storage capacity.
@@ -72,7 +74,7 @@ class BootImageStorage : public Storage
   private:
 
     /** Name of the BootSymbol */
-    const char *m_name;
+    const String m_name;
 
     /** Data pointer */
     u8 *m_data;

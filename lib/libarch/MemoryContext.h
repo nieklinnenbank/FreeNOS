@@ -21,6 +21,7 @@
 #include <Types.h>
 #include <Macros.h>
 #include <BitOperations.h>
+#include <Callback.h>
 #include "Memory.h"
 #include "MemoryMap.h"
 
@@ -128,13 +129,22 @@ class MemoryContext
     virtual Result access(Address addr, Memory::Access *access) const = 0;
 
     /**
-     * Map a range of physical pages to virtual addresses.
+     * Map a range of contiguous physical pages to virtual addresses.
      *
      * @param range Range object describing the range of physical pages.
      *
      * @return Result code.
      */
-    virtual Result mapRange(Memory::Range *range);
+    virtual Result mapRangeContiguous(Memory::Range *range);
+
+    /**
+     * Map and allocate a range of sparse (non-contiguous) physical pages to virtual addresses.
+     *
+     * @param range Range object describing the range of physical pages.
+     *
+     * @return Result code.
+     */
+    virtual Result mapRangeSparse(Memory::Range *range);
 
     /**
      * Unmaps a range of virtual memory.
@@ -190,6 +200,15 @@ class MemoryContext
      */
     virtual Result findFree(Size size, MemoryMap::Region region, Address *virt) const;
 
+    /**
+     * Callback to provide intermediate Range object during mapRangeSparse()
+     *
+     * @param phys Pointer to physical address value of newly allocated page.
+     *
+     * @see mapRangeSparse
+     */
+    virtual void mapRangeSparseCallback(Address *phys);
+
   protected:
 
     /** Physical memory allocator */
@@ -200,6 +219,15 @@ class MemoryContext
 
     /** The currently active MemoryContext */
     static MemoryContext *m_current;
+
+    /** Callback object for mapRangeSparseCallback function */
+    Callback<MemoryContext, Address> m_mapRangeSparseCallback;
+
+    /** Saved range input for use in the mapRangeSparse Callback. */
+    Memory::Range *m_savedRange;
+
+    /** Number of pages allocated via mapRangeSparse Callback. */
+    Size m_numSparsePages;
 };
 
 /**

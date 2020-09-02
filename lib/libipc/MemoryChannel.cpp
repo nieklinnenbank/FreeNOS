@@ -15,13 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <Assert.h>
 #include <Log.h>
-#include <FreeNOS/System.h>
+#include <MemoryBlock.h>
 #include "MemoryChannel.h"
 
-MemoryChannel::MemoryChannel()
-    : Channel()
+MemoryChannel::MemoryChannel(const Channel::Mode mode, const Size messageSize)
+    : Channel(mode, messageSize)
+    , m_maximumMessages((PAGESIZE / messageSize) - 1U)
 {
+    assert(messageSize >= sizeof(RingHead));
+    assert(messageSize < (PAGESIZE / 2));
+
     MemoryBlock::set(&m_head, 0, sizeof(m_head));
 }
 
@@ -29,31 +34,42 @@ MemoryChannel::~MemoryChannel()
 {
 }
 
-MemoryChannel::Result MemoryChannel::setMessageSize(Size size)
-{
-    if (size < sizeof(RingHead) || size > (PAGESIZE / 2))
-        return InvalidArgument;
-
-    m_messageSize = size;
-    m_maximumMessages = (PAGESIZE / m_messageSize) - 1;
-
-    return Success;
-}
-
-MemoryChannel::Result MemoryChannel::setVirtual(Address data, Address feedback)
+MemoryChannel::Result MemoryChannel::setVirtual(const Address data, const Address feedback)
 {
     m_data.setBase(data);
     m_feedback.setBase(feedback);
     return Success;
 }
 
-MemoryChannel::Result MemoryChannel::setPhysical(Address data, Address feedback)
+MemoryChannel::Result MemoryChannel::setPhysical(const Address data, const Address feedback)
 {
-    if (m_data.map(data, PAGESIZE) != IO::Success)
-        return IOError;
+    Memory::Access dataAccess = Memory::User | Memory::Readable;
+    Memory::Access feedAccess = Memory::User | Memory::Readable;
 
-    if (m_feedback.map(feedback, PAGESIZE) != IO::Success)
+    switch (m_mode)
+    {
+        case Consumer:
+            feedAccess |= Memory::Writable;
+            break;
+
+        case Producer:
+            dataAccess |= Memory::Writable;
+            break;
+    }
+
+    IO::Result result = m_data.map(data, PAGESIZE, dataAccess);
+    if (result != IO::Success)
+    {
+        ERROR("failed to map data physical address " << (void*)data << ": " << (int)result);
         return IOError;
+    }
+
+    result = m_feedback.map(feedback, PAGESIZE, feedAccess);
+    if (result != IO::Success)
+    {
+        ERROR("failed to map feedback physical address " << (void*)feedback << ": " << (int)result);
+        return IOError;
+    }
 
     return Success;
 }
@@ -80,7 +96,7 @@ MemoryChannel::Result MemoryChannel::read(void *buffer)
     return Success;
 }
 
-MemoryChannel::Result MemoryChannel::write(void *buffer)
+MemoryChannel::Result MemoryChannel::write(const void *buffer)
 {
     RingHead reader;
 
@@ -102,14 +118,40 @@ MemoryChannel::Result MemoryChannel::write(void *buffer)
 
 MemoryChannel::Result MemoryChannel::flush()
 {
-    // Cannot flush caches in usermode. All usermode code
-    // should memory map without caching.
-    if (!isKernel)
-        return IOError;
+#ifndef INTEL
+    if (m_mode == Producer)
+        flushPage(m_data.getBase());
+    else if (m_mode == Consumer)
+        flushPage(m_feedback.getBase());
+#endif /* INTEL */
 
-    // Clean both pages from the cache
-    Arch::Cache cache;
-    cache.cleanData(m_data.getBase());
-    cache.cleanData(m_feedback.getBase());
+    return Success;
+}
+
+MemoryChannel::Result MemoryChannel::flushPage(const Address page) const
+{
+    // Flush caches in usermode via the kernel.
+    if (!isKernel)
+    {
+#ifndef __HOST__
+        Memory::Range range;
+        range.virt = page;
+
+        const API::Result result = VMCtl(SELF, CacheClean, &range);
+        if (result != API::Success)
+        {
+            ERROR("failed to clean data cache at " << (void *) page <<
+                  ": result = " << (int) result);
+            return IOError;
+        }
+#endif /* __HOST__ */
+    }
+    // Clean both pages from the cache directly
+    else
+    {
+        Arch::Cache cache;
+        cache.cleanData(page);
+    }
+
     return Success;
 }

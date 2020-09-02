@@ -15,12 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
+#include <FreeNOS/User.h>
+#include "unistd.h"
+#include "stdlib.h"
 
 static unsigned int seed = 1;
+static bool seedInitialized = false;
 
 extern C void srandom(unsigned int new_seed)
 {
+    seedInitialized = true;
     seed = new_seed;
 }
 
@@ -34,6 +38,15 @@ extern C long int random(void)
     const unsigned int m = 1 << 31;
     const unsigned int a = 1103515245;
     const unsigned int c = 12345;
+
+    if (!seedInitialized)
+    {
+        const ProcessID pid = getpid();
+        Timer::Info timer;
+        ProcessCtl(SELF, InfoTimer, (Address) &timer);
+
+        srandom(pid + timer.ticks);
+    }
 
     seed = (a * seed + c) % m;
     return seed;

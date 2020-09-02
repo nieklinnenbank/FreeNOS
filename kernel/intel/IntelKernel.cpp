@@ -112,14 +112,14 @@ IntelKernel::IntelKernel(CoreInfo *info)
 
     // Initialize TSS Segment
     Address tssAddr = (Address) &kernelTss;
-    gdt[KERNEL_TSS].limitLow    = sizeof(TSS) + (0xfff / 8);
+    gdt[KERNEL_TSS].limitLow    = sizeof(TSS);
     gdt[KERNEL_TSS].baseLow     = (tssAddr) & 0xffff;
     gdt[KERNEL_TSS].baseMid     = (tssAddr >> 16) & 0xff;
     gdt[KERNEL_TSS].type        = 9;
     gdt[KERNEL_TSS].privilege   = 0;
     gdt[KERNEL_TSS].present     = 1;
     gdt[KERNEL_TSS].limitHigh   = 0;
-    gdt[KERNEL_TSS].granularity = 8;
+    gdt[KERNEL_TSS].granularity = 0;
     gdt[KERNEL_TSS].baseHigh    = (tssAddr >> 24) & 0xff;
 
     // Fill the Task State Segment (TSS).

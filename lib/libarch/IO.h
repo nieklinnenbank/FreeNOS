@@ -52,18 +52,18 @@ class IO
     IO();
 
     /**
-     * Get I/O base offset.
+     * Get memory I/O base offset.
      *
      * @return Base offset to add to each I/O address.
      */
-    uint getBase() const;
+    Address getBase() const;
 
     /**
-     * Set I/O base offset.
+     * Set memory I/O base offset.
      *
      * @param base Offset to add to each I/O address.
      */
-    void setBase(uint base);
+    void setBase(const Address base);
 
     /**
      * Map I/O address space.
@@ -86,8 +86,8 @@ class IO
 
   protected:
 
-    /** I/O base offset is added to each I/O address. */
-    volatile uint m_base;
+    /** memory I/O base offset is added to each I/O address. */
+    Address m_base;
 
     /** Memory range for performing I/O mappings. */
     Memory::Range m_range;

@@ -20,8 +20,12 @@ import os.path
 import shutil
 import datetime
 import platform
-from SCons.Script import *
-from autoconf import *
+import re
+import glob
+try:
+    from SCons.Script import *
+except ModuleNotFoundError:
+    pass
 
 class ConfDict(dict):
 
@@ -67,20 +71,20 @@ def initialize(target, host, params):
 
     # Apply commandline arguments for use in build.conf's
     for key in params:
-        if not key.startswith('HOST:'):
+        if not key.startswith('HOST_'):
             set_value(local_dict, key, params[key])
 
     local_dict.lock(True)
     apply_file('build.conf', target)
 
     local_dict = ConfDict()
-    local_dict.lock(False, "HOST:")
+    local_dict.lock(False, "HOST_")
 
     for key in params:
-        if key.startswith('HOST:'):
+        if key.startswith('HOST_'):
             set_value(local_dict, key[5:], params[key])
 
-    local_dict.lock(True, "HOST:")
+    local_dict.lock(True, "HOST_")
     apply_file('build.host.conf', host)
 
     # Apply default variables
@@ -94,19 +98,24 @@ def write_header(env, filename = None):
 
     if not filename:
         if env['ARCH'] != 'host':
-            path='config/'+env['ARCH']+'/'+env['SYSTEM']+'/System.h'
+            path='config/'+env['ARCH']+'/'+env['SYSTEM']+'/*.h'
 
             try:
                 os.makedirs(env['BUILDROOT'] + '/include')
                 os.symlink('.', env['BUILDROOT'] + '/include/FreeNOS')
-                shutil.copy(path, env['BUILDROOT'] + '/include/System.h')
+
+                for f in glob.glob(path):
+                    shutil.copy(f, env['BUILDROOT'] + '/include')
+
             except Exception as e:
                 pass
 
             try:
                 os.makedirs('build/host/include')
                 os.symlink('.', 'build/host/include/FreeNOS')
-                shutil.copy(path, 'build/host/include/System.h')
+
+                for f in glob.glob('config/host/*.h'):
+                    shutil.copy(f, 'build/host/include/')
             except:
                 pass
 

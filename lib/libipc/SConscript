@@ -18,5 +18,12 @@
 Import('build_env')
 
 env = build_env.Clone()
-env.UseLibraries(['libstd', 'libarch', 'libfs', 'libipc'])
-env.TargetLibrary('libipc', [ Glob('*.cpp') ])
+env.UseLibraries(['libstd', 'libarch'])
+env.UseLibraries(['libstd', 'libarch'], 'host')
+
+if env['ARCH'] == 'host':
+    srclist = [ 'Channel.cpp', 'ChannelRegistry.cpp', 'MemoryChannel.cpp' ]
+else:
+    srclist = Glob('*.cpp')
+
+env.Library('libipc', srclist)

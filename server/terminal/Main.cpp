@@ -15,12 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <DeviceServer.h>
-#include "Terminal.h"
-#include <stdlib.h>
-#include <unistd.h>
 #include <Runtime.h>
 #include <KernelLog.h>
+#include <DeviceServer.h>
+#include <FileSystemClient.h>
+#include "Terminal.h"
 
 int main(int argc, char **argv)
 {
@@ -28,15 +27,22 @@ int main(int argc, char **argv)
     log.setMinimumLogLevel(Log::Notice);
 
     // Wait for the input/output devices to become available
-    waitMount("/dev/ps2");
-    waitMount("/dev/video");
-    refreshMounts(0);
+    const FileSystemClient filesystem;
+    filesystem.waitFileSystem("/dev/ps2");
+    filesystem.waitFileSystem("/dev/video");
 
     // Register our device
     DeviceServer server("/console");
-    server.initialize();
+    server.registerDevice(new Terminal("/dev/ps2/keyboard0", "/dev/video/vga0"), "tty0");
+
+    // Initialize
+    const FileSystem::Result result = server.initialize();
+    if (result != FileSystem::Success)
+    {
+        ERROR("failed to initialize: result = " << (int) result);
+        return 1;
+    }
 
     // Start serving requests.
-    server.registerDevice(new Terminal("/dev/ps2/keyboard0", "/dev/video/vga0"), "tty0");
     return server.run();
 }

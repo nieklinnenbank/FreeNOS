@@ -39,7 +39,7 @@ class Device : public File
     /**
      * Constructor.
      */
-    Device(FileType type);
+    Device(FileSystem::FileType type);
 
     /**
      * Destructor.
@@ -58,7 +58,7 @@ class Device : public File
      *
      * @return Error result code.
      */
-    virtual Error initialize();
+    virtual FileSystem::Error initialize();
 
     /**
      * Called when an interrupt has been triggered for this device.
@@ -67,7 +67,7 @@ class Device : public File
      *
      * @return Error result code.
      */
-    virtual Error interrupt(Size vector);
+    virtual FileSystem::Error interrupt(Size vector);
 
   protected:
 

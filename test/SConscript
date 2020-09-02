@@ -20,7 +20,7 @@ Import('*')
 SubDirectories()
 
 env = build_env.Clone()
-env.UseLibraries([ 'libposix', 'libapp', 'liballoc', 'libstd',
+env.UseLibraries([ 'libposix', 'libapp', 'liballoc', 'libstd', 'libfs',
                    'libexec', 'libarch', 'libtest', 'libipc', 'librt' ])
 env.UseLibraries([ 'libtest', 'libapp', 'libstd' ], 'host')
 env.UseServers([ 'terminal', 'filesystem' ])

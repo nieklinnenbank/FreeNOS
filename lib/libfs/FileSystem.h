@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2020 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,19 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __FILESYSTEM_FILESYSTEM_H
-#define __FILESYSTEM_FILESYSTEM_H
+#ifndef __LIB_LIBFS_FILESYSTEM_H
+#define __LIB_LIBFS_FILESYSTEM_H
 
-#include <FreeNOS/System.h>
-#include <ChannelServer.h>
-#include <Vector.h>
-#include "Directory.h"
-#include "Device.h"
-#include "File.h"
-#include "FileCache.h"
-#include "FileSystemPath.h"
-#include "FileSystemMessage.h"
-#include "FileSystemRequest.h"
+#include <Types.h>
 
 /**
  * @addtogroup lib
@@ -37,227 +28,145 @@
  * @{
  */
 
+/** Number of bits needed to store a FileType. */
+#define FILETYPE_BITS   3
+
+/** Masker value for all FileTypes. */
+#define FILETYPE_MASK   7
+
 /**
- * Abstract filesystem class.
+ * Convert from a (host system's) POSIX struct stat into a FileType.
+ *
+ * @param st struct stat pointer.
+ *
+ * @return FileType value.
  */
-class FileSystem : public ChannelServer<FileSystem, FileSystemMessage>
+#define FILETYPE_FROM_ST(st) \
+({ \
+    FileSystem::FileType t = FileSystem::UnknownFile; \
+    \
+    switch ((st)->st_mode & S_IFMT) \
+    { \
+        case S_IFBLK:  t = FileSystem::BlockDeviceFile; break; \
+        case S_IFCHR:  t = FileSystem::CharacterDeviceFile; break; \
+        case S_IFIFO:  t = FileSystem::FIFOFile; break; \
+        case S_IFREG:  t = FileSystem::RegularFile; break; \
+        case S_IFDIR:  t = FileSystem::DirectoryFile; break; \
+        case S_IFLNK:  t = FileSystem::SymlinkFile; break; \
+        case S_IFSOCK: t = FileSystem::SocketFile; break; \
+        default: break; \
+    } \
+    t; \
+})
+
+/** Number of bits required for all FileModes. */
+#define FILEMODE_BITS 9
+
+/** Masker value for all FileMode values. */
+#define FILEMODE_MASK 0777
+
+/**
+ * Converts an (host system's) POSIX struct st into a FileMode.
+ *
+ * @param st struct st pointer.
+ *
+ * @return FileMode value.
+ */
+#define FILEMODE_FROM_ST(st) \
+    (FileSystem::FileMode)((st)->st_mode & FILEMODE_MASK)
+
+namespace FileSystem
 {
-  public:
+    /**
+     * Actions which may be performed on a filesystem.
+     */
+    enum Action
+    {
+        CreateFile = 0,
+        ReadFile,
+        WriteFile,
+        StatFile,
+        DeleteFile,
+        MountFileSystem,
+        WaitFileSystem,
+        GetFileSystems
+    };
 
     /**
-     * Constructor function.
-     *
-     * @param p Path to which we are mounted.
+     * Result code for filesystem Actions.
      */
-    FileSystem(const char *path);
+    enum Result
+    {
+        Success          =  0,
+        InvalidArgument  = -1,
+        NotFound         = -2,
+        RetryAgain       = -3,
+        IOError          = -4,
+        PermissionDenied = -5,
+        AlreadyExists    = -6,
+        NotSupported     = -7,
+        RedirectRequest  = -8,
+        IpcError         = -9
+    };
+
+    /** May contain a byte count or Result code with an error. */
+    typedef slong Error;
 
     /**
-     * Destructor function.
+     * All possible filetypes.
      */
-    virtual ~FileSystem();
+    enum FileType
+    {
+        RegularFile         = 0,
+        DirectoryFile       = 1,
+        BlockDeviceFile     = 2,
+        CharacterDeviceFile = 3,
+        SymlinkFile         = 4,
+        FIFOFile            = 5,
+        SocketFile          = 6,
+        UnknownFile         = 7,
+    };
 
     /**
-     * Get mount path
-     *
-     * @return Mount path of the filesystem
+     * File access permissions.
      */
-    const char * getMountPath() const;
+    enum FileMode
+    {
+        OwnerR   = 0400,
+        OwnerW   = 0200,
+        OwnerX   = 0100,
+        OwnerRW  = 0600,
+        OwnerRX  = 0500,
+        OwnerRWX = 0700,
+        GroupR   = 0040,
+        GroupW   = 0020,
+        GroupX   = 0010,
+        GroupRW  = 0060,
+        GroupRX  = 0050,
+        GroupRWX = 0070,
+        OtherR   = 0004,
+        OtherW   = 0002,
+        OtherX   = 0001,
+        OtherRW  = 0006,
+        OtherRX  = 0005,
+        OtherRWX = 0007,
+    };
+
+    /** Multiple FileMode values combined. */
+    typedef u16 FileModes;
 
     /**
-     * Get root directory.
-     *
-     * @return Root directory pointer
+     * Contains file information.
      */
-    Directory * getRoot();
-
-    /**
-     * Mount the FileSystem.
-     *
-     * This function is responsible for mounting the
-     * FileSystem.
-     *
-     * @return True if mounted successfully, false otherwise.
-     */
-    Error mount();
-
-    /**
-     * Register a new File.
-     *
-     * @param file File object pointer.
-     * @param path The path for the File.
-     *
-     * @return Error code.
-     */
-    Error registerFile(File *file, const char *path, ...);
-
-    /**
-     * Register a new File with variable arguments.
-     *
-     * @param file File object pointer.
-     * @param path The path for the File.
-     * @param args Variable argument list.
-     *
-     * @return Error code.
-     */
-    Error registerFile(File *file, const char *path, va_list args);
-
-    /**
-     * Create a new file.
-     *
-     * @param type Describes the type of file to create.
-     * @param deviceID Optionally specifies the device identities to create.
-     *
-     * @return Pointer to a new File on success or ZERO on failure.
-     */
-    virtual File * createFile(FileType type, DeviceID deviceID);
-
-    /**
-     * Inserts a file into the in-memory filesystem tree.
-     *
-     * @param file File to insert.
-     * @param pathFormat Formatted full path to the file to insert.
-     * @param ... Argument list.
-     *
-     * @return Pointer to the newly created FileCache, or NULL on failure.
-     */
-    FileCache * insertFileCache(File *file, const char *pathFormat, ...);
-
-    /**
-     * Inserts a file into the in-memory filesystem tree.
-     *
-     * @param file File to insert.
-     * @param pathFormat Formatted full path to the file to insert.
-     * @param args Argument list.
-     *
-     * @return Pointer to the newly created FileCache, or NULL on failure.
-     */
-    FileCache * insertFileCache(File *file, const char *pathFormat, va_list args);
-
-    /**
-     * Process an incoming filesystem request using a path.
-     *
-     * This message handler is responsible for processing any
-     * kind of FileSystemMessages which have an FileSystemAction using
-     * the path field, such as OpenFile.
-     *
-     * @param msg Incoming request message.
-     * @see FileSystemMessage
-     * @see FileSystemAction
-     */
-    void pathHandler(FileSystemMessage *msg);
-
-    /**
-     * Called when a sleep timeout is expired
-     *
-     * This function does a retry on all FileSystemRequests
-     */
-    virtual void timeout();
-
-    /**
-     * Retry any pending requests
-     *
-     * @return True if retry is needed again, false if all requests processed
-     */
-    virtual bool retryRequests();
-
-  protected:
-
-    /**
-     * Process a FileSystemRequest.
-     *
-     * @return EAGAIN if the request cannot be completed yet or
-     *         any other error code if processed.
-     */
-    Error processRequest(FileSystemRequest *req);
-
-    /**
-     * Send response for a FileSystemMessage
-     *
-     * @param msg The FileSystemMessage to send response for
-     */
-    void sendResponse(FileSystemMessage *msg);
-
-    /**
-     * Change the filesystem root directory.
-     *
-     * This function set the root member to the given
-     * Directory pointer. Additionally, it inserts '/.' and '/..'
-     * references to the file cache.
-     *
-     * @param newRoot A Directory pointer to set as the new root.
-     *
-     * @see root
-     * @see insertFileCache
-     */
-    void setRoot(Directory *newRoot);
-
-    /**
-     * Retrieve a File from storage.
-     *
-     * This function is responsible for walking the
-     * given FileSystemPath, retrieving each uncached File into
-     * the FileCache, and returning a pointer to corresponding FileCache
-     * of the last entry in the given path.
-     *
-     * @param path A path to lookup from storage.
-     *
-     * @return Pointer to a FileCache on success, ZERO otherwise.
-     */
-    FileCache * lookupFile(FileSystemPath *path);
-
-    /**
-     * Search the cache for an entry.
-     *
-     * @param path Full path of the file to find.
-     *
-     * @return Pointer to FileCache object on success, NULL on failure.
-     */
-    FileCache * findFileCache(char *path);
-
-    /**
-     * Search the cache for an entry.
-     *
-     * @param path Full path of the file to find.
-     *
-     * @return Pointer to FileCache object on success, NULL on failure.
-     */
-    FileCache * findFileCache(String *path);
-
-    /**
-     * Search the cache for an entry.
-     *
-     * @param path Full path of the file to find.
-     *
-     * @return Pointer to FileCache object on success, NULL on failure.
-     */
-    FileCache * findFileCache(FileSystemPath *p);
-
-    /**
-     * Process a cache hit.
-     *
-     * @param cache FileCache object which has just been referenced.
-     *
-     * @return FileCache object pointer.
-     */
-    virtual FileCache * cacheHit(FileCache *cache);
-
-    /**
-     * Cleans up the entire file cache (except opened file caches and root).
-     *
-     * @param cache Input FileCache object. ZERO to clean up all from root.
-     */
-    void clearFileCache(FileCache *cache = ZERO);
-
-  protected:
-
-    /** Root entry of the filesystem tree. */
-    FileCache *m_root;
-
-    /** Mount point. */
-    const char *m_mountPath;
-
-    /** Contains ongoing requests */
-    List<FileSystemRequest *> *m_requests;
+    struct FileStat
+    {
+        FileType type;      /**< File type. */
+        FileModes access;   /**< File access permission bits. */
+        Size size;          /**< Size of the file in bytes. */
+        UserID userID;      /**< User identity. */
+        GroupID groupID;    /**< Group identity. */
+        DeviceID deviceID;  /**< Device identity. */
+    };
 };
 
 /**

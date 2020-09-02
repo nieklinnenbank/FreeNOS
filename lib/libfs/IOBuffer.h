@@ -18,7 +18,6 @@
 #ifndef __LIB_LIBFS_IOBUFFER_H
 #define __LIB_LIBFS_IOBUFFER_H
 
-#include <FreeNOS/System.h>
 #include <Types.h>
 #include "FileSystemMessage.h"
 
@@ -38,6 +37,11 @@ class IOBuffer
   public:
 
     /**
+     * Default empty constructor
+     */
+    IOBuffer();
+
+    /**
      * Constructor.
      *
      * @param msg Describes the request being processed.
@@ -55,6 +59,13 @@ class IOBuffer
      * @return Byte count of the internal buffer.
      */
     Size getCount() const;
+
+    /**
+     * Set filesystem message
+     *
+     * @param msg FileSystemMessage pointer
+     */
+    void setMessage(const FileSystemMessage *msg);
 
     /**
      * Get filesystem message.
@@ -79,7 +90,7 @@ class IOBuffer
      *
      * @return Number of bytes read on success, and error code on failure.
      */
-    Error read(void *buffer, Size size, Size offset = ZERO) const;
+    FileSystem::Error read(void *buffer, Size size, Size offset = ZERO) const;
 
     /**
      * Write bytes to the I/O buffer.
@@ -90,14 +101,14 @@ class IOBuffer
      *
      * @return Number of bytes written on success, and error code on failure.
      */
-    Error write(void *buffer, Size size, Size offset = ZERO) const;
+    FileSystem::Error write(void *buffer, Size size, Size offset = ZERO) const;
 
     /**
      * Buffered read bytes from message to the I/O buffer.
      *
      * @return Error code.
      */
-    Error bufferedRead();
+    FileSystem::Error bufferedRead();
 
     /**
      * Buffered write bytes to the I/O buffer.
@@ -108,14 +119,14 @@ class IOBuffer
      *
      * @return Number of bytes written on success, and error code on failure.
      */
-    Error bufferedWrite(const void *buffer, Size size);
+    FileSystem::Error bufferedWrite(const void *buffer, Size size);
 
     /**
      * Flush write buffers.
      *
      * @return Error code.
      */
-    Error flush() const;
+    FileSystem::Error flush() const;
 
     /**
      * Byte index operator.

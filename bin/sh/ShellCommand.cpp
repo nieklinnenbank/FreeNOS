@@ -17,11 +17,11 @@
 
 #include "ShellCommand.h"
 
-ShellCommand::ShellCommand(const char *name, Size params)
+ShellCommand::ShellCommand(const char *name, const Size params)
+    : m_name(name)
+    , m_help("")
+    , m_minParams(params)
 {
-    m_name      = name;
-    m_minParams = params;
-    m_help      = "";
 }
 
 ShellCommand::~ShellCommand()

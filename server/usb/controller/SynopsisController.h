@@ -18,7 +18,7 @@
 #ifndef __LIBUSB_SYNOPSISUSB_H
 #define __LIBUSB_SYNOPSISUSB_H
 
-#include <FreeNOS/System.h>
+#include <FreeNOS/User.h>
 #include <Types.h>
 #include <Index.h>
 #include <arm/broadcom/BroadcomPower.h>
@@ -159,15 +159,15 @@ class SynopsisController : public USBController
      *
      * @return Result code
      */
-    virtual Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
      * Submit USB transfer.
      *
      * @return Result code
      */
-    virtual Error transfer(const FileSystemMessage *msg,
-                           USBMessage *usb);
+    virtual FileSystem::Error transfer(const FileSystemMessage *msg,
+                                       USBMessage *usb);
 
   private:
 

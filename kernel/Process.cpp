@@ -127,7 +127,7 @@ Process::Result Process::wait(ProcessID id)
     return Success;
 }
 
-Process::Result Process::raiseEvent(ProcessEvent *event)
+Process::Result Process::raiseEvent(const ProcessEvent *event)
 {
     // Write the message. Be sure to flush the caches because
     // the kernel has mapped the channel pages separately in low memory.
@@ -145,7 +145,7 @@ Process::Result Process::initialize()
     Allocator::Range allocPhys, allocVirt;
 
     // Create new kernel event channel object
-    m_kernelChannel = new MemoryChannel;
+    m_kernelChannel = new MemoryChannel(Channel::Producer, sizeof(ProcessEvent));
     if (!m_kernelChannel)
     {
         ERROR("failed to allocate kernel event channel object");
@@ -173,7 +173,7 @@ Process::Result Process::initialize()
     range.access = Memory::User | Memory::Readable;
     range.size   = PAGESIZE * 2;
     m_memoryContext->findFree(range.size, MemoryMap::UserPrivate, &range.virt);
-    m_memoryContext->mapRange(&range);
+    m_memoryContext->mapRangeContiguous(&range);
 
     // Remap the feedback page with write permissions
     m_memoryContext->unmap(range.virt + PAGESIZE);
@@ -185,24 +185,18 @@ Process::Result Process::initialize()
     m_shares.createShare(KERNEL_PID, Kernel::instance->getCoreInfo()->coreId, 0, range.virt, range.size);
 
     // Setup the kernel event channel
-    m_kernelChannel->setMode(Channel::Producer);
-    m_kernelChannel->setMessageSize(sizeof(ProcessEvent));
     m_kernelChannel->setVirtual(allocVirt.address, allocVirt.address + PAGESIZE);
 
     return Success;
 }
 
-Process::Result Process::wakeup(bool ignorePendingSleep)
+Process::Result Process::wakeup()
 {
     // This process might be just about to call sleep().
     // When another process is asking to wakeup this Process
     // such that it can receive an IPC message, we must guarantee
     // that the next sleep will be skipped.
-    if (ignorePendingSleep)
-        m_wakeups = 0;
-    else
-        m_wakeups++;
-
+    m_wakeups++;
     m_state = Ready;
     MemoryBlock::set(&m_sleepTimer, 0, sizeof(m_sleepTimer));
 

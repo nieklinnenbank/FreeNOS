@@ -179,6 +179,7 @@ MemoryContext::Result IntelPageDirectory::releaseRange(Memory::Range range,
             }
             // Release page table
             alloc->release(m_tables[ DIRENTRY(range.virt + i) ] & PAGEMASK);
+            m_tables[ DIRENTRY(range.virt + i) ] = 0;
         }
     }
     return MemoryContext::Success;

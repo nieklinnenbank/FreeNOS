@@ -15,12 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <MemoryBlock.h>
 #include "Directory.h"
 
-Directory::Directory() : File(DirectoryFile)
+Directory::Directory() : File(FileSystem::DirectoryFile)
 {
-    insert(DirectoryFile, ".");
-    insert(DirectoryFile, "..");
+    insert(FileSystem::DirectoryFile, ".");
+    insert(FileSystem::DirectoryFile, "..");
 }
 
 Directory::~Directory()
@@ -31,7 +32,7 @@ Directory::~Directory()
     entries.clear();
 }
 
-Error Directory::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error Directory::read(IOBuffer & buffer, Size size, Size offset)
 {
     Size bytes = 0;
 
@@ -55,24 +56,17 @@ File * Directory::lookup(const char *name)
     return ZERO;
 }
 
-void Directory::insert(FileType type, const char *name, ...)
+void Directory::insert(FileSystem::FileType type, const char *name)
 {
-    char path[PATHLEN];
-    va_list args;
     Dirent *d;
 
     // Only insert if not already in
     if (!get(name))
     {
-        // Format the path variable
-        va_start(args, name);
-        vsnprintf(path, sizeof(path), name, args);
-        va_end(args);
-
         // Create an fill entry object
         d = new Dirent;
         assert(d != NULL);
-        strlcpy(d->name, path, DIRENT_LEN);
+        MemoryBlock::copy(d->name, name, DIRENT_LEN);
         d->type = type;
         entries.append(d);
         m_size += sizeof(*d);
@@ -81,9 +75,11 @@ void Directory::insert(FileType type, const char *name, ...)
 
 void Directory::remove(const char *name)
 {
+    const String str(name, false);
+
     for (ListIterator<Dirent *> i(&entries); i.hasCurrent(); i++)
     {
-        if (strcmp(i.current()->name, name) == 0)
+        if (str.compareTo(i.current()->name) == 0)
         {
             delete i.current();
             i.remove();
@@ -103,9 +99,11 @@ void Directory::clear()
 
 Dirent * Directory::get(const char *name)
 {
+    const String str(name, false);
+
     for (ListIterator<Dirent *> i(&entries); i.hasCurrent(); i++)
     {
-        if (strcmp(i.current()->name, name) == 0)
+        if (str.compareTo(i.current()->name) == 0)
         {
             return i.current();
         }

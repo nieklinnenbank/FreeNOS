@@ -28,7 +28,7 @@ TestCase(BitArrayConstruct)
 
     // Check that the Array has the right size and counters
     testAssert(ba.m_array != NULL);
-    testAssert(ba.m_size == sizes[0]);
+    testAssert(ba.m_bitCount == sizes[0]);
     testAssert(ba.m_set  == 0);
     testAssert(ba.count(false) == sizes[0]);
 
@@ -325,7 +325,7 @@ TestCase(BitArraySetArray)
     // Check administration
     testAssert(ba2.m_array == ba.m_array);
     testAssert(ba2.m_set   == ba.m_set);
-    testAssert(ba2.m_size  == ba.m_size);
+    testAssert(ba2.m_bitCount  == ba.m_bitCount);
     testAssert(!ba2.m_allocated);
     return OK;
 }

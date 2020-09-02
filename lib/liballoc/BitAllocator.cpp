@@ -18,10 +18,13 @@
 #include <Assert.h>
 #include "BitAllocator.h"
 
-BitAllocator::BitAllocator(const Allocator::Range range, const Size chunkSize)
+BitAllocator::BitAllocator(const Allocator::Range range,
+                           const Size chunkSize,
+                           u8 *bitmap)
     : Allocator(range)
-    , m_array(range.size / chunkSize)
+    , m_array(range.size / chunkSize, bitmap)
     , m_chunkSize(chunkSize)
+    , m_lastBit(0)
 {
 }
 
@@ -37,11 +40,17 @@ Size BitAllocator::available() const
 
 Allocator::Result BitAllocator::allocate(Allocator::Range & args)
 {
-    return allocate(args, 0);
+    Allocator::Result result = allocateFrom(args, m_lastBit);
+    if (result == OutOfMemory)
+    {
+        return allocateFrom(args, 0);
+    } else {
+        return result;
+    }
 }
 
-Allocator::Result BitAllocator::allocate(Allocator::Range & args,
-                                         const Address allocStart)
+Allocator::Result BitAllocator::allocateFrom(Allocator::Range & args,
+                                             const Size startBit)
 {
     Size num = (args.size) / m_chunkSize;
     BitArray::Result result;
@@ -58,17 +67,17 @@ Allocator::Result BitAllocator::allocate(Allocator::Range & args,
             alignment = args.alignment / m_chunkSize;
     }
 
-    result = m_array.setNext(&bit, num, allocStart / m_chunkSize, alignment);
+    result = m_array.setNext(&bit, num, startBit, alignment);
     if (result != BitArray::Success)
         return OutOfMemory;
 
     args.address = base() + (bit * m_chunkSize);
-
     assert(isAllocated(args.address));
+    m_lastBit = bit;
     return Success;
 }
 
-Allocator::Result BitAllocator::allocate(const Address addr)
+Allocator::Result BitAllocator::allocateAt(const Address addr)
 {
     assert(!isAllocated(addr));
 

@@ -15,9 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
+#include <FreeNOS/User.h>
 #include <Macros.h>
-#include <errno.h>
 #include "Keyboard.h"
 
 /**
@@ -43,25 +42,25 @@ const char Keyboard::keymap[0x3a][2] =
     /*38*/{0x0, 0x0}, {' ', ' '}
 };
 
-Keyboard::Keyboard() : Device(CharacterDeviceFile), shiftState(ZERO)
+Keyboard::Keyboard() : Device(FileSystem::CharacterDeviceFile), shiftState(ZERO)
 {
     m_identifier << "keyboard0";
 }
 
-Error Keyboard::initialize()
+FileSystem::Error Keyboard::initialize()
 {
-    return ESUCCESS;
+    return FileSystem::Success;
 }
 
-Error Keyboard::interrupt(Size vector)
+FileSystem::Error Keyboard::interrupt(Size vector)
 {
     pending = true;
-    return ESUCCESS;
+    return FileSystem::Success;
 }
 
-Error Keyboard::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error Keyboard::read(IOBuffer & buffer, Size size, Size offset)
 {
-    Error ret = EAGAIN;
+    FileSystem::Error ret = FileSystem::RetryAgain;
 
     // Do we have any new key events?
     if (pending)
@@ -69,7 +68,7 @@ Error Keyboard::read(IOBuffer & buffer, Size size, Size offset)
         pending = false;
 
         // Read byte from the keyboard.
-        u8 keycode = ReadByte(PS2_PORT);
+        u8 keycode = m_io.inb(PS2_PORT);
 
         // Update shift state
         if (keycode == 0x2a || keycode == 0xaa)
@@ -87,5 +86,6 @@ Error Keyboard::read(IOBuffer & buffer, Size size, Size offset)
         // Re-enable interrupt
         ProcessCtl(SELF, EnableIRQ, PS2_IRQ);
     }
+
     return ret;
 }

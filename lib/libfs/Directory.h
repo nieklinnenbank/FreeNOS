@@ -18,12 +18,10 @@
 #ifndef __LIBFS_DIRECTORY_H
 #define __LIBFS_DIRECTORY_H
 
-#include <FreeNOS/System.h>
 #include <List.h>
+#include "FileSystem.h"
 #include "File.h"
 #include "FileSystemPath.h"
-#include <stdio.h>
-#include <string.h>
 
 /**
  * @addtogroup lib
@@ -45,17 +43,7 @@ typedef struct Dirent
     char name[DIRENT_LEN];
 
     /** Type of file. */
-    FileType type;
-
-    /**
-     * Compares this Dirent with another Dirent instance.
-     * @param dir Instance to compare with.
-     * @return True if equal, false otherwise.
-     */
-    bool operator == (struct Dirent *dir)
-    {
-        return strcmp(name, dir->name) == 0;
-    }
+    FileSystem::FileType type;
 }
 Dirent;
 
@@ -102,7 +90,7 @@ class Directory : public File
      * @see Storage
      * @see Dirent
      */
-    virtual Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
 
     /**
      * Retrieve a File from storage.
@@ -130,14 +118,13 @@ class Directory : public File
      * the underlying Storage.
      *
      * @param type File type.
-     * @param name Formatted name of the entry to add.
-     * @param ... Argument list.
+     * @param name Name of the entry to add.
      *
      * @note Entry names must be unique within the same Directory.
      * @see FileSystem
      * @see Storage
      */
-    void insert(FileType type, const char *name, ...);
+    void insert(FileSystem::FileType type, const char *name);
 
     /**
      * Remove a directory entry.

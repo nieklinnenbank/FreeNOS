@@ -15,15 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
-#include <string.h>
+#include <FreeNOS/User.h>
+#include <MemoryBlock.h>
 #include "BootImageStorage.h"
 
 BootImageStorage::BootImageStorage(const char *name)
+    : m_name(name)
+    , m_data(ZERO)
+    , m_size(0)
 {
-    m_name   = name;
-    m_data   = ZERO;
-    m_size   = 0;
 }
 
 bool BootImageStorage::load()
@@ -41,7 +41,7 @@ bool BootImageStorage::load()
                    Memory::Readable;
     range.virt   = ZERO;
     range.phys   = info.bootImageAddress;
-    VMCtl(SELF, Map, &range);
+    VMCtl(SELF, MapContiguous, &range);
 
     // Update our state
     image = (BootImage *) range.virt;
@@ -53,7 +53,7 @@ bool BootImageStorage::load()
         symbol = (BootSymbol *) (base + image->symbolTableOffset);
         symbol += i;
 
-        if (strcmp(symbol->name, m_name) == 0)
+        if (m_name.compareTo(symbol->name) == 0)
         {
             m_size   = symbol->segmentsTotalSize;
             segment = (BootSegment *) (base + image->segmentsTableOffset +
@@ -67,9 +67,9 @@ bool BootImageStorage::load()
     return false;
 }
 
-Error BootImageStorage::read(u64 offset, void *buffer, Size size)
+FileSystem::Error BootImageStorage::read(u64 offset, void *buffer, Size size)
 {
-    memcpy(buffer, m_data + offset, size);
+    MemoryBlock::copy(buffer, m_data + offset, size);
     return size;
 }
 

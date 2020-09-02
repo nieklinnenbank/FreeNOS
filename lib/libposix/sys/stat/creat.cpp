@@ -15,52 +15,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
-#include <FileSystemMessage.h>
-#include <FileType.h>
-#include <FileMode.h>
-#include "Runtime.h"
-#include <errno.h>
-#include "sys/stat.h"
-#include "unistd.h"
+#include <FileSystemClient.h>
+#include "errno.h"
+#include "limits.h"
 #include "stdio.h"
+#include "string.h"
+#include "sys/stat.h"
 
 int creat(const char *path, mode_t mode)
 {
-    FileSystemMessage msg;
-    ProcessID mnt = findMount(path);
-    char fullpath[PATH_MAX];
-
-    // Relative or absolute?
-    if (path[0] != '/')
-    {
-        char cwd[PATH_MAX];
-
-        // What's the current working dir?
-        getcwd(cwd, PATH_MAX);
-        snprintf(fullpath, sizeof(fullpath), "%s/%s", cwd, path);
-    }
-    else
-        strlcpy(fullpath, path, sizeof(fullpath));
-
-    // Fill in the message
-    msg.type     = ChannelMessage::Request;
-    msg.action   = CreateFile;
-    msg.path     = fullpath;
-    msg.filetype = RegularFile;
-    msg.mode     = (FileModes) (mode & FILEMODE_MASK);
+    const FileSystemClient filesystem;
 
     // Ask FileSystem to create the file for us
-    if (mnt)
-    {
-        ChannelClient::instance->syncSendReceive(&msg, mnt);
-
-        // Set errno
-        errno = msg.result;
-    }
+    const FileSystem::Result result = filesystem.createFile(path,
+                                                            FileSystem::RegularFile,
+                                                           (FileSystem::FileModes) (mode & FILEMODE_MASK),
+                                                            DeviceID());
+    // Set errno
+    if (result == FileSystem::Success)
+        errno = ESUCCESS;
     else
-        errno = ENOENT;
+        errno = EIO;
 
     // Report result
-    return msg.result == ESUCCESS ? 0 : -1;
+    return errno == ESUCCESS ? 0 : -1;
 }

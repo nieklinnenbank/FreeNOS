@@ -69,7 +69,7 @@ class ChannelRegistry
      *
      * @return Channel pointer if found or ZERO
      */
-    Channel * getConsumer(ProcessID pid);
+    Channel * getConsumer(const ProcessID pid);
 
     /**
      * Get one producer.
@@ -78,7 +78,7 @@ class ChannelRegistry
      *
      * @return Channel pointer if found or ZERO
      */
-    Channel * getProducer(ProcessID pid);
+    Channel * getProducer(const ProcessID pid);
 
     /**
      * Get all consumers
@@ -102,7 +102,7 @@ class ChannelRegistry
      *
      * @return Result code
      */
-    Result registerConsumer(ProcessID pid, Channel *channel);
+    Result registerConsumer(const ProcessID pid, Channel *channel);
 
     /**
      * Register producer channel.
@@ -112,7 +112,7 @@ class ChannelRegistry
      *
      * @return Result code
      */
-    Result registerProducer(ProcessID pid, Channel *channel);
+    Result registerProducer(const ProcessID pid, Channel *channel);
 
     /**
      * Unregister consumer channel.
@@ -121,7 +121,7 @@ class ChannelRegistry
      *
      * @return Result code
      */
-    Result unregisterConsumer(ProcessID pid);
+    Result unregisterConsumer(const ProcessID pid);
 
     /**
      * Unregister producer channel.
@@ -130,7 +130,7 @@ class ChannelRegistry
      *
      * @return Result code
      */
-    Result unregisterProducer(ProcessID pid);
+    Result unregisterProducer(const ProcessID pid);
 
   private:
 

@@ -63,14 +63,21 @@ end
 if ENV.has_key?('QEMU_URL')
     qemu_url = ENV['QEMU_URL']
 else
-    qemu_url = 'https://github.com/nieklinnenbank/qemu'
+    qemu_url = 'git://git.qemu.org/qemu.git'
 end
 
 # Contains the branch in the GIT archive with Qemu source
 if ENV.has_key?('QEMU_BRANCH')
     qemu_branch = ENV['QEMU_BRANCH']
 else
-    qemu_branch = 'orangepi-zero'
+    qemu_branch = 'v5.0.0'
+end
+
+# Retrieve the currently active GIT branch (if any)
+begin
+    git_branch = %x|git symbolic-ref --short HEAD|.strip
+rescue => error
+    git_branch = ''
 end
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
@@ -102,6 +109,7 @@ Vagrant.configure("2") do |config|
     master.vm.provider :libvirt do |libvirt|
         libvirt.cpus = 1
         libvirt.memory = 512
+        libvirt.cpu_mode = "host-passthrough"
     end
 
     # Enable provisioning with a shell script. Additional provisioners such as
@@ -117,7 +125,8 @@ Vagrant.configure("2") do |config|
     master.vm.provision "file", source: "freebsd12-loop.job.xml", destination: "freebsd12-loop.job.xml"
     master.vm.provision "file", source: "freebsd12.node.xml", destination: "freebsd12.node.xml"
     master.vm.provision "file", source: "common.sh", destination: "common.sh"
-    master.vm.provision "shell", path: "master.sh", env: { "SLAVE_CPUS" => slave_cpus }
+    master.vm.provision "shell", path: "master.sh", env: { "SLAVE_CPUS" => slave_cpus,
+                                                           "GIT_BRANCH" => git_branch }
   end
 
   config.vm.define "ubuntu1804" do |ubuntu1804|
@@ -135,6 +144,7 @@ Vagrant.configure("2") do |config|
     ubuntu1804.vm.provider :libvirt do |libvirt|
         libvirt.cpus = slave_cpus
         libvirt.memory = slave_memory
+        libvirt.cpu_mode = "host-passthrough"
     end
 
     # Enable provisioning with a shell script. Additional provisioners such as
@@ -145,7 +155,8 @@ Vagrant.configure("2") do |config|
     ubuntu1804.vm.provision "shell", path: "ubuntu1804.sh", env: { "SLAVE_CPUS" => slave_cpus,
                                                                    "QEMU_URL" => qemu_url,
                                                                    "QEMU_BRANCH" => qemu_branch }
-    ubuntu1804.vm.provision "shell", path: "schedule-job.sh", args: "FreeNOS-ubuntu1804"
+    ubuntu1804.vm.provision "shell", path: "schedule-job.sh", args: "FreeNOS-ubuntu1804",
+                                                              env: { "JOB_COUNT" => ENV['JOB_COUNT'] }
   end
 
   config.vm.define "freebsd12" do |freebsd12|
@@ -163,6 +174,7 @@ Vagrant.configure("2") do |config|
     freebsd12.vm.provider :libvirt do |libvirt|
         libvirt.cpus = slave_cpus
         libvirt.memory = slave_memory
+        libvirt.cpu_mode = "host-passthrough"
     end
 
     # Enable provisioning with a shell script. Additional provisioners such as
@@ -171,9 +183,10 @@ Vagrant.configure("2") do |config|
     freebsd12.vm.provision "file", source: "src.tar", destination: "src.tar"
     freebsd12.vm.provision "file", source: "common.sh", destination: "common.sh"
     freebsd12.vm.provision "shell", path: "freebsd12.sh", env: { "SLAVE_CPUS" => slave_cpus,
-                                                                  "QEMU_URL" => qemu_url,
-                                                                  "QEMU_BRANCH" => qemu_branch }
-    freebsd12.vm.provision "shell", path: "schedule-job.sh", args: "FreeNOS-freebsd12"
+                                                                 "QEMU_URL" => qemu_url,
+                                                                 "QEMU_BRANCH" => qemu_branch }
+    freebsd12.vm.provision "shell", path: "schedule-job.sh", args: "FreeNOS-freebsd12",
+                                                              env: { "JOB_COUNT" => ENV['JOB_COUNT'] }
   end
 
 end

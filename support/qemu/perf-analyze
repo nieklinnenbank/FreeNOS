@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+#
+# Copyright (C) 2020 Niek Linnenbank
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+"""
+This program provides a basic performance profile analysis by
+reading in the samples collected by the perf-collect script.
+
+To analyse the performance profiling data, simply run this script with
+the performance profile data file as the first argument:
+
+    $ ./support/qemu/perf-analyze ./prof.out
+"""
+
+import sys
+import os.path
+import json
+import argparse
+import subprocess
+
+# This script re-uses the configuration module that is used by SCons as well
+sys.path.insert(1, '../scons')
+sys.path.insert(1, './support/scons')
+import config
+
+class QemuProfAnalyzer(object):
+    """
+    Basic performance profile analyzer
+    """
+
+    def __init__(self, inputfile, configfile):
+        """
+        Constructor
+        """
+        self.inputfile = open(inputfile, 'r')
+        self.config    = config.parse_file(configfile)
+        self.buildroot = config.eval_string(self.config['BUILDROOT'])
+        self.kernpath  = '/kernel/' + \
+                         self.config['ARCH'] + '/' + self.config['SYSTEM'] + '/kernel'
+        self.addr2line = self.config['CROSS_COMPILE'] + 'addr2line -p -f -e '
+
+    def _resolve_symbol(self, program, addr):
+        """
+        Translate address inside the given program to symbol name
+        """
+        if program == 'Cannotaccessmemory':
+            return "??"
+        else:
+            return subprocess.check_output(self.addr2line + self.buildroot + '/' + program + " " + addr,
+                                           shell=True).decode('ascii').rstrip()
+
+    def analyze(self):
+        """
+        Analyze the input file
+        """
+        for line in self.inputfile.readlines():
+            obj = json.loads(line)
+
+            for cpu in range(len(obj[0])):
+                progpath=obj[1][cpu]
+                symbol=obj[0][cpu]
+
+                # Program executables are stored in a directory with the own name, e.g. './bin/login/login'
+                if os.path.dirname(progpath) == '/bin':
+                    progpath += '/' + os.path.basename(progpath)
+
+                output = self._resolve_symbol(progpath, symbol) + " [" + progpath + " @ " + symbol + "]"
+
+                # If the symbol was not resolved, it was probably running in the kernel
+                if output[:2] == '??':
+                    output = self._resolve_symbol(self.kernpath, symbol) + \
+                        " [" + self.kernpath + " @ " + symbol + " via " + progpath + "]"
+
+                print(output)
+            print()
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description='QEMU performance profile data analyzer')
+    parser.add_argument('inputfile', metavar='FILE', type=str, nargs=1, help='Path to the profiler file to read')
+    parser.add_argument('--config', metavar='CONFIG', type=str, default='build.conf', help='Path to the build.conf file to use')
+    args = parser.parse_args()
+
+    analyzer = QemuProfAnalyzer(args.inputfile[0], args.config)
+    analyzer.analyze()

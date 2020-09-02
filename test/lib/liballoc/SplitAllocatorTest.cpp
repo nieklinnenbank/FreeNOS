@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
+#include <FreeNOS/Constant.h>
 #include <TestCase.h>
 #include <TestRunner.h>
 #include <TestInt.h>
@@ -161,8 +161,11 @@ TestCase(SplitAllocateRelease)
     // All pages are free again. Confirm re-allocation works
     testAssert(sa.available() == allocSize);
     testAssert(sa.allocate(args) == Allocator::Success);
-    testAssert(args.address == physBase);
     testAssert(args.size == PAGESIZE);
 
+    // With the BitAllocator, the search for the allocation address
+    // begins at the last succesfully allocated address. In this case,
+    // that is the last page.
+    testAssert(args.address == physBase + allocSize - PAGESIZE);
     return OK;
 }

@@ -15,17 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <MemoryBlock.h>
 #include "FileSystemRequest.h"
 
 FileSystemRequest::FileSystemRequest(FileSystemMessage *msg)
 {
-    m_msg = msg;
-    m_ioBuffer = new IOBuffer(&m_msg);
-}
-
-FileSystemRequest::~FileSystemRequest()
-{
-    delete m_ioBuffer;
+    MemoryBlock::copy(&m_msg, msg, sizeof(m_msg));
+    m_ioBuffer.setMessage(&m_msg);
 }
 
 FileSystemMessage * FileSystemRequest::getMessage()
@@ -35,5 +31,5 @@ FileSystemMessage * FileSystemRequest::getMessage()
 
 IOBuffer & FileSystemRequest::getBuffer()
 {
-    return *m_ioBuffer;
+    return m_ioBuffer;
 }

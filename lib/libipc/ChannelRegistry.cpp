@@ -26,20 +26,20 @@ ChannelRegistry::~ChannelRegistry()
 {
 }
 
-Channel * ChannelRegistry::getConsumer(ProcessID pid)
+Channel * ChannelRegistry::getConsumer(const ProcessID pid)
 {
-    const Channel * const *ch = m_consumer.get(pid);
+    Channel * const *ch = m_consumer.get(pid);
     if (ch)
-        return (Channel *) *ch;
+        return *ch;
     else
         return ZERO;
 }
 
-Channel * ChannelRegistry::getProducer(ProcessID pid)
+Channel * ChannelRegistry::getProducer(const ProcessID pid)
 {
-    const Channel * const *ch = m_producer.get(pid);
+    Channel * const *ch = m_producer.get(pid);
     if (ch)
-        return (Channel *) *ch;
+        return *ch;
     else
         return ZERO;
 }
@@ -55,7 +55,7 @@ HashTable<ProcessID, Channel *> & ChannelRegistry::getProducers()
 }
 
 ChannelRegistry::Result ChannelRegistry::registerConsumer(
-    ProcessID pid,
+    const ProcessID pid,
     Channel *channel)
 {
     m_consumer.insert(pid, channel);
@@ -63,14 +63,14 @@ ChannelRegistry::Result ChannelRegistry::registerConsumer(
 }
 
 ChannelRegistry::Result ChannelRegistry::registerProducer(
-    ProcessID pid,
+    const ProcessID pid,
     Channel *channel)
 {
     m_producer.insert(pid, channel);
     return Success;
 }
 
-ChannelRegistry::Result ChannelRegistry::unregisterConsumer(ProcessID pid)
+ChannelRegistry::Result ChannelRegistry::unregisterConsumer(const ProcessID pid)
 {
     Channel *ch = getConsumer(pid);
     if (ch)
@@ -82,7 +82,7 @@ ChannelRegistry::Result ChannelRegistry::unregisterConsumer(ProcessID pid)
         return NotFound;
 }
 
-ChannelRegistry::Result ChannelRegistry::unregisterProducer(ProcessID pid)
+ChannelRegistry::Result ChannelRegistry::unregisterProducer(const ProcessID pid)
 {
     Channel *ch = getProducer(pid);
     if (ch)

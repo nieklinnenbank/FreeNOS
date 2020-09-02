@@ -16,6 +16,7 @@
  */
 
 #include <FreeNOS/System.h>
+#include <FreeNOS/Config.h>
 #include <Log.h>
 #include <ListIterator.h>
 #include <SplitAllocator.h>
@@ -42,8 +43,8 @@ Kernel::Kernel(CoreInfo *info)
     // Setup physical memory allocator
     const Arch::MemoryMap map;
     const Memory::Range kernelData = map.range(MemoryMap::KernelData);
-    const Allocator::Range physRange = { info->memory.phys, info->memory.size, 0 };
-    const Allocator::Range virtRange = { kernelData.virt, kernelData.size, 0 };
+    const Allocator::Range physRange = { info->memory.phys, info->memory.size, PAGESIZE };
+    const Allocator::Range virtRange = { kernelData.virt, kernelData.size, PAGESIZE };
     m_alloc  = new SplitAllocator(physRange, virtRange, PAGESIZE);
 
     // Initialize other class members
@@ -84,15 +85,13 @@ Error Kernel::heap(Address base, Size size)
     Size metaData = sizeof(BubbleAllocator) + sizeof(PoolAllocator);
     Allocator *bubble, *pool;
     const Allocator::Range bubbleRange = { base + metaData, size - metaData, sizeof(u32) };
-    const Allocator::Range poolRange   = { 0, size - metaData, sizeof(u32) };
 
     // Clear the heap first
     MemoryBlock::set((void *) base, 0, size);
 
     // Setup the dynamic memory heap
     bubble = new (base) BubbleAllocator(bubbleRange);
-    pool   = new (base + sizeof(BubbleAllocator)) PoolAllocator(poolRange);
-    pool->setParent(bubble);
+    pool   = new (base + sizeof(BubbleAllocator)) PoolAllocator(bubble);
 
     // Set default allocator
     Allocator::setDefault(pool);
@@ -279,7 +278,7 @@ Kernel::Result Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Siz
     argRange.phys = alloc_args.address;
 
     // Map program arguments in the process
-    if (mem->mapRange(&argRange) != MemoryContext::Success)
+    if (mem->mapRangeContiguous(&argRange) != MemoryContext::Success)
     {
         FATAL("failed to map program arguments page");
         return ProcessError;

@@ -16,44 +16,25 @@
  */
 
 #include <Assert.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <string.h>
+#include <String.h>
+#include <MemoryBlock.h>
 #include "PseudoFile.h"
 
 PseudoFile::PseudoFile()
-    : File(RegularFile)
+    : File(FileSystem::RegularFile)
 {
     m_size   = ZERO;
     m_buffer = ZERO;
-    m_access = OwnerRW;
+    m_access = FileSystem::OwnerRW;
 }
 
 PseudoFile::PseudoFile(const char *str)
 {
-    m_access = OwnerRW;
-    m_size   = strlen(str);
+    m_access = FileSystem::OwnerRW;
+    m_size   = String::length(str);
     m_buffer = new char[m_size + 1];
     assert(m_buffer != NULL);
-    strlcpy(m_buffer, str, m_size + 1);
-}
-
-
-PseudoFile::PseudoFile(const char *format, ...)
-{
-    va_list args;
-
-    // Allocate buffer
-    m_buffer = new char[512];
-    assert(m_buffer != NULL);
-
-    // Format the input
-    va_start(args, format);
-    m_size = vsnprintf(m_buffer, 512, format, args);
-    va_end(args);
-
-    // Set members
-    m_access = OwnerRW;
+    MemoryBlock::copy(m_buffer, str, m_size + 1);
 }
 
 PseudoFile::~PseudoFile()
@@ -62,7 +43,7 @@ PseudoFile::~PseudoFile()
         delete m_buffer;
 }
 
-Error PseudoFile::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error PseudoFile::read(IOBuffer & buffer, Size size, Size offset)
 {
     // Bounds checking
     if (offset >= m_size)
@@ -75,7 +56,7 @@ Error PseudoFile::read(IOBuffer & buffer, Size size, Size offset)
     return buffer.write(m_buffer + offset, bytes);
 }
 
-Error PseudoFile::write(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error PseudoFile::write(IOBuffer & buffer, Size size, Size offset)
 {
     // Check for the buffer size
     if (!m_buffer || m_size < (size + offset))
@@ -83,12 +64,12 @@ Error PseudoFile::write(IOBuffer & buffer, Size size, Size offset)
         // Allocate a new buffer and copy the old data
         char *new_buffer = new char[size+offset];
         assert(new_buffer != NULL);
-        memset(new_buffer, 0, sizeof(size+offset));
+        MemoryBlock::set(new_buffer, 0, sizeof(size+offset));
 
         // Inherit from the old buffer, if needed
         if (m_buffer)
         {
-            memcpy(new_buffer, m_buffer, m_size);
+            MemoryBlock::copy(new_buffer, m_buffer, m_size);
             delete m_buffer;
         }
         // Assign buffer

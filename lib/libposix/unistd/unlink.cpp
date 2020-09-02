@@ -15,44 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
-#include <FileSystemMessage.h>
-#include <errno.h>
-#include "Runtime.h"
+#include <FileSystemClient.h>
+#include "errno.h"
+#include "limits.h"
+#include "string.h"
 #include "unistd.h"
 
 int unlink(const char *path)
 {
-    FileSystemMessage msg;
-    ProcessID mnt = findMount(path);
-    char fullpath[PATH_MAX];
-
-    // Relative or absolute?
-    if (path[0] != '/')
-    {
-        char cwd[PATH_MAX];
-
-        // What's the current working dir?
-        getcwd(cwd, PATH_MAX);
-        snprintf(fullpath, sizeof(fullpath), "%s/%s", cwd, path);
-    }
-    else
-        strlcpy(fullpath, path, sizeof(fullpath));
+    const FileSystemClient filesystem;
 
     // Ask for the unlink
-    if (mnt)
-    {
-        msg.type   = ChannelMessage::Request;
-        msg.action = DeleteFile;
-        msg.path   = fullpath;
-        msg.from   = SELF;
-        ChannelClient::instance->syncSendReceive(&msg, mnt);
+    const FileSystem::Result result = filesystem.deleteFile(path);
 
-        // Set error number
-        errno = msg.result;
-    }
+    // Set error number
+    if (result == FileSystem::Success)
+        errno = ESUCCESS;
     else
-        errno = ENOENT;
+        errno = EIO;
 
     // Done
     return errno == ESUCCESS ? 0 : (off_t) -1;

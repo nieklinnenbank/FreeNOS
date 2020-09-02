@@ -18,6 +18,8 @@
 #ifndef __LIBIPC_CHANNEL_H
 #define __LIBIPC_CHANNEL_H
 
+#include <Types.h>
+
 /**
  * @addtogroup lib
  * @{
@@ -44,7 +46,8 @@ class Channel
         InvalidSize,
         IOError,
         ChannelFull,
-        NotFound
+        NotFound,
+        NotSupported
     };
 
     /**
@@ -60,8 +63,11 @@ class Channel
 
     /**
      * Constructor.
+     *
+     * @param mode Channel mode is either a producer or consumer
+     * @param messageSize Size of each individual message in bytes
      */
-    Channel();
+    Channel(const Mode mode, const Size messageSize);
 
     /**
      * Destructor.
@@ -76,38 +82,13 @@ class Channel
     const Size getMessageSize() const;
 
     /**
-     * Get maximum message count.
-     *
-     * @return Maximum message count.
-     */
-    const Size getMaximumMessages() const;
-
-    /**
-     * Set mode.
-     *
-     * @param mode Channel mode.
-     *
-     * @return Result code.
-     */
-    Result setMode(Mode mode);
-
-    /**
-     * Set message size.
-     *
-     * @param size New message size.
-     *
-     * @return Result code.
-     */
-    virtual Result setMessageSize(Size size);
-
-    /**
      * Read a message.
      *
      * @param buffer Output buffer for the message.
      *
      * @return Result code.
      */
-    virtual Result read(void *buffer) = 0;
+    virtual Result read(void *buffer);
 
     /**
      * Write a message.
@@ -116,7 +97,7 @@ class Channel
      *
      * @return Result code.
      */
-    virtual Result write(void *buffer) = 0;
+    virtual Result write(const void *buffer);
 
     /**
      * Flush message buffers.
@@ -125,18 +106,15 @@ class Channel
      *
      * @return Result code.
      */
-    virtual Result flush() = 0;
+    virtual Result flush();
 
   protected:
 
     /** Channel mode. */
-    Mode m_mode;
+    const Mode m_mode;
 
     /** Message size. */
-    Size m_messageSize;
-
-    /** Maximum number of message that the Channel can hold. */
-    Size m_maximumMessages;
+    const Size m_messageSize;
 };
 
 /**

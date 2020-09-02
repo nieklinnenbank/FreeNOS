@@ -15,12 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SERIAL_I8250_H
-#define __SERIAL_I8250_H
+#ifndef __SERVER_SERIAL_I8250_H
+#define __SERVER_SERIAL_I8250_H
 
 #include <Macros.h>
 #include <Types.h>
 #include <Device.h>
+#include <intel/IntelIO.h>
 
 /**
  * @addtogroup server
@@ -63,23 +64,23 @@ class i8250 : public Device
      *
      * @param base I/O base port.
      */
-    i8250(u16 base, u16 irq);
+    i8250(const u16 base, const u16 irq);
 
     /**
      * @brief Initializes the i8250 serial UART.
      *
-     * @return Error status code.
+     * @return FileSystem::Error status code.
      */
-    virtual Error initialize();
+    virtual FileSystem::Error initialize();
 
     /**
      * Called when an interrupt has been triggered for this device.
      *
      * @param vector Vector number of the interrupt.
      *
-     * @return Error result code.
+     * @return FileSystem::Error result code.
      */
-    virtual Error interrupt(Size vector);
+    virtual FileSystem::Error interrupt(Size vector);
 
     /**
      * Read bytes from the i8250.
@@ -90,7 +91,7 @@ class i8250 : public Device
      *
      * @return Number of bytes on success and ZERO on failure.
      */
-    virtual Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
 
     /**
      * Write bytes to the device.
@@ -101,15 +102,15 @@ class i8250 : public Device
      *
      * @return Number of bytes on success and ZERO on failure.
      */
-    virtual Error write(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Error write(IOBuffer & buffer, Size size, Size offset);
 
   private:
 
-    /** Base I/O port. */
-    u16 base;
-
     /** Interrupt vector. */
-    u16 irq;
+    const u16 m_irq;
+
+    /** I/O instance. */
+    IntelIO m_io;
 };
 
 /**
@@ -117,4 +118,4 @@ class i8250 : public Device
  * @}
  */
 
-#endif /* __SERIAL_I8250_H */
+#endif /* __SERVER_SERIAL_I8250_H */

@@ -15,11 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
+#include <FreeNOS/User.h>
 #include <KernelLog.h>
 #include <DeviceServer.h>
-#include <stdlib.h>
-#include <unistd.h>
 
 #ifdef ARM
 #include "PL011.h"
@@ -67,13 +65,19 @@ int main(int argc, char **argv)
     dev = new i8250(uarts[0].port, uarts[0].irq);
 #endif /* ARM */
 
-    server.initialize();
-
     server.insertFileCache(new Directory, "/serial0");
-    server.getRoot()->insert(DirectoryFile, "serial0");
+    server.getRoot()->insert(FileSystem::DirectoryFile, "serial0");
 
     server.registerDevice(dev, "/serial0/io");
     server.registerInterrupt(dev, uarts[0].irq);
+
+    // Initialize
+    const FileSystem::Result result = server.initialize();
+    if (result != FileSystem::Success)
+    {
+        ERROR("failed to initialize: result = " << (int) result);
+        return 1;
+    }
 
     // Perform log
     INFO("detected at PORT=" << uarts[0].port << " IRQ=" << uarts[0].irq);

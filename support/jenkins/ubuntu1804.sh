@@ -22,6 +22,7 @@ COMPILER_PACKAGES="gcc-4.8 gcc-4.8-multilib g++-4.8 g++-4.8-multilib \
                    gcc-6 gcc-6-multilib g++-6 g++-6-multilib \
                    gcc-7 gcc-7-multilib g++-7 g++-7-multilib \
                    gcc-8 gcc-8-multilib g++-8 g++-8-multilib \
+                   clang \
                    clang-3.9 \
                    clang-4.0 \
                    clang-5.0 \
@@ -53,6 +54,12 @@ cat /etc/netplan/01-netcfg.yaml | grep -v 'nameservers:' | grep -v 'addresses: '
 mv /etc/netplan/01-netcfg.yaml.new /etc/netplan/01-netcfg.yaml
 netplan apply
 sleep 5
+
+# Ensure GRUB will not complain about out-of-sync installed bootloaders
+firstdisk="`readlink -f /dev/disk/by-uuid/* | sort | head -n 1`"
+echo "grub-pc grub-pc/install_devices multiselect $firstdisk" > /tmp/input.txt
+debconf-set-selections /tmp/input.txt
+rm -f /tmp/input.txt
 
 # Update system to latest patches
 run_command_retry "apt-get update"

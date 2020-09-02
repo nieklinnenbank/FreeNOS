@@ -18,12 +18,9 @@
 #ifndef __FILESYSTEM_FILE_SYSTEM_MESSAGE_H
 #define __FILESYSTEM_FILE_SYSTEM_MESSAGE_H
 
-#include <FreeNOS/System.h>
 #include <Types.h>
 #include "ChannelMessage.h"
-#include "FileType.h"
-#include "FileMode.h"
-#include "FileStat.h"
+#include "FileSystem.h"
 
 /**
  * @addtogroup lib
@@ -34,94 +31,22 @@
  */
 
 /**
- * Actions which may be performed on the filesystem.
- */
-typedef enum FileSystemAction
-{
-    CreateFile = 0,
-    ReadFile,
-    WriteFile,
-    StatFile,
-    DeleteFile
-}
-FileSystemAction;
-
-/**
  * FileSystem IPC message.
  */
 typedef struct FileSystemMessage : public ChannelMessage
 {
-    /**
-     * Assignment operator.
-     * @param m FileSystemMessage pointer to copy from.
-     */
-    void operator = (FileSystemMessage *m)
-    {
-        type        = m->type;
-        identifier  = m->identifier;
-        from        = m->from;
-        action      = m->action;
-        result      = m->result;
-        buffer      = m->buffer;
-        size        = m->size;
-        offset      = m->offset;
-        userID      = m->userID;
-        groupID     = m->groupID;
-        deviceID    = m->deviceID;
-        mode        = m->mode;
-        stat        = m->stat;
-        path        = m->path;
-        filetype    = m->filetype;
-    }
-
-    /**
-     * Comparison operator.
-     *
-     * @param m Other FileSystemMessage to compare with.
-     *
-     * @return True if equal, false otherwise.
-     */
-    bool operator == (FileSystemMessage *m)
-    {
-        return this->from   == m->from &&
-               this->action == m->action;
-    }
-
-    /** Source of the message */
-    ProcessID from;
-
-    /** Action to perform. */
-    FileSystemAction action;
-
-    /** Result code. */
-    Error result;
-
-    /** Points to a buffer for I/O. */
-    char *buffer;
-
-    /** Size of the buffer. */
-    Size size;
-
-    /** Offset in the file for I/O. */
-    Size offset;
-
-    /** Path name of the file. */
-    char *path;
-
-    /** User ID and group ID. */
-    u16 userID, groupID;
-
-    /** Filetype. */
-    FileType filetype;
-
-    /** File mode permissions. */
-    FileModes mode;
-
-    /** File Statistics. */
-    FileStat *stat;
-
-    /** Device major/minor numbers. */
-    DeviceID deviceID;
+    FileSystem::Action action;     /**< Action to perform. */
+    FileSystem::Result result;     /**< Result code. */
+    char *buffer;                  /**< Points to a buffer for I/O. */
+    Size size;                     /**< Size of the buffer. */
+    Size offset;                   /**< Offset in the file for I/O. */
+    char *path;                    /**< Path name of the file. */
+    FileSystem::FileType filetype; /**< Filetype. */
+    FileSystem::FileModes mode;    /**< File mode permissions. */
+    FileSystem::FileStat *stat;    /**< File Statistics. */
+    DeviceID deviceID;             /**< Device major/minor numbers. */
+    ProcessID pid;                 /**< Process identifier (used for redirection) */
+    Size pathMountLength;          /**< Length of the mounted path (used for redirection) */
 }
 FileSystemMessage;
 

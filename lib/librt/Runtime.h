@@ -20,11 +20,6 @@
 
 #include <Macros.h>
 #include <Types.h>
-#include <Array.h>
-#include <String.h>
-#include <ChannelClient.h>
-#include <FileSystemMount.h>
-#include <FileDescriptor.h>
 
 /**
  * @addtogroup lib
@@ -49,61 +44,6 @@
  * @return Exit status.
  */
 int main(int argc, char **argv);
-
-/**
- * Retrieve the ProcessID of the FileSystemMount for the given path.
- *
- * @param path Path to lookup.
- *
- * @return ProcessID of the FileSystemMount on success and ZERO otherwise.
- */
-ProcessID findMount(const char *path);
-
-/**
- * Lookup the ProcessID of a FileSystemMount by a filedescriptor number.
- *
- * @param fildes FileDescriptor number.
- *
- * @return ProcessID of the FileSystemMount on success and ZERO otherwise.
- */
-ProcessID findMount(int fildes);
-
-/**
- * Refresh mounted filesystems
- *
- * @param path Input path to refresh or NULL to refresh all mountpoints
- */
-void refreshMounts(const char *path);
-
-/**
- * Blocking wait for a mounted filesystem
- *
- * @param path Full path of the mounted filesystem
- *
- * @note Blocks until a filesystem is mounted on the exact given input path
- */
-void waitMount(const char *path);
-
-/**
- * Get File Descriptors table.
- *
- * @return FileDescriptor array pointer
- */
-FileDescriptor * getFiles();
-
-/**
- * Get mounts table.
- *
- * @return FileSystemMount array pointer
- */
-FileSystemMount * getMounts();
-
-/**
- * Get current directory String.
- *
- * @return String pointer containing current directory
- */
-String * getCurrentDirectory();
 
 /**
  * @}

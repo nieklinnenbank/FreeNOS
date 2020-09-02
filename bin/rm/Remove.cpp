@@ -22,7 +22,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <Runtime.h>
 #include "Remove.h"
 
 Remove::Remove(int argc, char **argv)
@@ -39,9 +38,6 @@ Remove::~Remove()
 Remove::Result Remove::exec()
 {
     const Vector<Argument *> & positionals = arguments().getPositionals();
-
-    // Refresh the mounted filesystems
-    refreshMounts(0);
 
     // Delete all given files
     for (Size i = 0; i < positionals.count(); i++)

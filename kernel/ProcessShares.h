@@ -23,9 +23,9 @@
 #include <List.h>
 #include <MemoryMap.h>
 #include <Index.h>
-#include <MemoryContext.h>
 
 class MemoryChannel;
+class MemoryContext;
 class Process;
 
 /**

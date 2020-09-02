@@ -18,7 +18,7 @@
 #ifndef __FILESYSTEM_LINN_FILESYSTEM_H
 #define __FILESYSTEM_LINN_FILESYSTEM_H
 
-#include <FileSystem.h>
+#include <FileSystemServer.h>
 #include <FileSystemPath.h>
 #include <FileSystemMessage.h>
 #include <Storage.h>
@@ -66,10 +66,10 @@
  * static in size, i.e. 64-bytes. Those changes make it easier to program
  * the FileSystem implementation, thus easier to understand and learn from.
  *
- * @see FileSystem
+ * @see FileSystemServer
  * @see Ext2FileSystem
  */
-class LinnFileSystem : public FileSystem
+class LinnFileSystem : public FileSystemServer
 {
   public:
 

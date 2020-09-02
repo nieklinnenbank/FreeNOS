@@ -24,7 +24,6 @@
 #include "ChannelRegistry.h"
 #include "Channel.h"
 #include "ChannelMessage.h"
-#include <FileSystemMessage.h>
 
 /**
  * @addtogroup lib
@@ -120,21 +119,22 @@ class ChannelClient : public Singleton<ChannelClient>
      * to the given process and registers it with the ChannelRegistry.
      *
      * @param pid ProcessID for the process to connect to.
-     * @param msgSize Default message size to use.
+     * @param msgSize Message size to use.
      *
      * @return Result code
      */
-    virtual Result connect(ProcessID pid, Size msgSize = sizeof(FileSystemMessage));
+    virtual Result connect(const ProcessID pid, const Size msgSize);
 
     /**
      * Try to receive message from any channel.
      *
      * @param buffer Message buffer for output
+     * @param msgSize Message size to use.
      * @param pid ProcessID for output
      *
      * @return Result code
      */
-    virtual Result receiveAny(void *buffer, ProcessID *pid);
+    virtual Result receiveAny(void *buffer, const Size msgSize, ProcessID *pid);
 
     /**
      * Send asynchronous request message
@@ -145,12 +145,14 @@ class ChannelClient : public Singleton<ChannelClient>
      *
      * @param pid ProcessID to send the message to
      * @param buffer Points to message to send
+     * @param msgSize Message size to use.
      * @param callback Called when response message is received
      *
      * @return Result code
      */
-    virtual Result sendRequest(ProcessID pid,
+    virtual Result sendRequest(const ProcessID pid,
                                void *buffer,
+                               const Size msgSize,
                                CallbackFunction *callback);
 
     /**
@@ -161,38 +163,41 @@ class ChannelClient : public Singleton<ChannelClient>
      *
      * @return Result code
      */
-    virtual Result processResponse(ProcessID pid,
+    virtual Result processResponse(const ProcessID pid,
                                    ChannelMessage *msg);
 
     /**
      * Synchronous receive from one process.
      *
      * @param buffer Message buffer for output
+     * @param msgSize Message size to use.
      * @param pid ProcessID for the channel
      *
      * @return Result code
      */
-    virtual Result syncReceiveFrom(void *buffer, ProcessID pid);
+    virtual Result syncReceiveFrom(void *buffer, const Size msgSize, const ProcessID pid);
 
     /**
      * Synchronous send to one process.
      *
      * @param buffer Message buffer to send
+     * @param msgSize Message size to use.
      * @param pid ProcessID for the channel
      *
      * @return Result code
      */
-    virtual Result syncSendTo(void *buffer, ProcessID pid);
+    virtual Result syncSendTo(const void *buffer, const Size msgSize, const ProcessID pid);
 
     /**
      * Synchronous send and receive to/from one process.
      *
      * @param buffer Message buffer to send/receive
+     * @param msgSize Message size to use.
      * @param pid ProcessID for the channel
      *
      * @return Result code
      */
-    virtual Result syncSendReceive(void *buffer, ProcessID pid);
+    virtual Result syncSendReceive(void *buffer, const Size msgSize, const ProcessID pid);
 
   private:
 
@@ -200,19 +205,21 @@ class ChannelClient : public Singleton<ChannelClient>
      * Get consumer for a process.
      *
      * @param pid ProcessID of the process
+     * @param msgSize Message size to use.
      *
      * @return Channel object if found or ZERO otherwise.
      */
-    Channel * findConsumer(ProcessID pid);
+    Channel * findConsumer(const ProcessID pid, const Size msgSize);
 
     /**
      * Get producer for a process.
      *
      * @param pid ProcessID of the process
+     * @param msgSize Message size to use.
      *
      * @return Channel object if found or ZERO otherwise.
      */
-    Channel * findProducer(ProcessID pid);
+    Channel * findProducer(const ProcessID pid, const Size msgSize);
 
   private:
 

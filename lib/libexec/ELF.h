@@ -44,7 +44,7 @@ class ELF : public ExecutableFormat
      * @param image Pointer to raw input image data
      * @param size Number of bytes of input image data
      */
-    ELF(const u8 *image, Size size);
+    ELF(const u8 *image, const Size size);
 
     /**
      * Class destructor.
@@ -80,7 +80,7 @@ class ELF : public ExecutableFormat
      *
      * @return Result code
      */
-    static Result detect(const u8 *image, Size size, ExecutableFormat **fmt);
+    static Result detect(const u8 *image, const Size size, ExecutableFormat **fmt);
 };
 
 /**

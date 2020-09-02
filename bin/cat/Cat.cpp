@@ -22,7 +22,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <Runtime.h>
 #include "Cat.h"
 
 Cat::Cat(int argc, char **argv)
@@ -51,7 +50,7 @@ Cat::Result Cat::exec()
     {
         // Perform cat. */
         result = cat(*(positionals[i]->getValue()));
-    
+
         // Update exit code if needed
         if (result != Success)
         {
@@ -64,15 +63,12 @@ Cat::Result Cat::exec()
 
 Cat::Result Cat::cat(const char *file) const
 {
-    char buf[PAGESIZE];
+    char buf[1024];
     int fd, e;
     struct stat st;
     const char *name = *(parser().name());
 
     DEBUG("file = " << file);
-
-    // Retrieve fresh list of mountpoints
-    refreshMounts(0);
 
     // Stat the file
     if (stat(file, &st) != 0)

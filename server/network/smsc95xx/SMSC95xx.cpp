@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
+#include <FreeNOS/User.h>
 #include <Log.h>
 #include "SMSC95xx.h"
 
@@ -35,28 +35,28 @@ SMSC95xx::~SMSC95xx()
     delete m_usb;
 }
 
-Error SMSC95xx::initialize()
+FileSystem::Error SMSC95xx::initialize()
 {
     DEBUG("");
 
     m_maximumPacketSize += SMSC95xxUSB::TransmitCommandSize;
-    Error r = NetworkDevice::initialize();
-    if (r != ESUCCESS)
+    FileSystem::Error r = NetworkDevice::initialize();
+    if (r != FileSystem::Success)
     {
         ERROR("failed to initialize NetworkDevice");
         return r;
     }
 
     r = m_usb->initialize();
-    if (r != ESUCCESS)
+    if (r != FileSystem::Success)
     {
         ERROR("failed to initialize SMSC95xxUSB");
         return r;
     }
-    return ESUCCESS;
+    return FileSystem::Success;
 }
 
-Error SMSC95xx::getAddress(Ethernet::Address *address)
+FileSystem::Error SMSC95xx::getAddress(Ethernet::Address *address)
 {
     DEBUG("");
 
@@ -66,16 +66,16 @@ Error SMSC95xx::getAddress(Ethernet::Address *address)
     address->addr[3] = 0x33;
     address->addr[4] = 0x44;
     address->addr[5] = 0x55;
-    return ESUCCESS;
+    return FileSystem::Success;
 }
 
-Error SMSC95xx::setAddress(Ethernet::Address *address)
+FileSystem::Error SMSC95xx::setAddress(Ethernet::Address *address)
 {
     DEBUG("");
-    return ESUCCESS;
+    return FileSystem::Success;
 }
 
-Error SMSC95xx::transmit(NetworkQueue::Packet *pkt)
+FileSystem::Error SMSC95xx::transmit(NetworkQueue::Packet *pkt)
 {
     DEBUG("");
     return m_usb->transmit(pkt);

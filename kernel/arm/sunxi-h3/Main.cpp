@@ -18,17 +18,18 @@
 #include <FreeNOS/Config.h>
 #include <FreeNOS/Support.h>
 #include <FreeNOS/System.h>
-#include <Macros.h>
-#include <MemoryBlock.h>
 #include <arm/ARMPaging.h>
 #include <arm/ARMControl.h>
 #include <arm/ARMCore.h>
 #include <NS16550.h>
 #include <DeviceLog.h>
 #include <SunxiCoreServer.h>
+#include <Macros.h>
+#include <MemoryBlock.h>
+#include <Memory.h>
 #include "SunxiKernel.h"
 
-extern Address __bootimg, __bss_start, __bss_end, __heap_start, __heap_end;
+extern Address __bootimg, __heap_start, __heap_end;
 
 static u32 ALIGN(16 * 1024) SECTION(".data") tmpPageDir[4096];
 
@@ -82,7 +83,7 @@ extern C int kernel_main(void)
     }
 
     // Clear BSS
-    MemoryBlock::set(&__bss_start, 0, &__bss_end - &__bss_start);
+    clearBSS();
 
     // Initialize heap
     coreInfo.heapAddress = (Address) &__heap_start;

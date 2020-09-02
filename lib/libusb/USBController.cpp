@@ -21,15 +21,15 @@
 USBController::USBController(const char *path)
     : DeviceServer(path)
 {
+    registerFile(new USBTransferFile(this), "/transfer");
 }
 
-Error USBController::initialize()
+FileSystem::Result USBController::initialize()
 {
-    Error r = DeviceServer::initialize();
+    const FileSystem::Result r = DeviceServer::initialize();
 
-    if (r != ESUCCESS)
+    if (r != FileSystem::Success)
         return r;
 
-    registerFile(new USBTransferFile(this), "/transfer");
-    return ESUCCESS;
+    return FileSystem::Success;
 }

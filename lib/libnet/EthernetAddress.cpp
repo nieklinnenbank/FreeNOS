@@ -16,6 +16,7 @@
  */
 
 #include <Log.h>
+#include <errno.h>
 #include "EthernetAddress.h"
 
 EthernetAddress::EthernetAddress(Ethernet *eth)

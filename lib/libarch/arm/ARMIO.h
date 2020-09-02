@@ -41,65 +41,6 @@ class ARMIO : public IO
   public:
 
     /**
-     * Constructor
-     */
-    ARMIO();
-
-    /**
-     * Read a byte from a port.
-     *
-     * @param port The I/O port to read from.
-     *
-     * @return A byte read from the port.
-     */
-    inline u8 inb(u16 port)
-    {
-        return 0;
-    }
-
-    /**
-     * Read a word from a port.
-     *
-     * @param port The I/O port to read from.
-     *
-     * @return Word read from the port.
-     */
-    inline u16 inw(u16 port)
-    {
-        return 0;
-    }
-
-    /**
-     * Output a byte to a port.
-     *
-     * @param port Port to write to.
-     * @param byte The byte to output.
-     */
-    inline void outb(u16 port, u8 byte)
-    {
-    }
-
-    /**
-     * Output a word to a port.
-     *
-     * @param port Port to write to.
-     * @param byte The word to output.
-     */
-    inline void outw(u16 port, u16 word)
-    {
-    }
-
-    /**
-     * Output a long to a I/O port.
-     *
-     * @param port Target I/O port.
-     * @param l The long 32-bit number to output.
-     */
-    inline void outl(u16 port, u32 l)
-    {
-    }
-
-    /**
      * write to memory mapped I/O register
      */
     inline void write(u32 reg, u32 data)
@@ -151,7 +92,7 @@ class ARMIO : public IO
      * @param count Number of bytes to write.
      * @param buf Input buffer.
      */
-    inline void write(Address addr, Size count, void *buf)
+    inline void write(Address addr, Size count, const void *buf)
     {
         for (Size i = 0; i < count; i+= sizeof(u32))
         {

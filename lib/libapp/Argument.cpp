@@ -19,7 +19,7 @@
 
 Argument::Argument(const char *name)
     : m_id(0)
-    , m_name(name)
+    , m_name(name, true)
     , m_count(0)
 {
 }

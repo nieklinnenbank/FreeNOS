@@ -15,9 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __VIDEO_VGA_SERVER_H
-#define __VIDEO_VGA_SERVER_H
+#ifndef __SERVER_VIDEO_VGA_H
+#define __SERVER_VIDEO_VGA_H
 
+#include <FreeNOS/System.h>
 #include <DeviceServer.h>
 #include <Types.h>
 
@@ -111,7 +112,7 @@ class VGA : public Device
      *
      * @return Error status code.
      */
-    virtual Error initialize();
+    virtual FileSystem::Error initialize();
 
     /**
      * @brief Read from VGA video memory.
@@ -125,7 +126,7 @@ class VGA : public Device
      *
      * @return An error code describing the status of the operation.
      */
-    virtual Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
 
     /**
      * @brief Write to VGA video memory.
@@ -139,7 +140,7 @@ class VGA : public Device
      *
      * @return An error code describing the status of the operation.
      */
-    virtual Error write(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Error write(IOBuffer & buffer, Size size, Size offset);
 
   private:
 
@@ -151,6 +152,9 @@ class VGA : public Device
 
     /** @brief Number of characters vertically. */
     Size height;
+
+    /** Port I/O object. */
+    Arch::IO m_io;
 };
 
 /**
@@ -158,4 +162,4 @@ class VGA : public Device
  * @}
  */
 
-#endif /* __VIDEO_VGA_SERVER_H */
+#endif /* __SERVER_VIDEO_VGA_H */

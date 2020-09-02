@@ -24,6 +24,9 @@ MemoryContext * MemoryContext::m_current = 0;
 MemoryContext::MemoryContext(MemoryMap *map, SplitAllocator *alloc)
     : m_alloc(alloc)
     , m_map(map)
+    , m_mapRangeSparseCallback(this, &MemoryContext::mapRangeSparseCallback)
+    , m_savedRange(ZERO)
+    , m_numSparsePages(ZERO)
 {
 }
 
@@ -36,14 +39,14 @@ MemoryContext * MemoryContext::getCurrent()
     return m_current;
 }
 
-MemoryContext::Result MemoryContext::mapRange(Memory::Range *range)
+MemoryContext::Result MemoryContext::mapRangeContiguous(Memory::Range *range)
 {
     Result r = Success;
-    Allocator::Range alloc_args;
 
-    // Allocate physical pages, if needed.
+    // Allocate a block of contiguous physical pages, if needed.
     if (!range->phys)
     {
+        Allocator::Range alloc_args;
         alloc_args.address = 0;
         alloc_args.size = range->size;
         alloc_args.alignment = PAGESIZE;
@@ -62,7 +65,27 @@ MemoryContext::Result MemoryContext::mapRange(Memory::Range *range)
                      range->access)) != Success)
             break;
     }
+
     return r;
+}
+
+MemoryContext::Result MemoryContext::mapRangeSparse(Memory::Range *range)
+{
+    Allocator::Range alloc_args;
+
+    // Allocate a set of physical pages (non-contiguous)
+    m_savedRange = range;
+    m_numSparsePages = 0;
+
+    alloc_args.address = 0;
+    alloc_args.size = range->size;
+    alloc_args.alignment = 0;
+
+    // This invokes our callback for each new page that is allocated
+    if (m_alloc->allocateSparse(alloc_args, &m_mapRangeSparseCallback) != Allocator::Success)
+        return OutOfMemory;
+
+    return Success;
 }
 
 MemoryContext::Result MemoryContext::unmapRange(Memory::Range *range)
@@ -114,4 +137,20 @@ MemoryContext::Result MemoryContext::findFree(Size size, MemoryMap::Region regio
     }
     else
         return OutOfMemory;
+}
+
+void MemoryContext::mapRangeSparseCallback(Address *phys)
+{
+    Result r = Success;
+
+    for (Size i = 0; i < 8U * PAGESIZE; i += PAGESIZE)
+    {
+        r = map(m_savedRange->virt + m_numSparsePages, (*phys) + i, m_savedRange->access);
+        if (r != Success)
+            break;
+
+        m_numSparsePages += PAGESIZE;
+    }
+
+    assert(r == Success);
 }

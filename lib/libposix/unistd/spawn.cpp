@@ -16,15 +16,19 @@
  */
 
 #include <FreeNOS/System.h>
+#include <FileSystemClient.h>
+#include <FileDescriptor.h>
 #include <ExecutableFormat.h>
 #include <Types.h>
 #include <Runtime.h>
-#include <string.h>
-#include <errno.h>
+#include "limits.h"
+#include "string.h"
+#include "errno.h"
 #include "unistd.h"
 
-int spawn(Address program, Size programSize, const char *command)
+int spawn(Address program, Size programSize, const char *argv[])
 {
+    const FileSystemClient filesystem;
     ExecutableFormat *fmt;
     ExecutableFormat::Region regions[16];
     Arch::MemoryMap map;
@@ -72,69 +76,86 @@ int spawn(Address program, Size programSize, const char *command)
     // Map program regions into virtual memory of the new process
     for (Size i = 0; i < numRegions; i++)
     {
-        // Copy executable memory from this region
+        // Setup memory range to copy region data
         range.virt   = regions[i].virt;
         range.phys   = ZERO;
-        range.size   = regions[i].size;
-        range.access = Memory::User |
-                       Memory::Readable |
-                       Memory::Writable |
-                       Memory::Executable;
+        range.size   = regions[i].memorySize;
+        range.access = regions[i].access;
 
-        // Create mapping first
-        if (VMCtl(pid, Map, &range) != API::Success)
+        // Create mapping first in the new process
+        if (VMCtl(pid, MapContiguous, &range) != API::Success)
         {
             errno = EFAULT;
             ProcessCtl(pid, KillPID);
             return -1;
         }
 
-        // Copy bytes
-        if (VMCopy(pid, API::Write, (Address) regions[i].data,
-                   regions[i].virt, regions[i].size) < 0)
+        // Map inside our process
+        range.virt = ZERO;
+        if (VMCtl(SELF, MapContiguous, &range) != API::Success)
         {
             errno = EFAULT;
             ProcessCtl(pid, KillPID);
             return -1;
         }
 
-        // Release data buffer
-        delete regions[i].data;
+        // Copy data bytes
+        MemoryBlock::copy((void *)range.virt, (const void *)(program + regions[i].dataOffset),
+                          regions[i].dataSize);
+
+        // Nulify remaining space
+        if (regions[i].memorySize > regions[i].dataSize)
+        {
+            MemoryBlock::set((void *)(range.virt + regions[i].dataSize), 0,
+                             regions[i].memorySize - regions[i].dataSize);
+        }
+
+        // Remove temporary mapping
+        if (VMCtl(SELF, UnMap, &range) != API::Success)
+        {
+            errno = EFAULT;
+            ProcessCtl(pid, KillPID);
+            return -1;
+        }
     }
 
     // Create mapping for command-line arguments
     range = map.range(MemoryMap::UserArgs);
     range.phys = ZERO;
     range.access = Memory::User | Memory::Readable | Memory::Writable;
-    if (VMCtl(pid, Map, &range) != API::Success)
+    if (VMCtl(pid, MapContiguous, &range) != API::Success)
     {
         errno = EFAULT;
         ProcessCtl(pid, KillPID);
         return -1;
     }
 
-    // Allocate arguments
-    char *arguments = new char[PAGESIZE * 2];
-    char *arg = (char *)command;
-    memset(arguments, 0, PAGESIZE * 2);
+    // Allocate arguments and current working directory
+    char *arguments = new char[PAGESIZE*2];
+    memset(arguments, 0, PAGESIZE*2);
 
     // Fill in arguments
-    while (*command && count < PAGESIZE / ARGV_SIZE)
+    while (argv[count] && count < PAGESIZE / ARGV_SIZE)
     {
-        if (*command == ' ')
-        {
-            strlcpy(arguments + (ARGV_SIZE * count), arg, command-arg+1);
-            count++;
-            arg = (char *)(command+1);
-        }
-        command++;
+        strlcpy(arguments + (ARGV_SIZE * count), argv[count], ARGV_SIZE);
+        count++;
     }
 
-    // The last argument
-    strlcpy(arguments + (ARGV_SIZE * count), arg, command-arg+1);
+    // Fill in the current working directory
+    strlcpy(arguments + PAGESIZE, **filesystem.getCurrentDirectory(), PATH_MAX);
 
     // Copy argc/argv into the new process
     if ((VMCopy(pid, API::Write, (Address) arguments, range.virt, PAGESIZE * 2)) < 0)
+    {
+        delete[] arguments;
+        errno = EFAULT;
+        ProcessCtl(pid, KillPID);
+        return -1;
+    }
+
+    // Copy fds into the new process.
+    if ((VMCopy(pid, API::Write, (Address) getFiles(),
+                range.virt + (PAGESIZE * 2), range.size - (PAGESIZE * 2))) < 0)
     {
         delete[] arguments;
         errno = EFAULT;

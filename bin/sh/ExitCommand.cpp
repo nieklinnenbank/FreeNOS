@@ -30,7 +30,7 @@ ExitCommand::ExitCommand()
 }
 
 
-int ExitCommand::execute(Size nparams, char **params)
+int ExitCommand::execute(const Size nparams, const char **params)
 {
     exit(EXIT_SUCCESS);
     return EXIT_SUCCESS;

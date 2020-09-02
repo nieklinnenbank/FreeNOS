@@ -15,18 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FileSystemClient.h>
+#include <FileSystemPath.h>
 #include <String.h>
 #include <List.h>
-#include <FileSystemPath.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include "Runtime.h"
+#include "limits.h"
+#include "string.h"
+#include "sys/stat.h"
+#include "unistd.h"
 
 int chdir(const char *filepath)
 {
     String *last = ZERO;
     List<String *> lst;
     char cwd[PATH_MAX], buf[PATH_MAX], *path = ZERO;
+    FileSystemClient filesystem;
     FileSystemPath fspath;
     struct stat st;
 
@@ -86,7 +89,7 @@ int chdir(const char *filepath)
     }
 
     // Set current directory
-    (*getCurrentDirectory()) = path;
+    filesystem.setCurrentDirectory(path);
 
     // Done
     errno = ZERO;

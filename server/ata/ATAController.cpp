@@ -18,42 +18,47 @@
 #include <DeviceServer.h>
 #include "ATAController.h"
 #include <Types.h>
-#include <stdlib.h>
-#include <errno.h>
 
 int main(int argc, char **argv)
 {
     DeviceServer server("/dev/ata");
-    server.initialize();
+    server.registerDevice(new ATAController, "ata0");
+
+    // Initialize
+    const FileSystem::Result result = server.initialize();
+    if (result != FileSystem::Success)
+    {
+        ERROR("failed to initialize: result = " << (int) result);
+        return 1;
+    }
 
     // Start serving requests
-    server.registerDevice(new ATAController, "ata0");
     return server.run();
 }
 
 ATAController::ATAController()
-    : Device(BlockDeviceFile)
+    : Device(FileSystem::BlockDeviceFile)
 {
     m_identifier << "ata0";
 }
 
-Error ATAController::initialize()
+FileSystem::Error ATAController::initialize()
 {
     ATADrive *drive;
 
     // Detect ATA Controller
-    if (ReadByte(ATA_BASE_CMD0 + ATA_REG_STATUS) == 0xff)
+    if (m_io.inb(ATA_BASE_CMD0 + ATA_REG_STATUS) == 0xff)
     {
-        exit(EXIT_FAILURE);
+        return FileSystem::NotSupported;
     }
     pollReady(true);
 
     // Attempt to detect first drive
-    WriteByte(ATA_BASE_CMD0 + ATA_REG_SELECT, ATA_SEL_MASTER);
+    m_io.outb(ATA_BASE_CMD0 + ATA_REG_SELECT, ATA_SEL_MASTER);
     pollReady(true);
-    WriteByte(ATA_BASE_CMD0 + ATA_REG_CMD,    ATA_CMD_IDENTIFY);
+    m_io.outb(ATA_BASE_CMD0 + ATA_REG_CMD,    ATA_CMD_IDENTIFY);
 
-    switch (ReadByte(ATA_BASE_CMD0 + ATA_REG_STATUS))
+    switch (m_io.inb(ATA_BASE_CMD0 + ATA_REG_STATUS))
     {
     case 0:
         NOTICE("No ATA drive(s) detected");
@@ -70,7 +75,7 @@ Error ATAController::initialize()
         // Read IDENTIFY data
         for (int i = 0; i < 256; i++)
         {
-            ((u16 *) &drive->identity)[i] = ReadWord(ATA_BASE_CMD0 + ATA_REG_DATA);
+            ((u16 *) &drive->identity)[i] = m_io.inw(ATA_BASE_CMD0 + ATA_REG_DATA);
         }
 
         // Fixup ASCII bytes
@@ -87,10 +92,11 @@ Error ATAController::initialize()
                " SECTORS=" << drive->identity.sectors28);
         break;
     }
-    return ESUCCESS;
+
+    return FileSystem::Success;
 }
 
-Error ATAController::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error ATAController::read(IOBuffer & buffer, Size size, Size offset)
 {
     u8 sectors = CEIL(size, 512);
     u16 block[256];
@@ -100,16 +106,16 @@ Error ATAController::read(IOBuffer & buffer, Size size, Size offset)
     // Verify LBA
     if (drives.isEmpty() || drives.first()->identity.sectors28 < lba)
     {
-        return EIO;
+        return FileSystem::IOError;
     }
 
     // Perform ATA Read Command
-    WriteByte(ATA_BASE_CMD0 + ATA_REG_SELECT, ATA_SEL_MASTER_28);
-    WriteByte(ATA_BASE_CMD0 + ATA_REG_COUNT,  sectors);
-    WriteByte(ATA_BASE_CMD0 + ATA_REG_ADDR0,  (lba) & 0xff);
-    WriteByte(ATA_BASE_CMD0 + ATA_REG_ADDR1,  (lba >> 8) & 0xff);
-    WriteByte(ATA_BASE_CMD0 + ATA_REG_ADDR2,  (lba >> 16) & 0xff);
-    WriteByte(ATA_BASE_CMD0 + ATA_REG_CMD, ATA_CMD_READ);
+    m_io.outb(ATA_BASE_CMD0 + ATA_REG_SELECT, ATA_SEL_MASTER_28);
+    m_io.outb(ATA_BASE_CMD0 + ATA_REG_COUNT,  sectors);
+    m_io.outb(ATA_BASE_CMD0 + ATA_REG_ADDR0,  (lba) & 0xff);
+    m_io.outb(ATA_BASE_CMD0 + ATA_REG_ADDR1,  (lba >> 8) & 0xff);
+    m_io.outb(ATA_BASE_CMD0 + ATA_REG_ADDR2,  (lba >> 16) & 0xff);
+    m_io.outb(ATA_BASE_CMD0 + ATA_REG_CMD,    ATA_CMD_READ);
 
     // Read out all requested sectors
     while(result < size)
@@ -120,7 +126,7 @@ Error ATAController::read(IOBuffer & buffer, Size size, Size offset)
         // Read out bytes
         for (int i = 0; i < 256; i++)
         {
-            block[i] = ReadWord(ATA_BASE_CMD0 + ATA_REG_DATA);
+            block[i] = m_io.inw(ATA_BASE_CMD0 + ATA_REG_DATA);
         }
 
         // Calculate maximum bytes
@@ -134,20 +140,21 @@ Error ATAController::read(IOBuffer & buffer, Size size, Size offset)
         result += bytes;
         offset += bytes;
     }
+
     return result;
 }
 
-Error ATAController::interrupt(Size vector)
+FileSystem::Error ATAController::interrupt(Size vector)
 {
     INFO("ATA interrupted on IRQ " << vector);
-    return ESUCCESS;
+    return FileSystem::Success;
 }
 
 void ATAController::pollReady(bool noData)
 {
     while (true)
     {
-        u8 status = ReadByte(ATA_BASE_CMD0 + ATA_REG_STATUS);
+        u8 status = m_io.inb(ATA_BASE_CMD0 + ATA_REG_STATUS);
 
         if (!(status & ATA_STATUS_BUSY) &&
              (status & ATA_STATUS_DATA || noData))

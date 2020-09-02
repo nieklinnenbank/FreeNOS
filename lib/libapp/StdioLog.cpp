@@ -15,6 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef __HOST__
+#include <FreeNOS/User.h>
+#endif /* __HOST__ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -32,5 +35,8 @@ void StdioLog::write(const char *str)
 
 void StdioLog::terminate() const
 {
+#ifndef __HOST__
+    PrivExec(Panic);
+#endif /* __HOST__ */
     ::exit(EXIT_FAILURE);
 }

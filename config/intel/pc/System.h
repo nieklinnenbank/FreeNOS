@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -10,23 +10,15 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __INTEL_PC_SYSTEM_H
-#define __INTEL_PC_SYSTEM_H
+#ifndef __CONFIG_INTEL_PC_SYSTEM_H
+#define __CONFIG_INTEL_PC_SYSTEM_H
 
-#define INTEL
-#define PC
-#define __SYSTEM
-
-#define RAM_ADDR (0x0)
-
-#include <intel/IntelConstant.h>
-
-#ifndef __HOST__
+#include "Constant.h"
 #include <intel/IntelCore.h>
 #include <intel/IntelCache.h>
 #include <intel/IntelIO.h>
@@ -35,9 +27,7 @@
 #include <intel/IntelMap.h>
 #include <intel/IntelKernel.h>
 #include <intel/IntelProcess.h>
-#include <intel/IntelSerial.h>
-
+#include <intel/IntelTraps.h>
 #include <FreeNOS/API.h>
-#endif /* __HOST__ */
 
-#endif /* __INTEL_PC_SYSTEM_H */
+#endif /* __CONFIG_INTEL_PC_SYSTEM_H */

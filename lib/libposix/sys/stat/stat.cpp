@@ -15,57 +15,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
-#include <FileSystemMessage.h>
-#include "Runtime.h"
-#include <errno.h>
+#include <FileSystemClient.h>
 #include <Log.h>
-#include "unistd.h"
+#include "errno.h"
+#include "limits.h"
+#include "string.h"
 #include "sys/stat.h"
 
 int stat(const char *path, struct stat *buf)
 {
-    FileSystemMessage msg;
-    FileStat st;
-    ProcessID mnt = findMount(path);
-    char fullpath[PATH_MAX];
+    const FileSystemClient filesystem;
+    FileSystem::FileStat st;
 
-    // Relative or absolute?
-    if (path[0] != '/')
-    {
-        char cwd[PATH_MAX];
-
-        // What's the current working dir?
-        getcwd(cwd, PATH_MAX);
-        snprintf(fullpath, sizeof(fullpath), "%s/%s", cwd, path);
-    }
-    else
-        strlcpy(fullpath, path, sizeof(fullpath));
-
-    // Fill message
-    msg.type   = ChannelMessage::Request;
-    msg.action = StatFile;
-    msg.path   = fullpath;
-    msg.stat   = &st;
-
-    DEBUG("path = " << (void *) msg.path << " stat = " << (void *) msg.stat);
+    DEBUG("path = " << path);
 
     // Ask the FileSystem for the information
-    if (mnt)
-    {
-        ChannelClient::instance->syncSendReceive(&msg, mnt);
+    const FileSystem::Result result = filesystem.statFile(path, &st);
 
-        // Copy information into buf
-        if (msg.result == ESUCCESS)
-        {
+    // Copy information into buf
+    switch (result)
+    {
+        case FileSystem::Success:
             buf->fromFileStat(&st);
-        }
-        // Set errno
-        errno = msg.result;
+            errno = ESUCCESS;
+            break;
+        case FileSystem::NotFound:
+            errno = ENOENT;
+            break;
+        default:
+            errno = EIO;
+            break;
     }
-    else
-        errno = msg.result = ENOENT;
 
     // Success
-    return msg.result == ESUCCESS ? 0 : -1;
+    return errno == ESUCCESS ? 0 : -1;
 }

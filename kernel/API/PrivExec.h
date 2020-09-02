@@ -18,8 +18,6 @@
 #ifndef __API_PRIVEXEC_H
 #define __API_PRIVEXEC_H
 
-#include <FreeNOS/System.h>
-
 /**
  * @addtogroup kernel
  * @{
@@ -35,10 +33,11 @@
  */
 typedef enum PrivOperation
 {
-    Idle         = 0,
-    Reboot       = 1,
-    Shutdown     = 2,
-    WriteConsole = 3
+    Idle           = 0,
+    RebootSystem   = 1,
+    ShutdownSystem = 2,
+    WriteConsole   = 3,
+    Panic          = 4
 }
 PrivOperation;
 

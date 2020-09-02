@@ -26,7 +26,7 @@ NetworkServer::~NetworkServer()
 {
 }
 
-Error NetworkServer::initialize()
+FileSystem::Result NetworkServer::initialize()
 {
     DEBUG("");
     return DeviceServer::initialize();

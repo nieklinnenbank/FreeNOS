@@ -99,7 +99,7 @@ void search_parallel(int k, int n, unsigned *map, int argc, char **argv)
         gettimeofday(&t2, &tz);
         printf("sequential: ");
         printtimediff(&t1, &t2);
-        printf("\n");
+        printf("\r\n");
         gettimeofday(&t1, &tz);
     }
 
@@ -135,7 +135,7 @@ void search_parallel(int k, int n, unsigned *map, int argc, char **argv)
         gettimeofday(&t2, &tz);
         printf("parallel: ");
         printtimediff(&t1, &t2);
-        printf("\n");    
+        printf("\r\n");
     }
 
     // Collect results of all workers
@@ -147,7 +147,7 @@ void search_parallel(int k, int n, unsigned *map, int argc, char **argv)
         gettimeofday(&t2, &tz);
         printf("collect: ");
         printtimediff(&t1, &t2);
-        printf("\n");
+        printf("\r\n");
     }
 }
 
@@ -171,13 +171,13 @@ int main(int argc, char **argv)
     {
         printf("MPI_Init: ");
         printtimediff(&t1, &t2);
-        printf("\n");
+        printf("\r\n");
     }
 
     // Check arguments
     if (argc < 2)
     {
-        printf("usage: %s <number> [--stdout]\n", argv[0]);
+        printf("usage: %s <number> [--stdout]\r\n", argv[0]);
         return EXIT_FAILURE;
     }
     gettimeofday(&t1, &tz);
@@ -203,7 +203,7 @@ int main(int argc, char **argv)
     {
         printf("Setup: ");
         printtimediff(&t1, &t2);
-        printf("\n");
+        printf("\r\n");
     }
 
     // Search for primes until done
@@ -213,7 +213,7 @@ int main(int argc, char **argv)
     
     printf("Search_parallel: ");
     printtimediff(&t1, &t2);
-    printf("\n");
+    printf("\r\n");
 
     gettimeofday(&t1, &tz);
 
@@ -226,7 +226,7 @@ int main(int argc, char **argv)
             if (map[i] == 1)
                 output << " " << i;
         }
-        output << "\n";
+        output << "\r\n";
         write(1, *output, output.length());
     }
 
@@ -239,7 +239,7 @@ int main(int argc, char **argv)
         gettimeofday(&t2, &tz);
         printf("Finalize: ");
         printtimediff(&t1, &t2);
-        printf("\n");
+        printf("\r\n");
     }
     return EXIT_SUCCESS;
 }

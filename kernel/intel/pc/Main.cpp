@@ -19,7 +19,8 @@
 #include <FreeNOS/Support.h>
 #include <FreeNOS/System.h>
 #include <intel/IntelKernel.h>
-#include <intel/IntelSerial.h>
+#include <i8250.h>
+#include <DeviceLog.h>
 #include <CoreInfo.h>
 #include <Macros.h>
 #include <Log.h>
@@ -33,8 +34,10 @@ extern C int kernel_main(CoreInfo *info)
     coreInfo.heapSize    = (Size) ((Address) &__heap_end - (Address)&__heap_start);
     Kernel::heap(coreInfo.heapAddress, coreInfo.heapSize);
 
-    // Start serial console as the default output Log
-    IntelSerial *console = new IntelSerial(0x3f8);
+    // Open serial console as default Log
+    i8250 *uart = new i8250(0x3f8, 4);
+    uart->initialize();
+    DeviceLog *console = new DeviceLog(*uart);
 
     // Only the boot core outputs notifications
     if (info->coreId == 0)

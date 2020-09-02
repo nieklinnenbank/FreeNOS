@@ -15,9 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
-#include <Index.h>
 #include <MemoryChannel.h>
+#include <Index.h>
 #include "mpi.h"
 #include "MPIMessage.h"
 

@@ -16,17 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
+#include <FreeNOS/User.h>
 #include "PL011.h"
 
 PL011::PL011(u32 irq)
-    : Device(CharacterDeviceFile)
+    : Device(FileSystem::CharacterDeviceFile)
 {
     m_irq = irq;
     m_identifier << "serial0";
 }
 
-Error PL011::initialize()
+FileSystem::Error PL011::initialize()
 {
     if (!isKernel)
     {
@@ -35,7 +35,7 @@ Error PL011::initialize()
                      Memory::User | Memory::Readable | Memory::Writable | Memory::Device)
             != IO::Success)
         {
-            return EINVAL;
+            return FileSystem::IOError;
         }
 
         // Disable receiving interrupts
@@ -74,10 +74,11 @@ Error PL011::initialize()
 
     // Enable PL011, receive & transfer part of UART.
     m_io.write(PL011_CR, (1 << 0) | (1 << 8) | (1 << 9));
-    return 0;
+
+    return FileSystem::Success;
 }
 
-Error PL011::interrupt(u32 vector)
+FileSystem::Error PL011::interrupt(u32 vector)
 {
     // Clear Receive Interrupts
     u32 mis = m_io.read(PL011_MIS);
@@ -94,10 +95,11 @@ Error PL011::interrupt(u32 vector)
     {
         ProcessCtl(SELF, EnableIRQ, m_irq);
     }
-    return ESUCCESS;
+
+    return FileSystem::Success;
 }
 
-Error PL011::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error PL011::read(IOBuffer & buffer, Size size, Size offset)
 {
     Size bytes = 0;
 
@@ -114,10 +116,14 @@ Error PL011::read(IOBuffer & buffer, Size size, Size offset)
         buffer.bufferedWrite(&byte, 1);
         bytes++;
     }
-    return buffer.getCount() ? (Error) buffer.getCount() : EAGAIN;
+
+    if (buffer.getCount())
+        return (FileSystem::Error) buffer.getCount();
+    else
+        return FileSystem::RetryAgain;
 }
 
-Error PL011::write(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error PL011::write(IOBuffer & buffer, Size size, Size offset)
 {
     Size bytes = 0;
 
@@ -134,7 +140,11 @@ Error PL011::write(IOBuffer & buffer, Size size, Size offset)
             m_io.write(PL011_DR, buffer[bytes++]);
         }
     }
-    return bytes ? (Error) bytes : EAGAIN;
+
+    if (bytes)
+        return (FileSystem::Error) bytes;
+    else
+        return FileSystem::RetryAgain;
 }
 
 void PL011::delay(s32 count)

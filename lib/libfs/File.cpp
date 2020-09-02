@@ -15,14 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/User.h>
 #include "File.h"
 
-File::File(FileType type, UserID uid, GroupID gid)
+File::File(FileSystem::FileType type, UserID uid, GroupID gid)
     : m_type(type)
     , m_uid(uid)
     , m_gid(gid)
 {
-    m_access    = OwnerRWX;
+    m_access    = FileSystem::OwnerRWX;
     m_size      = 0;
 }
 
@@ -30,24 +31,24 @@ File::~File()
 {
 }
 
-FileType File::getType() const
+FileSystem::FileType File::getType() const
 {
     return m_type;
 }
 
 Error File::read(IOBuffer & buffer, Size size, Size offset)
 {
-    return ENOTSUP;
+    return FileSystem::NotSupported;
 }
 
 Error File::write(IOBuffer & buffer, Size size, Size offset)
 {
-    return ENOTSUP;
+    return FileSystem::NotSupported;
 }
 
 Error File::status(FileSystemMessage *msg)
 {
-    FileStat st;
+    FileSystem::FileStat st;
     Error e;
 
     // Fill in the status structure
@@ -63,8 +64,10 @@ Error File::status(FileSystemMessage *msg)
     if ((e = VMCopy(msg->from, API::Write, (Address) &st,
                    (Address) msg->stat, sizeof(st)) > 0))
     {
-        return ESUCCESS;
+        return FileSystem::Success;
     }
     else
+    {
         return e;
+    }
 }

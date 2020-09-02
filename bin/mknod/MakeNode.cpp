@@ -20,7 +20,6 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <Runtime.h>
 #include "MakeNode.h"
 
 MakeNode::MakeNode(int argc, char **argv)
@@ -40,9 +39,6 @@ MakeNode::~MakeNode()
 MakeNode::Result MakeNode::exec()
 {
     dev_t dev;
-
-    // Refresh current filesystem mount points
-    refreshMounts(0);
 
     // Fill in major/minor numbers
     dev.major = atoi(arguments().get("MAJOR"));

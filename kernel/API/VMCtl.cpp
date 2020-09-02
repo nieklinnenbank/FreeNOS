@@ -59,7 +59,8 @@ API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *ra
             range->phys += range->virt & ~PAGEMASK;
             break;
 
-        case Map:
+        case MapContiguous:
+        case MapSparse:
             if (!range->virt)
             {
                 memResult = mem->findFree(range->size, MemoryMap::UserPrivate, &range->virt);
@@ -71,7 +72,11 @@ API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *ra
                 }
                 range->virt += range->phys & ~PAGEMASK;
             }
-            memResult = mem->mapRange(range);
+            if (op == MapContiguous)
+                memResult = mem->mapRangeContiguous(range);
+            else
+                memResult = mem->mapRangeSparse(range);
+
             if (memResult != MemoryContext::Success)
             {
                 ERROR("failed to map memory range " << (void *)range->virt << "->" <<
@@ -102,6 +107,12 @@ API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *ra
 
         case CacheClean: {
             Arch::Cache cache;
+            cache.cleanData(range->virt);
+            break;
+        }
+
+        case CacheCleanInvalidate: {
+            Arch::Cache cache;
             cache.cleanInvalidate(Cache::Data);
             break;
         }
@@ -115,16 +126,25 @@ API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *ra
             break;
         }
 
-        case ReserveMem: {
-            Allocator::Range alloc_args;
-            alloc_args.address = range->phys;
-            alloc_args.size    = range->size;
-            alloc_args.alignment = PAGESIZE;
+        case ReserveMem:
+        {
+            SplitAllocator *alloc = Kernel::instance->getAllocator();
+            Allocator::Result allocResult = Allocator::Success;
 
-            if (Kernel::instance->getAllocator()->allocate(alloc_args) != Allocator::Success)
+            for (Size i = 0; i < range->size; i += PAGESIZE)
             {
-                ERROR("address " << (void *) (range->phys) << " already allocated");
-                return API::OutOfMemory;
+                const Address addr = range->phys + i;
+
+                if (alloc->isAllocated(addr))
+                {
+                    ERROR("address " << (void *)addr << " is already allocated");
+                    return API::InvalidArgument;
+                }
+                else if ((allocResult = alloc->allocate(addr)) != Allocator::Success)
+                {
+                    ERROR("failed to allocate " << (void *)addr << ", result = " << (int)allocResult);
+                    return API::IOError;
+                }
             }
             break;
         }

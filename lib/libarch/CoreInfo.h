@@ -119,6 +119,9 @@ CoreInfo;
  */
 extern CoreInfo coreInfo;
 
+/** Non-zero if this executable is linked as the kernel */
+extern C uint isKernel;
+
 #endif /* __ASSEMBLER__ */
 
 /**

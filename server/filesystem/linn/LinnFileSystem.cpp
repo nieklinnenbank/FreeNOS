@@ -17,73 +17,24 @@
 
 #include <Types.h>
 #include <Assert.h>
-#include <KernelLog.h>
-#include <FileStorage.h>
-#include <BootImageStorage.h>
 #include "LinnFileSystem.h"
 #include "LinnInode.h"
 #include "LinnFile.h"
 #include "LinnDirectory.h"
-#include <stdlib.h>
-
-int main(int argc, char **argv)
-{
-    KernelLog log;
-    Storage *storage = ZERO;
-    const char *path = "/";
-    SystemInformation info;
-
-    // Only run on core0
-    if (info.coreId != 0)
-        return EXIT_SUCCESS;
-
-    log.setMinimumLogLevel(Log::Notice);
-
-    // Mount the given file, or try to use the BootImage embedded rootfs
-    if (argc > 3)
-    {
-        NOTICE("file storage: " << argv[1] << " at offset " << atoi(argv[2]));
-        storage    = new FileStorage(argv[1], atoi(argv[2]));
-        assert(storage != NULL);
-        path       = argv[3];
-    }
-    else
-    {
-        BootImageStorage *bm = new BootImageStorage(LINNFS_ROOTFS_FILE);
-        assert(bm != NULL);
-        if (bm->load())
-        {
-            NOTICE("boot image: " << LINNFS_ROOTFS_FILE);
-            storage = bm;
-        } else
-            FATAL("unable to load: " << LINNFS_ROOTFS_FILE);
-    }
-
-    // Mount, then start serving requests.
-    if (storage)
-    {
-        LinnFileSystem server(path, storage);
-        server.mount();
-        return server.run();
-    }
-    ERROR("no usable storage found");
-    return EXIT_FAILURE;
-}
 
 LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
-    : FileSystem(p), storage(s), groups(ZERO)
+    : FileSystemServer(p), storage(s), groups(ZERO)
 {
     LinnInode *rootInode;
     LinnGroup *group;
     Size offset;
-    Error e;
+    FileSystem::Error e;
 
     // Read out the superblock.
     if ((e = s->read(LINN_SUPER_OFFSET, &super,
                      sizeof(super))) <= 0)
     {
-        FATAL("reading superblock failed: " <<
-               strerror(e));
+        FATAL("reading superblock failed: result = " << (int) e);
     }
     // Verify magic.
     if (super.magic0 != LINN_SUPER_MAGIC0 ||
@@ -108,8 +59,7 @@ LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
         // Read from storage.
         if ((e = s->read(offset, group, sizeof(LinnGroup))) <= 0)
         {
-            FATAL("reading group descriptor failed: " <<
-                   strerror(e));
+            FATAL("reading group descriptor failed: result = " << (int) e);
         }
         // Insert in the groups vector.
         groups->insert(i, group);
@@ -126,11 +76,6 @@ LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
     assert(dir != NULL);
     setRoot(dir);
 
-    // Filesystem writes are not supported
-    addIPCHandler(CreateFile, (IPCHandlerFunction) &LinnFileSystem::notSupportedHandler, false);
-    addIPCHandler(DeleteFile, (IPCHandlerFunction) &LinnFileSystem::notSupportedHandler, false);
-    addIPCHandler(WriteFile,  (IPCHandlerFunction) &LinnFileSystem::notSupportedHandler, false);
-
     // Done.
     NOTICE("mounted at " << p);
 }
@@ -140,7 +85,7 @@ LinnInode * LinnFileSystem::getInode(u32 inodeNum)
     LinnGroup *group;
     LinnInode *inode;
     Size offset;
-    Error e;
+    FileSystem::Error e;
 
     // Validate the inode number.
     if (inodeNum >= super.inodesCount)
@@ -166,8 +111,7 @@ LinnInode * LinnFileSystem::getInode(u32 inodeNum)
     // Read inode from storage.
     if ((e = storage->read(offset, inode, sizeof(LinnInode))) <= 0)
     {
-        ERROR("reading inode failed: " <<
-               strerror(e));
+        ERROR("reading inode failed: result = " << (int) e);
         return ZERO;
     }
     // Insert into the cache.
@@ -251,6 +195,6 @@ u64 LinnFileSystem::getOffset(LinnInode *inode, u32 blk)
 
 void LinnFileSystem::notSupportedHandler(FileSystemMessage *msg)
 {
-    msg->result = ENOTSUP;
+    msg->result = FileSystem::NotSupported;
     sendResponse(msg);
 }

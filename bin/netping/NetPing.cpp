@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -116,7 +115,7 @@ NetPing::Result NetPing::arpPing(const char *dev,
         ERROR("failed to convert to IPV4 address: " << host);
         return IOError;
     }
-    printf("Sending ARP request to %s\n", host);
+    printf("Sending ARP request to %s\r\n", host);
 
     // Send ARP request
     if (::write(sock, &ipAddr, sizeof(ipAddr)) < 0)
@@ -135,7 +134,7 @@ NetPing::Result NetPing::arpPing(const char *dev,
 
     for (Size i = 0; i < sizeof(Ethernet::Address); i++)
         printf("%x:", ethAddr.addr[i]);
-    printf("\n");
+    printf("\r\n");
 
     // Finished
     client.close(sock);
@@ -198,7 +197,7 @@ NetPing::Result NetPing::icmpPing(const char *dev, const char *host)
         return IOError;
     }
     // Print the ICMP address received
-    printf("Received ICMP response with id=%d sequence=%d\n",
+    printf("Received ICMP response with id=%d sequence=%d\r\n",
             msg.id, msg.sequence);
 
     // Finished

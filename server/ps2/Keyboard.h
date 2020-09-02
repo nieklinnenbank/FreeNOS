@@ -15,9 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __INPUT_KEYBOARD_H
-#define __INPUT_KEYBOARD_H
+#ifndef __SERVER_PS2_KEYBOARD_H
+#define __SERVER_PS2_KEYBOARD_H
 
+#include <FreeNOS/System.h>
 #include <Device.h>
 #include <Macros.h>
 #include <Types.h>
@@ -65,7 +66,7 @@ class Keyboard : public Device
      *
      * @return Error status code.
      */
-    virtual Error interrupt(Size vector);
+    virtual FileSystem::Error interrupt(Size vector);
 
     /**
      * @brief Read a character from the keyboard.
@@ -76,7 +77,7 @@ class Keyboard : public Device
      *
      * @return Number of bytes read or error code on failure.
      */
-    virtual Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
 
   private:
 
@@ -94,6 +95,9 @@ class Keyboard : public Device
 
     /** Do we have a byte ready? */
     bool pending;
+
+    /** Port I/O object. */
+    Arch::IO m_io;
 };
 
 /**
@@ -101,4 +105,4 @@ class Keyboard : public Device
  * @}
  */
 
-#endif /* __INPUT_KEYBOARD_H */
+#endif /* __SERVER_PS2_KEYBOARD_H */

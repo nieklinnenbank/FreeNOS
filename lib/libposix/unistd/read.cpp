@@ -15,15 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
-#include <FileSystemMessage.h>
-#include "Runtime.h"
-#include <errno.h>
+#include <FileSystemClient.h>
+#include <FileDescriptor.h>
+#include "errno.h"
 #include "unistd.h"
 
 ssize_t read(int fildes, void *buf, size_t nbyte)
 {
-    FileSystemMessage msg;
     FileDescriptor *files = getFiles();
 
     if (fildes >= FILE_DESCRIPTOR_MAX || fildes < 0)
@@ -40,25 +38,19 @@ ssize_t read(int fildes, void *buf, size_t nbyte)
     }
 
     // Read the file.
-    msg.type   = ChannelMessage::Request;
-    msg.action = ReadFile;
-    msg.path   = files[fildes].path;
-    msg.buffer = (char *) buf;
-    msg.size   = nbyte;
-    msg.offset = files[fildes].position;
-    msg.from   = SELF;
-    msg.deviceID.minor = files[fildes].identifier;
-    ChannelClient::instance->syncSendReceive(&msg, files[fildes].mount);
+    const FileSystemClient filesystem;
+    const FileSystem::Result result = filesystem.readFile(files[fildes].path,
+                                                          (char *)buf,
+                                                         &nbyte,
+                                                          files[fildes].position);
 
-    // Did we read something?
-    if (msg.result >= 0)
+    // Did the read succeed?
+    if (result != FileSystem::Success)
     {
-        files[fildes].position += msg.result;
-        return msg.result;
+        errno = EIO;
+        return -1;
     }
 
-    // Set error code
-    errno = msg.result;
-
-    return -1;
+    files[fildes].position += nbyte;
+    return nbyte;
 }

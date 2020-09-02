@@ -22,5 +22,5 @@ env.UseServers(['log', 'filesystem', 'core'])
 env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libarch',
                    'libexec', 'libipc', 'libfs', 'libusb', 'libnet', 'librt' ])
 
-if env['ARCH'] == 'arm':
+if env['ARCH'] == 'arm' and env['SYSTEM'] == 'raspberry':
     env.TargetProgram('server', [ Glob('*.cpp') ])

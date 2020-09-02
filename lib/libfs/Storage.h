@@ -19,7 +19,7 @@
 #define __FILESYSTEM_STORAGE_H
 
 #include <Types.h>
-#include <errno.h>
+#include "FileSystem.h"
 
 /**
  * @addtogroup lib
@@ -55,7 +55,7 @@ class Storage
      *
      * @return Result code
      */
-    virtual Error read(u64 offset, void *buffer, Size size);
+    virtual FileSystem::Error read(u64 offset, void *buffer, Size size);
 
     /**
      * Write a contiguous set of data.
@@ -66,7 +66,7 @@ class Storage
      *
      * @return Result code
      */
-    virtual Error write(u64 offset, void *buffer, Size size);
+    virtual FileSystem::Error write(u64 offset, void *buffer, Size size);
 
     /**
      * Retrieve maximum storage capacity.

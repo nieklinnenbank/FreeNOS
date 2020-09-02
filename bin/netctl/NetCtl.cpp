@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -27,7 +26,7 @@
 #include <NetworkSocket.h>
 #include <IPV4.h>
 #include <ICMP.h>
-#include <Runtime.h>
+#include <FileSystemClient.h>
 #include "NetCtl.h"
 
 NetCtl::NetCtl(int argc, char **argv)
@@ -49,15 +48,17 @@ NetCtl::Result NetCtl::initialize()
 
 NetCtl::Result NetCtl::exec()
 {
+    Size numberOfMounts = 0;
+
     DEBUG("");
 
     // Make a list of network devices
     // Get a list of mounts
-    refreshMounts(0);
-    FileSystemMount *mounts = ::getMounts();
+    FileSystemClient filesystem;
+    FileSystemMount *mounts = filesystem.getFileSystems(numberOfMounts);
 
     // Find closest matching device
-    for (Size i = 0; i < FILESYSTEM_MAXMOUNTS; i++)
+    for (Size i = 0; i < numberOfMounts; i++)
     {
         if (mounts[i].path[0] && strncmp(mounts[i].path, "/network/", 9) == 0)
         {
@@ -106,6 +107,6 @@ NetCtl::Result NetCtl::showDevice(const char *deviceName)
         close(fd);
     }
 
-    printf("%s\n", *out);
+    printf("%s\r\n", *out);
     return Success;
 }

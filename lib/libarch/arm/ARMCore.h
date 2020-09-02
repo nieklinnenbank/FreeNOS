@@ -20,7 +20,7 @@
 
 #include <Types.h>
 #include <Macros.h>
-#include <Core.h>
+#include "Endian.h"
 #include "ARMControl.h"
 
 /**
@@ -246,7 +246,7 @@ ALIGN(4) CPUState;
 /**
  * Class representing an ARM processor core
  */
-class ARMCore : public Core
+class ARMCore
 {
   public:
 

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
+#include <FreeNOS/Constant.h>
 #include <TestRunner.h>
 #include <TestInt.h>
 #include <TestCase.h>
@@ -24,7 +24,7 @@
 
 TestCase(AllocatorConstruct)
 {
-    const Allocator::Range range = { 0, PAGESIZE, 0 };
+    const Allocator::Range range = { 0, PAGESIZE, sizeof(u32) };
     Allocator alloc(range);
 
     return OK;
@@ -32,7 +32,7 @@ TestCase(AllocatorConstruct)
 
 TestCase(AllocatorDefault)
 {
-    const Allocator::Range range = { 0, PAGESIZE, 0 };
+    const Allocator::Range range = { 0, PAGESIZE, sizeof(u32) };
     Allocator alloc(range);
 
     // Retrieve current default
@@ -52,7 +52,7 @@ TestCase(AllocatorDefault)
 
 TestCase(AllocatorParent)
 {
-    const Allocator::Range range = { 0, PAGESIZE, 0 };
+    const Allocator::Range range = { 0, PAGESIZE, sizeof(u32) };
     Allocator alloc(range);
     Allocator parent(range);
 
@@ -62,6 +62,29 @@ TestCase(AllocatorParent)
     // Assign a new parent
     alloc.setParent(&parent);
     testAssert(alloc.parent() == &parent);
+
+    return OK;
+}
+
+TestCase(AllocatorAligned)
+{
+    const Allocator::Range range = { 0, PAGESIZE, sizeof(u32) };
+    Allocator alloc(range);
+
+    // Address zero is always aligned to itself
+    testAssert(alloc.aligned(0, sizeof(u8)) == 0);
+    testAssert(alloc.aligned(0, sizeof(u32)) == 0);
+    testAssert(alloc.aligned(0, PAGESIZE) == 0);
+
+    // Test for 32-bit alignments
+    testAssert(alloc.aligned(0x100, sizeof(u32)) == 0x100);
+    testAssert(alloc.aligned(31, sizeof(u32)) == 32);
+    testAssert(alloc.aligned(1, sizeof(u32)) == 4);
+
+    // Test for PAGESIZE alignments
+    testAssert(alloc.aligned(PAGESIZE-1, PAGESIZE) == PAGESIZE);
+    testAssert(alloc.aligned(PAGESIZE, PAGESIZE) == PAGESIZE);
+    testAssert(alloc.aligned(PAGESIZE+1, PAGESIZE) == PAGESIZE * 2);
 
     return OK;
 }

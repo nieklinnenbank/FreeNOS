@@ -19,7 +19,7 @@
 #define __FILESYSTEM_FILESTORAGE_H
 
 #include <Types.h>
-#include <sys/stat.h>
+#include "FileSystemClient.h"
 #include "Storage.h"
 
 /**
@@ -48,11 +48,6 @@ class FileStorage : public Storage
     FileStorage(const char *path, Size offset = ZERO);
 
     /**
-     * @brief Destructor function.
-     */
-    virtual ~FileStorage();
-
-    /**
      * Read a contiguous set of data.
      *
      * @param offset Offset to start reading from.
@@ -61,7 +56,7 @@ class FileStorage : public Storage
      *
      * @return Result code
      */
-    virtual Error read(u64 offset, void *buffer, Size size);
+    virtual FileSystem::Error read(u64 offset, void *buffer, Size size);
 
     /**
      * Write a contiguous set of data.
@@ -72,7 +67,7 @@ class FileStorage : public Storage
      *
      * @return Result code
      */
-    virtual Error write(u64 offset, void *buffer, Size size);
+    virtual FileSystem::Error write(u64 offset, void *buffer, Size size);
 
     /**
      * Retrieve maximum storage capacity.
@@ -83,11 +78,14 @@ class FileStorage : public Storage
 
   private:
 
-    /** File descriptor of the file for Storage I/O. */
-    int m_file;
+    /** Path to the file */
+    const char *m_path;
+
+    /** Client for file system I/O */
+    FileSystemClient m_file;
 
     /** Status of the file for Storage I/O. */
-    struct stat m_stat;
+    FileSystem::FileStat m_stat;
 
     /** Offset used as a base for I/O. */
     Size m_offset;

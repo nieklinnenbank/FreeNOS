@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
+#include <FreeNOS/Constant.h>
 #include <TestCase.h>
 #include <TestRunner.h>
 #include <TestInt.h>
@@ -25,18 +25,19 @@
 TestCase(BitConstruct)
 {
     TestInt<uint> addresses(UINT_MIN, UINT_MAX);
-    TestInt<uint> sizes(PAGESIZE, PAGESIZE * 16);
 
+    const Size chunkSize = 32;
+    const Size rangeSize = chunkSize * 64;
     const Address allocBase = addresses.random() & PAGEMASK;
-    const Allocator::Range range = { allocBase, sizes.random(), sizeof(u32) };
-    const Size chunkSize = 64;
+    const Allocator::Range range = { allocBase, rangeSize, sizeof(u32) };
+
     BitAllocator ba(range, chunkSize);
 
     // Verify initial state of the object
     testAssert(ba.m_chunkSize == chunkSize);
-    testAssert(ba.available() == (sizes[0] / chunkSize) * chunkSize);
+    testAssert(ba.available() == rangeSize);
     testAssert(ba.base() == allocBase);
-    testAssert(ba.size() == sizes[0]);
+    testAssert(ba.size() == rangeSize);
     testAssert(ba.alignment() == sizeof(u32));
     testAssert(!ba.isAllocated(allocBase));
 
@@ -59,7 +60,7 @@ TestCase(BitAllocateChunks)
     {
         Allocator::Range args = { 0, chunkSize, 0 };
 
-        testAssert(ba.allocate(args, 0) == Allocator::Success);
+        testAssert(ba.allocate(args) == Allocator::Success);
         testAssert(args.address == allocBase + (chunkSize * i));
         testAssert(args.size == chunkSize);
         testAssert(ba.isAllocated(allocBase + (chunkSize * i)));
@@ -98,7 +99,7 @@ TestCase(BitAllocateBytes)
     {
         Allocator::Range args = { 0, i, 0 };
 
-        testAssert(ba.allocate(args, 0) == Allocator::Success);
+        testAssert(ba.allocate(args) == Allocator::Success);
         testAssert(args.address == allocBase + (chunkSize * (i-1)));
         testAssert(args.size == i);
         testAssert(ba.isAllocated(allocBase + (chunkSize * (i-1))));
@@ -125,7 +126,7 @@ TestCase(BitAllocateBytes)
     {
         Allocator::Range args = { 0, i, 0 };
 
-        testAssert(ba.allocate(args, 0) == Allocator::Success);
+        testAssert(ba.allocate(args) == Allocator::Success);
         testAssert(args.address == allocAddr);
         testAssert(args.size == i);
         testAssert(ba.isAllocated(allocAddr));
@@ -163,7 +164,7 @@ TestCase(BitAllocateAlignment)
     Allocator::Range args = { 0, chunkSize, 0 };
 
     // Allocate a chunk with the default alignment (which is one chunk)
-    testAssert(ba.allocate(args, 0) == Allocator::Success);
+    testAssert(ba.allocate(args) == Allocator::Success);
     testAssert((args.address % chunkSize) == 0);
     testAssert(args.size == chunkSize);
 
@@ -171,7 +172,7 @@ TestCase(BitAllocateAlignment)
     for (Size i = 1; i <= 10; i++)
     {
         args.size = i;
-        testAssert(ba.allocate(args, 0) == Allocator::Success);
+        testAssert(ba.allocate(args) == Allocator::Success);
         testAssert((args.address % chunkSize) == 0);
     }
 
@@ -180,7 +181,7 @@ TestCase(BitAllocateAlignment)
     {
         args.size = i;
         args.alignment = chunkSize * 3;
-        testAssert(ba.allocate(args, 0) == Allocator::Success);
+        testAssert(ba.allocate(args) == Allocator::Success);
         testAssert((args.address % (chunkSize * 3)) == 0);
     }
 
@@ -188,7 +189,7 @@ TestCase(BitAllocateAlignment)
     // a chunk size will be rejected
     args.size = 1;
     args.alignment = chunkSize + 1;
-    testAssert(ba.allocate(args, 0) == Allocator::InvalidAlignment);
+    testAssert(ba.allocate(args) == Allocator::InvalidAlignment);
 
     return OK;
 }
@@ -205,14 +206,14 @@ TestCase(BitAllocateStartFrom)
     BitAllocator ba(range, chunkSize);
     Allocator::Range args = { 0, chunkSize, 0 };
 
-    // Allocate one chunk, start searching at the 2nd chunk address
-    testAssert(ba.allocate(args, chunkSize) == Allocator::Success);
+    // Allocate one chunk, start searching at the 2nd bit
+    testAssert(ba.allocateFrom(args, 1) == Allocator::Success);
     testAssert(args.address == allocBase + chunkSize);
     testAssert(args.size == chunkSize);
     testAssert(ba.isAllocated(allocBase + chunkSize));
 
-    // Allocate one chunk, start searching just after the 2nd chunk address
-    testAssert(ba.allocate(args, chunkSize + 1) == Allocator::Success);
+    // Allocate one chunk, start searching at the 3rd bit
+    testAssert(ba.allocateFrom(args, 2) == Allocator::Success);
     testAssert(args.address == allocBase + (chunkSize * 2));
     testAssert(args.size == chunkSize);
     testAssert(ba.isAllocated(allocBase + (chunkSize * 2)));
@@ -234,7 +235,7 @@ TestCase(BitAllocateSpecific)
     // Make allocations with explicit addresses
     for (Size i = 1; i <= chunkSize; i++)
     {
-        testAssert(ba.allocate(allocBase + (chunkSize * (i-1))) == Allocator::Success);
+        testAssert(ba.allocateAt(allocBase + (chunkSize * (i-1))) == Allocator::Success);
         testAssert(ba.isAllocated(allocBase + (chunkSize * (i-1))));
     }
 
@@ -267,13 +268,13 @@ TestCase(BitAllocateFull)
     // Allocate ten pages
     for (Size i = 0; i < 10; i++)
     {
-        testAssert(ba.allocate(args, 0) == Allocator::Success);
+        testAssert(ba.allocate(args) == Allocator::Success);
         testAssert(args.address == range.address + (PAGESIZE * i));
         testAssert(args.size == PAGESIZE);
     }
 
     // Now we are full. Allocation should fail
-    testAssert(ba.allocate(args, 0) == Allocator::OutOfMemory);
+    testAssert(ba.allocate(args) == Allocator::OutOfMemory);
     testAssert(ba.available() == 0);
 
     return OK;
@@ -292,7 +293,7 @@ TestCase(BitRelease)
     // Allocate ten pages
     for (Size i = 0; i < 10; i++)
     {
-        testAssert(ba.allocate(args, 0) == Allocator::Success);
+        testAssert(ba.allocate(args) == Allocator::Success);
         testAssert(args.address == range.address + (PAGESIZE * i));
         testAssert(args.size == PAGESIZE);
     }
@@ -312,9 +313,11 @@ TestCase(BitRelease)
 
     // All chunks are free again. Confirm re-allocation works
     testAssert(ba.available() == rangeSize);
-    testAssert(ba.allocate(args, 0) == Allocator::Success);
-    testAssert(args.address == range.address);
+    testAssert(ba.allocate(args) == Allocator::Success);
     testAssert(args.size == PAGESIZE);
 
+    // Note that the search for the allocation address begins at the
+    // last successfully allocated address, which here is the last chunk
+    testAssert(args.address == range.address + rangeSize - chunkSize);
     return OK;
 }

@@ -17,6 +17,7 @@
 
 #include <Log.h>
 #include <String.h>
+#include <errno.h>
 #include "IPV4Address.h"
 
 IPV4Address::IPV4Address(IPV4 *ipv4)

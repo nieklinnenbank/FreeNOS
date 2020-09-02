@@ -15,8 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Log.h>
+#include <FreeNOS/System.h>
 #include <FreeNOS/ProcessManager.h>
+#include <Log.h>
 #include "PrivExec.h"
 
 API::Result PrivExecHandler(PrivOperation op, Address addr)
@@ -31,11 +32,11 @@ API::Result PrivExecHandler(PrivOperation op, Address addr)
         return API::Success;
     }
 
-    case Reboot:
+    case RebootSystem:
         cpu_reboot();
         while (true) ;
 
-    case Shutdown:
+    case ShutdownSystem:
         cpu_shutdown();
         return API::Success;
 
@@ -44,6 +45,10 @@ API::Result PrivExecHandler(PrivOperation op, Address addr)
         {
             (*Log::instance) << (char *)addr;
         }
+        return API::Success;
+
+    case Panic:
+        FATAL("panic in PID " << Kernel::instance->getProcessManager()->current()->getID());
         return API::Success;
 
     default:

@@ -15,35 +15,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
-#include <FileSystemMessage.h>
-#include "Runtime.h"
-#include <errno.h>
+#include <FileSystemClient.h>
+#include "errno.h"
+#include "limits.h"
+#include "stdio.h"
+#include "string.h"
 #include "sys/stat.h"
 
 int mkdir(const char *path, mode_t mode)
 {
-    FileSystemMessage msg;
-    ProcessID mnt = findMount(path);
+    const FileSystemClient filesystem;
 
-    // Fill message
-    msg.type   = ChannelMessage::Request;
-    msg.action = CreateFile;
-    msg.path   = (char *) path;
-    msg.mode   = mode;
-    msg.filetype = DirectoryFile;
-
-    // Ask the FileSystem to create it
-    if (mnt)
-    {
-        ChannelClient::instance->syncSendReceive(&msg, mnt);
-
-        // Set errno
-        errno = msg.result;
-    }
+    // Ask FileSystem to create the file for us
+    const FileSystem::Result result = filesystem.createFile(path,
+                                                            FileSystem::DirectoryFile,
+                                                           (FileSystem::FileModes) (mode & FILEMODE_MASK),
+                                                            DeviceID());
+    // Set errno
+    if (result == FileSystem::Success)
+        errno = ESUCCESS;
     else
-        errno = ENOENT;
+        errno = EIO;
 
-    // Success
-    return msg.result == ESUCCESS ? 0 : -1;
+    // Report result
+    return errno == ESUCCESS ? 0 : -1;
 }

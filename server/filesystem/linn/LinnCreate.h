@@ -21,6 +21,7 @@
 #include <BitArray.h>
 #include <List.h>
 #include <String.h>
+#include <FileSystem.h>
 #include "LinnSuperBlock.h"
 #include "LinnInode.h"
 
@@ -160,7 +161,7 @@ class LinnCreate
      *
      * @return LinnInode pointer.
      */
-    LinnInode * createInode(le32 inodeNum, FileType type, FileModes mode,
+    LinnInode * createInode(le32 inodeNum, FileSystem::FileType type, FileSystem::FileModes mode,
                             UserID uid = ZERO, GroupID gid = ZERO);
 
     /**
@@ -182,7 +183,7 @@ class LinnCreate
      * @param type FileType for the entry to insert.
      */
     void insertEntry(le32 dirInode, le32 entryInode,
-                     const char *name, FileType type);
+                     const char *name, FileSystem::FileType type);
 
     /**
      * Inserts the given directory and it's childs to the filesystem image.

@@ -97,6 +97,12 @@
  */
 
 /**
+ * @defgroup libarch_host Host
+ *
+ * Host architecture code is suitable for running on the host operating system.
+ */
+
+/**
  * @defgroup libexec libexec
  *
  * Executable formats library can parse and extract program code and data.
@@ -199,9 +205,9 @@
  */
 
 /**
- * @defgroup sysfs SysFS
+ * @defgroup datastore Datastore
  *
- * The system information filesystem (SysFS) provides current hardware and software information.
+ * Provides a key/value in-memory based data storage that can be used system wide.
  */
 
 /**

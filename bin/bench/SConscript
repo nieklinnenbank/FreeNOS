@@ -18,7 +18,9 @@
 Import('build_env')
 
 env = build_env.Clone()
-env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libexec',
-                    'libarch', 'libipc', 'libfs', 'librt', 'libapp' ])
-env.UseServers(['core'])
-env.TargetProgram('bench', Glob('*.cpp'), env['bin'])
+
+if env['ARCH'] == 'intel':
+    env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libexec',
+                        'libarch', 'libipc', 'libfs', 'librt', 'libapp' ])
+    env.UseServers(['core'])
+    env.TargetProgram('bench', Glob('*.cpp'), env['bin'])

@@ -171,11 +171,9 @@ class Process
     /**
      * Prevent process from sleeping.
      *
-     * @param ignorePendingSleep True to ignore any (just) pending sleep of this Process
-     *
      * @return Result code
      */
-    Result wakeup(bool ignorePendingSleep = false);
+    Result wakeup();
 
     /**
      * Stops the process for executing until woken up
@@ -201,7 +199,7 @@ class Process
      *
      * @return Result code
      */
-    Result raiseEvent(struct ProcessEvent *event);
+    Result raiseEvent(const struct ProcessEvent *event);
 
     /**
      * Get sleep timer.

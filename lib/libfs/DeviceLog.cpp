@@ -15,8 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string.h>
+#include <String.h>
 #include "IOBuffer.h"
+#include "FileSystem.h"
 #include "DeviceLog.h"
 
 DeviceLog::DeviceLog(Device & device)
@@ -26,10 +27,10 @@ DeviceLog::DeviceLog(Device & device)
 
 void DeviceLog::write(const char *str)
 {
-    Size len = strlen(str);
+    const Size len = String::length(str);
 
     FileSystemMessage msg;
-    msg.action = WriteFile;
+    msg.action = FileSystem::WriteFile;
     msg.size = len;
 
     IOBuffer buffer(&msg);

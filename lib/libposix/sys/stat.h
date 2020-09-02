@@ -18,9 +18,7 @@
 #ifndef __LIBPOSIX_STAT_H
 #define __LIBPOSIX_STAT_H
 
-#include <FileType.h>
-#include <FileMode.h>
-#include <FileStat.h>
+#include <FileSystem.h>
 #include <Macros.h>
 #include <errno.h>
 #include <time.h>
@@ -48,25 +46,25 @@
 #define S_IFMT   (FILETYPE_MASK << FILEMODE_BITS)
 
 /** Block special. */
-#define S_IFBLK  (BlockDeviceFile << FILEMODE_BITS)
+#define S_IFBLK  (FileSystem::BlockDeviceFile << FILEMODE_BITS)
 
 /** Character special. */
-#define S_IFCHR  (CharacterDeviceFile << FILEMODE_BITS)
+#define S_IFCHR  (FileSystem::CharacterDeviceFile << FILEMODE_BITS)
 
 /** FIFO special. */
-#define S_IFIFO  (FIFOFile << FILEMODE_BITS)
+#define S_IFIFO  (FileSystem::FIFOFile << FILEMODE_BITS)
 
 /** Regular. */
-#define S_IFREG  (RegularFile << FILEMODE_BITS)
+#define S_IFREG  (FileSystem::RegularFile << FILEMODE_BITS)
 
 /** Directory. */
-#define S_IFDIR  (DirectoryFile << FILEMODE_BITS)
+#define S_IFDIR  (FileSystem::DirectoryFile << FILEMODE_BITS)
 
 /** Symbolic link. */
-#define S_IFLNK  (SymlinkFile << FILEMODE_BITS)
+#define S_IFLNK  (FileSystem::SymlinkFile << FILEMODE_BITS)
 
 /** Socket. */
-#define S_IFSOCK (SocketFile << FILEMODE_BITS)
+#define S_IFSOCK (FileSystem::SocketFile << FILEMODE_BITS)
 
 /** @} */
 
@@ -84,40 +82,40 @@
  */
 
 /** Read, write, execute/search by owner. */
-#define S_IRWXU  OwnerRWX
+#define S_IRWXU  FileSystem::OwnerRWX
 
 /** Read permission, owner. */
-#define S_IRUSR  OwnerR
+#define S_IRUSR  FileSystem::OwnerR
 
 /** Write permission, owner. */
-#define S_IWUSR  OwnerW
+#define S_IWUSR  FileSystem::OwnerW
 
 /** Execute/search permission, owner. */
-#define S_IXUSR  OwnerX
+#define S_IXUSR  FileSystem::OwnerX
 
 /** Read, write, execute/search by group. */
-#define S_IRWXG  GroupRWX
+#define S_IRWXG  FileSystem::GroupRWX
 
 /** Read permission, group. */
-#define S_IRGRP  GroupR
+#define S_IRGRP  FileSystem::GroupR
 
 /** Write permission, group. */
-#define S_IWGRP  GroupW
+#define S_IWGRP  FileSystem::GroupW
 
 /** Execute/search permission, group. */
-#define S_IXGRP  GroupX
+#define S_IXGRP  FileSystem::GroupX
 
 /** Read, write, execute/search by others. */
-#define S_IRWXO  OtherRWX
+#define S_IRWXO  FileSystem::OtherRWX
 
 /** Read permission, others. */
-#define S_IROTH  OtherR
+#define S_IROTH  FileSystem::OtherR
 
 /** Write permission, others. */
-#define S_IWOTH  OtherW
+#define S_IWOTH  FileSystem::OtherW
 
 /** Execute/search permission, others. */
-#define S_IXOTH  OtherX
+#define S_IXOTH  FileSystem::OtherX
 
 /** @} */
 
@@ -170,7 +168,7 @@ struct stat
      * Instantiates the structure given an FileStat object.
      * @param stat FileStat pointer to copy from.
      */
-    void fromFileStat(FileStat *stat)
+    void fromFileStat(FileSystem::FileStat *stat)
     {
         this->st_mode  = stat->access;
         this->st_mode |= stat->type << FILEMODE_BITS;

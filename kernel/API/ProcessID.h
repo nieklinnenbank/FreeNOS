@@ -36,7 +36,7 @@
 #define KERNEL_PID      65533
 
 #define CORESRV_PID     0
-#define SYSFS_PID       1
+#define DATASTORE_PID   1
 #define ROOTFS_PID      2
 
 /**

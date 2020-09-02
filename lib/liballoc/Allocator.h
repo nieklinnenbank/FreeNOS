@@ -72,7 +72,12 @@ class Allocator
   public:
 
     /**
-     * Class constructor.
+     * Default class constructor.
+     */
+    Allocator();
+
+    /**
+     * Class constructor with Range input.
      *
      * @param range Block of continguous memory to manage.
      */
@@ -112,13 +117,6 @@ class Allocator
     Allocator * parent();
 
     /**
-     * Get memory size.
-     *
-     * @return Size of memory owned by the Allocator.
-     */
-    Size size() const;
-
-    /**
      * Get memory base address for allocations.
      *
      * @return Memory address used as base address
@@ -131,6 +129,13 @@ class Allocator
      * @return Memory alignment value in bytes
      */
     Size alignment() const;
+
+    /**
+     * Get memory size.
+     *
+     * @return Size of memory owned by the Allocator.
+     */
+    virtual Size size() const;
 
     /**
      * Get memory available.
@@ -187,12 +192,12 @@ class Allocator
     Range m_range;
 };
 
-#ifndef __HOST__
-
 /**
  * @name Dynamic memory allocation.
  * @{
  */
+
+#ifndef __HOST__
 
 /**
  * Allocate new memory.
@@ -250,6 +255,8 @@ inline void operator delete[] (void *mem)
     Allocator::getDefault()->release((Address)mem);
 }
 
+#endif /* __HOST__ */
+
 /**
  * Let the new() operator return the given memory address.
  *
@@ -264,8 +271,6 @@ inline void * operator new(__SIZE_TYPE__ sz, Address addr)
 /**
  * @}
  */
-
-#endif /* __HOST__ */
 
 /**
  * @}

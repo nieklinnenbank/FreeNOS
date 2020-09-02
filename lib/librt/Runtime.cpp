@@ -19,21 +19,16 @@
 #include <Types.h>
 #include <Macros.h>
 #include <Array.h>
+#include <FileSystemClient.h>
 #include <ChannelClient.h>
 #include <PoolAllocator.h>
 #include <FileSystemMount.h>
-#include <FileSystemMessage.h>
 #include <FileDescriptor.h>
 #include <MemoryMap.h>
-#include <Core.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <libgen.h>
-#include <fcntl.h>
-#include <dirent.h>
-#include "Runtime.h"
+#include <Memory.h>
 #include "PageAllocator.h"
+#include "KernelLog.h"
+#include "Runtime.h"
 
 /** List of constructors. */
 extern void (*CTOR_LIST)();
@@ -41,14 +36,8 @@ extern void (*CTOR_LIST)();
 /** List of destructors. */
 extern void (*DTOR_LIST)();
 
-/** FileSystem mounts table */
-static FileSystemMount mounts[FILESYSTEM_MAXMOUNTS];
-
-/** Table with FileDescriptors. */
-static FileDescriptor *files = (FileDescriptor *) NULL;
-
-/** Current Directory String */
-String *currentDirectory = (String *) NULL;
+/** Initial logging instance */
+static KernelLog log;
 
 void * __dso_handle = 0;
 
@@ -103,9 +92,6 @@ void setupHeap()
     PageAllocator *pageAlloc;
     PoolAllocator *poolAlloc;
     const Allocator::Range pageRange = { heap.virt, heap.size, PAGESIZE };
-    const Allocator::Range poolRange = {
-        0, heap.size - sizeof(PageAllocator) - sizeof(PoolAllocator), sizeof(u32)
-    };
 
     // Allocate one page to store the allocators themselves
     Memory::Range range;
@@ -113,7 +99,7 @@ void setupHeap()
     range.access = Memory::User | Memory::Readable | Memory::Writable;
     range.virt   = heap.virt;
     range.phys   = ZERO;
-    const API::Result result = VMCtl(SELF, Map, &range);
+    const API::Result result = VMCtl(SELF, MapContiguous, &range);
     if (result != API::Success)
     {
         PrivExec(WriteConsole, (Address) ("failed to allocate pages for heap: terminating"));
@@ -122,20 +108,10 @@ void setupHeap()
 
     // Allocate instance copy on vm pages itself
     pageAlloc = new (heap.virt) PageAllocator(pageRange);
-    poolAlloc = new (heap.virt + sizeof(PageAllocator)) PoolAllocator(poolRange);
-    poolAlloc->setParent(pageAlloc);
+    poolAlloc = new (heap.virt + sizeof(PageAllocator)) PoolAllocator(pageAlloc);
 
     // Set default allocator
     Allocator::setDefault(poolAlloc);
-}
-
-void setupRandomizer()
-{
-    ProcessID pid = getpid();
-    Timer::Info timer;
-    ProcessCtl(SELF, InfoTimer, (Address) &timer);
-
-    ::srandom(pid + timer.ticks);
 }
 
 void setupChannels()
@@ -148,14 +124,7 @@ void setupChannels()
 
 void setupMappings()
 {
-    // Fill the mounts table
-    memset(mounts, 0, sizeof(FileSystemMount) * FILESYSTEM_MAXMOUNTS);
-    strlcpy(mounts[0].path, "/sys", PATH_MAX);
-    strlcpy(mounts[1].path, "/", PATH_MAX);
-    mounts[0].procID  = SYSFS_PID;
-    mounts[0].options = ZERO;
-    mounts[1].procID  = ROOTFS_PID;
-    mounts[1].options = ZERO;
+    FileSystemClient filesystem;
 
     // Map user program arguments
     Arch::MemoryMap map;
@@ -163,115 +132,18 @@ void setupMappings()
 
     // First page is the argc+argv (skip here)
     // Second page is the current working directory
-    currentDirectory = new String((char *) argRange.virt + PAGESIZE, false);
+    filesystem.setCurrentDirectory(new String((char *) argRange.virt + PAGESIZE, false));
 
     // Third page and above contain the file descriptors table
-    files = (FileDescriptor *) (argRange.virt + (PAGESIZE * 2));
+    setFiles((FileDescriptor *) (argRange.virt + (PAGESIZE * 2)));
 
     // Inherit file descriptors table from parent (if any).
     // Without a parent, just clear the file descriptors
-    if (getppid() == 0)
+    if (ProcessCtl(SELF, GetParent) == 0)
     {
-        memset(files, 0, argRange.size - (PAGESIZE * 2));
-        (*currentDirectory) = "/";
+        MemoryBlock::set(getFiles(), 0, argRange.size - (PAGESIZE * 2));
+        filesystem.setCurrentDirectory(String("/"));
     }
-}
-
-ProcessID findMount(const char *path)
-{
-    FileSystemMount *m = ZERO;
-    Size length = 0, len;
-    char tmp[PATH_MAX];
-
-    // Is the path relative?
-    if (path[0] != '/')
-    {
-        getcwd(tmp, sizeof(tmp));
-        snprintf(tmp, sizeof(tmp), "%s/%s", tmp, path);
-    }
-    else
-        strlcpy(tmp, path, PATH_MAX);
-
-    // Find the longest match
-    for (Size i = 0; i < FILESYSTEM_MAXMOUNTS; i++)
-    {
-        if (mounts[i].path[0])
-        {
-            len = strlen(mounts[i].path);
-
-            // Only choose this mount, if it matches,
-            // and is longer than the last match.
-            if (strncmp(tmp, mounts[i].path, len) == 0 && len > length)
-            {
-                length = len;
-                m = &mounts[i];
-            }
-        }
-    }
-
-    // All done
-    return m ? m->procID : ZERO;
-}
-
-void refreshMounts(const char *path)
-{
-    FileSystemMessage msg;
-    pid_t pid = getpid();
-
-    // Skip for rootfs and sysfs
-    if (pid == ROOTFS_PID || pid == SYSFS_PID)
-        return;
-
-    // Clear mounts table
-    MemoryBlock::set(&mounts[2], 0, sizeof(FileSystemMount) * (FILESYSTEM_MAXMOUNTS-2));
-
-    // Re-read the mounts table from SysFS.
-    msg.type   = ChannelMessage::Request;
-    msg.action = ReadFile;
-    msg.path   = "/sys/mounts";
-    msg.buffer = (char *) &mounts;
-    msg.size   = sizeof(FileSystemMount) * FILESYSTEM_MAXMOUNTS;
-    msg.offset = 0;
-    msg.from   = SELF;
-    ChannelClient::instance->syncSendReceive(&msg, SYSFS_PID);
-}
-
-ProcessID findMount(int fildes)
-{
-    if (files != NULL)
-        return files[fildes].open ? files[fildes].mount : ZERO;
-    else
-        return ZERO;
-}
-
-void waitMount(const char *path)
-{
-    FileSystemMessage msg;
-
-    // Send a write containing the requested path to the 'mountwait' file on SysFS
-    msg.type   = ChannelMessage::Request;
-    msg.action = WriteFile;
-    msg.path   = "/sys/mountwait";
-    msg.buffer = (char *) path;
-    msg.size   = strlen(path);
-    msg.offset = 0;
-    msg.from   = SELF;
-    ChannelClient::instance->syncSendReceive(&msg, SYSFS_PID);
-}
-
-FileSystemMount * getMounts()
-{
-    return mounts;
-}
-
-FileDescriptor * getFiles(void)
-{
-    return files;
-}
-
-String * getCurrentDirectory()
-{
-    return currentDirectory;
 }
 
 extern C void SECTION(".entry") _entry()
@@ -290,11 +162,10 @@ extern C void SECTION(".entry") _entry()
     runConstructors();
     setupChannels();
     setupMappings();
-    setupRandomizer();
 
     // Allocate buffer for arguments
     argc = 0;
-    argv = (char **) new char[ARGV_COUNT];
+    argv = new char*[ARGV_COUNT];
     arguments = (char *) map.range(MemoryMap::UserArgs).virt;
 
     // Fill in arguments list
@@ -310,5 +181,5 @@ extern C void SECTION(".entry") _entry()
 
     // Terminate execution
     runDestructors();
-    exit(ret);
+    ProcessCtl(SELF, KillPID, ret);
 }

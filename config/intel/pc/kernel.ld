@@ -26,9 +26,10 @@ SECTIONS
 
     .text :
     {
-        *(.boot)
+        KEEP (*(.boot))
         *(.text)
         *(*.text)
+        *(.text*)
         *(.gnu.linkonce.*)
         *(.rodata)
         *(.rodata.*)
@@ -71,7 +72,8 @@ SECTIONS
     {
         __bss_start = .;
         *(.bss)
-        *(.bss.*)
+        *(*.bss)
+        *(.bss*)
         __bss_end = .;
         *(COMMON)
 

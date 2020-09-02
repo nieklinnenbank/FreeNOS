@@ -17,26 +17,27 @@
 
 #include <FreeNOS/System.h>
 #include "MemoryContext.h"
-#include "Core.h"
+#include "CoreInfo.h"
 #include "IO.h"
 
 IO::IO()
 {
-    m_base = 0;
+    m_base = IO_BASE;
 }
 
-uint IO::getBase() const
+Address IO::getBase() const
 {
     return m_base;
 }
 
-void IO::setBase(uint base)
+void IO::setBase(const Address base)
 {
     m_base = base;
 }
 
 IO::Result IO::map(Address phys, Size size, Memory::Access access)
 {
+#ifndef __HOST__
     m_range.virt   = 0;
     m_range.phys   = phys;
     m_range.access = access;
@@ -44,7 +45,7 @@ IO::Result IO::map(Address phys, Size size, Memory::Access access)
 
     if (!isKernel)
     {
-        if (VMCtl(SELF, Map, &m_range) != API::Success)
+        if (VMCtl(SELF, MapContiguous, &m_range) != API::Success)
             return MapFailure;
     }
     else
@@ -62,11 +63,13 @@ IO::Result IO::map(Address phys, Size size, Memory::Access access)
             return MapFailure;
     }
     m_base = m_range.virt;
+#endif /* __HOST__ */
     return Success;
 }
 
 IO::Result IO::unmap()
 {
+#ifndef __HOST__
     if (!isKernel)
     {
         if (VMCtl(SELF, UnMap, &m_range) != API::Success)
@@ -81,5 +84,6 @@ IO::Result IO::unmap()
         if (ctx->unmapRange(&m_range) != MemoryContext::Success)
             return MapFailure;
     }
+#endif /* __HOST__ */
     return Success;
 }

@@ -19,6 +19,7 @@
 #define __LIBARCH_MEMORY_H
 
 #include <Types.h>
+#include <Macros.h>
 #include <BitOperations.h>
 
 /**
@@ -60,6 +61,11 @@ namespace Memory
     }
     Range;
 };
+
+/**
+ * Generic function to clear the BSS memory section to zero
+ */
+extern C void clearBSS();
 
 /**
  * @}

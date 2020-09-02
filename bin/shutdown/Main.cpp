@@ -15,9 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
+#include "Shutdown.h"
 
 int main(int argc, char **argv)
 {
-    return PrivExec(Shutdown);
+    Shutdown app(argc, argv);
+    return app.run();
 }

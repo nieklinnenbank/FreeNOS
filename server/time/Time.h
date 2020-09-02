@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2020 Niek Linnenbank
  * Copyright (C) 2009 Coen Bijlsma
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,9 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __TIME_TIME_H
-#define __TIME_TIME_H
+#ifndef __SERVER_TIME_TIME_H
+#define __SERVER_TIME_TIME_H
 
+#include <FreeNOS/System.h>
 #include <Macros.h>
 #include <Types.h>
 #include <Device.h>
@@ -104,7 +106,7 @@ class Time : public Device
      *
      * @return Error status code.
      */
-    virtual Error initialize();
+    virtual FileSystem::Error initialize();
 
     /**
      * @brief Read the system time.
@@ -115,7 +117,7 @@ class Time : public Device
      *
      * @return Number of bytes on success and ZERO on failure.
      */
-    virtual Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
 
   private:
 
@@ -140,6 +142,11 @@ class Time : public Device
      * @return A binary integer.
      */
     unsigned bcd2bin(unsigned char val);
+
+  private:
+
+    /** Port I/O object. */
+    Arch::IO m_io;
 };
 
 /**
@@ -147,4 +154,4 @@ class Time : public Device
  * @}
  */
 
-#endif /* __TIME_TIME_H */
+#endif /* __SERVER_TIME_TIME_H */

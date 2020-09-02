@@ -16,17 +16,21 @@
  */
 
 #include <DeviceServer.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include "Time.h"
 
 int main(int argc, char **argv)
 {
     DeviceServer server("/dev/time");
-    server.initialize();
+    server.registerDevice(new Time(), "rtc0");
+
+    // Initialize
+    const FileSystem::Result result = server.initialize();
+    if (result != FileSystem::Success)
+    {
+        ERROR("failed to initialize: result = " << (int) result);
+        return 1;
+    }
 
     // Start serving requests
-    Time* t = new Time();
-    server.registerDevice(t, "rtc0");
     return server.run();
 }

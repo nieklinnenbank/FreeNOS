@@ -56,14 +56,14 @@ class SingleCoreServer : public CoreServer
      *
      * @return Result code
      */
-    virtual Result bootCore(uint coreId, CoreInfo *info);
+    virtual Core::Result bootCore(uint coreId, CoreInfo *info);
 
     /**
      * Discover processor cores
      *
      * @return Result code
      */
-    virtual Result discoverCores();
+    virtual Core::Result discoverCores();
 
     /**
      * Wait for Inter-Processor-Interrupt
@@ -77,7 +77,7 @@ class SingleCoreServer : public CoreServer
      *
      * @return Result code
      */
-    virtual Result sendIPI(uint coreId);
+    virtual Core::Result sendIPI(uint coreId);
 };
 
 /**

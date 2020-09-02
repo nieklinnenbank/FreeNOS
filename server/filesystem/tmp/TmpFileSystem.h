@@ -19,8 +19,7 @@
 #define __FILESYSTEM_TMPFILESYSTEM_H
 
 #include <FileSystem.h>
-#include <FileSystemMessage.h>
-#include <FileSystemPath.h>
+#include <FileSystemServer.h>
 #include <Types.h>
 
 /**
@@ -34,7 +33,7 @@
 /**
  * Temporary filesystem (TmpFS). Maps files into virtual memory.
  */
-class TmpFileSystem : public FileSystem
+class TmpFileSystem : public FileSystemServer
 {
   public:
 
@@ -57,7 +56,7 @@ class TmpFileSystem : public FileSystem
      * @see File
      * @see FileSystemPath
      */
-    virtual File * createFile(FileType type, DeviceID deviceID);
+    virtual File * createFile(FileSystem::FileType type, DeviceID deviceID);
 };
 
 /**

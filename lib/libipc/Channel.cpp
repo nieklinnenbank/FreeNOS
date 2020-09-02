@@ -17,11 +17,10 @@
 
 #include "Channel.h"
 
-Channel::Channel()
+Channel::Channel(const Channel::Mode mode, const Size messageSize)
+    : m_mode(mode)
+    , m_messageSize(messageSize)
 {
-    m_mode = Consumer;
-    m_messageSize = 0;
-    m_maximumMessages = 0;
 }
 
 Channel::~Channel()
@@ -33,19 +32,17 @@ const Size Channel::getMessageSize() const
     return m_messageSize;
 }
 
-const Size Channel::getMaximumMessages() const
+Channel::Result Channel::read(void *buffer)
 {
-    return m_maximumMessages;
+    return NotSupported;
 }
 
-Channel::Result Channel::setMode(Channel::Mode mode)
+Channel::Result Channel::write(const void *buffer)
 {
-    m_mode = mode;
-    return Success;
+    return NotSupported;
 }
 
-Channel::Result Channel::setMessageSize(Size size)
+Channel::Result Channel::flush()
 {
-    m_messageSize = size;
-    return Success;
+    return NotSupported;
 }

@@ -17,4 +17,5 @@
 
 Import('*')
 
-SubDirectories()
+if build_env['ARCH'] == 'arm' and build_env['SYSTEM'] == 'raspberry':
+    SubDirectories()

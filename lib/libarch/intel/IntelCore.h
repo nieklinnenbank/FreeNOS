@@ -20,7 +20,7 @@
 
 #include <Types.h>
 #include <Macros.h>
-#include <Core.h>
+#include "Endian.h"
 #include "IntelIO.h"
 
 /**
@@ -254,7 +254,7 @@ CPUState;
 /**
  * Intel CPU Core.
  */
-class IntelCore : public Core
+class IntelCore
 {
   public:
 

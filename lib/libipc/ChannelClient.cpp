@@ -15,9 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
+#include <FreeNOS/User.h>
 #include <HashIterator.h>
-#include <FileSystemMessage.h>
 #include "ChannelClient.h"
 #include "MemoryChannel.h"
 
@@ -47,29 +46,25 @@ ChannelClient::Result ChannelClient::initialize()
     return Success;
 }
 
-ChannelClient::Result ChannelClient::connect(ProcessID pid, Size messageSize)
+ChannelClient::Result ChannelClient::connect(const ProcessID pid, const Size messageSize)
 {
     Address prodAddr, consAddr;
-    SystemInformation info;
+    const SystemInformation info;
 
     // Allocate consumer
-    MemoryChannel *cons = new MemoryChannel;
+    MemoryChannel *cons = new MemoryChannel(Channel::Consumer, messageSize);
     if (!cons)
     {
         return OutOfMemory;
     }
-    cons->setMessageSize(messageSize);
-    cons->setMode(Channel::Consumer);
 
     // Allocate producer
-    MemoryChannel *prod = new MemoryChannel;
+    MemoryChannel *prod = new MemoryChannel(Channel::Producer, messageSize);
     if (!prod)
     {
         delete cons;
         return OutOfMemory;
     }
-    prod->setMessageSize(messageSize);
-    prod->setMode(Channel::Producer);
 
     // Call VMShare to create shared memory mapping for MemoryChannel.
     ProcessShares::MemoryShare share;
@@ -82,7 +77,7 @@ ChannelClient::Result ChannelClient::connect(ProcessID pid, Size messageSize)
     share.range.access = Memory::User | Memory::Readable | Memory::Writable;
 
     // Create shared memory mapping
-    Error r = VMShare(pid, API::Create, &share);
+    const Error r = VMShare(pid, API::Create, &share);
     switch (r)
     {
         case API::Success:
@@ -125,8 +120,10 @@ ChannelClient::Result ChannelClient::connect(ProcessID pid, Size messageSize)
     return Success;
 }
 
-ChannelClient::Result ChannelClient::receiveAny(void *buffer, ProcessID *pid)
+ChannelClient::Result ChannelClient::receiveAny(void *buffer, const Size msgSize, ProcessID *pid)
 {
+    assert(msgSize > 0);
+
     for (HashIterator<ProcessID, Channel *> i(m_registry->getConsumers()); i.hasCurrent(); i++)
     {
         if (i.current()->read(buffer) == Channel::Success)
@@ -138,13 +135,14 @@ ChannelClient::Result ChannelClient::receiveAny(void *buffer, ProcessID *pid)
     return NotFound;
 }
 
-ChannelClient::Result ChannelClient::sendRequest(ProcessID pid,
+ChannelClient::Result ChannelClient::sendRequest(const ProcessID pid,
                                                  void *buffer,
+                                                 const Size msgSize,
                                                  CallbackFunction *callback)
 {
     Request *req = 0;
     Size identifier = 0;
-    Channel *ch  = findProducer(pid);
+    Channel *ch = findProducer(pid, msgSize);
     if (!ch)
         return NotFound;
 
@@ -158,6 +156,7 @@ ChannelClient::Result ChannelClient::sendRequest(ProcessID pid,
             break;
         }
     }
+
     // Allocate new request object if none available
     if (!req || req->active)
     {
@@ -167,6 +166,7 @@ ChannelClient::Result ChannelClient::sendRequest(ProcessID pid,
         assert(req->message != NULL);
         identifier   = m_requests.insert(*req);
     }
+
     // Fill request object
     MemoryBlock::copy(req->message, buffer, ch->getMessageSize());
     req->pid = pid;
@@ -183,15 +183,16 @@ ChannelClient::Result ChannelClient::sendRequest(ProcessID pid,
         req->active = false;
         return IOError;
     }
+
     // Wakeup the receiver
     ProcessCtl(pid, Resume, 0);
     return Success;
 }
 
-ChannelClient::Result ChannelClient::processResponse(ProcessID pid,
+ChannelClient::Result ChannelClient::processResponse(const ProcessID pid,
                                                      ChannelMessage *msg)
 {
-    Size count = m_requests.count();
+    const Size count = m_requests.count();
 
     for (Size i = 0; i < count; i++)
     {
@@ -210,37 +211,35 @@ ChannelClient::Result ChannelClient::processResponse(ProcessID pid,
 }
 
 
-Channel * ChannelClient::findConsumer(ProcessID pid)
+Channel * ChannelClient::findConsumer(const ProcessID pid, const Size msgSize)
 {
-    Result r;
     Channel *ch = m_registry->getConsumer(pid);
     if (ch)
         return ch;
 
     // Try to connect
-    if ((r = connect(pid)) != Success)
+    if (connect(pid, msgSize) != Success)
         return ZERO;
 
     return m_registry->getConsumer(pid);
 }
 
-Channel * ChannelClient::findProducer(ProcessID pid)
+Channel * ChannelClient::findProducer(const ProcessID pid, const Size msgSize)
 {
-    Result r;
     Channel *ch = m_registry->getProducer(pid);
     if (ch)
         return ch;
 
     // Try to connect
-    if ((r = connect(pid)) != Success)
+    if (connect(pid, msgSize) != Success)
         return ZERO;
 
     return m_registry->getProducer(pid);
 }
 
-ChannelClient::Result ChannelClient::syncReceiveFrom(void *buffer, ProcessID pid)
+ChannelClient::Result ChannelClient::syncReceiveFrom(void *buffer, const Size msgSize, const ProcessID pid)
 {
-    Channel *ch = findConsumer(pid);
+    Channel *ch = findConsumer(pid, msgSize);
     if (!ch)
         return NotFound;
 
@@ -250,9 +249,9 @@ ChannelClient::Result ChannelClient::syncReceiveFrom(void *buffer, ProcessID pid
     return Success;
 }
 
-ChannelClient::Result ChannelClient::syncSendTo(void *buffer, ProcessID pid)
+ChannelClient::Result ChannelClient::syncSendTo(const void *buffer, const Size msgSize, const ProcessID pid)
 {
-    Channel *ch = findProducer(pid);
+    Channel *ch = findProducer(pid, msgSize);
     if (!ch)
         return NotFound;
 
@@ -276,11 +275,11 @@ ChannelClient::Result ChannelClient::syncSendTo(void *buffer, ProcessID pid)
     return IOError;
 }
 
-ChannelClient::Result ChannelClient::syncSendReceive(void *buffer, ProcessID pid)
+ChannelClient::Result ChannelClient::syncSendReceive(void *buffer, const Size msgSize, const ProcessID pid)
 {
-    Result r = syncSendTo(buffer, pid);
-    if (r != Success)
-        return r;
+    const Result result = syncSendTo(buffer, msgSize, pid);
+    if (result != Success)
+        return result;
 
-    return syncReceiveFrom(buffer, pid);
+    return syncReceiveFrom(buffer, msgSize, pid);
 }

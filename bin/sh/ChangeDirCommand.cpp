@@ -21,7 +21,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <Log.h>
-#include <Runtime.h>
 
 ChangeDirCommand::ChangeDirCommand()
     : ShellCommand("cd", 1)
@@ -29,10 +28,8 @@ ChangeDirCommand::ChangeDirCommand()
     m_help = "Change the current working directory";
 }
 
-int ChangeDirCommand::execute(Size nparams, char **params)
+int ChangeDirCommand::execute(const Size nparams, const char **params)
 {
-    refreshMounts(0);
-
     if (chdir(params[0]) != 0)
     {
         ERROR(getName() << ": failed to change directory to `" << params[0] << "': " << strerror(errno));

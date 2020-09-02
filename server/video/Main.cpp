@@ -15,18 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FileType.h>
 #include <DeviceServer.h>
 #include "VGA.h"
-#include <stdlib.h>
-#include <unistd.h>
 
 int main(int argc, char **argv)
 {
     DeviceServer server("/dev/video");
-    server.initialize();
+    server.registerDevice(new VGA, "vga0");
+
+    // Initialize
+    const FileSystem::Result result = server.initialize();
+    if (result != FileSystem::Success)
+    {
+        ERROR("failed to initialize: result = " << (int) result);
+        return 1;
+    }
 
     // Start serving requests.
-    server.registerDevice(new VGA, "vga0");
     return server.run();
 }

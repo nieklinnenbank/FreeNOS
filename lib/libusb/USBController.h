@@ -49,15 +49,15 @@ class USBController : public DeviceServer
      *
      * @return Result code
      */
-    virtual Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
      * Submit USB transfer.
      *
      * @return Result code
      */
-    virtual Error transfer(const FileSystemMessage *msg,
-                           USBMessage *usb) = 0;
+    virtual FileSystem::Error transfer(const FileSystemMessage *msg,
+                                       USBMessage *usb) = 0;
 
   protected:
 

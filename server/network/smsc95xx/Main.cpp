@@ -25,9 +25,15 @@ int main(int argc, char **argv)
     log.setMinimumLogLevel(Log::Notice);
 
     NetworkServer server("/network/smsc95xx");
-
-    server.initialize();
     server.registerDevice(new SMSC95xx(2, "/usb", &server), "io");
+
+    // Initialize
+    const FileSystem::Result result = server.initialize();
+    if (result != FileSystem::Success)
+    {
+        ERROR("failed to initialize: result = " << (int) result);
+        return 1;
+    }
 
     // Start serving requests
     return server.run();

@@ -47,8 +47,11 @@ class BitAllocator : public Allocator
      * @param range Block of continguous memory to manage.
      * @param chunkSize The input memory range will be divided into equally sized chunks.
      *                  The chunkSize must be greater than zero.
+     * @param bitmap Pointer to existing bitmap array or ZERO to allocate new.
      */
-    BitAllocator(const Range range, const Size chunkSize);
+    BitAllocator(const Range range,
+                 const Size chunkSize,
+                 u8 *bitmap = ZERO);
 
     /**
      * Get chunk size.
@@ -81,11 +84,11 @@ class BitAllocator : public Allocator
      * @param args Contains the requested size and alignment on input.
      *             The alignment value must be a multiple of the chunk size.
      *             On output, contains the actual allocated address.
-     * @param allocStart Allocation address to start searching at.
+     * @param bit Bit position in the bitmap array to start searching at.
      *
      * @return Result value.
      */
-    Result allocate(Range & args, const Address allocStart = 0);
+    Result allocateFrom(Range & args, const Size startBit);
 
     /**
      * Allocate a specific address.
@@ -94,7 +97,7 @@ class BitAllocator : public Allocator
      *
      * @return Result value.
      */
-    Result allocate(const Address addr);
+    Result allocateAt(const Address addr);
 
     /**
      * Check if a chunk is allocated.
@@ -118,6 +121,9 @@ class BitAllocator : public Allocator
 
     /** Size of each chunk. */
     const Size m_chunkSize;
+
+    /** Last bit that was set. */
+    Size m_lastBit;
 };
 
 /**

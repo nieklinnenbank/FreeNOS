@@ -15,10 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
+#include <FreeNOS/User.h>
 #include "LinnFileSystem.h"
 #include "LinnFile.h"
-#include <string.h>
 
 LinnFile::LinnFile(LinnFileSystem *f, LinnInode *i)
     : fs(f), inode(i)
@@ -31,14 +30,14 @@ LinnFile::~LinnFile()
 {
 }
 
-Error LinnFile::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error LinnFile::read(IOBuffer & buffer, Size size, Size offset)
 {
     LinnSuperBlock *sb;
     Size bytes = 0, blockNr = 0;
     u64 storageOffset, copyOffset = offset;
     static u8 block[LINN_MAX_BLOCK_SIZE];
     Size total = 0;
-    Error e;
+    FileSystem::Error e;
 
     // Initialize variables.
     sb     = fs->getSuperBlock();
@@ -62,8 +61,9 @@ Error LinnFile::read(IOBuffer & buffer, Size size, Size offset)
         // Fetch the next block.
         if (fs->getStorage()->read(storageOffset, block, sb->blockSize) < 0)
         {
-            return EIO;
+            return FileSystem::IOError;
         }
+
         // Calculate the number of bytes to copy.
         bytes = sb->blockSize - copyOffset;
 
@@ -72,16 +72,19 @@ Error LinnFile::read(IOBuffer & buffer, Size size, Size offset)
         {
             bytes = inode->size - (offset + total);
         }
+
         // Respect the remote process buffer.
         if (bytes > size - total)
         {
             bytes = size - total;
         }
+
         // Copy into the buffer.
         if ((e = buffer.write(block + copyOffset, bytes, total)) < 0)
         {
             return e;
         }
+
         // Update state.
         total      += bytes;
         copyOffset  = 0;

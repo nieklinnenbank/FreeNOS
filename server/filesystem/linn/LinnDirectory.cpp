@@ -15,8 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
+#include <FreeNOS/User.h>
 #include <Assert.h>
+#include <MemoryBlock.h>
+#include <String.h>
 #include "LinnDirectory.h"
 #include "LinnFile.h"
 
@@ -29,13 +31,13 @@ LinnDirectory::LinnDirectory(LinnFileSystem *f,
     m_access = inode->mode;
 }
 
-Error LinnDirectory::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Error LinnDirectory::read(IOBuffer & buffer, Size size, Size offset)
 {
     LinnSuperBlock *sb = fs->getSuperBlock();
     LinnDirectoryEntry dent;
     LinnInode *dInode;
     Size bytes = ZERO, blk;
-    Error e;
+    FileSystem::Error e;
     Dirent tmp;
 
     // Read directory entries
@@ -55,20 +57,22 @@ Error LinnDirectory::read(IOBuffer & buffer, Size size, Size offset)
         if (fs->getStorage()->read(off, &dent,
                                    sizeof(LinnDirectoryEntry)) < 0)
         {
-            return EACCES;
+            return FileSystem::PermissionDenied;
         }
+
         // Can we read another entry?
         if (bytes + sizeof(Dirent) > size)
         {
-            return EFAULT;
+            return FileSystem::InvalidArgument;
         }
+
         // Fill in the Dirent.
         if (!(dInode = fs->getInode(dent.inode)))
         {
-            return EINVAL;
+            return FileSystem::NotFound;
         }
-        strlcpy(tmp.name, dent.name, LINN_DIRENT_NAME_LEN);
-        tmp.type = (FileType) dInode->type;
+        MemoryBlock::copy(tmp.name, dent.name, LINN_DIRENT_NAME_LEN);
+        tmp.type = (FileSystem::FileType) dInode->type;
 
         // Copy to the buffer.
         if (( e = buffer.write(&tmp, sizeof(Dirent), bytes)) < 0)
@@ -95,15 +99,15 @@ File * LinnDirectory::lookup(const char *name)
         return ZERO;
 
     // Create the appropriate in-memory file.
-    switch ((FileType)inode->type)
+    switch ((FileSystem::FileType)inode->type)
     {
-        case DirectoryFile: {
+        case FileSystem::DirectoryFile: {
             LinnDirectory *dir = new LinnDirectory(fs, inode);
             assert(dir != NULL);
             return dir;
         }
 
-        case RegularFile: {
+        case FileSystem::RegularFile: {
             LinnFile *file = new LinnFile(fs, inode);
             assert(file != NULL);
             return file;
@@ -117,6 +121,7 @@ File * LinnDirectory::lookup(const char *name)
 bool LinnDirectory::getLinnDirectoryEntry(LinnDirectoryEntry *dent,
                                           const char *name)
 {
+    const String nameStr(name, false);
     LinnSuperBlock *sb = fs->getSuperBlock();
     u64 offset;
 
@@ -136,13 +141,15 @@ bool LinnDirectory::getLinnDirectoryEntry(LinnDirectoryEntry *dent,
             {
                 return false;
             }
+
             // Is it the entry we are looking for?
-            if (strcmp(name, dent->name) == 0)
+            if (nameStr.equals(dent->name))
             {
                 return true;
             }
         }
     }
+
     // Not found.
     return false;
 }

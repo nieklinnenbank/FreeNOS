@@ -312,7 +312,7 @@ class String : public Sequence<char>
      *
      * @return Signed long integer
      */
-    long toLong(Number::Base base = Number::Dec);
+    long toLong(Number::Base base = Number::Dec) const;
 
     /**
      * Pad line with trailing whitespace.

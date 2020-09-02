@@ -18,7 +18,7 @@
 #ifndef __LIBALLOC_PAGEALLOCATOR_H
 #define __LIBALLOC_PAGEALLOCATOR_H
 
-#include <FreeNOS/System.h>
+#include <FreeNOS/Constant.h>
 #include <Types.h>
 #include "Allocator.h"
 
@@ -38,7 +38,7 @@ class PageAllocator : public Allocator
   private:
 
     /** Minimum size required for allocations */
-    static const Size MinimumAllocationSize = PAGESIZE * 2;
+    static const Size MinimumAllocationSize = PAGESIZE * 32U;
 
   public:
 

@@ -18,7 +18,8 @@
 #ifndef __API_VMCTL_H
 #define __API_VMCTL_H
 
-#include <FreeNOS/System.h>
+#include <Types.h>
+#include <Memory.h>
 
 /**
  * @addtogroup kernel
@@ -33,14 +34,16 @@
  */
 typedef enum MemoryOperation
 {
-    Map = 0,
+    MapContiguous = 0,
+    MapSparse,
     UnMap,
     Release,
     LookupVirtual,
     Access,
     ReserveMem,
     AddMem,
-    CacheClean
+    CacheClean,
+    CacheCleanInvalidate
 }
 MemoryOperation;
 

@@ -15,17 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
-#include <sys/types.h>
 #include <MemoryBlock.h>
 #include "ELF.h"
 
-ELF::ELF(const u8 *image, Size size)
+ELF::ELF(const u8 *image, const Size size)
     : ExecutableFormat(image, size)
 {
 }
@@ -34,9 +27,9 @@ ELF::~ELF()
 {
 }
 
-ELF::Result ELF::detect(const u8 *image, Size size, ExecutableFormat **fmt)
+ELF::Result ELF::detect(const u8 *image, const Size size, ExecutableFormat **fmt)
 {
-    ELFHeader *header = (ELFHeader *) image;
+    const ELFHeader *header = (const ELFHeader *) image;
 
     // Verify ELF magic bytes
     if (header->ident[ELF_INDEX_MAGIC0] == ELF_MAGIC0 &&
@@ -58,9 +51,11 @@ ELF::Result ELF::detect(const u8 *image, Size size, ExecutableFormat **fmt)
 
 ELF::Result ELF::regions(ELF::Region *regions, Size *count) const
 {
-    ELFSegment *segments;
-    ELFHeader *header = (ELFHeader *) m_image;
-    Size max = *count, num = header->programHeaderEntryCount, c = 0;
+    const ELFHeader *header = (const ELFHeader *) m_image;
+    const ELFSegment *segments = (const ELFSegment *) (m_image + header->programHeaderOffset);
+    const Size maxSegments = header->programHeaderEntryCount;
+    const Size maxRegions = *count;
+    Size numRegions = 0, numSegments = 0;
 
     // Must be of the same sizes
     if (!(header->programHeaderEntrySize == sizeof(ELFSegment) &&
@@ -69,43 +64,29 @@ ELF::Result ELF::regions(ELF::Region *regions, Size *count) const
         return InvalidFormat;
     }
 
-    // Point to the program segments
-    segments = (ELFSegment *) (m_image + header->programHeaderOffset);
-    (*count) = 0;
-
     // Fill in the memory regions
-    for (Size i = 0; c < max && i < num; i++)
+    for (;numRegions < maxRegions && numSegments < maxSegments; numSegments++)
     {
         // We are only interested in loadable segments
-        if (segments[i].type != ELF_SEGMENT_LOAD)
+        if (segments[numSegments].type != ELF_SEGMENT_LOAD)
             continue;
 
-        regions[c].virt   = segments[i].virtualAddress;
-        regions[c].size   = segments[i].memorySize;
-        regions[c].access = Memory::User | Memory::Readable | Memory::Writable;
-        regions[c].data   = new u8[segments[i].memorySize];
-
-        // Read segment contents from file
-        MemoryBlock::copy(regions[c].data, m_image + segments[i].offset,
-                          segments[i].fileSize);
-
-        // Nulify remaining space
-        if (segments[i].memorySize > segments[i].fileSize)
-        {
-            memset(regions[c].data + segments[i].fileSize, 0,
-                   segments[i].memorySize - segments[i].fileSize);
-        }
-        c++;
+        // Fill the region structure
+        regions[numRegions].virt       = segments[numSegments].virtualAddress;
+        regions[numRegions].dataOffset = segments[numSegments].offset;
+        regions[numRegions].dataSize   = segments[numSegments].fileSize;
+        regions[numRegions].memorySize = segments[numSegments].memorySize;
+        regions[numRegions++].access   = Memory::User | Memory::Readable | Memory::Writable | Memory::Executable;
     }
 
     // All done
-    (*count) = c;
+    (*count) = numRegions;
     return Success;
 }
 
 ELF::Result ELF::entry(Address *entry) const
 {
-    ELFHeader *header = (ELFHeader *) m_image;
+    const ELFHeader *header = (const ELFHeader *) m_image;
     *entry = header->entry;
     return Success;
 }

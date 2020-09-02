@@ -15,16 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FileType.h>
 #include <DeviceServer.h>
 #include "Keyboard.h"
-#include <stdlib.h>
-#include <unistd.h>
 
 int main(int argc, char **argv)
 {
     DeviceServer server("/dev/ps2");
-    server.initialize();
 
     // Create a new keyboard object
     Keyboard *kb = new Keyboard;
@@ -32,6 +28,14 @@ int main(int argc, char **argv)
     // Register it with the DeviceServer
     server.registerDevice(kb, "keyboard0");
     server.registerInterrupt(kb, PS2_IRQ);
+
+    // Initialize
+    const FileSystem::Result result = server.initialize();
+    if (result != FileSystem::Success)
+    {
+        ERROR("failed to initialize: result = " << (int) result);
+        return 1;
+    }
 
     // Start processing requests
     return server.run();

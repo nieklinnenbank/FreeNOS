@@ -58,7 +58,7 @@ i\vnum:
     movb $\vtype, 5(%eax)        /* Present, 32 bits, 01110 */
 .endm
 
-.global bootEntry32, gdt, kernelPageDir, kernelPageTab, kernelTss, kernelioBitMap
+.global bootEntry32, gdt, kernelPageDir, kernelPageTab, kernelTss
 
 .section ".text"
 .code32

@@ -21,8 +21,7 @@
 #include <String.h>
 #include <Types.h>
 #include <Macros.h>
-#include <FileType.h>
-#include <FileMode.h>
+#include <FileSystem.h>
 #include "LinnCreate.h"
 #include "LinnSuperBlock.h"
 #include "LinnGroup.h"
@@ -49,8 +48,8 @@ LinnCreate::LinnCreate()
     verbose   = false;
 }
 
-LinnInode * LinnCreate::createInode(le32 inodeNum, FileType type,
-                                    FileModes mode, UserID uid, GroupID gid)
+LinnInode * LinnCreate::createInode(le32 inodeNum, FileSystem::FileType type,
+                                    FileSystem::FileModes mode, UserID uid, GroupID gid)
 {
     LinnGroup *group;
     LinnInode *inode;
@@ -255,7 +254,7 @@ void LinnCreate::insertFile(char *inputFile, LinnInode *inode,
 }
 
 void LinnCreate::insertEntry(le32 dirInode, le32 entryInode,
-                             const char *name, FileType type)
+                             const char *name, FileSystem::FileType type)
 {
     LinnGroup *group;
     LinnInode *inode;
@@ -315,8 +314,8 @@ void LinnCreate::insertDirectory(char *inputDir, le32 inodeNum, le32 parentNum)
     bool skip = false;
 
     // Create '.' and '..'
-    insertEntry(inodeNum, inodeNum,  ".",  DirectoryFile);
-    insertEntry(inodeNum, parentNum, "..", DirectoryFile);
+    insertEntry(inodeNum, inodeNum,  ".",  FileSystem::DirectoryFile);
+    insertEntry(inodeNum, parentNum, "..", FileSystem::DirectoryFile);
 
     // Open the input directory
     if ((dir = opendir(inputDir)) == NULL)
@@ -422,14 +421,8 @@ int LinnCreate::create(Size blockSize, Size blockNum, Size inodeNum)
     }
 
     // Create special inodes
-    createInode(LINN_INODE_ROOT, DirectoryFile,
-                OwnerRWX | GroupRX | OtherRX);
-    createInode(LINN_INODE_LOADER, RegularFile,
-                OwnerRWX | GroupRX | OtherRX);
-    createInode(LINN_INODE_BAD, RegularFile,
-                OwnerRW | GroupR | OtherR);
-    createInode(LINN_INODE_JOURNAL, RegularFile,
-                OwnerRW | GroupR | OtherR);
+    createInode(LINN_INODE_ROOT, FileSystem::DirectoryFile,
+                FileSystem::OwnerRWX | FileSystem::GroupRX | FileSystem::OtherRX);
 
     // Insert into directory contents, if set
     if (input)

@@ -92,6 +92,18 @@
 #ifdef __cplusplus
 
 /**
+ * Check if a number is power of two.
+ *
+ * @param number Input number
+ *
+ * @return True if power of two, false otherwise.
+ */
+inline bool isPowerOfTwo(unsigned number)
+{
+    return (number != 0) && ((number & (number - 1)) == 0);
+}
+
+/**
  * Absolute value of a double.
  *
  * @param number Input number

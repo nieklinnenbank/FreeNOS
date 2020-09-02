@@ -17,6 +17,9 @@
 
 #include <FreeNOS/Config.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include "POSIXApplication.h"
 
 POSIXApplication::POSIXApplication(int argc, char **argv)
@@ -33,4 +36,37 @@ POSIXApplication::Result POSIXApplication::output(const char *string) const
 {
     printf("%s", string);
     return Success;
+}
+
+int POSIXApplication::runProgram(const char *path, const char **argv)
+{
+#ifdef __HOST__
+    struct stat buf;
+    int pid;
+
+    if (stat(path, &buf) != 0)
+    {
+        return -1;
+    }
+
+    pid = fork();
+    switch (pid)
+    {
+        case 0:
+            execve(path, (char * const *)argv, (char * const *)NULL);
+            ERROR("execve failed for " << path);
+            exit(1);
+            break;
+
+        case -1:
+            ERROR("fork failed");
+            break;
+
+        default:
+            break;
+    }
+    return pid;
+#else
+    return forkexec(path, argv);
+#endif
 }

@@ -15,6 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+EnsureSConsVersion(2, 0)
+
 import sys
 
 sys.path.insert(1, './support/scons')
@@ -58,10 +60,20 @@ VariantDir(host['BUILDROOT'] + '/lib', '#lib', duplicate = 0)
 VariantDir(host['BUILDROOT'] + '/bin', '#bin', duplicate = 0)
 VariantDir(host['BUILDROOT'] + '/server', '#server', duplicate = 0)
 VariantDir(host['BUILDROOT'] + '/test', '#test', duplicate = 0)
-SConscript(host['BUILDROOT'] + '/lib/SConscript')
-SConscript(host['BUILDROOT'] + '/bin/SConscript')
-SConscript(host['BUILDROOT'] + '/server/SConscript')
-SConscript(host['BUILDROOT'] + '/test/SConscript')
+
+if host['MINIMAL_BUILD'] == True:
+    SConscript(host['BUILDROOT'] + '/lib/libstd/SConscript')
+    SConscript(host['BUILDROOT'] + '/lib/libarch/SConscript')
+    SConscript(host['BUILDROOT'] + '/lib/libexec/SConscript')
+    SConscript(host['BUILDROOT'] + '/lib/libapp/SConscript')
+    SConscript(host['BUILDROOT'] + '/lib/libfs/SConscript')
+    SConscript(host['BUILDROOT'] + '/bin/img/SConscript')
+    SConscript(host['BUILDROOT'] + '/server/filesystem/linn/SConscript')
+else:
+    SConscript(host['BUILDROOT'] + '/lib/SConscript')
+    SConscript(host['BUILDROOT'] + '/bin/SConscript')
+    SConscript(host['BUILDROOT'] + '/server/SConscript')
+    SConscript(host['BUILDROOT'] + '/test/SConscript')
 
 #
 # Boot Image

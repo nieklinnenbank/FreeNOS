@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
+#include <FreeNOS/Constant.h>
 #include <TestCase.h>
 #include <TestRunner.h>
 #include <TestInt.h>
@@ -24,16 +24,15 @@
 
 TestCase(BubbleConstruct)
 {
-    TestInt<uint> addresses(UINT_MIN, UINT_MAX);
-    TestInt<uint> sizes(PAGESIZE, PAGESIZE * 16);
-
-    const Allocator::Range range = { addresses.random(), sizes.random(), sizeof(u32) };
+    const Size rangeSize = PAGESIZE * 64;
+    TestInt<uint> addresses(UINT_MIN, UINT_MAX - rangeSize);
+    const Allocator::Range range = { addresses.random(), rangeSize, sizeof(u32) };
     BubbleAllocator ba(range);
 
     // Verify initial state of the object
     testAssert(ba.m_allocated == 0);
     testAssert(ba.base() == addresses[0]);
-    testAssert(ba.size() == sizes[0]);
+    testAssert(ba.size() == rangeSize);
     testAssert(ba.alignment() == sizeof(u32));
 
     return OK;
@@ -41,8 +40,8 @@ TestCase(BubbleConstruct)
 
 TestCase(BubbleAllocate)
 {
-    TestInt<uint> addresses(UINT_MIN, UINT_MAX);
     const Size rangeSize = PAGESIZE * 64;
+    TestInt<uint> addresses(UINT_MIN, UINT_MAX - rangeSize);
     const Allocator::Range range = { addresses.random(), rangeSize, sizeof(u32) };
     BubbleAllocator ba(range);
     Allocator::Range args = { 0, PAGESIZE, sizeof(u32) };
@@ -133,8 +132,8 @@ TestCase(BubbleFull)
 
 TestCase(BubbleRelease)
 {
-    TestInt<uint> addresses(UINT_MIN, UINT_MAX);
     const Size rangeSize = PAGESIZE * 64;
+    TestInt<uint> addresses(UINT_MIN, UINT_MAX - rangeSize);
     const Allocator::Range range = { addresses.random(), rangeSize, sizeof(u32) };
     BubbleAllocator ba(range);
     Allocator::Range args = { 0, PAGESIZE, sizeof(u32) };

@@ -115,15 +115,25 @@
         <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=-7</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=-8</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=-9</string>
+        <string>HOST_MINIMAL_BUILD=False COMPILER=gcc</string>
+        <string>HOST_MINIMAL_BUILD=False COMPILER=clang</string>
       </values>
     </hudson.matrix.TextAxis>
   </axes>
   <builders>
     <hudson.tasks.Shell>
       <command>#!/bin/bash
-scons $sysargs $debugging VERBOSE=True HOST:VERBOSE=True QEMU_BUILD=True KVMFLAGS=&quot;&quot; || exit 1
-scons $sysargs $debugging VERBOSE=True HOST:VERBOSE=True QEMU_BUILD=True KVMFLAGS=&quot;&quot; xml_test || exit 1
-scons $sysargs $debugging VERBOSE=True HOST:VERBOSE=True QEMU_BUILD=True KVMFLAGS=&quot;&quot; qemu_test || exit 1
+export $sysargs
+
+if [ ! -z &quot;$ARCH&quot; ]; then
+    export HOST_MINIMAL_BUILD=True
+    test_target=&quot;qemu_test&quot;
+else
+    test_target=&quot;xml_test&quot;
+fi
+
+scons $sysargs $debugging VERBOSE=True HOST_VERBOSE=True QEMU_BUILD=True QEMU_KVM=False || exit 1
+scons $sysargs $debugging VERBOSE=True HOST_VERBOSE=True QEMU_BUILD=True QEMU_KVM=False &quot;$test_target&quot; || exit 1
 </command>
     </hudson.tasks.Shell>
   </builders>

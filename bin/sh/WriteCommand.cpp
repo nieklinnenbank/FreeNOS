@@ -31,7 +31,7 @@ WriteCommand::WriteCommand()
     m_help = "Write data to a file";
 }
 
-int WriteCommand::execute(Size nparams, char **params)
+int WriteCommand::execute(const Size nparams, const char **params)
 {
     int fd;
     String buf;

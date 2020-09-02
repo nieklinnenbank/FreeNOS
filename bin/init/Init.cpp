@@ -15,8 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
-#include <KernelLog.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -41,18 +39,13 @@ Init::Result Init::exec()
                          arguments().get("script") : "/etc/init.sh";
     const char *av[] = { "/bin/sh", script, ZERO };
     int pid, status;
-    SystemInformation info;
-
-    // Only run on core0
-    if (info.coreId != 0)
-        return Success;
 
     NOTICE("Starting init script: " << script);
 
     // Execute the run commands file
-    if ((pid = forkexec("/bin/sh", av)) == -1)
+    if ((pid = runProgram("/bin/sh", av)) == -1)
     {
-        ERROR("forkexec() failed for /bin/sh: " <<
+        ERROR("failed to execute /bin/sh: " <<
               strerror(errno));
         return IOError;
     }

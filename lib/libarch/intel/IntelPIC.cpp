@@ -21,8 +21,8 @@ IntelPIC::IntelPIC()
     : IntController()
 {
     m_base = InterruptBase;
-    m_master.setBase(MasterBase);
-    m_slave.setBase(SlaveBase);
+    m_master.setPortBase(MasterBase);
+    m_slave.setPortBase(SlaveBase);
 }
 
 IntelPIC::Result IntelPIC::initialize()

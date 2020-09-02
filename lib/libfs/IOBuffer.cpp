@@ -15,30 +15,50 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/User.h>
 #include <Assert.h>
 #include "IOBuffer.h"
 
+IOBuffer::IOBuffer()
+    : m_message(ZERO)
+    , m_buffer(ZERO)
+    , m_size(0)
+    , m_count(0)
+{
+}
+
 IOBuffer::IOBuffer(const FileSystemMessage *msg)
     : m_message(msg)
+    , m_buffer(ZERO)
+    , m_size(0)
+    , m_count(0)
 {
-    if (msg->action == ReadFile || msg->action == WriteFile)
-    {
-        m_buffer = new u8[msg->size];
-        assert(m_buffer != NULL);
-    }
-    else
-    {
-        m_buffer = 0;
-    }
-
-    m_size   = msg->size;
-    m_count  = 0;
+    setMessage(msg);
 }
 
 IOBuffer::~IOBuffer()
 {
     if (m_buffer)
         delete m_buffer;
+}
+
+void IOBuffer::setMessage(const FileSystemMessage *msg)
+{
+    if (msg->action == FileSystem::ReadFile ||
+        msg->action == FileSystem::WriteFile)
+    {
+        m_buffer = new u8[msg->size];
+        assert(m_buffer != NULL);
+    }
+    else
+    {
+        assert(m_buffer == NULL);
+        m_buffer = 0;
+    }
+
+    m_message = msg;
+    m_size   = msg->size;
+    m_count  = 0;
 }
 
 Size IOBuffer::getCount() const
@@ -56,13 +76,13 @@ const u8 * IOBuffer::getBuffer() const
     return m_buffer;
 }
 
-Error IOBuffer::bufferedRead()
+FileSystem::Error IOBuffer::bufferedRead()
 {
     m_count = read(m_buffer, m_message->size, 0);
     return m_count;
 }
 
-Error IOBuffer::bufferedWrite(const void *buffer, Size size)
+FileSystem::Error IOBuffer::bufferedWrite(const void *buffer, Size size)
 {
     Size i = 0;
 
@@ -79,21 +99,21 @@ Error IOBuffer::bufferedWrite(const void *buffer, Size size)
     return i;
 }
 
-Error IOBuffer::read(void *buffer, Size size, Size offset) const
+FileSystem::Error IOBuffer::read(void *buffer, Size size, Size offset) const
 {
     return VMCopy(m_message->from, API::Read,
                  (Address) buffer,
                  (Address) m_message->buffer + offset, size);
 }
 
-Error IOBuffer::write(void *buffer, Size size, Size offset) const
+FileSystem::Error IOBuffer::write(void *buffer, Size size, Size offset) const
 {
     return VMCopy(m_message->from, API::Write,
                  (Address) buffer,
                  (Address) m_message->buffer + offset, size);
 }
 
-Error IOBuffer::flush() const
+FileSystem::Error IOBuffer::flush() const
 {
     return write(m_buffer, m_count, 0);
 }

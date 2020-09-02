@@ -52,7 +52,7 @@ class NetworkServer : public DeviceServer
     /**
      * Initialize the NetworkServer.
      */
-    virtual Error initialize();
+    virtual FileSystem::Result initialize();
 };
 
 /**

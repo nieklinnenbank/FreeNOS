@@ -19,7 +19,6 @@
 #define __FILESYSTEM_LINN_DIRECTORY_H
 #ifndef __HOST__
 
-#include <FileSystemMessage.h>
 #include <Directory.h>
 #include <Types.h>
 #include "LinnDirectoryEntry.h"
@@ -68,7 +67,7 @@ class LinnDirectory : public Directory
      *
      * @see IOBuffer
      */
-    virtual Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
 
     /**
      * @brief Retrieves a File pointer for the given entry name.
