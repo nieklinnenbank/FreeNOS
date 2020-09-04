@@ -15,13 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/Constant.h>
 #include <FreeNOS/User.h>
 #include "NS16550.h"
 
-NS16550::NS16550(u32 irq)
-    : Device(FileSystem::CharacterDeviceFile)
+template<> SerialDevice* AbstractFactory<SerialDevice>::create()
 {
-    m_irq = irq;
+    return new NS16550(UART0_IRQ);
+}
+
+NS16550::NS16550(const u32 irq)
+    : SerialDevice(irq)
+{
     m_identifier << "serial0";
 }
 

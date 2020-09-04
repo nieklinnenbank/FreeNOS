@@ -20,8 +20,7 @@
 
 #include <Macros.h>
 #include <Types.h>
-#include <Device.h>
-#include <intel/IntelIO.h>
+#include "SerialDevice.h"
 
 /**
  * @addtogroup server
@@ -34,7 +33,7 @@
 /**
  * i8250 serial UART.
  */
-class i8250 : public Device
+class i8250 : public SerialDevice
 {
   public:
 
@@ -62,9 +61,10 @@ class i8250 : public Device
     /**
      * Constructor function.
      *
-     * @param base I/O base port.
+     * @param irq Interrupt vector
+     * @param base I/O base port
      */
-    i8250(const u16 base, const u16 irq);
+    i8250(const u32 irq, const u16 base);
 
     /**
      * @brief Initializes the i8250 serial UART.
@@ -103,14 +103,6 @@ class i8250 : public Device
      * @return Number of bytes on success and ZERO on failure.
      */
     virtual FileSystem::Error write(IOBuffer & buffer, Size size, Size offset);
-
-  private:
-
-    /** Interrupt vector. */
-    const u16 m_irq;
-
-    /** I/O instance. */
-    IntelIO m_io;
 };
 
 /**

@@ -35,7 +35,7 @@ extern C int kernel_main(CoreInfo *info)
     Kernel::heap(coreInfo.heapAddress, coreInfo.heapSize);
 
     // Open serial console as default Log
-    i8250 *uart = new i8250(0x3f8, 4);
+    i8250 *uart = new i8250(4, 0x3f8);
     uart->initialize();
     DeviceLog *console = new DeviceLog(*uart);
 

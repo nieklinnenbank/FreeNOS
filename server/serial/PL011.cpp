@@ -16,13 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/Constant.h>
 #include <FreeNOS/User.h>
 #include "PL011.h"
 
-PL011::PL011(u32 irq)
-    : Device(FileSystem::CharacterDeviceFile)
+template<> SerialDevice* AbstractFactory<SerialDevice>::create()
 {
-    m_irq = irq;
+    return new PL011(UART0_IRQ);
+}
+
+PL011::PL011(const u32 irq)
+    : SerialDevice(irq)
+{
     m_identifier << "serial0";
 }
 

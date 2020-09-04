@@ -19,10 +19,9 @@
 #ifndef __SERVER_SERIAL_PL011_H
 #define __SERVER_SERIAL_PL011_H
 
-#include <FreeNOS/System.h>
 #include <Log.h>
 #include <Types.h>
-#include <Device.h>
+#include "SerialDevice.h"
 
 /**
  * @addtogroup server
@@ -37,14 +36,14 @@
  *
  * @see libarch_arm
  */
-class PL011 : public Device
+class PL011 : public SerialDevice
 {
   public:
 
     /**
      * Constructor.
      */
-    PL011(u32 irq);
+    PL011(const u32 irq);
 
     /**
      * @brief Initializes the UART.
@@ -128,6 +127,8 @@ class PL011 : public Device
         PL011_TDR    = (0x8C)
     };
 
+  private:
+
     /*
      * delay function
      * int32_t delay: number of cycles to delay
@@ -136,14 +137,6 @@ class PL011 : public Device
      * wont optimize away.
      */
     void delay(s32 count);
-
-  private:
-
-    /** interrupt vector */
-    u32 m_irq;
-
-    /** I/O instance */
-    Arch::IO m_io;
 };
 
 /**

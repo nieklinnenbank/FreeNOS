@@ -21,9 +21,13 @@
 #include <Types.h>
 #include "i8250.h"
 
-i8250::i8250(const u16 base, const u16 irq)
-    : Device(FileSystem::CharacterDeviceFile)
-    , m_irq(irq)
+template<> SerialDevice* AbstractFactory<SerialDevice>::create()
+{
+    return new i8250(4, 0x3f8);
+}
+
+i8250::i8250(const u32 irq, const u16 base)
+    : SerialDevice(irq)
 {
     m_io.setPortBase(base);
     m_identifier << "serial0";

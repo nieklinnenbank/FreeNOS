@@ -32,7 +32,8 @@ env.TargetProgram('kernel', [ Glob('*.cpp'),
                               Glob('#' + env['BUILDROOT'] + '/kernel/intel/*.cpp'),
                               Glob('#' + env['BUILDROOT'] + '/kernel/intel/*.S'),
                               Glob('#' + env['BUILDROOT'] + '/kernel/API/*.cpp'),
-                              '#server/serial/i8250.cpp' ]
+                              '#' + env['BUILDROOT'] + '/server/serial/SerialDevice.o',
+                              '#' + env['BUILDROOT'] + '/server/serial/i8250.o' ]
                             , env['boot'])
 
 #

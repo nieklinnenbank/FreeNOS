@@ -18,10 +18,9 @@
 #ifndef __SERVER_SERIAL_NS16550_H
 #define __SERVER_SERIAL_NS16550_H
 
-#include <FreeNOS/System.h>
 #include <Log.h>
 #include <Types.h>
-#include <Device.h>
+#include "SerialDevice.h"
 
 /**
  * @addtogroup server
@@ -36,7 +35,7 @@
  *
  * @see libarch_arm
  */
-class NS16550 : public Device
+class NS16550 : public SerialDevice
 {
   private:
 
@@ -101,7 +100,7 @@ class NS16550 : public Device
     /**
      * Constructor.
      */
-    NS16550(u32 irq);
+    NS16550(const u32 irq);
 
     /**
      * @brief Initializes the UART.
@@ -158,14 +157,6 @@ class NS16550 : public Device
      * @param enabled True to enable, false otherwise
      */
     void setDivisorLatch(bool enabled);
-
-  private:
-
-    /** interrupt vector */
-    u32 m_irq;
-
-    /** I/O instance */
-    Arch::IO m_io;
 };
 
 /**
