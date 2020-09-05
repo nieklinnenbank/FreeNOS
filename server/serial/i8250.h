@@ -35,7 +35,7 @@
  */
 class i8250 : public SerialDevice
 {
-  public:
+  private:
 
     /**
      * Constants used to communicate with the UART.
@@ -57,6 +57,8 @@ class i8250 : public SerialDevice
         DLAB         = 0x80,
         BAUDRATE     = 9600,
     };
+
+  public:
 
     /**
      * Constructor function.

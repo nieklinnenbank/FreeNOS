@@ -38,6 +38,50 @@
  */
 class PL011 : public SerialDevice
 {
+  private:
+
+    /**
+     * The offsets and flags for each register in the UART.
+     */
+    enum {
+        PL011_DR        = (0x00),
+        PL011_RSRECR    = (0x04),
+
+        PL011_FR        = (0x18),
+        PL011_FR_RXFE   = (1 << 4),
+        PL011_FR_TXFE   = (1 << 7),
+
+        PL011_ILPR      = (0x20),
+        PL011_IBRD      = (0x24),
+        PL011_FBRD      = (0x28),
+
+        PL011_LCRH      = (0x2C),
+        PL011_LCRH_WLEN_8BIT = (0b11<<5),
+
+        PL011_CR        = (0x30),
+        PL011_IFLS      = (0x34),
+
+        PL011_IMSC      = (0x38),
+        PL011_IMSC_RXIM = (1 << 4),
+        PL011_IMSC_TXIM = (1 << 5),
+
+        PL011_RIS       = (0x3C),
+
+        PL011_MIS       = (0x40),
+        PL011_MIS_RXMIS = (1 << 4),
+        PL011_MIS_TXMIS = (1 << 5),
+
+        PL011_ICR       = (0x44),
+        PL011_ICR_TXIC  = (1 << 5),
+        PL011_ICR_RXIC  = (1 << 4),
+
+        PL011_DMACR     = (0x48),
+        PL011_ITCR      = (0x80),
+        PL011_ITIP      = (0x84),
+        PL011_ITOP      = (0x88),
+        PL011_TDR       = (0x8C)
+    };
+
   public:
 
     /**
@@ -82,50 +126,6 @@ class PL011 : public SerialDevice
      * @return Number of bytes on success and ZERO on failure.
      */
     virtual FileSystem::Error write(IOBuffer & buffer, Size size, Size offset);
-
-  private:
-
-    /**
-     * The offsets and flags for each register in the UART.
-     */
-    enum {
-        PL011_DR     = (0x00),
-        PL011_RSRECR = (0x04),
-
-        PL011_FR     = (0x18),
-        PL011_FR_RXFE = (1 << 4),
-        PL011_FR_TXFE = (1 << 7),
-
-        PL011_ILPR   = (0x20),
-        PL011_IBRD   = (0x24),
-        PL011_FBRD   = (0x28),
-
-        PL011_LCRH   = (0x2C),
-        PL011_LCRH_WLEN_8BIT = (0b11<<5),
-
-        PL011_CR     = (0x30),
-        PL011_IFLS   = (0x34),
-
-        PL011_IMSC   = (0x38),
-        PL011_IMSC_RXIM = (1 << 4),
-        PL011_IMSC_TXIM = (1 << 5),
-
-        PL011_RIS    = (0x3C),
-
-        PL011_MIS    = (0x40),
-        PL011_MIS_RXMIS = (1 << 4),
-        PL011_MIS_TXMIS = (1 << 5),
-
-        PL011_ICR    = (0x44),
-        PL011_ICR_TXIC = (1 << 5),
-        PL011_ICR_RXIC = (1 << 4),
-
-        PL011_DMACR  = (0x48),
-        PL011_ITCR   = (0x80),
-        PL011_ITIP   = (0x84),
-        PL011_ITOP   = (0x88),
-        PL011_TDR    = (0x8C)
-    };
 
   private:
 

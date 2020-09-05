@@ -125,7 +125,7 @@ class NS16550 : public SerialDevice
      * @param size Number of bytes to read.
      * @param offset Unused.
      *
-     * @return Number of bytes on success and ZERO on failure. 
+     * @return Number of bytes on success and ZERO on failure.
      */
     virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
 
