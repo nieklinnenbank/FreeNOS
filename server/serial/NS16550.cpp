@@ -62,15 +62,12 @@ FileSystem::Error NS16550::initialize()
     if (isKernel)
     {
         // Mask all interrupts.
-        // TODO: overlap: m_io.write(InterruptIdentity, 0);
         m_io.write(InterruptEnable, 0);
     }
     else
     {
         // Enable Rx/Tx interrupts and FIFOs
         m_io.write(FifoControl, FifoControlTrigger1 | FifoControlEnable);
-        // TODO: they overlap? Perhaps DLAB must be used here too?
-        // m_io.write(InterruptIdentity, InterruptIdentityFifoEnable);
         m_io.write(InterruptEnable, ReceiveDataInterrupt);
         ProcessCtl(SELF, EnableIRQ, m_irq);
     }
@@ -121,7 +118,6 @@ FileSystem::Error NS16550::write(IOBuffer & buffer, Size size, Size offset)
     while (bytes < size)
     {
         // Wait until TX fifo is empty
-        // TODO: optimize later
         while (!(m_io.read(LineStatus) & LineStatusTxEmpty))
         {
             ;
@@ -136,20 +132,8 @@ FileSystem::Error NS16550::write(IOBuffer & buffer, Size size, Size offset)
         return FileSystem::RetryAgain;
 }
 
-void NS16550::delay(s32 count) const
-{
-    asm volatile("1: subs %0, %0, #1; bne 1b"
-         : "=r"(count) : "0"(count));
-}
-
 void NS16550::setDivisorLatch(bool enabled)
 {
-    // Must wait until the busy flag is cleared
-    //while (m_io.read(UartStatus) & UartStatusBusy)
-    //{
-    //    ;
-    //}
-
     // Set the divisor latch register
     u32 lc = m_io.read(LineControl);
 

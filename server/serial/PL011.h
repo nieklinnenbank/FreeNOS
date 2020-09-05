@@ -126,17 +126,6 @@ class PL011 : public SerialDevice
      * @return Number of bytes on success and ZERO on failure.
      */
     virtual FileSystem::Error write(IOBuffer & buffer, Size size, Size offset);
-
-  private:
-
-    /*
-     * delay function
-     * int32_t delay: number of cycles to delay
-     *
-     * This just loops <delay> times in a way that the compiler
-     * wont optimize away.
-     */
-    void delay(s32 count);
 };
 
 /**

@@ -142,15 +142,6 @@ class NS16550 : public SerialDevice
 
   private:
 
-    /*
-     * delay function
-     * int32_t delay: number of cycles to delay
-     *
-     * This just loops <delay> times in a way that the compiler
-     * wont optimize away.
-     */
-    void delay(s32 count) const;
-
     /**
      * Enable access to the divisor latch registers
      *
