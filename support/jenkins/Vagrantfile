@@ -120,6 +120,7 @@ Vagrant.configure("2") do |config|
     master.vm.provision "file", source: "credentials.xml", destination: "credentials.xml"
     master.vm.provision "file", source: "ubuntu1804.job.xml", destination: "ubuntu1804.job.xml"
     master.vm.provision "file", source: "ubuntu1804-loop.job.xml", destination: "ubuntu1804-loop.job.xml"
+    master.vm.provision "file", source: "ubuntu1804-valgrind.job.xml", destination: "ubuntu1804-valgrind.job.xml"
     master.vm.provision "file", source: "ubuntu1804.node.xml", destination: "ubuntu1804.node.xml"
     master.vm.provision "file", source: "freebsd12.job.xml", destination: "freebsd12.job.xml"
     master.vm.provision "file", source: "freebsd12-loop.job.xml", destination: "freebsd12-loop.job.xml"

@@ -116,6 +116,7 @@ fi
 mkdir -p $JENKINS_HOME/jobs
 mkdir -p $JENKINS_HOME/jobs/FreeNOS-ubuntu1804
 mkdir -p $JENKINS_HOME/jobs/FreeNOS-ubuntu1804-loop
+mkdir -p $JENKINS_HOME/jobs/FreeNOS-ubuntu1804-valgrind
 mkdir -p $JENKINS_HOME/jobs/FreeNOS-freebsd12
 mkdir -p $JENKINS_HOME/jobs/FreeNOS-freebsd12-loop
 mkdir -p $JENKINS_HOME/nodes
@@ -128,6 +129,7 @@ mv ~vagrant/hudson.util.Secret $JENKINS_HOME/secrets/
 mv ~vagrant/credentials.xml $JENKINS_HOME/
 mv ~vagrant/ubuntu1804.job.xml $JENKINS_HOME/jobs/FreeNOS-ubuntu1804/config.xml
 mv ~vagrant/ubuntu1804-loop.job.xml $JENKINS_HOME/jobs/FreeNOS-ubuntu1804-loop/config.xml
+mv ~vagrant/ubuntu1804-valgrind.job.xml $JENKINS_HOME/jobs/FreeNOS-ubuntu1804-valgrind/config.xml
 mv ~vagrant/ubuntu1804.node.xml $JENKINS_HOME/nodes/ubuntu1804/config.xml
 mv ~vagrant/freebsd12.job.xml $JENKINS_HOME/jobs/FreeNOS-freebsd12/config.xml
 mv ~vagrant/freebsd12-loop.job.xml $JENKINS_HOME/jobs/FreeNOS-freebsd12-loop/config.xml
@@ -147,7 +149,7 @@ JENKINS_PLUGINS=(
     matrix-combinations-parameter/1.3.1 bouncycastle-api/2.18 command-launcher/1.4 jdk-tool/1.4 jaxb/2.3.0.1
     nodelabelparameter/1.7.2 jquery/1.12.4-1 token-macro/2.12
     ws-cleanup/0.38 workflow-durable-task-step/2.35 workflow-api/2.40 workflow-support/3.5 durable-task/1.34 resource-disposer/0.14
-    junit/1.29
+    junit/1.29 valgrind/0.24 jquery-detached/1.2.1 workflow-cps/2.83 workflow-job/2.40 ace-editor/1.1
     ssh-slaves/1.31.2
     timestamper/1.11.3
 )
