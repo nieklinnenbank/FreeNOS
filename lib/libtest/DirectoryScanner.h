@@ -18,6 +18,10 @@
 #ifndef __LIBTEST_DIRECTORYSCANNER_H
 #define __LIBTEST_DIRECTORYSCANNER_H
 
+#include <Index.h>
+
+class ExternalTest;
+
 /**
  * @addtogroup lib
  * @{
@@ -31,6 +35,11 @@
  */
 class DirectoryScanner
 {
+  private:
+
+    /** Maximum number of external tests. */
+    static const Size MaximumExternalTests = 512u;
+
   public:
 
     /**
@@ -40,6 +49,11 @@ class DirectoryScanner
      * @param argv Program argument values
      */
     DirectoryScanner(int argc, char **argv);
+
+    /**
+     * Destructor
+     */
+    ~DirectoryScanner();
 
     /**
      * Scan filesystem path for tests
@@ -57,6 +71,9 @@ class DirectoryScanner
 
     /** Program argument values */
     char **m_argv;
+
+    /** External tests that are detected. */
+    Index<ExternalTest, MaximumExternalTests> m_externalTests;
 };
 
 /**

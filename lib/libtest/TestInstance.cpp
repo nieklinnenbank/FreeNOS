@@ -24,6 +24,10 @@ TestInstance::TestInstance(const char *name)
     TestSuite::instance()->addTest(this);
 }
 
+TestInstance::~TestInstance()
+{
+}
+
 const String & TestInstance::getName() const
 {
     return m_name;

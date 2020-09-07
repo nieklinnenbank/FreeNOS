@@ -44,6 +44,11 @@ class TestInstance
     TestInstance(const char *name);
 
     /**
+     * Destructor
+     */
+    virtual ~TestInstance();
+
+    /**
      * Retrieve test instance name
      *
      * @return Test instance name

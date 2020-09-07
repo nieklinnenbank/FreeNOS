@@ -32,6 +32,10 @@ ExternalTest::ExternalTest(const char *name, int argc, char **argv)
     m_argv = argv;
 }
 
+ExternalTest::~ExternalTest()
+{
+}
+
 TestResult ExternalTest::run()
 {
     int status;
