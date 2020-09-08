@@ -214,7 +214,7 @@ PoolAllocator::Pool * PoolAllocator::allocatePool(const Size index, const Size o
     const Size objectSize = calculateObjectSize(index);
     const Size requestBitmapSize = objectCount;
     const Size requestPayloadSize = objectCount * objectSize;
-    const Size requestTotalSize = sizeof(Pool) + requestBitmapSize + requestPayloadSize;
+    const Size requestTotalSize = aligned(sizeof(Pool) + requestBitmapSize + requestPayloadSize, sizeof(u32));
     Pool *pool = 0;
     Allocator::Range alloc_args;
 
