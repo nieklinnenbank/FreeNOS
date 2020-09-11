@@ -21,77 +21,20 @@
 #include <TestCase.h>
 #include <TestMain.h>
 #include <Types.h>
-#include <POSIXApplication.h>
+#include <ApplicationLauncher.h>
 #include <DatastoreClient.h>
-#include <signal.h>
-
-/**
- * Helper class to launch the DatastoreServer program
- */
-class DatastoreServerLauncher : public POSIXApplication
-{
-  private:
-
-    /** Path to the DatastoreServer binary */
-    static const char *DatastoreServerPath;
-
-  public:
-
-    /**
-     * Constructor
-     */
-    DatastoreServerLauncher(int argc, char **argv)
-        : POSIXApplication(argc, argv)
-        , pid(0)
-    {
-    }
-
-    /**
-     * Execute the application.
-     *
-     * @return Result code
-     */
-    virtual Result exec()
-    {
-        const char *args[] = { (char *) "datastore", ZERO };
-        int result = runProgram(DatastoreServerPath, args);
-        if (result == -1)
-        {
-            FATAL("could not start DatastoreServer at " << DatastoreServerPath);
-            return IOError;
-        }
-
-        pid = (ProcessID) result;
-        return Success;
-    }
-
-    /**
-     * Terminate the DatastoreServer.
-     *
-     * @return ZERO on success, non-zero on failure.
-     */
-    int terminate() const
-    {
-        return kill(pid, SIGTERM);
-    }
-
-    /** PID of the DatastoreServer. */
-    ProcessID pid;
-};
-
-const char * DatastoreServerLauncher::DatastoreServerPath = TESTROOT "/server/datastore/server";
 
 TestCase(DatastoreServerRegisterBuffer)
 {
-    char *args[] = { (char *)"launcher", ZERO };
-    DatastoreServerLauncher launcher(1, args);
+    const char *args[] = { "launcher", ZERO };
+    ApplicationLauncher datastore(TESTROOT "/server/datastore/server", args);
 
     // Start the DatastoreServer
-    int exitCode = launcher.run();
-    testAssert(exitCode == 0);
+    const ApplicationLauncher::Result resultCode = datastore.exec();
+    testAssert(resultCode == ApplicationLauncher::Success);
 
     // Connect client
-    DatastoreClient datastoreClient(launcher.pid);
+    DatastoreClient datastoreClient(datastore.getPid());
 
     // Perform IPC
     void *bufptr = ZERO;
@@ -99,8 +42,8 @@ TestCase(DatastoreServerRegisterBuffer)
     testAssert(result == Datastore::Success);
 
     // Terminate the DatastoreServer
-    int terminateResult = launcher.terminate();
-    testAssert(terminateResult == 0);
+    const ApplicationLauncher::Result terminateResult = datastore.terminate();
+    testAssert(terminateResult == ApplicationLauncher::Success);
 
     return OK;
 }
