@@ -19,6 +19,7 @@
 #define __LIB_LIBFS_IOBUFFER_H
 
 #include <Types.h>
+#include <Macros.h>
 #include "FileSystemMessage.h"
 
 /**
