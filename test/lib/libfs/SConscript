@@ -24,3 +24,4 @@ env.UseLibraries([ 'libtest', 'libapp', 'libfs', 'libruntime', 'libipc', 'libarc
                    'libstd', 'rt' ], 'host')
 
 env.TargetHostProgram('FileSystemPathTest', 'FileSystemPathTest.cpp')
+env.TargetHostProgram('FileSystemServerTest', 'FileSystemServerTest.cpp')
