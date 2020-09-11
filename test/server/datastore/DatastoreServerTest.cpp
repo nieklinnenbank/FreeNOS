@@ -25,11 +25,6 @@
 #include <DatastoreClient.h>
 #include <signal.h>
 
-#ifndef __HOST__
-#undef BUILDROOT
-#define BUILDROOT
-#endif /* __HOST__ */
-
 /**
  * Helper class to launch the DatastoreServer program
  */
@@ -84,7 +79,7 @@ class DatastoreServerLauncher : public POSIXApplication
     ProcessID pid;
 };
 
-const char * DatastoreServerLauncher::DatastoreServerPath = BUILDROOT "/server/datastore/server";
+const char * DatastoreServerLauncher::DatastoreServerPath = TESTROOT "/server/datastore/server";
 
 TestCase(DatastoreServerRegisterBuffer)
 {

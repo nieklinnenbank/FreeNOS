@@ -92,6 +92,10 @@ def initialize(target, host, params):
     set_default_variables(target)
     set_default_variables(host)
 
+    # Set test root path (e.g. for launching compiled programs)
+    target['TESTROOT'] = ""
+    host['TESTROOT'] = host['BUILDROOT']
+
 def escape(obj):
     return str(obj).replace('"', '\\"').strip()
 
