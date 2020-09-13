@@ -104,12 +104,12 @@ FileSystem::Result FileSystemServer::registerFile(File *file, const char *path)
     FileSystemPath p(path);
     Directory *parent;
 
-    if (p.parent())
-        parent = (Directory *) findFileCache(**p.parent())->file;
+    if (p.parent().length() > 0)
+        parent = (Directory *) findFileCache(*p.parent())->file;
     else
         parent = (Directory *) m_root->file;
 
-    parent->insert(file->getType(), **p.base());
+    parent->insert(file->getType(), *p.base());
     return FileSystem::Success;
 }
 
@@ -225,17 +225,17 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
                 /* Attempt to create the new file. */
                 if ((file = createFile(msg->filetype, msg->deviceID)))
                 {
-                    insertFileCache(file, **path.full());
+                    insertFileCache(file, *path.full());
 
                     /* Add directory entry to our parent. */
-                    if (path.parent())
+                    if (path.parent().length() > 0)
                     {
-                        parent = (Directory *) findFileCache(**path.parent())->file;
+                        parent = (Directory *) findFileCache(*path.parent())->file;
                     }
                     else
                         parent = (Directory *) m_root->file;
 
-                    parent->insert(file->getType(), **path.full());
+                    parent->insert(file->getType(), *path.full());
                     msg->result = FileSystem::Success;
                 }
                 else
@@ -421,7 +421,7 @@ void FileSystemServer::setRoot(Directory *newRoot)
 
 FileCache * FileSystemServer::lookupFile(FileSystemPath *path)
 {
-    List<String *> *entries = path->split();
+    const List<String *> &entries = path->split();
     FileCache *c = ZERO;
     File *file = ZERO;
     Directory *dir;
@@ -470,7 +470,7 @@ FileCache * FileSystemServer::insertFileCache(File *file, const char *pathStr)
     path.parse(pathStr);
 
     // Lookup our parent
-    if (!(path.parent()))
+    if (path.parent().length() == 0)
     {
         parent = m_root;
     }
@@ -479,7 +479,7 @@ FileCache * FileSystemServer::insertFileCache(File *file, const char *pathStr)
         return ZERO;
     }
     /* Create new cache. */
-    FileCache *c = new FileCache(file, **path.base(), parent);
+    FileCache *c = new FileCache(file, *path.base(), parent);
     assert(c != NULL);
     return c;
 }
@@ -490,18 +490,18 @@ FileCache * FileSystemServer::findFileCache(const char *path)
     return findFileCache(&p);
 }
 
-FileCache * FileSystemServer::findFileCache(String *path)
+FileCache * FileSystemServer::findFileCache(const String &path)
 {
-    return path ? findFileCache(**path) : ZERO;
+    return findFileCache(*path);
 }
 
 FileCache * FileSystemServer::findFileCache(FileSystemPath *p)
 {
-    List<String *> *entries = p->split();
+    const List<String *> &entries = p->split();
     FileCache *c = m_root;
 
     /* Root is treated special. */
-    if (!p->parent() && p->length() == 0)
+    if (p->parent().length() == 0 && p->length() == 0)
     {
         return m_root;
     }

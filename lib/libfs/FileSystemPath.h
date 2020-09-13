@@ -90,28 +90,28 @@ class FileSystemPath
      *
      * @return Path of our parent.
      */
-    String * parent() const;
+    const String & parent() const;
 
     /**
      * The name of the last element in the path.
      *
      * @return Name of the base.
      */
-    String * base() const;
+    const String & base() const;
 
     /**
-     * Get the full path as a String instance.
+     * Get the full path as a String
      *
      * @return String instance.
      */
-    String * full() const;
+    const String & full() const;
 
     /**
      * Returns a List of separate path elements.
      *
      * @return Pointer to a List.
      */
-    List<String *> * split();
+    const List<String *> & split();
 
     /**
      * Get Length of our full path.
@@ -126,13 +126,10 @@ class FileSystemPath
     List<String *> m_path;
 
     /** Full input path. */
-    String *m_fullPath;
-
-    /** Full length of the given path. */
-    Size m_fullLength;
+    String m_full;
 
     /** Full path to our parent. */
-    String * m_parentPath;
+    String m_parent;
 
     /** Separator character. */
     char m_separator;
