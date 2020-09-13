@@ -34,7 +34,7 @@
 #define CHAR_BIT  8
 
 /** Maximum file path length. */
-#define PATH_MAX  PATHLEN
+#define PATH_MAX  FileSystemPath::MaximumLength
 
 /**
  * @}

@@ -32,7 +32,7 @@ inline FileSystem::Result FileSystemClient::request(const char *path,
                                                     FileSystemMessage &msg) const
 {
     const ProcessID mnt = m_pid == ANY ? findMount(path) : m_pid;
-    char fullpath[PATHLEN];
+    char fullpath[FileSystemPath::MaximumLength];
 
     // Use the current directory as prefix for relative paths
     if (path[0] != '/' && m_currentDirectory != NULL)
@@ -95,7 +95,7 @@ ProcessID FileSystemClient::findMount(const char *path) const
 {
     FileSystemMount *m = ZERO;
     Size length = 0;
-    char fullpath[PATHLEN];
+    char fullpath[FileSystemPath::MaximumLength];
 
     // Use the current directory as prefix for relative paths
     if (path[0] != '/' && m_currentDirectory != NULL)

@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __FILESYSTEM_FILESYSTEMPATH_H
-#define __FILESYSTEM_FILESYSTEMPATH_H
+#ifndef __LIB_LIBFS_FILESYSTEMPATH_H
+#define __LIB_LIBFS_FILESYSTEMPATH_H
 
 #include <List.h>
 #include <ListIterator.h>
@@ -31,17 +31,21 @@
  * @{
  */
 
-/** Maximum length of a filesystem path. */
-#define PATHLEN 64
-
-/** The default FileSystemPath separator. */
-#define DEFAULT_SEPARATOR '/'
-
 /**
  * Simple filesystem path parser.
  */
 class FileSystemPath
 {
+  private:
+
+    /** The default path separator character */
+    static const char DefaultSeparator = '/';
+
+  public:
+
+    /** Maximum length of a filesystem path in bytes */
+    static const Size MaximumLength = 64u;
+
   public:
 
     /**
@@ -56,7 +60,7 @@ class FileSystemPath
      * @param separator Pathname separator.
      */
     FileSystemPath(const char *path,
-                   const char separator = DEFAULT_SEPARATOR);
+                   const char separator = DefaultSeparator);
 
     /**
      * Constructor using a String.
@@ -65,7 +69,7 @@ class FileSystemPath
      * @param separator Pathname separator.
      */
     FileSystemPath(const String *s,
-                   const char separator = DEFAULT_SEPARATOR);
+                   const char separator = DefaultSeparator);
 
     /**
      * Destructor.
@@ -79,7 +83,7 @@ class FileSystemPath
      * @param separator Pathname separator.
      */
     void parse(const char *p,
-               const char sep = DEFAULT_SEPARATOR);
+               const char sep = DefaultSeparator);
 
     /**
      * Retrieve the full path of our parent.
@@ -139,4 +143,4 @@ class FileSystemPath
  * @}
  */
 
-#endif /* __FILESYSTEM_FILESYSTEMPATH_H */
+#endif /* __LIB_LIBFS_FILESYSTEMPATH_H */

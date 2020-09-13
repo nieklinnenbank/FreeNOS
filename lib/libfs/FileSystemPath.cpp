@@ -19,19 +19,11 @@
 #include <MemoryBlock.h>
 #include "FileSystemPath.h"
 
-/** Shortcut to the separator field. */
-#define SEPARATOR(x) \
-    (this->separator == (x))
-
-/** Test for an End of Line. */
-#define EOL(s,x) \
-    ((x) == (s) + length - 1)
-
 FileSystemPath::FileSystemPath()
     : m_fullPath(ZERO)
     , m_fullLength(0)
     , m_parentPath(ZERO)
-    , m_separator(DEFAULT_SEPARATOR)
+    , m_separator(DefaultSeparator)
 {
 }
 

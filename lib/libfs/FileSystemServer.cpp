@@ -167,7 +167,7 @@ bool FileSystemServer::redirectRequest(const char *path, FileSystemMessage *msg)
 
 FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
 {
-    char buf[PATHLEN];
+    char buf[FileSystemPath::MaximumLength];
     FileSystemPath path;
     FileCache *cache = ZERO;
     File *file = ZERO;
@@ -177,7 +177,7 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
 
     // Copy the file path
     if ((ret = VMCopy(msg->from, API::Read, (Address) buf,
-                    (Address) msg->path, PATHLEN)) <= 0)
+                    (Address) msg->path, FileSystemPath::MaximumLength)) <= 0)
     {
         ERROR("VMCopy failed: result = " << (int)ret << " from = " << msg->from <<
               " addr = " << (void *) msg->path << " action = " << (int) msg->action);
@@ -342,11 +342,11 @@ void FileSystemServer::sendResponse(FileSystemMessage *msg)
 
 void FileSystemServer::mountHandler(FileSystemMessage *msg)
 {
-    char buf[PATHLEN + 1];
+    char buf[FileSystemPath::MaximumLength + 1];
 
     // Copy the file path
     const API::Result result = VMCopy(msg->from, API::Read, (Address) buf,
-                                     (Address) msg->path, PATHLEN);
+                                     (Address) msg->path, FileSystemPath::MaximumLength);
     if (result <= 0)
     {
         ERROR("failed to copy mount path: result = " << (int) result);
@@ -355,7 +355,7 @@ void FileSystemServer::mountHandler(FileSystemMessage *msg)
     }
 
     // Null-terminate
-    buf[PATHLEN] = 0;
+    buf[FileSystemPath::MaximumLength] = 0;
 
     // Append to our filesystem mounts table
     for (Size i = 0; i < MaximumFileSystemMounts; i++)

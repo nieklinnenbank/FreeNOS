@@ -52,7 +52,7 @@ class FileDescriptor
     {
         position = fd.position;
         open     = fd.open;
-        MemoryBlock::copy(path, fd.path, PATHLEN);
+        MemoryBlock::copy(path, fd.path, FileSystemPath::MaximumLength);
     }
 
     bool operator == (const FileDescriptor & fd) const
@@ -71,7 +71,7 @@ class FileDescriptor
     Address identifier;
 
     /** Path to the file. */
-    char path[PATHLEN];
+    char path[FileSystemPath::MaximumLength];
 
     /** Current position indicator. */
     Size position;
