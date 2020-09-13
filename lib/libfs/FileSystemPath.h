@@ -55,7 +55,8 @@ class FileSystemPath
      * @param path The input path to parse.
      * @param separator Pathname separator.
      */
-    FileSystemPath(char *path, char separator = DEFAULT_SEPARATOR);
+    FileSystemPath(const char *path,
+                   const char separator = DEFAULT_SEPARATOR);
 
     /**
      * Constructor using a String.
@@ -63,7 +64,8 @@ class FileSystemPath
      * @param s String containing the path to parse.
      * @param separator Pathname separator.
      */
-    FileSystemPath(String *s, char separator = DEFAULT_SEPARATOR);
+    FileSystemPath(const String *s,
+                   const char separator = DEFAULT_SEPARATOR);
 
     /**
      * Destructor.
@@ -76,7 +78,8 @@ class FileSystemPath
      * @param p Path to parse.
      * @param separator Pathname separator.
      */
-    void parse(const char *p, char sep = DEFAULT_SEPARATOR);
+    void parse(const char *p,
+               const char sep = DEFAULT_SEPARATOR);
 
     /**
      * Retrieve the full path of our parent.

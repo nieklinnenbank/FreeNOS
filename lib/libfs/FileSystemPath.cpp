@@ -35,7 +35,7 @@ FileSystemPath::FileSystemPath()
 {
 }
 
-FileSystemPath::FileSystemPath(char *path, char separator)
+FileSystemPath::FileSystemPath(const char *path, const char separator)
     : m_fullPath(ZERO)
     , m_fullLength(ZERO)
     , m_parentPath(ZERO)
@@ -43,12 +43,12 @@ FileSystemPath::FileSystemPath(char *path, char separator)
     parse(path, separator);
 }
 
-FileSystemPath::FileSystemPath(String *s, char separator)
+FileSystemPath::FileSystemPath(const String *s, const char separator)
     : m_fullPath(ZERO)
     , m_fullLength(ZERO)
     , m_parentPath(ZERO)
 {
-    parse((char *) **s, separator);
+    parse(**s, separator);
 }
 
 FileSystemPath::~FileSystemPath()
@@ -62,7 +62,7 @@ FileSystemPath::~FileSystemPath()
     if (m_fullPath) delete m_fullPath;
 }
 
-void FileSystemPath::parse(const char *p, char sep)
+void FileSystemPath::parse(const char *p, const char sep)
 {
     const char *cur = p;
 
@@ -70,9 +70,9 @@ void FileSystemPath::parse(const char *p, char sep)
     while (*cur && *cur == sep) cur++;
 
     // Save parameters
-    p            = (char *) cur;
+    p = cur;
     m_separator  = sep;
-    m_fullLength = String::length((char *)cur);
+    m_fullLength = String::length(cur);
     m_fullPath   = new String(cur);
     assert(m_fullPath != NULL);
     String str(p);
@@ -100,8 +100,8 @@ void FileSystemPath::parse(const char *p, char sep)
 
             if (l->next && l->next->next)
             {
-                char tmp[2] = { m_separator, ZERO };
-                (*m_parentPath) << &tmp;
+                const char tmp[] = { m_separator, ZERO };
+                (*m_parentPath) << tmp;
             }
         }
     }

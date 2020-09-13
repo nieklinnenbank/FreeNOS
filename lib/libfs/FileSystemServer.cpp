@@ -101,7 +101,7 @@ FileSystem::Result FileSystemServer::registerFile(File *file, const char *path)
     insertFileCache(file, path);
 
     // Also add to the parent directory
-    FileSystemPath p((char *) path);
+    FileSystemPath p(path);
     Directory *parent;
 
     if (p.parent())
@@ -484,7 +484,7 @@ FileCache * FileSystemServer::insertFileCache(File *file, const char *pathStr)
     return c;
 }
 
-FileCache * FileSystemServer::findFileCache(char *path)
+FileCache * FileSystemServer::findFileCache(const char *path)
 {
     FileSystemPath p(path);
     return findFileCache(&p);

@@ -211,7 +211,7 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
      *
      * @return Pointer to FileCache object on success, NULL on failure.
      */
-    FileCache * findFileCache(char *path);
+    FileCache * findFileCache(const char *path);
 
     /**
      * Search the cache for an entry.
