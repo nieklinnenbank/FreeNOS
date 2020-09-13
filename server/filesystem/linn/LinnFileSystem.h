@@ -19,7 +19,6 @@
 #define __FILESYSTEM_LINN_FILESYSTEM_H
 
 #include <FileSystemServer.h>
-#include <FileSystemPath.h>
 #include <FileSystemMessage.h>
 #include <Storage.h>
 #include <Types.h>

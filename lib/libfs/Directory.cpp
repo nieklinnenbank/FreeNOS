@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <String.h>
+#include <ListIterator.h>
 #include <MemoryBlock.h>
 #include "Directory.h"
 

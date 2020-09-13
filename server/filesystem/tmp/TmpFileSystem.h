@@ -54,7 +54,6 @@ class TmpFileSystem : public FileSystemServer
      * @return Pointer to a new File on success, or ZERO on failure.
      *
      * @see File
-     * @see FileSystemPath
      */
     virtual File * createFile(FileSystem::FileType type, DeviceID deviceID);
 };

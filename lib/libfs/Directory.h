@@ -21,7 +21,6 @@
 #include <List.h>
 #include "FileSystem.h"
 #include "File.h"
-#include "FileSystemPath.h"
 
 /**
  * @addtogroup lib
