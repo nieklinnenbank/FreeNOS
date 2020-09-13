@@ -168,7 +168,6 @@ bool FileSystemServer::redirectRequest(const char *path, FileSystemMessage *msg)
 FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
 {
     char buf[FileSystemPath::MaximumLength];
-    FileSystemPath path;
     FileCache *cache = ZERO;
     File *file = ZERO;
     Directory *parent;
@@ -195,7 +194,7 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
         return msg->result;
     }
 
-    path.parse(buf + String::length(m_mountPath));
+    FileSystemPath path(buf + String::length(m_mountPath));
 
     // Do we have this file cached?
     if ((cache = findFileCache(&path)) ||
@@ -463,11 +462,8 @@ FileCache * FileSystemServer::lookupFile(FileSystemPath *path)
 
 FileCache * FileSystemServer::insertFileCache(File *file, const char *pathStr)
 {
-    FileSystemPath path;
+    FileSystemPath path(pathStr);
     FileCache *parent = ZERO;
-
-    // Interpret the given path
-    path.parse(pathStr);
 
     // Lookup our parent
     if (path.parent().length() == 0)

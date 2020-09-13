@@ -19,19 +19,16 @@
 #include <MemoryBlock.h>
 #include "FileSystemPath.h"
 
-FileSystemPath::FileSystemPath()
-    : m_separator(DefaultSeparator)
-{
-}
-
 FileSystemPath::FileSystemPath(const char *path, const char separator)
+    : m_separator(separator)
 {
-    parse(path, separator);
+    parse(path);
 }
 
-FileSystemPath::FileSystemPath(const String *s, const char separator)
+FileSystemPath::FileSystemPath(const String &str, const char separator)
+    : m_separator(separator)
 {
-    parse(**s, separator);
+    parse(*str);
 }
 
 FileSystemPath::~FileSystemPath()
@@ -42,24 +39,23 @@ FileSystemPath::~FileSystemPath()
     m_path.clear();
 }
 
-void FileSystemPath::parse(const char *p, const char sep)
+void FileSystemPath::parse(const char *p)
 {
     const char *cur = p;
 
     // Skip heading separators
-    while (*cur && *cur == sep)
+    while (*cur && *cur == m_separator)
     {
         cur++;
     }
 
     // Save parameters
     p = cur;
-    m_separator = sep;
     m_full = cur;
     String str(p);
 
     // Split the path into parts
-    List<String> parts = str.split(sep);
+    List<String> parts = str.split(m_separator);
     for (ListIterator<String> i(parts); i.hasCurrent(); i++)
     {
         String *s = new String(i.current());
