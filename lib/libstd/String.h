@@ -65,7 +65,7 @@ class String : public Sequence<char>
      * @param s Initial value of the String.
      * @param copy If true allocate and copy the input buffer.
      */
-    String(char *s, bool copy = true);
+    String(char *s, const bool copy = true);
 
     /**
      * Constant constructor.
@@ -73,7 +73,7 @@ class String : public Sequence<char>
      * @param s Initial value of the String.
      * @param copy If true allocate and copy the input buffer.
      */
-    String(const char *s, bool copy = false);
+    String(const char *s, const bool copy = false);
 
     /**
      * Signed integer constructor.
@@ -83,7 +83,7 @@ class String : public Sequence<char>
      *
      * @param number Integer number of the new String.
      */
-    String(int number);
+    String(const int number);
 
     /**
      * Destructor
@@ -136,7 +136,7 @@ class String : public Sequence<char>
      *
      * @return True if resized successfully, false otherwise.
      */
-    virtual bool resize(Size size);
+    virtual bool resize(const Size size);
 
     /**
      * Make sure at least given number of bytes available.
@@ -145,7 +145,7 @@ class String : public Sequence<char>
      *
      * @return True if success, false otherwise.
      */
-    virtual bool reserve(Size count);
+    virtual bool reserve(const Size count);
 
     /**
      * Returns the item at the given position.
@@ -154,7 +154,7 @@ class String : public Sequence<char>
      *
      * @return Pointer to the item at the given position or ZERO if no item available.
      */
-    virtual const char * get(Size position) const;
+    virtual const char * get(const Size position) const;
 
     /**
      * Returns a reference to the item at the given position.
@@ -165,7 +165,7 @@ class String : public Sequence<char>
      *
      * @note Position must be a valid index.
      */
-    virtual const char & at(Size position) const;
+    virtual const char & at(const Size position) const;
 
     /**
      * Return value at the given position.
@@ -177,7 +177,7 @@ class String : public Sequence<char>
      *
      * @return T at the given position or default constructed T.
      */
-    virtual const char value(Size position) const;
+    virtual const char value(const Size position) const;
 
     /**
      * Check if the given character occurs in the String.
@@ -186,7 +186,7 @@ class String : public Sequence<char>
      *
      * @return True if found, false otherwise.
      */
-    virtual bool contains(char character) const;
+    virtual bool contains(const char character) const;
 
     /**
      * Tests if this String starts with the specified prefix.
@@ -195,7 +195,7 @@ class String : public Sequence<char>
      *
      * @return True if matched, false otherwise.
      */
-    bool startsWith(String & prefix) const;
+    bool startsWith(const String & prefix) const;
 
     /**
      * Tests if this String starts with the specified prefix.
@@ -213,7 +213,7 @@ class String : public Sequence<char>
      *
      * @return True if matched, false otherwise.
      */
-    bool endsWith(String & suffix) const;
+    bool endsWith(const String & suffix) const;
 
     /**
      * Tests if this String ends with the specified suffix.
@@ -244,7 +244,7 @@ class String : public Sequence<char>
      * @return Zero if equal, negative if smaller or positive if greater.
      */
     virtual int compareTo(const String & str,
-                          bool caseSensitive = true) const;
+                          const bool caseSensitive = true) const;
 
     /**
      * Compare with a character string.
@@ -257,8 +257,8 @@ class String : public Sequence<char>
      * @return Zero if equal, negative if smaller or positive if greater.
      */
     virtual int compareTo(const char *str,
-                          bool caseSensitive = true,
-                          Size count = 0) const;
+                          const bool caseSensitive = true,
+                          const Size count = 0) const;
 
     /**
      * Alias for compareTo().
@@ -275,7 +275,7 @@ class String : public Sequence<char>
     bool match(const char *mask) const;
 
     /**
-     * Returns a new String that contains a copy of this String.
+     * Returns a part of the String as a copy.
      *
      * This function copies the input starting from index (inclusive),
      * and copies at most size characters.
@@ -283,9 +283,9 @@ class String : public Sequence<char>
      * @param index The begin index to create the substring of.
      * @param size The maximum size of the substring.
      *
-     * @return String* a pointer to the newly created substring.
+     * @return String by value
      */
-    String substring(Size index, Size size = 0);
+    String substring(const Size index, const Size size = 0) const;
 
     /**
      * Split the String into parts separated by a delimiter.
@@ -294,7 +294,7 @@ class String : public Sequence<char>
      *
      * @return List of Strings representing the parts.
      */
-    List<String> split(char delimiter);
+    List<String> split(const char delimiter) const;
 
     /**
      * Split the String into parts separated by a delimiter.
@@ -303,7 +303,7 @@ class String : public Sequence<char>
      *
      * @return List of Strings representing the parts.
      */
-    List<String> split(const String & delimiter);
+    List<String> split(const String & delimiter) const;
 
     /**
      * Convert the String to a signed long integer.
@@ -312,7 +312,7 @@ class String : public Sequence<char>
      *
      * @return Signed long integer
      */
-    long toLong(Number::Base base = Number::Dec) const;
+    long toLong(const Number::Base base = Number::Dec) const;
 
     /**
      * Pad line with trailing whitespace.
@@ -325,7 +325,7 @@ class String : public Sequence<char>
      *
      * @return Reference to the String
      */
-    String & pad(Size length);
+    String & pad(const Size length);
 
     /**
      * Remove leading and trailing whitespace from the String.
@@ -353,7 +353,9 @@ class String : public Sequence<char>
      *
      * @param string Destination character string buffer or ZERO to fill internal String buffer.
      */
-    Size set(long number, Number::Base base = Number::Dec, char *string = ZERO);
+    Size set(const long number,
+             const Number::Base base = Number::Dec,
+             char *string = ZERO);
 
     /**
      * Set text-representation of an unsigned number.
@@ -363,10 +365,10 @@ class String : public Sequence<char>
      * @param string Destination character string buffer or ZERO to fill internal String buffer.
      * @param sign Threat input number as signed.
      */
-    Size setUnsigned(ulong number,
-                     Number::Base base = Number::Dec,
+    Size setUnsigned(const ulong number,
+                     const Number::Base base = Number::Dec,
                      char *string = ZERO,
-                     bool sign = false);
+                     const bool sign = false);
 
     /**
      * Assignment operator.
@@ -419,22 +421,22 @@ class String : public Sequence<char>
     /**
      * Append the given signed number as text to the String.
      */
-    String & operator << (int number);
+    String & operator << (const int number);
 
     /**
      * Append the given unsigned number as text to the String.
      */
-    String & operator << (unsigned int number);
+    String & operator << (const unsigned int number);
 
     /**
      * Append the pointer as hexidecimal unsigned number to the String.
      */
-    String & operator << (void *pointer);
+    String & operator << (const void *pointer);
 
     /**
      * Change the default number format representation.
      */
-    String & operator << (Number::Base format);
+    String & operator << (const Number::Base format);
 
   private:
 
