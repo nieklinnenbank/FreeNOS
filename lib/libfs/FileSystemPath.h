@@ -58,20 +58,6 @@ class FileSystemPath
                    const char separator = DefaultSeparator);
 
     /**
-     * Constructor using a String.
-     *
-     * @param str String containing the path to parse.
-     * @param separator Pathname separator.
-     */
-    FileSystemPath(const String &str,
-                   const char separator = DefaultSeparator);
-
-    /**
-     * Destructor.
-     */
-    virtual ~FileSystemPath();
-
-    /**
      * Retrieve the full path of our parent.
      *
      * @return Path of our parent.
@@ -97,7 +83,7 @@ class FileSystemPath
      *
      * @return Pointer to a List.
      */
-    const List<String *> & split();
+    const List<String> & split() const;
 
     /**
      * Get Length of our full path.
@@ -108,23 +94,17 @@ class FileSystemPath
 
   private:
 
-    /**
-     * Parses a given character string as the path.
-     *
-     * @param p Path to parse.
-     */
-    void parse(const char *path);
-
-  private:
-
     /** Separator character. */
     const char m_separator;
 
-    /** The path split in pieces. */
-    List<String *> m_path;
-
     /** Full input path. */
-    String m_full;
+    const String m_full;
+
+    /** The path split in pieces by the separator. */
+    const List<String> m_path;
+
+    /** Last element in the full path. */
+    const String m_base;
 
     /** Full path to our parent. */
     String m_parent;

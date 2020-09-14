@@ -420,13 +420,13 @@ void FileSystemServer::setRoot(Directory *newRoot)
 
 FileCache * FileSystemServer::lookupFile(FileSystemPath *path)
 {
-    const List<String *> &entries = path->split();
+    const List<String> &entries = path->split();
     FileCache *c = ZERO;
     File *file = ZERO;
     Directory *dir;
 
     /* Loop the entire path. */
-    for (ListIterator<String *> i(entries); i.hasCurrent(); i++)
+    for (ListIterator<String> i(entries); i.hasCurrent(); i++)
     {
         /* Start at root? */
         if (!c)
@@ -434,7 +434,7 @@ FileCache * FileSystemServer::lookupFile(FileSystemPath *path)
             c = m_root;
         }
         /* Do we have this entry cached already? */
-        if (!c->entries.contains(*i.current()))
+        if (!c->entries.contains(i.current()))
         {
             /* If this isn't a directory, we cannot perform a lookup. */
             if (c->file->getType() != FileSystem::DirectoryFile)
@@ -444,17 +444,17 @@ FileCache * FileSystemServer::lookupFile(FileSystemPath *path)
             dir = (Directory *) c->file;
 
             /* Fetch the file, if possible. */
-            if (!(file = dir->lookup(**i.current())))
+            if (!(file = dir->lookup(*i.current())))
             {
                 return ZERO;
             }
             /* Insert into the FileCache. */
-            c = new FileCache(file, **i.current(), c);
+            c = new FileCache(file, *i.current(), c);
             assert(c != NULL);
         }
         /* Move to the next entry. */
         else
-            c = (FileCache *) c->entries.value(*i.current());
+            c = (FileCache *) c->entries.value(i.current());
     }
     /* All done. */
     return c;
@@ -493,7 +493,7 @@ FileCache * FileSystemServer::findFileCache(const String &path)
 
 FileCache * FileSystemServer::findFileCache(FileSystemPath *p)
 {
-    const List<String *> &entries = p->split();
+    const List<String> &entries = p->split();
     FileCache *c = m_root;
 
     /* Root is treated special. */
@@ -502,12 +502,12 @@ FileCache * FileSystemServer::findFileCache(FileSystemPath *p)
         return m_root;
     }
     /* Loop the entire path. */
-    for (ListIterator<String *> i(entries); i.hasCurrent(); i++)
+    for (ListIterator<String> i(entries); i.hasCurrent(); i++)
     {
-        if (!c->entries.contains(*i.current()))
+        if (!c->entries.contains(i.current()))
             return ZERO;
 
-        c = (FileCache *) c->entries.value(*i.current());
+        c = (FileCache *) c->entries.value(i.current());
     }
     /* Perform cachehit? */
     if (c)

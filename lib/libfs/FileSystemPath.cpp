@@ -21,59 +21,24 @@
 
 FileSystemPath::FileSystemPath(const char *path, const char separator)
     : m_separator(separator)
+    , m_full(path)
+    , m_path(m_full.split(m_separator))
+    , m_base(m_path.count() > 0 ? m_path.last() : "")
+    , m_parent()
 {
-    parse(path);
-}
-
-FileSystemPath::FileSystemPath(const String &str, const char separator)
-    : m_separator(separator)
-{
-    parse(*str);
-}
-
-FileSystemPath::~FileSystemPath()
-{
-    for (ListIterator<String *> i(m_path); i.hasCurrent(); i++)
-        delete i.current();
-
-    m_path.clear();
-}
-
-void FileSystemPath::parse(const char *p)
-{
-    const char *cur = p;
-
-    // Skip heading separators
-    while (*cur && *cur == m_separator)
-    {
-        cur++;
-    }
-
-    // Save parameters
-    p = cur;
-    m_full = cur;
-    String str(p);
-
-    // Split the path into parts
-    List<String> parts = str.split(m_separator);
-    for (ListIterator<String> i(parts); i.hasCurrent(); i++)
-    {
-        String *s = new String(i.current());
-        assert(s != NULL);
-        m_path.append(s);
-    }
-
     // Create parent, if any
     if (m_path.head() && m_path.head()->next)
     {
+        const char tmp[] = { m_separator, ZERO };
+        m_parent << tmp;
+
         // Construct parent path
-        for (List<String *>::Node *l = m_path.head(); l && l->next; l = l->next)
+        for (const List<String>::Node *l = m_path.head(); l && l->next; l = l->next)
         {
-            m_parent << **l->data;
+            m_parent << *l->data;
 
             if (l->next && l->next->next)
             {
-                const char tmp[] = { m_separator, ZERO };
                 m_parent << tmp;
             }
         }
@@ -87,7 +52,7 @@ const String & FileSystemPath::parent() const
 
 const String & FileSystemPath::base() const
 {
-    return (*m_path.last());
+    return m_base;
 }
 
 const String & FileSystemPath::full() const
@@ -95,7 +60,7 @@ const String & FileSystemPath::full() const
     return m_full;
 }
 
-const List<String *> & FileSystemPath::split()
+const List<String> & FileSystemPath::split() const
 {
     return m_path;
 }
