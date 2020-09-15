@@ -509,18 +509,9 @@ FileCache * FileSystemServer::findFileCache(FileSystemPath *p)
 
         c = (FileCache *) c->entries.value(i.current());
     }
-    /* Perform cachehit? */
-    if (c)
-    {
-        cacheHit(c);
-    }
-    /* Return what we got. */
-    return c && c->valid ? c : ZERO;
-}
 
-FileCache * FileSystemServer::cacheHit(FileCache *cache)
-{
-    return cache;
+    // Return what we got
+    return c && c->valid ? c : ZERO;
 }
 
 void FileSystemServer::clearFileCache(FileCache *cache)

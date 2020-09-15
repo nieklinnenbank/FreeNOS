@@ -232,15 +232,6 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
     FileCache * findFileCache(FileSystemPath *p);
 
     /**
-     * Process a cache hit.
-     *
-     * @param cache FileCache object which has just been referenced.
-     *
-     * @return FileCache object pointer.
-     */
-    virtual FileCache * cacheHit(FileCache *cache);
-
-    /**
      * Cleans up the entire file cache (except opened file caches and root).
      *
      * @param cache Input FileCache object. ZERO to clean up all from root.
