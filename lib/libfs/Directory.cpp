@@ -68,7 +68,7 @@ void Directory::insert(FileSystem::FileType type, const char *name)
         // Create an fill entry object
         d = new Dirent;
         assert(d != NULL);
-        MemoryBlock::copy(d->name, name, DIRENT_LEN);
+        MemoryBlock::copy(d->name, (char *)name, DIRENT_LEN);
         d->type = type;
         entries.append(d);
         m_size += sizeof(*d);
