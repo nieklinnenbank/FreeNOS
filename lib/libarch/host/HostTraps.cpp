@@ -93,6 +93,29 @@ static API::Result hostSystemInfoHandler(SystemInformation *info)
     return API::Success;
 }
 
+static API::Result hostVMCopyHandler(ProcessID procID, API::Operation how, Address ours,
+                                     Address theirs, Size sz)
+{
+    if (procID == SELF || procID == (ProcessID)getpid())
+    {
+        switch (how)
+        {
+            case API::Read:
+                MemoryBlock::copy((void *)ours, (void *)theirs, sz);
+                return (API::Result) sz;
+
+            case API::Write:
+                MemoryBlock::copy((void *)theirs, (void *)ours, sz);
+                return (API::Result) sz;
+
+            default:
+                break;
+        }
+    }
+
+    return API::IOError;
+}
+
 static API::Result hostVMCtlHandler(ProcessID procID,
                                     MemoryOperation op,
                                     Memory::Range *range)
@@ -149,6 +172,9 @@ static API::Result hostApiHandler(ulong api, ulong arg1, ulong arg2, ulong arg3,
 
         case API::SystemInfoNumber:
             return hostSystemInfoHandler((SystemInformation *) arg1);
+
+        case API::VMCopyNumber:
+            return hostVMCopyHandler(arg1, (API::Operation) arg2, arg3, arg4, arg5);
 
         case API::VMCtlNumber:
             return hostVMCtlHandler(arg1, (MemoryOperation) arg2, (Memory::Range *) arg3);
