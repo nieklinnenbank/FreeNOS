@@ -200,9 +200,8 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
     {
         ERROR("VMCopy failed: result = " << (int)ret << " from = " << msg->from <<
               " addr = " << (void *) msg->path << " action = " << (int) msg->action);
-        msg->type = ChannelMessage::Response;
         msg->result = FileSystem::IOError;
-        m_registry.getProducer(msg->from)->write(msg);
+        sendResponse(msg);
         return msg->result;
     }
     DEBUG(m_self << ": path = " << buf << " action = " << msg->action);
@@ -226,10 +225,8 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
     else if (msg->action != FileSystem::CreateFile && msg->action != FileSystem::WaitFileSystem)
     {
         DEBUG(m_self << ": not found");
-        msg->type = ChannelMessage::Response;
         msg->result = FileSystem::NotFound;
-        m_registry.getProducer(msg->from)->write(msg);
-        ProcessCtl(msg->from, Resume, 0);
+        sendResponse(msg);
         return msg->result;
     }
 
@@ -355,7 +352,21 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
 void FileSystemServer::sendResponse(FileSystemMessage *msg) const
 {
     msg->type = ChannelMessage::Response;
-    m_registry.getProducer(msg->from)->write(msg);
+
+    Channel *channel = m_registry.getProducer(msg->from);
+    if (channel == ZERO)
+    {
+        ERROR("failed to retrieve channel for PID " << msg->from);
+        return;
+    }
+
+    const Channel::Result result = channel->write(msg);
+    if (result != Channel::Success)
+    {
+        ERROR("failed to write channel for PID " << msg->from);
+        return;
+    }
+
     ProcessCtl(msg->from, Resume, 0);
 }
 
