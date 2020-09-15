@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Niek Linnenbank
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -90,7 +90,8 @@ FileSystem::Result FileSystemServer::mount()
     }
 }
 
-File * FileSystemServer::createFile(FileSystem::FileType type, DeviceID deviceID)
+File * FileSystemServer::createFile(const FileSystem::FileType type,
+                                    const DeviceID deviceID)
 {
     return (File *) ZERO;
 }
@@ -101,8 +102,8 @@ FileSystem::Result FileSystemServer::registerFile(File *file, const char *path)
     insertFileCache(file, path);
 
     // Also add to the parent directory
-    FileSystemPath p(path);
-    Directory *parent;
+    const FileSystemPath p(path);
+    Directory *parent = ZERO;
 
     if (p.parent().length() > 0)
         parent = (Directory *) findFileCache(*p.parent())->file;
@@ -194,11 +195,11 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
         return msg->result;
     }
 
-    FileSystemPath path(buf + String::length(m_mountPath));
+    const FileSystemPath path(buf + String::length(m_mountPath));
 
     // Do we have this file cached?
-    if ((cache = findFileCache(&path)) ||
-        (cache = lookupFile(&path)))
+    if ((cache = findFileCache(path)) ||
+        (cache = lookupFile(path)))
     {
         file = cache->file;
     }
@@ -332,7 +333,7 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
     return msg->result;
 }
 
-void FileSystemServer::sendResponse(FileSystemMessage *msg)
+void FileSystemServer::sendResponse(FileSystemMessage *msg) const
 {
     msg->type = ChannelMessage::Response;
     m_registry.getProducer(msg->from)->write(msg);
@@ -418,10 +419,10 @@ void FileSystemServer::setRoot(Directory *newRoot)
     insertFileCache(newRoot, "..");
 }
 
-FileCache * FileSystemServer::lookupFile(FileSystemPath *path)
+FileCache * FileSystemServer::lookupFile(const FileSystemPath &path)
 {
-    const List<String> &entries = path->split();
-    FileCache *c = ZERO;
+    const List<String> &entries = path.split();
+    FileCache *c = m_root;
     File *file = ZERO;
     Directory *dir;
 
@@ -462,7 +463,7 @@ FileCache * FileSystemServer::lookupFile(FileSystemPath *path)
 
 FileCache * FileSystemServer::insertFileCache(File *file, const char *pathStr)
 {
-    FileSystemPath path(pathStr);
+    const FileSystemPath path(pathStr);
     FileCache *parent = ZERO;
 
     // Lookup our parent
@@ -480,24 +481,24 @@ FileCache * FileSystemServer::insertFileCache(File *file, const char *pathStr)
     return c;
 }
 
-FileCache * FileSystemServer::findFileCache(const char *path)
+FileCache * FileSystemServer::findFileCache(const char *path) const
 {
-    FileSystemPath p(path);
-    return findFileCache(&p);
+    const FileSystemPath p(path);
+    return findFileCache(p);
 }
 
-FileCache * FileSystemServer::findFileCache(const String &path)
+FileCache * FileSystemServer::findFileCache(const String &path) const
 {
     return findFileCache(*path);
 }
 
-FileCache * FileSystemServer::findFileCache(FileSystemPath *p)
+FileCache * FileSystemServer::findFileCache(const FileSystemPath &path) const
 {
-    const List<String> &entries = p->split();
+    const List<String> &entries = path.split();
     FileCache *c = m_root;
 
-    /* Root is treated special. */
-    if (p->parent().length() == 0 && p->length() == 0)
+    // Root is treated special
+    if (path.parent().length() == 0 && path.length() == 0)
     {
         return m_root;
     }

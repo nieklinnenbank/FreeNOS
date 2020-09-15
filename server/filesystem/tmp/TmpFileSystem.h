@@ -55,7 +55,8 @@ class TmpFileSystem : public FileSystemServer
      *
      * @see File
      */
-    virtual File * createFile(FileSystem::FileType type, DeviceID deviceID);
+    virtual File * createFile(const FileSystem::FileType type,
+                              const DeviceID deviceID);
 };
 
 /**

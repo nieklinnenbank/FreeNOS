@@ -103,7 +103,8 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
      *
      * @return Pointer to a new File on success or ZERO on failure.
      */
-    virtual File * createFile(FileSystem::FileType type, DeviceID deviceID);
+    virtual File * createFile(const FileSystem::FileType type,
+                              const DeviceID deviceID);
 
     /**
      * Inserts a file into the in-memory filesystem tree.
@@ -164,7 +165,7 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
      *
      * @param msg The FileSystemMessage to send response for
      */
-    void sendResponse(FileSystemMessage *msg);
+    void sendResponse(FileSystemMessage *msg) const;
 
     /**
      * Try to forward the given FileSystemMessage to a mount file system.
@@ -202,7 +203,7 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
      *
      * @return Pointer to a FileCache on success, ZERO otherwise.
      */
-    FileCache * lookupFile(FileSystemPath *path);
+    FileCache * lookupFile(const FileSystemPath &path);
 
     /**
      * Search the cache for an entry.
@@ -211,7 +212,7 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
      *
      * @return Pointer to FileCache object on success, NULL on failure.
      */
-    FileCache * findFileCache(const char *path);
+    FileCache * findFileCache(const char *path) const;
 
     /**
      * Search the cache for an entry.
@@ -220,7 +221,7 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
      *
      * @return Pointer to FileCache object on success, NULL on failure.
      */
-    FileCache * findFileCache(const String &path);
+    FileCache * findFileCache(const String &path) const;
 
     /**
      * Search the cache for an entry.
@@ -229,7 +230,7 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
      *
      * @return Pointer to FileCache object on success, NULL on failure.
      */
-    FileCache * findFileCache(FileSystemPath *p);
+    FileCache * findFileCache(const FileSystemPath &path) const;
 
     /**
      * Cleans up the entire file cache (except opened file caches and root).

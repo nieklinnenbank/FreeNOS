@@ -29,7 +29,8 @@ TmpFileSystem::TmpFileSystem(const char *path)
     setRoot(dir);
 }
 
-File * TmpFileSystem::createFile(FileSystem::FileType type, DeviceID deviceID)
+File * TmpFileSystem::createFile(const FileSystem::FileType type,
+                                 const DeviceID deviceID)
 {
     // Create the appropriate file type
     switch (type)
