@@ -48,7 +48,11 @@ FileSystemServer::FileSystemServer(const char *path)
 FileSystemServer::~FileSystemServer()
 {
     if (m_requests)
+    {
         delete m_requests;
+    }
+
+    clearFileCache(m_root);
 }
 
 const char * FileSystemServer::getMountPath() const
@@ -99,7 +103,11 @@ File * FileSystemServer::createFile(const FileSystem::FileType type,
 FileSystem::Result FileSystemServer::registerFile(File *file, const char *path)
 {
     // Add to the filesystem cache
-    insertFileCache(file, path);
+    FileCache *cache = insertFileCache(file, path);
+    if (cache == ZERO)
+    {
+        return FileSystem::IOError;
+    }
 
     // Also add to the parent directory
     const FileSystemPath p(path);
@@ -512,41 +520,68 @@ FileCache * FileSystemServer::findFileCache(const FileSystemPath &path) const
     }
 
     // Return what we got
-    return c && c->valid ? c : ZERO;
+    return c;
+}
+
+void FileSystemServer::removeFileFromCache(FileCache *cache, File *file)
+{
+    assert(cache != ZERO);
+    assert(file != ZERO);
+
+    // Walk all our childs
+    for (HashIterator<String, FileCache *> i(cache->entries); i.hasCurrent(); i++)
+    {
+        FileCache *child = i.current();
+
+        if (child->file == cache->file)
+        {
+            static_cast<Directory *>(cache->file)->remove(*child->name);
+            removeFileFromCache(child, file);
+            child->file = ZERO;
+        }
+    }
 }
 
 void FileSystemServer::clearFileCache(FileCache *cache)
 {
-    /* Start from root? */
+    // Start from root?
     if (!cache)
     {
         cache = m_root;
     }
-    /* Mark invalid immediately. */
-    else
-        cache->valid = false;
 
-    /* Walk all our childs. */
-    for (HashIterator<String, FileCache *> i(cache->entries); i.hasCurrent(); i++)
+    // Make sure the current file is removed from all childs and below
+    if (cache->file != ZERO)
     {
-        /* Traverse subtree if it isn't invalidated yet. */
-        if (i.current()->valid)
-        {
-            clearFileCache(i.current());
-            i.remove();
-        }
+        removeFileFromCache(cache, cache->file);
     }
 
-    /* Remove the entry itself, if empty. */
-    if (!cache->valid && cache->entries.count() == 0)
+    // Walk all our childs
+    for (HashIterator<String, FileCache *> i(cache->entries); i.hasCurrent();)
     {
-        /* Remove entry from parent */
+        FileCache *child = i.current();
+
+        static_cast<Directory *>(cache->file)->remove(*child->name);
+        clearFileCache(child);
+        i.remove();
+    }
+
+    // Cleanup this cache object
+    assert(cache->entries.count() == 0);
+
+    if (cache->file != ZERO)
+    {
+        // Remove entry from parent */
         if (cache->parent)
         {
-            ((Directory *) cache->parent->file)->remove(*cache->name);
+            if (cache->parent->file)
+            {
+                static_cast<Directory *>(cache->parent->file)->remove(*cache->name);
+            }
             cache->parent->entries.remove(cache->name);
         }
+
         delete cache->file;
-        delete cache;
     }
+    delete cache;
 }

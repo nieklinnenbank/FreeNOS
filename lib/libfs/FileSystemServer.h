@@ -107,16 +107,6 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
                               const DeviceID deviceID);
 
     /**
-     * Inserts a file into the in-memory filesystem tree.
-     *
-     * @param file File to insert.
-     * @param pathFormat Full path to the file to insert.
-     *
-     * @return Pointer to the newly created FileCache, or NULL on failure.
-     */
-    FileCache * insertFileCache(File *file, const char *pathFormat);
-
-    /**
      * Process an incoming filesystem request using a path.
      *
      * This message handler is responsible for processing any
@@ -231,6 +221,24 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
      * @return Pointer to FileCache object on success, NULL on failure.
      */
     FileCache * findFileCache(const FileSystemPath &path) const;
+
+    /**
+     * Inserts a file into the in-memory filesystem tree.
+     *
+     * @param file File to insert.
+     * @param pathFormat Full path to the file to insert.
+     *
+     * @return Pointer to the newly created FileCache, or NULL on failure.
+     */
+    FileCache * insertFileCache(File *file, const char *pathFormat);
+
+    /**
+     * Remove a File from the cache.
+     *
+     * @param cache Cache entry to start searching at
+     * @param file File pointer to remove
+     */
+    void removeFileFromCache(FileCache *cache, File *file);
 
     /**
      * Cleans up the entire file cache (except opened file caches and root).
