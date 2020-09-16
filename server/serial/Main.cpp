@@ -29,8 +29,10 @@ int main(int argc, char **argv)
     SerialDevice *dev = SerialDevice::create();
 
     // Register to DeviceServer
-    server.insertFileCache(new Directory, "/serial0");
-    server.getRoot()->insert(FileSystem::DirectoryFile, "serial0");
+    Directory *dir = new Directory();
+    server.registerFile(dir, "/serial0");
+    server.registerFile(dir, "/serial0/.");
+    server.registerFile(dir, "/serial0/..");
     server.registerDevice(dev, "/serial0/io");
     server.registerInterrupt(dev, dev->getIrq());
 

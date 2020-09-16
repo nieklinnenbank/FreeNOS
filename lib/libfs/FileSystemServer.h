@@ -53,9 +53,10 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
     /**
      * Constructor function.
      *
-     * @param p Path to which we are mounted.
+     * @param root Root directory to use
+     * @param path Path to which we are mounted.
      */
-    FileSystemServer(const char *path);
+    FileSystemServer(Directory *root, const char *path);
 
     /**
      * Destructor function.
@@ -68,13 +69,6 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
      * @return Mount path of the filesystem
      */
     const char * getMountPath() const;
-
-    /**
-     * Get root directory.
-     *
-     * @return Root directory pointer
-     */
-    Directory * getRoot();
 
     /**
      * Mount the FileSystem.

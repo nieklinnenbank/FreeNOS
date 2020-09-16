@@ -23,7 +23,7 @@
 #include "LinnDirectory.h"
 
 LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
-    : FileSystemServer(p), storage(s), groups(ZERO)
+    : FileSystemServer(ZERO, p), storage(s), groups(ZERO)
 {
     LinnInode *rootInode;
     LinnGroup *group;

@@ -25,14 +25,15 @@
 #include "FileSystemMount.h"
 #include "FileSystemServer.h"
 
-FileSystemServer::FileSystemServer(const char *path)
+FileSystemServer::FileSystemServer(Directory *root, const char *path)
     : ChannelServer<FileSystemServer, FileSystemMessage>(this)
     , m_pid(ProcessCtl(SELF, GetPID))
+    , m_root(ZERO)
+    , m_mountPath(path)
+    , m_mounts(ZERO)
+    , m_requests(new List<FileSystemRequest *>())
 {
-    m_root      = 0;
-    m_mountPath = path;
-    m_requests  = new List<FileSystemRequest *>();
-    m_mounts    = ZERO;
+    setRoot(root);
 
     // Register message handlers
     addIPCHandler(FileSystem::CreateFile, &FileSystemServer::pathHandler, false);
@@ -58,11 +59,6 @@ FileSystemServer::~FileSystemServer()
 const char * FileSystemServer::getMountPath() const
 {
     return m_mountPath;
-}
-
-Directory * FileSystemServer::getRoot()
-{
-    return (Directory *) m_root->file;
 }
 
 FileSystem::Result FileSystemServer::mount()
@@ -114,12 +110,27 @@ FileSystem::Result FileSystemServer::registerFile(File *file, const char *path)
     Directory *parent = ZERO;
 
     if (p.parent().length() > 0)
-        parent = (Directory *) findFileCache(*p.parent())->file;
+    {
+        FileCache *cache = findFileCache(*p.parent());
+        if (cache != ZERO)
+        {
+            parent = static_cast<Directory *>(cache->file);
+        }
+    }
     else
-        parent = (Directory *) m_root->file;
+    {
+        parent = static_cast<Directory *>(m_root->file);
+    }
 
-    parent->insert(file->getType(), *p.base());
-    return FileSystem::Success;
+    if (parent != ZERO)
+    {
+        parent->insert(file->getType(), *p.base());
+        return FileSystem::Success;
+    }
+    else
+    {
+        return FileSystem::NotFound;
+    }
 }
 
 void FileSystemServer::pathHandler(FileSystemMessage *msg)
@@ -422,9 +433,12 @@ bool FileSystemServer::retryRequests()
 
 void FileSystemServer::setRoot(Directory *newRoot)
 {
-    m_root = new FileCache(newRoot, "/", ZERO);
-    insertFileCache(newRoot, ".");
-    insertFileCache(newRoot, "..");
+    if (newRoot != ZERO)
+    {
+        m_root = new FileCache(newRoot, "/", ZERO);
+        insertFileCache(newRoot, ".");
+        insertFileCache(newRoot, "..");
+    }
 }
 
 FileCache * FileSystemServer::lookupFile(const FileSystemPath &path)
@@ -434,38 +448,40 @@ FileCache * FileSystemServer::lookupFile(const FileSystemPath &path)
     File *file = ZERO;
     Directory *dir;
 
-    /* Loop the entire path. */
+    // Loop the entire path
     for (ListIterator<String> i(entries); i.hasCurrent(); i++)
     {
-        /* Start at root? */
-        if (!c)
-        {
-            c = m_root;
-        }
-        /* Do we have this entry cached already? */
+        // Do we have this entry cached already?
         if (!c->entries.contains(i.current()))
         {
-            /* If this isn't a directory, we cannot perform a lookup. */
+            // If this isn't a directory, we cannot perform a lookup
             if (c->file->getType() != FileSystem::DirectoryFile)
             {
                 return ZERO;
             }
             dir = (Directory *) c->file;
 
-            /* Fetch the file, if possible. */
+            // Fetch the file, if possible
             if (!(file = dir->lookup(*i.current())))
             {
                 return ZERO;
             }
-            /* Insert into the FileCache. */
+            // Insert into the FileCache
             c = new FileCache(file, *i.current(), c);
             assert(c != NULL);
         }
-        /* Move to the next entry. */
-        else
+        // Move to the next entry
+        else if (c != ZERO)
+        {
             c = (FileCache *) c->entries.value(i.current());
+        }
+        else
+        {
+            break;
+        }
     }
-    /* All done. */
+
+    // All done
     return c;
 }
 
@@ -483,7 +499,8 @@ FileCache * FileSystemServer::insertFileCache(File *file, const char *pathStr)
     {
         return ZERO;
     }
-    /* Create new cache. */
+
+    // Create new cache
     FileCache *c = new FileCache(file, *path.base(), parent);
     assert(c != NULL);
     return c;
@@ -510,12 +527,14 @@ FileCache * FileSystemServer::findFileCache(const FileSystemPath &path) const
     {
         return m_root;
     }
-    /* Loop the entire path. */
+
+    // Loop the entire path
     for (ListIterator<String> i(entries); i.hasCurrent(); i++)
     {
         if (!c->entries.contains(i.current()))
+        {
             return ZERO;
-
+        }
         c = (FileCache *) c->entries.value(i.current());
     }
 

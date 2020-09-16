@@ -22,11 +22,8 @@
 #include "TmpFileSystem.h"
 
 TmpFileSystem::TmpFileSystem(const char *path)
-    : FileSystemServer(path)
+    : FileSystemServer(new Directory(), path)
 {
-    Directory *dir = new Directory;
-    assert(dir != NULL);
-    setRoot(dir);
 }
 
 File * TmpFileSystem::createFile(const FileSystem::FileType type,

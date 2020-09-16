@@ -18,10 +18,9 @@
 #include "DeviceServer.h"
 
 DeviceServer::DeviceServer(const char *path)
-    : FileSystemServer(path)
+    : FileSystemServer(new Directory(), path)
 {
     m_interrupts.fill(ZERO);
-    setRoot(new Directory());
 }
 
 DeviceServer::~DeviceServer()
