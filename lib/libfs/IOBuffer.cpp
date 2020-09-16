@@ -39,7 +39,9 @@ IOBuffer::IOBuffer(const FileSystemMessage *msg)
 IOBuffer::~IOBuffer()
 {
     if (m_buffer)
-        delete m_buffer;
+    {
+        delete[] m_buffer;
+    }
 }
 
 void IOBuffer::setMessage(const FileSystemMessage *msg)
