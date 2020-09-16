@@ -40,7 +40,9 @@ PseudoFile::PseudoFile(const char *str)
 PseudoFile::~PseudoFile()
 {
     if (m_buffer)
-        delete m_buffer;
+    {
+        delete[] m_buffer;
+    }
 }
 
 FileSystem::Error PseudoFile::read(IOBuffer & buffer, Size size, Size offset)
@@ -70,7 +72,7 @@ FileSystem::Error PseudoFile::write(IOBuffer & buffer, Size size, Size offset)
         if (m_buffer)
         {
             MemoryBlock::copy(new_buffer, m_buffer, m_size);
-            delete m_buffer;
+            delete[] m_buffer;
         }
         // Assign buffer
         m_buffer = new_buffer;
