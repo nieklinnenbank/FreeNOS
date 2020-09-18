@@ -27,21 +27,43 @@ MemoryChannel::MemoryChannel(const Channel::Mode mode, const Size messageSize)
     assert(messageSize >= sizeof(RingHead));
     assert(messageSize < (PAGESIZE / 2));
 
-    MemoryBlock::set(&m_head, 0, sizeof(m_head));
+    reset(true);
 }
 
 MemoryChannel::~MemoryChannel()
 {
 }
 
-MemoryChannel::Result MemoryChannel::setVirtual(const Address data, const Address feedback)
+MemoryChannel::Result MemoryChannel::reset(const bool hardReset)
 {
-    m_data.setBase(data);
-    m_feedback.setBase(feedback);
+    if (hardReset)
+    {
+        MemoryBlock::set(&m_head, 0, sizeof(m_head));
+    }
+    else if (m_mode == Channel::Producer)
+    {
+        m_data.read(0, sizeof(m_head), &m_head);
+    }
+    else if (m_mode == Channel::Consumer)
+    {
+        m_feedback.read(0, sizeof(m_head), &m_head);
+    }
     return Success;
 }
 
-MemoryChannel::Result MemoryChannel::setPhysical(const Address data, const Address feedback)
+MemoryChannel::Result MemoryChannel::setVirtual(const Address data,
+                                                const Address feedback,
+                                                const bool hardReset)
+{
+    m_data.setBase(data);
+    m_feedback.setBase(feedback);
+
+    return reset(hardReset);
+}
+
+MemoryChannel::Result MemoryChannel::setPhysical(const Address data,
+                                                 const Address feedback,
+                                                 const bool hardReset)
 {
     Memory::Access dataAccess = Memory::User | Memory::Readable;
     Memory::Access feedAccess = Memory::User | Memory::Readable;
@@ -71,7 +93,7 @@ MemoryChannel::Result MemoryChannel::setPhysical(const Address data, const Addre
         return IOError;
     }
 
-    return Success;
+    return reset(hardReset);
 }
 
 MemoryChannel::Result MemoryChannel::read(void *buffer)

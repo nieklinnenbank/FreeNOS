@@ -38,7 +38,7 @@
  * the incoming data payloads. The producer writes payloads
  * to the data page. The feedback page is written only by the
  * consumer, where it stores the feedback information from its
- * consumption, such as the total bytes read and status.
+ * consumption.
  */
 class MemoryChannel : public Channel
 {
@@ -79,10 +79,13 @@ class MemoryChannel : public Channel
      *             Read/Write for the producer, Read-only for the consumer.
      * @param feedback Virtual memory address of the feedback page.
      *        Read/write for the consumer, read-only for the producer.
+     * @param hardReset Perform a hard reset after setting pages.
      *
      * @return Result code.
      */
-    Result setVirtual(const Address data, const Address feedback);
+    Result setVirtual(const Address data,
+                      const Address feedback,
+                      const bool hardReset = true);
 
     /**
      * Set memory pages by physical address.
@@ -94,10 +97,13 @@ class MemoryChannel : public Channel
      *             Read/Write for the producer, Read-only for the consumer.
      * @param feedback Physical memory address of the feedback page.
      *        Read/write for the consumer, read-only for the producer.
+     * @param hardReset Perform a hard reset after setting pages.
      *
      * @return Result code.
      */
-    Result setPhysical(const Address data, const Address feedback);
+    Result setPhysical(const Address data,
+                       const Address feedback,
+                       const bool hardReset = true);
 
     /**
      * Read a message.
@@ -137,6 +143,16 @@ class MemoryChannel : public Channel
     }
 
   private:
+
+    /**
+     * Reset to initial state.
+     *
+     * @param hardReset True to always start using the channel from
+     *                  beginning of data/feedback pages. False for soft-reset
+     *                  to read the new value of m_head back from the data page.
+     * @return Result code.
+     */
+    Result reset(const bool hardReset);
 
     /**
      * Flush memory page.

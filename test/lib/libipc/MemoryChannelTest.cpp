@@ -38,15 +38,33 @@ TestCase(MemoryChannelConstruct)
 
 TestCase(MemoryChannelSetVirtual)
 {
-    TestInt<uint> addresses(UINT_MIN, UINT_MAX);
+    static u8 dataPageBuf[PAGESIZE];
+    static u8 feedbackPageBuf[PAGESIZE];
 
-    const Address dataPage = addresses.random() & PAGEMASK;
-    const Address feedbackPage = addresses.random() & PAGEMASK;
-    MemoryChannel ch(Channel::Consumer, sizeof(u32));
+    const Address dataPage = (Address) dataPageBuf;
+    const Address feedbackPage = (Address) feedbackPageBuf;
+    MemoryChannel cons(Channel::Consumer, sizeof(u32));
+    MemoryChannel prod(Channel::Producer, sizeof(u32));
 
-    testAssert(ch.setVirtual(dataPage, feedbackPage) == MemoryChannel::Success);
-    testAssert(ch.m_data.getBase() == dataPage);
-    testAssert(ch.m_feedback.getBase() == feedbackPage);
+    // Default behaviour with hard reset
+    testAssert(cons.setVirtual(dataPage, feedbackPage) == MemoryChannel::Success);
+    testAssert(cons.m_data.getBase() == dataPage);
+    testAssert(cons.m_feedback.getBase() == feedbackPage);
+    testAssert(cons.m_head.index == ZERO);
+
+    // Soft reset must restore the RingHead from the feedback page for consumer
+    ((MemoryChannel::RingHead *) (feedbackPage))->index = 123;
+    testAssert(cons.setVirtual(dataPage, feedbackPage, false) == MemoryChannel::Success);
+    testAssert(cons.m_data.getBase() == dataPage);
+    testAssert(cons.m_feedback.getBase() == feedbackPage);
+    testAssert(cons.m_head.index == 123);
+
+    // Soft reset must restore the RingHead from the data page for producer
+    ((MemoryChannel::RingHead *) (dataPage))->index = 456;
+    testAssert(prod.setVirtual(dataPage, feedbackPage, false) == MemoryChannel::Success);
+    testAssert(prod.m_data.getBase() == dataPage);
+    testAssert(prod.m_feedback.getBase() == feedbackPage);
+    testAssert(prod.m_head.index == 456);
 
     return OK;
 }
