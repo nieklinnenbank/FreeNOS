@@ -92,6 +92,50 @@ TestCase(ChannelServerConstruct)
     return OK;
 }
 
+TestCase(ChannelServerRecoverChannels)
+{
+    SystemInformation info;
+    DummyServer server;
+
+    // Prepare channel. This test simulates the client-side of both channels.
+    static u8 pages[PAGESIZE * 4];
+    MemoryChannel prod(Channel::Producer, sizeof(DummyMessage));
+    MemoryChannel cons(Channel::Consumer, sizeof(DummyMessage));
+    prod.setVirtual((Address) pages, ((Address) pages) + PAGESIZE);
+    cons.setVirtual(((Address) pages) + (PAGESIZE * 2),
+                    ((Address) pages) + (PAGESIZE * 3));
+
+    // Setup a pending message in the request channel
+    DummyMessage msg;
+    msg.type   = ChannelMessage::Request;
+    msg.from   = SELF;
+    msg.action = DummyServer::DummyIpcAction;
+    msg.value  = 12345U;
+    msg.result = 0;
+    testAssert(prod.write(&msg) == MemoryChannel::Success);
+
+    // Invoke accept with soft-reset, just like recoverChannels would do
+    ProcessShares::MemoryShare share;
+    share.pid    = SELF;
+    share.coreId = info.coreId;
+    share.tagId  = 0;
+    share.range.virt = (Address) pages;
+    share.range.size = sizeof(pages);
+    testAssert(server.accept(SELF, share.range, false) == DummyServer::Success);
+
+    // See if the pending message is processed correctly (i.e. recovered after the soft-reset)
+    server.readChannels();
+    testAssert(server.m_msgCount == 1);
+    testAssert(server.m_irqCount == 0);
+
+    // See if the response can be received properly
+    testAssert(cons.read(&msg) == MemoryChannel::Success);
+    testAssert(msg.result == DummyServer::DummyIpcResult);
+    testAssert(server.m_msgValue == 12345U);
+
+    return OK;
+}
+
 TestCase(ChannelServerReadChannels)
 {
     DummyServer server;

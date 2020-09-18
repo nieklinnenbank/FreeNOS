@@ -19,6 +19,7 @@
 #define __LIBIPC_CHANNELSERVER_H
 
 #include <FreeNOS/User.h>
+#include <FreeNOS/ProcessManager.h>
 #include <FreeNOS/ProcessEvent.h>
 #include <FreeNOS/ProcessShares.h>
 #include <HashIterator.h>
@@ -136,8 +137,11 @@ template <class Base, class MsgType> class ChannelServer
         else
         {
             m_kernelEvent.setVirtual(share.range.virt,
-                                     share.range.virt + PAGESIZE);
+                                     share.range.virt + PAGESIZE, false);
         }
+
+        // Try to recover channels after a restart
+        recoverChannels();
     }
 
     /**
@@ -297,27 +301,61 @@ template <class Base, class MsgType> class ChannelServer
      *
      * @return Result code
      */
-    Result accept(const ProcessID pid, const Memory::Range range)
+    Result accept(const ProcessID pid,
+                  const Memory::Range range,
+                  const bool hardReset = true)
     {
         // Create consumer
         if (!m_registry.getConsumer(pid))
         {
             MemoryChannel *consumer = new MemoryChannel(Channel::Consumer, sizeof(MsgType));
             assert(consumer != NULL);
-            consumer->setVirtual(range.virt, range.virt + PAGESIZE);
+            consumer->setVirtual(range.virt, range.virt + PAGESIZE, hardReset);
             m_registry.registerConsumer(pid, consumer);
         }
+
         // Create producer
         if (!m_registry.getProducer(pid))
         {
             MemoryChannel *producer = new MemoryChannel(Channel::Producer, sizeof(MsgType));
             assert(producer != NULL);
             producer->setVirtual(range.virt + (PAGESIZE*2),
-                                 range.virt + (PAGESIZE*3));
+                                 range.virt + (PAGESIZE*3),
+                                 hardReset);
             m_registry.registerProducer(pid, producer);
         }
+
         // Done
         return Success;
+    }
+
+    /**
+     * Read existing shares to recover MemoryChannels after restart.
+     */
+    void recoverChannels()
+    {
+        const SystemInformation info;
+
+        for (ProcessID i = 0; i < MAX_PROCS; i++)
+        {
+            if (i != m_self && i != KERNEL_PID)
+            {
+                ProcessShares::MemoryShare share;
+                share.pid    = i;
+                share.coreId = info.coreId;
+                share.tagId  = 0;
+
+                const API::Result result = VMShare(SELF, API::Read, &share);
+                if (result == API::Success)
+                {
+                    const Result r = accept(i, share.range, false);
+                    if (r != Success)
+                    {
+                        ERROR("failed to recover share for PID " << i << ": " << (int)r);
+                    }
+                }
+            }
+        }
     }
 
     /**
