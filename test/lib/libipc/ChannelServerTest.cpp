@@ -41,8 +41,9 @@ class DummyServer : public ChannelServer<DummyServer, DummyMessage>
     static const u32 DummyIpcResult  = 112233U;
 
   public:
-    DummyServer(const Address kernelChannelAddr)
+    DummyServer()
         : ChannelServer<DummyServer, DummyMessage>(this)
+        , m_kernelProducer(Channel::Producer, sizeof(ProcessEvent))
         , m_irqValue(0)
         , m_irqCount(0)
         , m_msgValue(0)
@@ -50,7 +51,10 @@ class DummyServer : public ChannelServer<DummyServer, DummyMessage>
     {
         addIRQHandler(DummyIrqVector, &DummyServer::irqHandler);
         addIPCHandler(DummyIpcAction, &DummyServer::ipcHandler);
-        m_kernelEvent.setVirtual(kernelChannelAddr, kernelChannelAddr + PAGESIZE);
+
+        MemoryBlock::set(m_kernelPages, 0, sizeof(m_kernelPages));
+        m_kernelProducer.setVirtual((Address) m_kernelPages, ((Address) m_kernelPages) + PAGESIZE);
+        m_kernelEvent.setVirtual((Address) m_kernelPages, ((Address) m_kernelPages) + PAGESIZE);
     }
 
     void irqHandler(Size irq)
@@ -66,26 +70,19 @@ class DummyServer : public ChannelServer<DummyServer, DummyMessage>
         msg->result = DummyIpcResult;
     }
 
+    static u8 m_kernelPages[PAGESIZE * 2u];
+    MemoryChannel m_kernelProducer;
     Size m_irqValue;
     Size m_irqCount;
     u32  m_msgValue;
     Size m_msgCount;
 };
 
-static Address prepareKernelChannel(MemoryChannel *producer)
-{
-    static u8 kernelPages[PAGESIZE * 2];
-
-    MemoryBlock::set(kernelPages, 0, sizeof(kernelPages));
-    producer->setVirtual((Address) kernelPages, ((Address) kernelPages) + PAGESIZE);
-
-    return (Address) &kernelPages;
-}
+u8 DummyServer::m_kernelPages[PAGESIZE * 2u];
 
 TestCase(ChannelServerConstruct)
 {
-    MemoryChannel kernelProducer(Channel::Producer, sizeof(ProcessEvent));
-    DummyServer server(prepareKernelChannel(&kernelProducer));
+    DummyServer server;
 
     // Validate members
     testAssert(server.m_self != 0);
@@ -97,8 +94,7 @@ TestCase(ChannelServerConstruct)
 
 TestCase(ChannelServerReadChannels)
 {
-    MemoryChannel kernelProducer(Channel::Producer, sizeof(ProcessEvent));
-    DummyServer server(prepareKernelChannel(&kernelProducer));
+    DummyServer server;
 
     // Mask error output
     Log::instance()->setMinimumLogLevel(Log::Critical);
@@ -125,8 +121,8 @@ TestCase(ChannelServerReadChannels)
     event.type = ShareCreated;
     event.share.pid = pid;
     event.share.range.virt = (Address) &clientPages;
-    testAssert(kernelProducer.write(&event) == MemoryChannel::Success);
-    testAssert(kernelProducer.flush() == MemoryChannel::Success);
+    testAssert(server.m_kernelProducer.write(&event) == MemoryChannel::Success);
+    testAssert(server.m_kernelProducer.flush() == MemoryChannel::Success);
     testAssert(server.m_msgCount == 0);
     testAssert(server.m_irqCount == 0);
 
@@ -172,8 +168,8 @@ TestCase(ChannelServerReadChannels)
     // Raise event of process being terminated
     event.type   = ProcessTerminated;
     event.number = pid;
-    testAssert(kernelProducer.write(&event) == MemoryChannel::Success);
-    testAssert(kernelProducer.flush() == MemoryChannel::Success);
+    testAssert(server.m_kernelProducer.write(&event) == MemoryChannel::Success);
+    testAssert(server.m_kernelProducer.flush() == MemoryChannel::Success);
 
     // Process the event
     server.readKernelEvents();
@@ -185,8 +181,7 @@ TestCase(ChannelServerReadChannels)
 
 TestCase(ChannelServerShareCreated)
 {
-    MemoryChannel kernelProducer(Channel::Producer, sizeof(ProcessEvent));
-    DummyServer server(prepareKernelChannel(&kernelProducer));
+    DummyServer server;
 
     // Raise event with a newly created share
     const ProcessID pid = MAX_PROCS + 1234u;
@@ -195,8 +190,8 @@ TestCase(ChannelServerShareCreated)
     event.type = ShareCreated;
     event.share.pid = pid;
     event.share.range.virt = addr;
-    testAssert(kernelProducer.write(&event) == MemoryChannel::Success);
-    testAssert(kernelProducer.flush() == MemoryChannel::Success);
+    testAssert(server.m_kernelProducer.write(&event) == MemoryChannel::Success);
+    testAssert(server.m_kernelProducer.flush() == MemoryChannel::Success);
 
     // Process the new channel
     server.readKernelEvents();
@@ -216,8 +211,8 @@ TestCase(ChannelServerShareCreated)
     // Raise event of process being terminated
     event.type   = ProcessTerminated;
     event.number = pid;
-    testAssert(kernelProducer.write(&event) == MemoryChannel::Success);
-    testAssert(kernelProducer.flush() == MemoryChannel::Success);
+    testAssert(server.m_kernelProducer.write(&event) == MemoryChannel::Success);
+    testAssert(server.m_kernelProducer.flush() == MemoryChannel::Success);
 
     // Process the event
     server.readKernelEvents();
@@ -229,8 +224,7 @@ TestCase(ChannelServerShareCreated)
 
 TestCase(ChannelServerInterruptEvent)
 {
-    MemoryChannel kernelProducer(Channel::Producer, sizeof(ProcessEvent));
-    DummyServer server(prepareKernelChannel(&kernelProducer));
+    DummyServer server;
 
     // Mask error output
     Log::instance()->setMinimumLogLevel(Log::Critical);
@@ -243,8 +237,8 @@ TestCase(ChannelServerInterruptEvent)
     ProcessEvent event;
     event.type = InterruptEvent;
     event.number = 251;
-    testAssert(kernelProducer.write(&event) == MemoryChannel::Success);
-    testAssert(kernelProducer.flush() == MemoryChannel::Success);
+    testAssert(server.m_kernelProducer.write(&event) == MemoryChannel::Success);
+    testAssert(server.m_kernelProducer.flush() == MemoryChannel::Success);
 
     // Process the unregistered IRQ
     server.processAll();
@@ -252,8 +246,8 @@ TestCase(ChannelServerInterruptEvent)
 
     // Now raise the registered IRQ once.
     event.number = DummyServer::DummyIrqVector;
-    testAssert(kernelProducer.write(&event) == MemoryChannel::Success);
-    testAssert(kernelProducer.flush() == MemoryChannel::Success);
+    testAssert(server.m_kernelProducer.write(&event) == MemoryChannel::Success);
+    testAssert(server.m_kernelProducer.flush() == MemoryChannel::Success);
 
     // Process the registered IRQ. This must invoke the IRQ callback once.
     server.processAll();
@@ -263,8 +257,8 @@ TestCase(ChannelServerInterruptEvent)
     // Raise the registered IRQ multiple times. This will enqueue them.
     for (Size i = 0; i < 10U; i++)
     {
-        testAssert(kernelProducer.write(&event) == MemoryChannel::Success);
-        testAssert(kernelProducer.flush() == MemoryChannel::Success);
+        testAssert(server.m_kernelProducer.write(&event) == MemoryChannel::Success);
+        testAssert(server.m_kernelProducer.flush() == MemoryChannel::Success);
     }
 
     // For each queued IRQ event, the handler must be invoked.
@@ -277,8 +271,7 @@ TestCase(ChannelServerInterruptEvent)
 
 TestCase(ChannelServerProcessTerminated)
 {
-    MemoryChannel kernelProducer(Channel::Producer, sizeof(ProcessEvent));
-    DummyServer server(prepareKernelChannel(&kernelProducer));
+    DummyServer server;
 
     // Raise event with a newly created share
     const ProcessID pid = MAX_PROCS + 1234u;
@@ -287,8 +280,8 @@ TestCase(ChannelServerProcessTerminated)
     event.type = ShareCreated;
     event.share.pid = pid;
     event.share.range.virt = addr;
-    testAssert(kernelProducer.write(&event) == MemoryChannel::Success);
-    testAssert(kernelProducer.flush() == MemoryChannel::Success);
+    testAssert(server.m_kernelProducer.write(&event) == MemoryChannel::Success);
+    testAssert(server.m_kernelProducer.flush() == MemoryChannel::Success);
 
     // Process the new channel
     server.readKernelEvents();
@@ -298,8 +291,8 @@ TestCase(ChannelServerProcessTerminated)
     // Raise event of process being terminated
     event.type   = ProcessTerminated;
     event.number = pid;
-    testAssert(kernelProducer.write(&event) == MemoryChannel::Success);
-    testAssert(kernelProducer.flush() == MemoryChannel::Success);
+    testAssert(server.m_kernelProducer.write(&event) == MemoryChannel::Success);
+    testAssert(server.m_kernelProducer.flush() == MemoryChannel::Success);
 
     // Process the event
     server.readKernelEvents();
