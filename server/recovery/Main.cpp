@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2020 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,35 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __API_PROCESSID_H
-#define __API_PROCESSID_H
+#include <FreeNOS/User.h>
+#include <KernelLog.h>
+#include "RecoveryServer.h"
 
-/**
- * @addtogroup kernel
- * @{
- *
- * @addtogroup kernelapi
- * @{
- */
-
-/**
- * @name Static Process IDs
- * @{
- */
-
-#define ANY             65535
-#define SELF            65534
-#define KERNEL_PID      65533
-
-#define CORESRV_PID     0
-#define DATASTORE_PID   1
-#define RECOVERY_PID    2
-#define ROOTFS_PID      3
-
-/**
- * @}
- * @}
- * @}
- */
-
-#endif /* __API_PROCESSID_H */
+int main(int argc, char **argv)
+{
+    KernelLog log;
+    RecoveryServer server;
+    return server.run();
+}

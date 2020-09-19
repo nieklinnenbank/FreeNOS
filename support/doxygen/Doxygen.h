@@ -217,9 +217,9 @@
  */
 
 /**
- * @defgroup grovepi grovepi
+ * @defgroup recovery RecoveryServer
  *
- * The GrovePI is an I/O extension platform for the Raspberry Pi 1/2/3.
+ * Provides fault tolerance to servers by restarting on errors (recovery).
  */
 
 /**

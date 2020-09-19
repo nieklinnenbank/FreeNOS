@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2020 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,35 +15,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __API_PROCESSID_H
-#define __API_PROCESSID_H
+#ifndef __SERVER_RECOVERY_RECOVERYMESSAGE_H
+#define __SERVER_RECOVERY_RECOVERYMESSAGE_H
+
+#include <Types.h>
+#include <ChannelMessage.h>
+#include "Recovery.h"
 
 /**
- * @addtogroup kernel
+ * @addtogroup server
  * @{
  *
- * @addtogroup kernelapi
+ * @addtogroup recovery
  * @{
  */
 
 /**
- * @name Static Process IDs
- * @{
+ * Recovery IPC message.
  */
-
-#define ANY             65535
-#define SELF            65534
-#define KERNEL_PID      65533
-
-#define CORESRV_PID     0
-#define DATASTORE_PID   1
-#define RECOVERY_PID    2
-#define ROOTFS_PID      3
+typedef struct RecoveryMessage : public ChannelMessage
+{
+    ProcessID from;          /**< Source of the message */
+    Recovery::Action action; /**< Action to perform. */
+    Recovery::Result result; /**< Result of action. */
+    ProcessID pid;           /**< Process identifier of target process. */
+}
+RecoveryMessage;
 
 /**
  * @}
  * @}
- * @}
  */
 
-#endif /* __API_PROCESSID_H */
+#endif /* __SERVER_RECOVERY_RECOVERYMESSAGE_H */
