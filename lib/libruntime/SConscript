@@ -20,10 +20,11 @@ Import('build_env')
 env = build_env.Clone()
 env.UseLibraries(['liballoc', 'libstd', 'libarch', 'libipc', 'libfs' ])
 env.UseLibraries(['liballoc', 'libstd', 'libarch', 'libipc', 'libfs' ], 'host')
-env.UseServers([ 'filesystem', 'core', 'datastore' ])
+env.UseServers([ 'filesystem', 'core', 'datastore', 'recovery' ])
 
 if env['ARCH'] == 'host':
-    srclist = [ 'CoreClient.cpp', 'DatastoreClient.cpp', 'KernelLog.cpp' ]
+    srclist = [ 'CoreClient.cpp', 'DatastoreClient.cpp',
+                'KernelLog.cpp', 'RecoveryClient.cpp' ]
 else:
     srclist = [ Glob('*.cpp') ]
 
