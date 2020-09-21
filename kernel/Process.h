@@ -131,7 +131,6 @@ class Process
      */
     MemoryContext * getMemoryContext();
 
-
     /**
      * Get privilege.
      *
@@ -194,6 +193,13 @@ class Process
     Result wait(ProcessID id);
 
     /**
+     * Complete waiting for another Process.
+     *
+     * @param result Exit code of the other process
+     */
+    virtual Result join(const uint result);
+
+    /**
      * Raise kernel event
      *
      * @return Result code
@@ -211,13 +217,6 @@ class Process
      * Set parent process ID.
      */
     void setParent(ProcessID id);
-
-    /**
-     * Set wait result
-     *
-     * @param result Exit code of the other process
-     */
-    virtual void setWaitResult(uint result);
 
   protected:
 

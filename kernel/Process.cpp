@@ -77,11 +77,6 @@ uint Process::getWaitResult() const
     return m_waitResult;
 }
 
-void Process::setWaitResult(uint result)
-{
-    m_waitResult = result;
-}
-
 Process::State Process::getState() const
 {
     return m_state;
@@ -123,6 +118,19 @@ Process::Result Process::wait(ProcessID id)
     m_state  = Waiting;
     m_waitId = id;
 
+    return Success;
+}
+
+Process::Result Process::join(const uint result)
+{
+    if (m_state != Waiting)
+    {
+        ERROR("PID " << m_id << " has invalid state: " << (uint) m_state);
+        return InvalidArgument;
+    }
+
+    m_waitResult = result;
+    m_state = Ready;
     return Success;
 }
 

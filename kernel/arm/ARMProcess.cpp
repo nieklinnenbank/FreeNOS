@@ -88,13 +88,15 @@ void ARMProcess::setCpuState(const CPUState *cpuState)
     MemoryBlock::copy(&m_cpuState, cpuState, sizeof(*cpuState));
 }
 
-void ARMProcess::setWaitResult(uint result)
+ARMProcess::Result ARMProcess::join(const uint result)
 {
-    if (m_state != Waiting)
+    const Result r = Process::join(result);
+    if (r == Success)
     {
-        FATAL("set wait result while process is not waiting: status: " << (uint) m_state);
+        m_cpuState.r0 = result;
     }
-    m_cpuState.r0 = result;
+
+    return r;
 }
 
 void ARMProcess::execute(Process *previous)

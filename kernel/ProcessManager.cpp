@@ -81,21 +81,26 @@ void ProcessManager::remove(Process *proc, const uint exitStatus)
     if (proc == m_current)
         m_current = ZERO;
 
-    // Wakeup any Processes which are waiting for this Process
+    // Notify processes which are waiting for this Process
     const Size size = m_procs.size();
-
     for (Size i = 0; i < size; i++)
     {
         if (m_procs[i] != ZERO &&
             m_procs[i]->getState() == Process::Waiting &&
             m_procs[i]->getWait() == proc->getID())
         {
-            m_procs[i]->setWaitResult(exitStatus);
-
-            const Result result = wakeup(m_procs[i]);
-            if (result != Success)
+            const Process::Result result = m_procs[i]->join(exitStatus);
+            if (result != Process::Success)
             {
-                FATAL("failed to wakeup PID " << m_procs[i]->getID());
+                FATAL("failed to join() PID " << m_procs[i]->getID() <<
+                      ": result = " << (int) result);
+            }
+
+            const Result r = enqueueProcess(m_procs[i]);
+            if (r != Success)
+            {
+                FATAL("failed to enqueue() PID " << m_procs[i]->getID() <<
+                      ": result = " << (int) r);
             }
         }
     }
