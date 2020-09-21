@@ -74,7 +74,7 @@ API::Result ProcessCtlHandler(ProcessID procID,
         procs->schedule();
         break;
 
-    case Resume:
+    case Wakeup:
         // increment wakeup counter and set process ready
         if (procs->wakeup(proc) != ProcessManager::Success)
         {
@@ -166,7 +166,7 @@ Log & operator << (Log &log, ProcessOperation op)
         case InfoTimer: log.append("InfoTimer"); break;
         case EnterSleep: log.append("EnterSleep"); break;
         case Schedule:  log.append("Schedule"); break;
-        case Resume:    log.append("Resume"); break;
+        case Wakeup:    log.append("Wakeup"); break;
         default:        log.append("???"); break;
     }
     return log;

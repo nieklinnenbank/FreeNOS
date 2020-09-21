@@ -50,7 +50,7 @@ typedef enum ProcessOperation
     WaitTimer,
     EnterSleep,
     Schedule,
-    Resume,
+    Wakeup,
 }
 ProcessOperation;
 

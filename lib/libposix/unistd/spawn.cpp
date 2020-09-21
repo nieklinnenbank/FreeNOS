@@ -164,7 +164,7 @@ int spawn(Address program, Size programSize, const char *argv[])
     }
 
     // Let the Child begin execution
-    ProcessCtl(pid, Resume);
+    ProcessCtl(pid, Wakeup);
 
     // Done. Cleanup.
     delete[] arguments;

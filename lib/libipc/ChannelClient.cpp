@@ -182,7 +182,7 @@ ChannelClient::Result ChannelClient::sendRequest(const ProcessID pid,
     }
 
     // Wakeup the receiver
-    ProcessCtl(pid, Resume, 0);
+    ProcessCtl(pid, Wakeup, 0);
     return Success;
 }
 
@@ -257,11 +257,11 @@ ChannelClient::Result ChannelClient::syncSendTo(const void *buffer, const Size m
         switch (ch->write(buffer))
         {
             case Channel::Success:
-                ProcessCtl(pid, Resume, 0);
+                ProcessCtl(pid, Wakeup, 0);
                 return Success;
 
             case Channel::ChannelFull:
-                ProcessCtl(pid, Resume, 0);
+                ProcessCtl(pid, Wakeup, 0);
                 break;
 
             default:

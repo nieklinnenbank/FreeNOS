@@ -367,7 +367,7 @@ void FileSystemServer::sendResponse(FileSystemMessage *msg) const
         return;
     }
 
-    ProcessCtl(msg->from, Resume, 0);
+    ProcessCtl(msg->from, Wakeup, 0);
 }
 
 void FileSystemServer::mountHandler(FileSystemMessage *msg)
