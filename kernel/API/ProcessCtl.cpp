@@ -74,6 +74,26 @@ API::Result ProcessCtlHandler(ProcessID procID,
         procs->schedule();
         break;
 
+    case Stop:
+        if (procs->stop(proc) != ProcessManager::Success)
+        {
+            ERROR("failed to stop PID " << proc->getID());
+            return API::IOError;
+        }
+        if (procID == SELF)
+        {
+            procs->schedule();
+        }
+        break;
+
+    case Resume:
+        if (procs->resume(proc) != ProcessManager::Success)
+        {
+            ERROR("failed to resume PID " << proc->getID());
+            return API::IOError;
+        }
+        break;
+
     case Wakeup:
         // increment wakeup counter and set process ready
         if (procs->wakeup(proc) != ProcessManager::Success)

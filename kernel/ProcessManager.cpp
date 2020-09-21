@@ -56,7 +56,7 @@ Process * ProcessManager::create(const Address entry,
 
         if (readyToRun)
         {
-            wakeup(proc);
+            resume(proc);
         }
 
         if (m_current != 0)
@@ -208,6 +208,38 @@ ProcessManager::Result ProcessManager::wait(Process *proc)
     return dequeueProcess(m_current);
 }
 
+ProcessManager::Result ProcessManager::stop(Process *proc)
+{
+    const Process::State state = proc->getState();
+    const Process::Result result = proc->stop();
+    if (result != Process::Success)
+    {
+        ERROR("failed to stop PID " << proc->getID() << ": result = " << (int) result);
+        return IOError;
+    }
+
+    if (state == Process::Ready)
+    {
+        return dequeueProcess(proc);
+    }
+    else
+    {
+        return Success;
+    }
+}
+
+ProcessManager::Result ProcessManager::resume(Process *proc)
+{
+    const Process::Result result = proc->resume();
+    if (result != Process::Success)
+    {
+        ERROR("failed to resume PID " << proc->getID() << ": result = " << (int) result);
+        return IOError;
+    }
+
+    return enqueueProcess(proc);
+}
+
 ProcessManager::Result ProcessManager::sleep(const Timer::Info *timer, const bool ignoreWakeups)
 {
     const Process::Result result = m_current->sleep(timer, ignoreWakeups);
@@ -242,45 +274,39 @@ ProcessManager::Result ProcessManager::sleep(const Timer::Info *timer, const boo
 
 ProcessManager::Result ProcessManager::wakeup(Process *proc)
 {
-    const Process::State state = proc->getState();
     const Process::Result result = proc->wakeup();
 
-    if (result != Process::Success)
+    switch (result)
     {
-        ERROR("failed to wakeup process ID " << proc->getID() <<
-              ": result: " << (uint) result);
-        return IOError;
-    }
+        case Process::WakeupPending:
+            return Success;
 
-    if (state != Process::Ready)
-    {
-        return enqueueProcess(proc);
-    }
-    else
-    {
-        return Success;
+        case Process::Success:
+            return enqueueProcess(proc);
+
+        default:
+            ERROR("failed to wakeup process ID " << proc->getID() <<
+                  ": result: " << (uint) result);
+            return IOError;
     }
 }
 
 ProcessManager::Result ProcessManager::raiseEvent(Process *proc, const struct ProcessEvent *event)
 {
-    const Process::State state = proc->getState();
     const Process::Result result = proc->raiseEvent(event);
 
-    if (result != Process::Success)
+    switch (result)
     {
-        ERROR("failed to raise event in process ID " << proc->getID() <<
-              ": result: " << (uint) result);
-        return IOError;
-    }
+        case Process::WakeupPending:
+            return Success;
 
-    if (state != Process::Ready)
-    {
-        return enqueueProcess(proc);
-    }
-    else
-    {
-        return Success;
+        case Process::Success:
+            return enqueueProcess(proc);
+
+        default:
+            ERROR("failed to raise event in process ID " << proc->getID() <<
+                  ": result: " << (uint) result);
+            return IOError;
     }
 }
 

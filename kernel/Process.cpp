@@ -26,7 +26,7 @@
 Process::Process(ProcessID id, Address entry, bool privileged, const MemoryMap &map)
     : m_id(id), m_map(map), m_shares(id)
 {
-    m_state         = Sleeping;
+    m_state         = Stopped;
     m_parent        = 0;
     m_waitId        = 0;
     m_waitResult    = 0;
@@ -134,6 +134,30 @@ Process::Result Process::join(const uint result)
     return Success;
 }
 
+Process::Result Process::stop()
+{
+    if (m_state != Ready && m_state != Sleeping && m_state != Stopped)
+    {
+        ERROR("PID " << m_id << " has invalid state: " << (uint) m_state);
+        return InvalidArgument;
+    }
+
+    m_state = Stopped;
+    return Success;
+}
+
+Process::Result Process::resume()
+{
+    if (m_state != Stopped)
+    {
+        ERROR("PID " << m_id << " has invalid state: " << (uint) m_state);
+        return InvalidArgument;
+    }
+
+    m_state = Ready;
+    return Success;
+}
+
 Process::Result Process::raiseEvent(const ProcessEvent *event)
 {
     // Write the message. Be sure to flush the caches because
@@ -199,21 +223,22 @@ Process::Result Process::initialize()
 
 Process::Result Process::wakeup()
 {
-    if (m_state != Ready && m_state != Sleeping)
-    {
-        ERROR("PID " << m_id << " has invalid state: " << (uint) m_state);
-        return InvalidArgument;
-    }
-
     // This process might be just about to call sleep().
     // When another process is asking to wakeup this Process
     // such that it can receive an IPC message, we must guarantee
     // that the next sleep will be skipped.
     m_wakeups++;
-    m_state = Ready;
-    MemoryBlock::set(&m_sleepTimer, 0, sizeof(m_sleepTimer));
 
-    return Success;
+    if (m_state == Sleeping)
+    {
+        m_state = Ready;
+        MemoryBlock::set(&m_sleepTimer, 0, sizeof(m_sleepTimer));
+        return Success;
+    }
+    else
+    {
+        return WakeupPending;
+    }
 }
 
 Process::Result Process::sleep(const Timer::Info *timer, bool ignoreWakeups)

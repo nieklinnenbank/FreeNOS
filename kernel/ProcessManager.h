@@ -117,6 +117,24 @@ class ProcessManager
     Result wait(Process *proc);
 
     /**
+     * Remove given Process from the Scheduler
+     *
+     * @param proc Process pointer
+     *
+     * @return Result code
+     */
+    Result stop(Process *proc);
+
+    /**
+     * Resume scheduling of the given Process.
+     *
+     * @param proc Process pointer
+     *
+     * @return Result code
+     */
+    Result resume(Process *proc);
+
+    /**
      * Let current Process sleep until a timer expires or wakeup occurs.
      *
      * @param timer Timer on which the process must be woken up (if expired), or ZERO for no limit

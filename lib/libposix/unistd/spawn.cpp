@@ -164,7 +164,13 @@ int spawn(Address program, Size programSize, const char *argv[])
     }
 
     // Let the Child begin execution
-    ProcessCtl(pid, Wakeup);
+    if (ProcessCtl(pid, Resume) != API::Success)
+    {
+        delete[] arguments;
+        errno = EIO;
+        ProcessCtl(pid, KillPID);
+        return -1;
+    }
 
     // Done. Cleanup.
     delete[] arguments;

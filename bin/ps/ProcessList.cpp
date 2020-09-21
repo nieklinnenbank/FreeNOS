@@ -31,7 +31,8 @@ const char * ProcessList::ProcessStates[] =
 {
     "Ready",
     "Sleeping",
-    "Waiting"
+    "Waiting",
+    "Stopped"
 };
 
 ProcessList::ProcessList(int argc, char **argv)

@@ -67,7 +67,8 @@ class Process
     {
         Ready,
         Sleeping,
-        Waiting
+        Waiting,
+        Stopped
     };
 
   public:
@@ -198,6 +199,20 @@ class Process
      * @param result Exit code of the other process
      */
     virtual Result join(const uint result);
+
+    /**
+     * Stop execution of this process.
+     *
+     * @return Result code
+     */
+    Result stop();
+
+    /**
+     * Resume execution when this process is stopped.
+     *
+     * @return Result code
+     */
+    Result resume();
 
     /**
      * Raise kernel event
