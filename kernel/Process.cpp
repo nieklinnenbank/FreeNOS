@@ -199,6 +199,12 @@ Process::Result Process::initialize()
 
 Process::Result Process::wakeup()
 {
+    if (m_state != Ready && m_state != Sleeping)
+    {
+        ERROR("PID " << m_id << " has invalid state: " << (uint) m_state);
+        return InvalidArgument;
+    }
+
     // This process might be just about to call sleep().
     // When another process is asking to wakeup this Process
     // such that it can receive an IPC message, we must guarantee
@@ -214,7 +220,7 @@ Process::Result Process::sleep(const Timer::Info *timer, bool ignoreWakeups)
 {
     if (m_state != Ready)
     {
-        ERROR("Process ID " << m_id << " has invalid state: " << (uint) m_state);
+        ERROR("PID " << m_id << " has invalid state: " << (uint) m_state);
         return InvalidArgument;
     }
 
