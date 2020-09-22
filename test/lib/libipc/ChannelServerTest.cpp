@@ -101,9 +101,24 @@ TestCase(ChannelServerRecoverChannels)
     static u8 pages[PAGESIZE * 4];
     MemoryChannel prod(Channel::Producer, sizeof(DummyMessage));
     MemoryChannel cons(Channel::Consumer, sizeof(DummyMessage));
-    prod.setVirtual((Address) pages, ((Address) pages) + PAGESIZE);
-    cons.setVirtual(((Address) pages) + (PAGESIZE * 2),
-                    ((Address) pages) + (PAGESIZE * 3));
+
+    // Determine producer/consumer pages by the PIDs
+    // Note that this test simulates a client of the server.
+    Address prodAddr, consAddr;
+    if (SELF <= server.m_self)
+    {
+        prodAddr = (Address) pages;
+        consAddr = ((Address) pages) + (PAGESIZE * 2);
+    }
+    else
+    {
+        prodAddr = ((Address) pages) + (PAGESIZE * 2);
+        consAddr = (Address) pages;
+    }
+
+    // Apply channel pages
+    prod.setVirtual(prodAddr, prodAddr + PAGESIZE);
+    cons.setVirtual(consAddr, consAddr + PAGESIZE);
 
     // Setup a pending message in the request channel
     DummyMessage msg;
@@ -139,6 +154,7 @@ TestCase(ChannelServerRecoverChannels)
 TestCase(ChannelServerReadChannels)
 {
     DummyServer server;
+    const ProcessID pid = MAX_PROCS + 1234u;
 
     // Mask error output
     Log::instance()->setMinimumLogLevel(Log::Critical);
@@ -149,22 +165,34 @@ TestCase(ChannelServerReadChannels)
     testAssert(server.m_irqCount == 0);
 
     // Create client channels
-    static u8 clientPages[PAGESIZE * 4];
+    static u8 pages[PAGESIZE * 4];
     MemoryChannel clientProducer(Channel::Producer, sizeof(DummyMessage));
     MemoryChannel clientConsumer(Channel::Consumer, sizeof(DummyMessage));
 
+    // Determine producer/consumer pages by the PIDs
+    // Note that this test simulates a client of the server.
+    Address prodAddr, consAddr;
+    if (pid <= server.m_self)
+    {
+        prodAddr = (Address) pages;
+        consAddr = ((Address) pages) + (PAGESIZE * 2);
+    }
+    else
+    {
+        prodAddr = ((Address) pages) + (PAGESIZE * 2);
+        consAddr = (Address) pages;
+    }
+
     // Assign memory pages
-    MemoryBlock::set(clientPages, 0, sizeof(clientPages));
-    clientProducer.setVirtual((Address) clientPages, (Address) clientPages + PAGESIZE);
-    clientConsumer.setVirtual((Address) clientPages + (PAGESIZE * 2),
-                              (Address) clientPages + (PAGESIZE * 3));
+    MemoryBlock::set(pages, 0, sizeof(pages));
+    clientProducer.setVirtual(prodAddr, prodAddr + PAGESIZE);
+    clientConsumer.setVirtual(consAddr, consAddr + PAGESIZE);
 
     // Raise event with a newly created share
-    const ProcessID pid = MAX_PROCS + 1234u;
     ProcessEvent event;
     event.type = ShareCreated;
     event.share.pid = pid;
-    event.share.range.virt = (Address) &clientPages;
+    event.share.range.virt = (Address) &pages;
     testAssert(server.m_kernelProducer.write(&event) == MemoryChannel::Success);
     testAssert(server.m_kernelProducer.flush() == MemoryChannel::Success);
     testAssert(server.m_msgCount == 0);
@@ -226,10 +254,23 @@ TestCase(ChannelServerReadChannels)
 TestCase(ChannelServerShareCreated)
 {
     DummyServer server;
-
-    // Raise event with a newly created share
     const ProcessID pid = MAX_PROCS + 1234u;
     const Address addr  = 0x12340000;
+
+    // Determine producer/consumer pages by the PIDs
+    Address prodAddr, consAddr;
+    if (server.m_self < pid)
+    {
+        prodAddr = addr;
+        consAddr = addr + (PAGESIZE * 2);
+    }
+    else
+    {
+        prodAddr = addr + (PAGESIZE * 2);
+        consAddr = addr;
+    }
+
+    // Raise event with a newly created share
     ProcessEvent event;
     event.type = ShareCreated;
     event.share.pid = pid;
@@ -243,14 +284,14 @@ TestCase(ChannelServerShareCreated)
     // Verify consumer channel creation
     MemoryChannel *cons = (MemoryChannel *) ChannelClient::instance()->getRegistry().getConsumer(pid);
     testAssert(cons != ZERO);
-    testAssert(cons->m_data.m_base == addr);
-    testAssert(cons->m_feedback.m_base == addr + PAGESIZE);
+    testAssert(cons->m_data.m_base == consAddr);
+    testAssert(cons->m_feedback.m_base == consAddr + PAGESIZE);
 
     // Verify producer channel creation
     MemoryChannel *prod = (MemoryChannel *) ChannelClient::instance()->getRegistry().getProducer(pid);
     testAssert(prod != ZERO);
-    testAssert(prod->m_data.m_base == addr + (PAGESIZE * 2));
-    testAssert(prod->m_feedback.m_base == addr + (PAGESIZE * 3));
+    testAssert(prod->m_data.m_base == prodAddr);
+    testAssert(prod->m_feedback.m_base == prodAddr + PAGESIZE);
 
     // Raise event of process being terminated
     event.type   = ProcessTerminated;

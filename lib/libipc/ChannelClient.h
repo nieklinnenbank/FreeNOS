@@ -225,6 +225,9 @@ class ChannelClient : public StrictSingleton<ChannelClient>
 
     /** Contains ongoing requests */
     Index<Request, MaximumRequests> m_requests;
+
+    /** Current Process ID */
+    const ProcessID m_pid;
 };
 
 /**

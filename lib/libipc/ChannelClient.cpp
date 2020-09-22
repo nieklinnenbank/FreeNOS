@@ -22,6 +22,7 @@
 
 ChannelClient::ChannelClient()
     : StrictSingleton<ChannelClient>()
+    , m_pid(ProcessCtl(SELF, GetPID, 0))
 {
 }
 
@@ -89,24 +90,16 @@ ChannelClient::Result ChannelClient::connect(const ProcessID pid, const Size mes
         }
     }
 
-    switch (r)
+    // ProcessID's determine where the producer/consumer is placed
+    if (m_pid < pid)
     {
-        case API::Success:
-        {
-            prodAddr = share.range.virt;
-            consAddr = share.range.virt + (PAGESIZE * 2);
-            break;
-        }
-        case API::AlreadyExists:
-        {
-            prodAddr = share.range.virt + (PAGESIZE * 2);
-            consAddr = share.range.virt;
-            break;
-        }
-        default:
-        {
-            return IOError;
-        }
+        prodAddr = share.range.virt;
+        consAddr = share.range.virt + (PAGESIZE * 2);
+    }
+    else
+    {
+        prodAddr = share.range.virt + (PAGESIZE * 2);
+        consAddr = share.range.virt;
     }
 
     // Setup producer memory address

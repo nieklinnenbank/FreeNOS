@@ -305,12 +305,26 @@ template <class Base, class MsgType> class ChannelServer
                   const Memory::Range range,
                   const bool hardReset = true)
     {
+        Address prodAddr, consAddr;
+
+        // ProcessID's determine where the producer/consumer is placed
+        if (m_self < pid)
+        {
+            prodAddr = range.virt;
+            consAddr = range.virt + (PAGESIZE * 2);
+        }
+        else
+        {
+            prodAddr = range.virt + (PAGESIZE * 2);
+            consAddr = range.virt;
+        }
+
         // Create consumer
         if (!m_registry.getConsumer(pid))
         {
             MemoryChannel *consumer = new MemoryChannel(Channel::Consumer, sizeof(MsgType));
             assert(consumer != NULL);
-            consumer->setVirtual(range.virt, range.virt + PAGESIZE, hardReset);
+            consumer->setVirtual(consAddr, consAddr + PAGESIZE, hardReset);
             m_registry.registerConsumer(pid, consumer);
         }
 
@@ -319,8 +333,8 @@ template <class Base, class MsgType> class ChannelServer
         {
             MemoryChannel *producer = new MemoryChannel(Channel::Producer, sizeof(MsgType));
             assert(producer != NULL);
-            producer->setVirtual(range.virt + (PAGESIZE*2),
-                                 range.virt + (PAGESIZE*3),
+            producer->setVirtual(prodAddr,
+                                 prodAddr + PAGESIZE,
                                  hardReset);
             m_registry.registerProducer(pid, producer);
         }
