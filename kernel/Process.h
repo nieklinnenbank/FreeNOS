@@ -161,6 +161,13 @@ class Process
     virtual Result initialize();
 
     /**
+     * Restart execution at the given entry point.
+     *
+     * @param entry Address to begin execution.
+     */
+    virtual void reset(const Address entry) = 0;
+
+    /**
      * Allow the Process to run on the CPU.
      *
      * @param previous The previous Process which ran on the CPU. ZERO if none.

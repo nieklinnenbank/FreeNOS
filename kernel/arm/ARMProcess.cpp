@@ -65,10 +65,7 @@ Process::Result ARMProcess::initialize()
     }
 
     // Fill usermode program registers
-    MemoryBlock::set(&m_cpuState, 0, sizeof(m_cpuState));
-    m_cpuState.sp = range.virt + range.size - MEMALIGN8;  // user stack pointer
-    m_cpuState.pc = m_entry;      // user program counter
-    m_cpuState.cpsr = (m_privileged ? SYS_MODE : USR_MODE); // current program status (CPSR)
+    reset(m_entry);
 
     // Finalize with generic initialization
     return Process::initialize();
@@ -97,6 +94,16 @@ ARMProcess::Result ARMProcess::join(const uint result)
     }
 
     return r;
+}
+
+void ARMProcess::reset(const Address entry)
+{
+    const Memory::Range range = m_map.range(MemoryMap::UserStack);
+
+    MemoryBlock::set(&m_cpuState, 0, sizeof(m_cpuState));
+    m_cpuState.sp = range.virt + range.size - MEMALIGN8;    // user stack pointer
+    m_cpuState.pc = entry;                                  // user program counter
+    m_cpuState.cpsr = (m_privileged ? SYS_MODE : USR_MODE); // current program status (CPSR)
 }
 
 void ARMProcess::execute(Process *previous)

@@ -94,6 +94,14 @@ API::Result ProcessCtlHandler(ProcessID procID,
         }
         break;
 
+    case Reset:
+        if (procs->reset(proc, addr) != ProcessManager::Success)
+        {
+            ERROR("failed to reset PID " << proc->getID());
+            return API::IOError;
+        }
+        break;
+
     case Wakeup:
         // increment wakeup counter and set process ready
         if (procs->wakeup(proc) != ProcessManager::Success)

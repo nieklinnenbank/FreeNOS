@@ -67,6 +67,13 @@ class IntelProcess : public Process
     virtual Result initialize();
 
     /**
+     * Restart execution at the given entry point.
+     *
+     * @param entry Address to begin execution.
+     */
+    virtual void reset(const Address entry);
+
+    /**
      * Execute the process.
      *
      * Saves and restores registers, then perform a context switch.

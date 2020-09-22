@@ -52,7 +52,8 @@ typedef enum ProcessOperation
     Schedule,
     Wakeup,
     Stop,
-    Resume
+    Resume,
+    Reset
 }
 ProcessOperation;
 

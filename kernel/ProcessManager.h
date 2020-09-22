@@ -135,6 +135,14 @@ class ProcessManager
     Result resume(Process *proc);
 
     /**
+     * Restart execution of a Process at the given entry point.
+     *
+     * @param proc Process pointer
+     * @param entry Address to begin execution.
+     */
+    Result reset(Process *proc, const Address entry);
+
+    /**
      * Let current Process sleep until a timer expires or wakeup occurs.
      *
      * @param timer Timer on which the process must be woken up (if expired), or ZERO for no limit

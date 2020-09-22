@@ -29,12 +29,8 @@ IntelProcess::IntelProcess(ProcessID id, Address entry, bool privileged, const M
 
 Process::Result IntelProcess::initialize()
 {
-    Address userStack;
     Memory::Range range;
     Allocator::Range allocPhys, allocVirt;
-    CPUState *regs;
-    u16 dataSel = m_privileged ? KERNEL_DS_SEL : USER_DS_SEL;
-    u16 codeSel = m_privileged ? KERNEL_CS_SEL : USER_CS_SEL;
 
     // Create MMU context
     m_memoryContext = new IntelPaging(&m_map, Kernel::instance()->getAllocator());
@@ -64,7 +60,6 @@ Process::Result IntelProcess::initialize()
         ERROR("failed to map user stack");
         return MemoryMapError;
     }
-    userStack = range.virt + range.size - MEMALIGN;
 
     // Allocate Kernel stack
     allocPhys.address = 0;
@@ -78,13 +73,36 @@ Process::Result IntelProcess::initialize()
     }
     m_kernelStackBase = allocVirt.address;
     m_kernelStackBase += KernelStackSize;
+
+    // Initialize registers
+    reset(m_entry);
+
+    // Finalize with generic initialization
+    return Process::initialize();
+}
+
+IntelProcess::~IntelProcess()
+{
+    // Release the kernel stack memory page
+    SplitAllocator *alloc = Kernel::instance()->getAllocator();
+    alloc->release((Address)alloc->toPhysical(m_kernelStackBase) - KernelStackSize);
+}
+
+void IntelProcess::reset(const Address entry)
+{
+    const Memory::Range range = m_map.range(MemoryMap::UserStack);
+    const Address userStack = range.virt + range.size - MEMALIGN;
+    const u16 dataSel = m_privileged ? KERNEL_DS_SEL : USER_DS_SEL;
+    const u16 codeSel = m_privileged ? KERNEL_CS_SEL : USER_CS_SEL;
+
+    // Reset saved kernel stack pointer
     m_kernelStack = m_kernelStackBase - sizeof(CPUState)
                                       - sizeof(IRQRegs0)
                                       - sizeof(CPURegs);
 
     // Fill kernel stack with initial (user)registers to restore
     // loadCoreState: struct CPUState
-    regs = (CPUState *) m_kernelStackBase - 1;
+    CPUState *regs = (CPUState *) m_kernelStackBase - 1;
     MemoryBlock::set(regs, 0, sizeof(CPUState));
     regs->seg.ss0    = KERNEL_DS_SEL;
     regs->seg.fs     = dataSel;
@@ -111,16 +129,6 @@ Process::Result IntelProcess::initialize()
     MemoryBlock::set(pusha, 0, sizeof(CPURegs));
     pusha->ebp  = m_kernelStackBase - sizeof(CPURegs);
     pusha->esp0 = pusha->ebp;
-
-    // Finalize with generic initialization
-    return Process::initialize();
-}
-
-IntelProcess::~IntelProcess()
-{
-    // Release the kernel stack memory page
-    SplitAllocator *alloc = Kernel::instance()->getAllocator();
-    alloc->release((Address)alloc->toPhysical(m_kernelStackBase) - KernelStackSize);
 }
 
 void IntelProcess::execute(Process *previous)

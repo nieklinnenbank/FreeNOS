@@ -240,6 +240,18 @@ ProcessManager::Result ProcessManager::resume(Process *proc)
     return enqueueProcess(proc);
 }
 
+ProcessManager::Result ProcessManager::reset(Process *proc, const Address entry)
+{
+    if (proc == m_current)
+    {
+        ERROR("cannot reset current Process");
+        return IOError;
+    }
+
+    proc->reset(entry);
+    return Success;
+}
+
 ProcessManager::Result ProcessManager::sleep(const Timer::Info *timer, const bool ignoreWakeups)
 {
     const Process::Result result = m_current->sleep(timer, ignoreWakeups);

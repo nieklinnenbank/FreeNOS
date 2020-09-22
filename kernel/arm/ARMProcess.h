@@ -81,6 +81,13 @@ class ARMProcess : public Process
     virtual Result initialize();
 
     /**
+     * Restart execution at the given entry point.
+     *
+     * @param entry Address to begin execution.
+     */
+    virtual void reset(const Address entry);
+
+    /**
      * Allow the Process to run on the CPU.
      */
     virtual void execute(Process *previous);
