@@ -192,11 +192,6 @@ void ProcessManager::setIdle(Process *proc)
     m_idle = proc;
 }
 
-Vector<Process *> * ProcessManager::getProcessTable()
-{
-    return &m_procs;
-}
-
 ProcessManager::Result ProcessManager::wait(Process *proc)
 {
     if (m_current->wait(proc->getID()) != Process::Success)

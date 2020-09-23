@@ -211,13 +211,6 @@ class ProcessManager
      */
     Process * current();
 
-    /**
-     * Retrieve the process table.
-     *
-     * @return Pointer to the process table.
-     */
-    Vector<Process *> * getProcessTable();
-
   private:
 
     /**
