@@ -236,7 +236,7 @@ class ProcessManager
   private:
 
     /** All known Processes. */
-    Vector<Process *> m_procs;
+    Index<Process, MAX_PROCS> m_procs;
 
     /** Object which selects processes to run. */
     Scheduler *m_scheduler;

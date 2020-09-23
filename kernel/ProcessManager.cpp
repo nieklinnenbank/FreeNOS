@@ -23,7 +23,7 @@
 #include "ProcessManager.h"
 
 ProcessManager::ProcessManager()
-    : m_procs(MAX_PROCS)
+    : m_procs()
     , m_interruptNotifyList(256)
 {
     DEBUG("m_procs = " << MAX_PROCS);
@@ -47,30 +47,54 @@ Process * ProcessManager::create(const Address entry,
                                  const bool readyToRun,
                                  const bool privileged)
 {
-    Process *proc = new Arch::Process(m_procs.count(), entry, privileged, map);
+    Size pid = 0;
 
-    // Insert to the process table
-    if (proc && proc->initialize() == Process::Success)
+    // Insert a dummy to determine the next available PID
+    if (!m_procs.insert(pid, (Process *) ~ZERO))
     {
-        m_procs.insert(proc);
-
-        if (readyToRun)
-        {
-            resume(proc);
-        }
-
-        if (m_current != 0)
-            proc->setParent(m_current->getID());
-
-        return proc;
+        return ZERO;
     }
-    return ZERO;
+
+    // Create the new Process
+    Process *proc = new Arch::Process(pid, entry, privileged, map);
+    if (!proc)
+    {
+        ERROR("failed to allocate Process");
+        m_procs.remove(pid);
+        return ZERO;
+    }
+
+    // Initialize the Process
+    const Process::Result result = proc->initialize();
+    if (result != Process::Success)
+    {
+        ERROR("failed to initialize Process: result = " << (int) result);
+        m_procs.remove(pid);
+        delete proc;
+        return ZERO;
+    }
+
+    // Overwrite dummy with actual Process
+    m_procs.insertAt(pid, proc);
+
+    // Report to scheduler, if requested
+    if (readyToRun)
+    {
+        resume(proc);
+    }
+
+    // Assign parent, if any
+    if (m_current != 0)
+    {
+        proc->setParent(m_current->getID());
+    }
+
+    return proc;
 }
 
 Process * ProcessManager::get(const ProcessID id)
 {
-    Process **p = (Process **) m_procs.get(id);
-    return p ? *p : ZERO;
+    return m_procs.get(id);
 }
 
 void ProcessManager::remove(Process *proc, const uint exitStatus)
@@ -109,7 +133,7 @@ void ProcessManager::remove(Process *proc, const uint exitStatus)
     unregisterInterruptNotify(proc);
 
     // Remove process from administration and schedule
-    m_procs[proc->getID()] = ZERO;
+    m_procs.remove(proc->getID());
 
     if (proc->getState() == Process::Ready)
     {
