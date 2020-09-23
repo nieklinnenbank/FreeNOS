@@ -203,7 +203,7 @@ Process::Result Process::initialize()
     range.phys   = allocPhys.address;
     range.access = Memory::User | Memory::Readable;
     range.size   = PAGESIZE * 2;
-    m_memoryContext->findFree(range.size, MemoryMap::UserPrivate, &range.virt);
+    m_memoryContext->findFree(range.size, MemoryMap::UserShare, &range.virt);
     m_memoryContext->mapRangeContiguous(&range);
 
     // Remap the feedback page with write permissions

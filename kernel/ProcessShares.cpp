@@ -111,6 +111,9 @@ ProcessShares::Result ProcessShares::createShare(ProcessID pid,
     share->range.virt = virt;
     share->range.size = size;
 
+    // For the kernel channel, set to unattached to ensure releaseShare() always works
+    share->attached   = !(pid == KERNEL_PID);
+
     // Translate to physical address
     if ((result = m_memory->lookup(share->range.virt, &share->range.phys)) != MemoryContext::Success)
     {
@@ -301,7 +304,7 @@ ProcessShares::Result ProcessShares::releaseShare(MemoryShare *s, Size idx)
             }
         }
     }
-    else if (s->pid != KERNEL_PID)
+    else
     {
         // Only release physical memory pages if the other
         // process already detached earlier
