@@ -386,6 +386,22 @@ void FileSystemServer::mountHandler(FileSystemMessage *msg)
 
     // Null-terminate
     buf[FileSystemPath::MaximumLength] = 0;
+    const String path(buf);
+
+    // Check for already existing entry (re-mount)
+    for (Size i = 0; i < MaximumFileSystemMounts; i++)
+    {
+        const String entry(m_mounts[i].path);
+
+        if (path.equals(entry))
+        {
+            m_mounts[i].procID  = msg->from;
+            m_mounts[i].options = ZERO;
+            NOTICE("remounted " << m_mounts[i].path);
+            msg->result = FileSystem::Success;
+            return;
+        }
+    }
 
     // Append to our filesystem mounts table
     for (Size i = 0; i < MaximumFileSystemMounts; i++)
