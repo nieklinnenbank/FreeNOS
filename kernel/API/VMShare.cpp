@@ -51,6 +51,7 @@ API::Result VMShareHandler(ProcessID procID, API::Operation op, ProcessShares::M
             {
                 case ProcessShares::Success: return API::Success;
                 case ProcessShares::AlreadyExists: return API::AlreadyExists;
+                case ProcessShares::DetachInProgress: return API::TemporaryUnavailable;
                 default: return API::IOError;
             }
             break;

@@ -151,8 +151,15 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
         return InvalidArgument;
 
     // Check if the share already exists
-    if (readShare(share) == Success)
+    if (findShare(share->pid, share->coreId, share->tagId) != ZERO)
         return AlreadyExists;
+
+    // Check if the remote share is still detaching
+    remoteShare = instance.findShare(m_pid, share->coreId, share->tagId);
+    if (remoteShare && !remoteShare->attached)
+    {
+        return DetachInProgress;
+    }
 
     // Allocate local
     localShare = new MemoryShare;
@@ -321,25 +328,38 @@ ProcessShares::Result ProcessShares::releaseShare(MemoryShare *s, Size idx)
     }
 }
 
-ProcessShares::Result ProcessShares::readShare(MemoryShare *share)
+ProcessShares::MemoryShare * ProcessShares::findShare(const ProcessID pid,
+                                                      const Size coreId,
+                                                      const Size tagId)
 {
     const Size size = m_shares.size();
-    const MemoryShare *s = 0;
 
     for (Size i = 0; i < size; i++)
     {
-        if ((s = m_shares.get(i)) != ZERO)
+        MemoryShare *s = m_shares.get(i);
+
+        if (s != ZERO)
         {
             assert(s->coreId == coreInfo.coreId);
 
-            if (s->pid == share->pid &&
-                s->coreId == share->coreId &&
-                s->tagId == share->tagId)
+            if (s->pid == pid && s->coreId == coreId && s->tagId == tagId)
             {
-                MemoryBlock::copy(share, s, sizeof(MemoryShare));
-                return Success;
+                return s;
             }
         }
     }
+
+    return ZERO;
+}
+
+ProcessShares::Result ProcessShares::readShare(MemoryShare *share)
+{
+    const MemoryShare *s = findShare(share->pid, share->coreId, share->tagId);
+    if (s != ZERO)
+    {
+        MemoryBlock::copy(share, s, sizeof(MemoryShare));
+        return Success;
+    }
+
     return NotFound;
 }

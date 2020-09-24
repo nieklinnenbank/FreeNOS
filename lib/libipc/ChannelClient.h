@@ -43,6 +43,9 @@ class ChannelClient : public StrictSingleton<ChannelClient>
     /** Maximum number of concurrent outgoing requests. */
     static const Size MaximumRequests = 32u;
 
+    /** Maximum number of retries for establishing new connection. */
+    static const Size MaxConnectRetries = 16u;
+
     /**
      * Holds an outgoing request
      */

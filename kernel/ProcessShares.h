@@ -70,6 +70,7 @@ class ProcessShares
         MemoryMapError,
         OutOfMemory,
         AlreadyExists,
+        DetachInProgress,
         NotFound
     };
 
@@ -156,6 +157,19 @@ class ProcessShares
      * @return Result code
      */
     Result releaseShare(MemoryShare *share, Size idx);
+
+    /**
+     * Retrieve MemoryShare object.
+     *
+     * @param pid ProcessID value to match
+     * @param coreId CoreID value to match
+     * @param tagId TagID value to match
+     *
+     * @return MemoryShare pointer if found or ZERO if not
+     */
+    MemoryShare * findShare(const ProcessID pid,
+                            const Size coreId,
+                            const Size tagId);
 
   private:
 

@@ -63,7 +63,8 @@ class API
         InvalidArgument = -4,
         OutOfMemory     = -5,
         IOError         = -6,
-        AlreadyExists   = -7
+        AlreadyExists   = -7,
+        TemporaryUnavailable = -8,
     }
     Error;
 

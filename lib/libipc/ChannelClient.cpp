@@ -70,7 +70,25 @@ ChannelClient::Result ChannelClient::connect(const ProcessID pid, const Size mes
     share.range.access = Memory::User | Memory::Readable | Memory::Writable;
 
     // Create shared memory mapping
-    const Error r = VMShare(pid, API::Create, &share);
+    Error r = VMShare(pid, API::Create, &share);
+    if (r != API::Success)
+    {
+        // It is possible that the other Process is still detaching
+        // from a previous shared memory channel (e.g. if a PID is re-used)
+        for (Size i = 0; i < MaxConnectRetries && r == API::TemporaryUnavailable; i++)
+        {
+            ProcessCtl(pid, Wakeup, 0);
+            r = VMShare(pid, API::Create, &share);
+        }
+
+        if (r != API::Success)
+        {
+            delete prod;
+            delete cons;
+            return IOError;
+        }
+    }
+
     switch (r)
     {
         case API::Success:
