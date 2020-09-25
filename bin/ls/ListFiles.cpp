@@ -34,6 +34,7 @@ ListFiles::ListFiles(int argc, char **argv)
     parser().registerPositional("FILE", "Target file to list", 0);
     parser().registerFlag('l', "long", "List files in long output format");
     parser().registerFlag('a', "all", "List all files on the filesystem");
+    parser().registerFlag('n', "no-color", "Set to disable terminal color output");
 }
 
 ListFiles::~ListFiles()
@@ -130,6 +131,7 @@ ListFiles::Result ListFiles::printFiles(const String & path) const
 
 ListFiles::Result ListFiles::printSingleFile(const String & path, String & out) const
 {
+    const bool color = arguments().get("no-color") == ZERO;
     struct stat st;
 
     // Retrieve file status
@@ -142,7 +144,10 @@ ListFiles::Result ListFiles::printSingleFile(const String & path, String & out) 
     // Apply long output
     if (arguments().get("long"))
     {
-        out << WHITE;
+        if (color)
+        {
+            out << WHITE;
+        }
         out << (st.st_mode & S_IRUSR ? "r" : "-");
         out << (st.st_mode & S_IWUSR ? "w" : "-");
         out << (st.st_mode & S_IXUSR ? "x" : "-");
@@ -164,19 +169,27 @@ ListFiles::Result ListFiles::printSingleFile(const String & path, String & out) 
     }
 
     // Apply coloring
-    if (S_ISDIR(st.st_mode))
-        out << BLUE;
+    if (color)
+    {
+        if (S_ISDIR(st.st_mode))
+            out << BLUE;
 
-    else if (S_ISBLK(st.st_mode) || S_ISCHR(st.st_mode))
-        out << YELLOW;
+        else if (S_ISBLK(st.st_mode) || S_ISCHR(st.st_mode))
+            out << YELLOW;
 
-    // Is the file executable?
-    else if (st.st_mode & 0100)
-        out << GREEN;
-    else
-        out << WHITE;
+        // Is the file executable?
+        else if (st.st_mode & 0100)
+            out << GREEN;
+        else
+            out << WHITE;
+    }
 
     out << basename((char *) *path) << " ";
+
+    if (color)
+    {
+        out << WHITE;
+    }
 
     // Long output needs a newline
     if (arguments().get("long"))
