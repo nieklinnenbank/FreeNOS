@@ -21,6 +21,9 @@ stdio /console/tty0 /console/tty0
 /server/filesystem/tmp/server /tmp &
 /bin/mount --wait=/tmp
 
+/server/network/loopback/server &
+/bin/mount --wait=/network/loopback
+
 #
 # Serial console
 #
