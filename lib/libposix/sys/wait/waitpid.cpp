@@ -24,9 +24,21 @@ pid_t waitpid(pid_t pid, int *stat_loc, int options)
 {
     API::Result result = ProcessCtl(pid, WaitPID);
 
-    if (stat_loc)
+    switch (result)
     {
-        *stat_loc = result;
+        case API::NotFound:
+            errno = ESRCH;
+            return (pid_t) -1;
+
+        case API::Success:
+            if (stat_loc)
+            {
+                *stat_loc = result;
+            }
+            return pid;
+
+        default:
+            errno = EIO;
+            return (pid_t) -1;
     }
-    return pid;
 }
