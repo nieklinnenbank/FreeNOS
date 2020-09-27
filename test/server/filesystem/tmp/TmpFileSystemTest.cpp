@@ -25,39 +25,9 @@
 #include <FileSystem.h>
 #include <FileSystemPath.h>
 #include <ApplicationLauncher.h>
+#include <ProcessClient.h>
 #include <RecoveryClient.h>
 #include <FileSystemClient.h>
-
-static const ProcessID findTmpFileSystem()
-{
-    char cmd[FileSystemPath::MaximumLength];
-    Arch::MemoryMap map;
-    ProcessInfo info;
-    Memory::Range range = map.range(MemoryMap::UserArgs);
-
-    // Find the TmpFileSystemServer process
-    for (Size i = 0; i < MAX_PROCS; i++)
-    {
-        // Request kernel's process information
-        if (ProcessCtl(i, InfoPID, (Address) &info) == API::Success)
-        {
-            // Get the command
-            const Size len = (const Size) VMCopy(i, API::Read, (Address) cmd, range.virt, sizeof(cmd));
-            if (len == sizeof(cmd))
-            {
-                const String str(cmd);
-                const String tmp("/server/filesystem/tmp/server");
-
-                if (str.equals(tmp))
-                {
-                    return i;
-                }
-            }
-        }
-    }
-
-    return ANY;
-}
 
 TestCase(TmpFileSystemReadWrite)
 {
@@ -108,7 +78,7 @@ TestCase(TmpFileSystemReadWrite)
 TestCase(TmpFileSystemRestart)
 {
     // Find PID first
-    const ProcessID pid = findTmpFileSystem();
+    const ProcessID pid = ProcessClient().findProcess("/server/filesystem/tmp/server");
     if (pid == ANY)
     {
         return SKIP;

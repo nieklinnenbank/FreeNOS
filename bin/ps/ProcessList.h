@@ -30,11 +30,6 @@
  */
 class ProcessList : public POSIXApplication
 {
-  private:
-
-    /** Array of process state strings */
-    static const char *ProcessStates[];
-
   public:
 
     /**
