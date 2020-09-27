@@ -75,14 +75,13 @@ NetPing::Result NetPing::exec()
     if (icmp)
     {
         DEBUG("sending ICMP packets");
-        icmpPing(dev, host);
+        return icmpPing(dev, host);
     }
     else
     {
         DEBUG("sending ARP packets");
-        arpPing(dev, host);
+        return arpPing(dev, host);
     }
-    return Success;
 }
 
 NetPing::Result NetPing::arpPing(const char *dev,
