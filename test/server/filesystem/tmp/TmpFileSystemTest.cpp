@@ -100,8 +100,9 @@ TestCase(TmpFileSystemRestart)
     testAssert(recovery.restartProcess(pid) == Recovery::Success);
 
     // Wait for list program to finish
-    const API::Result waitResult = ProcessCtl(ls.getPid(), WaitPID);
-    testAssert(waitResult == API::NotFound || (int)waitResult == 0);
+    const ApplicationLauncher::Result waitResult = ls.wait();
+    testAssert(waitResult == ApplicationLauncher::Success || waitResult == ApplicationLauncher::NotFound);
+    testAssert(ls.getExitCode() == 0);
 
     // Done
     return OK;

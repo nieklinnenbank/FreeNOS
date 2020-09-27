@@ -18,6 +18,7 @@
 #include <Log.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <signal.h>
 #include <errno.h>
@@ -29,12 +30,18 @@ ApplicationLauncher::ApplicationLauncher(const char *path,
     : m_path(path)
     , m_argv(argv)
     , m_pid(0)
+    , m_exitCode(0)
 {
 }
 
 const ProcessID ApplicationLauncher::getPid() const
 {
     return m_pid;
+}
+
+const int ApplicationLauncher::getExitCode() const
+{
+    return WEXITSTATUS(m_exitCode);
 }
 
 ApplicationLauncher::Result ApplicationLauncher::exec()
@@ -89,6 +96,27 @@ ApplicationLauncher::Result ApplicationLauncher::terminate() const
     if (::kill(m_pid, SIGTERM) == 0)
     {
         return Success;
+    }
+    else
+    {
+        return IOError;
+    }
+}
+
+ApplicationLauncher::Result ApplicationLauncher::wait()
+{
+    if (m_pid == 0)
+    {
+        return InvalidArgument;
+    }
+
+    if (waitpid(m_pid, &m_exitCode, 0) == (pid_t) m_pid)
+    {
+        return Success;
+    }
+    else if (errno == ESRCH)
+    {
+        return NotFound;
     }
     else
     {

@@ -65,6 +65,13 @@ class ApplicationLauncher
     const ProcessID getPid() const;
 
     /**
+     * Retrieve exit code of the program.
+     *
+     * @return Exit code
+     */
+    const int getExitCode() const;
+
+    /**
      * Runs the external program
      *
      * @return Result code
@@ -78,6 +85,13 @@ class ApplicationLauncher
      */
     Result terminate() const;
 
+    /**
+     * Wait for the program to terminate.
+     *
+     * @return Result code
+     */
+    Result wait();
+
   private:
 
     /** Absolute path to the program to run */
@@ -88,6 +102,9 @@ class ApplicationLauncher
 
     /** PID of the DatastoreServer. */
     ProcessID m_pid;
+
+    /** Exit code after the program has terminated. */
+    int m_exitCode;
 };
 
 /**
