@@ -63,7 +63,7 @@ Error IPV4Address::write(IOBuffer & buffer, Size size, Size offset)
         return ERANGE;
 
     // Set the address
-    if ((r = m_ipv4->setAddress(&addr)) == ESUCCESS)
+    if ((r = m_ipv4->setAddress(&addr)) == 0)
         return size;
     else
         return r;

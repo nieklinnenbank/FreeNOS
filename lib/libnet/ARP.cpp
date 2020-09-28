@@ -39,7 +39,7 @@ Error ARP::initialize()
     m_sock = new ARPSocket(this);
     m_server->registerFile(this, "/arp");
     m_server->registerFile(m_sock, "/arp/socket");
-    return ESUCCESS;
+    return 0;
 }
 
 void ARP::setIP(::IPV4 *ip)
@@ -93,7 +93,7 @@ Error ARP::lookupAddress(IPV4::Address *ipAddr,
     if (entry && entry->valid)
     {
         MemoryBlock::copy(ethAddr, &entry->ethAddr, sizeof(Ethernet::Address));
-        return ESUCCESS;
+        return 0;
     }
     // Send an ARP request
     Error r = sendRequest(*ipAddr);

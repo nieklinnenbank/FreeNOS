@@ -44,7 +44,7 @@ Error ARPSocket::read(IOBuffer & buffer, Size size, Size offset)
         return 0;
 
     Error r = m_arp->lookupAddress(&m_ipAddr, &m_ethAddr);
-    if (r != ESUCCESS)
+    if (r != 0)
         return r;
 
     buffer.write(&m_ethAddr, sizeof(Ethernet::Address));
@@ -61,7 +61,7 @@ Error ARPSocket::write(IOBuffer & buffer, Size size, Size offset)
     // Send request
     // return m_arp->sendRequest(m_ipAddr);
     Error r = m_arp->lookupAddress(&m_ipAddr, &m_ethAddr);
-    if (r != ESUCCESS)
+    if (r != 0)
         return r;
     else
         return size;
@@ -70,7 +70,7 @@ Error ARPSocket::write(IOBuffer & buffer, Size size, Size offset)
 Error ARPSocket::process(NetworkQueue::Packet *pkt)
 {
     DEBUG("");
-    return ESUCCESS;
+    return 0;
 }
 
 void ARPSocket::error(Error err)

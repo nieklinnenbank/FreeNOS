@@ -68,7 +68,7 @@ Error ICMPSocket::write(IOBuffer & buffer, Size size, Size offset)
         buffer.read(&header, sizeof(header));
 
         Error r = m_icmp->sendPacket(m_info.address, &header);
-        if (r != ESUCCESS)
+        if (r != 0)
             return r;
     }
     return size;
@@ -77,7 +77,7 @@ Error ICMPSocket::write(IOBuffer & buffer, Size size, Size offset)
 Error ICMPSocket::process(NetworkQueue::Packet *pkt)
 {
     DEBUG("");
-    return ESUCCESS;
+    return 0;
 }
 
 void ICMPSocket::error(Error err)

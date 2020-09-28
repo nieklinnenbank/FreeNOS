@@ -80,7 +80,7 @@ Error UDPSocket::write(IOBuffer & buffer, Size size, Size offset)
         DEBUG("addr =" << m_info.address << " port = " << m_info.port);
 
         Error r = m_udp->bind(this, m_info.port);
-        if (r != ESUCCESS)
+        if (r != 0)
             return r;
         else
             return size;
@@ -102,7 +102,7 @@ Error UDPSocket::process(NetworkQueue::Packet *pkt)
     buf->size = pkt->size;
     MemoryBlock::copy(buf->data, pkt->data, pkt->size);
     m_queue.push(buf);
-    return ESUCCESS;
+    return 0;
 }
 
 void UDPSocket::error(Error err)

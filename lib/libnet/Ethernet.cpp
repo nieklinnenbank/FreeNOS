@@ -39,19 +39,19 @@ Error Ethernet::initialize()
 {
     m_server->registerFile(this, "/ethernet");
     m_server->registerFile(new EthernetAddress(this), "/ethernet/address");
-    return ESUCCESS;
+    return 0;
 }
 
 Error Ethernet::getAddress(Ethernet::Address *address)
 {
     MemoryBlock::copy(address, &m_address, sizeof(Ethernet::Address));
-    return ESUCCESS;
+    return 0;
 }
 
 Error Ethernet::setAddress(Ethernet::Address *address)
 {
     Error r = m_device->setAddress(address);
-    if (r == ESUCCESS)
+    if (r == 0)
     {
         MemoryBlock::copy(&m_address, address, sizeof(Ethernet::Address));
     }

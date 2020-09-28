@@ -46,7 +46,7 @@ Error ICMP::initialize()
     m_factory = new ICMPFactory(this);
     m_server->registerFile(this, "/icmp");
     m_server->registerFile(m_factory, "/icmp/factory");
-    return ESUCCESS;
+    return 0;
 }
 
 Error ICMP::process(NetworkQueue::Packet *pkt, Size offset)
@@ -78,7 +78,7 @@ Error ICMP::process(NetworkQueue::Packet *pkt, Size offset)
             break;
         }
     }
-    return ESUCCESS;
+    return 0;
 }
 
 ICMPSocket * ICMP::createSocket(String & path)
@@ -115,7 +115,7 @@ Error ICMP::sendPacket(IPV4::Address ip, ICMP::Header *header)
     r = m_ipv4->getTransmitPacket(
         &pkt, ip, IPV4::ICMP, sizeof(Header)
     );
-    if (r != ESUCCESS)
+    if (r != 0)
         return r;
 
     // Fill payload

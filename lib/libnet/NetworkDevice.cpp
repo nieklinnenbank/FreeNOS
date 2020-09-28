@@ -38,7 +38,7 @@ NetworkDevice::~NetworkDevice()
 Error NetworkDevice::initialize()
 {
     Error r = Device::initialize();
-    if (r != ESUCCESS)
+    if (r != 0)
     {
         ERROR("failed to initialize Device");
         return r;
@@ -93,5 +93,5 @@ Error NetworkDevice::process(NetworkQueue::Packet *pkt, Size offset)
 
     // Let the protocols process the packet
     m_eth->process(pkt, offset);
-    return ESUCCESS;
+    return 0;
 }

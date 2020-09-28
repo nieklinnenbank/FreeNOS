@@ -45,7 +45,7 @@ Error UDP::initialize()
     m_factory = new UDPFactory(this);
     m_server->registerFile(this, "/udp");
     m_server->registerFile(m_factory, "/udp/factory");
-    return ESUCCESS;
+    return 0;
 }
 
 UDPSocket * UDP::createSocket(String & path)
@@ -86,7 +86,7 @@ Error UDP::process(NetworkQueue::Packet *pkt, Size offset)
         return EINVAL;
     }
     (*sock)->process(pkt);
-    return ESUCCESS;
+    return 0;
 }
 
 Error UDP::sendPacket(NetworkClient::SocketInfo *src, IOBuffer & buffer, Size size)
@@ -106,7 +106,7 @@ Error UDP::sendPacket(NetworkClient::SocketInfo *src, IOBuffer & buffer, Size si
     r = m_ipv4->getTransmitPacket(
         &pkt, dest.address, IPV4::UDP, sizeof(Header) + size - sizeof(dest)
     );
-    if (r != ESUCCESS)
+    if (r != 0)
         return r;
 
     // Fill UDP header
@@ -139,7 +139,7 @@ Error UDP::bind(UDPSocket *sock, u16 port)
         return EINVAL;
 
     m_ports.insert(port, sock);
-    return ESUCCESS;
+    return 0;
 }
 
 const ulong UDP::calculateSum(const u16 *ptr, Size bytes)

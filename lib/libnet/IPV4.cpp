@@ -48,7 +48,7 @@ Error IPV4::initialize()
     DEBUG("");
     m_server->registerFile(this, "/ipv4");
     m_server->registerFile(new IPV4Address(this), "/ipv4/address");
-    return ESUCCESS;
+    return 0;
 }
 
 void IPV4::setICMP(::ICMP *icmp)
@@ -74,13 +74,13 @@ void IPV4::setUDP(::UDP *udp)
 Error IPV4::getAddress(IPV4::Address *address)
 {
     *address = m_address;
-    return ESUCCESS;
+    return 0;
 }
 
 Error IPV4::setAddress(IPV4::Address *address)
 {
     m_address = *address;
-    return ESUCCESS;
+    return 0;
 }
 
 const String IPV4::toString(Address address)
@@ -127,7 +127,7 @@ Error IPV4::getTransmitPacket(NetworkQueue::Packet **pkt,
     Error r;
 
     // Find the ethernet address using ARP first
-    if ((r = m_arp->lookupAddress(&destination, &ethAddr)) != ESUCCESS)
+    if ((r = m_arp->lookupAddress(&destination, &ethAddr)) != 0)
         return r;
 
     // Get a fresh ethernet packet
@@ -152,7 +152,7 @@ Error IPV4::getTransmitPacket(NetworkQueue::Packet **pkt,
     m_id++;
 
     // Success
-    return ESUCCESS;
+    return 0;
 }
 
 const u16 IPV4::checksum(const void *buffer, Size len)
