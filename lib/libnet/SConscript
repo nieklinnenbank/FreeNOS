@@ -19,5 +19,5 @@ Import('build_env')
 
 env = build_env.Clone()
 env.UseLibraries(['libstd', 'libarch', 'libfs', 'libipc', 'libposix', 'libruntime'])
-env.UseServers([])
-env.TargetLibrary('libnet', [ Glob('*.cpp') ])
+env.UseLibraries(['libstd', 'libarch', 'libfs', 'libipc', 'libruntime'], 'host')
+env.Library('libnet', [ Glob('*.cpp') ])
