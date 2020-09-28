@@ -40,7 +40,7 @@ NetworkQueue::~NetworkQueue()
         Packet *p = m_free.get(i);
         if (p)
         {
-            delete p->data;
+            delete[] p->data;
             delete p;
         }
     }
