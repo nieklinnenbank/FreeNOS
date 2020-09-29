@@ -92,6 +92,7 @@
     <hudson.tasks.Shell>
       <command>#!/usr/local/bin/bash
 set -x
+set -e
 export $sysargs
 
 # Unfortunately Clang does not ship with its own linker and libgcc equivalent.
@@ -105,8 +106,8 @@ else
   EXTRA=&quot;&quot;
 fi
 
-scons $sysargs DEBUG=False VERBOSE=True HOST_VERBOSE=True HOST_MINIMAL_BUILD=True QEMU_BUILD=True KVMFLAGS=&quot;&quot; $EXTRA || exit 1
-scons $sysargs DEBUG=False VERBOSE=True HOST_VERBOSE=True HOST_MINIMAL_BUILD=True QEMU_BUILD=True KVMFLAGS=&quot;&quot; $EXTRA qemu_loop || exit 1
+scons $sysargs DEBUG=False VERBOSE=True HOST_VERBOSE=True HOST_MINIMAL_BUILD=True QEMU_BUILD=True KVMFLAGS=&quot;&quot; $EXTRA
+scons $sysargs DEBUG=False VERBOSE=True HOST_VERBOSE=True HOST_MINIMAL_BUILD=True QEMU_BUILD=True KVMFLAGS=&quot;&quot; $EXTRA qemu_loop
 </command>
     </hudson.tasks.Shell>
   </builders>

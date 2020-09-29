@@ -108,6 +108,7 @@
     <hudson.tasks.Shell>
       <command>#!/usr/local/bin/bash
 set -x
+set -e
 export $sysargs $debugging
 
 if [ ! -z &quot;$ARCH&quot; ]; then

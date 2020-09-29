@@ -123,6 +123,8 @@
   <builders>
     <hudson.tasks.Shell>
       <command>#!/bin/bash
+set -x
+set -e
 export $sysargs
 
 if [ ! -z &quot;$ARCH&quot; ]; then
@@ -132,8 +134,8 @@ else
     test_target=&quot;xml_test&quot;
 fi
 
-scons $sysargs $debugging VERBOSE=True HOST_VERBOSE=True QEMU_BUILD=True QEMU_KVM=False || exit 1
-scons $sysargs $debugging VERBOSE=True HOST_VERBOSE=True QEMU_BUILD=True QEMU_KVM=False &quot;$test_target&quot; || exit 1
+scons $sysargs $debugging VERBOSE=True HOST_VERBOSE=True QEMU_BUILD=True QEMU_KVM=False
+scons $sysargs $debugging VERBOSE=True HOST_VERBOSE=True QEMU_BUILD=True QEMU_KVM=False &quot;$test_target&quot;
 </command>
     </hudson.tasks.Shell>
   </builders>

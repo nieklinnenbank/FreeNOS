@@ -91,8 +91,11 @@
   <builders>
     <hudson.tasks.Shell>
       <command>#!/bin/bash
-scons $sysargs DEBUG=False VERBOSE=True HOST_VERBOSE=True HOST_MINIMAL_BUILD=True QEMU_BUILD=True KVMFLAGS=&quot;&quot; || exit 1
-scons $sysargs DEBUG=False VERBOSE=True HOST_VERBOSE=True HOST_MINIMAL_BUILD=True QEMU_BUILD=True KVMFLAGS=&quot;&quot; qemu_loop || exit 1
+set -x
+set -e
+
+scons $sysargs DEBUG=False VERBOSE=True HOST_VERBOSE=True HOST_MINIMAL_BUILD=True QEMU_BUILD=True KVMFLAGS=&quot;&quot;
+scons $sysargs DEBUG=False VERBOSE=True HOST_VERBOSE=True HOST_MINIMAL_BUILD=True QEMU_BUILD=True KVMFLAGS=&quot;&quot; qemu_loop
 </command>
     </hudson.tasks.Shell>
   </builders>
