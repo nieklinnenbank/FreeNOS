@@ -41,8 +41,10 @@ class BootImageStorage : public Storage
 
     /**
      * Constructor function.
+     *
+     * @param image Pointer to mapped BootImage or ZERO to map via kernel
      */
-    BootImageStorage();
+    BootImageStorage(const BootImage *image = ZERO);
 
     /**
      * Get BootImage header.
@@ -56,7 +58,7 @@ class BootImageStorage : public Storage
      *
      * @return Result code
      */
-    virtual FileSystem::Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
      * Reads data from the boot image.
@@ -67,7 +69,7 @@ class BootImageStorage : public Storage
      *
      * @return Error code
      */
-    virtual FileSystem::Error read(const u64 offset, void *buffer, const Size size) const;
+    virtual FileSystem::Result read(const u64 offset, void *buffer, const Size size) const;
 
     /**
      * Retrieve maximum storage capacity.

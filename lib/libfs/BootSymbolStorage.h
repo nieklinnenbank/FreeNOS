@@ -54,7 +54,7 @@ class BootSymbolStorage : public Storage
      *
      * @return Result code
      */
-    virtual FileSystem::Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
      * Reads data from the BootSymbol.
@@ -65,7 +65,7 @@ class BootSymbolStorage : public Storage
      *
      * @return Error code
      */
-    virtual FileSystem::Error read(const u64 offset, void *buffer, const Size size) const;
+    virtual FileSystem::Result read(const u64 offset, void *buffer, const Size size) const;
 
     /**
      * Retrieve maximum storage capacity.

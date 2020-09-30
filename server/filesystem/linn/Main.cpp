@@ -46,18 +46,27 @@ int main(int argc, char **argv)
     }
     else
     {
+        // Allocate BootImage
         BootImageStorage *bm = new BootImageStorage();
         assert(bm != NULL);
-        if (bm->initialize() != FileSystem::Success)
+
+        // Load BootImage
+        const FileSystem::Result imageResult = bm->initialize();
+        if (imageResult != FileSystem::Success)
         {
-            FATAL("unable to load BootImage");
+            FATAL("unable to load BootImage: result = " << (int) imageResult);
         }
 
+        // Allocate BootSymbol
         BootSymbolStorage *bs = new BootSymbolStorage(*bm, LINNFS_ROOTFS_FILE);
         assert(bs != NULL);
-        if (bs->initialize() != FileSystem::Success)
+
+        // Load BootSymbol
+        const FileSystem::Result symbolResult = bs->initialize();
+        if (symbolResult != FileSystem::Success)
         {
-            FATAL("unable to load BootSymbol: " << LINNFS_ROOTFS_FILE);
+            FATAL("unable to load BootSymbol '" << LINNFS_ROOTFS_FILE <<
+                  "': result = " << (int) symbolResult);
         }
 
         storage = bs;

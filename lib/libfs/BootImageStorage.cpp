@@ -19,8 +19,8 @@
 #include <MemoryBlock.h>
 #include "BootImageStorage.h"
 
-BootImageStorage::BootImageStorage()
-    : m_image(load())
+BootImageStorage::BootImageStorage(const BootImage *image)
+    : m_image(image != ZERO ? image : load())
 {
 }
 
@@ -31,16 +31,16 @@ const BootImage BootImageStorage::bootImage() const
     return header;
 }
 
-FileSystem::Error BootImageStorage::initialize()
+FileSystem::Result BootImageStorage::initialize()
 {
     return m_image != ZERO ? FileSystem::Success : FileSystem::IOError;
 }
 
-FileSystem::Error BootImageStorage::read(const u64 offset, void *buffer, const Size size) const
+FileSystem::Result BootImageStorage::read(const u64 offset, void *buffer, const Size size) const
 {
     const u8 *data = ((const u8 *)(m_image)) + offset;
     MemoryBlock::copy(buffer, data, size);
-    return size;
+    return FileSystem::Success;
 }
 
 u64 BootImageStorage::capacity() const

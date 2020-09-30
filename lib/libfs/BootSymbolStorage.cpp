@@ -27,7 +27,7 @@ BootSymbolStorage::BootSymbolStorage(const BootImageStorage &bootImage,
 {
 }
 
-FileSystem::Error BootSymbolStorage::initialize()
+FileSystem::Result BootSymbolStorage::initialize()
 {
     if (m_symbol.segmentsTotalSize != 0 && m_segment.offset != 0)
     {
@@ -39,7 +39,7 @@ FileSystem::Error BootSymbolStorage::initialize()
     }
 }
 
-FileSystem::Error BootSymbolStorage::read(const u64 offset, void *buffer, const Size size) const
+FileSystem::Result BootSymbolStorage::read(const u64 offset, void *buffer, const Size size) const
 {
     return m_bootImage.read(offset + m_segment.offset, buffer, size);
 }

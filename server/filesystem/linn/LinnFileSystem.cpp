@@ -28,11 +28,11 @@ LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
     LinnInode *rootInode;
     LinnGroup *group;
     Size offset;
-    FileSystem::Error e;
+    FileSystem::Result e;
 
     // Read out the superblock.
     if ((e = s->read(LINN_SUPER_OFFSET, &super,
-                     sizeof(super))) <= 0)
+                     sizeof(super))) != FileSystem::Success)
     {
         FATAL("reading superblock failed: result = " << (int) e);
     }
@@ -57,7 +57,7 @@ LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
                  (sizeof(LinnGroup)  * i);
 
         // Read from storage.
-        if ((e = s->read(offset, group, sizeof(LinnGroup))) <= 0)
+        if ((e = s->read(offset, group, sizeof(LinnGroup))) != FileSystem::Success)
         {
             FATAL("reading group descriptor failed: result = " << (int) e);
         }
@@ -85,7 +85,7 @@ LinnInode * LinnFileSystem::getInode(u32 inodeNum)
     LinnGroup *group;
     LinnInode *inode;
     Size offset;
-    FileSystem::Error e;
+    FileSystem::Result e;
 
     // Validate the inode number.
     if (inodeNum >= super.inodesCount)
@@ -109,7 +109,7 @@ LinnInode * LinnFileSystem::getInode(u32 inodeNum)
                 ((inodeNum % super.inodesPerGroup) * sizeof(LinnInode));
 
     // Read inode from storage.
-    if ((e = storage->read(offset, inode, sizeof(LinnInode))) <= 0)
+    if ((e = storage->read(offset, inode, sizeof(LinnInode))) != FileSystem::Success)
     {
         ERROR("reading inode failed: result = " << (int) e);
         return ZERO;
@@ -164,7 +164,7 @@ u64 LinnFileSystem::getOffset(LinnInode *inode, u32 blk)
     while (true)
     {
         // Fetch block.
-        if (storage->read(offset, block, super.blockSize) < 0)
+        if (storage->read(offset, block, super.blockSize) != FileSystem::Success)
         {
             return 0;
         }

@@ -55,7 +55,7 @@ FileSystem::Error LinnDirectory::read(IOBuffer & buffer, Size size, Size offset)
 
         // Get the next entry.
         if (fs->getStorage()->read(off, &dent,
-                                   sizeof(LinnDirectoryEntry)) < 0)
+                                   sizeof(LinnDirectoryEntry)) != FileSystem::Success)
         {
             return FileSystem::PermissionDenied;
         }
@@ -137,7 +137,7 @@ bool LinnDirectory::getLinnDirectoryEntry(LinnDirectoryEntry *dent,
 
             // Get the next entry.
             if (fs->getStorage()->read(offset, dent,
-                                       sizeof(LinnDirectoryEntry)) < 0)
+                                       sizeof(LinnDirectoryEntry)) != FileSystem::Success)
             {
                 return false;
             }

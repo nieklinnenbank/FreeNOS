@@ -48,6 +48,13 @@ class FileStorage : public Storage
     FileStorage(const char *path, Size offset = ZERO);
 
     /**
+     * Initialize the Storage device
+     *
+     * @return Result code
+     */
+    virtual FileSystem::Result initialize();
+
+    /**
      * Read a contiguous set of data.
      *
      * @param offset Offset to start reading from.
@@ -56,7 +63,7 @@ class FileStorage : public Storage
      *
      * @return Result code
      */
-    virtual FileSystem::Error read(const u64 offset, void *buffer, const Size size) const;
+    virtual FileSystem::Result read(const u64 offset, void *buffer, const Size size) const;
 
     /**
      * Write a contiguous set of data.
@@ -67,7 +74,7 @@ class FileStorage : public Storage
      *
      * @return Result code
      */
-    virtual FileSystem::Error write(const u64 offset, void *buffer, const Size size);
+    virtual FileSystem::Result write(const u64 offset, void *buffer, const Size size);
 
     /**
      * Retrieve maximum storage capacity.

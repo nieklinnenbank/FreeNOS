@@ -59,7 +59,7 @@ FileSystem::Error LinnFile::read(IOBuffer & buffer, Size size, Size offset)
         storageOffset = fs->getOffset(inode, blockNr);
 
         // Fetch the next block.
-        if (fs->getStorage()->read(storageOffset, block, sb->blockSize) < 0)
+        if (fs->getStorage()->read(storageOffset, block, sb->blockSize) != FileSystem::Success)
         {
             return FileSystem::IOError;
         }
