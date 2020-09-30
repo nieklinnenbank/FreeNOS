@@ -153,7 +153,7 @@ host.Append(QEMU    = 'qemu-system')
 host.Append(QEMUCMD = '${QEMU} ${QEMUFLAGS}')
 host.Append(QEMUFLAGS = '')
 
-target = host.Clone(tools    = ["default", "bootimage", "iso", "binary", "linn", "phony", "strip", "test", "compress"],
+target = host.Clone(tools    = ["default", "bootimage", "iso", "binary", "linn", "phony", "strip", "test", "lz4"],
                     toolpath = ["support/scons"])
 
 # Configuration build variables may come from, in order of priority:

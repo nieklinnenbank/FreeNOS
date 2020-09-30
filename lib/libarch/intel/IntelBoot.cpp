@@ -54,7 +54,7 @@ void multibootToCoreInfo(MultibootInfo *info)
         String str((char *)(mod->string), false);
 
         // Is this the BootImage?
-        if (str.match("*.img.gz"))
+        if (str.match("*.img"))
         {
             coreInfo.bootImageAddress = mod->modStart;
             coreInfo.bootImageSize    = mod->modEnd - mod->modStart;

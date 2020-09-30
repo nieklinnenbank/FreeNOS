@@ -41,7 +41,7 @@ env.TargetProgram('kernel', [ Glob('*.cpp'),
 #
 cd = env.ISO('#${BUILDROOT}/boot.iso',
            [ '#${BUILDROOT}/kernel/intel/pc/kernel',
-             '#${BUILDROOT}/boot.img.gz' ])
+             '#${BUILDROOT}/boot.img' ])
 
 # Shortcut to build the ISO.
 Alias('iso', cd)

@@ -79,7 +79,7 @@ else:
 # Boot Image
 #
 target.BootImage('#${BUILDROOT}/boot.img', '#config/' + target['ARCH'] + '/' + target['SYSTEM'] + '/boot.imgdesc')
-target.Gzip('#${BUILDROOT}/boot.img.gz', '#${BUILDROOT}/boot.img')
+target.Lz4Compress('#${BUILDROOT}/boot.img.lz4', '#${BUILDROOT}/boot.img')
 
 #
 # RootFS
