@@ -20,6 +20,7 @@
 #include <KernelLog.h>
 #include <FileStorage.h>
 #include <BootImageStorage.h>
+#include <BootSymbolStorage.h>
 #include "LinnFileSystem.h"
 
 int main(int argc, char **argv)
@@ -45,17 +46,22 @@ int main(int argc, char **argv)
     }
     else
     {
-        BootImageStorage *bm = new BootImageStorage(LINNFS_ROOTFS_FILE);
+        BootImageStorage *bm = new BootImageStorage();
         assert(bm != NULL);
-        if (bm->load())
+        if (bm->initialize() != FileSystem::Success)
         {
-            NOTICE("boot image: " << LINNFS_ROOTFS_FILE);
-            storage = bm;
+            FATAL("unable to load BootImage");
         }
-        else
+
+        BootSymbolStorage *bs = new BootSymbolStorage(*bm, LINNFS_ROOTFS_FILE);
+        assert(bs != NULL);
+        if (bs->initialize() != FileSystem::Success)
         {
-            FATAL("unable to load: " << LINNFS_ROOTFS_FILE);
+            FATAL("unable to load BootSymbol: " << LINNFS_ROOTFS_FILE);
         }
+
+        storage = bs;
+        NOTICE("boot image: " << LINNFS_ROOTFS_FILE);
     }
 
     // Mount, then start serving requests.

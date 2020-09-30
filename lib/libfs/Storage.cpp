@@ -26,12 +26,17 @@ Storage::~Storage()
 {
 }
 
-FileSystem::Error Storage::read(u64 offset, void *buffer, Size size)
+FileSystem::Error Storage::initialize()
+{
+    return FileSystem::Success;
+}
+
+FileSystem::Error Storage::read(const u64 offset, void *buffer, const Size size) const
 {
     return FileSystem::NotSupported;
 }
 
-FileSystem::Error Storage::write(u64 offset, void *buffer, Size size)
+FileSystem::Error Storage::write(const u64 offset, void *buffer, const Size size)
 {
     return FileSystem::NotSupported;
 }

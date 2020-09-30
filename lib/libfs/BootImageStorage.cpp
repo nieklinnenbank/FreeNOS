@@ -19,21 +19,39 @@
 #include <MemoryBlock.h>
 #include "BootImageStorage.h"
 
-BootImageStorage::BootImageStorage(const char *name)
-    : m_name(name)
-    , m_data(ZERO)
-    , m_size(0)
+BootImageStorage::BootImageStorage()
+    : m_image(load())
 {
 }
 
-bool BootImageStorage::load()
+const BootImage BootImageStorage::bootImage() const
 {
-    SystemInformation info;
-    BootImage *image;
-    BootSymbol *symbol;
-    BootSegment *segment;
+    BootImage header;
+    read(0, &header, sizeof(header));
+    return header;
+}
+
+FileSystem::Error BootImageStorage::initialize()
+{
+    return m_image != ZERO ? FileSystem::Success : FileSystem::IOError;
+}
+
+FileSystem::Error BootImageStorage::read(const u64 offset, void *buffer, const Size size) const
+{
+    const u8 *data = ((const u8 *)(m_image)) + offset;
+    MemoryBlock::copy(buffer, data, size);
+    return size;
+}
+
+u64 BootImageStorage::capacity() const
+{
+    return m_image->bootImageSize;
+}
+
+const BootImage * BootImageStorage::load() const
+{
+    const SystemInformation info;
     Memory::Range range;
-    u8 *base;
 
     // Request boot image memory
     range.size   = info.bootImageSize;
@@ -41,39 +59,14 @@ bool BootImageStorage::load()
                    Memory::Readable;
     range.virt   = ZERO;
     range.phys   = info.bootImageAddress;
-    VMCtl(SELF, MapContiguous, &range);
 
-    // Update our state
-    image = (BootImage *) range.virt;
-    base  = (u8 *) image;
-
-    // Search for the given BootSymbol
-    for (uint i = 0; i < image->symbolTableCount; i++)
+    // Map BootImage into our address space
+    const API::Result r = VMCtl(SELF, MapContiguous, &range);
+    if (r != API::Success)
     {
-        symbol = (BootSymbol *) (base + image->symbolTableOffset);
-        symbol += i;
-
-        if (m_name.compareTo(symbol->name) == 0)
-        {
-            m_size   = symbol->segmentsTotalSize;
-            segment = (BootSegment *) (base + image->segmentsTableOffset +
-                                      (symbol->segmentsOffset * sizeof(BootSegment)));
-            m_data   = base + segment->offset;
-            // Success
-            return true;
-        }
+        ERROR("failed to map BootImage using VMCtl: result = " << (int) r);
+        return ZERO;
     }
-    // BootSymbol not found
-    return false;
-}
 
-FileSystem::Error BootImageStorage::read(u64 offset, void *buffer, Size size)
-{
-    MemoryBlock::copy(buffer, m_data + offset, size);
-    return size;
-}
-
-u64 BootImageStorage::capacity() const
-{
-    return m_size;
+    return (const BootImage *) range.virt;
 }

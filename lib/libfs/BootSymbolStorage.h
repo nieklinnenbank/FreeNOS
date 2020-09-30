@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Niek Linnenbank
+ * Copyright (C) 2020 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,14 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIB_LIBFS_BOOTIMAGESTORAGE_H
-#define __LIB_LIBFS_BOOTIMAGESTORAGE_H
+#ifndef __LIB_LIBFS_BOOTSYMBOLSTORAGE_H
+#define __LIB_LIBFS_BOOTSYMBOLSTORAGE_H
 
 #include <Types.h>
 #include <String.h>
 #include <BootImage.h>
 #include "FileSystem.h"
 #include "Storage.h"
+#include "BootImageStorage.h"
 
 /**
  * @addtogroup lib
@@ -33,23 +34,20 @@
  */
 
 /**
- * Uses a BootImage as a storage provider.
+ * Uses a BootSymbol inside a BootImage as a storage provider.
  */
-class BootImageStorage : public Storage
+class BootSymbolStorage : public Storage
 {
   public:
 
     /**
      * Constructor function.
-     */
-    BootImageStorage();
-
-    /**
-     * Get BootImage header.
      *
-     * @return BootImage header.
+     * @param bootImage BootImageStorage to use for I/O.
+     * @param symbolName Name of the BootSymbol entry to use.
      */
-    const BootImage bootImage() const;
+    BootSymbolStorage(const BootImageStorage &bootImage,
+                      const char *symbolName);
 
     /**
      * Initialize the Storage device
@@ -59,7 +57,7 @@ class BootImageStorage : public Storage
     virtual FileSystem::Error initialize();
 
     /**
-     * Reads data from the boot image.
+     * Reads data from the BootSymbol.
      *
      * @param offset Offset to start reading from.
      * @param buffer Output buffer.
@@ -79,16 +77,31 @@ class BootImageStorage : public Storage
   private:
 
     /**
-     * Loads the BootImage into virtual memory.
+     * Loads the BootSymbol from the BootImage.
      *
-     * @return Pointer to the BootImage or ZERO on failure
+     * @return BootSymbol value
      */
-    const BootImage * load() const;
+    const BootSymbol loadSymbol(const char *name) const;
+
+    /**
+     * Load the BootSegment for the given BootSymbol.
+     *
+     * @param symbol BootSymbol reference
+     *
+     * @return BootSegment value
+     */
+    const BootSegment loadSegment(const BootSymbol &symbol) const;
 
   private:
 
-    /** Pointer to the BootImage */
-    const BootImage *m_image;
+    /** Read-only reference to the BootImage storage */
+    const BootImageStorage &m_bootImage;
+
+    /** BootSymbol value */
+    const BootSymbol m_symbol;
+
+    /** BootSegment value */
+    const BootSegment m_segment;
 };
 
 /**
@@ -96,4 +109,4 @@ class BootImageStorage : public Storage
  * @}
  */
 
-#endif /* __LIB_LIBFS_BOOTIMAGESTORAGE_H */
+#endif /* __LIB_LIBFS_BOOTSYMBOLSTORAGE_H */
