@@ -288,15 +288,35 @@ Kernel::Result Kernel::loadBootProgram(const BootImageStorage &bootImage,
             return ProcessError;
         }
 
-        // Map the BootSegment in the process address space
-        for (Size j = 0; j < segment.size; j += PAGESIZE)
+        // Map memory
+        Memory::Range range;
+        range.phys = 0;
+        range.virt = segment.virtualAddress;
+        range.size = segment.size;
+        range.access = Memory::User | Memory::Readable | Memory::Writable | Memory::Executable;
+
+        const MemoryContext::Result mapResult = mem->mapRangeContiguous(&range);
+        if (mapResult != MemoryContext::Success)
         {
-            mem->map(segment.virtualAddress + j,
-                     m_coreInfo->bootImageAddress + segment.offset + j,
-                     Memory::User     |
-                     Memory::Readable |
-                     Memory::Writable |
-                     Memory::Executable);
+            FATAL("failed to map BootSegment at " << (void *) segment.virtualAddress <<
+                  " for BootProgram " << program.name << ": result = " << (int) mapResult);
+            return ProcessError;
+        }
+
+        // Read from BootImage to physical memory of the program
+        // This assumes direct access to that physical memory.
+        const FileSystem::Result readResult = bootImage.read(
+            segment.offset,
+            (void *) m_alloc->toVirtual(range.phys),
+            segment.size
+        );
+
+        if (readResult != FileSystem::Success)
+        {
+            FATAL("failed to read BootSegment data at " << (void *) segment.virtualAddress <<
+                  " for BootProgram " << program.name << ": result = " << (int) readResult);
+            return ProcessError;
+
         }
     }
 
