@@ -33,7 +33,24 @@ const BootImage BootImageStorage::bootImage() const
 
 FileSystem::Result BootImageStorage::initialize()
 {
-    return m_image != ZERO ? FileSystem::Success : FileSystem::IOError;
+    if (m_image == ZERO)
+    {
+        return FileSystem::IOError;
+    }
+
+    if (m_image->magic[0] == BOOTIMAGE_MAGIC0 &&
+        m_image->magic[1] == BOOTIMAGE_MAGIC1 &&
+        m_image->layoutRevision == BOOTIMAGE_REVISION)
+    {
+        return FileSystem::Success;
+    }
+    else
+    {
+        ERROR("invalid BootImage: signature = " <<
+               m_image->magic[0] << ", " << m_image->magic[1] <<
+              " revision = " << m_image->layoutRevision);
+        return FileSystem::InvalidArgument;
+    }
 }
 
 FileSystem::Result BootImageStorage::read(const u64 offset, void *buffer, const Size size) const
