@@ -28,7 +28,7 @@ JENKINS_PACKAGES="git openjdk11 bash"
 COMPILER_PACKAGES="gcc gcc7 gcc8 gcc9 \
                    llvm60 llvm70 llvm80 llvm90 llvm10 \
                    arm-none-eabi-gcc"
-MISC_PACKAGES="scons-py37 cdrkit-genisoimage xorriso u-boot-tools"
+MISC_PACKAGES="scons-py37 cdrkit-genisoimage xorriso u-boot-tools liblz4"
 PACKAGES="$JENKINS_PACKAGES $COMPILER_PACKAGES $MISC_PACKAGES"
 RELEASE="`uname -r|cut -f 1,2 -d -`"
 CHROOT="freebsd32"

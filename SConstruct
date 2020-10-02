@@ -82,17 +82,20 @@ else:
     SConscript(host['BUILDROOT'] + '/test/SConscript')
 
 #
-# Boot Image
-#
-target.BootImage('#${BUILDROOT}/boot.img', '#config/' + target['ARCH'] + '/' + target['SYSTEM'] + '/boot.imgdesc')
-target.Lz4Compress('#${BUILDROOT}/boot.img.lz4', '#${BUILDROOT}/boot.img')
-
-#
 # RootFS
 #
 Import('rootfs_files')
 target.LinnImage('#${BUILDROOT}/rootfs.linn', rootfs_files)
-target.Depends('#${BUILDROOT}/rootfs.linn', '#build/host')
+target.Depends('#${BUILDROOT}/rootfs.linn', '#build/host/server/filesystem/linn/create')
+target.Depends('#${BUILDROOT}/rootfs.linn', '#build/host/bin/img/img')
+
+#
+# Boot Image
+#
+target.BootImage('#${BUILDROOT}/boot.img', '#config/' + target['ARCH'] + '/' + target['SYSTEM'] + '/boot.imgdesc')
+target.Lz4Compress('#${BUILDROOT}/boot.img.lz4', '#${BUILDROOT}/boot.img')
+host.Install('#${BUILDROOT}', target['BUILDROOT'] + '/boot.img')
+host.Install('#${BUILDROOT}', target['BUILDROOT'] + '/boot.img.lz4')
 
 #
 # Source Release
