@@ -37,10 +37,12 @@ VariantDir(target['BUILDROOT'] + '/test', '#test', duplicate = 0)
 VariantDir(target['BUILDROOT'] + '/kernel', '#kernel', duplicate = 0)
 
 # Install files to the target RootFS
+target.Lz4Compress4K('#${BUILDROOT}/include/Config.h.lz4', '#${BUILDROOT}/include/Config.h')
 target.TargetInstall('VERSION', target['etc'])
 target.TargetInstall('build.conf', target['etc'])
 target.TargetInstall('build.host.conf', target['etc'])
 target.TargetInstall(target['BUILDROOT'] + '/include/Config.h', target['etc'])
+target.TargetInstall(target['BUILDROOT'] + '/include/Config.h.lz4', target['etc'])
 target.TargetInstall('config/' + target['ARCH'] + '/' + target['SYSTEM'] + '/init.sh', target['etc'])
 
 SConscript(target['BUILDROOT'] + '/lib/SConscript')
@@ -54,6 +56,10 @@ SConscript(target['BUILDROOT'] + '/kernel/' + target['ARCH'] + '/' + target['SYS
 #
 build_env = host
 Export('build_env')
+
+# Copy files from the target
+host.Install('#${BUILDROOT}/etc', target['BUILDROOT'] + '/include/Config.h')
+host.Install('#${BUILDROOT}/etc', target['BUILDROOT'] + '/include/Config.h.lz4')
 
 # Build programs and libraries.
 VariantDir(host['BUILDROOT'] + '/lib', '#lib', duplicate = 0)
