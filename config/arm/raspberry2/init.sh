@@ -9,6 +9,7 @@ stdio /dev/serial/serial0/io /dev/serial/serial0/io
 # System Servers and Drivers.
 #
 /server/filesystem/tmp/server /tmp &
+/bin/mount --wait=/tmp
 
 # This ensures we wait until all cores
 # are booted by the CoreServer.
