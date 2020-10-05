@@ -174,6 +174,22 @@ class Log : public WeakSingleton<Log>
 
   private:
 
+    /**
+     * Flush internal buffer.
+     *
+     * This function reads the contents of the internal
+     * buffer and writes all available bytes to the actual
+     * output device using write().
+     *
+     * @param force True to always flush, even without newline
+     *              at the end of the buffer.
+     *
+     * @see write
+     */
+    void flush(const bool force = false);
+
+  private:
+
     /** Minimum log level required to log. */
     Level m_minimumLogLevel;
 

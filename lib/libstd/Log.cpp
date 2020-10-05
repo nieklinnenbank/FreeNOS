@@ -53,13 +53,25 @@ void Log::setIdent(const char *ident)
 void Log::append(const char *str)
 {
     // Copy input. Note that we need to reserve 1 byte for the NULL-terminator
-    while (m_outputBufferWritten < LogBufferSize-1 && *str)
+    while (*str)
     {
-        m_outputBuffer[m_outputBufferWritten++] = *str;
-        str++;
+        if (m_outputBufferWritten < LogBufferSize-1)
+        {
+            m_outputBuffer[m_outputBufferWritten++] = *str;
+            str++;
+        }
+        else
+        {
+            flush(true);
+        }
     }
 
-    if (m_outputBufferWritten > 0 && m_outputBuffer[m_outputBufferWritten-1] == '\n')
+    flush();
+}
+
+void Log::flush(const bool force)
+{
+    if (m_outputBufferWritten > 0 && (m_outputBuffer[m_outputBufferWritten-1] == '\n' || force))
     {
         m_outputBuffer[m_outputBufferWritten] = 0;
         write(m_outputBuffer);
