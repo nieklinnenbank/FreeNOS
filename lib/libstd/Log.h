@@ -212,6 +212,8 @@ Log & operator << (Log &log, const char *str);
 
 Log & operator << (Log &log, int number);
 
+Log & operator << (Log &log, const char character);
+
 Log & operator << (Log &log, unsigned number);
 
 Log & operator << (Log &log, unsigned long number);

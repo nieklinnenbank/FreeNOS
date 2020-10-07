@@ -97,6 +97,13 @@ Log & operator << (Log &log, int number)
     return log;
 }
 
+Log & operator << (Log &log, const char character)
+{
+    const char tmp[2] = { character, 0 };
+    log.append(tmp);
+    return log;
+}
+
 Log & operator << (Log &log, unsigned number)
 {
     String s = number;
