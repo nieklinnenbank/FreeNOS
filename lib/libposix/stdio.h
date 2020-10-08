@@ -122,6 +122,31 @@ extern C size_t fread(void *ptr, size_t size,
                       size_t nitems, FILE *stream);
 
 /**
+ * The fwrite() function shall write, from the array pointed to by ptr,
+ * up to nitems elements whose size is specified by size, to the stream
+ * pointed to by stream. For each object, size calls shall be made to the
+ * fputc() function, taking the values (in order) from an array of unsigned
+ * char exactly overlaying the object. The file-position indicator for the
+ * stream (if defined) shall be advanced by the number of bytes successfully
+ * written. If an error occurs, the resulting value of the file-position
+ * indicator for the stream is unspecified.
+ *
+ * @param ptr Input buffer.
+ * @param size Size of each item to write.
+ * @param nitems Number of items to write.
+ * @param stream FILE pointer to write to.
+ *
+ * @return The fwrite() function shall return the number of elements
+ *         successfully written, which may be less than nitems if a
+ *         write error is encountered. If size or nitems is 0, fwrite()
+ *         shall return 0 and the state of the stream remains unchanged.
+ *         Otherwise, if a write error occurs, the error indicator for the
+ *         stream shall be set, and errno shall be set to indicate the error.
+ */
+extern C size_t fwrite(const void *ptr, size_t size,
+                       size_t nitems, FILE *stream);
+
+/**
  * @brief Close a stream.
  *
  * The fclose() function shall cause the stream pointed to by stream
