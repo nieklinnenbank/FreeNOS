@@ -30,6 +30,8 @@ API::Result SystemInfoHandler(SystemInformation *info)
 
     // Fill in our current information
     info->version          = VERSIONCODE;
+    info->kernelAddress    = core->kernel.phys;
+    info->kernelSize       = core->kernel.size;
     info->memorySize       = memory->size();
     info->memoryAvail      = memory->available();
     info->coreId           = core->coreId;

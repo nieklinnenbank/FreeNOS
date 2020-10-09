@@ -88,6 +88,12 @@ typedef struct SystemInformation
     /** Boot commandline. */
     char cmdline[64];
 
+    /** Physical start address of the kernel program */
+    Address kernelAddress;
+
+    /** Size of the kernel program in bytes */
+    Size kernelSize;
+
     /** Total and available memory in bytes. */
     Size memorySize, memoryAvail;
 
