@@ -36,7 +36,6 @@ SysInfo::~SysInfo()
 
 SysInfo::Result SysInfo::exec()
 {
-    SystemInformation info;
     const CoreClient coreClient;
     Size numCores = 1U;
     Timer::Info timer;
@@ -55,6 +54,9 @@ SysInfo::Result SysInfo::exec()
     // Retrieve scheduler timer info from the kernel
     ProcessCtl(SELF, InfoTimer, (Address) &timer);
     gettimeofday(&tv, &tz);
+
+    // Retrieve system information
+    const SystemInformation info;
 
     // Print all information to standard output
     printf("Memory Total:     %u KB\r\n"
