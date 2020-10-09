@@ -121,7 +121,7 @@ class Kernel : public WeakSingleton<Kernel>
      *
      * @return Zero on success or error code on failure.
      */
-    static Error heap(Address base, Size size);
+    static Error initializeHeap();
 
     /**
      * Get physical memory allocator.

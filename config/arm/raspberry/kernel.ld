@@ -83,20 +83,14 @@ SECTIONS
     . = ALIGN(4096); /* align to page size */
     __bss_end = .;
 
-    .heap 0x00400000 :
-    {
-        __heap_start = .;
-    }
+    __end = .;
 
-    .bootimg 0x00500000 :
+    .bootimg :
     {
-        __heap_end = .;
         __bootimg = .;
         KEEP (*(.bootimg))
         LONG(0)
     }
-
-    __end = .;
 
     .ARM.exidx.text :
     {

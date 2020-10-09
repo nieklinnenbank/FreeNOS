@@ -383,7 +383,7 @@ Core::Result CoreServer::prepareCore(uint coreId, CoreInfo *info,
     for (Size i = 0; i < m_numRegions; i++)
     {
         Memory::Range range;
-        range.phys = info->kernel.phys + (regions[i].virt - RAM_ADDR);
+        range.phys = info->memory.phys + (regions[i].virt - RAM_ADDR);
         range.virt = 0;
         range.size = regions[i].dataSize;
         range.access = Memory::Readable | Memory::Writable |
@@ -496,13 +496,19 @@ Core::Result CoreServer::prepareCoreInfo()
             info->coreId = coreId;
             info->memory.phys = RAM_ADDR + (memPerCore * coreId);
             info->memory.size = memPerCore - PAGESIZE;
-            info->kernel.phys = info->memory.phys;
-            info->kernel.size = MegaByte(4);
+            info->kernel.phys = sysInfo.kernelAddress + (memPerCore * coreId);
+            info->kernel.size = sysInfo.kernelSize;
+
+            info->bootImageAddress = info->kernel.phys + info->kernel.size;
+            info->bootImageAddress += PAGESIZE - (info->kernel.size % PAGESIZE);
+            info->bootImageSize = sysInfo.bootImageSize;
+
+            info->heapAddress = info->bootImageAddress + info->bootImageSize;
+            info->heapAddress += PAGESIZE - (info->bootImageSize % PAGESIZE);
             info->heapSize = MegaByte(1);
-            info->bootImageAddress = info->kernel.phys + info->kernel.size + info->heapSize;
-            info->bootImageSize    = sysInfo.bootImageSize;
-            info->coreChannelAddress = info->bootImageAddress + info->bootImageSize;
-            info->coreChannelAddress += PAGESIZE - (info->bootImageSize % PAGESIZE);
+
+            info->coreChannelAddress = info->heapAddress + info->heapSize;
+            info->coreChannelAddress += PAGESIZE - (info->heapSize % PAGESIZE);
             info->coreChannelSize    = PAGESIZE * 4;
             clearPages(info->coreChannelAddress, info->coreChannelSize);
 

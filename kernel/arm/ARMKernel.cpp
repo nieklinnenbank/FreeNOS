@@ -50,6 +50,9 @@ ARMKernel::ARMKernel(CoreInfo *info)
     ctrl.unset(ARMControl::BigEndian);
 #endif
 
+    // First page is used for exception handlers
+    m_alloc->allocate(info->memory.phys);
+
     // Allocate physical memory for the temporary stack.
     //
     // This is an area of 1MiB which must not be used. It is re-mapped on the
@@ -64,7 +67,7 @@ ARMKernel::ARMKernel(CoreInfo *info)
             m_alloc->allocate(TMPSTACKADDR + i);
     } else {
         for (Size i = 0; i < MegaByte(1); i += PAGESIZE)
-            m_alloc->allocate(info->kernel.phys + TMPSTACKOFF + i);
+            m_alloc->allocate(info->memory.phys + TMPSTACKOFF + i);
     }
 }
 

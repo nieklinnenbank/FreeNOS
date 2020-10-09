@@ -37,12 +37,17 @@ extern C void executeInterrupt(CPUState state)
 IntelKernel::IntelKernel(CoreInfo *info)
     : Kernel(info)
 {
-
     IntelMap map;
     IntelCore core;
-    IntelPaging memContext(&map, core.readCR3(), m_alloc);
+
+    // First megabyte should not be used on Intel (I/O devices and tables)
+    for (Size i = 0; i < MegaByte(1); i += PAGESIZE)
+    {
+        m_alloc->allocate(info->memory.phys + i);
+    }
 
     // Refresh MemoryContext::current()
+    IntelPaging memContext(&map, core.readCR3(), m_alloc);
     memContext.activate();
 
     // Install interruptRun() callback
@@ -128,6 +133,7 @@ IntelKernel::IntelKernel(CoreInfo *info)
     kernelTss.esp0   = 0;
     kernelTss.bitmap = sizeof(TSS);
     ltr(KERNEL_TSS_SEL);
+
 }
 
 void IntelKernel::enableIRQ(u32 irq, bool enabled)

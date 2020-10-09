@@ -25,14 +25,10 @@
 #include <Macros.h>
 #include <Log.h>
 
-extern Address __heap_start, __heap_end;
-
 extern C int kernel_main(CoreInfo *info)
 {
     // Initialize heap
-    coreInfo.heapAddress = (Address) &__heap_start;
-    coreInfo.heapSize    = (Size) ((Address) &__heap_end - (Address)&__heap_start);
-    Kernel::heap(coreInfo.heapAddress, coreInfo.heapSize);
+    Kernel::initializeHeap();
 
     // Open serial console as default Log
     i8250 *uart = new i8250(4, 0x3f8);

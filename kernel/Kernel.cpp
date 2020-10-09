@@ -71,9 +71,19 @@ Kernel::Kernel(CoreInfo *info)
 
     // Verify coreInfo memory ranges
     assert(info->kernel.phys >= info->memory.phys);
-    assert(m_alloc->toPhysical(m_coreInfo->heapAddress) >= info->kernel.phys + info->kernel.size);
-    assert(m_alloc->toPhysical(m_coreInfo->heapAddress) + m_coreInfo->heapSize <= m_coreInfo->bootImageAddress);
-    assert(m_coreInfo->coreChannelAddress >= m_coreInfo->bootImageAddress + m_coreInfo->bootImageSize);
+    assert(info->bootImageAddress >= info->kernel.phys + info->kernel.size);
+    assert(m_alloc->toPhysical(info->heapAddress) >= info->bootImageAddress + info->bootImageSize);
+
+    // Only secondary cores need to allocate coreChannels
+    if (info->coreId == 0)
+    {
+        assert(info->coreChannelAddress == ZERO);
+        assert(info->coreChannelSize == ZERO);
+    }
+    else
+    {
+        assert(info->coreChannelAddress >= m_alloc->toPhysical(info->heapAddress + info->heapSize));
+    }
 
     // Mark all kernel memory used
     for (Size i = 0; i < info->kernel.size; i += PAGESIZE)
@@ -95,18 +105,30 @@ Kernel::Kernel(CoreInfo *info)
     m_interrupts.fill(ZERO);
 }
 
-Error Kernel::heap(Address base, Size size)
+Error Kernel::initializeHeap()
 {
+    // Calculate proper heap address: heap starts after the boot image.
+    Size heapPhysical = coreInfo.bootImageAddress + coreInfo.bootImageSize;
+    heapPhysical += PAGESIZE - (coreInfo.bootImageSize % PAGESIZE);
+
+    // Heap must be a virtual address (see SplitAllocator)
+    const Arch::MemoryMap map;
+    const Memory::Range kernelData = map.range(MemoryMap::KernelData);
+    coreInfo.heapAddress = heapPhysical - (coreInfo.memory.phys - kernelData.virt);
+    coreInfo.heapSize    = MegaByte(1);
+
+    // Prepare allocators
     Size metaData = sizeof(BubbleAllocator) + sizeof(PoolAllocator);
     Allocator *bubble, *pool;
-    const Allocator::Range bubbleRange = { base + metaData, size - metaData, sizeof(u32) };
+    const Allocator::Range bubbleRange = { coreInfo.heapAddress + metaData,
+                                           coreInfo.heapSize - metaData, sizeof(u32) };
 
     // Clear the heap first
-    MemoryBlock::set((void *) base, 0, size);
+    MemoryBlock::set((void *) coreInfo.heapAddress, 0, coreInfo.heapSize);
 
     // Setup the dynamic memory heap
-    bubble = new (base) BubbleAllocator(bubbleRange);
-    pool   = new (base + sizeof(BubbleAllocator)) PoolAllocator(bubble);
+    bubble = new (coreInfo.heapAddress) BubbleAllocator(bubbleRange);
+    pool   = new (coreInfo.heapAddress + sizeof(BubbleAllocator)) PoolAllocator(bubble);
 
     // Set default allocator
     Allocator::setDefault(pool);

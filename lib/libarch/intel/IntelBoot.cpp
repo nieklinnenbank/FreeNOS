@@ -20,13 +20,15 @@
 #include <CoreInfo.h>
 #include "IntelBoot.h"
 
+extern Address __start, __end;
+
 void multibootToCoreInfo(MultibootInfo *info)
 {
     // Fill coreId and memory info
     MemoryBlock::set(&coreInfo, 0, sizeof(CoreInfo));
     coreInfo.coreId = 0;
-    coreInfo.kernel.phys = 0;
-    coreInfo.kernel.size = MegaByte(4);
+    coreInfo.kernel.phys = (Address) &__start;
+    coreInfo.kernel.size = ((Address) &__end - (Address) &__start);
     coreInfo.memory.phys = 0;
 
     // Limit maximum supported memory to 1GiB minus 128MiB
@@ -59,6 +61,4 @@ void multibootToCoreInfo(MultibootInfo *info)
             break;
         }
     }
-
-    coreInfo.coreChannelAddress = coreInfo.bootImageAddress + coreInfo.bootImageSize;
 }

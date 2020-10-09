@@ -37,7 +37,7 @@ ARMPaging::ARMPaging(MemoryMap *map, SplitAllocator *alloc)
     if (alloc->allocate(phys, virt) == Allocator::Success)
     {
         m_firstTable = (ARMFirstTable *) virt.address;
-        setupFirstTable(map, phys.address, coreInfo.kernel.phys);
+        setupFirstTable(map, phys.address, coreInfo.memory.phys);
     }
 }
 

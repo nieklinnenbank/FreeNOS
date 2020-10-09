@@ -28,7 +28,7 @@
 #include <DeviceLog.h>
 #include "RaspberryKernel.h"
 
-extern Address __bootimg, __heap_start, __heap_end;
+extern Address __start, __end, __bootimg;
 
 static u32 ALIGN(16 * 1024) SECTION(".data") tmpPageDir[4096];
 
@@ -49,11 +49,10 @@ extern C int kernel_main(void)
     MemoryBlock::set(&coreInfo, 0, sizeof(CoreInfo));
     coreInfo.bootImageAddress = (Address) (bootimage);
     coreInfo.bootImageSize    = bootimage->bootImageSize;
-    coreInfo.kernel.phys      = RAM_ADDR;
-    coreInfo.kernel.size      = MegaByte(4);
+    coreInfo.kernel.phys      = (Address) &__start;
+    coreInfo.kernel.size      = ((Address) &__end - (Address) &__start);
     coreInfo.memory.phys      = RAM_ADDR;
     coreInfo.memory.size      = RAM_SIZE;
-    coreInfo.coreChannelAddress = coreInfo.bootImageAddress + coreInfo.bootImageSize;
 
     // Prepare early page tables
     Arch::MemoryMap mem;
@@ -65,10 +64,8 @@ extern C int kernel_main(void)
     // Clear BSS
     clearBSS();
 
-    // Initialize heap at the end of the kernel (and after embedded boot image)
-    coreInfo.heapAddress = (Address) &__heap_start;
-    coreInfo.heapSize    = (Size) ((Address) &__heap_end - (Address)&__heap_start);
-    Kernel::heap(coreInfo.heapAddress, coreInfo.heapSize);
+    // Initialize heap
+    Kernel::initializeHeap();
 
     // Run all constructors first
     constructors();

@@ -29,7 +29,7 @@
 #include <Memory.h>
 #include "SunxiKernel.h"
 
-extern Address __bootimg, __heap_start, __heap_end;
+extern Address __start, __end, __bootimg;
 
 static u32 ALIGN(16 * 1024) SECTION(".data") tmpPageDir[4096];
 
@@ -48,19 +48,19 @@ extern C int kernel_main(void)
         cache.invalidate(Cache::Unified);
     }
 
-    // Setup memory map with kernel base physical memory address
+    // Setup memory map with the memory base physical memory address
     Arch::MemoryMap mem;
-    Address kernelBaseAddr = RAM_ADDR;
+    Address memoryBaseAddr = RAM_ADDR;
 
     if (read_core_id() != 0) {
         CoreInfo tmpInfo;
         MemoryBlock::copy((void *)&tmpInfo,
             (void *)SunxiCoreServer::SecondaryCoreInfoAddress, sizeof(coreInfo));
-        kernelBaseAddr = tmpInfo.kernel.phys;
+        memoryBaseAddr = tmpInfo.memory.phys;
     }
 
     // Prepare early page tables and re-map the temporary stack
-    ARMPaging paging(&mem, (Address) &tmpPageDir, kernelBaseAddr);
+    ARMPaging paging(&mem, (Address) &tmpPageDir, memoryBaseAddr);
 
     // Activate MMU
     paging.activate(true);
@@ -72,11 +72,10 @@ extern C int kernel_main(void)
         MemoryBlock::set(&coreInfo, 0, sizeof(CoreInfo));
         coreInfo.bootImageAddress = (Address) (bootimage);
         coreInfo.bootImageSize    = bootimage->bootImageSize;
-        coreInfo.kernel.phys      = RAM_ADDR;
-        coreInfo.kernel.size      = MegaByte(4);
+        coreInfo.kernel.phys      = (Address) &__start;
+        coreInfo.kernel.size      = ((Address) &__end - (Address) &__start);
         coreInfo.memory.phys      = RAM_ADDR;
         coreInfo.memory.size      = RAM_SIZE;
-        coreInfo.coreChannelAddress = coreInfo.bootImageAddress + coreInfo.bootImageSize;
     }
     // Copy CoreInfo prepared by the CoreServer
     else
@@ -89,9 +88,7 @@ extern C int kernel_main(void)
     clearBSS();
 
     // Initialize heap
-    coreInfo.heapAddress = (Address) &__heap_start;
-    coreInfo.heapSize    = (Size) ((Address) &__heap_end - (Address)&__heap_start);
-    Kernel::heap(coreInfo.heapAddress, coreInfo.heapSize);
+    Kernel::initializeHeap();
 
     // Run all constructors first
     constructors();
