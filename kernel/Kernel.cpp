@@ -55,6 +55,20 @@ Kernel::Kernel(CoreInfo *info)
     m_intControl = ZERO;
     m_timer      = ZERO;
 
+    // Print memory map
+    NOTICE("kernel @ " << (void *) info->kernel.phys << ".." <<
+                          (void *) (info->kernel.phys + info->kernel.size));
+    NOTICE("bootImage @ " << (void *) info->bootImageAddress << ".." <<
+                             (void *) (info->bootImageAddress + info->bootImageSize));
+    NOTICE("heap @ " << (void *) (m_alloc->toPhysical(info->heapAddress)) << ".." <<
+                        (void *) (m_alloc->toPhysical(info->heapAddress + info->heapSize)));
+
+    if (info->coreChannelSize)
+    {
+        NOTICE("coreChannel @ " << (void *) info->coreChannelAddress << ".." <<
+                                   (void *) (info->coreChannelAddress + info->coreChannelSize - 1));
+    }
+
     // Verify coreInfo memory ranges
     assert(info->kernel.phys >= info->memory.phys);
     assert(m_alloc->toPhysical(m_coreInfo->heapAddress) >= info->kernel.phys + info->kernel.size);
