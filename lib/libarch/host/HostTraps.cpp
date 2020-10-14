@@ -122,10 +122,24 @@ static API::Result hostVMCtlHandler(ProcessID procID,
 {
     switch (op)
     {
+        case UnMap:
+        {
+            return API::Success;
+        }
+
+        case LookupVirtual:
+        {
+            range->phys = range->virt;
+            return API::Success;
+        }
+
         case MapContiguous:
         {
-            if (procID != SELF)
-                return API::Success;
+            if (range->virt == ZERO)
+            {
+                range->virt = range->phys;
+            }
+            return API::Success;
         }
 
         default:
