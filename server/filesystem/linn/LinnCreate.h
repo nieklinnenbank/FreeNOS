@@ -210,13 +210,13 @@ class LinnCreate
      * Inserts an indirect block address.
      *
      * @param ptr Buffer containing block addresses.
-     * @param blockNumber Block index number to insert in
-     *                    the buffer, minus LINN_INODE_DIR_BLOCKS
-     * @param blockValue The block address to insert indirectly.
+     * @param blockIndexNumber Block index number to insert in
+     *                         the buffer, minus LINN_INODE_DIR_BLOCKS
      * @param depth Level of indirection.
+     *
+     * @return Newly allocated block address
      */
-    void insertIndirect(le32 *ptr, le32 blockNumber,
-                        le32 blockValue, Size depth);
+    le32 insertIndirect(le32 *ptr, const le32 blockIndexNumber, const Size depth);
 
     /**
      * Writes the final image to disk.

@@ -142,8 +142,7 @@ le32 LinnCreate::createInode(char *inputFile, struct stat *st)
     return in;
 }
 
-void LinnCreate::insertIndirect(le32 *ptr, le32 blockNumber,
-                                le32 blockValue, Size depth)
+le32 LinnCreate::insertIndirect(le32 *ptr, const le32 blockIndexNumber, const Size depth)
 {
     Size remain = 1;
 
@@ -165,13 +164,15 @@ void LinnCreate::insertIndirect(le32 *ptr, le32 blockNumber,
     // More indirection?
     if (remain == 1)
     {
-        ptr[blockNumber % LINN_SUPER_NUM_PTRS(super)] = blockValue;
+        const le32 blockValue = BLOCK(super);
+        ptr[blockIndexNumber % LINN_SUPER_NUM_PTRS(super)] = blockValue;
+        return blockValue;
     }
     // Traverse indirection
     else
     {
-        insertIndirect(&ptr[blockNumber / remain],
-                        blockNumber, blockValue, depth - 1);
+        return insertIndirect(&ptr[blockIndexNumber / remain],
+                               blockIndexNumber, depth - 1);
     }
 }
 
@@ -190,44 +191,31 @@ void LinnCreate::insertFile(char *inputFile, LinnInode *inode,
     }
 
     // Read blocks from the file
-    while (true)
+    while (inode->size < st->st_size)
     {
-        // Grab a block
-        blockNr = BLOCK(super);
-
-        // Read a block
-        if ((bytes = read(fd, BLOCKPTR(u8, blockNr), super->blockSize)) < 0)
-        {
-            printf("%s: failed to read() `%s': %s\n",
-                    prog, inputFile, strerror(errno));
-            exit(EXIT_FAILURE);
-        }
-
-        // End of file?
-        if (!bytes) break;
-
         // Insert the block (direct)
         if (LINN_INODE_NUM_BLOCKS(super, inode) <
             LINN_INODE_DIR_BLOCKS)
         {
+            blockNr = BLOCK(super);
             inode->block[LINN_INODE_NUM_BLOCKS(super,inode)] = blockNr;
         }
         // Insert the block (indirect)
         else if (LINN_INODE_NUM_BLOCKS(super, inode) <
                  LINN_INODE_DIR_BLOCKS + LINN_SUPER_NUM_PTRS(super))
         {
-            insertIndirect(&inode->block[LINN_INODE_IND_BLOCKS-1],
-                            LINN_INODE_NUM_BLOCKS(super, inode) -
-                            LINN_INODE_DIR_BLOCKS, blockNr, 1);
+            blockNr = insertIndirect(&inode->block[LINN_INODE_IND_BLOCKS-1],
+                                      LINN_INODE_NUM_BLOCKS(super, inode) -
+                                      LINN_INODE_DIR_BLOCKS, 1);
         }
         // Insert the block (double indirect)
         else if (LINN_INODE_NUM_BLOCKS(super, inode) <
                  LINN_INODE_DIR_BLOCKS + (LINN_SUPER_NUM_PTRS(super) *
                                           LINN_SUPER_NUM_PTRS(super)))
         {
-            insertIndirect(&inode->block[LINN_INODE_DIND_BLOCKS-1],
-                            LINN_INODE_NUM_BLOCKS(super, inode) -
-                            LINN_INODE_DIR_BLOCKS, blockNr, 2);
+            blockNr = insertIndirect(&inode->block[LINN_INODE_DIND_BLOCKS-1],
+                                      LINN_INODE_NUM_BLOCKS(super, inode) -
+                                      LINN_INODE_DIR_BLOCKS, 2);
         }
         // Insert the blck (triple indirect)
         else if (LINN_INODE_NUM_BLOCKS(super, inode) <
@@ -235,9 +223,9 @@ void LinnCreate::insertFile(char *inputFile, LinnInode *inode,
                                           LINN_SUPER_NUM_PTRS(super) *
                                           LINN_SUPER_NUM_PTRS(super)))
         {
-            insertIndirect(&inode->block[LINN_INODE_TIND_BLOCKS-1],
-                            LINN_INODE_NUM_BLOCKS(super, inode) -
-                            LINN_INODE_DIR_BLOCKS, blockNr, 3);
+            blockNr = insertIndirect(&inode->block[LINN_INODE_TIND_BLOCKS-1],
+                                      LINN_INODE_NUM_BLOCKS(super, inode) -
+                                      LINN_INODE_DIR_BLOCKS, 3);
         }
         // Maximum file capacity reached
         else
@@ -246,6 +234,15 @@ void LinnCreate::insertFile(char *inputFile, LinnInode *inode,
                     prog, inputFile);
             break;
         }
+
+        // Read block contents
+        if ((bytes = read(fd, BLOCKPTR(u8, blockNr), super->blockSize)) < 0)
+        {
+            printf("%s: failed to read() `%s': %s\n",
+                    prog, inputFile, strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+
         // Increment size appropriately
         inode->size += bytes;
     }
