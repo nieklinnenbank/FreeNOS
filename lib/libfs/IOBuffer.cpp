@@ -111,6 +111,12 @@ Size IOBuffer::getCount() const
     return m_count;
 }
 
+void IOBuffer::addCount(const Size bytes)
+{
+    m_count += bytes;
+    assert(m_count <= m_size);
+}
+
 const FileSystemMessage * IOBuffer::getMessage() const
 {
     return m_message;

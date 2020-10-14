@@ -35,12 +35,10 @@ FileSystem::Error LinnFile::read(IOBuffer & buffer, Size size, Size offset)
     LinnSuperBlock *sb;
     Size bytes = 0, blockNr = 0;
     u64 storageOffset, copyOffset = offset;
-    static u8 block[LINN_MAX_BLOCK_SIZE];
     Size total = 0;
-    FileSystem::Error e;
 
     // Initialize variables.
-    sb     = fs->getSuperBlock();
+    sb = fs->getSuperBlock();
     assert(sb->blockSize <= LINN_MAX_BLOCK_SIZE);
 
     // Skip ahead blocks.
@@ -58,12 +56,6 @@ FileSystem::Error LinnFile::read(IOBuffer & buffer, Size size, Size offset)
         // Calculate the offset in storage for this block.
         storageOffset = fs->getOffset(inode, blockNr);
 
-        // Fetch the next block.
-        if (fs->getStorage()->read(storageOffset, block, sb->blockSize) != FileSystem::Success)
-        {
-            return FileSystem::IOError;
-        }
-
         // Calculate the number of bytes to copy.
         bytes = sb->blockSize - copyOffset;
 
@@ -79,11 +71,12 @@ FileSystem::Error LinnFile::read(IOBuffer & buffer, Size size, Size offset)
             bytes = size - total;
         }
 
-        // Copy into the buffer.
-        if ((e = buffer.write(block + copyOffset, bytes, total)) < 0)
+        // Fetch the next block.
+        if (fs->getStorage()->read(storageOffset + copyOffset, buffer.getBuffer() + total, bytes) != FileSystem::Success)
         {
-            return e;
+            return FileSystem::IOError;
         }
+        buffer.addCount(bytes);
 
         // Update state.
         total      += bytes;

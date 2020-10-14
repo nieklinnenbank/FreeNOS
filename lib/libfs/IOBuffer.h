@@ -63,6 +63,13 @@ class IOBuffer
     Size getCount() const;
 
     /**
+     * Increment byte counter
+     *
+     * @param bytes Number of bytes to increment
+     */
+    void addCount(const Size bytes);
+
+    /**
      * Set filesystem message
      *
      * @param msg FileSystemMessage pointer
