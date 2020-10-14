@@ -20,6 +20,7 @@
 
 #include <Types.h>
 #include <Macros.h>
+#include <Memory.h>
 #include "FileSystemMessage.h"
 
 /**
@@ -80,7 +81,7 @@ class IOBuffer
      *
      * @return Buffer pointer.
      */
-    const u8 * getBuffer() const;
+    u8 * getBuffer();
 
     /**
      * @brief Read bytes from the I/O buffer.
@@ -91,7 +92,9 @@ class IOBuffer
      *
      * @return Number of bytes read on success, and error code on failure.
      */
-    FileSystem::Error read(void *buffer, Size size, Size offset = ZERO) const;
+    FileSystem::Error read(void *buffer,
+                           const Size size,
+                           const Size offset = ZERO);
 
     /**
      * Write bytes to the I/O buffer.
@@ -102,7 +105,9 @@ class IOBuffer
      *
      * @return Number of bytes written on success, and error code on failure.
      */
-    FileSystem::Error write(void *buffer, Size size, Size offset = ZERO) const;
+    FileSystem::Error write(const void *buffer,
+                            const Size size,
+                            const Size offset = ZERO);
 
     /**
      * Buffered read bytes from message to the I/O buffer.
@@ -120,14 +125,14 @@ class IOBuffer
      *
      * @return Number of bytes written on success, and error code on failure.
      */
-    FileSystem::Error bufferedWrite(const void *buffer, Size size);
+    FileSystem::Error bufferedWrite(const void *buffer, const Size size);
 
     /**
      * Flush write buffers.
      *
      * @return Error code.
      */
-    FileSystem::Error flush() const;
+    FileSystem::Error flushWrite();
 
     /**
      * Byte index operator.
@@ -151,6 +156,12 @@ class IOBuffer
      * @see IOBuffer::write
      */
     const FileSystemMessage *m_message;
+
+    /** True if using directly memory-mapped memory (unbuffered) */
+    bool m_directMapped;
+
+    /** Contains the memory address range of the direct memory mapping */
+    Memory::Range m_directMapRange;
 
     /** Buffer for storing temporary data. */
     u8 *m_buffer;

@@ -290,7 +290,9 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
                 msg->result = FileSystem::Success;
 
                 if (req.getBuffer().getCount())
-                    req.getBuffer().flush();
+                {
+                    req.getBuffer().flushWrite();
+                }
             }
             else if (ret == FileSystem::RetryAgain)
             {
@@ -306,7 +308,9 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
 
         case FileSystem::WriteFile: {
             if (!req.getBuffer().getCount())
+            {
                 req.getBuffer().bufferedRead();
+            }
 
             if ((ret = file->write(req.getBuffer(), msg->size, msg->offset)) >= 0)
             {
