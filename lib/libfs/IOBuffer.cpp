@@ -17,6 +17,7 @@
 
 #include <FreeNOS/User.h>
 #include <Assert.h>
+#include <MemoryBlock.h>
 #include <CoreInfo.h>
 #include "IOBuffer.h"
 
@@ -135,13 +136,12 @@ FileSystem::Error IOBuffer::bufferedRead()
 
 FileSystem::Error IOBuffer::bufferedWrite(const void *buffer, const Size size)
 {
-    Size i = 0;
+    const Size num = m_count + size < m_size ? size : m_size - m_count;
 
-    for (i = 0; i < size && m_count < m_size; i++)
-    {
-        m_buffer[m_count++] = ((u8 *)buffer)[i];
-    }
-    return i;
+    MemoryBlock::copy(m_buffer + m_count, buffer, num);
+    m_count += num;
+
+    return num;
 }
 
 FileSystem::Error IOBuffer::read(void *buffer, const Size size, const Size offset)
