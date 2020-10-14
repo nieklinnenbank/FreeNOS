@@ -92,12 +92,7 @@ FileSystem::Error Terminal::initialize()
     teken_set_winsize(&state, &winsz);
 
     // Print banners
-    FileSystemMessage msg;
-    msg.type = ChannelMessage::Request;
-    msg.size = 512;
-    IOBuffer io(&msg);
-    io.bufferedWrite((void *)(BANNER COPYRIGHT "\r\n"), strlen(BANNER)+strlen(COPYRIGHT)+2);
-    write(io, io.getCount(), 0);
+    writeTerminal((const u8 *)(BANNER COPYRIGHT "\r\n"), strlen(BANNER)+strlen(COPYRIGHT)+2);
 
     // Done
     return FileSystem::Success;
@@ -154,6 +149,11 @@ FileSystem::Error Terminal::read(IOBuffer & buffer, Size size, Size offset)
 
 Error Terminal::write(IOBuffer & buffer, Size size, Size offset)
 {
+    return writeTerminal(buffer.getBuffer(), size);
+}
+
+FileSystem::Error Terminal::writeTerminal(const u8 *bytes, const Size size)
+{
     char cr = '\r', ch;
 
     // Initialize buffer with the current screen first
@@ -164,11 +164,11 @@ Error Terminal::write(IOBuffer & buffer, Size size, Size offset)
     // whenever a linefeed is detected.
     for (Size i = 0; i < size; i++)
     {
-        if (buffer[i] == '\n')
+        if (bytes[i] == '\n')
         {
             teken_input(&state, &cr, 1);
         }
-        ch = buffer[i];
+        ch = bytes[i];
         teken_input(&state, &ch, 1);
     }
 

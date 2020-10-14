@@ -152,6 +152,18 @@ class Terminal : public Device
 
   private:
 
+    /**
+     * Write bytes to the output device
+     *
+     * @param bytes Input bytes
+     * @param size Number of input bytes
+     *
+     * @return Number of bytes written or error code on failure.
+     */
+    FileSystem::Error writeTerminal(const u8 *bytes, const Size size);
+
+  private:
+
     /** Terminal state. */
     teken_t state;
 
