@@ -143,12 +143,16 @@ class LinnFileSystem : public FileSystemServer
      *
      * @param inode LinnInode pointer.
      * @param blk Calculate the offset for this block.
+     * @param numContiguous Number of contiguous blocks inside the same Inode
+     *                      starting at the given offset.
      *
      * @return Offset in bytes in storage.
      *
      * @see LinnInode
      */
-    u64 getOffset(LinnInode *inode, u32 blk);
+    u64 getOffsetRange(const LinnInode *inode,
+                       const u32 blk,
+                       Size & numContiguous);
 
   private:
 

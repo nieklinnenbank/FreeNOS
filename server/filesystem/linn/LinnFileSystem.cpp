@@ -129,18 +129,33 @@ LinnGroup * LinnFileSystem::getGroupByInode(u32 inodeNum)
     return getGroup(inodeNum ? inodeNum / super.inodesPerGroup : 0);
 }
 
-u64 LinnFileSystem::getOffset(LinnInode *inode, u32 blk)
+u64 LinnFileSystem::getOffsetRange(const LinnInode *inode,
+                                   const u32 blk,
+                                   Size & numContiguous)
 {
-    u64 numPerBlock = LINN_SUPER_NUM_PTRS(&super), offset;
     static u32 block[LINN_MAX_BLOCK_SIZE / sizeof(u32)];
+    const u64 numPerBlock = LINN_SUPER_NUM_PTRS(&super);
+    const Size numBlocks = LINN_INODE_NUM_BLOCKS(&super, inode);
     Size depth = ZERO, remain = 1;
+    u64 offset;
 
     assert(LINN_SUPER_NUM_PTRS(&super) <= sizeof(block) / sizeof(u32));
 
     // Direct blocks.
     if (blk < LINN_INODE_DIR_BLOCKS)
     {
-        return inode->block[blk] * super.blockSize;
+        const u32 offsetBlock = inode->block[blk];
+        numContiguous = 1;
+
+        for (Size i = blk + 1; i < numBlocks && i < LINN_INODE_DIR_BLOCKS; i++)
+        {
+            if (inode->block[i] == offsetBlock + numContiguous)
+                numContiguous++;
+            else
+                break;
+        }
+
+        return offsetBlock * super.blockSize;
     }
     // Indirect blocks.
     if (blk - LINN_INODE_DIR_BLOCKS < numPerBlock)
@@ -154,9 +169,11 @@ u64 LinnFileSystem::getOffset(LinnInode *inode, u32 blk)
     }
     // Triple indirect blocks.
     else
+    {
         depth = 3;
+    }
 
-    // Allocate temporary block.
+    // Prepare read offset for the lookup
     offset  = inode->block[(LINN_INODE_DIR_BLOCKS + depth - 1)];
     offset *= super.blockSize;
 
@@ -184,13 +201,23 @@ u64 LinnFileSystem::getOffset(LinnInode *inode, u32 blk)
         remain  = 1;
         depth--;
     }
+
     // Calculate the final offset.
-    offset  = block[ (blk - LINN_INODE_DIR_BLOCKS) %
-                      LINN_SUPER_NUM_PTRS(&super) ];
-    offset *= super.blockSize;
+    const u32 offsetBlock = block[(blk - LINN_INODE_DIR_BLOCKS) % numPerBlock];
+
+    // Calculate number of contiguous blocks following this block
+    numContiguous = 1;
+
+    for (Size i = blk + 1; i < numBlocks && (i % numPerBlock) != 0; i++)
+    {
+        if (block[(i - LINN_INODE_DIR_BLOCKS) % numPerBlock] == offsetBlock + numContiguous)
+            numContiguous++;
+        else
+            break;
+    }
 
     // All done.
-    return offset;
+    return offsetBlock * super.blockSize;
 }
 
 void LinnFileSystem::notSupportedHandler(FileSystemMessage *msg)
