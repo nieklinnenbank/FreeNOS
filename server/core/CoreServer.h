@@ -142,11 +142,18 @@ class CoreServer : public ChannelServer<CoreServer, CoreMessage>
     Core::Result prepareCoreInfo();
 
     /**
-     * Load operating system kernel
+     * Load operating system kernel program
      *
      * @return Result code
      */
     Core::Result loadKernel();
+
+    /**
+     * Unload operating system kernel program
+     *
+     * @return Result code
+     */
+    Core::Result unloadKernel();
 
     /**
      * Boot all processor cores
@@ -235,7 +242,7 @@ class CoreServer : public ChannelServer<CoreServer, CoreMessage>
   private:
 
     ExecutableFormat *m_kernel;
-    u8 *m_kernelImage;
+    Memory::Range m_kernelImage;
 
     ExecutableFormat::Region m_regions[16];
 

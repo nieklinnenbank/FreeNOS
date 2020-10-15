@@ -32,7 +32,7 @@ CoreServer::CoreServer()
 {
     m_numRegions = 0;
     m_kernel = ZERO;
-    m_kernelImage = ZERO;
+    MemoryBlock::set(&m_kernelImage, 0, sizeof(m_kernelImage));
     m_coreInfo = ZERO;
 
     m_cores = ZERO;
@@ -273,7 +273,7 @@ CoreServer::Result CoreServer::initialize()
 
     if (loadKernel() != Core::Success)
     {
-        ERROR("failed to load kernel");
+        ERROR("failed to load kernel program");
         return IOError;
     }
 
@@ -301,6 +301,12 @@ CoreServer::Result CoreServer::initialize()
         return IOError;
     }
 
+    if (unloadKernel() != Core::Success)
+    {
+        ERROR("failed to unload kernel program");
+        return IOError;
+    }
+
     return Success;
 }
 
@@ -319,6 +325,21 @@ Core::Result CoreServer::loadKernel()
         return Core::IOError;
     }
 
+    // Map memory buffer for the program image
+    m_kernelImage.virt   = ZERO;
+    m_kernelImage.phys   = ZERO;
+    m_kernelImage.size   = st.st_size;
+    m_kernelImage.access = Memory::User|Memory::Readable|Memory::Writable;
+
+    // Allocate memory buffer
+    const API::Result mapResult = VMCtl(SELF, MapContiguous, &m_kernelImage);
+    if (mapResult != API::Success)
+    {
+        ERROR("failed to allocate kernel image with VMCtl: result = " << (int) mapResult);
+        return Core::IOError;
+    }
+
+    // Open the file
     if ((fd = open(kernelPath, O_RDONLY)) < 0)
     {
         ERROR("failed to open() kernel on path: " << kernelPath <<
@@ -326,8 +347,8 @@ Core::Result CoreServer::loadKernel()
         return Core::IOError;
     }
 
-    m_kernelImage = new u8[st.st_size];
-    if ((r = read(fd, m_kernelImage, st.st_size)) != st.st_size)
+    // Read the file
+    if ((r = read(fd, (void *)m_kernelImage.virt, st.st_size)) != st.st_size)
     {
         ERROR("failed to read() kernel on path: " << kernelPath <<
               ": result " << r);
@@ -336,7 +357,7 @@ Core::Result CoreServer::loadKernel()
     close(fd);
 
     // Attempt to read executable format
-    ExecutableFormat::Result result = ExecutableFormat::find(m_kernelImage, st.st_size, &m_kernel);
+    ExecutableFormat::Result result = ExecutableFormat::find((const u8 *)m_kernelImage.virt, st.st_size, &m_kernel);
     if (result != ExecutableFormat::Success)
     {
         ERROR("failed to find ExecutableFormat of kernel on path: " << kernelPath <<
@@ -356,6 +377,21 @@ Core::Result CoreServer::loadKernel()
     }
 
     DEBUG("kernel loaded");
+    return Core::Success;
+}
+
+Core::Result CoreServer::unloadKernel()
+{
+    // Cleanup program buffer
+    const API::Result r = VMCtl(SELF, Release, &m_kernelImage);
+    if (r != API::Success)
+    {
+        ERROR("failed to deallocate kernel image with VMCtl: result = " << (int) r);
+        return Core::IOError;
+    }
+
+    MemoryBlock::set(&m_kernelImage, 0, sizeof(m_kernelImage));
+    MemoryBlock::set(&m_regions, 0, sizeof(m_regions));
     return Core::Success;
 }
 
@@ -401,7 +437,7 @@ Core::Result CoreServer::prepareCore(uint coreId, CoreInfo *info,
 #pragma GCC diagnostic ignored "-Wsign-compare"
 
         // Copy the kernel to the target core's memory
-        r = VMCopy(SELF, API::Write, ((Address) m_kernelImage) + regions[i].dataOffset,
+        r = VMCopy(SELF, API::Write, m_kernelImage.virt + regions[i].dataOffset,
                    range.virt, regions[i].dataSize);
         if ((Size)r != regions[i].dataSize)
         {
