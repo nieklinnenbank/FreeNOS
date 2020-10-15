@@ -105,6 +105,16 @@ API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *ra
             }
             break;
 
+        case ReleaseSections:
+            memResult = mem->releaseSection(*range);
+            if (memResult != MemoryContext::Success)
+            {
+                ERROR("failed to release sections at virtual address " << (void *)range->virt <<
+                      ": " << (int) memResult);
+                return API::IOError;
+            }
+            break;
+
         case CacheClean: {
             Arch::Cache cache;
             cache.cleanData(range->virt);

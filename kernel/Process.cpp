@@ -47,12 +47,12 @@ Process::~Process()
 
     if (m_memoryContext)
     {
-        m_memoryContext->releaseRegion(MemoryMap::UserData);
-        m_memoryContext->releaseRegion(MemoryMap::UserHeap);
-        m_memoryContext->releaseRegion(MemoryMap::UserStack);
-        m_memoryContext->releaseRegion(MemoryMap::UserPrivate);
-        m_memoryContext->releaseRegion(MemoryMap::UserArgs);
-        m_memoryContext->releaseRegion(MemoryMap::UserShare, true);
+        m_memoryContext->releaseSection(m_map.range(MemoryMap::UserData));
+        m_memoryContext->releaseSection(m_map.range(MemoryMap::UserHeap));
+        m_memoryContext->releaseSection(m_map.range(MemoryMap::UserStack));
+        m_memoryContext->releaseSection(m_map.range(MemoryMap::UserPrivate));
+        m_memoryContext->releaseSection(m_map.range(MemoryMap::UserArgs));
+        m_memoryContext->releaseSection(m_map.range(MemoryMap::UserShare), true);
         delete m_memoryContext;
     }
 }

@@ -171,19 +171,22 @@ class MemoryContext
      *
      * @return Result code
      */
-    virtual Result releaseRange(Memory::Range *range, bool tablesOnly = false) = 0;
+    virtual Result releaseRange(Memory::Range *range) = 0;
 
     /**
-     * Release memory region.
+     * Release memory sections.
      *
      * Deallocate all associated physical memory
-     * which resides in the given memory region.
+     * which resides in the given memory section range.
      *
-     * @param region Memory region to release
+     * @param range Range of memory sections to release
+     * @param tablesOnly True to only release associated page tables
+     *                   and do not release the actual mapped pages
      *
      * @return Result code
      */
-    virtual Result releaseRegion(MemoryMap::Region region, bool tablesOnly = false) = 0;
+    virtual Result releaseSection(const Memory::Range & range,
+                                  const bool tablesOnly = false) = 0;
 
     /**
      * Find unused memory.

@@ -38,6 +38,7 @@ typedef enum MemoryOperation
     MapSparse,
     UnMap,
     Release,
+    ReleaseSections,
     LookupVirtual,
     Access,
     ReserveMem,

@@ -119,12 +119,13 @@ MemoryContext::Result IntelPaging::access(Address virt, Memory::Access *access) 
     return m_pageDirectory->access(virt, access, m_alloc);
 }
 
-MemoryContext::Result IntelPaging::releaseRegion(MemoryMap::Region region, bool tablesOnly)
+MemoryContext::Result IntelPaging::releaseSection(const Memory::Range & range,
+                                                  const bool tablesOnly)
 {
-    return m_pageDirectory->releaseRange(m_map->range(region), m_alloc, tablesOnly);
+    return m_pageDirectory->releaseSection(range, m_alloc, tablesOnly);
 }
 
-MemoryContext::Result IntelPaging::releaseRange(Memory::Range *range, bool tablesOnly)
+MemoryContext::Result IntelPaging::releaseRange(Memory::Range *range)
 {
-    return m_pageDirectory->releaseRange(*range, m_alloc, tablesOnly);
+    return m_pageDirectory->releaseRange(*range, m_alloc);
 }

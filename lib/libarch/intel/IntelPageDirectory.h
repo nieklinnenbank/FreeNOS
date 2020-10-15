@@ -105,19 +105,39 @@ class IntelPageDirectory
                                  SplitAllocator *alloc) const;
 
     /**
-     * Release range of memory.
+     * Release memory sections.
      *
-     * @param range Memory range input
+     * @param range Memory range of the sections to release
      * @param alloc Memory allocator to release memory from
      * @param tablesOnly Set to true to only release page tables and not mapped pages.
      *
      * @return Result code.
      */
-    MemoryContext::Result releaseRange(Memory::Range range,
-                                       SplitAllocator *alloc,
-                                       bool tablesOnly);
+    MemoryContext::Result releaseSection(const Memory::Range range,
+                                         SplitAllocator *alloc,
+                                         const bool tablesOnly);
+
+    /**
+     * Release range of memory.
+     *
+     * @param range Memory range input
+     * @param alloc Memory allocator to release memory from
+     *
+     * @return Result code.
+     */
+    MemoryContext::Result releaseRange(const Memory::Range range,
+                                       SplitAllocator *alloc);
 
   private:
+
+    /**
+     * Release a single physical page
+     *
+     * @param alloc Memory allocator to release memory from
+     * @param phys Physical address to release
+     */
+    inline void releasePhysical(SplitAllocator *alloc,
+                                const Address phys);
 
     /**
      * Retrieve second level page table

@@ -119,24 +119,28 @@ class ARMPaging : public MemoryContext
     virtual Result access(Address addr, Memory::Access *access) const;
 
     /**
-     * Release region of memory.
+     * Release memory sections.
      *
-     * @param region Memory region input
-     * @param tablesOnly Set to true to only release page tables and not mapped pages.
+     * Deallocate all associated physical memory
+     * which resides in the given memory section range.
      *
-     * @return Result code.
+     * @param range Range of memory sections to release
+     * @param tablesOnly True to only release associated page tables
+     *                   and do not release the actual mapped pages
+     *
+     * @return Result code
      */
-    virtual Result releaseRegion(MemoryMap::Region region, bool tablesOnly);
+    virtual Result releaseSection(const Memory::Range & range,
+                                  const bool tablesOnly = false);
 
     /**
      * Release range of memory.
      *
      * @param range Memory range input
-     * @param tablesOnly Set to true to only release page tables and not mapped pages.
      *
      * @return Result code.
      */
-    virtual Result releaseRange(Memory::Range *range, bool tablesOnly);
+    virtual Result releaseRange(Memory::Range *range);
 
   private:
 

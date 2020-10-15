@@ -189,7 +189,7 @@ bool RecoveryServer::cleanupProgram(const ProcessID pid) const
     DEBUG("pid = " << pid);
 
     range = map.range(MemoryMap::UserData);
-    const API::Result dataResult = VMCtl(pid, Release, &range);
+    const API::Result dataResult = VMCtl(pid, ReleaseSections, &range);
     if (dataResult != API::Success)
     {
         ERROR("failed to release UserData region in PID " << pid <<
@@ -198,7 +198,7 @@ bool RecoveryServer::cleanupProgram(const ProcessID pid) const
     }
 
     range = map.range(MemoryMap::UserHeap);
-    const API::Result heapResult = VMCtl(pid, Release, &range);
+    const API::Result heapResult = VMCtl(pid, ReleaseSections, &range);
     if (heapResult != API::Success)
     {
         ERROR("failed to release UserHeap region in PID " << pid <<
@@ -207,7 +207,7 @@ bool RecoveryServer::cleanupProgram(const ProcessID pid) const
     }
 
     range = map.range(MemoryMap::UserPrivate);
-    const API::Result privResult = VMCtl(pid, Release, &range);
+    const API::Result privResult = VMCtl(pid, ReleaseSections, &range);
     if (privResult != API::Success)
     {
         ERROR("failed to release UserPrivate region in PID " << pid <<
