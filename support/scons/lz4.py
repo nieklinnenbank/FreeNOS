@@ -23,7 +23,7 @@ import shutil
 # Invoke the LZ4 command-line program to compress
 #
 def lz4_invoke(target, source, blocksize):
-    lz4_cmd = 'lz4 -9 --content-size -B' + str(blocksize) + ' "' + str(source) + '" "' + str(target) + '"'
+    lz4_cmd = 'lz4 -9 -q --content-size -B' + str(blocksize) + ' "' + str(source) + '" "' + str(target) + '"'
     r = os.system(lz4_cmd)
     if r != 0:
         raise Exception("failed to compress `" + str(target) + "': command `" + lz4_cmd + "' failed: exit code " + str(r >> 8))

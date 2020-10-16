@@ -17,6 +17,7 @@
 
 #include <FreeNOS/User.h>
 #include <ExecutableFormat.h>
+#include <Lz4Decompressor.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -314,10 +315,11 @@ Core::Result CoreServer::loadKernel()
 {
     struct stat st;
     int fd, r;
+    API::Result result;
 
     DEBUG("Opening : " << kernelPath);
 
-    // Read the program image
+    // Stat the compressed program image
     if ((r = stat(kernelPath, &st)) != 0)
     {
         ERROR("failed to stat() kernel on path: " << kernelPath <<
@@ -325,17 +327,18 @@ Core::Result CoreServer::loadKernel()
         return Core::IOError;
     }
 
-    // Map memory buffer for the program image
-    m_kernelImage.virt   = ZERO;
-    m_kernelImage.phys   = ZERO;
-    m_kernelImage.size   = st.st_size;
-    m_kernelImage.access = Memory::User|Memory::Readable|Memory::Writable;
+    // Map memory buffer for the compressed program image
+    Memory::Range compressed;
+    compressed.virt   = ZERO;
+    compressed.phys   = ZERO;
+    compressed.size   = st.st_size;
+    compressed.access = Memory::User|Memory::Readable|Memory::Writable;
 
-    // Allocate memory buffer
-    const API::Result mapResult = VMCtl(SELF, MapContiguous, &m_kernelImage);
-    if (mapResult != API::Success)
+    // Allocate compressed memory buffer
+    result = VMCtl(SELF, MapContiguous, &compressed);
+    if (result != API::Success)
     {
-        ERROR("failed to allocate kernel image with VMCtl: result = " << (int) mapResult);
+        ERROR("failed to allocate compressed kernel image with VMCtl: result = " << (int) result);
         return Core::IOError;
     }
 
@@ -348,7 +351,7 @@ Core::Result CoreServer::loadKernel()
     }
 
     // Read the file
-    if ((r = read(fd, (void *)m_kernelImage.virt, st.st_size)) != st.st_size)
+    if ((r = read(fd, (void *) compressed.virt, st.st_size)) != st.st_size)
     {
         ERROR("failed to read() kernel on path: " << kernelPath <<
               ": result " << r);
@@ -356,12 +359,43 @@ Core::Result CoreServer::loadKernel()
     }
     close(fd);
 
+    // Initialize decompressor
+    Lz4Decompressor lz4((void *)compressed.virt, st.st_size);
+    Lz4Decompressor::Result decompResult = lz4.initialize();
+    if (decompResult != Lz4Decompressor::Success)
+    {
+        ERROR("failed to initialize LZ4 decompressor: result = " << (int) decompResult);
+        return Core::IOError;
+    }
+
+    // Map memory buffer for the uncompressed program image
+    m_kernelImage.virt   = ZERO;
+    m_kernelImage.phys   = ZERO;
+    m_kernelImage.size   = lz4.getUncompressedSize();
+    m_kernelImage.access = Memory::User|Memory::Readable|Memory::Writable;
+
+    // Allocate uncompressed memory buffer
+    result = VMCtl(SELF, MapContiguous, &m_kernelImage);
+    if (result != API::Success)
+    {
+        ERROR("failed to allocate kernel image with VMCtl: result = " << (int) result);
+        return Core::IOError;
+    }
+
+    // Decompress the kernel program
+    decompResult = lz4.read((void *)m_kernelImage.virt, lz4.getUncompressedSize());
+    if (decompResult != Lz4Decompressor::Success)
+    {
+        ERROR("failed to decompress kernel image: result = " << (int) decompResult);
+        return Core::IOError;
+    }
+
     // Attempt to read executable format
-    ExecutableFormat::Result result = ExecutableFormat::find((const u8 *)m_kernelImage.virt, st.st_size, &m_kernel);
-    if (result != ExecutableFormat::Success)
+    ExecutableFormat::Result execResult = ExecutableFormat::find((const u8 *)m_kernelImage.virt, st.st_size, &m_kernel);
+    if (execResult != ExecutableFormat::Success)
     {
         ERROR("failed to find ExecutableFormat of kernel on path: " << kernelPath <<
-             ": result " << (int) result);
+             ": result " << (int) execResult);
         return Core::ExecError;
     }
 
@@ -374,6 +408,14 @@ Core::Result CoreServer::loadKernel()
         ERROR("failed to get ExecutableFormat regions of kernel on path: " << kernelPath <<
               ": result " << (int) result);
         return Core::ExecError;
+    }
+
+    // Release compressed kernel image
+    result = VMCtl(SELF, Release, &compressed);
+    if (result != API::Success)
+    {
+        ERROR("failed to release compressed kernel image with VMCtl: result = " << (int) result);
+        return Core::IOError;
     }
 
     DEBUG("kernel loaded");

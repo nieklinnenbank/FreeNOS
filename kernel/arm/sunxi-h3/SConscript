@@ -39,9 +39,11 @@ env.TargetProgram('kernel.empty', [ Glob('*.cpp'),
                    False)
 
 #
-# Place the empty kernel in the rootfs for CoreServer
+# Place the stripped, compressed empty kernel in the rootfs for CoreServer
 #
-env.TargetInstallAs('kernel.empty', '${ROOTFS}/boot/kernel')
+env.Strip('kernel.stripped', 'kernel.empty')
+env.Lz4Compress('kernel.lz4', 'kernel.stripped')
+env.TargetInstallAs('kernel.lz4', '${ROOTFS}/boot/kernel')
 
 #
 # Embed the boot.img in the kernel

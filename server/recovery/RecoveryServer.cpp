@@ -19,6 +19,7 @@
 #include <Log.h>
 #include <FileSystemClient.h>
 #include <ExecutableFormat.h>
+#include <Lz4Decompressor.h>
 #include "RecoveryServer.h"
 
 RecoveryServer::RecoveryServer()
@@ -113,7 +114,6 @@ bool RecoveryServer::reloadProgram(const ProcessID pid,
 {
     const FileSystemClient fs;
     FileSystem::FileStat st;
-    bool result = true;
 
     DEBUG("pid = " << pid << " path = " << path);
 
@@ -125,60 +125,104 @@ bool RecoveryServer::reloadProgram(const ProcessID pid,
         return false;
     }
 
-    // Map memory buffer for the program image
-    Memory::Range range;
-    range.virt   = ZERO;
-    range.phys   = ZERO;
-    range.size   = st.size;
-    range.access = Memory::User|Memory::Readable|Memory::Writable;
+    // Map memory buffer for the compressed program image
+    Memory::Range compressed;
+    compressed.virt   = ZERO;
+    compressed.phys   = ZERO;
+    compressed.size   = st.size;
+    compressed.access = Memory::User|Memory::Readable|Memory::Writable;
 
     // Create memory mapping
-    const API::Result mapResult = VMCtl(SELF, MapContiguous, &range);
+    API::Result mapResult = VMCtl(SELF, MapContiguous, &compressed);
     if (mapResult != API::Success)
     {
-        ERROR("failed to map memory: result = " << (int) mapResult);
+        ERROR("failed to map compressed memory: result = " << (int) mapResult);
         return false;
     }
 
     // Read the program image
     Size num = st.size;
-    const FileSystem::Result readResult = fs.readFile(path, (void *) range.virt, &num, 0);
+    const FileSystem::Result readResult = fs.readFile(path, (void *) compressed.virt, &num, 0);
     if (readResult != FileSystem::Success || num != st.size)
     {
         ERROR("failed to readFile() for " << path <<
               ": result = " << (int) readResult << ", num = " << num);
-        result = false;
+        VMCtl(SELF, Release, &compressed);
+        return false;
     }
 
-    if (result)
+    // Initialize decompressor
+    Lz4Decompressor lz4((const void *) compressed.virt, st.size);
+    Lz4Decompressor::Result lz4Result = lz4.initialize();
+    if (lz4Result != Lz4Decompressor::Success)
     {
-        // Release current memory pages
-        result = cleanupProgram(pid);
-        if (!result)
-        {
-            ERROR("failed to cleanup program data for PID " << pid);
-        }
-        else
-        {
-            // Write to program
-            result = rewriteProgram(pid, range.virt, num);
-            if (!result)
-            {
-                ERROR("failed to reset data for PID " << pid);
-            }
-        }
+        ERROR("failed to initialize LZ4 decompressor: result = " << (int) lz4Result);
+        VMCtl(SELF, Release, &compressed);
+        return false;
     }
 
-    // Cleanup program buffer
-    const API::Result releaseResult = VMCtl(SELF, Release, &range);
+    // Map memory buffer for the uncompressed program image
+    Memory::Range uncompressed;
+    uncompressed.virt   = ZERO;
+    uncompressed.phys   = ZERO;
+    uncompressed.size   = lz4.getUncompressedSize();
+    uncompressed.access = Memory::User|Memory::Readable|Memory::Writable;
+
+    // Create memory mapping
+    mapResult = VMCtl(SELF, MapContiguous, &uncompressed);
+    if (mapResult != API::Success)
+    {
+        ERROR("failed to map uncompressed memory: result = " << (int) mapResult);
+        VMCtl(SELF, Release, &compressed);
+        return false;
+    }
+
+    // Decompress entire file
+    lz4Result = lz4.read((void *)uncompressed.virt, lz4.getUncompressedSize());
+    if (lz4Result != Lz4Decompressor::Success)
+    {
+        ERROR("failed to decompress file: result = " << (int) lz4Result);
+        VMCtl(SELF, Release, &compressed);
+        VMCtl(SELF, Release, &uncompressed);
+        return false;
+    }
+
+    // Release current memory pages
+    if (!cleanupProgram(pid))
+    {
+        ERROR("failed to cleanup program data for PID " << pid);
+        VMCtl(SELF, Release, &compressed);
+        VMCtl(SELF, Release, &uncompressed);
+        return false;
+    }
+
+    // Write to program
+    if (!rewriteProgram(pid, uncompressed.virt, num))
+    {
+        ERROR("failed to reset data for PID " << pid);
+        VMCtl(SELF, Release, &compressed);
+        VMCtl(SELF, Release, &uncompressed);
+        return false;
+    }
+
+    // Cleanup program buffers
+    API::Result releaseResult = VMCtl(SELF, Release, &compressed);
     if (releaseResult != API::Success)
     {
-        DEBUG("failed to unmap memory: result = " << (int) releaseResult);
+        DEBUG("failed to release compressed memory: result = " << (int) releaseResult);
+        VMCtl(SELF, Release, &uncompressed);
+        return false;
+    }
+
+    releaseResult = VMCtl(SELF, Release, &uncompressed);
+    if (releaseResult != API::Success)
+    {
+        DEBUG("failed to release uncompressed memory: result = " << (int) releaseResult);
         return false;
     }
 
     // Success
-    return result;
+    return true;
 }
 
 bool RecoveryServer::cleanupProgram(const ProcessID pid) const
