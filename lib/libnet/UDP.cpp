@@ -111,17 +111,17 @@ Error UDP::sendPacket(NetworkClient::SocketInfo *src, IOBuffer & buffer, Size si
 
     // Fill UDP header
     hdr = (Header *) (pkt->data + pkt->size);
-    hdr->sourcePort = cpu_to_be16(src->port);
-    hdr->destPort   = cpu_to_be16(dest.port);
-    hdr->length     = cpu_to_be16(size - sizeof(dest) + sizeof(Header));
-    hdr->checksum   = 0;
+    writeBe16(&hdr->sourcePort, src->port);
+    writeBe16(&hdr->destPort, dest.port);
+    writeBe16(&hdr->length, size - sizeof(dest) + sizeof(Header));
+    writeBe16(&hdr->checksum, 0);
 
     // Insert payload. The payload is just after the 'dest' struct in the IOBuffer.
     buffer.read(pkt->data + pkt->size + sizeof(Header), size - sizeof(dest), sizeof(dest));
 
     // Calculate final checksum
-    hdr->checksum = checksum((IPV4::Header *)(pkt->data + pkt->size - sizeof(IPV4::Header)),
-                             hdr, size - sizeof(dest));
+    writeBe16(&hdr->checksum, checksum((IPV4::Header *)(pkt->data + pkt->size - sizeof(IPV4::Header)),
+                                        hdr, size - sizeof(dest)));
     DEBUG("checksum = " << (uint) hdr->checksum);
 
     // Increment packet size
@@ -149,12 +149,13 @@ const ulong UDP::calculateSum(const u16 *ptr, Size bytes)
     for (;bytes > 0; bytes -= 2, ptr++)
     {
         if (bytes == 1) {
-            sum += *(u8 *)ptr;
+            sum += read8(ptr);
             break;
         }
         else
-            sum += *ptr;
+            sum += read16(ptr);
     }
+
     return sum;
 }
 
@@ -166,11 +167,11 @@ const u16 UDP::checksum(const IPV4::Header *ip,
     ulong sum = 0;
 
     // Setup a pseudo header
-    phr.reserved    = 0;
-    phr.source      = ip->source;
-    phr.destination = ip->destination;
-    phr.protocol    = IPV4::UDP;
-    phr.length      = cpu_to_be16((sizeof(Header) + datalen));
+    phr.reserved = 0;
+    phr.protocol = IPV4::UDP;
+    write32(&phr.source, ip->source);
+    write32(&phr.destination, ip->destination);
+    writeBe16(&phr.length, sizeof(Header) + datalen);
     DEBUG("ip src = " << phr.source << " dst = " << phr.destination);
 
     // Sum the pseudo header

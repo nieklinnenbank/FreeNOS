@@ -73,13 +73,13 @@ ARP::ARPCache * ARP::insertCacheEntry(IPV4::Address ipAddr)
 }
 
 void ARP::updateCacheEntry(IPV4::Address ipAddr,
-                           Ethernet::Address ethAddr)
+                           const Ethernet::Address *ethAddr)
 {
     ARPCache *entry = getCacheEntry(ipAddr);
     if (entry)
     {
         entry->valid = true;
-        MemoryBlock::copy(&entry->ethAddr, &ethAddr, sizeof(Ethernet::Address));
+        MemoryBlock::copy(&entry->ethAddr, ethAddr, sizeof(Ethernet::Address));
     }
 }
 
@@ -140,11 +140,11 @@ Error ARP::sendRequest(IPV4::Address address)
     pkt->size += sizeof(ARP::Header);
 
     // Fill the ARP packet
-    arp->hardwareType   = cpu_to_be16(ARP::Ethernet);
-    arp->protocolType   = cpu_to_be16(ARP::IPV4);
+    writeBe16(&arp->hardwareType, ARP::Ethernet);
+    writeBe16(&arp->protocolType, ARP::IPV4);
+    writeBe16(&arp->operation, ARP::Request);
     arp->hardwareLength = sizeof(Ethernet::Address);
     arp->protocolLength = sizeof(IPV4::Address);
-    arp->operation      = cpu_to_be16(ARP::Request);
 
     // Get our current IP
     IPV4::Address ipaddr;
@@ -152,9 +152,9 @@ Error ARP::sendRequest(IPV4::Address address)
 
     // Fill source and destinations
     MemoryBlock::copy(&arp->etherSender, &ether->source, sizeof(Ethernet::Address));
-    arp->ipSender = cpu_to_be32(ipaddr);
     MemoryBlock::copy(&arp->etherTarget, &ether->destination, sizeof(Ethernet::Address));
-    arp->ipTarget = cpu_to_be32(address);
+    writeBe32(&arp->ipSender, ipaddr);
+    writeBe32(&arp->ipTarget, address);
 
     // Send the packet using the network device
     return m_device->transmit(pkt);
@@ -186,17 +186,17 @@ Error ARP::sendReply(const Ethernet::Address *ethAddr, const IPV4::Address ipAdd
     DEBUG("eth: source=" << ether->source << " dest=" << ether->destination);
 
     // ARP packet
-    arp->hardwareType   = cpu_to_be16(ARP::Ethernet);
-    arp->protocolType   = cpu_to_be16(ARP::IPV4);
+    writeBe16(&arp->hardwareType, ARP::Ethernet);
+    writeBe16(&arp->protocolType, ARP::IPV4);
+    writeBe16(&arp->operation, ARP::Request);
     arp->hardwareLength = sizeof(Ethernet::Address);
     arp->protocolLength = sizeof(IPV4::Address);
-    arp->operation      = cpu_to_be16(ARP::Reply);
 
     // Fill source and destinations
     MemoryBlock::copy(&arp->etherSender, &ether->source, sizeof(Ethernet::Address));
-    arp->ipSender = cpu_to_be32(myip);
     MemoryBlock::copy(&arp->etherTarget, &ether->destination, sizeof(Ethernet::Address));
-    arp->ipTarget = ipAddr;
+    writeBe32(&arp->ipSender, myip);
+    writeBe32(&arp->ipTarget, ipAddr);
 
     // Send the packet using the network device
     return m_device->transmit(pkt);
@@ -204,35 +204,34 @@ Error ARP::sendReply(const Ethernet::Address *ethAddr, const IPV4::Address ipAdd
 
 Error ARP::process(NetworkQueue::Packet *pkt, Size offset)
 {
-    DEBUG("");
-
     const Ethernet::Header *ether = (Ethernet::Header *) (pkt->data + offset - sizeof(Ethernet::Header));
     const Header *arp = (Header *) (pkt->data + offset);
+    const u16 operation = readBe16(&arp->operation);
+    const u32 ipTarget  = readBe32(&arp->ipTarget);
+    const u32 ipSender  = readBe32(&arp->ipSender);
     IPV4::Address ipAddr;
 
-    if (!m_ip)
-        return EINVAL;
+    DEBUG("");
 
     m_ip->getAddress(&ipAddr);
 
-    switch (be16_to_cpu(arp->operation))
+    switch (operation)
     {
         case Request:
             // Only send reply if the request is for our IP
-            if (be32_to_cpu(arp->ipTarget) == ipAddr)
+            if (ipTarget == ipAddr)
             {
-                updateCacheEntry(be32_to_cpu(arp->ipSender),
-                                 arp->etherSender);
-                return sendReply(&ether->source, arp->ipSender);
+                updateCacheEntry(ipSender, &arp->etherSender);
+                return sendReply(&ether->source, ipSender);
             }
             break;
 
         case Reply: {
-            updateCacheEntry(be32_to_cpu(arp->ipSender),
-                             arp->etherSender);
+            updateCacheEntry(ipSender, &arp->etherSender);
             return m_sock->process(pkt);
         }
     }
+
     // Unknown ARP operation
     return ENOTSUP;
 }

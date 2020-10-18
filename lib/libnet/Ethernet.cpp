@@ -93,7 +93,7 @@ NetworkQueue::Packet * Ethernet::getTransmitPacket(const Ethernet::Address *dest
     Ethernet::Header *ether = (Ethernet::Header *) (pkt->data + pkt->size);
     MemoryBlock::copy(&ether->source, &m_address, sizeof(Address));
     MemoryBlock::copy(&ether->destination, destination, sizeof(Address));
-    ether->type = cpu_to_be16(type);
+    writeBe16(&ether->type, type);
 
     pkt->size += sizeof(Ethernet::Header);
     return pkt;
@@ -101,10 +101,10 @@ NetworkQueue::Packet * Ethernet::getTransmitPacket(const Ethernet::Address *dest
 
 Error Ethernet::process(NetworkQueue::Packet *pkt, Size offset)
 {
-    DEBUG("");
-
     const Ethernet::Header *ether = (Ethernet::Header *) (pkt->data + offset);
-    u16 type = be16_to_cpu(ether->type);
+    const u16 type = readBe16(&ether->type);
+
+    DEBUG("");
 
     switch (type)
     {
@@ -119,7 +119,7 @@ Error Ethernet::process(NetworkQueue::Packet *pkt, Size offset)
             break;
 
         default:
-            DEBUG("dropped unknown ethernet type: " << (int) ether->type);
+            DEBUG("dropped unknown ethernet type: " << (int) type);
             break;
     }
     return EINVAL;

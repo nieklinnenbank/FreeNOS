@@ -208,7 +208,7 @@ class ARP : public NetworkProtocol
      * @param ethAddr Ethernet address for update
      */
     void updateCacheEntry(IPV4::Address ipAddr,
-                          Ethernet::Address ethAddr);
+                          const Ethernet::Address *ethAddr);
 
   private:
 

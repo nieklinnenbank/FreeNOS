@@ -53,7 +53,7 @@ Error ICMP::process(NetworkQueue::Packet *pkt, Size offset)
 {
     IPV4::Header *iphdr = (IPV4::Header *) (pkt->data + offset - sizeof(IPV4::Header));
     Header *hdr = (Header *) (pkt->data + offset);
-    IPV4::Address source = be32_to_cpu(iphdr->source);
+    const IPV4::Address source = readBe32(&iphdr->source);
 
     DEBUG("source = " << (uint)source << " type = " << hdr->type << " code = " << hdr->code << " id = " << hdr->id);
 
@@ -62,8 +62,8 @@ Error ICMP::process(NetworkQueue::Packet *pkt, Size offset)
         case EchoRequest: {
             DEBUG("request");
             hdr->type     = EchoReply;
-            hdr->checksum = 0;
-            hdr->checksum = checksum(hdr);
+            write16(&hdr->checksum, 0);
+            write16(&hdr->checksum, checksum(hdr));
             return sendPacket(source, hdr);
         }
         case EchoReply: {

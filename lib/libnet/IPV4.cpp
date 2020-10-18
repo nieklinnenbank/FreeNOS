@@ -139,13 +139,13 @@ Error IPV4::getTransmitPacket(NetworkQueue::Packet **pkt,
     Header *hdr = (Header *) ((*pkt)->data + (*pkt)->size);
     hdr->versionIHL     = (sizeof(Header) / sizeof(u32)) | (4 << 4);
     hdr->typeOfService  = 0;
-    hdr->length         = cpu_to_be16(size + sizeof(Header));
-    hdr->identification = cpu_to_be16(m_id);
-    hdr->fragmentOffset = cpu_to_be16(0x4000); // dont fragment flag
     hdr->timeToLive     = 64;
     hdr->protocol       = type;
-    hdr->source         = cpu_to_be32(m_address);
-    hdr->destination    = cpu_to_be32(destination);
+    writeBe16(&hdr->length, size + sizeof(Header));
+    writeBe16(&hdr->identification, m_id);
+    writeBe16(&hdr->fragmentOffset, 0x4000); // dont fragment flag
+    writeBe32(&hdr->source, m_address);
+    writeBe32(&hdr->destination, destination);
     hdr->checksum       = 0;
     hdr->checksum       = checksum(hdr, sizeof(Header));
     (*pkt)->size += sizeof(Header);
@@ -163,14 +163,14 @@ const u16 IPV4::checksum(const void *buffer, Size len)
     // Calculate sum of the buffer
     while (len > 1)
     {
-        sum += *ptr;
+        sum += read16(ptr);
         ptr++;
         len -= 2;
     }
 
     // Add left-over byte, if any
     if (len > 0)
-        sum += be16_to_cpu(*((u8 *)ptr) << 8);
+        sum += (readBe16(ptr) << 8);
 
     // Enforce 16-bit checksum
     while (sum >> 16)
@@ -185,8 +185,9 @@ Error IPV4::process(NetworkQueue::Packet *pkt, Size offset)
     DEBUG("");
 
     Header *hdr = (Header *) (pkt->data + offset);
+    const u32 destination = readBe32(&hdr->destination);
 
-    if (be32_to_cpu(hdr->destination) != m_address)
+    if (destination != m_address)
     {
         DEBUG("dropped packet");
         return ERANGE;

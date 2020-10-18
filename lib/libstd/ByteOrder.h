@@ -219,6 +219,106 @@
  */
 
 /**
+ * Read 64-bit integer (no conversion)
+ *
+ * @param data Memory pointer, which can be unaligned.
+ *
+ * @return Unsigned 64-bit integer
+ */
+inline const u64 read64(const void *data)
+{
+    u64 value;
+    MemoryBlock::copy(&value, data, sizeof(value));
+    return value;
+}
+
+/**
+ * Read 32-bit integer (no conversion)
+ *
+ * @param data Memory pointer, which can be unaligned.
+ *
+ * @return Unsigned 32-bit integer
+ */
+inline const u32 read32(const void *data)
+{
+    u32 value;
+    MemoryBlock::copy(&value, data, sizeof(value));
+    return value;
+}
+
+/**
+ * Read 16-bit integer (no conversion)
+ *
+ * @param data Memory pointer, which can be unaligned.
+ *
+ * @return Unsigned 16-bit integer
+ */
+inline const u16 read16(const void *data)
+{
+    u16 value;
+    MemoryBlock::copy(&value, data, sizeof(value));
+    return value;
+}
+
+/**
+ * Read 8-bit integer
+ *
+ * @param data Memory pointer, which can be unaligned.
+ *
+ * @return Unsigned 8-bit integer
+ */
+inline const u8 read8(const void *data)
+{
+    u8 value;
+    MemoryBlock::copy(&value, data, sizeof(value));
+    return value;
+}
+
+/**
+ * Write 64-bit integer (no conversion)
+ *
+ * @param data Memory pointer to write to, which can be unaligned.
+ * @param input Input integer
+ */
+inline void write64(void *data, const u64 input)
+{
+    MemoryBlock::copy(data, &input, sizeof(input));
+}
+
+/**
+ * Write 32-bit integer (no conversion)
+ *
+ * @param data Memory pointer to write to, which can be unaligned.
+ * @param input Input integer
+ */
+inline void write32(void *data, const u32 input)
+{
+    MemoryBlock::copy(data, &input, sizeof(input));
+}
+
+/**
+ * Write 16-bit integer (no conversion)
+ *
+ * @param data Memory pointer to write to, which can be unaligned.
+ * @param input Input integer
+ */
+inline void write16(void *data, const u16 input)
+{
+    MemoryBlock::copy(data, &input, sizeof(input));
+}
+
+/**
+ * Write 8-bit integer
+ *
+ * @param data Memory pointer to write to, which can be unaligned.
+ * @param input Input integer
+ */
+inline void write8(void *data, const u8 input)
+{
+    MemoryBlock::copy(data, &input, sizeof(input));
+}
+
+/**
  * Read 64-bit little endian integer
  *
  * @param data Memory pointer, which can be unaligned.
