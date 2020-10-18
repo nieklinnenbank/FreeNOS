@@ -21,7 +21,6 @@
 #include <FreeNOS/Constant.h>
 #include <Types.h>
 #include <Macros.h>
-#include "Endian.h"
 #include "ARMControl.h"
 
 /**

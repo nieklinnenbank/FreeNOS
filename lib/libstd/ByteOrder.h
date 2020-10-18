@@ -15,36 +15,73 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBARCH_ENDIAN_H
-#define __LIBARCH_ENDIAN_H
+#ifndef __LIB_LIBSTD_BYTEORDER_H
+#define __LIB_LIBSTD_BYTEORDER_H
 
-#include <Macros.h>
-#include <Types.h>
+#include "Types.h"
 
 /**
  * @addtogroup lib
  * @{
  *
- * @addtogroup libarch
+ * @addtogroup libstd
  * @{
  */
 
-#define swab16(x) ((u16)(                                   \
-        (((u16)(x) & (u16)0x00ffU) << 8) |                  \
+#ifndef __BYTE_ORDER__
+#error "__BYTE_ORDER__ not defined"
+#endif /* __BYTE_ORDER__ */
+
+#ifndef __ORDER_LITTLE_ENDIAN__
+#error "__ORDER_LITTLE_ENDIAN__ not defined"
+#endif /* __ORDER_LITTLE_ENDIAN__ */
+
+#if __BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__
+#error "This implementation only supports little-endian targets: define __BYTE_ORDER__ to __ORDER_LITTLE_ENDIAN__"
+#endif
+
+/**
+ * Byte swap a 16-bit integer
+ *
+ * @param x Integer input
+ *
+ * @return Byte-swapped integer value
+ */
+#define SWAP16(x) ((u16)(                   \
+        (((u16)(x) & (u16)0x00ffU) << 8) |  \
         (((u16)(x) & (u16)0xff00U) >> 8)))
 
-#define swab32(x) ((u32)(                                   \
-        (((u32)(x) & (u32)0x000000ffUL) << 24) |            \
-        (((u32)(x) & (u32)0x0000ff00UL) <<  8) |            \
-        (((u32)(x) & (u32)0x00ff0000UL) >>  8) |            \
+/**
+ * Byte swap a 32-bit integer
+ *
+ * @param x Integer input
+ *
+ * @return Byte-swapped integer value
+ */
+
+#define SWAP32(x) ((u32)(                          \
+        (((u32)(x) & (u32)0x000000ffUL) << 24) |   \
+        (((u32)(x) & (u32)0x0000ff00UL) <<  8) |   \
+        (((u32)(x) & (u32)0x00ff0000UL) >>  8) |   \
         (((u32)(x) & (u32)0xff000000UL) >> 24)))
 
-#ifdef CPU_BIG_ENDIAN
+/**
+ * Byte swap a 64-bit integer
+ *
+ * @param x Integer input
+ *
+ * @return Byte-swapped integer value
+ */
 
-#else
-#ifdef CPU_LITTLE_ENDIAN
-
-#define FORCE
+#define SWAP64(x) ((u64)(                          \
+        (((u64)(x) & (u64)0x00000000000000ffUL) << 56) |   \
+        (((u64)(x) & (u64)0x000000000000ff00UL) << 40) |   \
+        (((u64)(x) & (u64)0x0000000000ff0000UL) << 24) |   \
+        (((u64)(x) & (u64)0x00000000ff000000UL) <<  8) |   \
+        (((u64)(x) & (u64)0x000000ff00000000UL) >>  8) |   \
+        (((u64)(x) & (u64)0x0000ff0000000000UL) >> 24) |   \
+        (((u64)(x) & (u64)0x00ff000000000000UL) >> 40) |   \
+        (((u64)(x) & (u64)0xff00000000000000UL) >> 56)))
 
 /**
  * CPU byte order to little endian 64-bit.
@@ -53,7 +90,7 @@
  *
  * @return le64 type integer.
  */
-#define cpu_to_le64(x) ((FORCE le64)(u64)(x))
+#define cpu_to_le64(x) ((le64)(u64)(x))
 
 /**
  * Little endian 64-bit to CPU byte order.
@@ -62,7 +99,7 @@
  *
  * @return CPU byte ordered 64-bit integer.
  */
-#define le64_to_cpu(x) ((FORCE u64)(le64)(x))
+#define le64_to_cpu(x) ((u64)(le64)(x))
 
 /**
  * CPU byte order to little endian 32-bit.
@@ -71,7 +108,7 @@
  *
  * @return le32 type integer.
  */
-#define cpu_to_le32(x) ((FORCE le32)(u32)(x))
+#define cpu_to_le32(x) ((le32)(u32)(x))
 
 /**
  * Little endian 32-bit to CPU byte order.
@@ -80,7 +117,7 @@
  *
  * @return CPU byte ordered 32-bit integer.
  */
-#define le32_to_cpu(x) ((FORCE u32)(le32)(x))
+#define le32_to_cpu(x) ((u32)(le32)(x))
 
 /**
  * CPU byte order to little endian 16-bit.
@@ -89,7 +126,7 @@
  *
  * @return le16 type integer.
  */
-#define cpu_to_le16(x) ((FORCE le16)(u16)(x))
+#define cpu_to_le16(x) ((le16)(u16)(x))
 
 /**
  * Little endian 16-bit to CPU byte order.
@@ -98,7 +135,7 @@
  *
  * @return CPU byte ordered 16-bit integer.
  */
-#define le16_to_cpu(x) ((FORCE u16)(le16)(x))
+#define le16_to_cpu(x) ((u16)(le16)(x))
 
 /**
  * CPU byte order to big endian 64-bit.
@@ -107,7 +144,7 @@
  *
  * @return be64 type integer.
  */
-#define cpu_to_be64(x) ((FORCE be64)swab64((x)))
+#define cpu_to_be64(x) ((be64)SWAP64((x)))
 
 /**
  * Big endian 64-bit to CPU byte order.
@@ -116,7 +153,7 @@
  *
  * @return CPU byte ordered 64-bit integer.
  */
-#define be64_to_cpu(x) swab64((FORCE u64)(be64)(x))
+#define be64_to_cpu(x) SWAP64((u64)(be64)(x))
 
 /**
  * CPU byte order to big endian 32-bit.
@@ -125,7 +162,7 @@
  *
  * @return be32 type integer.
  */
-#define cpu_to_be32(x) ((FORCE be32)swab32((x)))
+#define cpu_to_be32(x) ((be32)SWAP32((x)))
 
 /**
  * Big endian 32-bit to CPU byte order.
@@ -134,7 +171,7 @@
  *
  * @return CPU byte ordered 32-bit integer.
  */
-#define be32_to_cpu(x) swab32((FORCE u32)(be32)(x))
+#define be32_to_cpu(x) SWAP32((u32)(be32)(x))
 
 /**
  * CPU byte order to big endian 16-bit.
@@ -143,7 +180,7 @@
  *
  * @return be16 type integer.
  */
-#define cpu_to_be16(x) ((FORCE be16)swab16((x)))
+#define cpu_to_be16(x) ((be16)SWAP16((x)))
 
 /**
  * Big endian 16-bit to CPU byte order.
@@ -152,14 +189,11 @@
  *
  * @return CPU byte ordered 16-bit integer.
  */
-#define be16_to_cpu(x) swab16((FORCE u16)(be16)(x))
-
-#endif /* CPU_LITTLE_ENDIAN */
-#endif /* CPU_LITTLE_ENDIAN */
+#define be16_to_cpu(x) SWAP16((u16)(be16)(x))
 
 /**
  * @}
  * @}
  */
 
-#endif /* __LIBARCH_ENDIAN_H */
+#endif /* __LIB_LIBSTD_BYTEORDER_H */

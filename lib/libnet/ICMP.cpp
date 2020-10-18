@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <ByteOrder.h>
 #include <errno.h>
 #include "NetworkServer.h"
 #include "NetworkProtocol.h"

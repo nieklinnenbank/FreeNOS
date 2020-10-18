@@ -18,7 +18,6 @@
 #ifndef __LIBARCH_HOST_HOSTCORE_H
 #define __LIBARCH_HOST_HOSTCORE_H
 
-#include "Endian.h"
 #include "CoreInfo.h"
 #include "HostIO.h"
 

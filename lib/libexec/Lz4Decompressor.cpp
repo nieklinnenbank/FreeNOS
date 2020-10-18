@@ -17,7 +17,7 @@
 
 #include <FreeNOS/User.h>
 #include <Log.h>
-#include <Endian.h>
+#include <ByteOrder.h>
 #include <MemoryBlock.h>
 #include "Lz4Decompressor.h"
 

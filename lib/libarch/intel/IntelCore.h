@@ -20,7 +20,6 @@
 
 #include <Types.h>
 #include <Macros.h>
-#include "Endian.h"
 #include "IntelIO.h"
 
 /**

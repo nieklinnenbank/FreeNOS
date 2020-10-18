@@ -16,6 +16,7 @@
  */
 
 #include <FreeNOS/System.h>
+#include <ByteOrder.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>

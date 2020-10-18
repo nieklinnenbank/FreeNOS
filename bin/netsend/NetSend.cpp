@@ -28,6 +28,7 @@
 #include <ARP.h>
 #include <Ethernet.h>
 #include <MemoryBlock.h>
+#include <ByteOrder.h>
 #include "NetSend.h"
 
 //
