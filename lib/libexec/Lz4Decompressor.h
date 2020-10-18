@@ -140,33 +140,6 @@ class Lz4Decompressor
                                    const u8 *next,
                                    Size &byteCount) const;
 
-    /**
-     * Read unsigned, unaligned, little-endian 64-bit integer
-     *
-     * @param data Pointer to data
-     *
-     * @return 64-bit unsigned, little-endian integer
-     */
-    inline const u64 readU64(const void *data) const;
-
-    /**
-     * Read unsigned, unaligned, little-endian 32-bit integer
-     *
-     * @param data Pointer to data
-     *
-     * @return 32-bit unsigned, little-endian integer
-     */
-    inline const u32 readU32(const void *data) const;
-
-    /**
-     * Read unsigned, unaligned, little-endian 16-bit integer
-     *
-     * @param data Pointer to data
-     *
-     * @return 16-bit unsigned, little-endian integer
-     */
-    inline const u16 readU16(const void *data) const;
-
   private:
 
     /** Compressed input data */

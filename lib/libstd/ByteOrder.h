@@ -19,6 +19,7 @@
 #define __LIB_LIBSTD_BYTEORDER_H
 
 #include "Types.h"
+#include "MemoryBlock.h"
 
 /**
  * @addtogroup lib
@@ -39,6 +40,11 @@
 #if __BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__
 #error "This implementation only supports little-endian targets: define __BYTE_ORDER__ to __ORDER_LITTLE_ENDIAN__"
 #endif
+
+/**
+ * Byte swap functions
+ * @{
+ */
 
 /**
  * Byte swap a 16-bit integer
@@ -82,6 +88,15 @@
         (((u64)(x) & (u64)0x0000ff0000000000UL) >> 24) |   \
         (((u64)(x) & (u64)0x00ff000000000000UL) >> 40) |   \
         (((u64)(x) & (u64)0xff00000000000000UL) >> 56)))
+
+/**
+ * @}
+ */
+
+/**
+ * Integer conversion functions
+ * @{
+ */
 
 /**
  * CPU byte order to little endian 64-bit.
@@ -190,6 +205,178 @@
  * @return CPU byte ordered 16-bit integer.
  */
 #define be16_to_cpu(x) SWAP16((u16)(be16)(x))
+
+/**
+ * @}
+ */
+
+/**
+ * Memory read/write functions
+ *
+ * @note These functions support unaligned memory pointers
+ *
+ * @{
+ */
+
+/**
+ * Read 64-bit little endian integer
+ *
+ * @param data Memory pointer, which can be unaligned.
+ *
+ * @return Unsigned 64-bit integer
+ */
+inline const u64 readLe64(const void *data)
+{
+    u64 value;
+    MemoryBlock::copy(&value, data, sizeof(value));
+    return le64_to_cpu(value);
+}
+
+/**
+ * Read 32-bit little endian integer
+ *
+ * @param data Memory pointer, which can be unaligned.
+ *
+ * @return Unsigned 32-bit integer
+ */
+inline const u32 readLe32(const void *data)
+{
+    u32 value;
+    MemoryBlock::copy(&value, data, sizeof(value));
+    return le32_to_cpu(value);
+}
+
+/**
+ * Read 16-bit little endian integer
+ *
+ * @param data Memory pointer, which can be unaligned.
+ *
+ * @return Unsigned 16-bit integer
+ */
+inline const u16 readLe16(const void *data)
+{
+    u16 value;
+    MemoryBlock::copy(&value, data, sizeof(value));
+    return le16_to_cpu(value);
+}
+
+/**
+ * Read 64-bit big endian integer
+ *
+ * @param data Memory pointer, which can be unaligned.
+ *
+ * @return Unsigned 64-bit integer
+ */
+inline const u64 readBe64(const void *data)
+{
+    u64 value;
+    MemoryBlock::copy(&value, data, sizeof(value));
+    return be64_to_cpu(value);
+}
+
+/**
+ * Read 32-bit big endian integer
+ *
+ * @param data Memory pointer, which can be unaligned.
+ *
+ * @return Unsigned 32-bit integer
+ */
+inline const u32 readBe32(const void *data)
+{
+    u32 value;
+    MemoryBlock::copy(&value, data, sizeof(value));
+    return be32_to_cpu(value);
+}
+
+/**
+ * Read 16-bit big endian integer
+ *
+ * @param data Memory pointer, which can be unaligned.
+ *
+ * @return Unsigned 16-bit integer
+ */
+inline const u16 readBe16(const void *data)
+{
+    u16 value;
+    MemoryBlock::copy(&value, data, sizeof(value));
+    return be16_to_cpu(value);
+}
+
+/**
+ * Write 64-bit little endian integer
+ *
+ * @param data Memory pointer to write to, which can be unaligned.
+ * @param input Input integer
+ */
+inline void writeLe64(void *data, const u64 input)
+{
+    const u64 value = cpu_to_le64(input);
+    MemoryBlock::copy(data, &value, sizeof(value));
+}
+
+/**
+ * Write 32-bit little endian integer
+ *
+ * @param data Memory pointer to write to, which can be unaligned.
+ * @param input Input integer
+ */
+inline void writeLe32(void *data, const u32 input)
+{
+    const u32 value = cpu_to_le32(input);
+    MemoryBlock::copy(data, &value, sizeof(value));
+}
+
+/**
+ * Write 16-bit little endian integer
+ *
+ * @param data Memory pointer to write to, which can be unaligned.
+ * @param input Input integer
+ */
+inline void writeLe16(void *data, const u16 input)
+{
+    const u16 value = cpu_to_le16(input);
+    MemoryBlock::copy(data, &value, sizeof(value));
+}
+
+/**
+ * Write 64-bit big endian integer
+ *
+ * @param data Memory pointer to write to, which can be unaligned.
+ * @param input Input integer
+ */
+inline void writeBe64(void *data, const u64 input)
+{
+    const u64 value = cpu_to_be64(input);
+    MemoryBlock::copy(data, &value, sizeof(value));
+}
+
+/**
+ * Write 32-bit big endian integer
+ *
+ * @param data Memory pointer to write to, which can be unaligned.
+ * @param input Input integer
+ */
+inline void writeBe32(void *data, const u32 input)
+{
+    const u32 value = cpu_to_be32(input);
+    MemoryBlock::copy(data, &value, sizeof(value));
+}
+
+/**
+ * Write 16-bit big endian integer
+ *
+ * @param data Memory pointer to write to, which can be unaligned.
+ * @param input Input integer
+ */
+inline void writeBe16(void *data, const u16 input)
+{
+    const u16 value = cpu_to_be16(input);
+    MemoryBlock::copy(data, &value, sizeof(value));
+}
+
+/**
+ * @}
+ */
 
 /**
  * @}

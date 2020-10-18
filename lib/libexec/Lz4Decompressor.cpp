@@ -45,9 +45,9 @@ Lz4Decompressor::Result Lz4Decompressor::initialize()
     }
 
     // Verify the input is an actual LZ4 frame
-    if (readU32(m_inputData) != FrameMagic)
+    if (readLe32(m_inputData) != FrameMagic)
     {
-        ERROR("invalid magic value " << readU32(m_inputData) << " != " << FrameMagic);
+        ERROR("invalid magic value " << readLe32(m_inputData) << " != " << FrameMagic);
         return InvalidArgument;
     }
 
@@ -76,7 +76,7 @@ Lz4Decompressor::Result Lz4Decompressor::initialize()
     // Check for content size flag
     if ((flg >> FrameContentSzShift) & 0x1)
     {
-        m_contentSize = readU64(m_inputData + sizeof(u32) + (sizeof(u8) * 2));
+        m_contentSize = readLe64(m_inputData + sizeof(u32) + (sizeof(u8) * 2));
         m_frameDescSize += 8;
     }
 
@@ -138,7 +138,7 @@ Lz4Decompressor::Result Lz4Decompressor::read(void *buffer,
     while (copied < size && input < inputEnd)
     {
         // Fetch the next block
-        const u32 blockSizeByte = readU32(input);
+        const u32 blockSizeByte = readLe32(input);
         const u32 blockSize = blockSizeByte & ~(1 << 31);
         const bool isCompressed = blockSizeByte & (1 << 31) ? false : true;
         Size uncompSize;
@@ -174,27 +174,6 @@ Lz4Decompressor::Result Lz4Decompressor::read(void *buffer,
     }
 
     return Success;
-}
-
-inline const u64 Lz4Decompressor::readU64(const void *data) const
-{
-    u64 value;
-    MemoryBlock::copy(&value, data, sizeof(value));
-    return le64_to_cpu(value);
-}
-
-inline const u32 Lz4Decompressor::readU32(const void *data) const
-{
-    u32 value;
-    MemoryBlock::copy(&value, data, sizeof(value));
-    return le32_to_cpu(value);
-}
-
-inline const u16 Lz4Decompressor::readU16(const void *data) const
-{
-    u16 value;
-    MemoryBlock::copy(&value, data, sizeof(value));
-    return le16_to_cpu(value);
 }
 
 inline const u32 Lz4Decompressor::integerDecode(const u32 initial,
@@ -260,7 +239,7 @@ const u32 Lz4Decompressor::decompress(const u8 *input,
         }
 
         // Read match offset
-        const u16 off = readU16(input);
+        const u16 off = readLe16(input);
         assert(off <= outputOffset);
         const u32 matchOffset = outputOffset - off;
         input += sizeof(u16);
