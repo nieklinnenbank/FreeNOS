@@ -26,8 +26,7 @@ TmpFileSystem::TmpFileSystem(const char *path)
 {
 }
 
-File * TmpFileSystem::createFile(const FileSystem::FileType type,
-                                 const DeviceID deviceID)
+File * TmpFileSystem::createFile(const FileSystem::FileType type)
 {
     // Create the appropriate file type
     switch (type)

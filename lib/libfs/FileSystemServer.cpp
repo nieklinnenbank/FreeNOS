@@ -90,8 +90,7 @@ FileSystem::Result FileSystemServer::mount()
     }
 }
 
-File * FileSystemServer::createFile(const FileSystem::FileType type,
-                                    const DeviceID deviceID)
+File * FileSystemServer::createFile(const FileSystem::FileType type)
 {
     return (File *) ZERO;
 }
@@ -239,7 +238,7 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
             else
             {
                 /* Attempt to create the new file. */
-                if ((file = createFile(msg->filetype, msg->deviceID)))
+                if ((file = createFile(msg->filetype)) != ZERO)
                 {
                     insertFileCache(file, *path.full());
 

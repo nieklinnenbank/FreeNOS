@@ -93,12 +93,10 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
      * Create a new file.
      *
      * @param type Describes the type of file to create.
-     * @param deviceID Optionally specifies the device identities to create.
      *
      * @return Pointer to a new File on success or ZERO on failure.
      */
-    virtual File * createFile(const FileSystem::FileType type,
-                              const DeviceID deviceID);
+    virtual File * createFile(const FileSystem::FileType type);
 
     /**
      * Process an incoming filesystem request using a path.

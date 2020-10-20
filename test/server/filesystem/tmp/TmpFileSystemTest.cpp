@@ -44,7 +44,7 @@ TestCase(TmpFileSystemReadWrite)
     testAssert(fs.writeFile(path, data, &sz, 0) == FileSystem::NotFound);
 
     // Create new file
-    testAssert(fs.createFile(path, FileSystem::RegularFile, FileSystem::OwnerRW, DeviceID()) == FileSystem::Success);
+    testAssert(fs.createFile(path, FileSystem::RegularFile, FileSystem::OwnerRW) == FileSystem::Success);
 
     // File should now exist
     testAssert(fs.statFile(path, &st) == FileSystem::Success);

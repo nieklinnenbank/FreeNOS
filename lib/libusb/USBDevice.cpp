@@ -395,7 +395,6 @@ FileSystem::Error USBDevice::beginTransfer(
         fs.size   = sizeof(*msg);
         fs.offset = (Size) buffer;
         fs.from   = SELF;
-        fs.deviceID.minor = fd->identifier;
         if (ChannelClient::instance()->sendRequest(mnt, &fs, sizeof(fs), callback) == ChannelClient::Success)
             return FileSystem::Success;
     }

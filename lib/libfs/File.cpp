@@ -62,8 +62,6 @@ FileSystem::Result File::status(FileSystemMessage *msg)
     st.size     = m_size;
     st.userID   = m_uid;
     st.groupID  = m_gid;
-    st.deviceID.major = m_deviceId.major;
-    st.deviceID.minor = m_deviceId.minor;
 
     // Copy to the remote process
     const Size result = VMCopy(msg->from, API::Write, (Address) &st,

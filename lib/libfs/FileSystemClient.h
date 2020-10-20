@@ -96,14 +96,12 @@ class FileSystemClient
      * @param path Path to the file
      * @param type File type of the new file
      * @param mode Initial access permissions
-     * @param dev Optional device number specifier
      *
      * @return Result code
      */
     FileSystem::Result createFile(const char *path,
                                   const FileSystem::FileType type,
-                                  const FileSystem::FileModes mode,
-                                  const DeviceID deviceId) const;
+                                  const FileSystem::FileModes mode) const;
 
     /**
      * Read a file.

@@ -44,7 +44,6 @@ typedef struct FileSystemMessage : public ChannelMessage
     FileSystem::FileType filetype; /**< Filetype. */
     FileSystem::FileModes mode;    /**< File mode permissions. */
     FileSystem::FileStat *stat;    /**< File Statistics. */
-    DeviceID deviceID;             /**< Device major/minor numbers. */
     ProcessID pid;                 /**< Process identifier (used for redirection) */
     Size pathMountLength;          /**< Length of the mounted path (used for redirection) */
 }

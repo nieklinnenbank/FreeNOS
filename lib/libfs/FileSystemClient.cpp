@@ -157,8 +157,7 @@ void FileSystemClient::setCurrentDirectory(String *directory)
 
 FileSystem::Result FileSystemClient::createFile(const char *path,
                                                 const FileSystem::FileType type,
-                                                const FileSystem::FileModes mode,
-                                                const DeviceID deviceId) const
+                                                const FileSystem::FileModes mode) const
 {
     FileSystemMessage msg;
     msg.type     = ChannelMessage::Request;
@@ -166,7 +165,6 @@ FileSystem::Result FileSystemClient::createFile(const char *path,
     msg.path     = (char *)path;
     msg.filetype = type;
     msg.mode     = mode;
-    msg.deviceID = deviceId;
 
     return request(path, msg);
 }

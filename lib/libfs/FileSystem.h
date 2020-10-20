@@ -165,7 +165,6 @@ namespace FileSystem
         Size size;          /**< Size of the file in bytes. */
         UserID userID;      /**< User identity. */
         GroupID groupID;    /**< Group identity. */
-        DeviceID deviceID;  /**< Device identity. */
     };
 };
 

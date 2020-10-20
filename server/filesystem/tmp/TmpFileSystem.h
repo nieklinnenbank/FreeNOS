@@ -49,14 +49,12 @@ class TmpFileSystem : public FileSystemServer
      *
      * @param path Full path to the file to create.
      * @param type Describes the file type to create.
-     * @param deviceID Optionally specifies which device identities to use.
      *
      * @return Pointer to a new File on success, or ZERO on failure.
      *
      * @see File
      */
-    virtual File * createFile(const FileSystem::FileType type,
-                              const DeviceID deviceID);
+    virtual File * createFile(const FileSystem::FileType type);
 };
 
 /**

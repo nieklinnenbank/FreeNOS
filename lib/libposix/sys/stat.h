@@ -175,7 +175,8 @@ struct stat
         this->st_size  = stat->size;
         this->st_uid   = stat->userID;
         this->st_gid   = stat->groupID;
-        this->st_dev   = stat->deviceID;
+        this->st_dev.major = 0;
+        this->st_dev.minor = 0;
     }
 #endif /* CPP */
 

@@ -116,9 +116,6 @@ class File
 
     /** Size of the file, in bytes. */
     Size m_size;
-
-    /** Device major/minor ID. */
-    DeviceID m_deviceId;
 };
 
 /**
