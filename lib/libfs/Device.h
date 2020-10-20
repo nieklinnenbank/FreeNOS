@@ -39,7 +39,7 @@ class Device : public File
     /**
      * Constructor.
      */
-    Device(FileSystem::FileType type);
+    Device(const FileSystem::FileType type);
 
     /**
      * Destructor.

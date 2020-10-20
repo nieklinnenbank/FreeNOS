@@ -18,13 +18,15 @@
 #include <FreeNOS/User.h>
 #include "File.h"
 
-File::File(FileSystem::FileType type, UserID uid, GroupID gid)
+File::File(const FileSystem::FileType type,
+           const UserID uid,
+           const GroupID gid)
     : m_type(type)
     , m_uid(uid)
     , m_gid(gid)
+    , m_access(FileSystem::OwnerRWX)
+    , m_size(0)
 {
-    m_access    = FileSystem::OwnerRWX;
-    m_size      = 0;
 }
 
 File::~File()

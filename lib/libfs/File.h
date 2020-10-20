@@ -47,7 +47,9 @@ class File
      * @param uid User identity.
      * @param gid Group identity.
      */
-    File(FileSystem::FileType type = FileSystem::RegularFile, UserID uid = ZERO, GroupID gid = ZERO);
+    File(const FileSystem::FileType type = FileSystem::RegularFile,
+         const UserID uid = ZERO,
+         const GroupID gid = ZERO);
 
     /**
      * Destructor function.
@@ -101,19 +103,19 @@ class File
   protected:
 
     /** Type of this file. */
-    FileSystem::FileType m_type;
-
-    /** Access permissions. */
-    FileSystem::FileModes m_access;
-
-    /** Size of the file, in bytes. */
-    Size m_size;
+    const FileSystem::FileType m_type;
 
     /** Owner of the file. */
     UserID m_uid;
 
     /** Group of the file. */
     GroupID m_gid;
+
+    /** Access permissions. */
+    FileSystem::FileModes m_access;
+
+    /** Size of the file, in bytes. */
+    Size m_size;
 
     /** Device major/minor ID. */
     DeviceID m_deviceId;
