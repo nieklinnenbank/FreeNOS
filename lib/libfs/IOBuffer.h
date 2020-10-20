@@ -97,11 +97,11 @@ class IOBuffer
      * @param size Number of bytes to copy.
      * @param offset The offset inside the I/O buffer to start reading.
      *
-     * @return Number of bytes read on success, and error code on failure.
+     * @return Result code
      */
-    FileSystem::Error read(void *buffer,
-                           const Size size,
-                           const Size offset = ZERO);
+    FileSystem::Result read(void *buffer,
+                            const Size size,
+                            const Size offset = ZERO);
 
     /**
      * Write bytes to the I/O buffer.
@@ -110,18 +110,18 @@ class IOBuffer
      * @param size Number of bytes to write.
      * @param offset The offset inside the I/O buffer to start writing.
      *
-     * @return Number of bytes written on success, and error code on failure.
+     * @return Result code
      */
-    FileSystem::Error write(const void *buffer,
-                            const Size size,
-                            const Size offset = ZERO);
+    FileSystem::Result write(const void *buffer,
+                             const Size size,
+                             const Size offset = ZERO);
 
     /**
      * Buffered read bytes from message to the I/O buffer.
      *
-     * @return Error code.
+     * @return Result code
      */
-    FileSystem::Error bufferedRead();
+    FileSystem::Result bufferedRead();
 
     /**
      * Buffered write bytes to the I/O buffer.
@@ -130,16 +130,17 @@ class IOBuffer
      * @param size Number of bytes to write.
      * @param offset The offset inside the I/O buffer to start writing.
      *
-     * @return Number of bytes written on success, and error code on failure.
+     * @return Result code
      */
-    FileSystem::Error bufferedWrite(const void *buffer, const Size size);
+    FileSystem::Result bufferedWrite(const void *buffer,
+                                     const Size size);
 
     /**
      * Flush write buffers.
      *
-     * @return Error code.
+     * @return Result code
      */
-    FileSystem::Error flushWrite();
+    FileSystem::Result flushWrite();
 
     /**
      * Byte index operator.

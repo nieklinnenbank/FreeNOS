@@ -37,7 +37,6 @@ FileSystem::Error LinnDirectory::read(IOBuffer & buffer, Size size, Size offset)
     LinnDirectoryEntry dent;
     LinnInode *dInode;
     Size bytes = ZERO, blk;
-    FileSystem::Error e;
     Dirent tmp;
 
     // Read directory entries
@@ -75,10 +74,12 @@ FileSystem::Error LinnDirectory::read(IOBuffer & buffer, Size size, Size offset)
         tmp.type = (FileSystem::FileType) dInode->type;
 
         // Copy to the buffer.
-        if (( e = buffer.write(&tmp, sizeof(Dirent), bytes)) < 0)
+        const FileSystem::Result result = buffer.write(&tmp, sizeof(Dirent), bytes);
+        if (result != FileSystem::Success)
         {
-            return e;
+            return result;
         }
+
         bytes += sizeof(Dirent);
     }
     // All done.

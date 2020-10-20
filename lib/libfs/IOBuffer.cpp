@@ -127,7 +127,7 @@ u8 * IOBuffer::getBuffer()
     return m_buffer;
 }
 
-FileSystem::Error IOBuffer::bufferedRead()
+FileSystem::Result IOBuffer::bufferedRead()
 {
     if (m_directMapped)
     {
@@ -137,60 +137,72 @@ FileSystem::Error IOBuffer::bufferedRead()
     {
         m_count = read(m_buffer, m_message->size, 0);
     }
-    return m_count;
+
+    return FileSystem::Success;
 }
 
-FileSystem::Error IOBuffer::bufferedWrite(const void *buffer, const Size size)
+FileSystem::Result IOBuffer::bufferedWrite(const void *buffer, const Size size)
 {
     const Size num = m_count + size < m_size ? size : m_size - m_count;
 
     MemoryBlock::copy(m_buffer + m_count, buffer, num);
     m_count += num;
 
-    return num;
+    return FileSystem::Success;
 }
 
-FileSystem::Error IOBuffer::read(void *buffer, const Size size, const Size offset)
+FileSystem::Result IOBuffer::read(void *buffer, const Size size, const Size offset)
 {
     m_count = 0;
 
     if (m_directMapped)
     {
         MemoryBlock::copy(buffer, m_buffer + offset, size);
-        return size;
+        return FileSystem::Success;
+    }
+
+    const Size copied = VMCopy(m_message->from, API::Read,
+                              (Address) buffer,
+                              (Address) m_message->buffer + offset, size);
+    if (copied == size)
+    {
+        return FileSystem::Success;
     }
     else
     {
-        return VMCopy(m_message->from, API::Read,
-                     (Address) buffer,
-                     (Address) m_message->buffer + offset, size);
+        return FileSystem::IOError;
     }
 }
 
-FileSystem::Error IOBuffer::write(const void *buffer, const Size size, const Size offset)
+FileSystem::Result IOBuffer::write(const void *buffer, const Size size, const Size offset)
 {
     m_count = 0;
 
     if (m_directMapped)
     {
         MemoryBlock::copy(m_buffer + offset, buffer, size);
-        return size;
+        return FileSystem::Success;
+    }
+
+    const Size copied = VMCopy(m_message->from, API::Write,
+                              (Address) buffer,
+                              (Address) m_message->buffer + offset, size);
+    if (copied == size)
+    {
+        return FileSystem::Success;
     }
     else
     {
-        return VMCopy(m_message->from, API::Write,
-                     (Address) buffer,
-                     (Address) m_message->buffer + offset, size);
+        return FileSystem::IOError;
     }
 }
 
-FileSystem::Error IOBuffer::flushWrite()
+FileSystem::Result IOBuffer::flushWrite()
 {
     if (m_directMapped)
     {
-        const Size ret = m_count;
         m_count = 0;
-        return ret;
+        return FileSystem::Success;
     }
     else
     {

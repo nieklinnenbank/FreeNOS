@@ -55,7 +55,15 @@ FileSystem::Error PseudoFile::read(IOBuffer & buffer, Size size, Size offset)
     Size bytes = m_size - offset > size ? size : m_size - offset;
 
     // Copy the buffers
-    return buffer.write(m_buffer + offset, bytes);
+    const FileSystem::Result result = buffer.write(m_buffer + offset, bytes);
+    if (result == FileSystem::Success)
+    {
+        return bytes;
+    }
+    else
+    {
+        return FileSystem::IOError;
+    }
 }
 
 FileSystem::Error PseudoFile::write(IOBuffer & buffer, Size size, Size offset)
