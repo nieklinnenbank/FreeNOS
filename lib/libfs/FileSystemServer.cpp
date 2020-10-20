@@ -283,48 +283,30 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
             DEBUG(m_self << ": stat = " << (int)msg->result);
             break;
 
-        case FileSystem::ReadFile: {
-            if ((ret = file->read(req.getBuffer(), msg->size, msg->offset)) >= 0)
-            {
-                msg->size = ret;
-                msg->result = FileSystem::Success;
+        case FileSystem::ReadFile:
+        {
+            msg->result = file->read(req.getBuffer(), msg->size, msg->offset);
 
+            if (msg->result == FileSystem::Success)
+            {
                 if (req.getBuffer().getCount())
                 {
                     req.getBuffer().flushWrite();
                 }
             }
-            else if (ret == FileSystem::RetryAgain)
-            {
-                msg->result = FileSystem::RetryAgain;
-            }
-            else
-            {
-                msg->result = FileSystem::IOError;
-            }
+
             DEBUG(m_self << ": read = " << (int)msg->result);
             break;
         }
 
-        case FileSystem::WriteFile: {
+        case FileSystem::WriteFile:
+        {
             if (!req.getBuffer().getCount())
             {
                 req.getBuffer().bufferedRead();
             }
 
-            if ((ret = file->write(req.getBuffer(), msg->size, msg->offset)) >= 0)
-            {
-                msg->size = ret;
-                msg->result = FileSystem::Success;
-            }
-            else if (ret == FileSystem::RetryAgain)
-            {
-                msg->result = FileSystem::RetryAgain;
-            }
-            else
-            {
-                msg->result = FileSystem::IOError;
-            }
+            msg->result = file->write(req.getBuffer(), msg->size, msg->offset);
             DEBUG(m_self << ": write = " << (int)msg->result);
             break;
         }

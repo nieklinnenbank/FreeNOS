@@ -104,7 +104,9 @@ FileSystem::Error PL011::interrupt(u32 vector)
     return FileSystem::Success;
 }
 
-FileSystem::Error PL011::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result PL011::read(IOBuffer & buffer,
+                               Size & size,
+                               const Size offset)
 {
     Size bytes = 0;
 
@@ -123,12 +125,19 @@ FileSystem::Error PL011::read(IOBuffer & buffer, Size size, Size offset)
     }
 
     if (buffer.getCount())
-        return (FileSystem::Error) buffer.getCount();
+    {
+        size = buffer.getCount();
+        return FileSystem::Success;
+    }
     else
+    {
         return FileSystem::RetryAgain;
+    }
 }
 
-FileSystem::Error PL011::write(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result PL011::write(IOBuffer & buffer,
+                                Size & size,
+                                const Size offset)
 {
     Size bytes = 0;
 
@@ -147,7 +156,12 @@ FileSystem::Error PL011::write(IOBuffer & buffer, Size size, Size offset)
     }
 
     if (bytes)
-        return (FileSystem::Error) bytes;
+    {
+        size = bytes;
+        return FileSystem::Success;
+    }
     else
+    {
         return FileSystem::RetryAgain;
+    }
 }

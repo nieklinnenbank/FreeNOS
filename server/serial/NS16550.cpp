@@ -82,7 +82,9 @@ FileSystem::Error NS16550::interrupt(u32 vector)
     return FileSystem::Success;
 }
 
-FileSystem::Error NS16550::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result NS16550::read(IOBuffer & buffer,
+                                 Size & size,
+                                 const Size offset)
 {
     Size bytes = 0;
 
@@ -105,12 +107,19 @@ FileSystem::Error NS16550::read(IOBuffer & buffer, Size size, Size offset)
     }
 
     if (buffer.getCount())
-        return (FileSystem::Error) buffer.getCount();
+    {
+        size = buffer.getCount();
+        return FileSystem::Success;
+    }
     else
+    {
         return FileSystem::RetryAgain;
+    }
 }
 
-FileSystem::Error NS16550::write(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result NS16550::write(IOBuffer & buffer,
+                                  Size & size,
+                                  const Size offset)
 {
     Size bytes = 0;
 
@@ -127,9 +136,14 @@ FileSystem::Error NS16550::write(IOBuffer & buffer, Size size, Size offset)
     }
 
     if (bytes)
-        return (FileSystem::Error) bytes;
+    {
+        size = bytes;
+        return FileSystem::Success;
+    }
     else
+    {
         return FileSystem::RetryAgain;
+    }
 }
 
 void NS16550::setDivisorLatch(bool enabled)

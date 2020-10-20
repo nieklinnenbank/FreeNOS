@@ -115,32 +115,32 @@ class VGA : public Device
     virtual FileSystem::Error initialize();
 
     /**
-     * @brief Read from VGA video memory.
+     * Read video memory
      *
-     * This function copies bytes directly from VGA
-     * video memory into the target buffer.
+     * @param buffer Input/Output buffer to output bytes to.
+     * @param size Maximum number of bytes to read on input.
+     *             On output, the actual number of bytes read.
+     * @param offset Offset inside the file to start reading.
      *
-     * @param buffer Output buffer.
-     * @param size Number of bytes to copy into the buffer.
-     * @param offset Offset in VGA video memory to read in bytes.
-     *
-     * @return An error code describing the status of the operation.
+     * @return Result code
      */
-    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result read(IOBuffer & buffer,
+                                    Size & size,
+                                    const Size offset);
 
     /**
-     * @brief Write to VGA video memory.
+     * Write video memory
      *
-     * This function copies bytes directly into VGA
-     * video memory from the source buffer.
+     * @param buffer Input/Output buffer to input bytes from.
+     * @param size Maximum number of bytes to write on input.
+     *             On output, the actual number of bytes written.
+     * @param offset Offset inside the file to start writing.
      *
-     * @param buffer Input buffer.
-     * @param size Number of bytes to copy from the buffer.
-     * @param offset Offset in VGA video memory to write in bytes.
-     *
-     * @return An error code describing the status of the operation.
+     * @return Result code
      */
-    virtual FileSystem::Error write(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result write(IOBuffer & buffer,
+                                     Size & size,
+                                     const Size offset);
 
   private:
 

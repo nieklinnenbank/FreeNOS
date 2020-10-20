@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <errno.h>
 #include "Ethernet.h"
 #include "IPV4.h"
 #include "ARP.h"
@@ -33,25 +32,37 @@ ARPSocket::~ARPSocket()
 {
 }
 
-Error ARPSocket::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result ARPSocket::read(IOBuffer & buffer,
+                                   Size & size,
+                                   const Size offset)
 {
     DEBUG("");
 
     if (size != sizeof(Ethernet::Address))
-        return ERANGE;
+    {
+        return FileSystem::InvalidArgument;
+    }
 
     if (offset >= sizeof(Ethernet::Address))
-        return 0;
+    {
+        size = 0;
+        return FileSystem::Success;
+    }
 
     Error r = m_arp->lookupAddress(&m_ipAddr, &m_ethAddr);
     if (r != 0)
-        return r;
+    {
+        return FileSystem::IOError;
+    }
 
     buffer.write(&m_ethAddr, sizeof(Ethernet::Address));
-    return sizeof(Ethernet::Address);
+    size = sizeof(Ethernet::Address);
+    return FileSystem::Success;
 }
 
-Error ARPSocket::write(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result ARPSocket::write(IOBuffer & buffer,
+                                    Size & size,
+                                    const Size offset)
 {
     DEBUG("");
 
@@ -59,12 +70,17 @@ Error ARPSocket::write(IOBuffer & buffer, Size size, Size offset)
     buffer.read(&m_ipAddr, sizeof(IPV4::Address));
 
     // Send request
-    // return m_arp->sendRequest(m_ipAddr);
     Error r = m_arp->lookupAddress(&m_ipAddr, &m_ethAddr);
     if (r != 0)
-        return r;
-    else
-        return size;
+    {
+        if (r == FileSystem::RetryAgain)
+            return (FileSystem::Result) r;
+        else
+            return FileSystem::IOError;
+    }
+
+    size = sizeof(IPV4::Address);
+    return FileSystem::Success;
 }
 
 Error ARPSocket::process(NetworkQueue::Packet *pkt)

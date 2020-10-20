@@ -135,24 +135,36 @@ u16 * Terminal::getCursorValue()
     return &cursorValue;
 }
 
-FileSystem::Error Terminal::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result Terminal::read(IOBuffer & buffer,
+                                  Size & size,
+                                  const Size offset)
 {
     char tmp[255];
     int n;
 
     n = ::read(input, tmp, size < sizeof(tmp) ? size : sizeof(tmp));
-    if (n > 0)
+    if (n < 0)
+    {
+        return FileSystem::IOError;
+    }
+    else if (n > 0)
+    {
         buffer.write(tmp, n);
+    }
 
-    return n;
+    size = n;
+    return FileSystem::Success;
 }
 
-Error Terminal::write(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result Terminal::write(IOBuffer & buffer,
+                                   Size & size,
+                                   const Size offset)
 {
     return writeTerminal(buffer.getBuffer(), size);
 }
 
-FileSystem::Error Terminal::writeTerminal(const u8 *bytes, const Size size)
+FileSystem::Result Terminal::writeTerminal(const u8 *bytes,
+                                           const Size size)
 {
     char cr = '\r', ch;
 
@@ -177,7 +189,7 @@ FileSystem::Error Terminal::writeTerminal(const u8 *bytes, const Size size)
     ::write(output, this->buffer, width * height * 2);
 
     // Done
-    return size;
+    return FileSystem::Success;
 }
 
 void Terminal::hideCursor()

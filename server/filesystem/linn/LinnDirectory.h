@@ -57,17 +57,18 @@ class LinnDirectory : public Directory
     LinnDirectory(LinnFileSystem *fs, LinnInode *inode);
 
     /**
-     * @brief Read directory entries.
+     * Read directory entries
      *
-     * @param buffer Input/Output buffer to write bytes to.
-     * @param size Number of bytes to copy at maximum.
-     * @param offset Offset in the file to start reading.
+     * @param buffer Input/Output buffer to output bytes to.
+     * @param size Maximum number of bytes to read on input.
+     *             On output, the actual number of bytes read.
+     * @param offset Offset inside the file to start reading.
      *
-     * @return Number of bytes read on success, Error on failure.
-     *
-     * @see IOBuffer
+     * @return Result code
      */
-    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result read(IOBuffer & buffer,
+                                    Size & size,
+                                    const Size offset);
 
     /**
      * @brief Retrieves a File pointer for the given entry name.

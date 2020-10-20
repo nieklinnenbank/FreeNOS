@@ -31,7 +31,9 @@ LinnDirectory::LinnDirectory(LinnFileSystem *f,
     m_access = inode->mode;
 }
 
-FileSystem::Error LinnDirectory::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result LinnDirectory::read(IOBuffer & buffer,
+                                       Size & size,
+                                       const Size offset)
 {
     LinnSuperBlock *sb = fs->getSuperBlock();
     LinnDirectoryEntry dent;
@@ -48,6 +50,7 @@ FileSystem::Error LinnDirectory::read(IOBuffer & buffer, Size size, Size offset)
         {
             break;
         }
+
         // Calculate offset to read.
         u64 off = (inode->block[blk] * sb->blockSize) +
                       (ent * sizeof(LinnDirectoryEntry));
@@ -82,8 +85,10 @@ FileSystem::Error LinnDirectory::read(IOBuffer & buffer, Size size, Size offset)
 
         bytes += sizeof(Dirent);
     }
+
     // All done.
-    return bytes;
+    size = bytes;
+    return FileSystem::Success;
 }
 
 File * LinnDirectory::lookup(const char *name)

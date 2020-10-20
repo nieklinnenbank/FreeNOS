@@ -27,7 +27,7 @@ DeviceLog::DeviceLog(Device & device)
 
 void DeviceLog::write(const char *str)
 {
-    const Size len = String::length(str);
+    Size len = String::length(str);
 
     FileSystemMessage msg;
     msg.action = FileSystem::WriteFile;

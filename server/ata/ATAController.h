@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __ATA_ATACONTROLLER_H
-#define __ATA_ATACONTROLLER_H
+#ifndef __SERVER_ATA_ATACONTROLLER_H
+#define __SERVER_ATA_ATACONTROLLER_H
 
 #include <FreeNOS/User.h>
 #include <List.h>
@@ -276,15 +276,18 @@ class ATAController : public Device
     virtual FileSystem::Error initialize();
 
     /**
-     * Read bytes from a drive attached to the ATA controller.
+     * Read bytes from a drive attached to the ATA controller
      *
-     * @param buffer Buffer to store bytes to read.
-     * @param size Number of bytes to read.
-     * @param offset Offset in the device.
+     * @param buffer Input/Output buffer to output bytes to.
+     * @param size Maximum number of bytes to read on input.
+     *             On output, the actual number of bytes read.
+     * @param offset Offset inside the file to start reading.
      *
-     * @return Number of bytes on success and an error code on failure.
+     * @return Result code
      */
-    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result read(IOBuffer & buffer,
+                                    Size & size,
+                                    const Size offset);
 
     /**
      * @brief Process ATA interrupts.
@@ -318,4 +321,4 @@ class ATAController : public Device
  * @}
  */
 
-#endif /* __ATA_ATACONTROLLER_H */
+#endif /* __SERVER_ATA_ATACONTROLLER_H */

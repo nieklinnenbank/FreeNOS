@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <errno.h>
 #include "UDP.h"
 #include "UDPFactory.h"
 #include "UDPSocket.h"
@@ -29,7 +28,9 @@ UDPFactory::~UDPFactory()
 {
 }
 
-Error UDPFactory::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result UDPFactory::read(IOBuffer & buffer,
+                                    Size & size,
+                                    const Size offset)
 {
     DEBUG("");
 
@@ -37,12 +38,18 @@ Error UDPFactory::read(IOBuffer & buffer, Size size, Size offset)
     UDPSocket *sock;
 
     if (offset > 0)
-        return 0;
+    {
+        size = 0;
+        return FileSystem::Success;
+    }
 
     sock = m_udp->createSocket(path);
     if (!sock)
-        return EIO;
+    {
+        return FileSystem::IOError;
+    }
 
     buffer.write(*path, path.length() + 1);
-    return path.length() + 1;
+    size = path.length() + 1;
+    return FileSystem::Success;
 }

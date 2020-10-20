@@ -69,15 +69,18 @@ class Keyboard : public Device
     virtual FileSystem::Error interrupt(Size vector);
 
     /**
-     * @brief Read a character from the keyboard.
+     * Read a character from the keyboard
      *
-     * @param buffer Output buffer.
-     * @param size Number of bytes to read.
-     * @param offset Unused.
+     * @param buffer Input/Output buffer to output bytes to.
+     * @param size Maximum number of bytes to read on input.
+     *             On output, the actual number of bytes read.
+     * @param offset Offset inside the file to start reading.
      *
-     * @return Number of bytes read or error code on failure.
+     * @return Result code
      */
-    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result read(IOBuffer & buffer,
+                                    Size & size,
+                                    const Size offset);
 
   private:
 

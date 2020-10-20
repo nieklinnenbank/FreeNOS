@@ -63,7 +63,9 @@ FileSystem::Error i8250::interrupt(Size vector)
     return FileSystem::Success;
 }
 
-FileSystem::Error i8250::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result i8250::read(IOBuffer & buffer,
+                               Size & size,
+                               const Size offset)
 {
     Size bytes = 0;
     u8 byte;
@@ -77,12 +79,19 @@ FileSystem::Error i8250::read(IOBuffer & buffer, Size size, Size offset)
     }
 
     if (bytes)
-        return (FileSystem::Error) bytes;
+    {
+        size = bytes;
+        return FileSystem::Success;
+    }
     else
+    {
         return FileSystem::RetryAgain;
+    }
 }
 
-FileSystem::Error i8250::write(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result i8250::write(IOBuffer & buffer,
+                                Size & size,
+                                const Size offset)
 {
     Size bytes = 0;
 
@@ -93,7 +102,12 @@ FileSystem::Error i8250::write(IOBuffer & buffer, Size size, Size offset)
     }
 
     if (bytes)
-        return (FileSystem::Error) bytes;
+    {
+        size = bytes;
+        return FileSystem::Success;
+    }
     else
+    {
         return FileSystem::RetryAgain;
+    }
 }

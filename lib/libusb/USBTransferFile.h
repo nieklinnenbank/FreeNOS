@@ -42,15 +42,18 @@ class USBTransferFile : public File
     USBTransferFile(USBController *controller);
 
     /**
-     * Write bytes to the file.
+     * Write bytes to the file
      *
      * @param buffer Input/Output buffer to input bytes from.
-     * @param size Number of bytes to write, at maximum.
+     * @param size Maximum number of bytes to write on input.
+     *             On output, the actual number of bytes written.
      * @param offset Offset inside the file to start writing.
      *
-     * @return Number of bytes written on success, Error on failure.
+     * @return Result code
      */
-    virtual Error write(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result write(IOBuffer & buffer,
+                                     Size & size,
+                                     const Size offset);
 
   private:
 

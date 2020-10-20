@@ -30,7 +30,9 @@ LinnFile::~LinnFile()
 {
 }
 
-FileSystem::Error LinnFile::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result LinnFile::read(IOBuffer & buffer,
+                                  Size & size,
+                                  const Size offset)
 {
     const LinnSuperBlock *sb = fs->getSuperBlock();
     const Size inodeNumBlocks = LINN_INODE_NUM_BLOCKS(sb, inode);
@@ -84,5 +86,6 @@ FileSystem::Error LinnFile::read(IOBuffer & buffer, Size size, Size offset)
     }
 
     // Success.
-    return (Error) total;
+    size = total;
+    return FileSystem::Success;
 }

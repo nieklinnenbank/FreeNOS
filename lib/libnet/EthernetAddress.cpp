@@ -16,7 +16,6 @@
  */
 
 #include <Log.h>
-#include <errno.h>
 #include "EthernetAddress.h"
 
 EthernetAddress::EthernetAddress(Ethernet *eth)
@@ -28,7 +27,9 @@ EthernetAddress::~EthernetAddress()
 {
 }
 
-Error EthernetAddress::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result EthernetAddress::read(IOBuffer & buffer,
+                                         Size & size,
+                                         const Size offset)
 {
     Ethernet::Address addr;
 
@@ -36,13 +37,19 @@ Error EthernetAddress::read(IOBuffer & buffer, Size size, Size offset)
     String s = Ethernet::toString(addr);
 
     if (offset >= s.length())
-        return 0;
+    {
+        size = 0;
+        return FileSystem::Success;
+    }
 
     buffer.write(*s, s.length());
-    return s.length();
+    size = s.length();
+    return FileSystem::Success;
 }
 
-Error EthernetAddress::write(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result EthernetAddress::write(IOBuffer & buffer,
+                                          Size & size,
+                                          const Size offset)
 {
-    return ENOTSUP;
+    return FileSystem::NotSupported;
 }

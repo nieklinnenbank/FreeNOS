@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <errno.h>
 #include "ICMPFactory.h"
 #include "ICMPSocket.h"
 
@@ -28,7 +27,9 @@ ICMPFactory::~ICMPFactory()
 {
 }
 
-Error ICMPFactory::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result ICMPFactory::read(IOBuffer & buffer,
+                                     Size & size,
+                                     const Size offset)
 {
     DEBUG("");
 
@@ -36,12 +37,18 @@ Error ICMPFactory::read(IOBuffer & buffer, Size size, Size offset)
     ICMPSocket *sock;
 
     if (offset > 0)
-        return 0;
+    {
+        size = 0;
+        return FileSystem::Success;
+    }
 
     sock = m_icmp->createSocket(path);
     if (!sock)
-        return EIO;
+    {
+        return FileSystem::IOError;
+    }
 
     buffer.write(*path, path.length() + 1);
-    return path.length() + 1;
+    size = path.length() + 1;
+    return FileSystem::Success;
 }

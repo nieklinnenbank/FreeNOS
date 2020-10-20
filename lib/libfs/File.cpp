@@ -36,20 +36,23 @@ FileSystem::FileType File::getType() const
     return m_type;
 }
 
-Error File::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result File::read(IOBuffer & buffer,
+                              Size & size,
+                              const Size offset)
 {
     return FileSystem::NotSupported;
 }
 
-Error File::write(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result File::write(IOBuffer & buffer,
+                               Size & size,
+                               const Size offset)
 {
     return FileSystem::NotSupported;
 }
 
-Error File::status(FileSystemMessage *msg)
+FileSystem::Result File::status(FileSystemMessage *msg)
 {
     FileSystem::FileStat st;
-    Error e;
 
     // Fill in the status structure
     st.type     = m_type;
@@ -61,13 +64,14 @@ Error File::status(FileSystemMessage *msg)
     st.deviceID.minor = m_deviceId.minor;
 
     // Copy to the remote process
-    if ((e = VMCopy(msg->from, API::Write, (Address) &st,
-                   (Address) msg->stat, sizeof(st)) > 0))
+    const Size result = VMCopy(msg->from, API::Write, (Address) &st,
+                              (Address) msg->stat, sizeof(st));
+    if (result == sizeof(st))
     {
         return FileSystem::Success;
     }
     else
     {
-        return e;
+        return FileSystem::IOError;
     }
 }

@@ -15,9 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __FILESYSTEM_LINN_FILE_H
-#define __FILESYSTEM_LINN_FILE_H
-#ifndef __HOST__
+#ifndef __SERVER_FILESYSTEM_LINN_LINNFILE_H
+#define __SERVER_FILESYSTEM_LINN_LINNFILE_H
 
 #include <File.h>
 #include <Types.h>
@@ -54,16 +53,18 @@ class LinnFile : public File
     virtual ~LinnFile();
 
     /**
-     * @brief Read out the file.
+     * @brief Read bytes from the file.
      *
-     * @param buffer Input/Output buffer to write bytes to.
-     * @param size Number of bytes to copy at maximum.
-     * @param offset Offset in the file to start reading.
-     * @return Number of bytes read, or Error number.
+     * @param buffer Input/Output buffer to output bytes to.
+     * @param size Maximum number of bytes to read on input.
+     *             On output, the actual number of bytes read.
+     * @param offset Offset inside the file to start reading.
      *
-     * @see IOBuffer
+     * @return Result code
      */
-    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result read(IOBuffer & buffer,
+                                    Size & size,
+                                    const Size offset);
 
   private:
 
@@ -79,5 +80,4 @@ class LinnFile : public File
  * @}
  */
 
-#endif /* __HOST__ */
-#endif /* __FILESYSTEM_LINN_FILE_H */
+#endif /* __SERVER_FILESYSTEM_LINN_LINNFILE_H */

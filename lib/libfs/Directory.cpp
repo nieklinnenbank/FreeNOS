@@ -34,7 +34,9 @@ Directory::~Directory()
     entries.clear();
 }
 
-FileSystem::Error Directory::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result Directory::read(IOBuffer & buffer,
+                                   Size & size,
+                                   const Size offset)
 {
     Size bytes = 0;
 
@@ -49,8 +51,10 @@ FileSystem::Error Directory::read(IOBuffer & buffer, Size size, Size offset)
         }
         else break;
     }
+
     // Report results
-    return bytes;
+    size = bytes;
+    return FileSystem::Success;
 }
 
 File * Directory::lookup(const char *name)

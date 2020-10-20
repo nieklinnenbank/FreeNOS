@@ -119,26 +119,32 @@ class NS16550 : public SerialDevice
     virtual FileSystem::Error interrupt(Size vector);
 
     /**
-     * Read bytes from the UART.
+     * Read bytes from the device
      *
-     * @param buffer Buffer to save the read bytes.
-     * @param size Number of bytes to read.
-     * @param offset Unused.
+     * @param buffer Input/Output buffer to output bytes to.
+     * @param size Maximum number of bytes to read on input.
+     *             On output, the actual number of bytes read.
+     * @param offset Offset inside the file to start reading.
      *
-     * @return Number of bytes on success and ZERO on failure.
+     * @return Result code
      */
-    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result read(IOBuffer & buffer,
+                                    Size & size,
+                                    const Size offset);
 
     /**
-     * Write bytes to the device.
+     * Write bytes to the device
      *
-     * @param buffer Buffer containing bytes to write.
-     * @param size Number of bytes to write.
-     * @param offset Unused.
+     * @param buffer Input/Output buffer to input bytes from.
+     * @param size Maximum number of bytes to write on input.
+     *             On output, the actual number of bytes written.
+     * @param offset Offset inside the file to start writing.
      *
-     * @return Number of bytes on success and ZERO on failure.
+     * @return Result code
      */
-    virtual FileSystem::Error write(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result write(IOBuffer & buffer,
+                                     Size & size,
+                                     const Size offset);
 
   private:
 
