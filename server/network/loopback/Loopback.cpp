@@ -38,9 +38,10 @@ FileSystem::Result Loopback::initialize()
 {
     DEBUG("");
 
-    FileSystem::Error result = NetworkDevice::initialize();
-    if (result != 0)
+    const FileSystem::Result result = NetworkDevice::initialize();
+    if (result != FileSystem::Success)
     {
+        ERROR("failed to initialize NetworkDevice: result = " << (int) result);
         return FileSystem::IOError;
     }
 
@@ -51,31 +52,32 @@ FileSystem::Result Loopback::initialize()
     return FileSystem::Success;
 }
 
-FileSystem::Error Loopback::getAddress(Ethernet::Address *address)
+FileSystem::Result Loopback::getAddress(Ethernet::Address *address)
 {
     DEBUG("");
+
     MemoryBlock::copy(address, &m_address, sizeof(Ethernet::Address));
     return FileSystem::Success;
 }
 
-FileSystem::Error Loopback::setAddress(const Ethernet::Address *address)
+FileSystem::Result Loopback::setAddress(const Ethernet::Address *address)
 {
     DEBUG("");
+
     MemoryBlock::copy(&m_address, address, sizeof(Ethernet::Address));
     return FileSystem::Success;
 }
 
-FileSystem::Error Loopback::transmit(NetworkQueue::Packet *pkt)
+FileSystem::Result Loopback::transmit(NetworkQueue::Packet *pkt)
 {
     DEBUG("size = " << pkt->size);
 
     // Process the packet by protocols as input (loopback)
-    process(pkt);
+    const FileSystem::Result result = process(pkt);
 
     // Release packet buffer
     m_transmit.release(pkt);
 
-    // TODO: Restart FileSystem::Error flag triggers a restart of all other requests.
-    // This is required because we need to retry all read requests.
-    return pkt->size;
+    // Done
+    return result;
 }

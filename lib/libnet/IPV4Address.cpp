@@ -57,7 +57,6 @@ FileSystem::Result IPV4Address::write(IOBuffer & buffer,
 {
     IPV4::Address addr;
     char tmp[32];
-    Error r;
 
     buffer.read(tmp, size < sizeof(tmp) ? size : sizeof(tmp));
     tmp[sizeof(tmp) - 1] = 0;
@@ -72,12 +71,5 @@ FileSystem::Result IPV4Address::write(IOBuffer & buffer,
     }
 
     // Set the address
-    if ((r = m_ipv4->setAddress(&addr)) == 0)
-    {
-        return FileSystem::Success;
-    }
-    else
-    {
-        return FileSystem::IOError;
-    }
+    return m_ipv4->setAddress(&addr);
 }

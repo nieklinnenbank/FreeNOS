@@ -51,6 +51,8 @@ class NetworkServer : public DeviceServer
 
     /**
      * Initialize the NetworkServer.
+     *
+     * @return Result code
      */
     virtual FileSystem::Result initialize();
 };

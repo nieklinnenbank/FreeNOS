@@ -16,7 +16,6 @@
  */
 
 #include <ByteOrder.h>
-#include <errno.h>
 #include "NetworkClient.h"
 #include "NetworkServer.h"
 #include "NetworkDevice.h"
@@ -34,12 +33,13 @@ ARP::~ARP()
 {
 }
 
-Error ARP::initialize()
+FileSystem::Result ARP::initialize()
 {
     m_sock = new ARPSocket(this);
     m_server->registerFile(this, "/arp");
     m_server->registerFile(m_sock, "/arp/socket");
-    return 0;
+
+    return FileSystem::Success;
 }
 
 void ARP::setIP(::IPV4 *ip)
@@ -83,8 +83,8 @@ void ARP::updateCacheEntry(const IPV4::Address ipAddr,
     }
 }
 
-Error ARP::lookupAddress(const IPV4::Address *ipAddr,
-                         Ethernet::Address *ethAddr)
+FileSystem::Result ARP::lookupAddress(const IPV4::Address *ipAddr,
+                                      Ethernet::Address *ethAddr)
 {
     DEBUG("");
 
@@ -93,14 +93,15 @@ Error ARP::lookupAddress(const IPV4::Address *ipAddr,
     if (entry && entry->valid)
     {
         MemoryBlock::copy(ethAddr, &entry->ethAddr, sizeof(Ethernet::Address));
-        return 0;
+        return FileSystem::Success;
     }
 
     // Send an ARP request
-    const Error r = sendRequest(*ipAddr);
-    if (r < 0)
+    const FileSystem::Result result = sendRequest(*ipAddr);
+    if (result != FileSystem::Success && result != FileSystem::RetryAgain)
     {
-        return r;
+        ERROR("failed to send request: result = " << (int) result);
+        return result;
     }
 
     // Make sure we are called again in about 500msec
@@ -108,14 +109,16 @@ Error ARP::lookupAddress(const IPV4::Address *ipAddr,
     return FileSystem::RetryAgain;
 }
 
-Error ARP::sendRequest(const IPV4::Address address)
+FileSystem::Result ARP::sendRequest(const IPV4::Address address)
 {
     DEBUG("");
 
     // Get cache entry
     ARPCache *entry = getCacheEntry(address);
     if (!entry)
-        return EHOSTUNREACH;
+    {
+        return FileSystem::NotFound;
+    }
 
     // Update the cache entry administration
     entry->valid = false;
@@ -123,7 +126,7 @@ Error ARP::sendRequest(const IPV4::Address address)
     if (entry->retryCount > MaxRetries)
     {
         entry->retryCount = 0;
-        return EHOSTUNREACH;
+        return FileSystem::NotFound;
     }
 
     // Destination is broadcast ethernet address
@@ -136,7 +139,9 @@ Error ARP::sendRequest(const IPV4::Address address)
         Ethernet::ARP
     );
     if (!pkt)
+    {
         return FileSystem::RetryAgain;
+    }
 
     Ethernet::Header *ether = (Ethernet::Header *) (pkt->data + pkt->size - sizeof(Ethernet::Header));
     ARP::Header *arp = (ARP::Header *) (pkt->data + pkt->size);
@@ -163,7 +168,7 @@ Error ARP::sendRequest(const IPV4::Address address)
     return m_device->transmit(pkt);
 }
 
-Error ARP::sendReply(const Ethernet::Address *ethAddr, const IPV4::Address ipAddr)
+FileSystem::Result ARP::sendReply(const Ethernet::Address *ethAddr, const IPV4::Address ipAddr)
 {
     DEBUG("");
 
@@ -173,10 +178,14 @@ Error ARP::sendReply(const Ethernet::Address *ethAddr, const IPV4::Address ipAdd
         Ethernet::ARP
     );
     if (!pkt)
+    {
         return FileSystem::RetryAgain;
+    }
 
     if (!m_ip)
-        return EINVAL;
+    {
+        return FileSystem::InvalidArgument;
+    }
 
     IPV4::Address myip;
     m_ip->getAddress(&myip);
@@ -205,7 +214,7 @@ Error ARP::sendReply(const Ethernet::Address *ethAddr, const IPV4::Address ipAdd
     return m_device->transmit(pkt);
 }
 
-Error ARP::process(const NetworkQueue::Packet *pkt, const Size offset)
+FileSystem::Result ARP::process(const NetworkQueue::Packet *pkt, const Size offset)
 {
     const Ethernet::Header *ether = (const Ethernet::Header *) (pkt->data + offset - sizeof(Ethernet::Header));
     const Header *arp = (const Header *) (pkt->data + offset);
@@ -227,7 +236,7 @@ Error ARP::process(const NetworkQueue::Packet *pkt, const Size offset)
                 updateCacheEntry(ipSender, &arp->etherSender);
                 return sendReply(&ether->source, ipSender);
             }
-            break;
+            return FileSystem::Success;
 
         case Reply: {
             updateCacheEntry(ipSender, &arp->etherSender);
@@ -236,5 +245,5 @@ Error ARP::process(const NetworkQueue::Packet *pkt, const Size offset)
     }
 
     // Unknown ARP operation
-    return ENOTSUP;
+    return FileSystem::InvalidArgument;
 }

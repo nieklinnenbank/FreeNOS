@@ -16,7 +16,6 @@
  */
 
 #include <ByteOrder.h>
-#include <errno.h>
 #include "NetworkServer.h"
 #include "NetworkProtocol.h"
 #include "ICMP.h"
@@ -40,17 +39,19 @@ void ICMP::setIP(::IPV4 *ip)
     m_ipv4 = ip;
 }
 
-Error ICMP::initialize()
+FileSystem::Result ICMP::initialize()
 {
     DEBUG("");
+
     m_factory = new ICMPFactory(this);
     m_server->registerFile(this, "/icmp");
     m_server->registerFile(m_factory, "/icmp/factory");
-    return 0;
+
+    return FileSystem::Success;
 }
 
-Error ICMP::process(const NetworkQueue::Packet *pkt,
-                    const Size offset)
+FileSystem::Result ICMP::process(const NetworkQueue::Packet *pkt,
+                                 const Size offset)
 {
     const IPV4::Header *iphdr = (const IPV4::Header *) (pkt->data + offset - sizeof(IPV4::Header));
     const Header *hdr = (const Header *) (pkt->data + offset);
@@ -60,16 +61,20 @@ Error ICMP::process(const NetworkQueue::Packet *pkt,
 
     switch (hdr->type)
     {
-        case EchoRequest: {
+        case EchoRequest:
+        {
             DEBUG("request");
+
             Header reply;
             MemoryBlock::copy(&reply, hdr, sizeof(reply));
             reply.type = EchoReply;
             write16(&reply.checksum, 0);
             write16(&reply.checksum, checksum(&reply));
+
             return sendPacket(source, &reply);
         }
-        case EchoReply: {
+        case EchoReply:
+        {
             DEBUG("reply");
 
             for (Size i = 0; i < m_sockets.size(); i++)
@@ -81,7 +86,8 @@ Error ICMP::process(const NetworkQueue::Packet *pkt,
             break;
         }
     }
-    return 0;
+
+    return FileSystem::Success;
 }
 
 ICMPSocket * ICMP::createSocket(String & path)
@@ -107,20 +113,19 @@ ICMPSocket * ICMP::createSocket(String & path)
     return sock;
 }
 
-Error ICMP::sendPacket(const IPV4::Address ip,
-                       const ICMP::Header *header)
+FileSystem::Result ICMP::sendPacket(const IPV4::Address ip,
+                                    const ICMP::Header *header)
 {
     DEBUG("");
 
     NetworkQueue::Packet *pkt;
 
     // Get a fresh IP packet
-    const Error r = m_ipv4->getTransmitPacket(
-        &pkt, ip, IPV4::ICMP, sizeof(Header)
-    );
-    if (r != 0)
+    const FileSystem::Result result = m_ipv4->getTransmitPacket(&pkt, ip, IPV4::ICMP,
+                                                                sizeof(Header));
+    if (result != FileSystem::Success)
     {
-        return r;
+        return result;
     }
 
     // Fill payload

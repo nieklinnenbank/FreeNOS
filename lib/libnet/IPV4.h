@@ -111,9 +111,9 @@ class IPV4 : public NetworkProtocol
     /**
      * Perform initialization.
      *
-     * @return Error code
+     * @return Result code
      */
-    virtual Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
      * Set ICMP instance
@@ -133,23 +133,24 @@ class IPV4 : public NetworkProtocol
      *
      * @param address IPV4 address buffer
      *
-     * @return Error code
+     * @return Result code
      */
-    virtual Error getAddress(Address *address);
+    virtual FileSystem::Result getAddress(Address *address);
 
     /**
      * Set current IP address
      *
      * @param address IPV4 address buffer
      *
-     * @return Error code
+     * @return Result code
      */
-    virtual Error setAddress(const Address *address);
+    virtual FileSystem::Result setAddress(const Address *address);
 
     /**
      * Convert address to string
      *
      * @param address Input IP address
+     *
      * @return Text value of the IP
      */
     static const String toString(const Address address);
@@ -167,12 +168,12 @@ class IPV4 : public NetworkProtocol
      *
      * @param destination
      *
-     * @return Error code
+     * @return Result code
      */
-    Error getTransmitPacket(NetworkQueue::Packet **pkt,
-                            const Address destination,
-                            const Protocol type,
-                            const Size size);
+    FileSystem::Result getTransmitPacket(NetworkQueue::Packet **pkt,
+                                         const Address destination,
+                                         const Protocol type,
+                                         const Size size);
 
     /**
      * Process incoming network packet.
@@ -180,10 +181,10 @@ class IPV4 : public NetworkProtocol
      * @param pkt Incoming packet pointer
      * @param offset Offset for processing
      *
-     * @return Error code
+     * @return Result code
      */
-    virtual Error process(const NetworkQueue::Packet *pkt,
-                          const Size offset);
+    virtual FileSystem::Result process(const NetworkQueue::Packet *pkt,
+                                       const Size offset);
 
     /**
      * Calculate IP checksum

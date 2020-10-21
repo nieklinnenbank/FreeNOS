@@ -86,31 +86,15 @@ FileSystem::Result UDPSocket::write(IOBuffer & buffer,
 
         DEBUG("addr =" << m_info.address << " port = " << m_info.port);
 
-        Error r = m_udp->bind(this, m_info.port);
-        if (r != 0)
-        {
-            return FileSystem::IOError;
-        }
-        else
-        {
-            return FileSystem::Success;
-        }
+        return m_udp->bind(this, m_info.port);
     }
     else
     {
-        const Error e = m_udp->sendPacket(&m_info, buffer, size);
-        if (e < 0)
-        {
-            return FileSystem::IOError;
-        }
-        else
-        {
-            return FileSystem::Success;
-        }
+        return m_udp->sendPacket(&m_info, buffer, size);
     }
 }
 
-Error UDPSocket::process(const NetworkQueue::Packet *pkt)
+FileSystem::Result UDPSocket::process(const NetworkQueue::Packet *pkt)
 {
     DEBUG("");
 
@@ -120,8 +104,10 @@ Error UDPSocket::process(const NetworkQueue::Packet *pkt)
         ERROR("udp socket queue full");
         return FileSystem::IOError;
     }
+
     buf->size = pkt->size;
     MemoryBlock::copy(buf->data, pkt->data, pkt->size);
     m_queue.push(buf);
-    return 0;
+
+    return FileSystem::Success;
 }

@@ -62,9 +62,9 @@ class NetworkProtocol : public Directory
     /**
      * Perform initialization.
      *
-     * @return Error code
+     * @return Result code
      */
-    virtual Error initialize() = 0;
+    virtual FileSystem::Result initialize() = 0;
 
     /**
      * Process incoming network packet.
@@ -72,10 +72,10 @@ class NetworkProtocol : public Directory
      * @param pkt Incoming packet pointer
      * @param offset Offset for processing
      *
-     * @return Error code
+     * @return Result code
      */
-    virtual Error process(const NetworkQueue::Packet *pkt,
-                          const Size offset) = 0;
+    virtual FileSystem::Result process(const NetworkQueue::Packet *pkt,
+                                       const Size offset) = 0;
 
   protected:
 

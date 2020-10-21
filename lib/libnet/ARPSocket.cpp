@@ -49,10 +49,10 @@ FileSystem::Result ARPSocket::read(IOBuffer & buffer,
         return FileSystem::Success;
     }
 
-    Error r = m_arp->lookupAddress(&m_ipAddr, &m_ethAddr);
-    if (r != 0)
+    const FileSystem::Result result = m_arp->lookupAddress(&m_ipAddr, &m_ethAddr);
+    if (result != FileSystem::Success)
     {
-        return FileSystem::IOError;
+        return result;
     }
 
     buffer.write(&m_ethAddr, sizeof(Ethernet::Address));
@@ -70,21 +70,19 @@ FileSystem::Result ARPSocket::write(IOBuffer & buffer,
     buffer.read(&m_ipAddr, sizeof(IPV4::Address));
 
     // Send request
-    Error r = m_arp->lookupAddress(&m_ipAddr, &m_ethAddr);
-    if (r != 0)
+    const FileSystem::Result result = m_arp->lookupAddress(&m_ipAddr, &m_ethAddr);
+    if (result != FileSystem::Success)
     {
-        if (r == FileSystem::RetryAgain)
-            return (FileSystem::Result) r;
-        else
-            return FileSystem::IOError;
+        return result;
     }
 
     size = sizeof(IPV4::Address);
     return FileSystem::Success;
 }
 
-Error ARPSocket::process(const NetworkQueue::Packet *pkt)
+FileSystem::Result ARPSocket::process(const NetworkQueue::Packet *pkt)
 {
     DEBUG("");
-    return 0;
+
+    return FileSystem::Success;
 }

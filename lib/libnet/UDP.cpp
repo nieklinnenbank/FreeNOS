@@ -16,7 +16,6 @@
  */
 
 #include <ByteOrder.h>
-#include <errno.h>
 #include "NetworkServer.h"
 #include "NetworkDevice.h"
 #include "UDP.h"
@@ -39,13 +38,15 @@ void UDP::setIP(::IPV4 *ip)
     m_ipv4 = ip;
 }
 
-Error UDP::initialize()
+FileSystem::Result UDP::initialize()
 {
     DEBUG("");
+
     m_factory = new UDPFactory(this);
     m_server->registerFile(this, "/udp");
     m_server->registerFile(m_factory, "/udp/factory");
-    return 0;
+
+    return FileSystem::Success;
 }
 
 UDPSocket * UDP::createSocket(String & path)
@@ -71,8 +72,8 @@ UDPSocket * UDP::createSocket(String & path)
     return sock;
 }
 
-Error UDP::process(const NetworkQueue::Packet *pkt,
-                   const Size offset)
+FileSystem::Result UDP::process(const NetworkQueue::Packet *pkt,
+                                const Size offset)
 {
     const Header *hdr = (const Header *)(pkt->data + sizeof(Ethernet::Header) + sizeof(IPV4::Header));
     const u16 port = be16_to_cpu(hdr->destPort);
@@ -84,21 +85,20 @@ Error UDP::process(const NetworkQueue::Packet *pkt,
     if (!sock)
     {
         DEBUG("dropped");
-        return EINVAL;
+        return FileSystem::NotFound;
     }
 
     (*sock)->process(pkt);
-    return 0;
+    return FileSystem::Success;
 }
 
-Error UDP::sendPacket(const NetworkClient::SocketInfo *src,
-                      IOBuffer & buffer,
-                      const Size size)
+FileSystem::Result UDP::sendPacket(const NetworkClient::SocketInfo *src,
+                                   IOBuffer & buffer,
+                                   const Size size)
 {
     NetworkClient::SocketInfo dest;
     NetworkQueue::Packet *pkt;
     Header *hdr;
-    Error r;
 
     DEBUG("");
 
@@ -107,11 +107,14 @@ Error UDP::sendPacket(const NetworkClient::SocketInfo *src,
     DEBUG("send payload to: " << dest.address << " port: " << dest.port << " size: " << size);
 
     // Get a fresh IP packet
-    r = m_ipv4->getTransmitPacket(
-        &pkt, dest.address, IPV4::UDP, sizeof(Header) + size - sizeof(dest)
-    );
-    if (r != 0)
-        return r;
+    const FileSystem::Result result = m_ipv4->getTransmitPacket(&pkt, dest.address,
+                                                                IPV4::UDP,
+                                                                sizeof(Header) + size - sizeof(dest));
+    if (result != FileSystem::Success)
+    {
+        ERROR("could not get transmit packet: result = " << (int) result);
+        return result;
+    }
 
     // Fill UDP header
     hdr = (Header *) (pkt->data + pkt->size);
@@ -135,18 +138,18 @@ Error UDP::sendPacket(const NetworkClient::SocketInfo *src,
     return m_device->transmit(pkt);
 }
 
-Error UDP::bind(UDPSocket *sock,
-                const u16 port)
+FileSystem::Result UDP::bind(UDPSocket *sock,
+                             const u16 port)
 {
     DEBUG("port = " << port);
 
     if (!port)
     {
-        return EINVAL;
+        return FileSystem::InvalidArgument;
     }
 
     m_ports.insert(port, sock);
-    return 0;
+    return FileSystem::Success;
 }
 
 const ulong UDP::calculateSum(const u16 *ptr,

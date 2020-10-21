@@ -55,9 +55,9 @@ class NetworkSocket : public File
      *
      * @param pkt Incoming packet pointer
      *
-     * @return Error code
+     * @return Result code
      */
-    virtual Error process(const NetworkQueue::Packet *pkt) = 0;
+    virtual FileSystem::Result process(const NetworkQueue::Packet *pkt) = 0;
 
   protected:
 

@@ -60,25 +60,25 @@ class SMSC95xx : public NetworkDevice
      *
      * @param address Ethernet address reference for output
      *
-     * @return FileSystem::Error code
+     * @return Result code
      */
-    virtual FileSystem::Error getAddress(Ethernet::Address *address);
+    virtual FileSystem::Result getAddress(Ethernet::Address *address);
 
     /**
      * Set ethernet address
      *
      * @param address New ethernet address to set
      *
-     * @return FileSystem::Error code
+     * @return Result code
      */
-    virtual FileSystem::Error setAddress(const Ethernet::Address *address);
+    virtual FileSystem::Result setAddress(const Ethernet::Address *address);
 
     /**
      * Transmit one network packet
      *
      * @param pkt Network packet buffer
      */
-    virtual FileSystem::Error transmit(NetworkQueue::Packet *pkt);
+    virtual FileSystem::Result transmit(NetworkQueue::Packet *pkt);
 
   private:
 

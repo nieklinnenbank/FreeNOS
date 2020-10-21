@@ -92,9 +92,9 @@ class ICMP : public NetworkProtocol
     /**
      * Perform initialization.
      *
-     * @return Error code
+     * @return Result code
      */
-    virtual Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
      * Creates an ICMP socket
@@ -109,18 +109,18 @@ class ICMP : public NetworkProtocol
      * @param pkt Incoming packet pointer
      * @param offset Offset for processing
      *
-     * @return Error code
+     * @return Result code
      */
-    virtual Error process(const NetworkQueue::Packet *pkt,
-                          const Size offset);
+    virtual FileSystem::Result process(const NetworkQueue::Packet *pkt,
+                                       const Size offset);
 
     /**
      * Send packet
      *
-     * @return Error code
+     * @return Result code
      */
-    Error sendPacket(const IPV4::Address ip,
-                     const Header *header);
+    FileSystem::Result sendPacket(const IPV4::Address ip,
+                                  const Header *header);
 
     /**
      * Calculate ICMP checksum

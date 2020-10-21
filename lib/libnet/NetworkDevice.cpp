@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <errno.h>
 #include "NetworkDevice.h"
 
 NetworkDevice::NetworkDevice(NetworkServer *server)
@@ -88,12 +87,11 @@ NetworkQueue * NetworkDevice::getTransmitQueue()
     return &m_transmit;
 }
 
-Error NetworkDevice::process(const NetworkQueue::Packet *pkt,
-                             const Size offset)
+FileSystem::Result NetworkDevice::process(const NetworkQueue::Packet *pkt,
+                                          const Size offset)
 {
     DEBUG("");
 
     // Let the protocols process the packet
-    m_eth->process(pkt, offset);
-    return 0;
+    return m_eth->process(pkt, offset);
 }

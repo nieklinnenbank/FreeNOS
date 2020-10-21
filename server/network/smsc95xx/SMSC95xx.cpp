@@ -58,7 +58,7 @@ FileSystem::Result SMSC95xx::initialize()
     return FileSystem::Success;
 }
 
-FileSystem::Error SMSC95xx::getAddress(Ethernet::Address *address)
+FileSystem::Result SMSC95xx::getAddress(Ethernet::Address *address)
 {
     DEBUG("");
 
@@ -68,17 +68,19 @@ FileSystem::Error SMSC95xx::getAddress(Ethernet::Address *address)
     address->addr[3] = 0x33;
     address->addr[4] = 0x44;
     address->addr[5] = 0x55;
+
     return FileSystem::Success;
 }
 
-FileSystem::Error SMSC95xx::setAddress(const Ethernet::Address *address)
+FileSystem::Result SMSC95xx::setAddress(const Ethernet::Address *address)
 {
     DEBUG("");
     return FileSystem::Success;
 }
 
-FileSystem::Error SMSC95xx::transmit(NetworkQueue::Packet *pkt)
+FileSystem::Result SMSC95xx::transmit(NetworkQueue::Packet *pkt)
 {
     DEBUG("");
+
     return m_usb->transmit(pkt);
 }

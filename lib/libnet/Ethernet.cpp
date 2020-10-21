@@ -16,7 +16,6 @@
  */
 
 #include <ByteOrder.h>
-#include <errno.h>
 #include "NetworkServer.h"
 #include "NetworkDevice.h"
 #include "Ethernet.h"
@@ -35,27 +34,29 @@ Ethernet::~Ethernet()
 {
 }
 
-Error Ethernet::initialize()
+FileSystem::Result Ethernet::initialize()
 {
     m_server->registerFile(this, "/ethernet");
     m_server->registerFile(new EthernetAddress(this), "/ethernet/address");
-    return 0;
+
+    return FileSystem::Success;
 }
 
-Error Ethernet::getAddress(Ethernet::Address *address)
+FileSystem::Result Ethernet::getAddress(Ethernet::Address *address)
 {
     MemoryBlock::copy(address, &m_address, sizeof(Ethernet::Address));
-    return 0;
+    return FileSystem::Success;
 }
 
-Error Ethernet::setAddress(const Ethernet::Address *address)
+FileSystem::Result Ethernet::setAddress(const Ethernet::Address *address)
 {
-    Error r = m_device->setAddress(address);
-    if (r == 0)
+    const FileSystem::Result result = m_device->setAddress(address);
+    if (result == FileSystem::Success)
     {
         MemoryBlock::copy(&m_address, address, sizeof(Ethernet::Address));
     }
-    return r;
+
+    return result;
 }
 
 void Ethernet::setARP(::ARP *arp)
@@ -99,8 +100,8 @@ NetworkQueue::Packet * Ethernet::getTransmitPacket(const Ethernet::Address *dest
     return pkt;
 }
 
-Error Ethernet::process(const NetworkQueue::Packet *pkt,
-                        const Size offset)
+FileSystem::Result Ethernet::process(const NetworkQueue::Packet *pkt,
+                                     const Size offset)
 {
     const Ethernet::Header *ether = (const Ethernet::Header *) (pkt->data + offset);
     const u16 type = readBe16(&ether->type);
@@ -123,7 +124,8 @@ Error Ethernet::process(const NetworkQueue::Packet *pkt,
             DEBUG("dropped unknown ethernet type: " << (int) type);
             break;
     }
-    return EINVAL;
+
+    return FileSystem::InvalidArgument;
 }
 
 Log & operator << (Log &log, const Ethernet::Address & addr)

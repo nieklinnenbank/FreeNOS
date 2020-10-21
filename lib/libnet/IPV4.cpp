@@ -20,7 +20,6 @@
 #include <List.h>
 #include <ListIterator.h>
 #include <ByteOrder.h>
-#include <errno.h>
 #include "NetworkServer.h"
 #include "NetworkDevice.h"
 #include "IPV4.h"
@@ -43,12 +42,14 @@ IPV4::~IPV4()
 {
 }
 
-Error IPV4::initialize()
+FileSystem::Result IPV4::initialize()
 {
     DEBUG("");
+
     m_server->registerFile(this, "/ipv4");
     m_server->registerFile(new IPV4Address(this), "/ipv4/address");
-    return 0;
+
+    return FileSystem::Success;
 }
 
 void IPV4::setICMP(::ICMP *icmp)
@@ -71,16 +72,16 @@ void IPV4::setUDP(::UDP *udp)
     m_udp = udp;
 }
 
-Error IPV4::getAddress(IPV4::Address *address)
+FileSystem::Result IPV4::getAddress(IPV4::Address *address)
 {
     *address = m_address;
-    return 0;
+    return FileSystem::Success;
 }
 
-Error IPV4::setAddress(const IPV4::Address *address)
+FileSystem::Result IPV4::setAddress(const IPV4::Address *address)
 {
     m_address = *address;
-    return 0;
+    return FileSystem::Success;
 }
 
 const String IPV4::toString(const Address address)
@@ -104,7 +105,9 @@ const IPV4::Address IPV4::toAddress(const char *address)
 
     // The address must be 4 bytes
     if (lst.count() != 4)
+    {
         return ZERO;
+    }
 
     // Extract bytes in dot format (xxx.xxx.xxx.xxx)
     for (ListIterator<String> i(lst); i.hasCurrent(); i++)
@@ -119,23 +122,31 @@ const IPV4::Address IPV4::toAddress(const char *address)
     return addr;
 }
 
-Error IPV4::getTransmitPacket(NetworkQueue::Packet **pkt,
-                              const IPV4::Address destination,
-                              const IPV4::Protocol type,
-                              const Size size)
+FileSystem::Result IPV4::getTransmitPacket(NetworkQueue::Packet **pkt,
+                                           const IPV4::Address destination,
+                                           const IPV4::Protocol type,
+                                           const Size size)
 {
     Ethernet::Address ethAddr;
-    Error r;
 
     // Find the ethernet address using ARP first
-    if ((r = m_arp->lookupAddress(&destination, &ethAddr)) != 0)
-        return r;
+    const FileSystem::Result result = m_arp->lookupAddress(&destination, &ethAddr);
+    if (result != FileSystem::Success)
+    {
+        return result;
+    }
 
     // Get a fresh ethernet packet
     *pkt = m_ether->getTransmitPacket(
         &ethAddr,
         Ethernet::IPV4
     );
+
+    if (*pkt == ZERO)
+    {
+        return FileSystem::IOError;
+    }
+
     // Fill IP header
     Header *hdr = (Header *) ((*pkt)->data + (*pkt)->size);
     hdr->versionIHL     = (sizeof(Header) / sizeof(u32)) | (4 << 4);
@@ -153,7 +164,7 @@ Error IPV4::getTransmitPacket(NetworkQueue::Packet **pkt,
     m_id++;
 
     // Success
-    return 0;
+    return FileSystem::Success;
 }
 
 const u16 IPV4::checksum(const void *buffer, const Size length)
@@ -182,8 +193,8 @@ const u16 IPV4::checksum(const void *buffer, const Size length)
     return (~sum);
 }
 
-Error IPV4::process(const NetworkQueue::Packet *pkt,
-                    const Size offset)
+FileSystem::Result IPV4::process(const NetworkQueue::Packet *pkt,
+                                 const Size offset)
 {
     DEBUG("");
 
@@ -193,22 +204,20 @@ Error IPV4::process(const NetworkQueue::Packet *pkt,
     if (destination != m_address)
     {
         DEBUG("dropped packet");
-        return ERANGE;
+        return FileSystem::NotFound;
     }
 
     switch (hdr->protocol)
     {
         case ICMP:
-            m_icmp->process(pkt, offset + sizeof(Header));
-            break;
+            return m_icmp->process(pkt, offset + sizeof(Header));
 
         case UDP:
-            m_udp->process(pkt, offset + sizeof(Header));
-            break;
+            return m_udp->process(pkt, offset + sizeof(Header));
 
         default:
             break;
     }
 
-    return EINVAL;
+    return FileSystem::InvalidArgument;
 }

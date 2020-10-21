@@ -209,7 +209,7 @@ void SMSC95xxUSB::writeFinished(FileSystemMessage *message)
     writeStart();
 }
 
-FileSystem::Error SMSC95xxUSB::transmit(NetworkQueue::Packet *pkt)
+FileSystem::Result SMSC95xxUSB::transmit(NetworkQueue::Packet *pkt)
 {
     DEBUG("size = " << pkt->size);
 
@@ -245,7 +245,7 @@ FileSystem::Error SMSC95xxUSB::transmit(NetworkQueue::Packet *pkt)
         writeStart();
 
     // Packet in transmission
-    return pkt->size;
+    return FileSystem::Success;
 }
 
 FileSystem::Error SMSC95xxUSB::getMACAddress(Ethernet::Address *address)

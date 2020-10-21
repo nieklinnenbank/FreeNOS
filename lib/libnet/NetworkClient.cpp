@@ -134,7 +134,7 @@ NetworkClient::Result NetworkClient::writeSocketInfo(const int sock,
 
     // Read socket factory. The factory will create
     // a new socket for us. We need to read the new file path
-    Error r = ::read(sock, buf, sizeof(buf));
+    int r = ::read(sock, buf, sizeof(buf));
     if (r < 0)
     {
         return IOError;

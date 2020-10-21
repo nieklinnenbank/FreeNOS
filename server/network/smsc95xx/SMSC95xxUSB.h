@@ -188,8 +188,10 @@ class SMSC95xxUSB : public USBDevice
      * Transmit one network packet
      *
      * @param pkt Network packet buffer
+     *
+     * @return Result code
      */
-    virtual Error transmit(NetworkQueue::Packet *pkt);
+    virtual FileSystem::Result transmit(NetworkQueue::Packet *pkt);
 
   private:
 

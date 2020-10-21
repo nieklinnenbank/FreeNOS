@@ -80,8 +80,10 @@ class UDP : public NetworkProtocol
 
     /**
      * Perform initialization.
+     *
+     * @return Result code
      */
-    virtual Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
      * Creates an UDP socket
@@ -96,10 +98,10 @@ class UDP : public NetworkProtocol
      * @param pkt Incoming packet pointer
      * @param offset Offset for processing
      *
-     * @return Error code
+     * @return Result code
      */
-    virtual Error process(const NetworkQueue::Packet *pkt,
-                          const Size offset);
+    virtual FileSystem::Result process(const NetworkQueue::Packet *pkt,
+                                       const Size offset);
 
     /**
      * Bind to UDP port
@@ -107,17 +109,19 @@ class UDP : public NetworkProtocol
      * @param sock UDP socket
      * @param port The port to bind to
      *
-     * @return Error code
+     * @return Result code
      */
-    Error bind(UDPSocket *sock,
-               const u16 port);
+    FileSystem::Result bind(UDPSocket *sock,
+                            const u16 port);
 
     /**
      * Send packet
+     *
+     * @return Result code
      */
-    Error sendPacket(const NetworkClient::SocketInfo *info,
-                     IOBuffer & buffer,
-                     const Size size);
+    FileSystem::Result sendPacket(const NetworkClient::SocketInfo *info,
+                                  IOBuffer & buffer,
+                                  const Size size);
 
     /**
      * Calculate ICMP checksum

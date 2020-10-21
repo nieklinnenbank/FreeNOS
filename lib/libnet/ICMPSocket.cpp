@@ -73,20 +73,15 @@ FileSystem::Result ICMPSocket::write(IOBuffer & buffer,
         ICMP::Header header;
         buffer.read(&header, sizeof(header));
 
-        Error r = m_icmp->sendPacket(m_info.address, &header);
-        if (r != 0)
-        {
-            return FileSystem::IOError;
-        }
+        return m_icmp->sendPacket(m_info.address, &header);
     }
-
-    return FileSystem::Success;
 }
 
-Error ICMPSocket::process(const NetworkQueue::Packet *pkt)
+FileSystem::Result ICMPSocket::process(const NetworkQueue::Packet *pkt)
 {
     DEBUG("");
-    return 0;
+
+    return FileSystem::Success;
 }
 
 void ICMPSocket::setReply(const ICMP::Header *header)

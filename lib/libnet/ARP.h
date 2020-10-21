@@ -121,8 +121,10 @@ class ARP : public NetworkProtocol
 
     /**
      * Perform initialization.
+     *
+     * @return Result code
      */
-    virtual Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
      * Set IPV4 instance
@@ -144,21 +146,19 @@ class ARP : public NetworkProtocol
      * @param ipAddr Input IP address to lookup
      * @param ethAddr Output Ethernet address when found
      *
-     * @return EAGAIN when the lookup is in progress
-     *         ESUCCESS on success
-     *         Other error code on error
+     * @return Result code
      */
-    Error lookupAddress(const IPV4::Address *ipAddr,
-                        Ethernet::Address *ethAddr);
+    FileSystem::Result lookupAddress(const IPV4::Address *ipAddr,
+                                     Ethernet::Address *ethAddr);
 
     /**
      * Send ARP request
      *
      * @param address IPV4 address to lookup
      *
-     * @return Error code
+     * @return Result code
      */
-    Error sendRequest(const IPV4::Address address);
+    FileSystem::Result sendRequest(const IPV4::Address address);
 
     /**
      * Send ARP reply
@@ -166,10 +166,10 @@ class ARP : public NetworkProtocol
      * @param ethaddr Ethernet address to send reply to
      * @param ipaddr IP address of the origin
      *
-     * @return Error code
+     * @return Result code
      */
-    Error sendReply(const Ethernet::Address *ethaddr,
-                    const IPV4::Address ipAddr);
+    FileSystem::Result sendReply(const Ethernet::Address *ethaddr,
+                                 const IPV4::Address ipAddr);
 
     /**
      * Process incoming network packet.
@@ -177,10 +177,10 @@ class ARP : public NetworkProtocol
      * @param pkt Incoming packet pointer
      * @param offset Offset for processing
      *
-     * @return Error code
+     * @return Result code
      */
-    virtual Error process(const NetworkQueue::Packet *pkt,
-                          const Size offset);
+    virtual FileSystem::Result process(const NetworkQueue::Packet *pkt,
+                                       const Size offset);
 
   private:
 

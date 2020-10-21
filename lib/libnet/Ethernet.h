@@ -93,26 +93,28 @@ class Ethernet : public NetworkProtocol
 
     /**
      * Perform initialization.
+     *
+     * @return Result code
      */
-    virtual Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
      * Retrieve Ethernet address
      *
      * @param address Output buffer to store the address
      *
-     * @return Error code
+     * @return Result code
      */
-    virtual Error getAddress(Address *address);
+    virtual FileSystem::Result getAddress(Address *address);
 
     /**
      * Set Ethernet address
      *
      * @param address Input address
      *
-     * @return Error code
+     * @return Result code
      */
-    virtual Error setAddress(const Address *address);
+    virtual FileSystem::Result setAddress(const Address *address);
 
     /**
      * Get a new packet for transmission
@@ -151,10 +153,10 @@ class Ethernet : public NetworkProtocol
      * @param pkt Incoming packet pointer
      * @param offset Offset for processing
      *
-     * @return Error code
+     * @return Result code
      */
-    virtual Error process(const NetworkQueue::Packet *pkt,
-                          const Size offset);
+    virtual FileSystem::Result process(const NetworkQueue::Packet *pkt,
+                                       const Size offset);
 
   private:
 
