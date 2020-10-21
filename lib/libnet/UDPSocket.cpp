@@ -110,7 +110,7 @@ FileSystem::Result UDPSocket::write(IOBuffer & buffer,
     }
 }
 
-Error UDPSocket::process(NetworkQueue::Packet *pkt)
+Error UDPSocket::process(const NetworkQueue::Packet *pkt)
 {
     DEBUG("");
 

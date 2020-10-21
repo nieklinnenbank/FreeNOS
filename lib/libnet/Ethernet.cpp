@@ -48,7 +48,7 @@ Error Ethernet::getAddress(Ethernet::Address *address)
     return 0;
 }
 
-Error Ethernet::setAddress(Ethernet::Address *address)
+Error Ethernet::setAddress(const Ethernet::Address *address)
 {
     Error r = m_device->setAddress(address);
     if (r == 0)
@@ -68,7 +68,7 @@ void Ethernet::setIP(::IPV4 *ip)
     m_ipv4 = ip;
 }
 
-const String Ethernet::toString(Ethernet::Address address)
+const String Ethernet::toString(const Ethernet::Address address)
 {
     String s;
 
@@ -84,7 +84,7 @@ const String Ethernet::toString(Ethernet::Address address)
 }
 
 NetworkQueue::Packet * Ethernet::getTransmitPacket(const Ethernet::Address *destination,
-                                                   Ethernet::PayloadType type)
+                                                   const Ethernet::PayloadType type)
 {
     NetworkQueue::Packet *pkt = m_device->getTransmitQueue()->get();
     if (!pkt)
@@ -99,9 +99,10 @@ NetworkQueue::Packet * Ethernet::getTransmitPacket(const Ethernet::Address *dest
     return pkt;
 }
 
-Error Ethernet::process(NetworkQueue::Packet *pkt, Size offset)
+Error Ethernet::process(const NetworkQueue::Packet *pkt,
+                        const Size offset)
 {
-    const Ethernet::Header *ether = (Ethernet::Header *) (pkt->data + offset);
+    const Ethernet::Header *ether = (const Ethernet::Header *) (pkt->data + offset);
     const u16 type = readBe16(&ether->type);
 
     DEBUG("");

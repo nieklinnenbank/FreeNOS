@@ -49,10 +49,11 @@ Error ICMP::initialize()
     return 0;
 }
 
-Error ICMP::process(NetworkQueue::Packet *pkt, Size offset)
+Error ICMP::process(const NetworkQueue::Packet *pkt,
+                    const Size offset)
 {
-    IPV4::Header *iphdr = (IPV4::Header *) (pkt->data + offset - sizeof(IPV4::Header));
-    Header *hdr = (Header *) (pkt->data + offset);
+    const IPV4::Header *iphdr = (const IPV4::Header *) (pkt->data + offset - sizeof(IPV4::Header));
+    const Header *hdr = (const Header *) (pkt->data + offset);
     const IPV4::Address source = readBe32(&iphdr->source);
 
     DEBUG("source = " << (uint)source << " type = " << hdr->type << " code = " << hdr->code << " id = " << hdr->id);
@@ -61,10 +62,12 @@ Error ICMP::process(NetworkQueue::Packet *pkt, Size offset)
     {
         case EchoRequest: {
             DEBUG("request");
-            hdr->type     = EchoReply;
-            write16(&hdr->checksum, 0);
-            write16(&hdr->checksum, checksum(hdr));
-            return sendPacket(source, hdr);
+            Header reply;
+            MemoryBlock::copy(&reply, hdr, sizeof(reply));
+            reply.type = EchoReply;
+            write16(&reply.checksum, 0);
+            write16(&reply.checksum, checksum(&reply));
+            return sendPacket(source, &reply);
         }
         case EchoReply: {
             DEBUG("reply");
@@ -104,19 +107,21 @@ ICMPSocket * ICMP::createSocket(String & path)
     return sock;
 }
 
-Error ICMP::sendPacket(IPV4::Address ip, ICMP::Header *header)
+Error ICMP::sendPacket(const IPV4::Address ip,
+                       const ICMP::Header *header)
 {
     DEBUG("");
 
     NetworkQueue::Packet *pkt;
-    Error r;
 
     // Get a fresh IP packet
-    r = m_ipv4->getTransmitPacket(
+    const Error r = m_ipv4->getTransmitPacket(
         &pkt, ip, IPV4::ICMP, sizeof(Header)
     );
     if (r != 0)
+    {
         return r;
+    }
 
     // Fill payload
     MemoryBlock::copy(pkt->data + pkt->size, header, sizeof(ICMP::Header));
@@ -126,7 +131,7 @@ Error ICMP::sendPacket(IPV4::Address ip, ICMP::Header *header)
     return m_device->transmit(pkt);
 }
 
-const u16 ICMP::checksum(Header *header)
+const u16 ICMP::checksum(const Header *header)
 {
     return IPV4::checksum(header, sizeof(*header));
 }

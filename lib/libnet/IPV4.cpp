@@ -77,13 +77,13 @@ Error IPV4::getAddress(IPV4::Address *address)
     return 0;
 }
 
-Error IPV4::setAddress(IPV4::Address *address)
+Error IPV4::setAddress(const IPV4::Address *address)
 {
     m_address = *address;
     return 0;
 }
 
-const String IPV4::toString(Address address)
+const String IPV4::toString(const Address address)
 {
     String s;
 
@@ -97,8 +97,8 @@ const String IPV4::toString(Address address)
 
 const IPV4::Address IPV4::toAddress(const char *address)
 {
-    String input = address;
-    List<String> lst = input.split('.');
+    const String input = address;
+    const List<String> lst = input.split('.');
     Size shift = 24;
     IPV4::Address addr = 0;
 
@@ -114,14 +114,15 @@ const IPV4::Address IPV4::toAddress(const char *address)
         addr |= (byte << shift);
         shift -= 8;
     }
+
     // Done
     return addr;
 }
 
 Error IPV4::getTransmitPacket(NetworkQueue::Packet **pkt,
-                              IPV4::Address destination,
-                              IPV4::Protocol type,
-                              Size size)
+                              const IPV4::Address destination,
+                              const IPV4::Protocol type,
+                              const Size size)
 {
     Ethernet::Address ethAddr;
     Error r;
@@ -155,9 +156,10 @@ Error IPV4::getTransmitPacket(NetworkQueue::Packet **pkt,
     return 0;
 }
 
-const u16 IPV4::checksum(const void *buffer, Size len)
+const u16 IPV4::checksum(const void *buffer, const Size length)
 {
     const u16 *ptr = (const u16 *) buffer;
+    Size len = length;
     uint sum = 0;
 
     // Calculate sum of the buffer
@@ -180,11 +182,12 @@ const u16 IPV4::checksum(const void *buffer, Size len)
     return (~sum);
 }
 
-Error IPV4::process(NetworkQueue::Packet *pkt, Size offset)
+Error IPV4::process(const NetworkQueue::Packet *pkt,
+                    const Size offset)
 {
     DEBUG("");
 
-    Header *hdr = (Header *) (pkt->data + offset);
+    const Header *hdr = (const Header *) (pkt->data + offset);
     const u32 destination = readBe32(&hdr->destination);
 
     if (destination != m_address)
@@ -192,6 +195,7 @@ Error IPV4::process(NetworkQueue::Packet *pkt, Size offset)
         DEBUG("dropped packet");
         return ERANGE;
     }
+
     switch (hdr->protocol)
     {
         case ICMP:
@@ -205,5 +209,6 @@ Error IPV4::process(NetworkQueue::Packet *pkt, Size offset)
         default:
             break;
     }
+
     return EINVAL;
 }

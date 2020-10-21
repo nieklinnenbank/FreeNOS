@@ -70,7 +70,7 @@ class Loopback : public NetworkDevice
      *
      * @return FileSystem::Error code
      */
-    virtual FileSystem::Error setAddress(Ethernet::Address *address);
+    virtual FileSystem::Error setAddress(const Ethernet::Address *address);
 
     /**
      * Transmit one network packet

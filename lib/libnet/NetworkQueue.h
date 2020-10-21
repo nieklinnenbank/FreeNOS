@@ -68,7 +68,9 @@ class NetworkQueue
      * @param headerSize Size of the physical header, if any
      * @param queueSize The size of the queue in number of packets
      */
-    NetworkQueue(Size packetSize, Size headerSize = 0, Size queueSize = 8);
+    NetworkQueue(const Size packetSize,
+                 const Size headerSize = 0,
+                 const Size queueSize = 8);
 
     /**
      * Destructor
@@ -78,7 +80,7 @@ class NetworkQueue
     /**
      * Set default packet header size
      */
-    void setHeaderSize(Size size);
+    void setHeaderSize(const Size size);
 
     /**
      * Get unused packet
@@ -109,7 +111,7 @@ class NetworkQueue
     Index<Packet, MaxPackets> m_data;
 
     /** Size of each packet */
-    Size m_packetSize;
+    const Size m_packetSize;
 
     /**
      * Size of physical hardware header.

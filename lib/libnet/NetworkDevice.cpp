@@ -88,7 +88,8 @@ NetworkQueue * NetworkDevice::getTransmitQueue()
     return &m_transmit;
 }
 
-Error NetworkDevice::process(NetworkQueue::Packet *pkt, Size offset)
+Error NetworkDevice::process(const NetworkQueue::Packet *pkt,
+                             const Size offset)
 {
     DEBUG("");
 

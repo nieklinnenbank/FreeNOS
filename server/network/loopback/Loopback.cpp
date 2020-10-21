@@ -58,7 +58,7 @@ FileSystem::Error Loopback::getAddress(Ethernet::Address *address)
     return FileSystem::Success;
 }
 
-FileSystem::Error Loopback::setAddress(Ethernet::Address *address)
+FileSystem::Error Loopback::setAddress(const Ethernet::Address *address)
 {
     DEBUG("");
     MemoryBlock::copy(&m_address, address, sizeof(Ethernet::Address));

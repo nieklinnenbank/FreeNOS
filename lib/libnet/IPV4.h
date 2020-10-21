@@ -144,7 +144,7 @@ class IPV4 : public NetworkProtocol
      *
      * @return Error code
      */
-    virtual Error setAddress(Address *address);
+    virtual Error setAddress(const Address *address);
 
     /**
      * Convert address to string
@@ -152,7 +152,7 @@ class IPV4 : public NetworkProtocol
      * @param address Input IP address
      * @return Text value of the IP
      */
-    static const String toString(Address address);
+    static const String toString(const Address address);
 
     /**
      * Convert string to IPV4 address.
@@ -170,16 +170,20 @@ class IPV4 : public NetworkProtocol
      * @return Error code
      */
     Error getTransmitPacket(NetworkQueue::Packet **pkt,
-                            Address destination,
-                            Protocol type,
-                            Size size);
+                            const Address destination,
+                            const Protocol type,
+                            const Size size);
 
     /**
      * Process incoming network packet.
      *
+     * @param pkt Incoming packet pointer
+     * @param offset Offset for processing
+     *
      * @return Error code
      */
-    virtual Error process(NetworkQueue::Packet *pkt, Size offset);
+    virtual Error process(const NetworkQueue::Packet *pkt,
+                          const Size offset);
 
     /**
      * Calculate IP checksum
@@ -189,7 +193,8 @@ class IPV4 : public NetworkProtocol
      *
      * @return IP checksum value for the given buffer
      */
-    static const u16 checksum(const void *buffer, Size length);
+    static const u16 checksum(const void *buffer,
+                              const Size length);
 
   private:
 

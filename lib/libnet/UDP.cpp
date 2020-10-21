@@ -71,10 +71,11 @@ UDPSocket * UDP::createSocket(String & path)
     return sock;
 }
 
-Error UDP::process(NetworkQueue::Packet *pkt, Size offset)
+Error UDP::process(const NetworkQueue::Packet *pkt,
+                   const Size offset)
 {
-    Header *hdr = (Header *)(pkt->data + sizeof(Ethernet::Header) + sizeof(IPV4::Header));
-    u16 port = be16_to_cpu(hdr->destPort);
+    const Header *hdr = (const Header *)(pkt->data + sizeof(Ethernet::Header) + sizeof(IPV4::Header));
+    const u16 port = be16_to_cpu(hdr->destPort);
 
     DEBUG("port = " << port);
 
@@ -85,11 +86,14 @@ Error UDP::process(NetworkQueue::Packet *pkt, Size offset)
         DEBUG("dropped");
         return EINVAL;
     }
+
     (*sock)->process(pkt);
     return 0;
 }
 
-Error UDP::sendPacket(NetworkClient::SocketInfo *src, IOBuffer & buffer, Size size)
+Error UDP::sendPacket(const NetworkClient::SocketInfo *src,
+                      IOBuffer & buffer,
+                      const Size size)
 {
     NetworkClient::SocketInfo dest;
     NetworkQueue::Packet *pkt;
@@ -131,29 +135,37 @@ Error UDP::sendPacket(NetworkClient::SocketInfo *src, IOBuffer & buffer, Size si
     return m_device->transmit(pkt);
 }
 
-Error UDP::bind(UDPSocket *sock, u16 port)
+Error UDP::bind(UDPSocket *sock,
+                const u16 port)
 {
     DEBUG("port = " << port);
 
     if (!port)
+    {
         return EINVAL;
+    }
 
     m_ports.insert(port, sock);
     return 0;
 }
 
-const ulong UDP::calculateSum(const u16 *ptr, Size bytes)
+const ulong UDP::calculateSum(const u16 *ptr,
+                              const Size bytes)
 {
     ulong sum = 0;
+    Size remain = bytes;
 
-    for (;bytes > 0; bytes -= 2, ptr++)
+    for (;remain > 0; remain -= sizeof(u16), ptr++)
     {
-        if (bytes == 1) {
+        if (remain == sizeof(u8))
+        {
             sum += read8(ptr);
             break;
         }
         else
+        {
             sum += read16(ptr);
+        }
     }
 
     return sum;

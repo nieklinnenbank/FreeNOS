@@ -112,7 +112,7 @@ class Ethernet : public NetworkProtocol
      *
      * @return Error code
      */
-    virtual Error setAddress(Address *address);
+    virtual Error setAddress(const Address *address);
 
     /**
      * Get a new packet for transmission
@@ -120,7 +120,7 @@ class Ethernet : public NetworkProtocol
      * @param destination
      */
     NetworkQueue::Packet *getTransmitPacket(const Address *destination,
-                                            PayloadType type);
+                                            const PayloadType type);
 
 
     /**
@@ -129,7 +129,7 @@ class Ethernet : public NetworkProtocol
      * @param address Input ethernet address
      * @return Text value of the ethernet address
      */
-    static const String toString(Address address);
+    static const String toString(const Address address);
 
     /**
      * Set ARP instance
@@ -148,9 +148,13 @@ class Ethernet : public NetworkProtocol
     /**
      * Process incoming network packet.
      *
+     * @param pkt Incoming packet pointer
+     * @param offset Offset for processing
+     *
      * @return Error code
      */
-    virtual Error process(NetworkQueue::Packet *pkt, Size offset);
+    virtual Error process(const NetworkQueue::Packet *pkt,
+                          const Size offset);
 
   private:
 

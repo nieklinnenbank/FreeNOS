@@ -91,9 +91,11 @@ class ICMPSocket : public NetworkSocket
     /**
      * Process incoming network packet.
      *
+     * @param pkt Incoming packet pointer
+     *
      * @return Error code
      */
-    virtual Error process(NetworkQueue::Packet *pkt);
+    virtual Error process(const NetworkQueue::Packet *pkt);
 
     /**
      * Set error status
@@ -107,7 +109,7 @@ class ICMPSocket : public NetworkSocket
      *
      * @param reply ICMP reply header
      */
-    void setReply(ICMP::Header *reply);
+    void setReply(const ICMP::Header *reply);
 
   private:
 

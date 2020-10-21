@@ -106,24 +106,30 @@ class ICMP : public NetworkProtocol
     /**
      * Process incoming network packet.
      *
+     * @param pkt Incoming packet pointer
+     * @param offset Offset for processing
+     *
      * @return Error code
      */
-    virtual Error process(NetworkQueue::Packet *pkt, Size offset);
+    virtual Error process(const NetworkQueue::Packet *pkt,
+                          const Size offset);
 
     /**
      * Send packet
      *
      * @return Error code
      */
-    Error sendPacket(IPV4::Address ip, Header *header);
+    Error sendPacket(const IPV4::Address ip,
+                     const Header *header);
 
     /**
      * Calculate ICMP checksum
      *
      * @param header ICMP header
+     *
      * @return ICMP checksum value for the given header
      */
-    static const u16 checksum(Header *header);
+    static const u16 checksum(const Header *header);
 
   private:
 

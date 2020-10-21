@@ -71,7 +71,7 @@ FileSystem::Error SMSC95xx::getAddress(Ethernet::Address *address)
     return FileSystem::Success;
 }
 
-FileSystem::Error SMSC95xx::setAddress(Ethernet::Address *address)
+FileSystem::Error SMSC95xx::setAddress(const Ethernet::Address *address)
 {
     DEBUG("");
     return FileSystem::Success;

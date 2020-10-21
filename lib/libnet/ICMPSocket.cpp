@@ -83,7 +83,7 @@ FileSystem::Result ICMPSocket::write(IOBuffer & buffer,
     return FileSystem::Success;
 }
 
-Error ICMPSocket::process(NetworkQueue::Packet *pkt)
+Error ICMPSocket::process(const NetworkQueue::Packet *pkt)
 {
     DEBUG("");
     return 0;
@@ -94,7 +94,7 @@ void ICMPSocket::error(Error err)
     DEBUG("");
 }
 
-void ICMPSocket::setReply(ICMP::Header *header)
+void ICMPSocket::setReply(const ICMP::Header *header)
 {
     DEBUG("");
 

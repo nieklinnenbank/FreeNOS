@@ -90,9 +90,11 @@ class UDPSocket : public NetworkSocket
     /**
      * Process incoming network packet.
      *
+     * @param pkt Incoming packet pointer
+     *
      * @return Error code
      */
-    virtual Error process(NetworkQueue::Packet *pkt);
+    virtual Error process(const NetworkQueue::Packet *pkt);
 
     /**
      * Set error status

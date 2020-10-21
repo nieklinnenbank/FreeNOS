@@ -93,23 +93,31 @@ class UDP : public NetworkProtocol
     /**
      * Process incoming network packet.
      *
+     * @param pkt Incoming packet pointer
+     * @param offset Offset for processing
+     *
      * @return Error code
      */
-    virtual Error process(NetworkQueue::Packet *pkt, Size offset);
+    virtual Error process(const NetworkQueue::Packet *pkt,
+                          const Size offset);
 
     /**
      * Bind to UDP port
      *
      * @param sock UDP socket
      * @param port The port to bind to
+     *
      * @return Error code
      */
-    Error bind(UDPSocket *sock, u16 port);
+    Error bind(UDPSocket *sock,
+               const u16 port);
 
     /**
      * Send packet
      */
-    Error sendPacket(NetworkClient::SocketInfo *info, IOBuffer & buffer, Size size);
+    Error sendPacket(const NetworkClient::SocketInfo *info,
+                     IOBuffer & buffer,
+                     const Size size);
 
     /**
      * Calculate ICMP checksum
@@ -124,7 +132,7 @@ class UDP : public NetworkProtocol
   private:
 
     static const ulong calculateSum(const u16 *ptr,
-                                    Size bytes);
+                                    const Size bytes);
 
   private:
 

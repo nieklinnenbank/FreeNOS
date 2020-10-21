@@ -83,7 +83,7 @@ FileSystem::Result ARPSocket::write(IOBuffer & buffer,
     return FileSystem::Success;
 }
 
-Error ARPSocket::process(NetworkQueue::Packet *pkt)
+Error ARPSocket::process(const NetworkQueue::Packet *pkt)
 {
     DEBUG("");
     return 0;

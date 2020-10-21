@@ -81,7 +81,7 @@ class NetworkDevice : public Device
      * @param address New ethernet address to set
      * @return Error code
      */
-    virtual Error setAddress(Ethernet::Address *address) = 0;
+    virtual Error setAddress(const Ethernet::Address *address) = 0;
 
     /**
      * Get receive queue
@@ -111,7 +111,8 @@ class NetworkDevice : public Device
      *
      * @return Error code
      */
-    virtual Error process(NetworkQueue::Packet *packet, Size offset = 0);
+    virtual Error process(const NetworkQueue::Packet *packet,
+                          const Size offset = 0);
 
   protected:
 

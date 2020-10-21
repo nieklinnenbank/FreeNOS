@@ -17,12 +17,13 @@
 
 #include "NetworkQueue.h"
 
-NetworkQueue::NetworkQueue(Size packetSize, Size headerSize, Size queueSize)
+NetworkQueue::NetworkQueue(const Size packetSize,
+                           const Size headerSize,
+                           const Size queueSize)
+    : m_packetSize(packetSize)
+    , m_packetHeader(headerSize)
 {
     assert(queueSize <= MaxPackets);
-
-    m_packetSize   = packetSize;
-    m_packetHeader = headerSize;
 
     for (Size i = 0; i < queueSize; i++)
     {
@@ -46,7 +47,7 @@ NetworkQueue::~NetworkQueue()
     }
 }
 
-void NetworkQueue::setHeaderSize(Size size)
+void NetworkQueue::setHeaderSize(const Size size)
 {
     m_packetHeader = size;
 }

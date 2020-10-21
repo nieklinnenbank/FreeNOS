@@ -69,9 +69,13 @@ class NetworkProtocol : public Directory
     /**
      * Process incoming network packet.
      *
+     * @param pkt Incoming packet pointer
+     * @param offset Offset for processing
+     *
      * @return Error code
      */
-    virtual Error process(NetworkQueue::Packet *pkt, Size offset) = 0;
+    virtual Error process(const NetworkQueue::Packet *pkt,
+                          const Size offset) = 0;
 
   protected:
 

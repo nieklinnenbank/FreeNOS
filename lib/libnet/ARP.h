@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBNET_ARP_H
-#define __LIBNET_ARP_H
+#ifndef __LIB_LIBNET_ARP_H
+#define __LIB_LIBNET_ARP_H
 
 #include <Types.h>
 #include <HashTable.h>
@@ -148,7 +148,7 @@ class ARP : public NetworkProtocol
      *         ESUCCESS on success
      *         Other error code on error
      */
-    Error lookupAddress(IPV4::Address *ipAddr,
+    Error lookupAddress(const IPV4::Address *ipAddr,
                         Ethernet::Address *ethAddr);
 
     /**
@@ -158,7 +158,7 @@ class ARP : public NetworkProtocol
      *
      * @return Error code
      */
-    Error sendRequest(IPV4::Address address);
+    Error sendRequest(const IPV4::Address address);
 
     /**
      * Send ARP reply
@@ -179,7 +179,8 @@ class ARP : public NetworkProtocol
      *
      * @return Error code
      */
-    virtual Error process(NetworkQueue::Packet *pkt, Size offset);
+    virtual Error process(const NetworkQueue::Packet *pkt,
+                          const Size offset);
 
   private:
 
@@ -190,7 +191,7 @@ class ARP : public NetworkProtocol
      *
      * @return ARPCache object pointer
      */
-    ARPCache * insertCacheEntry(IPV4::Address ipAddr);
+    ARPCache * insertCacheEntry(const IPV4::Address ipAddr);
 
     /**
      * Retrieve cache entry by IP
@@ -199,7 +200,7 @@ class ARP : public NetworkProtocol
      *
      * @return ARPCache object pointer or ZERO if not found
      */
-    ARPCache * getCacheEntry(IPV4::Address ipAddr);
+    ARPCache * getCacheEntry(const IPV4::Address ipAddr);
 
     /**
      * Update cache entry
@@ -207,7 +208,7 @@ class ARP : public NetworkProtocol
      * @param ipAddr IP address for update
      * @param ethAddr Ethernet address for update
      */
-    void updateCacheEntry(IPV4::Address ipAddr,
+    void updateCacheEntry(const IPV4::Address ipAddr,
                           const Ethernet::Address *ethAddr);
 
   private:
@@ -230,4 +231,4 @@ class ARP : public NetworkProtocol
  * @}
  */
 
-#endif /* __LIBNET_ARP_H */
+#endif /* __LIB_LIBNET_ARP_H */

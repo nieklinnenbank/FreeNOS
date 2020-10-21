@@ -52,7 +52,7 @@ void ARP::setEthernet(::Ethernet *eth)
     m_ether = eth;
 }
 
-ARP::ARPCache * ARP::getCacheEntry(IPV4::Address ipAddr)
+ARP::ARPCache * ARP::getCacheEntry(const IPV4::Address ipAddr)
 {
     ARPCache **entry = (ARPCache **) m_cache.get(ipAddr);
     if (entry)
@@ -61,7 +61,7 @@ ARP::ARPCache * ARP::getCacheEntry(IPV4::Address ipAddr)
         return insertCacheEntry(ipAddr);
 }
 
-ARP::ARPCache * ARP::insertCacheEntry(IPV4::Address ipAddr)
+ARP::ARPCache * ARP::insertCacheEntry(const IPV4::Address ipAddr)
 {
     ARPCache *entry = new ARPCache;
     MemoryBlock::set(entry, 0, sizeof(*entry));
@@ -72,7 +72,7 @@ ARP::ARPCache * ARP::insertCacheEntry(IPV4::Address ipAddr)
     return entry;
 }
 
-void ARP::updateCacheEntry(IPV4::Address ipAddr,
+void ARP::updateCacheEntry(const IPV4::Address ipAddr,
                            const Ethernet::Address *ethAddr)
 {
     ARPCache *entry = getCacheEntry(ipAddr);
@@ -83,29 +83,32 @@ void ARP::updateCacheEntry(IPV4::Address ipAddr,
     }
 }
 
-Error ARP::lookupAddress(IPV4::Address *ipAddr,
+Error ARP::lookupAddress(const IPV4::Address *ipAddr,
                          Ethernet::Address *ethAddr)
 {
     DEBUG("");
 
     // See if we have the IP cached
-    ARPCache *entry = getCacheEntry(*ipAddr);
+    const ARPCache *entry = getCacheEntry(*ipAddr);
     if (entry && entry->valid)
     {
         MemoryBlock::copy(ethAddr, &entry->ethAddr, sizeof(Ethernet::Address));
         return 0;
     }
+
     // Send an ARP request
-    Error r = sendRequest(*ipAddr);
+    const Error r = sendRequest(*ipAddr);
     if (r < 0)
+    {
         return r;
+    }
 
     // Make sure we are called again in about 500msec
     m_server->setTimeout(500);
     return FileSystem::RetryAgain;
 }
 
-Error ARP::sendRequest(IPV4::Address address)
+Error ARP::sendRequest(const IPV4::Address address)
 {
     DEBUG("");
 
@@ -202,10 +205,10 @@ Error ARP::sendReply(const Ethernet::Address *ethAddr, const IPV4::Address ipAdd
     return m_device->transmit(pkt);
 }
 
-Error ARP::process(NetworkQueue::Packet *pkt, Size offset)
+Error ARP::process(const NetworkQueue::Packet *pkt, const Size offset)
 {
-    const Ethernet::Header *ether = (Ethernet::Header *) (pkt->data + offset - sizeof(Ethernet::Header));
-    const Header *arp = (Header *) (pkt->data + offset);
+    const Ethernet::Header *ether = (const Ethernet::Header *) (pkt->data + offset - sizeof(Ethernet::Header));
+    const Header *arp = (const Header *) (pkt->data + offset);
     const u16 operation = readBe16(&arp->operation);
     const u32 ipTarget  = readBe32(&arp->ipTarget);
     const u32 ipSender  = readBe32(&arp->ipSender);
