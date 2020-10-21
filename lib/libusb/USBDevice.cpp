@@ -191,7 +191,7 @@ FileSystem::Result USBDevice::initialize()
     return FileSystem::Success;
 }
 
-FileSystem::Error USBDevice::getDeviceDescriptor(USBDescriptor::Device *desc, Size size)
+Error USBDevice::getDeviceDescriptor(USBDescriptor::Device *desc, Size size)
 {
     DEBUG("");
 
@@ -203,7 +203,7 @@ FileSystem::Error USBDevice::getDeviceDescriptor(USBDescriptor::Device *desc, Si
                           desc, size);
 }
 
-FileSystem::Error USBDevice::getConfigDescriptor(USBDescriptor::Configuration *desc, Size size)
+Error USBDevice::getConfigDescriptor(USBDescriptor::Configuration *desc, Size size)
 {
     DEBUG("");
 
@@ -215,7 +215,7 @@ FileSystem::Error USBDevice::getConfigDescriptor(USBDescriptor::Configuration *d
                           desc, size);
 }
 
-FileSystem::Error USBDevice::getInterfaceDescriptor(USBDescriptor::Interface *desc)
+Error USBDevice::getInterfaceDescriptor(USBDescriptor::Interface *desc)
 {
     DEBUG("");
 
@@ -227,7 +227,7 @@ FileSystem::Error USBDevice::getInterfaceDescriptor(USBDescriptor::Interface *de
                           desc, sizeof(*desc));
 }
 
-FileSystem::Error USBDevice::getEndpointDescriptor(u8 endpointId, USBDescriptor::Endpoint *desc)
+Error USBDevice::getEndpointDescriptor(u8 endpointId, USBDescriptor::Endpoint *desc)
 {
     DEBUG("endpointId = " << endpointId);
 
@@ -239,12 +239,12 @@ FileSystem::Error USBDevice::getEndpointDescriptor(u8 endpointId, USBDescriptor:
                           desc, sizeof(*desc));
 }
 
-FileSystem::Error USBDevice::setAddress(u8 address)
+Error USBDevice::setAddress(u8 address)
 {
     DEBUG("address =" << address);
 
     // Send the request
-    FileSystem::Error r = controlMessage(USBTransfer::SetAddress,
+    Error r = controlMessage(USBTransfer::SetAddress,
                              USBTransfer::Out,
                              USBTransfer::Standard,
                              USBTransfer::Device,
@@ -257,7 +257,7 @@ FileSystem::Error USBDevice::setAddress(u8 address)
     return r;
 }
 
-FileSystem::Error USBDevice::setConfiguration(u8 configId)
+Error USBDevice::setConfiguration(u8 configId)
 {
     DEBUG("configId =" << configId);
     return controlMessage(USBTransfer::SetConfiguration,
@@ -267,7 +267,7 @@ FileSystem::Error USBDevice::setConfiguration(u8 configId)
                           configId, 0, 0, 0);
 }
 
-FileSystem::Error USBDevice::controlMessage(u8 request,
+Error USBDevice::controlMessage(u8 request,
                                 const USBTransfer::Direction direction,
                                 const USBTransfer::RequestType type,
                                 const USBTransfer::Recipient recipient,
@@ -312,7 +312,7 @@ FileSystem::Error USBDevice::controlMessage(u8 request,
     return submit(msg);
 }
 
-FileSystem::Error USBDevice::transfer(const USBTransfer::Type type,
+Error USBDevice::transfer(const USBTransfer::Type type,
                           const USBTransfer::Direction direction,
                           Address endpointId,
                           void *buffer,
@@ -346,7 +346,7 @@ FileSystem::Error USBDevice::transfer(const USBTransfer::Type type,
     return submit(msg);
 }
 
-FileSystem::Error USBDevice::beginTransfer(
+Error USBDevice::beginTransfer(
     const USBTransfer::Type type,
     const USBTransfer::Direction direction,
     Address endpointId,
@@ -402,7 +402,7 @@ FileSystem::Error USBDevice::beginTransfer(
     return FileSystem::IOError;
 }
 
-FileSystem::Error USBDevice::finishTransfer(FileSystemMessage *msg)
+Error USBDevice::finishTransfer(FileSystemMessage *msg)
 {
     DEBUG("");
 
@@ -416,7 +416,7 @@ FileSystem::Error USBDevice::finishTransfer(FileSystemMessage *msg)
     return FileSystem::Success;
 }
 
-FileSystem::Error USBDevice::submit(USBMessage & msg)
+Error USBDevice::submit(USBMessage & msg)
 {
     DEBUG("");
 

@@ -56,8 +56,8 @@ class USBController : public DeviceServer
      *
      * @return Result code
      */
-    virtual FileSystem::Error transfer(const FileSystemMessage *msg,
-                                       USBMessage *usb) = 0;
+    virtual Error transfer(const FileSystemMessage *msg,
+                           USBMessage *usb) = 0;
 
   protected:
 

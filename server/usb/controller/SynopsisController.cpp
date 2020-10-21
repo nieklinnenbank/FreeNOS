@@ -216,8 +216,8 @@ SynopsisChannel * SynopsisController::getChannel(const FileSystemMessage *msg,
     return ZERO;
 }
 
-FileSystem::Error SynopsisController::transfer(const FileSystemMessage *msg,
-                                               USBMessage *usb)
+Error SynopsisController::transfer(const FileSystemMessage *msg,
+                                   USBMessage *usb)
 {
     DEBUG("");
 
