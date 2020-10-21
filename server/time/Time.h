@@ -102,11 +102,11 @@ class Time : public Device
     Time();
 
     /**
-     * @brief Initializes the time class.
+     * Initialize the time device
      *
-     * @return Error status code.
+     * @return Result code
      */
-    virtual FileSystem::Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
      * Read time

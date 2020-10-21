@@ -67,7 +67,7 @@ class BootImageStorage : public Storage
      * @param buffer Output buffer.
      * @param size Number of bytes to copied.
      *
-     * @return Error code
+     * @return Result code
      */
     virtual FileSystem::Result read(const u64 offset, void *buffer, const Size size) const;
 

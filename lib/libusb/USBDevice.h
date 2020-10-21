@@ -59,11 +59,11 @@ class USBDevice : public Device
     virtual ~USBDevice();
 
     /**
-     * Initialize the USBDevice.
+     * Initialize the device
      *
      * @return Result code
      */
-    virtual FileSystem::Error initialize();
+    virtual FileSystem::Result initialize();
 
   protected:
 

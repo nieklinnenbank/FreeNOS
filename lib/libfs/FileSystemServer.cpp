@@ -191,13 +191,13 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
     File *file = ZERO;
     Directory *parent;
     FileSystemMessage *msg = req.getMessage();
-    Error ret;
 
     // Copy the file path
-    if ((ret = VMCopy(msg->from, API::Read, (Address) buf,
-                    (Address) msg->path, FileSystemPath::MaximumLength)) <= 0)
+    int result = VMCopy(msg->from, API::Read, (Address) buf,
+                       (Address) msg->path, FileSystemPath::MaximumLength);
+    if (result <= 0)
     {
-        ERROR("VMCopy failed: result = " << (int)ret << " from = " << msg->from <<
+        ERROR("VMCopy failed: result = " << (int)result << " from = " << msg->from <<
               " addr = " << (void *) msg->path << " action = " << (int) msg->action);
         msg->result = FileSystem::IOError;
         sendResponse(msg);

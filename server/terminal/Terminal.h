@@ -122,11 +122,11 @@ class Terminal : public Device
     void showCursor();
 
     /**
-     * @brief Initializes the Terminal.
+     * Initialize the Terminal.
      *
-     * @return Error result code.
+     * @return Result code
      */
-    virtual FileSystem::Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
      * Read bytes from the Terminal

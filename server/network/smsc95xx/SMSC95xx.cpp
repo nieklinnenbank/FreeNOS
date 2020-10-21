@@ -35,24 +35,26 @@ SMSC95xx::~SMSC95xx()
     delete m_usb;
 }
 
-FileSystem::Error SMSC95xx::initialize()
+FileSystem::Result SMSC95xx::initialize()
 {
     DEBUG("");
 
     m_maximumPacketSize += SMSC95xxUSB::TransmitCommandSize;
-    FileSystem::Error r = NetworkDevice::initialize();
-    if (r != FileSystem::Success)
+
+    const FileSystem::Result result = NetworkDevice::initialize();
+    if (result != FileSystem::Success)
     {
         ERROR("failed to initialize NetworkDevice");
-        return r;
+        return result;
     }
 
-    r = m_usb->initialize();
+    Error r = m_usb->initialize();
     if (r != FileSystem::Success)
     {
         ERROR("failed to initialize SMSC95xxUSB");
-        return r;
+        return FileSystem::IOError;
     }
+
     return FileSystem::Success;
 }
 

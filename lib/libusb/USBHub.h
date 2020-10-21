@@ -95,11 +95,11 @@ class USBHub : public USBDevice
     virtual ~USBHub();
 
     /**
-     * Initialize the hub.
+     * Initialize the device
      *
      * @return Result code
      */
-    virtual Error initialize();
+    virtual FileSystem::Result initialize();
 
   private:
 

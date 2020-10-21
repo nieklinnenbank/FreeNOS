@@ -51,7 +51,7 @@ USBDevice::~USBDevice()
     delete m_config;
 }
 
-FileSystem::Error USBDevice::initialize()
+FileSystem::Result USBDevice::initialize()
 {
     DEBUG("");
 
@@ -62,7 +62,7 @@ FileSystem::Error USBDevice::initialize()
     if ((m_transferFile = ::open(*m_transferFilePath, O_RDWR)) < 0)
     {
         ERROR("failed to open " << *m_transferFilePath << ": " << strerror(errno) << "\n");
-        return errno;
+        return FileSystem::IOError;
     }
     DEBUG("opened: " << *m_transferFilePath);
 
@@ -187,6 +187,7 @@ FileSystem::Error USBDevice::initialize()
             }
         }
     }
+
     return FileSystem::Success;
 }
 

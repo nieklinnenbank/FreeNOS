@@ -54,15 +54,15 @@ SMSC95xxUSB::~SMSC95xxUSB()
     delete m_value;
 }
 
-FileSystem::Error SMSC95xxUSB::initialize()
+FileSystem::Result SMSC95xxUSB::initialize()
 {
     DEBUG("");
 
-    FileSystem::Error r = USBDevice::initialize();
-    if (r != FileSystem::Success)
+    const FileSystem::Result result = USBDevice::initialize();
+    if (result != FileSystem::Success)
     {
         ERROR("failed to initialize USBDevice");
-        return r;
+        return result;
     }
     DEBUG("setting MAC");
 

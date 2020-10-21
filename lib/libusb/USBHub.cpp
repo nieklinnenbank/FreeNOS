@@ -33,18 +33,18 @@ USBHub::~USBHub()
     delete m_hub;
 }
 
-Error USBHub::initialize()
+FileSystem::Result USBHub::initialize()
 {
-    Error r;
+    const FileSystem::Result result = USBDevice::initialize();
 
-    if ((r = USBDevice::initialize()) != ESUCCESS)
+    if (result != FileSystem::Success)
     {
         ERROR("failed to initialize USB device for Hub");
-        return r;
+        return result;
     }
 
     DEBUG("get hub descriptor");
-    r = controlMessage(GetDescriptor,
+    Error r = controlMessage(GetDescriptor,
                        USBTransfer::In,
                        USBTransfer::Class,
                        USBTransfer::Device,
@@ -53,7 +53,7 @@ Error USBHub::initialize()
     if (r != ESUCCESS)
     {
         ERROR("failed to get Hub descriptor");
-        return r;
+        return FileSystem::IOError;
     }
 
     DEBUG("found " << m_hub->numPorts << " ports");
@@ -73,7 +73,8 @@ Error USBHub::initialize()
     {
         ERROR("failed to attach port 1");
     }
-    return ESUCCESS;
+
+    return FileSystem::Success;
 }
 
 Error USBHub::setPortFeature(u8 port, USBHub::PortFeature feature)

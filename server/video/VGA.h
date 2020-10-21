@@ -104,15 +104,15 @@ class VGA : public Device
     VGA(Size width = 80, Size height = 25);
 
     /**
-     * @brief Initializes the VGA device.
+     * Initialize the VGA device.
      *
      * First this function maps the VGA video memory
      * into our address space. It clears the screen
      * and finally disables the VGA hardware cursor.
      *
-     * @return Error status code.
+     * @return Result code
      */
-    virtual FileSystem::Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
      * Read video memory

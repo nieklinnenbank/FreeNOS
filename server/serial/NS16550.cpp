@@ -30,7 +30,7 @@ NS16550::NS16550(const u32 irq)
     m_identifier << "serial0";
 }
 
-FileSystem::Error NS16550::initialize()
+FileSystem::Result NS16550::initialize()
 {
     if (!isKernel)
     {
@@ -75,7 +75,7 @@ FileSystem::Error NS16550::initialize()
     return FileSystem::Success;
 }
 
-FileSystem::Error NS16550::interrupt(u32 vector)
+FileSystem::Result NS16550::interrupt(const Size vector)
 {
     // Mask interrupt until FIFOs are empty
     m_io.write(InterruptEnable, 0);

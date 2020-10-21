@@ -47,7 +47,7 @@ Terminal::Terminal(const char *in, const char *out,
     buffer = new u16[width * height];
 }
 
-FileSystem::Error Terminal::initialize()
+FileSystem::Result Terminal::initialize()
 {
     teken_pos_t winsz;
 

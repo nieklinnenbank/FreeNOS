@@ -44,7 +44,7 @@ ATAController::ATAController()
     m_identifier << "ata0";
 }
 
-FileSystem::Error ATAController::initialize()
+FileSystem::Result ATAController::initialize()
 {
     ATADrive *drive;
 
@@ -150,7 +150,7 @@ FileSystem::Result ATAController::read(IOBuffer & buffer,
     return FileSystem::Success;
 }
 
-FileSystem::Error ATAController::interrupt(Size vector)
+FileSystem::Result ATAController::interrupt(const Size vector)
 {
     INFO("ATA interrupted on IRQ " << vector);
     return FileSystem::Success;

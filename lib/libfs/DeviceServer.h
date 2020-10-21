@@ -55,7 +55,7 @@ class DeviceServer : public FileSystemServer
     /**
      * Initialize DeviceServer.
      *
-     * @return Error code
+     * @return Result code
      */
     virtual FileSystem::Result initialize();
 

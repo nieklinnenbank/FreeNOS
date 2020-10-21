@@ -30,7 +30,7 @@ Time::Time()
     m_identifier << "time0";
 }
 
-FileSystem::Error Time::initialize()
+FileSystem::Result Time::initialize()
 {
     return FileSystem::Success;
 }

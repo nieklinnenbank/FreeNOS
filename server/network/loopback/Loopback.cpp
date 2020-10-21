@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <errno.h>
 #include "Loopback.h"
 
 Loopback::Loopback(NetworkServer *server)
@@ -35,21 +34,21 @@ Loopback::~Loopback()
     DEBUG("");
 }
 
-FileSystem::Error Loopback::initialize()
+FileSystem::Result Loopback::initialize()
 {
     DEBUG("");
 
     FileSystem::Error result = NetworkDevice::initialize();
     if (result != 0)
     {
-        return result;
+        return FileSystem::IOError;
     }
 
     assert(m_ipv4 != ZERO);
     IPV4::Address addr = IPV4::toAddress("127.0.0.1");
     m_ipv4->setAddress(&addr);
 
-    return 0;
+    return FileSystem::Success;
 }
 
 FileSystem::Error Loopback::getAddress(Ethernet::Address *address)

@@ -31,7 +31,7 @@ PL011::PL011(const u32 irq)
     m_identifier << "serial0";
 }
 
-FileSystem::Error PL011::initialize()
+FileSystem::Result PL011::initialize()
 {
     if (!isKernel)
     {
@@ -83,7 +83,7 @@ FileSystem::Error PL011::initialize()
     return FileSystem::Success;
 }
 
-FileSystem::Error PL011::interrupt(u32 vector)
+FileSystem::Result PL011::interrupt(const Size vector)
 {
     // Clear Receive Interrupts
     u32 mis = m_io.read(PL011_MIS);

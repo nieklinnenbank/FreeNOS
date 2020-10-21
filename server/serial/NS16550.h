@@ -103,20 +103,20 @@ class NS16550 : public SerialDevice
     NS16550(const u32 irq);
 
     /**
-     * @brief Initializes the UART.
+     * Initializes the UART.
      *
-     * @return FileSystem::Error status code.
+     * @return Result code
      */
-    virtual FileSystem::Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
      * Called when an interrupt has been triggered for this device.
      *
      * @param vector Vector number of the interrupt.
      *
-     * @return FileSystem::Error result code.
+     * @return Result code
      */
-    virtual FileSystem::Error interrupt(Size vector);
+    virtual FileSystem::Result interrupt(const Size vector);
 
     /**
      * Read bytes from the device

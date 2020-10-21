@@ -178,11 +178,11 @@ class SMSC95xxUSB : public USBDevice
     virtual ~SMSC95xxUSB();
 
     /**
-     * Initialize the controller.
+     * Initialize the device
      *
      * @return Result code
      */
-    virtual Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
      * Transmit one network packet

@@ -35,13 +35,13 @@ NetworkDevice::~NetworkDevice()
 {
 }
 
-Error NetworkDevice::initialize()
+FileSystem::Result NetworkDevice::initialize()
 {
-    Error r = Device::initialize();
-    if (r != 0)
+    const FileSystem::Result result = Device::initialize();
+    if (result != FileSystem::Success)
     {
-        ERROR("failed to initialize Device");
-        return r;
+        ERROR("failed to initialize Device: result = " << (int) result);
+        return result;
     }
 
     // Setup protocol stack
@@ -69,7 +69,8 @@ Error NetworkDevice::initialize()
     m_ipv4->setUDP(m_udp);
     m_icmp->setIP(m_ipv4);
     m_udp->setIP(m_ipv4);
-    return r;
+
+    return FileSystem::Success;
 }
 
 const Size NetworkDevice::getMaximumPacketSize() const

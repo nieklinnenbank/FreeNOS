@@ -25,7 +25,7 @@ VGA::VGA(Size w, Size h) : Device(FileSystem::BlockDeviceFile), width(w), height
     m_identifier << "vga0";
 }
 
-FileSystem::Error VGA::initialize()
+FileSystem::Result VGA::initialize()
 {
     Memory::Range range;
 

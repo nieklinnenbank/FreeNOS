@@ -269,11 +269,11 @@ class ATAController : public Device
     ATAController();
 
     /**
-     * @brief Configures the ATA controller.
+     * Configures the ATA controller.
      *
-     * @return Error result code.
+     * @return Result code.
      */
-    virtual FileSystem::Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
      * Read bytes from a drive attached to the ATA controller
@@ -290,13 +290,13 @@ class ATAController : public Device
                                     const Size offset);
 
     /**
-     * @brief Process ATA interrupts.
+     * Process ATA interrupts.
      *
      * @param vector Interrupt number.
      *
-     * @return Error result code.
+     * @return Result code
      */
-    virtual FileSystem::Error interrupt(Size vector);
+    virtual FileSystem::Result interrupt(const Size vector);
 
   private:
 

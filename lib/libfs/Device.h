@@ -54,20 +54,20 @@ class Device : public File
     virtual const String & getIdentifier() const;
 
     /**
-     * @brief Perform device specific initialization.
+     * Initialize the device
      *
-     * @return Error result code.
+     * @return Result code
      */
-    virtual FileSystem::Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
      * Called when an interrupt has been triggered for this device.
      *
      * @param vector Vector number of the interrupt.
      *
-     * @return Error result code.
+     * @return Result code
      */
-    virtual FileSystem::Error interrupt(Size vector);
+    virtual FileSystem::Result interrupt(const Size vector);
 
   protected:
 

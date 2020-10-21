@@ -47,12 +47,12 @@ Keyboard::Keyboard() : Device(FileSystem::CharacterDeviceFile), shiftState(ZERO)
     m_identifier << "keyboard0";
 }
 
-FileSystem::Error Keyboard::initialize()
+FileSystem::Result Keyboard::initialize()
 {
     return FileSystem::Success;
 }
 
-FileSystem::Error Keyboard::interrupt(Size vector)
+FileSystem::Result Keyboard::interrupt(const Size vector)
 {
     pending = true;
     return FileSystem::Success;

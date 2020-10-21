@@ -53,20 +53,20 @@ class Keyboard : public Device
     Keyboard();
 
     /**
-     * @brief Initialize the PS2 Keyboard driver.
+     * Initialize the device
      *
-     * @return Error status code.
+     * @return Result code
      */
-    virtual Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
-     * @brief Executed when a key state has changed.
+     * Executed when a key state has changed.
      *
      * @param vector Interrupt vector.
      *
-     * @return Error status code.
+     * @return Result code
      */
-    virtual FileSystem::Error interrupt(Size vector);
+    virtual FileSystem::Result interrupt(const Size vector);
 
     /**
      * Read a character from the keyboard

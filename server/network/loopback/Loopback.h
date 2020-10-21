@@ -48,9 +48,11 @@ class Loopback : public NetworkDevice
     virtual ~Loopback();
 
     /**
-     * Perform initialization
+     * Initialize the device
+     *
+     * @return Result code
      */
-    virtual FileSystem::Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
      * Read ethernet address.

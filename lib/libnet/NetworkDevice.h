@@ -53,11 +53,11 @@ class NetworkDevice : public Device
     virtual ~NetworkDevice();
 
     /**
-     * Initialize the NetworkDevice.
+     * Initialize the device
      *
-     * @return Error code
+     * @return Result code
      */
-    virtual Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
      * Get maximum packet size
