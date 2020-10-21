@@ -125,8 +125,3 @@ Error UDPSocket::process(const NetworkQueue::Packet *pkt)
     m_queue.push(buf);
     return 0;
 }
-
-void UDPSocket::error(Error err)
-{
-    DEBUG("");
-}

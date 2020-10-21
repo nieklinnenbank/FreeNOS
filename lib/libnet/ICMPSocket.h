@@ -98,13 +98,6 @@ class ICMPSocket : public NetworkSocket
     virtual Error process(const NetworkQueue::Packet *pkt);
 
     /**
-     * Set error status
-     *
-     * @param err Error code
-     */
-    virtual void error(Error err);
-
-    /**
      * Set ICMP reply
      *
      * @param reply ICMP reply header

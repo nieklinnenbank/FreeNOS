@@ -88,8 +88,3 @@ Error ARPSocket::process(const NetworkQueue::Packet *pkt)
     DEBUG("");
     return 0;
 }
-
-void ARPSocket::error(Error err)
-{
-    DEBUG("");
-}

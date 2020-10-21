@@ -96,22 +96,6 @@ class UDPSocket : public NetworkSocket
      */
     virtual Error process(const NetworkQueue::Packet *pkt);
 
-    /**
-     * Set error status
-     *
-     * @param err Error code
-     */
-    virtual void error(Error err);
-
-    bool operator == (const UDPSocket & sock) const
-    {
-        return true;
-    }
-    bool operator != (const UDPSocket & sock) const
-    {
-        return false;
-    }
-
   private:
 
     /** UDP protocol instance */

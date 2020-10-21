@@ -89,11 +89,6 @@ Error ICMPSocket::process(const NetworkQueue::Packet *pkt)
     return 0;
 }
 
-void ICMPSocket::error(Error err)
-{
-    DEBUG("");
-}
-
 void ICMPSocket::setReply(const ICMP::Header *header)
 {
     DEBUG("");

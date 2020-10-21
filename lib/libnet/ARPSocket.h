@@ -88,13 +88,6 @@ class ARPSocket : public NetworkSocket
      */
     virtual Error process(const NetworkQueue::Packet *pkt);
 
-    /**
-     * Set error status
-     *
-     * @param err Error code
-     */
-    virtual void error(Error err);
-
   private:
 
     /** ARP protocol instance */

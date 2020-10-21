@@ -47,15 +47,6 @@ class NetworkQueue
     {
         Size size;
         u8 *data;
-
-        const bool operator == (const struct Packet & pkt) const
-        {
-            return pkt.size == size && pkt.data == data;
-        }
-        const bool operator != (const struct Packet & pkt) const
-        {
-            return pkt.size != size || pkt.data != data;
-        }
     }
     Packet;
 
