@@ -45,6 +45,7 @@ FileSystem::Result ICMPFactory::read(IOBuffer & buffer,
     sock = m_icmp->createSocket(path);
     if (!sock)
     {
+        ERROR("failed to create ICMP socket");
         return FileSystem::IOError;
     }
 

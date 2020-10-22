@@ -22,6 +22,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
 #include "NetworkClient.h"
 #include "ARP.h"
 #include "ARPSocket.h"
@@ -101,10 +102,13 @@ NetworkClient::Result NetworkClient::createSocket(const NetworkClient::SocketTyp
             return NotFound;
     }
 
-    if ((*sock = ::open(*path, O_RDWR)) != -1)
-        return Success;
-    else
+    if ((*sock = ::open(*path, O_RDWR)) == -1)
+    {
+        ERROR("failed to create socket: " << strerror(errno));
         return IOError;
+    }
+
+    return Success;
 }
 
 NetworkClient::Result NetworkClient::connectSocket(const int sock,
@@ -137,6 +141,7 @@ NetworkClient::Result NetworkClient::writeSocketInfo(const int sock,
     int r = ::read(sock, buf, sizeof(buf));
     if (r < 0)
     {
+        ERROR("failed to read from socket factory: " << strerror(errno));
         return IOError;
     }
 
@@ -153,6 +158,7 @@ NetworkClient::Result NetworkClient::writeSocketInfo(const int sock,
     r = ::write(sock, &info, sizeof(info));
     if (r < 0)
     {
+        ERROR("failed to write socket info: " << strerror(errno));
         return IOError;
     }
 

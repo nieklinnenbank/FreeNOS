@@ -133,18 +133,18 @@ FileSystem::Result IPV4::getTransmitPacket(NetworkQueue::Packet **pkt,
     const FileSystem::Result result = m_arp->lookupAddress(&destination, &ethAddr);
     if (result != FileSystem::Success)
     {
+        if (result != FileSystem::RetryAgain)
+        {
+            ERROR("failed to perform ARP lookup: result = " << (int) result);
+        }
         return result;
     }
 
     // Get a fresh ethernet packet
-    *pkt = m_ether->getTransmitPacket(
-        &ethAddr,
-        Ethernet::IPV4
-    );
-
+    *pkt = m_ether->getTransmitPacket(&ethAddr, Ethernet::IPV4);
     if (*pkt == ZERO)
     {
-        return FileSystem::IOError;
+        return FileSystem::RetryAgain;
     }
 
     // Fill IP header

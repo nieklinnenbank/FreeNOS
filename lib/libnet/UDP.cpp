@@ -57,10 +57,14 @@ UDPSocket * UDP::createSocket(String & path)
 
     UDPSocket *sock = new UDPSocket(this);
     if (!sock)
+    {
+        ERROR("failed to allocate UDP socket");
         return ZERO;
+    }
 
     if (!m_sockets.insert(sock))
     {
+        ERROR("failed to insert UDP socket");
         delete sock;
         return ZERO;
     }
@@ -68,7 +72,14 @@ UDPSocket * UDP::createSocket(String & path)
     filepath << "/udp/" << pos;
 
     path << m_server->getMountPath() << filepath;
-    m_server->registerFile(sock, *filepath);
+    const FileSystem::Result result = m_server->registerFile(sock, *filepath);
+    if (result != FileSystem::Success)
+    {
+        ERROR("failed to register UDP socket: result = " << (int) result);
+        delete sock;
+        m_sockets.remove(pos);
+    }
+
     return sock;
 }
 
@@ -112,7 +123,10 @@ FileSystem::Result UDP::sendPacket(const NetworkClient::SocketInfo *src,
                                                                 sizeof(Header) + size - sizeof(dest));
     if (result != FileSystem::Success)
     {
-        ERROR("could not get transmit packet: result = " << (int) result);
+        if (result != FileSystem::RetryAgain)
+        {
+            ERROR("could not get transmit packet: result = " << (int) result);
+        }
         return result;
     }
 

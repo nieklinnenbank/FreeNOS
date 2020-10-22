@@ -46,6 +46,7 @@ FileSystem::Result UDPFactory::read(IOBuffer & buffer,
     sock = m_udp->createSocket(path);
     if (!sock)
     {
+        ERROR("failed to create UDP socket");
         return FileSystem::IOError;
     }
 

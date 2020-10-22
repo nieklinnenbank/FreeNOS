@@ -96,20 +96,35 @@ ICMPSocket * ICMP::createSocket(String & path)
 
     DEBUG("");
 
+    // Allocate socket
     ICMPSocket *sock = new ICMPSocket(this);
     if (!sock)
+    {
+        ERROR("failed to allocate ICMP socket");
         return ZERO;
+    }
 
+    // Insert to sockets array
     if (!m_sockets.insert(pos, sock))
     {
+        ERROR("failed to insert ICMP socket");
         delete sock;
         return ZERO;
     }
     String filepath;
     filepath << "/icmp/" << pos;
 
+    // Add socket to NetworkServer as a file
     path << m_server->getMountPath() << filepath;
-    m_server->registerFile(sock, *filepath);
+    const FileSystem::Result result = m_server->registerFile(sock, *filepath);
+    if (result != FileSystem::Success)
+    {
+        ERROR("failed to register ICMP socket to NetworkServer: result = " << (int) result);
+        m_sockets.remove(pos);
+        delete sock;
+        return ZERO;
+    }
+
     return sock;
 }
 
@@ -125,6 +140,10 @@ FileSystem::Result ICMP::sendPacket(const IPV4::Address ip,
                                                                 sizeof(Header));
     if (result != FileSystem::Success)
     {
+        if (result != FileSystem::RetryAgain)
+        {
+            ERROR("failed to get transmit packet: result = " << (int) result);
+        }
         return result;
     }
 
