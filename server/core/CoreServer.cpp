@@ -402,12 +402,12 @@ Core::Result CoreServer::loadKernel()
 
     // Retrieve memory regions
     m_numRegions = 16;
-    result = m_kernel->regions(m_regions, &m_numRegions);
+    execResult = m_kernel->regions(m_regions, &m_numRegions);
 
-    if (result != ExecutableFormat::Success)
+    if (execResult != ExecutableFormat::Success)
     {
         ERROR("failed to get ExecutableFormat regions of kernel on path: " << kernelPath <<
-              ": result " << (int) result);
+              ": result " << (int) execResult);
         return Core::ExecError;
     }
 

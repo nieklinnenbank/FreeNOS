@@ -60,7 +60,7 @@ MemoryOperation;
 inline API::Result VMCtl(ProcessID procID, MemoryOperation op,
                          Memory::Range *range = ZERO)
 {
-    return trapKernel3(API::VMCtlNumber, procID, op, (Address) range);
+    return (API::Result) trapKernel3(API::VMCtlNumber, procID, op, (Address) range);
 }
 
 /**

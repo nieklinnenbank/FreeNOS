@@ -50,7 +50,7 @@ PrivOperation;
  */
 inline API::Result PrivExec(PrivOperation op, Address param = 0)
 {
-    return trapKernel2(API::PrivExecNumber, op, param);
+    return (API::Result) trapKernel2(API::PrivExecNumber, op, param);
 }
 
 /**

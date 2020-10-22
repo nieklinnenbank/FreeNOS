@@ -92,7 +92,7 @@ Log & operator << (Log &log, ProcessOperation op);
  */
 inline API::Result ProcessCtl(ProcessID proc, ProcessOperation op, Address addr = 0, Address output = 0)
 {
-    return trapKernel4(API::ProcessCtlNumber, proc, op, addr, output);
+    return (API::Result) trapKernel4(API::ProcessCtlNumber, proc, op, addr, output);
 }
 
 /**

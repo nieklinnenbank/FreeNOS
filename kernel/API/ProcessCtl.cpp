@@ -55,7 +55,7 @@ API::Result ProcessCtlHandler(ProcessID procID,
             ERROR("failed to create process");
             return API::IOError;
         }
-        return API::Success | (proc->getID() << 16);
+        return (API::Result) (API::Success | (proc->getID() << 16));
 
     case KillPID:
         procs->remove(proc, addr); // Addr contains the exit status
@@ -65,10 +65,10 @@ API::Result ProcessCtlHandler(ProcessID procID,
         break;
 
     case GetPID:
-        return procs->current()->getID();
+        return (API::Result) procs->current()->getID();
 
     case GetParent:
-        return procs->current()->getParent();
+        return (API::Result) procs->current()->getParent();
 
     case Schedule:
         procs->schedule();
@@ -153,7 +153,7 @@ API::Result ProcessCtlHandler(ProcessID procID,
         //
         // Note that the API::Result is stored in the lower 16-bit of the
         // return value and the process exit status is stored in the upper 16 bits.
-        return (API::Success) | (procs->current()->getWaitResult() << 16);
+        return (API::Result) ((API::Success) | (procs->current()->getWaitResult() << 16));
 
     case InfoTimer:
         if (!(timer = Kernel::instance()->getTimer()))

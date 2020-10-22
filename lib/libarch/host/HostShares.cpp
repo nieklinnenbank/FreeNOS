@@ -131,7 +131,7 @@ HostShareManager::Result HostShareManager::createShare(
         {
             perror("ftruncate");
             close(fd);
-            return EXIT_FAILURE;
+            return API::IOError;
         }
     }
 

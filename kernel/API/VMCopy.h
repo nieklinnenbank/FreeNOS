@@ -42,7 +42,7 @@
 inline API::Result VMCopy(ProcessID proc, API::Operation how, Address ours,
                           Address theirs, Size sz)
 {
-    return trapKernel5(API::VMCopyNumber, proc, how, ours, theirs, sz);
+    return (API::Result) trapKernel5(API::VMCopyNumber, proc, how, ours, theirs, sz);
 }
 
 /**

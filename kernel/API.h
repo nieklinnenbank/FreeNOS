@@ -52,24 +52,26 @@ class API
     Number;
 
     /**
-     * Enumeration of generic kernel API error codes.
+     * Enumeration of generic kernel API result codes.
+     *
+     * @note This type must have the same size as the native
+     *       register size of the underlying architecture (typically ulong).
+     *       Some API handlers will return additional data in upper bits of
+     *       return value which has the type API::Result 
      */
-    typedef enum ErrorCode
+    enum Result
     {
-        Success         =  0,
-        AccessViolation = -1,
-        RangeError      = -2,
-        NotFound        = -3,
-        InvalidArgument = -4,
-        OutOfMemory     = -5,
-        IOError         = -6,
-        AlreadyExists   = -7,
-        TemporaryUnavailable = -8,
-    }
-    Error;
-
-    /** Represents the result of an system call handler */
-    typedef ::Error Result;
+        Success = 0,
+        AccessViolation,
+        RangeError,
+        NotFound,
+        InvalidArgument,
+        OutOfMemory,
+        IOError,
+        AlreadyExists,
+        TemporaryUnavailable,
+        MaxValue = UINT_MAX
+    };
 
     /**
      * Function which handles an kernel API (system call) request.

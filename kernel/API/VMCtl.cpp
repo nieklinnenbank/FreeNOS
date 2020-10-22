@@ -26,7 +26,7 @@ API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *ra
     ProcessManager *procs = Kernel::instance()->getProcessManager();
     Process *proc = ZERO;
     MemoryContext::Result memResult = MemoryContext::Success;
-    Error ret = API::Success;
+    API::Result ret = API::Success;
 
     DEBUG("");
 
@@ -132,7 +132,7 @@ API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *ra
             if (mr == MemoryContext::Success)
                 ret = API::Success;
             else
-                ret = (API::Result) mr;
+                ret = API::AccessViolation;
             break;
         }
 
@@ -163,6 +163,7 @@ API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *ra
             ret = API::InvalidArgument;
             break;
     }
+
     // Done
     return ret;
 }

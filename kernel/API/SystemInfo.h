@@ -39,7 +39,7 @@ struct SystemInformation;
  */
 inline API::Result SystemInfo(SystemInformation *info)
 {
-    return trapKernel1(API::SystemInfoNumber, (Address) info);
+    return (API::Result) trapKernel1(API::SystemInfoNumber, (Address) info);
 }
 
 /**

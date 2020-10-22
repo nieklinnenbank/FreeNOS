@@ -26,7 +26,7 @@ API::Result VMShareHandler(ProcessID procID, API::Operation op, ProcessShares::M
 {
     ProcessManager *procs = Kernel::instance()->getProcessManager();
     Process *proc = ZERO;
-    Error ret = API::Success;
+    API::Result ret = API::Success;
 
     DEBUG("");
 
