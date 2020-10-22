@@ -15,38 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <MemoryBlock.h>
+#include <NetworkClient.h>
+#include <NetworkSocket.h>
+#include <IPV4.h>
+#include <ICMP.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
-#include <MemoryBlock.h>
-#include <NetworkClient.h>
-#include <NetworkSocket.h>
-#include <IPV4.h>
-#include <ICMP.h>
 #include "NetPing.h"
-
-//
-// Send manual formatted network packets:
-//
-//   $ NetPing smsc --arp --dest=192.168.1.123
-//
-// Receive and dump network packets:
-//
-//   $ netrecv smsc
-//
-// Change device parameters:
-//
-//   $ devctl smsc ip_address=192.168.1.2 ether_address=00:11:22:33:44:55
-//   $ devctl serial0 baudrate=9600
-//
-// Show device status and statistics:
-//
-//   $ devstat smsc
-//   $ devstat serial0
-//
 
 NetPing::NetPing(int argc, char **argv)
     : POSIXApplication(argc, argv)
@@ -87,24 +67,28 @@ NetPing::Result NetPing::exec()
 NetPing::Result NetPing::arpPing(const char *dev,
                                  const char *host)
 {
-    DEBUG("");
-
     NetworkClient client(dev);
+    NetworkClient::Result result;
     Ethernet::Address ethAddr;
     IPV4::Address ipAddr;
     int sock;
 
+    DEBUG("");
+
     // Initialize networking client
-    if (client.initialize() != NetworkClient::Success)
+    result = client.initialize();
+    if (result != NetworkClient::Success)
     {
-        ERROR("failed to initialize network client for device: " << dev);
+        ERROR("failed to initialize network client for device: " << dev <<
+              ", result = " << (int) result);
         return IOError;
     }
 
     // Create an ARP socket
-    if (client.createSocket(NetworkClient::ARP, &sock) != NetworkClient::Success)
+    result = client.createSocket(NetworkClient::ARP, &sock);
+    if (result != NetworkClient::Success)
     {
-        ERROR("failed to create ARP socket");
+        ERROR("failed to create ARP socket: result = " << (int) result);
         return IOError;
     }
 
@@ -122,14 +106,16 @@ NetPing::Result NetPing::arpPing(const char *dev,
         ERROR("failed to send ARP request: " << strerror(errno));
         return IOError;
     }
+
     // Receive ARP reply, if any
     if (::read(sock, &ethAddr, sizeof(ethAddr)) < 0)
     {
         ERROR("failed to receive ARP response: " << strerror(errno));
         return IOError;
     }
+
     // Print the MAC address received
-    printf("Received reply for: ");
+    printf("Received ARP response for: ");
 
     for (Size i = 0; i < sizeof(Ethernet::Address); i++)
         printf("%x:", ethAddr.addr[i]);
@@ -142,30 +128,37 @@ NetPing::Result NetPing::arpPing(const char *dev,
 
 NetPing::Result NetPing::icmpPing(const char *dev, const char *host)
 {
-    DEBUG("");
-
     NetworkClient client(dev);
+    NetworkClient::Result result;
     int sock;
 
+    DEBUG("");
+
     // Initialize networking client
-    if (client.initialize() != NetworkClient::Success)
+    result = client.initialize();
+    if (result != NetworkClient::Success)
     {
-        ERROR("failed to initialize network client for device: " << dev);
+        ERROR("failed to initialize network client for device: " << dev <<
+              ", result = " << (int) result);
         return IOError;
     }
 
     // Create an ICMP socket
-    if (client.createSocket(NetworkClient::ICMP, &sock) != NetworkClient::Success)
+    result = client.createSocket(NetworkClient::ICMP, &sock);
+    if (result != NetworkClient::Success)
     {
-        ERROR("failed to create ARP socket");
+        ERROR("failed to create ICMP socket: result = " << (int)result);
         return IOError;
     }
+
     // Connect socket to the given host
-    if (client.connectSocket(sock, IPV4::toAddress(host)) != NetworkClient::Success)
+    result = client.connectSocket(sock, IPV4::toAddress(host));
+    if (result != NetworkClient::Success)
     {
-        ERROR("failed to connect ICMP socket");
+        ERROR("failed to connect ICMP socket: result = " << (int) result);
         return IOError;
     }
+
     // Send an echo request
     ICMP::Header msg;
     msg.type     = ICMP::EchoRequest;
@@ -180,21 +173,25 @@ NetPing::Result NetPing::icmpPing(const char *dev, const char *host)
     // Send the packet
     if (::write(sock, &msg, sizeof(msg)) <= 0)
     {
-        ERROR("failed to send ICMP request");
+        ERROR("failed to send ICMP request: " << strerror(errno));
         return IOError;
     }
+    printf("Sending ICMP request to %s\r\n", host);
+
     // Receive echo reply
     if (::read(sock, &msg, sizeof(msg)) <= 0)
     {
-        ERROR("failed to receive ICMP response");
+        ERROR("failed to receive ICMP response: " << strerror(errno));
         return IOError;
     }
+
     // Check message type
     if (msg.type != ICMP::EchoReply)
     {
         ERROR("invalid ICMP code in response: " << (int) msg.type);
         return IOError;
     }
+
     // Print the ICMP address received
     printf("Received ICMP response with id=%d sequence=%d\r\n",
             msg.id, msg.sequence);
