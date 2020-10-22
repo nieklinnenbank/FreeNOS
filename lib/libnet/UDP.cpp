@@ -43,7 +43,7 @@ FileSystem::Result UDP::initialize()
     DEBUG("");
 
     m_factory = new UDPFactory(this);
-    m_server->registerFile(this, "/udp");
+    m_server->registerDirectory(this, "/udp");
     m_server->registerFile(m_factory, "/udp/factory");
 
     return FileSystem::Success;

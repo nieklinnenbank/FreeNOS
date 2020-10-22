@@ -90,6 +90,17 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
     FileSystem::Result registerFile(File *file, const char *path);
 
     /**
+     * Register a new Directory.
+     *
+     * @param dir Directory object pointer
+     * @param path Path to the directory
+     *
+     * @return Result code
+     */
+    FileSystem::Result registerDirectory(Directory *dir,
+                                         const char *path);
+
+    /**
      * Create a new file.
      *
      * @param type Describes the type of file to create.
@@ -172,6 +183,15 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
      * @see insertFileCache
      */
     void setRoot(Directory *newRoot);
+
+    /**
+     * Retrieve parent Directory for a file.
+     *
+     * @param path Path to the file
+     *
+     * @return Directory pointer on success or NULL on failure
+     */
+    Directory * getParentDirectory(const char *path);
 
     /**
      * Retrieve a File from storage.

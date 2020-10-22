@@ -44,7 +44,7 @@ FileSystem::Result ICMP::initialize()
     DEBUG("");
 
     m_factory = new ICMPFactory(this);
-    m_server->registerFile(this, "/icmp");
+    m_server->registerDirectory(this, "/icmp");
     m_server->registerFile(m_factory, "/icmp/factory");
 
     return FileSystem::Success;

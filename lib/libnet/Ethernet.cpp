@@ -36,7 +36,7 @@ Ethernet::~Ethernet()
 
 FileSystem::Result Ethernet::initialize()
 {
-    m_server->registerFile(this, "/ethernet");
+    m_server->registerDirectory(this, "/ethernet");
     m_server->registerFile(new EthernetAddress(this), "/ethernet/address");
 
     return FileSystem::Success;

@@ -46,7 +46,7 @@ FileSystem::Result IPV4::initialize()
 {
     DEBUG("");
 
-    m_server->registerFile(this, "/ipv4");
+    m_server->registerDirectory(this, "/ipv4");
     m_server->registerFile(new IPV4Address(this), "/ipv4/address");
 
     return FileSystem::Success;

@@ -105,24 +105,10 @@ FileSystem::Result FileSystemServer::registerFile(File *file, const char *path)
     }
 
     // Also add to the parent directory
-    const FileSystemPath p(path);
-    Directory *parent = ZERO;
-
-    if (p.parent().length() > 0)
-    {
-        FileCache *cache = findFileCache(*p.parent());
-        if (cache != ZERO)
-        {
-            parent = static_cast<Directory *>(cache->file);
-        }
-    }
-    else
-    {
-        parent = static_cast<Directory *>(m_root->file);
-    }
-
+    Directory *parent = getParentDirectory(path);
     if (parent != ZERO)
     {
+        const FileSystemPath p(path);
         parent->insert(file->getType(), *p.base());
         return FileSystem::Success;
     }
@@ -130,6 +116,43 @@ FileSystem::Result FileSystemServer::registerFile(File *file, const char *path)
     {
         return FileSystem::NotFound;
     }
+}
+
+FileSystem::Result FileSystemServer::registerDirectory(Directory *dir,
+                                                       const char *path)
+{
+    // Add the directory itself first
+    FileSystem::Result result = registerFile(dir, path);
+    if (result != FileSystem::Success)
+    {
+        ERROR("failed to register directory " << path <<
+              ": result = " << (int) result);
+        return result;
+    }
+
+    String dot;
+    dot << path;
+    dot << "/.";
+
+    // Insert the '.' directory which points to itself
+    result = registerFile(dir, *dot);
+    if (result != FileSystem::Success)
+    {
+        ERROR("failed to register '.' for directory " << path <<
+              ": result = " << (int) result);
+        return result;
+    }
+
+    // Insert the '..' directory which points to its parent
+    Directory *parent = getParentDirectory(path);
+    if (parent == ZERO)
+    {
+        ERROR("failed to retrieve parent directory for " << path);
+        return FileSystem::NotFound;
+    }
+
+    dot << ".";
+    return registerFile(parent, *dot);
 }
 
 void FileSystemServer::pathHandler(FileSystemMessage *msg)
@@ -451,6 +474,27 @@ void FileSystemServer::setRoot(Directory *newRoot)
         insertFileCache(newRoot, ".");
         insertFileCache(newRoot, "..");
     }
+}
+
+Directory * FileSystemServer::getParentDirectory(const char *path)
+{
+    const FileSystemPath p(path);
+    Directory *parent = ZERO;
+
+    if (p.parent().length() > 0)
+    {
+        FileCache *cache = findFileCache(*p.parent());
+        if (cache != ZERO)
+        {
+            parent = static_cast<Directory *>(cache->file);
+        }
+    }
+    else
+    {
+        parent = static_cast<Directory *>(m_root->file);
+    }
+
+    return parent;
 }
 
 FileCache * FileSystemServer::lookupFile(const FileSystemPath &path)
