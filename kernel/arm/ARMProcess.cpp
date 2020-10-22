@@ -90,7 +90,7 @@ ARMProcess::Result ARMProcess::join(const uint result)
     const Result r = Process::join(result);
     if (r == Success)
     {
-        m_cpuState.r0 = result;
+        m_cpuState.r0 = API::Success | (result << 16);
     }
 
     return r;

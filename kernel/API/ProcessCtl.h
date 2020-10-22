@@ -86,6 +86,8 @@ Log & operator << (Log &log, ProcessOperation op);
  * @param output Output argument address (optional).
  *
  * @return API::Success on success and other API::ErrorCode on failure.
+ *         For WaitPID, the process exit status is stored in the upper 16-bits
+ *         of this return value on success.
  */
 inline API::Result ProcessCtl(ProcessID proc, ProcessOperation op, Address addr = 0, Address output = 0)
 {

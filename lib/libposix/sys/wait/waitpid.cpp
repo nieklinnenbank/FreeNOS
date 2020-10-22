@@ -22,9 +22,9 @@
 
 pid_t waitpid(pid_t pid, int *stat_loc, int options)
 {
-    API::Result result = ProcessCtl(pid, WaitPID);
+    const ulong result = (ulong) ProcessCtl(pid, WaitPID);
 
-    switch (result)
+    switch ((const API::Result) (result & 0xffff))
     {
         case API::NotFound:
             errno = ESRCH;
@@ -33,7 +33,7 @@ pid_t waitpid(pid_t pid, int *stat_loc, int options)
         case API::Success:
             if (stat_loc)
             {
-                *stat_loc = result;
+                *stat_loc = result >> 16;
             }
             return pid;
 

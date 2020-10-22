@@ -150,7 +150,10 @@ API::Result ProcessCtlHandler(ProcessID procID,
         // For ARM, the kernel continues executing here even after
         // the schedule() is done. For ARM, the actual wait result is
         // injected directly in the saved CPU registers.
-        return procs->current()->getWaitResult();
+        //
+        // Note that the API::Result is stored in the lower 16-bit of the
+        // return value and the process exit status is stored in the upper 16 bits.
+        return (API::Success) | (procs->current()->getWaitResult() << 16);
 
     case InfoTimer:
         if (!(timer = Kernel::instance()->getTimer()))
