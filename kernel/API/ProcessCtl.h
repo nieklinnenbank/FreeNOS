@@ -87,7 +87,8 @@ Log & operator << (Log &log, ProcessOperation op);
  *
  * @return API::Success on success and other API::ErrorCode on failure.
  *         For WaitPID, the process exit status is stored in the upper 16-bits
- *         of this return value on success.
+ *         of this return value on success. For Spawn, the new PID is stored in
+ *         the upper 16-bits.
  */
 inline API::Result ProcessCtl(ProcessID proc, ProcessOperation op, Address addr = 0, Address output = 0)
 {

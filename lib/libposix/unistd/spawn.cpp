@@ -54,13 +54,14 @@ int spawn(Address program, Size programSize, const char *argv[])
     }
 
     // Create new process
-    pid = ProcessCtl(ANY, Spawn, entry);
-    if (pid == (pid_t) -1)
+    const ulong result = ProcessCtl(ANY, Spawn, entry);
+    if ((result & 0xffff) != API::Success)
     {
         delete fmt;
         errno = EIO;
         return -1;
     }
+    pid = (result >> 16);
 
     // Retrieve memory regions
     if (fmt->regions(regions, &numRegions) != ExecutableFormat::Success)
