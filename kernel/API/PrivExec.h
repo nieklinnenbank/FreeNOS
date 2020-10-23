@@ -48,7 +48,8 @@ PrivOperation;
  *
  * @return API::Success on success and other API::ErrorCode on failure.
  */
-inline API::Result PrivExec(PrivOperation op, Address param = 0)
+inline API::Result PrivExec(const PrivOperation op,
+                            const Address param = 0)
 {
     return (API::Result) trapKernel2(API::PrivExecNumber, op, param);
 }
@@ -67,7 +68,8 @@ inline API::Result PrivExec(PrivOperation op, Address param = 0)
 /**
  * Prototype for kernel handler.
  */
-extern API::Result PrivExecHandler(PrivOperation op, Address param);
+extern API::Result PrivExecHandler(const PrivOperation op,
+                                   const Address param);
 
 /**
  * @}

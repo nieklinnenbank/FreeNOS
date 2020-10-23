@@ -24,16 +24,16 @@
 #include <Log.h>
 #include "ProcessCtl.h"
 
-API::Result ProcessCtlHandler(ProcessID procID,
-                              ProcessOperation action,
-                              Address addr,
-                              Address output)
+API::Result ProcessCtlHandler(const ProcessID procID,
+                              const ProcessOperation action,
+                              const Address addr,
+                              const Address output)
 {
+    const Arch::MemoryMap map;
     Process *proc = ZERO;
     ProcessInfo *info = (ProcessInfo *) addr;
     ProcessManager *procs = Kernel::instance()->getProcessManager();
     Timer *timer;
-    Arch::MemoryMap map;
 
     DEBUG("#" << procs->current()->getID() << " " << action << " -> " << procID << " (" << addr << ")");
 
@@ -178,6 +178,7 @@ API::Result ProcessCtlHandler(ProcessID procID,
             procs->schedule();
         break;
     }
+
     return API::Success;
 }
 

@@ -21,12 +21,14 @@
 #include "VMCtl.h"
 #include "ProcessID.h"
 
-API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range)
+API::Result VMCtlHandler(const ProcessID procID,
+                         const MemoryOperation op,
+                         Memory::Range *range)
 {
     ProcessManager *procs = Kernel::instance()->getProcessManager();
-    Process *proc = ZERO;
     MemoryContext::Result memResult = MemoryContext::Success;
     API::Result ret = API::Success;
+    Process *proc = ZERO;
 
     DEBUG("");
 
@@ -128,7 +130,7 @@ API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *ra
         }
 
         case Access: {
-            MemoryContext::Result mr = mem->access(range->virt, &range->access);
+            const MemoryContext::Result mr = mem->access(range->virt, &range->access);
             if (mr == MemoryContext::Success)
                 ret = API::Success;
             else

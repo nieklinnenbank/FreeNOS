@@ -39,7 +39,9 @@
  *
  * @return API::Success on success and other API::ErrorCode on failure.
  */
-inline API::Result VMShare(ProcessID pid, API::Operation op, ProcessShares::MemoryShare *share)
+inline API::Result VMShare(const ProcessID pid,
+                           const API::Operation op,
+                           ProcessShares::MemoryShare *share)
 {
     return (API::Result) trapKernel3(API::VMShareNumber, pid, op, (Address) share);
 }
@@ -55,7 +57,9 @@ inline API::Result VMShare(ProcessID pid, API::Operation op, ProcessShares::Memo
  * @{
  */
 
-extern API::Result VMShareHandler(ProcessID pid, API::Operation op, ProcessShares::MemoryShare *share);
+extern API::Result VMShareHandler(const ProcessID pid,
+                                  const API::Operation op,
+                                  ProcessShares::MemoryShare *share);
 
 /**
  * @}

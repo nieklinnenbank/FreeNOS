@@ -90,7 +90,10 @@ Log & operator << (Log &log, ProcessOperation op);
  *         of this return value on success. For Spawn, the new PID is stored in
  *         the upper 16-bits.
  */
-inline API::Result ProcessCtl(ProcessID proc, ProcessOperation op, Address addr = 0, Address output = 0)
+inline API::Result ProcessCtl(const ProcessID proc,
+                              const ProcessOperation op,
+                              const Address addr = 0,
+                              const Address output = 0)
 {
     return (API::Result) trapKernel4(API::ProcessCtlNumber, proc, op, addr, output);
 }
@@ -109,7 +112,10 @@ inline API::Result ProcessCtl(ProcessID proc, ProcessOperation op, Address addr 
 /**
  * Kernel handler prototype.
  */
-extern API::Result ProcessCtlHandler(ProcessID proc, ProcessOperation op, Address addr, Address output);
+extern API::Result ProcessCtlHandler(const ProcessID proc,
+                                     const ProcessOperation op,
+                                     const Address addr,
+                                     const Address output);
 
 /**
  * @}

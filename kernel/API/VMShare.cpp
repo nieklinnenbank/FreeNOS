@@ -22,7 +22,9 @@
 #include "VMShare.h"
 #include "ProcessID.h"
 
-API::Result VMShareHandler(ProcessID procID, API::Operation op, ProcessShares::MemoryShare *share)
+API::Result VMShareHandler(const ProcessID procID,
+                           const API::Operation op,
+                           ProcessShares::MemoryShare *share)
 {
     ProcessManager *procs = Kernel::instance()->getProcessManager();
     Process *proc = ZERO;

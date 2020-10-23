@@ -39,8 +39,11 @@
  *
  * @return API::Success on success and any other value on error.
  */
-inline API::Result VMCopy(ProcessID proc, API::Operation how, Address ours,
-                          Address theirs, Size sz)
+inline API::Result VMCopy(const ProcessID proc,
+                          const API::Operation how,
+                          const Address ours,
+                          const Address theirs,
+                          const Size sz)
 {
     return (API::Result) trapKernel5(API::VMCopyNumber, proc, how, ours, theirs, sz);
 }
@@ -56,7 +59,11 @@ inline API::Result VMCopy(ProcessID proc, API::Operation how, Address ours,
  * @{
  */
 
-extern API::Result VMCopyHandler(ProcessID proc, API::Operation how, Address ours, Address theirs, Size sz);
+extern API::Result VMCopyHandler(const ProcessID proc,
+                                 const API::Operation how,
+                                 const Address ours,
+                                 const Address theirs,
+                                 const Size sz);
 
 /**
  * @}

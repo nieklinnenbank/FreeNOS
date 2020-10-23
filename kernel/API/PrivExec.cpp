@@ -20,7 +20,8 @@
 #include <Log.h>
 #include "PrivExec.h"
 
-API::Result PrivExecHandler(PrivOperation op, Address addr)
+API::Result PrivExecHandler(const PrivOperation op,
+                            const Address addr)
 {
     DEBUG("");
 
