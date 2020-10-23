@@ -58,7 +58,7 @@ void Mount::listMounts() const
         {
             // Get the command
             const API::Result result = VMCopy(mounts[i].procID, API::Read, (Address) cmd, range.virt, PAGESIZE);
-            if (result < 0)
+            if (result != API::Success)
             {
                 ERROR("VMCopy failed for PID " << mounts[i].procID << ": result = " << (int) result);
                 MemoryBlock::copy(cmd, "???", sizeof(cmd));

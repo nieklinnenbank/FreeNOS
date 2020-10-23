@@ -102,11 +102,11 @@ static API::Result hostVMCopyHandler(ProcessID procID, API::Operation how, Addre
         {
             case API::Read:
                 MemoryBlock::copy((void *)ours, (void *)theirs, sz);
-                return (API::Result) sz;
+                return API::Success;
 
             case API::Write:
                 MemoryBlock::copy((void *)theirs, (void *)ours, sz);
-                return (API::Result) sz;
+                return API::Success;
 
             default:
                 break;

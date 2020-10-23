@@ -68,9 +68,11 @@ void RecoveryServer::restartProcess(RecoveryMessage *msg)
     const Arch::MemoryMap map;
     const Memory::Range argRange = map.range(MemoryMap::UserArgs);
 
-    if (VMCopy(msg->pid, API::Read, (Address) cmd, argRange.virt, sizeof(cmd)) != sizeof(cmd))
+    result = VMCopy(msg->pid, API::Read, (Address) cmd, argRange.virt, sizeof(cmd));
+    if (result != API::Success)
     {
-        ERROR("failed to read command string from PID " << msg->pid);
+        ERROR("failed to read command string from PID " << msg->pid <<
+              ": result = " << (int) result);
         msg->result = Recovery::IOError;
         return;
     }

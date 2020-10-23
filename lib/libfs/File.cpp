@@ -64,14 +64,15 @@ FileSystem::Result File::status(FileSystemMessage *msg)
     st.groupID  = m_gid;
 
     // Copy to the remote process
-    const Size result = VMCopy(msg->from, API::Write, (Address) &st,
-                              (Address) msg->stat, sizeof(st));
-    if (result == sizeof(st))
+    const API::Result result = VMCopy(msg->from, API::Write, (Address) &st,
+                                     (Address) msg->stat, sizeof(st));
+    if (result == API::Success)
     {
         return FileSystem::Success;
     }
     else
     {
+        ERROR("VMCopy failed for PID " << msg->from << ": result = " << (int) result);
         return FileSystem::IOError;
     }
 }

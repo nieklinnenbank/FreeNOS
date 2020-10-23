@@ -133,10 +133,11 @@ void CoreServer::createProcess(CoreMessage *msg)
     else
     {
         // Copy the program command
-        if (VMCopy(SELF, API::ReadPhys, (Address) cmd,
-                  (Address) msg->programCmd, sizeof(cmd)) != sizeof(cmd))
+        result = VMCopy(SELF, API::ReadPhys, (Address) cmd,
+                       (Address) msg->programCmd, sizeof(cmd));
+        if (result != API::Success)
         {
-            ERROR("failed to copy program command");
+            ERROR("failed to copy program command: result = " << (int) result);
             msg->result = Core::InvalidArgument;
             sendToMaster(msg);
             return;
@@ -475,13 +476,10 @@ Core::Result CoreServer::prepareCore(uint coreId, CoreInfo *info,
             return Core::OutOfMemory;
         }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsign-compare"
-
         // Copy the kernel to the target core's memory
         r = VMCopy(SELF, API::Write, m_kernelImage.virt + regions[i].dataOffset,
                    range.virt, regions[i].dataSize);
-        if ((Size)r != regions[i].dataSize)
+        if (r != API::Success)
         {
             ERROR("VMCopy failed for kernel regions[" << i << "].dataOffset" <<
                   " at " << (void *)regions[i].dataOffset << ": result " << (int) r);
@@ -516,13 +514,13 @@ Core::Result CoreServer::prepareCore(uint coreId, CoreInfo *info,
     }
 
     // Copy the BootImage
-    Error err = VMCopy(SELF, API::Write, sysInfo.bootImageAddress,
-                     range.virt, sysInfo.bootImageSize);
-    if (err != (Error) sysInfo.bootImageSize)
+    r = VMCopy(SELF, API::Write, sysInfo.bootImageAddress,
+               range.virt, sysInfo.bootImageSize);
+    if (r != API::Success)
     {
         ERROR("VMCopy failed for BootIage on core" << coreId <<
               " at " << (void *)sysInfo.bootImageAddress <<
-              ": result " << (int)err);
+              ": result " << (int) r);
         return Core::MemoryError;
     }
 

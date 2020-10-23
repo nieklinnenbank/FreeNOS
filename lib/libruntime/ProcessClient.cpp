@@ -50,7 +50,7 @@ ProcessClient::Result ProcessClient::processInfo(const ProcessID pid,
     }
 
     // Read the full command
-    if (VMCopy(pid, API::Read, (Address) cmd, range.virt, sizeof(cmd)) != sizeof(cmd))
+    if (VMCopy(pid, API::Read, (Address) cmd, range.virt, sizeof(cmd)) != API::Success)
     {
         return IOError;
     }

@@ -94,5 +94,6 @@ API::Result VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
         theirs += bytes;
         total  += bytes;
     }
-    return total;
+
+    return API::Success;
 }

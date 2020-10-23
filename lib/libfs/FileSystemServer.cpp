@@ -193,9 +193,9 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
     FileSystemMessage *msg = req.getMessage();
 
     // Copy the file path
-    int result = VMCopy(msg->from, API::Read, (Address) buf,
-                       (Address) msg->path, FileSystemPath::MaximumLength);
-    if (result <= 0)
+    const API::Result result = VMCopy(msg->from, API::Read, (Address) buf,
+                                     (Address) msg->path, FileSystemPath::MaximumLength);
+    if (result != API::Success)
     {
         ERROR("VMCopy failed: result = " << (int)result << " from = " << msg->from <<
               " addr = " << (void *) msg->path << " action = " << (int) msg->action);
@@ -362,7 +362,7 @@ void FileSystemServer::mountHandler(FileSystemMessage *msg)
     // Copy the file path
     const API::Result result = VMCopy(msg->from, API::Read, (Address) buf,
                                      (Address) msg->path, FileSystemPath::MaximumLength);
-    if (result <= 0)
+    if (result != API::Success)
     {
         ERROR("failed to copy mount path: result = " << (int) result);
         msg->result = FileSystem::IOError;
@@ -413,7 +413,7 @@ void FileSystemServer::getFileSystemsHandler(FileSystemMessage *msg)
     const Size numBytes = msg->size < mountsSize ? msg->size : mountsSize;
     const API::Result result = VMCopy(msg->from, API::Write, (Address) m_mounts,
                                      (Address) msg->buffer, numBytes);
-    if (result <= 0)
+    if (result != API::Success)
     {
         ERROR("failed to copy mount table: result = " << (int) result);
         msg->result = FileSystem::IOError;

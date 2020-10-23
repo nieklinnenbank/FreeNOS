@@ -161,15 +161,16 @@ FileSystem::Result IOBuffer::read(void *buffer, const Size size, const Size offs
         return FileSystem::Success;
     }
 
-    const Size copied = VMCopy(m_message->from, API::Read,
-                              (Address) buffer,
-                              (Address) m_message->buffer + offset, size);
-    if (copied == size)
+    const API::Result result = VMCopy(m_message->from, API::Read,
+                                     (Address) buffer,
+                                     (Address) m_message->buffer + offset, size);
+    if (result == API::Success)
     {
         return FileSystem::Success;
     }
     else
     {
+        ERROR("VMCopy failed for PID " << m_message->from << ": result = " << (int) result);
         return FileSystem::IOError;
     }
 }
@@ -184,15 +185,16 @@ FileSystem::Result IOBuffer::write(const void *buffer, const Size size, const Si
         return FileSystem::Success;
     }
 
-    const Size copied = VMCopy(m_message->from, API::Write,
-                              (Address) buffer,
-                              (Address) m_message->buffer + offset, size);
-    if (copied == size)
+    const API::Result result = VMCopy(m_message->from, API::Write,
+                                     (Address) buffer,
+                                     (Address) m_message->buffer + offset, size);
+    if (result == API::Success)
     {
         return FileSystem::Success;
     }
     else
     {
+        ERROR("VMCopy failed for PID " << m_message->from << ": result = " << (int) result);
         return FileSystem::IOError;
     }
 }

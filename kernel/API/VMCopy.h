@@ -37,7 +37,7 @@
  * @param theirs Virtual address of the remote process' buffer.
  * @param sz Amount of memory to copy.
  *
- * @return Total number of bytes copied on success and API::ErrorCode on failure.
+ * @return API::Success on success and any other value on error.
  */
 inline API::Result VMCopy(ProcessID proc, API::Operation how, Address ours,
                           Address theirs, Size sz)
