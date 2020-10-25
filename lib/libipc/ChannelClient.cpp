@@ -16,6 +16,7 @@
  */
 
 #include <FreeNOS/User.h>
+#include <Log.h>
 #include <HashIterator.h>
 #include "ChannelClient.h"
 #include "MemoryChannel.h"
@@ -49,6 +50,7 @@ ChannelClient::Result ChannelClient::connect(const ProcessID pid, const Size mes
     MemoryChannel *cons = new MemoryChannel(Channel::Consumer, messageSize);
     if (!cons)
     {
+        ERROR("failed to allocate consumer MemoryChannel");
         return OutOfMemory;
     }
 
@@ -56,6 +58,7 @@ ChannelClient::Result ChannelClient::connect(const ProcessID pid, const Size mes
     MemoryChannel *prod = new MemoryChannel(Channel::Producer, messageSize);
     if (!prod)
     {
+        ERROR("failed to allocate producer MemoryChannel");
         delete cons;
         return OutOfMemory;
     }
@@ -84,6 +87,7 @@ ChannelClient::Result ChannelClient::connect(const ProcessID pid, const Size mes
 
         if (r != API::Success)
         {
+            ERROR("VMShare failed for PID " << pid << ": result = " << (int) r);
             delete prod;
             delete cons;
             return IOError;
@@ -103,16 +107,24 @@ ChannelClient::Result ChannelClient::connect(const ProcessID pid, const Size mes
     }
 
     // Setup producer memory address
-    if (prod->setVirtual(prodAddr, prodAddr + PAGESIZE) != MemoryChannel::Success)
+    MemoryChannel::Result memResult = prod->setVirtual(prodAddr, prodAddr + PAGESIZE);
+    if (memResult != MemoryChannel::Success)
     {
+        ERROR("failed to set producer virtual memory for PID " <<
+               pid << " to " << (void *) prodAddr <<
+              ": result = " << (int) memResult);
         delete prod;
         delete cons;
         return IOError;
     }
 
     // Setup consumer memory address
-    if (cons->setVirtual(consAddr, consAddr + PAGESIZE) != MemoryChannel::Success)
+    memResult = cons->setVirtual(consAddr, consAddr + PAGESIZE);
+    if (memResult != MemoryChannel::Success)
     {
+        ERROR("failed to set consumer virtual memory for PID " <<
+               pid << " to " << (void *) consAddr <<
+              ": result = " << (int) memResult);
         delete prod;
         delete cons;
         return IOError;
@@ -136,6 +148,7 @@ ChannelClient::Result ChannelClient::receiveAny(void *buffer, const Size msgSize
             return Success;
         }
     }
+
     return NotFound;
 }
 
@@ -148,7 +161,10 @@ ChannelClient::Result ChannelClient::sendRequest(const ProcessID pid,
     Size identifier = 0;
     Channel *ch = findProducer(pid, msgSize);
     if (!ch)
+    {
+        ERROR("failed to find producer for PID " << pid);
         return NotFound;
+    }
 
     // Find request object
     for (Size i = 0; i < m_requests.count(); i++)
@@ -171,6 +187,7 @@ ChannelClient::Result ChannelClient::sendRequest(const ProcessID pid,
 
         if (!m_requests.insert(identifier, req))
         {
+            ERROR("failed to insert Request");
             return OutOfMemory;
         }
     }
@@ -186,8 +203,10 @@ ChannelClient::Result ChannelClient::sendRequest(const ProcessID pid,
     DEBUG("sending request with id = " << req->message->identifier << " to PID " << pid);
 
     // Try to send the message
-    if (ch->write(req->message) != Channel::Success)
+    Channel::Result r = ch->write(req->message);
+    if (r != Channel::Success)
     {
+        ERROR("failed to write to Channel for PID " << pid << ": result = " << (int) r);
         req->active = false;
         return IOError;
     }
@@ -215,6 +234,7 @@ ChannelClient::Result ChannelClient::processResponse(const ProcessID pid,
             return Success;
         }
     }
+
     return NotFound;
 }
 
@@ -226,8 +246,12 @@ Channel * ChannelClient::findConsumer(const ProcessID pid, const Size msgSize)
         return ch;
 
     // Try to connect
-    if (connect(pid, msgSize) != Success)
+    Result r = connect(pid, msgSize);
+    if (r != Success)
+    {
+        ERROR("failed to connect to PID " << pid << ": result = " << (int) r);
         return ZERO;
+    }
 
     return m_registry.getConsumer(pid);
 }
@@ -239,8 +263,12 @@ Channel * ChannelClient::findProducer(const ProcessID pid, const Size msgSize)
         return ch;
 
     // Try to connect
-    if (connect(pid, msgSize) != Success)
+    Result r = connect(pid, msgSize);
+    if (r != Success)
+    {
+        ERROR("failed to connect to PID " << pid << ": result = " << (int) r);
         return ZERO;
+    }
 
     return m_registry.getProducer(pid);
 }
@@ -249,7 +277,10 @@ ChannelClient::Result ChannelClient::syncReceiveFrom(void *buffer, const Size ms
 {
     Channel *ch = findConsumer(pid, msgSize);
     if (!ch)
+    {
+        ERROR("failed to find consumer for PID " << pid);
         return NotFound;
+    }
 
     while (ch->read(buffer) != Channel::Success)
         ProcessCtl(SELF, EnterSleep, 0);
@@ -261,7 +292,10 @@ ChannelClient::Result ChannelClient::syncSendTo(const void *buffer, const Size m
 {
     Channel *ch = findProducer(pid, msgSize);
     if (!ch)
+    {
+        ERROR("failed to find producer for PID " << pid);
         return NotFound;
+    }
 
     while (true)
     {
@@ -280,14 +314,25 @@ ChannelClient::Result ChannelClient::syncSendTo(const void *buffer, const Size m
         }
         ProcessCtl(SELF, Schedule, 0);
     }
+
     return IOError;
 }
 
 ChannelClient::Result ChannelClient::syncSendReceive(void *buffer, const Size msgSize, const ProcessID pid)
 {
-    const Result result = syncSendTo(buffer, msgSize, pid);
+    Result result = syncSendTo(buffer, msgSize, pid);
     if (result != Success)
+    {
+        ERROR("syncSendTo failed to PID " << pid << ": result = " << (int) result);
         return result;
+    }
 
-    return syncReceiveFrom(buffer, msgSize, pid);
+    result = syncReceiveFrom(buffer, msgSize, pid);
+    if (result != Success)
+    {
+        ERROR("syncReceiveFrom failed from PID " << pid << ": result = " << (int) result);
+        return result;
+    }
+
+    return Success;
 }
