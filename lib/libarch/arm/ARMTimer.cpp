@@ -53,12 +53,14 @@ ARMTimer::Result ARMTimer::setFrequency(const Size hertz)
 {
     m_initialTimerCounter = getSystemFrequency() / hertz;
     tick();
-    return Success;
+
+    return Timer::setFrequency(hertz);
 }
 
 ARMTimer::Result ARMTimer::tick()
 {
     setPL1PhysicalTimerValue(m_initialTimerCounter);
     setPL1PhysicalTimerControl(TimerControlEnable);
-    return Success;
+
+    return Timer::tick();
 }
