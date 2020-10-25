@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <Log.h>
 #include <ChannelClient.h>
 #include "FileSystemMessage.h"
 #include "FileSystemClient.h"
@@ -55,8 +56,11 @@ inline FileSystem::Result FileSystemClient::request(const char *path,
 inline FileSystem::Result FileSystemClient::request(const ProcessID pid,
                                                     FileSystemMessage &msg) const
 {
-    if (ChannelClient::instance()->syncSendReceive(&msg, sizeof(msg), pid) != ChannelClient::Success)
+    ChannelClient::Result r = ChannelClient::instance()->syncSendReceive(&msg, sizeof(msg), pid);
+    if (r != ChannelClient::Success)
     {
+        ERROR("failed to send request to PID " << pid <<
+              " for path " << msg.path << ": result = " << (int) r);
         return FileSystem::IpcError;
     }
     else if (msg.result != FileSystem::RedirectRequest)
@@ -82,8 +86,11 @@ inline FileSystem::Result FileSystemClient::request(const ProcessID pid,
     }
 
     msg.type = ChannelMessage::Request;
-    if (ChannelClient::instance()->syncSendReceive(&msg, sizeof(msg), msg.pid) != ChannelClient::Success)
+    r = ChannelClient::instance()->syncSendReceive(&msg, sizeof(msg), msg.pid);
+    if (r != ChannelClient::Success)
     {
+        ERROR("failed to redirect request to PID " << msg.pid <<
+              " for path " << msg.path << ": result = " << (int) r);
         return FileSystem::IpcError;
     }
 
