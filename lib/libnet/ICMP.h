@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBNET_ICMP_H
-#define __LIBNET_ICMP_H
+#ifndef __LIB_LIBNET_ICMP_H
+#define __LIB_LIBNET_ICMP_H
 
 #include <Types.h>
 #include <Index.h>
@@ -75,9 +75,12 @@ class ICMP : public NetworkProtocol
 
     /**
      * Constructor
+     *
+     * @param server Reference to the NetworkServer instance
+     * @param device Reference to the NetworkDevice instance
      */
-    ICMP(NetworkServer *server,
-         NetworkDevice *device);
+    ICMP(NetworkServer &server,
+         NetworkDevice &device);
 
     /**
      * Destructor
@@ -145,4 +148,4 @@ class ICMP : public NetworkProtocol
  * @}
  */
 
-#endif /* __LIBNET_ICMP_H */
+#endif /* __LIB_LIBNET_ICMP_H */

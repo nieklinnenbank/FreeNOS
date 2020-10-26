@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBNET_IPV4_H
-#define __LIBNET_IPV4_H
+#ifndef __LIB_LIBNET_IPV4_H
+#define __LIB_LIBNET_IPV4_H
 
 #include <Types.h>
 #include "Ethernet.h"
@@ -99,9 +99,12 @@ class IPV4 : public NetworkProtocol
 
     /**
      * Constructor
+     *
+     * @param server Reference to the NetworkServer instance
+     * @param device Reference to the NetworkDevice instance
      */
-    IPV4(NetworkServer *server,
-       NetworkDevice *device);
+    IPV4(NetworkServer &server,
+         NetworkDevice &device);
 
     /**
      * Destructor
@@ -223,4 +226,4 @@ class IPV4 : public NetworkProtocol
  * @}
  */
 
-#endif /* __LIBNET_IPV4_H */
+#endif /* __LIB_LIBNET_IPV4_H */

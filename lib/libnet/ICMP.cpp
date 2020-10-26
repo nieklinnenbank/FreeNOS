@@ -23,8 +23,8 @@
 #include "ICMPSocket.h"
 #include "IPV4.h"
 
-ICMP::ICMP(NetworkServer *server,
-           NetworkDevice *device)
+ICMP::ICMP(NetworkServer &server,
+           NetworkDevice &device)
     : NetworkProtocol(server, device)
 {
     m_ipv4  = ZERO;
@@ -44,8 +44,8 @@ FileSystem::Result ICMP::initialize()
     DEBUG("");
 
     m_factory = new ICMPFactory(this);
-    m_server->registerDirectory(this, "/icmp");
-    m_server->registerFile(m_factory, "/icmp/factory");
+    m_server.registerDirectory(this, "/icmp");
+    m_server.registerFile(m_factory, "/icmp/factory");
 
     return FileSystem::Success;
 }
@@ -115,8 +115,8 @@ ICMPSocket * ICMP::createSocket(String & path)
     filepath << "/icmp/" << pos;
 
     // Add socket to NetworkServer as a file
-    path << m_server->getMountPath() << filepath;
-    const FileSystem::Result result = m_server->registerFile(sock, *filepath);
+    path << m_server.getMountPath() << filepath;
+    const FileSystem::Result result = m_server.registerFile(sock, *filepath);
     if (result != FileSystem::Success)
     {
         ERROR("failed to register ICMP socket to NetworkServer: result = " << (int) result);
@@ -152,7 +152,7 @@ FileSystem::Result ICMP::sendPacket(const IPV4::Address ip,
     pkt->size += sizeof(ICMP::Header);
 
     // Transmit the packet
-    return m_device->transmit(pkt);
+    return m_device.transmit(pkt);
 }
 
 const u16 ICMP::checksum(const Header *header)

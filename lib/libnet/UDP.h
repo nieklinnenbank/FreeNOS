@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBNET_UDP_H
-#define __LIBNET_UDP_H
+#ifndef __LIB_LIBNET_UDP_H
+#define __LIB_LIBNET_UDP_H
 
 #include <Types.h>
 #include <Index.h>
@@ -27,7 +27,6 @@
 #include "UDPSocket.h"
 
 class UDPFactory;
-class ARP;
 
 /**
  * @addtogroup lib
@@ -64,9 +63,12 @@ class UDP : public NetworkProtocol
 
     /**
      * Constructor
+     *
+     * @param server Reference to the NetworkServer instance
+     * @param device Reference to the NetworkDevice instance
      */
-    UDP(NetworkServer *server,
-        NetworkDevice *device);
+    UDP(NetworkServer &server,
+        NetworkDevice &device);
 
     /**
      * Destructor
@@ -155,4 +157,4 @@ class UDP : public NetworkProtocol
  * @}
  */
 
-#endif /* __LIBNET_UDP_H */
+#endif /* __LIB_LIBNET_UDP_H */

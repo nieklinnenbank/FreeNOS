@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBNET_NETWORKPROTOCOL_H
-#define __LIBNET_NETWORKPROTOCOL_H
+#ifndef __LIB_LIBNET_NETWORKPROTOCOL_H
+#define __LIB_LIBNET_NETWORKPROTOCOL_H
 
 #include <Directory.h>
 #include <Types.h>
@@ -42,9 +42,12 @@ class NetworkProtocol : public Directory
 
     /**
      * Constructor
+     *
+     * @param server Reference to the NetworkServer instance
+     * @param device Reference to the NetworkDevice instance
      */
-    NetworkProtocol(NetworkServer *server,
-                    NetworkDevice *device);
+    NetworkProtocol(NetworkServer &server,
+                    NetworkDevice &device);
 
     /**
      * Destructor
@@ -80,10 +83,10 @@ class NetworkProtocol : public Directory
   protected:
 
     /** Network server instance */
-    NetworkServer *m_server;
+    NetworkServer &m_server;
 
     /** Network device instance */
-    NetworkDevice *m_device;
+    NetworkDevice &m_device;
 };
 
 /**
@@ -91,4 +94,4 @@ class NetworkProtocol : public Directory
  * @}
  */
 
-#endif /* __LIBNET_NETWORKPROTOCOL_H */
+#endif /* __LIB_LIBNET_NETWORKPROTOCOL_H */

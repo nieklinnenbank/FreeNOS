@@ -110,9 +110,12 @@ class ARP : public NetworkProtocol
 
     /**
      * Constructor
+     *
+     * @param server Reference to the NetworkServer instance
+     * @param device Reference to the NetworkDevice instance
      */
-    ARP(NetworkServer *server,
-        NetworkDevice *device);
+    ARP(NetworkServer &server,
+        NetworkDevice &device);
 
     /**
      * Destructor

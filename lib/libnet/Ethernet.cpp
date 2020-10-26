@@ -22,12 +22,13 @@
 #include "EthernetAddress.h"
 #include "ICMP.h"
 
-Ethernet::Ethernet(NetworkServer *server, NetworkDevice *device)
+Ethernet::Ethernet(NetworkServer &server,
+                   NetworkDevice &device)
     : NetworkProtocol(server, device)
 {
     m_arp  = ZERO;
     m_ipv4 = ZERO;
-    device->getAddress(&m_address);
+    m_device.getAddress(&m_address);
 }
 
 Ethernet::~Ethernet()
@@ -36,8 +37,8 @@ Ethernet::~Ethernet()
 
 FileSystem::Result Ethernet::initialize()
 {
-    m_server->registerDirectory(this, "/ethernet");
-    m_server->registerFile(new EthernetAddress(this), "/ethernet/address");
+    m_server.registerDirectory(this, "/ethernet");
+    m_server.registerFile(new EthernetAddress(this), "/ethernet/address");
 
     return FileSystem::Success;
 }
@@ -50,7 +51,7 @@ FileSystem::Result Ethernet::getAddress(Ethernet::Address *address)
 
 FileSystem::Result Ethernet::setAddress(const Ethernet::Address *address)
 {
-    const FileSystem::Result result = m_device->setAddress(address);
+    const FileSystem::Result result = m_device.setAddress(address);
     if (result == FileSystem::Success)
     {
         MemoryBlock::copy(&m_address, address, sizeof(Ethernet::Address));
@@ -87,7 +88,7 @@ const String Ethernet::toString(const Ethernet::Address address)
 NetworkQueue::Packet * Ethernet::getTransmitPacket(const Ethernet::Address *destination,
                                                    const Ethernet::PayloadType type)
 {
-    NetworkQueue::Packet *pkt = m_device->getTransmitQueue()->get();
+    NetworkQueue::Packet *pkt = m_device.getTransmitQueue()->get();
     if (!pkt)
         return ZERO;
 

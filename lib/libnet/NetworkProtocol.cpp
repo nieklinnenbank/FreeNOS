@@ -18,11 +18,11 @@
 #include "NetworkDevice.h"
 #include "NetworkProtocol.h"
 
-NetworkProtocol::NetworkProtocol(NetworkServer *server,
-                                 NetworkDevice *device)
+NetworkProtocol::NetworkProtocol(NetworkServer &server,
+                                 NetworkDevice &device)
+    : m_server(server)
+    , m_device(device)
 {
-    m_server = server;
-    m_device = device;
 }
 
 NetworkProtocol::~NetworkProtocol()
@@ -31,5 +31,5 @@ NetworkProtocol::~NetworkProtocol()
 
 const Size NetworkProtocol::getMaximumPacketSize() const
 {
-    return m_device->getMaximumPacketSize();
+    return m_device.getMaximumPacketSize();
 }

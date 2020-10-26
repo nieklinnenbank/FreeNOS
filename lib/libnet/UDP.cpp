@@ -22,8 +22,8 @@
 #include "UDPSocket.h"
 #include "UDPFactory.h"
 
-UDP::UDP(NetworkServer *server,
-         NetworkDevice *device)
+UDP::UDP(NetworkServer &server,
+         NetworkDevice &device)
     : NetworkProtocol(server, device)
 {
     m_ipv4 = 0;
@@ -43,8 +43,8 @@ FileSystem::Result UDP::initialize()
     DEBUG("");
 
     m_factory = new UDPFactory(this);
-    m_server->registerDirectory(this, "/udp");
-    m_server->registerFile(m_factory, "/udp/factory");
+    m_server.registerDirectory(this, "/udp");
+    m_server.registerFile(m_factory, "/udp/factory");
 
     return FileSystem::Success;
 }
@@ -71,8 +71,8 @@ UDPSocket * UDP::createSocket(String & path)
     String filepath;
     filepath << "/udp/" << pos;
 
-    path << m_server->getMountPath() << filepath;
-    const FileSystem::Result result = m_server->registerFile(sock, *filepath);
+    path << m_server.getMountPath() << filepath;
+    const FileSystem::Result result = m_server.registerFile(sock, *filepath);
     if (result != FileSystem::Success)
     {
         ERROR("failed to register UDP socket: result = " << (int) result);
@@ -149,7 +149,7 @@ FileSystem::Result UDP::sendPacket(const NetworkClient::SocketInfo *src,
     pkt->size += sizeof(Header) + size - sizeof(dest);
 
     // Transmit now
-    return m_device->transmit(pkt);
+    return m_device.transmit(pkt);
 }
 
 FileSystem::Result UDP::bind(UDPSocket *sock,

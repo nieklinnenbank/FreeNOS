@@ -27,8 +27,8 @@
 #include "UDP.h"
 #include "ICMP.h"
 
-IPV4::IPV4(NetworkServer *server,
-           NetworkDevice *device)
+IPV4::IPV4(NetworkServer &server,
+           NetworkDevice &device)
     : NetworkProtocol(server, device)
 {
     m_address = 0;
@@ -46,8 +46,8 @@ FileSystem::Result IPV4::initialize()
 {
     DEBUG("");
 
-    m_server->registerDirectory(this, "/ipv4");
-    m_server->registerFile(new IPV4Address(this), "/ipv4/address");
+    m_server.registerDirectory(this, "/ipv4");
+    m_server.registerFile(new IPV4Address(this), "/ipv4/address");
 
     return FileSystem::Success;
 }

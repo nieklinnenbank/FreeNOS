@@ -22,7 +22,8 @@
 #include "ARP.h"
 #include "ARPSocket.h"
 
-ARP::ARP(NetworkServer *server, NetworkDevice *device)
+ARP::ARP(NetworkServer &server,
+         NetworkDevice &device)
     : NetworkProtocol(server, device)
 {
     m_ip = 0;
@@ -36,8 +37,8 @@ ARP::~ARP()
 FileSystem::Result ARP::initialize()
 {
     m_sock = new ARPSocket(this);
-    m_server->registerDirectory(this, "/arp");
-    m_server->registerFile(m_sock, "/arp/socket");
+    m_server.registerDirectory(this, "/arp");
+    m_server.registerFile(m_sock, "/arp/socket");
 
     return FileSystem::Success;
 }
@@ -105,7 +106,7 @@ FileSystem::Result ARP::lookupAddress(const IPV4::Address *ipAddr,
     }
 
     // Make sure we are called again in about 500msec
-    m_server->setTimeout(500);
+    m_server.setTimeout(500);
     return FileSystem::RetryAgain;
 }
 
@@ -165,7 +166,7 @@ FileSystem::Result ARP::sendRequest(const IPV4::Address address)
     writeBe32(&arp->ipTarget, address);
 
     // Send the packet using the network device
-    return m_device->transmit(pkt);
+    return m_device.transmit(pkt);
 }
 
 FileSystem::Result ARP::sendReply(const Ethernet::Address *ethAddr, const IPV4::Address ipAddr)
@@ -211,7 +212,7 @@ FileSystem::Result ARP::sendReply(const Ethernet::Address *ethAddr, const IPV4::
     writeBe32(&arp->ipTarget, ipAddr);
 
     // Send the packet using the network device
-    return m_device->transmit(pkt);
+    return m_device.transmit(pkt);
 }
 
 FileSystem::Result ARP::process(const NetworkQueue::Packet *pkt, const Size offset)
