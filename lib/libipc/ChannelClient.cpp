@@ -82,6 +82,7 @@ ChannelClient::Result ChannelClient::connect(const ProcessID pid, const Size mes
         for (Size i = 0; i < MaxConnectRetries && r == API::TemporaryUnavailable; i++)
         {
             ProcessCtl(pid, Wakeup, 0);
+            ProcessCtl(SELF, Schedule, 0);
             r = VMShare(pid, API::Create, &share);
         }
 
