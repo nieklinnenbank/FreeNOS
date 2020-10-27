@@ -19,13 +19,12 @@
 #define __LIB_LIBNET_IPV4_H
 
 #include <Types.h>
-#include "Ethernet.h"
-#include "IPV4.h"
+#include <String.h>
+#include "NetworkProtocol.h"
 
 class ICMP;
 class ARP;
 class UDP;
-class Ethernet;
 
 /**
  * @addtogroup lib
@@ -102,9 +101,11 @@ class IPV4 : public NetworkProtocol
      *
      * @param server Reference to the NetworkServer instance
      * @param device Reference to the NetworkDevice instance
+     * @param parent Parent upper-layer protocol
      */
     IPV4(NetworkServer &server,
-         NetworkDevice &device);
+         NetworkDevice &device,
+         NetworkProtocol &parent);
 
     /**
      * Destructor
@@ -128,8 +129,6 @@ class IPV4 : public NetworkProtocol
     void setARP(::ARP *arp);
 
     void setUDP(::UDP *udp);
-
-    void setEthernet(::Ethernet *ether);
 
     /**
      * Get current IP address
@@ -227,9 +226,6 @@ class IPV4 : public NetworkProtocol
 
     /** UDP instance */
     ::UDP *m_udp;
-
-    /** Ethernet instance */
-    ::Ethernet *m_ether;
 
     /** Packet ID for IPV4 */
     u16 m_id;

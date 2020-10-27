@@ -28,13 +28,13 @@
 #include "ICMP.h"
 
 IPV4::IPV4(NetworkServer &server,
-           NetworkDevice &device)
-    : NetworkProtocol(server, device)
+           NetworkDevice &device,
+           NetworkProtocol &parent)
+    : NetworkProtocol(server, device, parent)
 {
     m_address = 0;
     m_icmp = 0;
     m_udp = 0;
-    m_ether = 0;
     m_id = 1;
 }
 
@@ -55,11 +55,6 @@ FileSystem::Result IPV4::initialize()
 void IPV4::setICMP(::ICMP *icmp)
 {
     m_icmp = icmp;
-}
-
-void IPV4::setEthernet(::Ethernet *ether)
-{
-    m_ether = ether;
 }
 
 void IPV4::setARP(::ARP *arp)
@@ -154,7 +149,7 @@ NetworkQueue::Packet * IPV4::getTransmitPacket(const void *address,
     }
 
     // Get a fresh ethernet packet
-    NetworkQueue::Packet *pkt = m_ether->getTransmitPacket(&ethAddr, sizeof(ethAddr),
+    NetworkQueue::Packet *pkt = m_parent.getTransmitPacket(&ethAddr, sizeof(ethAddr),
                                                            NetworkProtocol::IPV4, payloadSize);
     if (pkt == ZERO)
     {

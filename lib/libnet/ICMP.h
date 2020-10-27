@@ -78,9 +78,11 @@ class ICMP : public NetworkProtocol
      *
      * @param server Reference to the NetworkServer instance
      * @param device Reference to the NetworkDevice instance
+     * @param parent Parent upper-layer protocol
      */
     ICMP(NetworkServer &server,
-         NetworkDevice &device);
+         NetworkDevice &device,
+         NetworkProtocol &parent);
 
     /**
      * Destructor
@@ -139,8 +141,6 @@ class ICMP : public NetworkProtocol
     ICMPFactory *m_factory;
 
     Index<ICMPSocket, MaxIcmpSockets> m_sockets;
-
-    ::IPV4 *m_ipv4;
 };
 
 /**

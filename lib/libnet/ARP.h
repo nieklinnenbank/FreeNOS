@@ -113,9 +113,11 @@ class ARP : public NetworkProtocol
      *
      * @param server Reference to the NetworkServer instance
      * @param device Reference to the NetworkDevice instance
+     * @param parent Parent upper-layer protocol
      */
     ARP(NetworkServer &server,
-        NetworkDevice &device);
+        NetworkDevice &device,
+        NetworkProtocol &parent);
 
     /**
      * Destructor
@@ -135,13 +137,6 @@ class ARP : public NetworkProtocol
      * @param ip IPV4 instance
      */
     void setIP(::IPV4 *ip);
-
-    /**
-     * Set Ethernet instance
-     *
-     * @param ether Ethernet intstance
-     */
-    void setEthernet(::Ethernet *ether);
 
     /**
      * Lookup Ethernet address for an IP

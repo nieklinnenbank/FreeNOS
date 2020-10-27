@@ -19,9 +19,11 @@
 #include "NetworkProtocol.h"
 
 NetworkProtocol::NetworkProtocol(NetworkServer &server,
-                                 NetworkDevice &device)
+                                 NetworkDevice &device,
+                                 NetworkProtocol &parent)
     : m_server(server)
     , m_device(device)
+    , m_parent(parent)
 {
 }
 

@@ -23,7 +23,6 @@
 #include <String.h>
 #include <HashTable.h>
 #include "NetworkProtocol.h"
-#include "IPV4.h"
 #include "UDPSocket.h"
 
 class UDPFactory;
@@ -66,19 +65,16 @@ class UDP : public NetworkProtocol
      *
      * @param server Reference to the NetworkServer instance
      * @param device Reference to the NetworkDevice instance
+     * @param parent Parent upper-layer protocol
      */
     UDP(NetworkServer &server,
-        NetworkDevice &device);
+        NetworkDevice &device,
+        NetworkProtocol &parent);
 
     /**
      * Destructor
      */
     virtual ~UDP();
-
-    /**
-     * Set IP object
-     */
-    void setIP(::IPV4 *ip);
 
     /**
      * Perform initialization.
@@ -129,6 +125,7 @@ class UDP : public NetworkProtocol
      * Calculate ICMP checksum
      *
      * @param header ICMP header
+     *
      * @return ICMP checksum value for the given header
      */
     static const u16 checksum(const IPV4::Header *ip,
@@ -137,19 +134,27 @@ class UDP : public NetworkProtocol
 
   private:
 
+    /**
+     * Calculate sum of artibrary data
+     *
+     * @param ptr Pointer to the data to sum
+     * @param bytes Number of bytes to add to the sum
+     *
+     * @return Sum value for the input data
+     */
     static const ulong calculateSum(const u16 *ptr,
                                     const Size bytes);
 
   private:
 
+    /** Factory for creating new UDP sockets */
     UDPFactory *m_factory;
 
+    /** Contains all UDP sockets */
     Index<UDPSocket, MaxUdpSockets> m_sockets;
 
     /** Maps UDP ports to UDP sockets */
     HashTable<u16, UDPSocket *> m_ports;
-
-    ::IPV4 *m_ipv4;
 };
 
 /**

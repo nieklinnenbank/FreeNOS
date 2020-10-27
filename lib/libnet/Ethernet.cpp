@@ -24,7 +24,7 @@
 
 Ethernet::Ethernet(NetworkServer &server,
                    NetworkDevice &device)
-    : NetworkProtocol(server, device)
+    : NetworkProtocol(server, device, *this)
 {
     m_arp  = ZERO;
     m_ipv4 = ZERO;

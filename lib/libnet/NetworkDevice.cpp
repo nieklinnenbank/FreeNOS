@@ -45,10 +45,10 @@ FileSystem::Result NetworkDevice::initialize()
 
     // Setup protocol stack
     m_eth  = new Ethernet(*m_server, *this);
-    m_arp  = new ARP(*m_server, *this);
-    m_ipv4 = new IPV4(*m_server, *this);
-    m_icmp = new ICMP(*m_server, *this);
-    m_udp  = new UDP(*m_server, *this);
+    m_arp  = new ARP(*m_server, *this, *m_eth);
+    m_ipv4 = new IPV4(*m_server, *this, *m_eth);
+    m_icmp = new ICMP(*m_server, *this, *m_ipv4);
+    m_udp  = new UDP(*m_server, *this, *m_ipv4);
 
     // Initialize protocols
     m_eth->initialize();
@@ -61,13 +61,9 @@ FileSystem::Result NetworkDevice::initialize()
     m_eth->setIP(m_ipv4);
     m_eth->setARP(m_arp);
     m_arp->setIP(m_ipv4);
-    m_arp->setEthernet(m_eth);
     m_ipv4->setICMP(m_icmp);
     m_ipv4->setARP(m_arp);
-    m_ipv4->setEthernet(m_eth);
     m_ipv4->setUDP(m_udp);
-    m_icmp->setIP(m_ipv4);
-    m_udp->setIP(m_ipv4);
 
     return FileSystem::Success;
 }

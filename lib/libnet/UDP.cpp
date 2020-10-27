@@ -23,19 +23,14 @@
 #include "UDPFactory.h"
 
 UDP::UDP(NetworkServer &server,
-         NetworkDevice &device)
-    : NetworkProtocol(server, device)
+         NetworkDevice &device,
+         NetworkProtocol &parent)
+    : NetworkProtocol(server, device, parent)
 {
-    m_ipv4 = 0;
 }
 
 UDP::~UDP()
 {
-}
-
-void UDP::setIP(::IPV4 *ip)
-{
-    m_ipv4 = ip;
 }
 
 FileSystem::Result UDP::initialize()
@@ -118,8 +113,8 @@ FileSystem::Result UDP::sendPacket(const NetworkClient::SocketInfo *src,
     DEBUG("send payload to: " << dest.address << " port: " << dest.port << " size: " << size);
 
     // Get a fresh packet
-    pkt = m_ipv4->getTransmitPacket(&dest.address, sizeof(dest.address),
-                                    NetworkProtocol::UDP, sizeof(Header) + size - sizeof(dest));
+    pkt = m_parent.getTransmitPacket(&dest.address, sizeof(dest.address),
+                                     NetworkProtocol::UDP, sizeof(Header) + size - sizeof(dest));
     if (pkt == ZERO)
     {
         return FileSystem::RetryAgain;

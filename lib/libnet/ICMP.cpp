@@ -24,19 +24,14 @@
 #include "IPV4.h"
 
 ICMP::ICMP(NetworkServer &server,
-           NetworkDevice &device)
-    : NetworkProtocol(server, device)
+           NetworkDevice &device,
+           NetworkProtocol &parent)
+    : NetworkProtocol(server, device, parent)
 {
-    m_ipv4  = ZERO;
 }
 
 ICMP::~ICMP()
 {
-}
-
-void ICMP::setIP(::IPV4 *ip)
-{
-    m_ipv4 = ip;
 }
 
 FileSystem::Result ICMP::initialize()
@@ -134,8 +129,8 @@ FileSystem::Result ICMP::sendPacket(const IPV4::Address ip,
     DEBUG("");
 
     // Get a fresh packet
-    NetworkQueue::Packet *pkt = m_ipv4->getTransmitPacket(&ip, sizeof(ip),
-                                                          NetworkProtocol::ICMP, sizeof(Header));
+    NetworkQueue::Packet *pkt = m_parent.getTransmitPacket(&ip, sizeof(ip),
+                                                           NetworkProtocol::ICMP, sizeof(Header));
     if (pkt == ZERO)
     {
         return FileSystem::RetryAgain;

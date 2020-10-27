@@ -60,9 +60,11 @@ class NetworkProtocol : public Directory
      *
      * @param server Reference to the NetworkServer instance
      * @param device Reference to the NetworkDevice instance
+     * @param parent Parent upper-layer protocol (or use this for no parent)
      */
     NetworkProtocol(NetworkServer &server,
-                    NetworkDevice &device);
+                    NetworkDevice &device,
+                    NetworkProtocol &parent);
 
     /**
      * Destructor
@@ -117,6 +119,9 @@ class NetworkProtocol : public Directory
 
     /** Network device instance */
     NetworkDevice &m_device;
+
+    /** Parent upper-layer protocol instance */
+    NetworkProtocol &m_parent;
 };
 
 /**

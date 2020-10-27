@@ -23,11 +23,11 @@
 #include "ARPSocket.h"
 
 ARP::ARP(NetworkServer &server,
-         NetworkDevice &device)
-    : NetworkProtocol(server, device)
+         NetworkDevice &device,
+         NetworkProtocol &parent)
+    : NetworkProtocol(server, device, parent)
 {
     m_ip = 0;
-    m_ether = 0;
 }
 
 ARP::~ARP()
@@ -46,11 +46,6 @@ FileSystem::Result ARP::initialize()
 void ARP::setIP(::IPV4 *ip)
 {
     m_ip = ip;
-}
-
-void ARP::setEthernet(::Ethernet *eth)
-{
-    m_ether = eth;
 }
 
 ARP::ARPCache * ARP::getCacheEntry(const IPV4::Address ipAddr)
@@ -135,7 +130,7 @@ FileSystem::Result ARP::sendRequest(const IPV4::Address address)
     MemoryBlock::set(&destAddr, 0xff, sizeof(destAddr));
 
     // Get a fresh ethernet packet
-    NetworkQueue::Packet *pkt = m_ether->getTransmitPacket(&destAddr, sizeof(destAddr),
+    NetworkQueue::Packet *pkt = m_parent.getTransmitPacket(&destAddr, sizeof(destAddr),
                                                            NetworkProtocol::ARP, sizeof(Header));
     if (!pkt)
     {
@@ -177,7 +172,7 @@ FileSystem::Result ARP::sendReply(const Ethernet::Address *ethAddr, const IPV4::
     }
 
     // Get a fresh ethernet packet
-    NetworkQueue::Packet *pkt = m_ether->getTransmitPacket(ethAddr, sizeof(*ethAddr),
+    NetworkQueue::Packet *pkt = m_parent.getTransmitPacket(ethAddr, sizeof(*ethAddr),
                                                            NetworkProtocol::ARP, sizeof(Header));
     if (!pkt)
     {
