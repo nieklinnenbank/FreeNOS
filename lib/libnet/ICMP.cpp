@@ -133,18 +133,12 @@ FileSystem::Result ICMP::sendPacket(const IPV4::Address ip,
 {
     DEBUG("");
 
-    NetworkQueue::Packet *pkt;
-
-    // Get a fresh IP packet
-    const FileSystem::Result result = m_ipv4->getTransmitPacket(&pkt, ip, IPV4::ICMP,
-                                                                sizeof(Header));
-    if (result != FileSystem::Success)
+    // Get a fresh packet
+    NetworkQueue::Packet *pkt = m_ipv4->getTransmitPacket(&ip, sizeof(ip),
+                                                          NetworkProtocol::ICMP, sizeof(Header));
+    if (pkt == ZERO)
     {
-        if (result != FileSystem::RetryAgain)
-        {
-            ERROR("failed to get transmit packet: result = " << (int) result);
-        }
-        return result;
+        return FileSystem::RetryAgain;
     }
 
     // Fill payload

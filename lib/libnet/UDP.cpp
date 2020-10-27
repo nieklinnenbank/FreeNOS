@@ -117,17 +117,12 @@ FileSystem::Result UDP::sendPacket(const NetworkClient::SocketInfo *src,
     buffer.read(&dest, sizeof(dest));
     DEBUG("send payload to: " << dest.address << " port: " << dest.port << " size: " << size);
 
-    // Get a fresh IP packet
-    const FileSystem::Result result = m_ipv4->getTransmitPacket(&pkt, dest.address,
-                                                                IPV4::UDP,
-                                                                sizeof(Header) + size - sizeof(dest));
-    if (result != FileSystem::Success)
+    // Get a fresh packet
+    pkt = m_ipv4->getTransmitPacket(&dest.address, sizeof(dest.address),
+                                    NetworkProtocol::UDP, sizeof(Header) + size - sizeof(dest));
+    if (pkt == ZERO)
     {
-        if (result != FileSystem::RetryAgain)
-        {
-            ERROR("could not get transmit packet: result = " << (int) result);
-        }
-        return result;
+        return FileSystem::RetryAgain;
     }
 
     // Fill UDP header

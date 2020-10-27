@@ -135,10 +135,8 @@ FileSystem::Result ARP::sendRequest(const IPV4::Address address)
     MemoryBlock::set(&destAddr, 0xff, sizeof(destAddr));
 
     // Get a fresh ethernet packet
-    NetworkQueue::Packet *pkt = m_ether->getTransmitPacket(
-        &destAddr,
-        Ethernet::ARP
-    );
+    NetworkQueue::Packet *pkt = m_ether->getTransmitPacket(&destAddr, sizeof(destAddr),
+                                                           NetworkProtocol::ARP, sizeof(Header));
     if (!pkt)
     {
         return FileSystem::RetryAgain;
@@ -173,19 +171,17 @@ FileSystem::Result ARP::sendReply(const Ethernet::Address *ethAddr, const IPV4::
 {
     DEBUG("");
 
-    // Get a fresh ethernet packet
-    NetworkQueue::Packet *pkt = m_ether->getTransmitPacket(
-        ethAddr,
-        Ethernet::ARP
-    );
-    if (!pkt)
-    {
-        return FileSystem::RetryAgain;
-    }
-
     if (!m_ip)
     {
         return FileSystem::InvalidArgument;
+    }
+
+    // Get a fresh ethernet packet
+    NetworkQueue::Packet *pkt = m_ether->getTransmitPacket(ethAddr, sizeof(*ethAddr),
+                                                           NetworkProtocol::ARP, sizeof(Header));
+    if (!pkt)
+    {
+        return FileSystem::RetryAgain;
     }
 
     IPV4::Address myip;

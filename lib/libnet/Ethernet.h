@@ -123,11 +123,17 @@ class Ethernet : public NetworkProtocol
     /**
      * Get a new packet for transmission
      *
-     * @param destination
+     * @param address Address of the destination of this packet
+     * @param addressSize Number of bytes of the address
+     * @param protocol Identifier for the protocol to create the packet for
+     * @param payloadSize Number of payload bytes
+     *
+     * @return Packet pointer on success, ZERO on failure
      */
-    NetworkQueue::Packet *getTransmitPacket(const Address *destination,
-                                            const PayloadType type);
-
+    virtual NetworkQueue::Packet * getTransmitPacket(const void *address,
+                                                     const Size addressSize,
+                                                     const Identifier protocol,
+                                                     const Size payloadSize);
 
     /**
      * Convert address to string

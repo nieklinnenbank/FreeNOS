@@ -122,49 +122,63 @@ const IPV4::Address IPV4::toAddress(const char *address)
     return addr;
 }
 
-FileSystem::Result IPV4::getTransmitPacket(NetworkQueue::Packet **pkt,
-                                           const IPV4::Address destination,
-                                           const IPV4::Protocol type,
-                                           const Size size)
+IPV4::Protocol IPV4::getProtocolByIdentifier(const NetworkProtocol::Identifier id) const
+{
+    switch (id)
+    {
+        case NetworkProtocol::ICMP:
+            return IPV4::ICMP;
+        case NetworkProtocol::UDP:
+            return IPV4::UDP;
+        default:
+            return IPV4::TCP;
+    }
+}
+
+NetworkQueue::Packet * IPV4::getTransmitPacket(const void *address,
+                                               const Size addressSize,
+                                               const NetworkProtocol::Identifier protocol,
+                                               const Size payloadSize)
 {
     Ethernet::Address ethAddr;
 
     // Find the ethernet address using ARP first
-    const FileSystem::Result result = m_arp->lookupAddress(&destination, &ethAddr);
+    const FileSystem::Result result = m_arp->lookupAddress((const IPV4::Address *)address, &ethAddr);
     if (result != FileSystem::Success)
     {
         if (result != FileSystem::RetryAgain)
         {
             ERROR("failed to perform ARP lookup: result = " << (int) result);
         }
-        return result;
+        return ZERO;
     }
 
     // Get a fresh ethernet packet
-    *pkt = m_ether->getTransmitPacket(&ethAddr, Ethernet::IPV4);
-    if (*pkt == ZERO)
+    NetworkQueue::Packet *pkt = m_ether->getTransmitPacket(&ethAddr, sizeof(ethAddr),
+                                                           NetworkProtocol::IPV4, payloadSize);
+    if (pkt == ZERO)
     {
-        return FileSystem::RetryAgain;
+        return ZERO;
     }
 
     // Fill IP header
-    Header *hdr = (Header *) ((*pkt)->data + (*pkt)->size);
+    Header *hdr = (Header *) (pkt->data + pkt->size);
     hdr->versionIHL     = (sizeof(Header) / sizeof(u32)) | (4 << 4);
     hdr->typeOfService  = 0;
     hdr->timeToLive     = 64;
-    hdr->protocol       = type;
-    writeBe16(&hdr->length, size + sizeof(Header));
+    hdr->protocol       = getProtocolByIdentifier(protocol);
+    writeBe16(&hdr->length, payloadSize + sizeof(Header));
     writeBe16(&hdr->identification, m_id);
     writeBe16(&hdr->fragmentOffset, 0x4000); // dont fragment flag
     writeBe32(&hdr->source, m_address);
-    writeBe32(&hdr->destination, destination);
+    writeBe32(&hdr->destination, *(u32 *)address);
     hdr->checksum       = 0;
     hdr->checksum       = checksum(hdr, sizeof(Header));
-    (*pkt)->size += sizeof(Header);
+    pkt->size += sizeof(Header);
     m_id++;
 
     // Success
-    return FileSystem::Success;
+    return pkt;
 }
 
 const u16 IPV4::checksum(const void *buffer, const Size length)

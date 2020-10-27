@@ -85,17 +85,35 @@ const String Ethernet::toString(const Ethernet::Address address)
     return s;
 }
 
-NetworkQueue::Packet * Ethernet::getTransmitPacket(const Ethernet::Address *destination,
-                                                   const Ethernet::PayloadType type)
+NetworkQueue::Packet * Ethernet::getTransmitPacket(const void *address,
+                                                   const Size addressSize,
+                                                   const NetworkProtocol::Identifier protocol,
+                                                   const Size payloadSize)
 {
     NetworkQueue::Packet *pkt = m_device.getTransmitQueue()->get();
     if (!pkt)
+    {
         return ZERO;
+    }
 
     Ethernet::Header *ether = (Ethernet::Header *) (pkt->data + pkt->size);
     MemoryBlock::copy(&ether->source, &m_address, sizeof(Address));
-    MemoryBlock::copy(&ether->destination, destination, sizeof(Address));
-    writeBe16(&ether->type, type);
+    MemoryBlock::copy(&ether->destination, address, sizeof(Address));
+
+    switch (protocol)
+    {
+        case NetworkProtocol::IPV4:
+            writeBe16(&ether->type, IPV4);
+            break;
+
+        case NetworkProtocol::ARP:
+            writeBe16(&ether->type, ARP);
+            break;
+
+        default:
+            ERROR("unsupported protocol: " << (int) protocol);
+            return ZERO;
+    }
 
     pkt->size += sizeof(Ethernet::Header);
     return pkt;

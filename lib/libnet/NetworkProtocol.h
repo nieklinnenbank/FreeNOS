@@ -38,6 +38,21 @@ class NetworkDevice;
  */
 class NetworkProtocol : public Directory
 {
+  protected:
+
+    /**
+     * List of known network protocol identifiers
+     */
+    enum Identifier
+    {
+        Ethernet = 1,
+        IPV4,
+        ARP,
+        ICMP,
+        UDP,
+        TCP
+    };
+
   public:
 
     /**
@@ -68,6 +83,21 @@ class NetworkProtocol : public Directory
      * @return Result code
      */
     virtual FileSystem::Result initialize() = 0;
+
+    /**
+     * Get a new packet for transmission
+     *
+     * @param address Address of the destination of this packet
+     * @param addressSize Number of bytes of the address
+     * @param protocol Identifier for the protocol to create the packet for
+     * @param payloadSize Number of payload bytes
+     *
+     * @return Packet pointer on success, ZERO on failure
+     */
+    virtual NetworkQueue::Packet * getTransmitPacket(const void *address,
+                                                     const Size addressSize,
+                                                     const Identifier protocol,
+                                                     const Size payloadSize);
 
     /**
      * Process incoming network packet.
