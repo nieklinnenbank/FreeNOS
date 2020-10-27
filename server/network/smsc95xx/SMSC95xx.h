@@ -41,7 +41,7 @@ class SMSC95xx : public NetworkDevice
     /**
      * Constructor
      */
-    SMSC95xx(u8 deviceId, const char *usbPath, NetworkServer *server);
+    SMSC95xx(u8 deviceId, const char *usbPath, NetworkServer &server);
 
     /**
      * Destructor

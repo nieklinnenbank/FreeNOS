@@ -27,7 +27,7 @@
 TestCase(LoopbackConstruct)
 {
     NetworkServer server("/networktest/loopback");
-    Loopback loop(&server);
+    Loopback loop(server);
 
     return OK;
 }

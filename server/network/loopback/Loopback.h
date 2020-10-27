@@ -40,7 +40,7 @@ class Loopback : public NetworkDevice
     /**
      * Constructor
      */
-    Loopback(NetworkServer *server);
+    Loopback(NetworkServer &server);
 
     /**
      * Destructor

@@ -16,6 +16,7 @@
  */
 
 #include <ByteOrder.h>
+#include <MemoryBlock.h>
 #include "NetworkServer.h"
 #include "NetworkDevice.h"
 #include "Ethernet.h"
@@ -28,7 +29,7 @@ Ethernet::Ethernet(NetworkServer &server,
 {
     m_arp  = ZERO;
     m_ipv4 = ZERO;
-    m_device.getAddress(&m_address);
+    MemoryBlock::set(&m_address, 0, sizeof(m_address));
 }
 
 Ethernet::~Ethernet()
@@ -37,6 +38,8 @@ Ethernet::~Ethernet()
 
 FileSystem::Result Ethernet::initialize()
 {
+    m_device.getAddress(&m_address);
+
     m_server.registerDirectory(this, "/ethernet");
     m_server.registerFile(new EthernetAddress(this), "/ethernet/address");
 

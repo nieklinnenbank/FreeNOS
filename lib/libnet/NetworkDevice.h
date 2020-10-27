@@ -45,7 +45,7 @@ class NetworkDevice : public Device
     /**
      * Constructor
      */
-    NetworkDevice(NetworkServer *server);
+    NetworkDevice(NetworkServer &server);
 
     /**
      * Destructor
@@ -124,17 +124,17 @@ class NetworkDevice : public Device
 
     NetworkQueue m_transmit;
 
-    NetworkServer *m_server;
+    NetworkServer &m_server;
 
-    Ethernet *m_eth;
+    Ethernet m_eth;
 
-    ARP *m_arp;
+    ARP m_arp;
 
-    IPV4 *m_ipv4;
+    IPV4 m_ipv4;
 
-    ICMP *m_icmp;
+    ICMP m_icmp;
 
-    UDP *m_udp;
+    UDP m_udp;
 };
 
 /**

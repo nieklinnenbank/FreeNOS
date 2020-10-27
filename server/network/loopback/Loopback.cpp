@@ -17,7 +17,7 @@
 
 #include "Loopback.h"
 
-Loopback::Loopback(NetworkServer *server)
+Loopback::Loopback(NetworkServer &server)
     : NetworkDevice(server)
 {
     DEBUG("");
@@ -45,9 +45,8 @@ FileSystem::Result Loopback::initialize()
         return FileSystem::IOError;
     }
 
-    assert(m_ipv4 != ZERO);
     IPV4::Address addr = IPV4::toAddress("127.0.0.1");
-    m_ipv4->setAddress(&addr);
+    m_ipv4.setAddress(&addr);
 
     return FileSystem::Success;
 }

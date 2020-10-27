@@ -17,17 +17,18 @@
 
 #include "NetworkDevice.h"
 
-NetworkDevice::NetworkDevice(NetworkServer *server)
-    : Device(FileSystem::CharacterDeviceFile),
-      m_receive(1500),
-      m_transmit(1500)
+NetworkDevice::NetworkDevice(NetworkServer &server)
+    : Device(FileSystem::CharacterDeviceFile)
+    , m_maximumPacketSize(1500)
+    , m_receive(m_maximumPacketSize)
+    , m_transmit(m_maximumPacketSize)
+    , m_server(server)
+    , m_eth(m_server, *this)
+    , m_arp(m_server, *this, m_eth)
+    , m_ipv4(m_server, *this, m_eth)
+    , m_icmp(m_server, *this, m_ipv4)
+    , m_udp(m_server, *this, m_ipv4)
 {
-    m_maximumPacketSize = 1500;
-    m_server = server;
-    m_eth = 0;
-    m_arp = 0;
-    m_ipv4 = 0;
-    m_udp = 0;
 }
 
 NetworkDevice::~NetworkDevice()
@@ -43,27 +44,20 @@ FileSystem::Result NetworkDevice::initialize()
         return result;
     }
 
-    // Setup protocol stack
-    m_eth  = new Ethernet(*m_server, *this);
-    m_arp  = new ARP(*m_server, *this, *m_eth);
-    m_ipv4 = new IPV4(*m_server, *this, *m_eth);
-    m_icmp = new ICMP(*m_server, *this, *m_ipv4);
-    m_udp  = new UDP(*m_server, *this, *m_ipv4);
-
     // Initialize protocols
-    m_eth->initialize();
-    m_arp->initialize();
-    m_ipv4->initialize();
-    m_icmp->initialize();
-    m_udp->initialize();
+    m_eth.initialize();
+    m_arp.initialize();
+    m_ipv4.initialize();
+    m_icmp.initialize();
+    m_udp.initialize();
 
     // Connect objects
-    m_eth->setIP(m_ipv4);
-    m_eth->setARP(m_arp);
-    m_arp->setIP(m_ipv4);
-    m_ipv4->setICMP(m_icmp);
-    m_ipv4->setARP(m_arp);
-    m_ipv4->setUDP(m_udp);
+    m_eth.setIP(&m_ipv4);
+    m_eth.setARP(&m_arp);
+    m_arp.setIP(&m_ipv4);
+    m_ipv4.setICMP(&m_icmp);
+    m_ipv4.setARP(&m_arp);
+    m_ipv4.setUDP(&m_udp);
 
     return FileSystem::Success;
 }
@@ -89,5 +83,5 @@ FileSystem::Result NetworkDevice::process(const NetworkQueue::Packet *pkt,
     DEBUG("");
 
     // Let the protocols process the packet
-    return m_eth->process(pkt, offset);
+    return m_eth.process(pkt, offset);
 }
