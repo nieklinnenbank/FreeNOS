@@ -57,7 +57,7 @@ UDPSocket * UDP::createSocket(String & path)
         return ZERO;
     }
 
-    if (!m_sockets.insert(sock))
+    if (!m_sockets.insert(pos, sock))
     {
         ERROR("failed to insert UDP socket");
         delete sock;
