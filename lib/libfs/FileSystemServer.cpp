@@ -637,6 +637,10 @@ void FileSystemServer::clearFileCache(FileCache *cache)
         FileCache *child = i.current();
 
         static_cast<Directory *>(cache->file)->remove(*child->name);
+        if (cache->parent && cache->parent->file == child->file)
+        {
+            child->file = ZERO;
+        }
         clearFileCache(child);
         i.remove();
     }
