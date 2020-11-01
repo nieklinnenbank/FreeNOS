@@ -65,6 +65,22 @@ Size MemoryBlock::copy(char *dst, char *src, Size count)
     return(s - src - 1);
 }
 
+bool MemoryBlock::compare(const void *p1, const void *p2, const Size count)
+{
+    const char *ch1 = (const char *) p1;
+    const char *ch2 = (const char *) p2;
+
+    for (Size i = 0; i < count; i++)
+    {
+        if (*ch1++ != *ch2++)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 bool MemoryBlock::compare(const char *p1, const char *p2, Size count)
 {
     for (Size i = count; i > 0 || !count; i--)

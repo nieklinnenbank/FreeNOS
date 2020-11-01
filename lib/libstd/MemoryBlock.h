@@ -70,13 +70,13 @@ class MemoryBlock
     /**
      * Compare memory.
      *
-     * @param dest Destination address
-     * @param src Source address
+     * @param p1 Memory pointer one.
+     * @param p2 Memory pointer two.
      * @param count Number of bytes to compare
      *
-     * @return Zero if equal or non-zero if not equal
+     * @return True if equal, false otherwise
      */
-    static bool compare(void *dest, void *src, Size count);
+    static bool compare(const void *p1, const void *p2, const Size count);
 
     /**
      * Compare memory.
