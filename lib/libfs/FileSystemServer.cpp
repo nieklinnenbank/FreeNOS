@@ -80,13 +80,17 @@ FileSystem::Result FileSystemServer::mount()
         return FileSystem::Success;
     }
     // Other file systems send a request to root file system to mount.
-    else
+    else if (m_mountPath != ZERO)
     {
         const FileSystemClient rootfs(ROOTFS_PID);
         const FileSystem::Result result = rootfs.mountFileSystem(m_mountPath);
 
         assert(result == FileSystem::Success);
         return result;
+    }
+    else
+    {
+        return FileSystem::Success;
     }
 }
 
