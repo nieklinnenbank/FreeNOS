@@ -71,6 +71,14 @@ static API::Result hostProcessCtlHandler(ProcessID procID,
             return API::Success;
         }
 
+        case InfoTimer:
+        {
+            Timer::Info *info = (Timer::Info *) addr;
+            info->frequency = 250;
+            info->ticks = 128;
+            return API::Success;
+        }
+
         default:
             break;
     }
