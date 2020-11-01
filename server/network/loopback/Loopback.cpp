@@ -46,7 +46,7 @@ FileSystem::Result Loopback::initialize()
     }
 
     IPV4::Address addr = IPV4::toAddress("127.0.0.1");
-    m_ipv4.setAddress(&addr);
+    m_ipv4->setAddress(&addr);
 
     return FileSystem::Success;
 }
