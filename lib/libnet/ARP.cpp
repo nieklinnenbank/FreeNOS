@@ -32,6 +32,10 @@ ARP::ARP(NetworkServer &server,
 
 ARP::~ARP()
 {
+    for (HashIterator<IPV4::Address, ARPCache *> i(m_cache); i.hasCurrent(); i++)
+    {
+        delete i.current();
+    }
 }
 
 FileSystem::Result ARP::initialize()
