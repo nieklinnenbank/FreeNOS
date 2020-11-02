@@ -241,6 +241,12 @@
  */
 
 /**
+ * @defgroup sun8iemac sun8iemac
+ *
+ * Network device of the Allwinner Sun8i family System-on-Chips.
+ */
+
+/**
  * @defgroup pn532 pn532
  *
  * The PN532 is a NFC reader device connected via an SPI bus.

@@ -36,15 +36,13 @@
  */
 class NetworkQueue
 {
-  private:
+  public:
 
     /** Size of payload memory buffer */
     static const Size PayloadBufferSize = 2048;
 
     /** Maximum number of packets available */
     static const Size MaxPackets = 64u;
-
-  public:
 
     /**
      * Represents a network packet
