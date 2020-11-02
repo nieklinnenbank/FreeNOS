@@ -88,7 +88,15 @@ class UDP : public NetworkProtocol
      *
      * @return UDPSocket object instance
      */
-    UDPSocket * createSocket(String & path);
+    UDPSocket * createSocket(String & path,
+                             const ProcessID pid);
+
+    /**
+     * Remove sockets for a process
+     *
+     * @param pid ProcessID to remove sockets for
+     */
+    void unregisterSockets(const ProcessID pid);
 
     /**
      * Process incoming network packet.

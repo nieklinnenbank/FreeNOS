@@ -85,14 +85,15 @@ FileSystem::Result ICMP::process(const NetworkQueue::Packet *pkt,
     return FileSystem::Success;
 }
 
-ICMPSocket * ICMP::createSocket(String & path)
+ICMPSocket * ICMP::createSocket(String & path,
+                                const ProcessID pid)
 {
     Size pos = 0;
 
     DEBUG("");
 
     // Allocate socket
-    ICMPSocket *sock = new ICMPSocket(this);
+    ICMPSocket *sock = new ICMPSocket(this, pid);
     if (!sock)
     {
         ERROR("failed to allocate ICMP socket");
@@ -121,6 +122,28 @@ ICMPSocket * ICMP::createSocket(String & path)
     }
 
     return sock;
+}
+
+void ICMP::unregisterSockets(const ProcessID pid)
+{
+    DEBUG("pid = " << pid);
+
+    for (Size i = 0; i < MaxIcmpSockets; i++)
+    {
+        ICMPSocket *sock = m_sockets[i];
+        if (sock != ZERO && sock->getProcessID() == pid)
+        {
+            m_sockets.remove(i);
+            String path;
+            path << "/icmp/" << i;
+            const FileSystem::Result result = m_server.unregisterFile(*path);
+            if (result != FileSystem::Success)
+            {
+                ERROR("failed to unregister ICMPSocket at " << *path <<
+                      " for PID " << pid << ": result = " << (int) result);
+            }
+        }
+    }
 }
 
 FileSystem::Result ICMP::sendPacket(const IPV4::Address ip,

@@ -46,7 +46,8 @@ class ICMPSocket : public NetworkSocket
     /**
      * Constructor
      */
-    ICMPSocket(ICMP *icmp);
+    ICMPSocket(ICMP *icmp,
+               const ProcessID pid);
 
     /**
      * Destructor

@@ -159,6 +159,25 @@ FileSystem::Result FileSystemServer::registerDirectory(Directory *dir,
     return registerFile(parent, *dot);
 }
 
+FileSystem::Result FileSystemServer::unregisterFile(const char *path)
+{
+    DEBUG("path = " << path);
+
+    FileCache *cache = findFileCache(path);
+    if (!cache)
+    {
+        return FileSystem::NotFound;
+    }
+
+    if (cache->entries.count() != 0)
+    {
+        return FileSystem::PermissionDenied;
+    }
+
+    clearFileCache(cache);
+    return FileSystem::Success;
+}
+
 void FileSystemServer::pathHandler(FileSystemMessage *msg)
 {
     // Prepare request
@@ -287,13 +306,7 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
             break;
 
         case FileSystem::DeleteFile:
-            if (cache->entries.count() == 0)
-            {
-                clearFileCache(cache);
-                msg->result = FileSystem::Success;
-            }
-            else
-                msg->result = FileSystem::PermissionDenied;
+            msg->result = unregisterFile(*path.full());
             DEBUG(m_self << ": delete = " << (int)msg->result);
             break;
 

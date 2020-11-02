@@ -42,13 +42,22 @@ class NetworkSocket : public File
      * Constructor
      *
      * @param packetSize Size of each network packet
+     * @param pid ProcessID which owns this socket
      */
-    NetworkSocket(const Size packetSize);
+    NetworkSocket(const Size packetSize,
+                  const ProcessID pid);
 
     /**
      * Destructor
      */
     virtual ~NetworkSocket();
+
+    /**
+     * Get owner ProcessID
+     *
+     * @return ProcessID
+     */
+    ProcessID getProcessID() const;
 
     /**
      * Process incoming network packet.
@@ -60,6 +69,9 @@ class NetworkSocket : public File
     virtual FileSystem::Result process(const NetworkQueue::Packet *pkt) = 0;
 
   protected:
+
+    /** ProcessID which owns this socket */
+    const ProcessID m_pid;
 
     /** Receive queue */
     NetworkQueue m_receive;

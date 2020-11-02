@@ -15,13 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/API/ProcessID.h>
 #include "Ethernet.h"
 #include "IPV4.h"
 #include "ARP.h"
 #include "ARPSocket.h"
 
 ARPSocket::ARPSocket(ARP *arp)
-    : NetworkSocket(arp->getMaximumPacketSize())
+    : NetworkSocket(arp->getMaximumPacketSize(), ANY)
 {
     m_arp = arp;
     m_ipAddr = 0;

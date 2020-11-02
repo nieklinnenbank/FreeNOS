@@ -36,6 +36,7 @@ FileSystem::Result UDPFactory::read(IOBuffer & buffer,
 
     String path;
     UDPSocket *sock;
+    const FileSystemMessage *msg = buffer.getMessage();
 
     if (offset > 0)
     {
@@ -43,7 +44,7 @@ FileSystem::Result UDPFactory::read(IOBuffer & buffer,
         return FileSystem::Success;
     }
 
-    sock = m_udp->createSocket(path);
+    sock = m_udp->createSocket(path, msg->from);
     if (!sock)
     {
         ERROR("failed to create UDP socket");

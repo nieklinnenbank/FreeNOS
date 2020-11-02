@@ -18,13 +18,20 @@
 #include <MemoryBlock.h>
 #include "NetworkSocket.h"
 
-NetworkSocket::NetworkSocket(const Size packetSize)
-    : m_receive(packetSize),
-      m_transmit(packetSize)
+NetworkSocket::NetworkSocket(const Size packetSize,
+                             const ProcessID pid)
+    : m_pid(pid)
+    , m_receive(packetSize)
+    , m_transmit(packetSize)
 {
     MemoryBlock::set(&m_info, 0, sizeof(m_info));
 }
 
 NetworkSocket::~NetworkSocket()
 {
+}
+
+ProcessID NetworkSocket::getProcessID() const
+{
+    return m_pid;
 }

@@ -44,13 +44,14 @@ FileSystem::Result UDP::initialize()
     return FileSystem::Success;
 }
 
-UDPSocket * UDP::createSocket(String & path)
+UDPSocket * UDP::createSocket(String & path,
+                              const ProcessID pid)
 {
     Size pos = 0;
 
     DEBUG("");
 
-    UDPSocket *sock = new UDPSocket(this);
+    UDPSocket *sock = new UDPSocket(this, pid);
     if (!sock)
     {
         ERROR("failed to allocate UDP socket");
@@ -76,6 +77,41 @@ UDPSocket * UDP::createSocket(String & path)
     }
 
     return sock;
+}
+
+void UDP::unregisterSockets(const ProcessID pid)
+{
+    DEBUG("pid = " << pid);
+
+    for (HashIterator<u16, UDPSocket *> it(m_ports); it.hasCurrent();)
+    {
+        UDPSocket *sock = it.current();
+        if (sock->getProcessID() == pid)
+        {
+            it.remove();
+        }
+        else
+        {
+            it++;
+        }
+    }
+
+    for (Size i = 0; i < MaxUdpSockets; i++)
+    {
+        UDPSocket *sock = m_sockets[i];
+        if (sock != ZERO && sock->getProcessID() == pid)
+        {
+            m_sockets.remove(i);
+            String path;
+            path << "/udp/" << i;
+            const FileSystem::Result result = m_server.unregisterFile(*path);
+            if (result != FileSystem::Success)
+            {
+                ERROR("failed to unregister UDPSocket at " << *path <<
+                      " for PID " << pid << ": result = " << (int) result);
+            }
+        }
+    }
 }
 
 FileSystem::Result UDP::process(const NetworkQueue::Packet *pkt,

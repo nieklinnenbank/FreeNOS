@@ -95,6 +95,13 @@ class NetworkDevice : public Device
     NetworkQueue * getTransmitQueue();
 
     /**
+     * Remove sockets for a process
+     *
+     * @param pid ProcessID to remove sockets for
+     */
+    void unregisterSockets(const ProcessID pid);
+
+    /**
      * Transmit one network packet
      *
      * @param buffer Input/Output buffer to input bytes from.

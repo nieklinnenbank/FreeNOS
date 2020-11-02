@@ -237,6 +237,15 @@ template <class Base, class MsgType> class ChannelServer
     }
 
     /**
+     * Called whenever another Process is terminated
+     *
+     * @param pid ProcessID of the terminating process
+     */
+    virtual void onProcessTerminated(const ProcessID pid)
+    {
+    }
+
+    /**
      * Keep retrying requests until all served
      */
     void retryAllRequests()
@@ -434,6 +443,8 @@ template <class Base, class MsgType> class ChannelServer
                         ERROR("failed to remove shares with VMShare for PID " <<
                                event.number << ": " << (int)shareResult);
                     }
+
+                    onProcessTerminated(event.number);
                     break;
                 }
                 default:

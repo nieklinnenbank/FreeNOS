@@ -24,6 +24,8 @@
 #include "Ethernet.h"
 #include "IPV4.h"
 
+class NetworkDevice;
+
 /**
  * @addtogroup lib
  * @{
@@ -50,11 +52,30 @@ class NetworkServer : public DeviceServer
     virtual ~NetworkServer();
 
     /**
+     * Register network device
+     *
+     * @param dev NetworkDevice pointer
+     */
+    void registerNetworkDevice(NetworkDevice *dev);
+
+    /**
      * Initialize the NetworkServer.
      *
      * @return Result code
      */
     virtual FileSystem::Result initialize();
+
+    /**
+     * Called whenever another Process is terminated
+     *
+     * @param pid ProcessID of the terminating process
+     */
+    virtual void onProcessTerminated(const ProcessID pid);
+
+  private:
+
+    /** Network device instance */
+    NetworkDevice *m_device;
 };
 
 /**

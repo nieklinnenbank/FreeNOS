@@ -80,6 +80,14 @@ NetworkQueue * NetworkDevice::getTransmitQueue()
     return &m_transmit;
 }
 
+void NetworkDevice::unregisterSockets(const ProcessID pid)
+{
+    DEBUG("pid = " << pid);
+
+    m_udp->unregisterSockets(pid);
+    m_icmp->unregisterSockets(pid);
+}
+
 FileSystem::Result NetworkDevice::process(const NetworkQueue::Packet *pkt,
                                           const Size offset)
 {

@@ -101,6 +101,15 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
                                          const char *path);
 
     /**
+     * Remove a File from the FileSystemServer
+     *
+     * @param path Path to the file to remove
+     *
+     * @return Result code
+     */
+    FileSystem::Result unregisterFile(const char *path);
+
+    /**
      * Create a new file.
      *
      * @param type Describes the type of file to create.

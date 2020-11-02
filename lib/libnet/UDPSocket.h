@@ -18,6 +18,7 @@
 #ifndef __LIB_LIBNET_UDPSOCKET_H
 #define __LIB_LIBNET_UDPSOCKET_H
 
+#include <Types.h>
 #include "NetworkSocket.h"
 #include "NetworkQueue.h"
 #include "NetworkClient.h"
@@ -45,7 +46,8 @@ class UDPSocket : public NetworkSocket
     /**
      * Constructor
      */
-    UDPSocket(UDP *udp);
+    UDPSocket(UDP *udp,
+              const ProcessID pid);
 
     /**
      * Destructor

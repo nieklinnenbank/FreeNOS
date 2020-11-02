@@ -23,7 +23,7 @@ int main(int argc, char **argv)
 {
     KernelLog log;
     NetworkServer server("/network/loopback");
-    server.registerDevice(new Loopback(server), "io");
+    server.registerNetworkDevice(new Loopback(server));
 
     // Initialize
     const FileSystem::Result result = server.initialize();

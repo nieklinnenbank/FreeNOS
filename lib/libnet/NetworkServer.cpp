@@ -19,6 +19,7 @@
 
 NetworkServer::NetworkServer(const char *path)
     : DeviceServer(path)
+    , m_device(ZERO)
 {
 }
 
@@ -26,8 +27,24 @@ NetworkServer::~NetworkServer()
 {
 }
 
+void NetworkServer::registerNetworkDevice(NetworkDevice *dev)
+{
+    registerDevice(dev, "io");
+    m_device = dev;
+}
+
 FileSystem::Result NetworkServer::initialize()
 {
     DEBUG("");
     return DeviceServer::initialize();
+}
+
+void NetworkServer::onProcessTerminated(const ProcessID pid)
+{
+    DEBUG("pid = " << pid);
+
+    if (m_device != ZERO)
+    {
+        m_device->unregisterSockets(pid);
+    }
 }

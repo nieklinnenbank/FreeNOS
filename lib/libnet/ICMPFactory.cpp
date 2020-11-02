@@ -35,6 +35,7 @@ FileSystem::Result ICMPFactory::read(IOBuffer & buffer,
 
     String path;
     ICMPSocket *sock;
+    const FileSystemMessage *msg = buffer.getMessage();
 
     if (offset > 0)
     {
@@ -42,7 +43,7 @@ FileSystem::Result ICMPFactory::read(IOBuffer & buffer,
         return FileSystem::Success;
     }
 
-    sock = m_icmp->createSocket(path);
+    sock = m_icmp->createSocket(path, msg->from);
     if (!sock)
     {
         ERROR("failed to create ICMP socket");

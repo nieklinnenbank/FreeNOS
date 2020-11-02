@@ -106,7 +106,15 @@ class ICMP : public NetworkProtocol
      *
      * @return ICMPSocket object instance
      */
-    ICMPSocket * createSocket(String & path);
+    ICMPSocket * createSocket(String & path,
+                              const ProcessID pid);
+
+    /**
+     * Remove sockets for a process
+     *
+     * @param pid ProcessID to remove sockets for
+     */
+    void unregisterSockets(const ProcessID pid);
 
     /**
      * Process incoming network packet.

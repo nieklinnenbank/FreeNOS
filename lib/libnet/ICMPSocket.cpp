@@ -22,8 +22,9 @@
 #include "ICMPSocket.h"
 #include "NetworkClient.h"
 
-ICMPSocket::ICMPSocket(ICMP *icmp)
-    : NetworkSocket(icmp->getMaximumPacketSize())
+ICMPSocket::ICMPSocket(ICMP *icmp,
+                       const ProcessID pid)
+    : NetworkSocket(icmp->getMaximumPacketSize(), pid)
 {
     m_icmp = icmp;
     m_gotReply = false;
