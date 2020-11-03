@@ -36,7 +36,8 @@ class NetworkQueue
 {
   private:
 
-    static const Size MaxPackets = 128u;
+    /** Maximum number of packets available */
+    static const Size MaxPackets = 64u;
 
   public:
 
@@ -61,7 +62,7 @@ class NetworkQueue
      */
     NetworkQueue(const Size packetSize,
                  const Size headerSize = 0,
-                 const Size queueSize = 8);
+                 const Size queueSize = MaxPackets);
 
     /**
      * Destructor
