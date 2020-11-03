@@ -18,17 +18,15 @@
 #include "NetworkQueue.h"
 
 NetworkQueue::NetworkQueue(const Size packetSize,
-                           const Size headerSize,
                            const Size queueSize)
     : m_packetSize(packetSize)
-    , m_packetHeader(headerSize)
 {
     assert(queueSize <= MaxPackets);
 
     for (Size i = 0; i < queueSize; i++)
     {
         Packet *packet = new Packet;
-        packet->size = m_packetHeader;
+        packet->size = 0;
         packet->data = new u8[packetSize];
         m_free.insertAt(i, packet);
     }
@@ -47,11 +45,6 @@ NetworkQueue::~NetworkQueue()
     }
 }
 
-void NetworkQueue::setHeaderSize(const Size size)
-{
-    m_packetHeader = size;
-}
-
 NetworkQueue::Packet * NetworkQueue::get()
 {
     for (Size i = 0; i < m_free.size(); i++)
@@ -59,7 +52,7 @@ NetworkQueue::Packet * NetworkQueue::get()
         Packet *p = m_free.get(i);
         if (p)
         {
-            p->size = m_packetHeader;
+            p->size = 0;
             m_free.remove(i);
             return p;
         }
@@ -69,7 +62,7 @@ NetworkQueue::Packet * NetworkQueue::get()
 
 void NetworkQueue::release(NetworkQueue::Packet *packet)
 {
-    packet->size = m_packetHeader;
+    packet->size = 0;
     m_free.insert(packet);
 }
 

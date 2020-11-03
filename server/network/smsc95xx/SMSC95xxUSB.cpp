@@ -42,9 +42,6 @@ SMSC95xxUSB::SMSC95xxUSB(u8 deviceId,
     m_writeFinished = new Callback<SMSC95xxUSB, FileSystemMessage>(this, &SMSC95xxUSB::writeFinished);
     m_server        = server;
     m_smsc          = smsc;
-
-    // Set packet header size
-    m_smsc->getTransmitQueue()->setHeaderSize(TransmitCommandSize);
 }
 
 SMSC95xxUSB::~SMSC95xxUSB()

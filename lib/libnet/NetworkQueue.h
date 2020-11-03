@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBNET_NETWORKQUEUE_H
-#define __LIBNET_NETWORKQUEUE_H
+#ifndef __LIB_LIBNET_NETWORKQUEUE_H
+#define __LIB_LIBNET_NETWORKQUEUE_H
 
 #include <Types.h>
 #include <Index.h>
@@ -57,22 +57,15 @@ class NetworkQueue
      * Constructor
      *
      * @param packetSize The size of each packet in bytes
-     * @param headerSize Size of the physical header, if any
      * @param queueSize The size of the queue in number of packets
      */
     NetworkQueue(const Size packetSize,
-                 const Size headerSize = 0,
                  const Size queueSize = MaxPackets);
 
     /**
      * Destructor
      */
     virtual ~NetworkQueue();
-
-    /**
-     * Set default packet header size
-     */
-    void setHeaderSize(const Size size);
 
     /**
      * Get unused packet
@@ -104,14 +97,6 @@ class NetworkQueue
 
     /** Size of each packet */
     const Size m_packetSize;
-
-    /**
-     * Size of physical hardware header.
-     * This reserves some bytes at the start of
-     * the actual packet payload. Some hardware needs
-     * an extra physical header before the ethernet/ip headers.
-     */
-    Size m_packetHeader;
 };
 
 /**
@@ -119,4 +104,4 @@ class NetworkQueue
  * @}
  */
 
-#endif /* __LIBNET_NETWORKQUEUE_H */
+#endif /* __LIB_LIBNET_NETWORKQUEUE_H */
