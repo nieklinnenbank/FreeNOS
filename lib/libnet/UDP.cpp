@@ -164,7 +164,12 @@ FileSystem::Result UDP::sendPacket(const NetworkClient::SocketInfo *src,
     writeBe16(&hdr->checksum, 0);
 
     // Insert payload. The payload is just after the 'dest' struct in the IOBuffer.
-    buffer.read(pkt->data + pkt->size + sizeof(Header), size - sizeof(dest), sizeof(dest));
+    // Note that the payload must not overwrite past the packet buffer
+    const Size maximum = getMaximumPacketSize();
+    const Size needed = pkt->size + size - sizeof(dest);
+
+    buffer.read(pkt->data + pkt->size + sizeof(Header),
+                needed > maximum ? maximum : needed, sizeof(dest));
 
     // Calculate final checksum
     writeBe16(&hdr->checksum, checksum((IPV4::Header *)(pkt->data + pkt->size - sizeof(IPV4::Header)),
