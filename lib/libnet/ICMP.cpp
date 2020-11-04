@@ -52,7 +52,8 @@ FileSystem::Result ICMP::process(const NetworkQueue::Packet *pkt,
     const ICMP::Header *hdr = (const ICMP::Header *) (pkt->data + offset);
     const IPV4::Address source = readBe32(&iphdr->source);
 
-    DEBUG("source = " << (uint)source << " type = " << hdr->type << " code = " << hdr->code << " id = " << hdr->id);
+    DEBUG("source = " << *IPV4::toString(source) << " type = " <<
+          hdr->type << " code = " << hdr->code << " id = " << hdr->id);
 
     switch (hdr->type)
     {

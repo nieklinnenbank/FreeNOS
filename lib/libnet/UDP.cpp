@@ -146,7 +146,8 @@ FileSystem::Result UDP::sendPacket(const NetworkClient::SocketInfo *src,
 
     // Read destination
     buffer.read(&dest, sizeof(dest));
-    DEBUG("send payload to: " << dest.address << " port: " << dest.port << " size: " << size);
+    DEBUG("send payload to: ipAddr = " << *IPV4::toString(dest.address) <<
+          " port = " << dest.port << " size = " << size);
 
     // Get a fresh packet
     pkt = m_parent.getTransmitPacket(&dest.address, sizeof(dest.address),
@@ -232,7 +233,8 @@ const u16 UDP::checksum(const IPV4::Header *ip,
     write32(&phr.source, ip->source);
     write32(&phr.destination, ip->destination);
     writeBe16(&phr.length, sizeof(Header) + datalen);
-    DEBUG("ip src = " << phr.source << " dst = " << phr.destination);
+    DEBUG("ip src = " << *IPV4::toString(phr.source) <<
+          " dst = " << *IPV4::toString(phr.destination));
 
     // Sum the pseudo header
     sum += calculateSum((u16 *) &phr, sizeof(phr));

@@ -226,9 +226,11 @@ FileSystem::Result ARP::process(const NetworkQueue::Packet *pkt, const Size offs
     const u32 ipSender  = readBe32(&arp->ipSender);
     IPV4::Address ipAddr;
 
-    DEBUG("operation = " << operation);
-
     m_ip->getAddress(&ipAddr);
+
+    DEBUG("target = " << *IPV4::toString(ipTarget) << " sender = " << *IPV4::toString(ipSender) <<
+          " ipAddr = " << *IPV4::toString(ipAddr) << " operation = " << operation <<
+          " etherSender = " << arp->etherSender << " etherTarget = " << arp->etherTarget);
 
     switch (operation)
     {

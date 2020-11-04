@@ -212,7 +212,7 @@ FileSystem::Result IPV4::process(const NetworkQueue::Packet *pkt,
 
     if (destination != m_address && destination != 0xffffffff)
     {
-        DEBUG("dropped packet");
+        DEBUG("dropped packet for " << *IPV4::toString(destination));
         return FileSystem::NotFound;
     }
 
