@@ -111,7 +111,7 @@ FileSystem::Result ARP::lookupAddress(const IPV4::Address *ipAddr,
 
 FileSystem::Result ARP::sendRequest(const IPV4::Address address)
 {
-    DEBUG("");
+    DEBUG("address = " << *IPV4::toString(address));
 
     // Get cache entry
     ARPCache *entry = getCacheEntry(address);
@@ -196,7 +196,7 @@ FileSystem::Result ARP::sendReply(const Ethernet::Address *ethAddr, const IPV4::
     // ARP packet
     writeBe16(&arp->hardwareType, ARP::Ethernet);
     writeBe16(&arp->protocolType, ARP::IPV4);
-    writeBe16(&arp->operation, ARP::Request);
+    writeBe16(&arp->operation, ARP::Reply);
     arp->hardwareLength = sizeof(Ethernet::Address);
     arp->protocolLength = sizeof(IPV4::Address);
 
@@ -219,7 +219,7 @@ FileSystem::Result ARP::process(const NetworkQueue::Packet *pkt, const Size offs
     const u32 ipSender  = readBe32(&arp->ipSender);
     IPV4::Address ipAddr;
 
-    DEBUG("");
+    DEBUG("operation = " << operation);
 
     m_ip->getAddress(&ipAddr);
 
