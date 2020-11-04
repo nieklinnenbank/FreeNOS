@@ -130,19 +130,17 @@ class ICMP : public NetworkProtocol
     /**
      * Send packet
      *
+     * @param ip Destination IP address
+     * @param header ICMP packet header
+     * @param payload ICMP packet payload
+     * @param payloadSize Payload size in bytes
+     *
      * @return Result code
      */
     FileSystem::Result sendPacket(const IPV4::Address ip,
-                                  const Header *header);
-
-    /**
-     * Calculate ICMP checksum
-     *
-     * @param header ICMP header
-     *
-     * @return ICMP checksum value for the given header
-     */
-    static const u16 checksum(const Header *header);
+                                  const Header *header,
+                                  const void *payload,
+                                  const Size payloadSize);
 
   private:
 

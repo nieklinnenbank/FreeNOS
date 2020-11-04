@@ -74,7 +74,7 @@ FileSystem::Result ICMPSocket::write(IOBuffer & buffer,
         ICMP::Header header;
         buffer.read(&header, sizeof(header));
 
-        return m_icmp->sendPacket(m_info.address, &header);
+        return m_icmp->sendPacket(m_info.address, &header, ZERO, 0);
     }
 }
 

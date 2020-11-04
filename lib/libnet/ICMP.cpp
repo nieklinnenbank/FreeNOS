@@ -49,7 +49,7 @@ FileSystem::Result ICMP::process(const NetworkQueue::Packet *pkt,
                                  const Size offset)
 {
     const IPV4::Header *iphdr = (const IPV4::Header *) (pkt->data + offset - sizeof(IPV4::Header));
-    const Header *hdr = (const Header *) (pkt->data + offset);
+    const ICMP::Header *hdr = (const ICMP::Header *) (pkt->data + offset);
     const IPV4::Address source = readBe32(&iphdr->source);
 
     DEBUG("source = " << (uint)source << " type = " << hdr->type << " code = " << hdr->code << " id = " << hdr->id);
@@ -60,13 +60,11 @@ FileSystem::Result ICMP::process(const NetworkQueue::Packet *pkt,
         {
             DEBUG("request");
 
-            Header reply;
+            ICMP::Header reply;
             MemoryBlock::copy(&reply, hdr, sizeof(reply));
             reply.type = EchoReply;
-            write16(&reply.checksum, 0);
-            write16(&reply.checksum, checksum(&reply));
 
-            return sendPacket(source, &reply);
+            return sendPacket(source, &reply, hdr + 1, pkt->size - offset - sizeof(ICMP::Header));
         }
         case EchoReply:
         {
@@ -147,27 +145,40 @@ void ICMP::unregisterSockets(const ProcessID pid)
 }
 
 FileSystem::Result ICMP::sendPacket(const IPV4::Address ip,
-                                    const ICMP::Header *header)
+                                    const ICMP::Header *headerInput,
+                                    const void *payload,
+                                    const Size payloadSize)
 {
-    DEBUG("");
+    DEBUG("ip = " << *IPV4::toString(ip) << " header.type = " << headerInput->type <<
+          " header.id = " << readBe16(&headerInput->id) << " header.seq = " <<
+            readBe16(&headerInput->sequence) << " payloadSize = " << payloadSize);
 
     // Get a fresh packet
     NetworkQueue::Packet *pkt = m_parent.getTransmitPacket(&ip, sizeof(ip),
-                                                           NetworkProtocol::ICMP, sizeof(Header));
+                                                           NetworkProtocol::ICMP,
+                                                           sizeof(ICMP::Header) + payloadSize);
     if (pkt == ZERO)
     {
         return FileSystem::RetryAgain;
     }
 
-    // Fill payload
-    MemoryBlock::copy(pkt->data + pkt->size, header, sizeof(ICMP::Header));
+    // Fill header
+    ICMP::Header *header = (ICMP::Header *) (pkt->data + pkt->size);
+    MemoryBlock::copy(header, headerInput, sizeof(ICMP::Header));
     pkt->size += sizeof(ICMP::Header);
+
+    // Fill payload
+    const Size maximum = getMaximumPacketSize();
+    const Size needed = pkt->size + payloadSize;
+    const Size amount = needed > maximum ? maximum - pkt->size : needed - pkt->size;
+
+    MemoryBlock::copy(pkt->data + pkt->size, payload, amount);
+    pkt->size += amount;
+
+    // Calculate checksum
+    write16(&header->checksum, 0);
+    write16(&header->checksum, IPV4::checksum(header, sizeof(ICMP::Header) + amount));
 
     // Transmit the packet
     return m_device.transmit(pkt);
-}
-
-const u16 ICMP::checksum(const Header *header)
-{
-    return IPV4::checksum(header, sizeof(*header));
 }

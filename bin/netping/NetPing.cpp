@@ -168,7 +168,7 @@ NetPing::Result NetPing::icmpPing(const char *dev, const char *host)
     msg.sequence = 1;
 
     // Generate checksum
-    msg.checksum = ICMP::checksum(&msg);
+    msg.checksum = IPV4::checksum(&msg, sizeof(msg));
 
     // Send the packet
     if (::write(sock, &msg, sizeof(msg)) <= 0)
