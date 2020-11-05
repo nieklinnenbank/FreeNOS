@@ -19,8 +19,10 @@
 #include "EthernetAddress.h"
 
 EthernetAddress::EthernetAddress(Ethernet *eth)
+    : File()
+    , m_eth(eth)
 {
-    m_eth = eth;
+    m_size = sizeof(Ethernet::Address);
 }
 
 EthernetAddress::~EthernetAddress()
@@ -32,18 +34,17 @@ FileSystem::Result EthernetAddress::read(IOBuffer & buffer,
                                          const Size offset)
 {
     Ethernet::Address addr;
-
     m_eth->getAddress(&addr);
-    String s = Ethernet::toString(addr);
 
-    if (offset >= s.length())
+    if (offset >= m_size)
     {
         size = 0;
         return FileSystem::Success;
     }
 
-    buffer.write(*s, s.length());
-    size = s.length();
+    buffer.write(&addr, sizeof(addr));
+    size = sizeof(addr);
+
     return FileSystem::Success;
 }
 

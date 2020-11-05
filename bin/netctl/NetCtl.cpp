@@ -26,6 +26,7 @@
 #include <NetworkSocket.h>
 #include <IPV4.h>
 #include <ICMP.h>
+#include <Ethernet.h>
 #include <FileSystemClient.h>
 #include "NetCtl.h"
 
@@ -71,10 +72,8 @@ NetCtl::Result NetCtl::exec()
 NetCtl::Result NetCtl::showDevice(const char *deviceName)
 {
     DEBUG("");
-    
-    String ipv4, ether, out;
-    char tmp[64];
 
+    String ipv4, ether, out;
     ether << "/network/" << deviceName << "/ethernet/address";
     ipv4  << "/network/" << deviceName << "/ipv4/address";
     out   << deviceName << " ipv4 ";
@@ -85,11 +84,12 @@ NetCtl::Result NetCtl::showDevice(const char *deviceName)
 
     if (fd != -1)
     {
-        r = read(fd, tmp, sizeof(tmp));
+        IPV4::Address ipAddr;
+
+        r = read(fd, &ipAddr, sizeof(ipAddr));
         if (r != -1)
         {
-            tmp[r] = 0;
-            out << tmp;
+            out << IPV4::toString(ipAddr);
         }
         close(fd);
     }
@@ -98,11 +98,12 @@ NetCtl::Result NetCtl::showDevice(const char *deviceName)
     fd = open(*ether, O_RDONLY);
     if (fd != -1)
     {
-        r = read(fd, tmp, sizeof(tmp));
+        Ethernet::Address etherAddress;
+
+        r = read(fd, &etherAddress, sizeof(etherAddress));
         if (r != -1)
         {
-            tmp[r] = 0;
-            out << tmp;
+            out << Ethernet::toString(etherAddress);
         }
         close(fd);
     }

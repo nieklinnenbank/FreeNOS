@@ -17,11 +17,14 @@
 
 #include <Log.h>
 #include <String.h>
+#include <MemoryBlock.h>
 #include "IPV4Address.h"
 
 IPV4Address::IPV4Address(IPV4 *ipv4)
+    : File()
+    , m_ipv4(ipv4)
 {
-    m_ipv4 = ipv4;
+    m_size = sizeof(IPV4::Address);
 }
 
 IPV4Address::~IPV4Address()
@@ -33,21 +36,17 @@ FileSystem::Result IPV4Address::read(IOBuffer & buffer,
                                      const Size offset)
 {
     IPV4::Address addr;
-    String str;
-
     m_ipv4->getAddress(&addr);
-    str << IPV4::toString(addr);
 
-    if (offset >= str.length())
+    if (offset >= m_size)
     {
         size = 0;
         return FileSystem::Success;
     }
 
-    DEBUG("address = " << *str);
+    buffer.write(&addr, sizeof(addr));
+    size = sizeof(addr);
 
-    buffer.write(*str, str.length());
-    size = str.length();
     return FileSystem::Success;
 }
 
@@ -61,14 +60,20 @@ FileSystem::Result IPV4Address::write(IOBuffer & buffer,
     buffer.read(tmp, size < sizeof(tmp) ? size : sizeof(tmp));
     tmp[sizeof(tmp) - 1] = 0;
 
-    DEBUG("address = " << tmp);
-
-    // Try to convert text dotted notation to IPV4::Address
+    // Try to convert from a text dotted notation to IPV4::Address
     addr = IPV4::toAddress(tmp);
     if (!addr)
     {
-        return FileSystem::InvalidArgument;
+        // If not in text format, it must be given in 32-bit value
+        if (size != sizeof(IPV4::Address))
+        {
+            ERROR("invalid IP addresss format given");
+            return FileSystem::InvalidArgument;
+        }
+        MemoryBlock::copy(&addr, tmp, sizeof(addr));
     }
+
+    DEBUG("address = " << *IPV4::toString(addr));
 
     // Set the address
     return m_ipv4->setAddress(&addr);
