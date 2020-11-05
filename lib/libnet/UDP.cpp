@@ -172,8 +172,8 @@ FileSystem::Result UDP::sendPacket(const NetworkClient::SocketInfo *src,
                 needed > maximum ? maximum : needed, sizeof(dest));
 
     // Calculate final checksum
-    writeBe16(&hdr->checksum, checksum((IPV4::Header *)(pkt->data + pkt->size - sizeof(IPV4::Header)),
-                                        hdr, size - sizeof(dest)));
+    write16(&hdr->checksum, checksum((IPV4::Header *)(pkt->data + pkt->size - sizeof(IPV4::Header)),
+                                      hdr, size - sizeof(dest)));
     DEBUG("checksum = " << (uint) hdr->checksum);
 
     // Increment packet size
