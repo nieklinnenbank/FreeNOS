@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <ByteOrder.h>
 #include <stdlib.h>
 #include "Ethernet.h"
 #include "UDP.h"
@@ -58,8 +59,8 @@ FileSystem::Result UDPSocket::read(IOBuffer & buffer,
                                  - sizeof(UDP::Header);
 
     // Fill socket info
-    info.address = ipHdr->source;
-    info.port    = udpHdr->sourcePort;
+    info.address = readBe32(&ipHdr->source);
+    info.port    = readBe16(&udpHdr->sourcePort);
     buffer.write(&info, sizeof(info));
 
     // Fill payload

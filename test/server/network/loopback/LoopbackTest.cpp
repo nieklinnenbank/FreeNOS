@@ -177,8 +177,8 @@ TestCase(LoopbackUdpPing)
     // Process the message
     server.pathHandler(&msg);
     testAssert(msg.result == FileSystem::Success);
-    testAssert(be32_to_cpu(info->address) == IPV4::toAddress("127.0.0.1"));
-    testAssert(be16_to_cpu(info->port) == 54321);
+    testAssert(info->address == IPV4::toAddress("127.0.0.1"));
+    testAssert(info->port == 54321);
     testAssert(MemoryBlock::compare(info + 1, payload, String::length(payload)));
 
     return OK;
