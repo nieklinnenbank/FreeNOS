@@ -96,6 +96,13 @@ FileSystem::Result ARP::lookupAddress(const IPV4::Address *ipAddr,
         return FileSystem::Success;
     }
 
+    // Is this a broadcast address?
+    if (*ipAddr == 0xffffffff)
+    {
+        MemoryBlock::set(ethAddr, 0xff, sizeof(Ethernet::Address));
+        return FileSystem::Success;
+    }
+
     // Send an ARP request
     const FileSystem::Result result = sendRequest(*ipAddr);
     if (result != FileSystem::Success && result != FileSystem::RetryAgain)
