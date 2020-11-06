@@ -210,7 +210,7 @@ FileSystem::Result IPV4::process(const NetworkQueue::Packet *pkt,
     const Header *hdr = (const Header *) (pkt->data + offset);
     const u32 destination = readBe32(&hdr->destination);
 
-    if (destination != m_address && destination != 0xffffffff)
+    if (destination != m_address && destination != 0xffffffff && m_address != 0)
     {
         DEBUG("dropped packet for " << *IPV4::toString(destination));
         return FileSystem::NotFound;
