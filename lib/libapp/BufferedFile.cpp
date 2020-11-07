@@ -18,7 +18,8 @@
 #include <Log.h>
 #include <Assert.h>
 #include <Macros.h>
-#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <errno.h>
@@ -57,10 +58,10 @@ const Size BufferedFile::size() const
 BufferedFile::Result BufferedFile::read()
 {
     struct stat st;
-    FILE *fp;
+    int fp;
 
     // Retrieve file information
-    if (stat(m_path, &st) != 0)
+    if (::stat(m_path, &st) != 0)
     {
         ERROR("failed to stat input file " << m_path << ": " << strerror(errno));
         return NotFound;
@@ -68,7 +69,7 @@ BufferedFile::Result BufferedFile::read()
     m_size = st.st_size;
 
     // Open the file
-    if ((fp = fopen(m_path, "r")) == NULL)
+    if ((fp = ::open(m_path, O_RDONLY)) == -1)
     {
         ERROR("failed to open input file " << m_path << ": " << strerror(errno));
         return IOError;
@@ -83,38 +84,38 @@ BufferedFile::Result BufferedFile::read()
     assert(m_buffer != ZERO);
 
     // Read input file
-    if (fread(m_buffer, st.st_size, 1, fp) != 1)
+    if (::read(fp, m_buffer, st.st_size) <= 0)
     {
         ERROR("failed to read input file " << m_path << ": " << strerror(errno));
-        fclose(fp);
+        ::close(fp);
         return IOError;
     }
 
     // Done
-    fclose(fp);
+    ::close(fp);
     return Success;
 }
 
 BufferedFile::Result BufferedFile::write(const void *data, const Size size) const
 {
-    FILE *fp;
+    int fp;
 
     // Open the file
-    if ((fp = fopen(m_path, "w")) == NULL)
+    if ((fp = ::open(m_path, O_RDWR)) == -1)
     {
         ERROR("failed to open output file " << m_path << ": " << strerror(errno));
         return IOError;
     }
 
     // Write to the file
-    if (fwrite(data, size, 1, fp) != 1)
+    if (::write(fp, data, size) <= 0)
     {
         ERROR("failed to write output file " << m_path << ": " << strerror(errno));
-        fclose(fp);
+        ::close(fp);
         return IOError;
     }
 
     // Done
-    fclose(fp);
+    ::close(fp);
     return Success;
 }
