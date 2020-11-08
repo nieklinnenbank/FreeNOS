@@ -22,7 +22,7 @@
 #include "TmpFileSystem.h"
 
 TmpFileSystem::TmpFileSystem(const char *path)
-    : FileSystemServer(new Directory(), path)
+    : FileSystemServer(new Directory(1), path)
 {
 }
 
@@ -32,13 +32,13 @@ File * TmpFileSystem::createFile(const FileSystem::FileType type)
     switch (type)
     {
         case FileSystem::RegularFile: {
-            PseudoFile *file = new PseudoFile;
+            PseudoFile *file = new PseudoFile(getNextInode());
             assert(file != NULL);
             return file;
         }
 
         case FileSystem::DirectoryFile: {
-            Directory *dir = new Directory;
+            Directory *dir = new Directory(getNextInode());
             assert(dir != NULL);
             return dir;
         }

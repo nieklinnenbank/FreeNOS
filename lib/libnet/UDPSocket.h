@@ -46,7 +46,8 @@ class UDPSocket : public NetworkSocket
     /**
      * Constructor
      */
-    UDPSocket(UDP *udp,
+    UDPSocket(const u32 inode,
+              UDP *udp,
               const ProcessID pid);
 
     /**

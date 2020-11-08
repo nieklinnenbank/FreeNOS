@@ -21,7 +21,7 @@
 USBController::USBController(const char *path)
     : DeviceServer(path)
 {
-    registerFile(new USBTransferFile(this), "/transfer");
+    registerFile(new USBTransferFile(getNextInode(), this), "/transfer");
 }
 
 FileSystem::Result USBController::initialize()

@@ -39,8 +39,12 @@ class Loopback : public NetworkDevice
 
     /**
      * Constructor
+     *
+     * @param inode Inode number
+     * @param server NetworkServer reference
      */
-    Loopback(NetworkServer &server);
+    Loopback(const u32 inode,
+             NetworkServer &server);
 
     /**
      * Destructor

@@ -18,10 +18,12 @@
 #include <FreeNOS/User.h>
 #include "File.h"
 
-File::File(const FileSystem::FileType type,
+File::File(const u32 inode,
+           const FileSystem::FileType type,
            const UserID uid,
            const GroupID gid)
-    : m_type(type)
+    : m_inode(inode)
+    , m_type(type)
     , m_uid(uid)
     , m_gid(gid)
     , m_access(FileSystem::OwnerRWX)
@@ -31,6 +33,11 @@ File::File(const FileSystem::FileType type,
 
 File::~File()
 {
+}
+
+u32 File::getInode() const
+{
+    return m_inode;
 }
 
 FileSystem::FileType File::getType() const

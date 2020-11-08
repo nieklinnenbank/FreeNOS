@@ -24,8 +24,8 @@
 #include <time.h>
 #include "Time.h"
 
-Time::Time()
-    : Device(FileSystem::CharacterDeviceFile)
+Time::Time(const u32 inode)
+    : Device(inode, FileSystem::CharacterDeviceFile)
 {
     m_identifier << "time0";
 }

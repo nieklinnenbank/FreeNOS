@@ -21,13 +21,14 @@
 #include "UDP.h"
 #include "UDPSocket.h"
 
-UDPSocket::UDPSocket(UDP *udp,
+UDPSocket::UDPSocket(const u32 inode,
+                     UDP *udp,
                      const ProcessID pid)
-    : NetworkSocket(udp->getMaximumPacketSize(), pid)
+    : NetworkSocket(inode, udp->getMaximumPacketSize(), pid)
+    , m_udp(udp)
+    , m_port(0)
     , m_queue(udp->getMaximumPacketSize())
 {
-    m_udp  = udp;
-    m_port = 0;
 }
 
 UDPSocket::~UDPSocket()

@@ -20,8 +20,9 @@
 #include <MemoryBlock.h>
 #include "IPV4Address.h"
 
-IPV4Address::IPV4Address(IPV4 *ipv4)
-    : File()
+IPV4Address::IPV4Address(const u32 inode,
+                         IPV4 *ipv4)
+    : File(inode)
     , m_ipv4(ipv4)
 {
     m_size = sizeof(IPV4::Address);

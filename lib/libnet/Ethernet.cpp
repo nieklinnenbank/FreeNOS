@@ -41,7 +41,7 @@ FileSystem::Result Ethernet::initialize()
     m_device.getAddress(&m_address);
 
     m_server.registerDirectory(this, "/ethernet");
-    m_server.registerFile(new EthernetAddress(this), "/ethernet/address");
+    m_server.registerFile(new EthernetAddress(m_server.getNextInode(), this), "/ethernet/address");
 
     return FileSystem::Success;
 }

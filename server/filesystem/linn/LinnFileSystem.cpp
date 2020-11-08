@@ -72,7 +72,7 @@ LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
 
     // Read out the root directory.
     rootInode = getInode(LINN_INODE_ROOT);
-    LinnDirectory *dir = new LinnDirectory(this, rootInode);
+    LinnDirectory *dir = new LinnDirectory(this, LINN_INODE_ROOT, rootInode);
     assert(dir != NULL);
     setRoot(dir);
 

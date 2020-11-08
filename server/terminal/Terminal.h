@@ -48,14 +48,18 @@ class Terminal : public Device
     /**
      * @brief Class constructor.
      *
+     * @param inode Inode number
      * @param inputFile Path to the (device) file to use as input source.
      * @param outputFile Path to the (device) file to use as
-     *        an output source.
+     *                   an output source.
      * @param width Width of the Terminal.
      * @param height Height of the Terminal.
      */
-    Terminal(const char *inputFile, const char *outputFile,
-             Size width = 80, Size height = 25);
+    Terminal(const u32 inode,
+             const char *inputFile,
+             const char *outputFile,
+             const Size width = 80,
+             const Size height = 25);
 
     /**
      * @brief Class destructor.

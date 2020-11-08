@@ -22,27 +22,29 @@
 #include "LinnDirectory.h"
 #include "LinnFile.h"
 
-LinnDirectory::LinnDirectory(LinnFileSystem *f,
-                             LinnInode *i)
-    : fs(f)
-    , inode(i)
+LinnDirectory::LinnDirectory(LinnFileSystem *fs,
+                             const u32 inode,
+                             LinnInode *inodeData)
+    : Directory(inode)
+    , m_fs(fs)
+    , m_inodeData(inodeData)
 {
-    m_size   = inode->size;
-    m_access = inode->mode;
+    m_size   = m_inodeData->size;
+    m_access = m_inodeData->mode;
 }
 
 FileSystem::Result LinnDirectory::read(IOBuffer & buffer,
                                        Size & size,
                                        const Size offset)
 {
-    LinnSuperBlock *sb = fs->getSuperBlock();
+    LinnSuperBlock *sb = m_fs->getSuperBlock();
     LinnDirectoryEntry dent;
     LinnInode *dInode;
     Size bytes = ZERO, blk;
     Dirent tmp;
 
     // Read directory entries
-    for (u32 ent = 0; ent < inode->size / sizeof(LinnDirectoryEntry); ent++)
+    for (u32 ent = 0; ent < m_inodeData->size / sizeof(LinnDirectoryEntry); ent++)
     {
         // Point to correct (direct) block
         if ((blk = (ent * sizeof(LinnDirectoryEntry)) / sb->blockSize)
@@ -52,11 +54,11 @@ FileSystem::Result LinnDirectory::read(IOBuffer & buffer,
         }
 
         // Calculate offset to read.
-        u64 off = (inode->block[blk] * sb->blockSize) +
+        u64 off = (m_inodeData->block[blk] * sb->blockSize) +
                       (ent * sizeof(LinnDirectoryEntry));
 
         // Get the next entry.
-        if (fs->getStorage()->read(off, &dent,
+        if (m_fs->getStorage()->read(off, &dent,
                                    sizeof(LinnDirectoryEntry)) != FileSystem::Success)
         {
             return FileSystem::PermissionDenied;
@@ -69,7 +71,7 @@ FileSystem::Result LinnDirectory::read(IOBuffer & buffer,
         }
 
         // Fill in the Dirent.
-        if (!(dInode = fs->getInode(dent.inode)))
+        if (!(dInode = m_fs->getInode(dent.inode)))
         {
             return FileSystem::NotFound;
         }
@@ -101,20 +103,20 @@ File * LinnDirectory::lookup(const char *name)
         return ZERO;
 
     // Then retrieve it's LinnInode.
-    if (!(inode = fs->getInode(entry.inode)))
+    if (!(inode = m_fs->getInode(entry.inode)))
         return ZERO;
 
     // Create the appropriate in-memory file.
-    switch ((FileSystem::FileType)inode->type)
+    switch ((FileSystem::FileType) inode->type)
     {
         case FileSystem::DirectoryFile: {
-            LinnDirectory *dir = new LinnDirectory(fs, inode);
+            LinnDirectory *dir = new LinnDirectory(m_fs, entry.inode, inode);
             assert(dir != NULL);
             return dir;
         }
 
         case FileSystem::RegularFile: {
-            LinnFile *file = new LinnFile(fs, inode);
+            LinnFile *file = new LinnFile(m_fs, entry.inode, inode);
             assert(file != NULL);
             return file;
         }
@@ -128,22 +130,22 @@ bool LinnDirectory::getLinnDirectoryEntry(LinnDirectoryEntry *dent,
                                           const char *name)
 {
     const String nameStr(name, false);
-    LinnSuperBlock *sb = fs->getSuperBlock();
+    LinnSuperBlock *sb = m_fs->getSuperBlock();
     u64 offset;
 
     // Loop all blocks.
-    for (u32 blk = 0; blk < LINN_INODE_NUM_BLOCKS(sb, inode); blk++)
+    for (u32 blk = 0; blk < LINN_INODE_NUM_BLOCKS(sb, m_inodeData); blk++)
     {
         // Read directory entries.
         for (u32 ent = 0; ent < LINN_DIRENT_PER_BLOCK(sb); ent++)
         {
             // Calculate offset to read.
-            offset = (inode->block[blk] * sb->blockSize) +
+            offset = (m_inodeData->block[blk] * sb->blockSize) +
                      (sizeof(LinnDirectoryEntry) * ent);
 
             // Get the next entry.
-            if (fs->getStorage()->read(offset, dent,
-                                       sizeof(LinnDirectoryEntry)) != FileSystem::Success)
+            if (m_fs->getStorage()->read(offset, dent,
+                                         sizeof(LinnDirectoryEntry)) != FileSystem::Success)
             {
                 return false;
             }

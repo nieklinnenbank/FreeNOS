@@ -39,7 +39,7 @@ class USBTransferFile : public File
     /**
      * Constructor
      */
-    USBTransferFile(USBController *controller);
+    USBTransferFile(const u32 inode, USBController *controller);
 
     /**
      * Write bytes to the file

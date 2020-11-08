@@ -23,7 +23,8 @@ int main(int argc, char **argv)
 {
     KernelLog log;
     NetworkServer server("/network/smsc95xx");
-    server.registerNetworkDevice(new SMSC95xx(2, "/usb", server));
+    server.registerNetworkDevice(new SMSC95xx(server.getNextInode(),
+                                              server.getNextInode(), 2, "/usb", server));
 
     // Initialize
     const FileSystem::Result result = server.initialize();

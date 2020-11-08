@@ -39,15 +39,19 @@ class PseudoFile : public File
 
     /**
      * Default constructor.
+     *
+     * @param inode Inode number for this File
      */
-    PseudoFile();
+    PseudoFile(const u32 inode);
 
     /**
      * Constructor.
      *
+     * @param inode Inode number for this File
      * @param str Text string with file data
      */
-    PseudoFile(const char *str);
+    PseudoFile(const u32 inode,
+               const char *str);
 
     /**
      * Destructor.

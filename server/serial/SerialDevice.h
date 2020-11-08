@@ -53,6 +53,9 @@ class SerialDevice : public Device,
      */
     u32 getIrq() const;
 
+    /** Keeps track of inode number for SerialDevices */
+    static u32 inodeNumber;
+
   protected:
 
     /** interrupt vector */

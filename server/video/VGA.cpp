@@ -20,7 +20,12 @@
 #include <MemoryBlock.h>
 #include "VGA.h"
 
-VGA::VGA(Size w, Size h) : Device(FileSystem::BlockDeviceFile), width(w), height(h)
+VGA::VGA(const u32 inode,
+         const Size w,
+         const Size h)
+    : Device(inode, FileSystem::BlockDeviceFile)
+    , width(w)
+    , height(h)
 {
     m_identifier << "vga0";
 }

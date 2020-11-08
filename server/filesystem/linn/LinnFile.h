@@ -43,9 +43,12 @@ class LinnFile : public File
      * Constructor function.
      *
      * @param fs LinnFS filesystem pointer.
-     * @param inode Inode pointer.
+     * @param inode Inode number
+     * @param inodeData Inode data pointer.
      */
-    LinnFile(LinnFileSystem *fs, LinnInode *inode);
+    LinnFile(LinnFileSystem *fs,
+             const u32 inode,
+             LinnInode *inodeData);
 
     /**
      * Destructor function.
@@ -69,10 +72,10 @@ class LinnFile : public File
   private:
 
     /** Filesystem pointer. */
-    LinnFileSystem *fs;
+    LinnFileSystem *m_fs;
 
     /** Inode pointer. */
-    LinnInode *inode;
+    LinnInode *m_inodeData;
 };
 
 /**

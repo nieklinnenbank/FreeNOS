@@ -98,10 +98,13 @@ class VGA : public Device
     /**
      * @brief Class constructor function.
      *
+     * @param inode Inode number
      * @param width Number of characters horizontally.
      * @param height Number of characters vertically.
      */
-    VGA(Size width = 80, Size height = 25);
+    VGA(const u32 inode,
+        const Size width = 80,
+        const Size height = 25);
 
     /**
      * Initialize the VGA device.

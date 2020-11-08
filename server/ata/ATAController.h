@@ -264,9 +264,11 @@ class ATAController : public Device
   public:
 
     /**
-     * @brief Constructor function.
+     * Constructor
+     *
+     * @param inode Inode number
      */
-    ATAController();
+    ATAController(const u32 inode);
 
     /**
      * Configures the ATA controller.

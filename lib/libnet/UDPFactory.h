@@ -41,8 +41,12 @@ class UDPFactory : public File
 
     /**
      * Constructor
+     *
+     * @param inode Inode number
+     * @param udp UDP object pointer
      */
-    UDPFactory(UDP *udp);
+    UDPFactory(const u32 inode,
+               UDP *udp);
 
     /**
      * Destructor

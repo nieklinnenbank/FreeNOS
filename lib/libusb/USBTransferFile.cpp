@@ -20,8 +20,8 @@
 #include "USBTransferFile.h"
 #include "USBDescriptor.h"
 
-USBTransferFile::USBTransferFile(USBController *controller)
-    : File()
+USBTransferFile::USBTransferFile(const u32 inode, USBController *controller)
+    : File(inode)
 {
     m_access     = FileSystem::OwnerRW;
     m_controller = controller;

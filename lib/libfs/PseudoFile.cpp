@@ -20,15 +20,17 @@
 #include <MemoryBlock.h>
 #include "PseudoFile.h"
 
-PseudoFile::PseudoFile()
-    : File(FileSystem::RegularFile)
+PseudoFile::PseudoFile(const u32 inode)
+    : File(inode, FileSystem::RegularFile)
 {
     m_size   = ZERO;
     m_buffer = ZERO;
     m_access = FileSystem::OwnerRW;
 }
 
-PseudoFile::PseudoFile(const char *str)
+PseudoFile::PseudoFile(const u32 inode,
+                       const char *str)
+    : File(inode, FileSystem::RegularFile)
 {
     m_access = FileSystem::OwnerRW;
     m_size   = String::length(str);

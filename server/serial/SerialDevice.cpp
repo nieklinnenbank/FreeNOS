@@ -17,8 +17,10 @@
 
 #include "SerialDevice.h"
 
+u32 SerialDevice::inodeNumber = 2;
+
 SerialDevice::SerialDevice(const u32 irq)
-    : Device(FileSystem::CharacterDeviceFile)
+    : Device(inodeNumber, FileSystem::CharacterDeviceFile)
     , AbstractFactory<SerialDevice>()
     , m_irq(irq)
 {

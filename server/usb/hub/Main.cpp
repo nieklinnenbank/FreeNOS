@@ -24,7 +24,7 @@ int main(int argc, char **argv)
 {
     KernelLog log;
     DeviceServer server("/usbhub");
-    server.registerDevice(new USBHub(1), "roothub");
+    server.registerDevice(new USBHub(server.getNextInode(), 1), "roothub");
 
     // Initialize
     const FileSystem::Result result = server.initialize();

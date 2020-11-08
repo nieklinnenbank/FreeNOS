@@ -18,8 +18,9 @@
 #include <Log.h>
 #include "EthernetAddress.h"
 
-EthernetAddress::EthernetAddress(Ethernet *eth)
-    : File()
+EthernetAddress::EthernetAddress(const u32 inode,
+                                 Ethernet *eth)
+    : File(inode)
     , m_eth(eth)
 {
     m_size = sizeof(Ethernet::Address);

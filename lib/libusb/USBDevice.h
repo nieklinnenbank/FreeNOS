@@ -51,7 +51,7 @@ class USBDevice : public Device
     /**
      * Constructor
      */
-    USBDevice(u8 deviceId, const char *usbPath = "/usb");
+    USBDevice(const u32 inode, u8 deviceId, const char *usbPath = "/usb");
 
     /**
      * Destructor

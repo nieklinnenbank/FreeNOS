@@ -38,7 +38,7 @@ FileSystem::Result ICMP::initialize()
 {
     DEBUG("");
 
-    m_factory = new ICMPFactory(this);
+    m_factory = new ICMPFactory(m_server.getNextInode(), this);
     m_server.registerDirectory(this, "/icmp");
     m_server.registerFile(m_factory, "/icmp/factory");
 
@@ -92,7 +92,7 @@ ICMPSocket * ICMP::createSocket(String & path,
     DEBUG("");
 
     // Allocate socket
-    ICMPSocket *sock = new ICMPSocket(this, pid);
+    ICMPSocket *sock = new ICMPSocket(m_server.getNextInode(), this, pid);
     if (!sock)
     {
         ERROR("failed to allocate ICMP socket");

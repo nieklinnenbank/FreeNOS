@@ -52,7 +52,7 @@ TestCase(LoopbackInitialize)
 {
     const char *mountPath = "/networktest/loopback";
     NetworkServer server(mountPath);
-    Loopback *loop = new Loopback(server);
+    Loopback *loop = new Loopback(server.getNextInode(), server);
 
     // Initialize
     server.registerDevice(loop, "io");
@@ -67,7 +67,7 @@ TestCase(LoopbackUdpPing)
 {
     const char *mountPath = "/networktest/loopback";
     NetworkServer server(mountPath);
-    Loopback *loop = new Loopback(server);
+    Loopback *loop = new Loopback(server.getNextInode(), server);
 
     // Register dummy channels
     server.m_registry.registerProducer(server.m_pid, new DummyChannel(Channel::Producer, sizeof(FileSystemMessage)));

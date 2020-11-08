@@ -43,11 +43,13 @@ class File
     /**
      * Constructor function.
      *
+     * @param inode The inode number of this file.
      * @param type Type of file.
      * @param uid User identity.
      * @param gid Group identity.
      */
-    File(const FileSystem::FileType type = FileSystem::RegularFile,
+    File(const u32 inode,
+         const FileSystem::FileType type = FileSystem::RegularFile,
          const UserID uid = ZERO,
          const GroupID gid = ZERO);
 
@@ -55,6 +57,13 @@ class File
      * Destructor function.
      */
     virtual ~File();
+
+    /**
+     * Get inode number
+     *
+     * @return Inode number
+     */
+    u32 getInode() const;
 
     /**
      * Retrieve our filetype.
@@ -101,6 +110,9 @@ class File
     virtual FileSystem::Result status(FileSystemMessage *msg);
 
   protected:
+
+    /** Inode number */
+    const u32 m_inode;
 
     /** Type of this file. */
     const FileSystem::FileType m_type;

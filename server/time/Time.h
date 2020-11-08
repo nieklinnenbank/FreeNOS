@@ -97,9 +97,11 @@ class Time : public Device
     public:
 
     /**
-     * @brief Constructor function.
+     * Constructor
+     *
+     * @param inode Inode number
      */
-    Time();
+    Time(const u32 inode);
 
     /**
      * Initialize the time device

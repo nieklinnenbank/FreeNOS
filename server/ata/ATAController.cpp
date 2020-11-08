@@ -24,7 +24,7 @@ int main(int argc, char **argv)
 {
     KernelLog log;
     DeviceServer server("/dev/ata");
-    server.registerDevice(new ATAController, "ata0");
+    server.registerDevice(new ATAController(server.getNextInode()), "ata0");
 
     // Initialize
     const FileSystem::Result result = server.initialize();
@@ -38,8 +38,8 @@ int main(int argc, char **argv)
     return server.run();
 }
 
-ATAController::ATAController()
-    : Device(FileSystem::BlockDeviceFile)
+ATAController::ATAController(const u32 inode)
+    : Device(inode, FileSystem::BlockDeviceFile)
 {
     m_identifier << "ata0";
 }

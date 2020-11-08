@@ -18,7 +18,9 @@
 #include "ICMPFactory.h"
 #include "ICMPSocket.h"
 
-ICMPFactory::ICMPFactory(ICMP *icmp)
+ICMPFactory::ICMPFactory(const u32 inode,
+                         ICMP *icmp)
+    : File(inode)
 {
     m_icmp = icmp;
 }

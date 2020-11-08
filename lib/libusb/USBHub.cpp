@@ -20,8 +20,8 @@
 #include <string.h>
 #include "USBHub.h"
 
-USBHub::USBHub(u8 deviceId, const char *usbPath)
-    : USBDevice(deviceId, usbPath)
+USBHub::USBHub(const u32 inode, u8 deviceId, const char *usbPath)
+    : USBDevice(inode, deviceId, usbPath)
 {
     DEBUG("");
 

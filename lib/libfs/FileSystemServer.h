@@ -71,6 +71,13 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
     const char * getMountPath() const;
 
     /**
+     * Get next unused inode
+     *
+     * @return Inode number
+     */
+    u32 getNextInode();
+
+    /**
      * Mount the FileSystem.
      *
      * This function is responsible for mounting the file system.
@@ -275,6 +282,9 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
 
     /** Root entry of the filesystem tree. */
     FileCache *m_root;
+
+    /** Contains a mapping of inode number to file of all cached files */
+    HashTable<u32, File *> m_inodeMap;
 
     /** Mount point path. */
     const char *m_mountPath;

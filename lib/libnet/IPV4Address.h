@@ -39,8 +39,12 @@ class IPV4Address : public File
 
     /**
      * Constructor
+     *
+     * @param inode Inode number
+     * @param ipv4 IPV4 object pointer
      */
-    IPV4Address(IPV4 *ipv4);
+    IPV4Address(const u32 inode,
+                IPV4 *ipv4);
 
     /**
      * Destructor

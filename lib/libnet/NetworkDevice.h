@@ -44,8 +44,12 @@ class NetworkDevice : public Device
 
     /**
      * Constructor
+     *
+     * @param inode Inode number
+     * @param server NetworkServer reference
      */
-    NetworkDevice(NetworkServer &server);
+    NetworkDevice(const u32 inode,
+                  NetworkServer &server);
 
     /**
      * Destructor

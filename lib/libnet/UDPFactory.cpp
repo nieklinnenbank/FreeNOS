@@ -19,9 +19,11 @@
 #include "UDPFactory.h"
 #include "UDPSocket.h"
 
-UDPFactory::UDPFactory(UDP *udp)
+UDPFactory::UDPFactory(const u32 inode,
+                       UDP *udp)
+    : File(inode)
+    , m_udp(udp)
 {
-    m_udp = udp;
 }
 
 UDPFactory::~UDPFactory()

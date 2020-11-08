@@ -39,9 +39,16 @@ u8 tekenToVGA[] =
     LIGHTGREY,
 };
 
-Terminal::Terminal(const char *in, const char *out,
-                   Size w, Size h)
-    : Device(FileSystem::CharacterDeviceFile), inputFile(in), outputFile(out), width(w), height(h)
+Terminal::Terminal(const u32 inode,
+                   const char *in,
+                   const char *out,
+                   const Size w,
+                   const Size h)
+    : Device(inode, FileSystem::CharacterDeviceFile)
+    , inputFile(in)
+    , outputFile(out)
+    , width(w)
+    , height(h)
 {
     m_identifier << "tty0";
     buffer = new u16[width * height];

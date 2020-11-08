@@ -17,10 +17,12 @@
 
 #include "Loopback.h"
 
-Loopback::Loopback(NetworkServer &server)
-    : NetworkDevice(server)
+Loopback::Loopback(const u32 inode,
+                   NetworkServer &server)
+    : NetworkDevice(inode, server)
 {
     DEBUG("");
+
     m_address.addr[0] = 0x11;
     m_address.addr[1] = 0x22;
     m_address.addr[2] = 0x33;

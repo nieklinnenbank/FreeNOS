@@ -20,7 +20,8 @@
 #include <MemoryBlock.h>
 #include "Directory.h"
 
-Directory::Directory() : File(FileSystem::DirectoryFile)
+Directory::Directory(const u32 inode)
+    : File(inode, FileSystem::DirectoryFile)
 {
     insert(FileSystem::DirectoryFile, ".");
     insert(FileSystem::DirectoryFile, "..");

@@ -38,8 +38,12 @@ class Device : public File
 
     /**
      * Constructor.
+     *
+     * @param inode Inode number for this Device
+     * @param type Type of file
      */
-    Device(const FileSystem::FileType type);
+    Device(const u32 inode,
+           const FileSystem::FileType type);
 
     /**
      * Destructor.

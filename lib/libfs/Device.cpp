@@ -17,8 +17,9 @@
 
 #include "Device.h"
 
-Device::Device(const FileSystem::FileType type)
-    : File(type)
+Device::Device(const u32 inode,
+               const FileSystem::FileType type)
+    : File(inode, type)
 {
 }
 

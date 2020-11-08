@@ -167,7 +167,8 @@ class SMSC95xxUSB : public USBDevice
     /**
      * Constructor
      */
-    SMSC95xxUSB(u8 deviceId,
+    SMSC95xxUSB(const u32 inode,
+                u8 deviceId,
                 const char *usbPath,
                 NetworkServer *server,
                 SMSC95xx *smsc);

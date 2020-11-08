@@ -37,7 +37,7 @@ FileSystem::Result UDP::initialize()
 {
     DEBUG("");
 
-    m_factory = new UDPFactory(this);
+    m_factory = new UDPFactory(m_server.getNextInode(), this);
     m_server.registerDirectory(this, "/udp");
     m_server.registerFile(m_factory, "/udp/factory");
 
@@ -51,7 +51,7 @@ UDPSocket * UDP::createSocket(String & path,
 
     DEBUG("");
 
-    UDPSocket *sock = new UDPSocket(this, pid);
+    UDPSocket *sock = new UDPSocket(m_server.getNextInode(), this, pid);
     if (!sock)
     {
         ERROR("failed to allocate UDP socket");

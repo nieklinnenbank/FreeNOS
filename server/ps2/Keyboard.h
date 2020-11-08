@@ -48,9 +48,11 @@ class Keyboard : public Device
   public:
 
     /**
-     * @brief Constructor function.
+     * Constructor
+     *
+     * @param inode Inode number
      */
-    Keyboard();
+    Keyboard(const u32 inode);
 
     /**
      * Initialize the device

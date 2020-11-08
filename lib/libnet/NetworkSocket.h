@@ -41,10 +41,12 @@ class NetworkSocket : public File
     /**
      * Constructor
      *
+     * @param inode Inode number
      * @param packetSize Size of each network packet
      * @param pid ProcessID which owns this socket
      */
-    NetworkSocket(const Size packetSize,
+    NetworkSocket(const u32 inode,
+                  const Size packetSize,
                   const ProcessID pid);
 
     /**

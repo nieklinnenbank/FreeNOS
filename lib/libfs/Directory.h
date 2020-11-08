@@ -62,8 +62,10 @@ class Directory : public File
 
     /**
      * Constructor
+     *
+     * @param inode Inode number for this Directory
      */
-    Directory();
+    Directory(const u32 inode);
 
     /**
      * Destructor

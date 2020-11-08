@@ -40,7 +40,7 @@ ARP::~ARP()
 
 FileSystem::Result ARP::initialize()
 {
-    m_sock = new ARPSocket(this);
+    m_sock = new ARPSocket(m_server.getNextInode(), this);
     m_server.registerDirectory(this, "/arp");
     m_server.registerFile(m_sock, "/arp/socket");
 

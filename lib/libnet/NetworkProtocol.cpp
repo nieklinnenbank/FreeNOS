@@ -17,11 +17,13 @@
 
 #include "NetworkDevice.h"
 #include "NetworkProtocol.h"
+#include "NetworkServer.h"
 
 NetworkProtocol::NetworkProtocol(NetworkServer &server,
                                  NetworkDevice &device,
                                  NetworkProtocol &parent)
-    : m_server(server)
+    : Directory(server.getNextInode())
+    , m_server(server)
     , m_device(device)
     , m_parent(parent)
 {

@@ -32,7 +32,9 @@ int main(int argc, char **argv)
 
     // Register our device
     DeviceServer server("/console");
-    server.registerDevice(new Terminal("/dev/ps2/keyboard0", "/dev/video/vga0"), "tty0");
+    server.registerDevice(new Terminal(server.getNextInode(),
+                                       "/dev/ps2/keyboard0",
+                                       "/dev/video/vga0"), "tty0");
 
     // Initialize
     const FileSystem::Result result = server.initialize();

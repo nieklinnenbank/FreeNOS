@@ -87,7 +87,7 @@ class USBHub : public USBDevice
     /**
      * Constructor
      */
-    USBHub(u8 deviceId, const char *usbPath = "/usb");
+    USBHub(const u32 inode, u8 deviceId, const char *usbPath = "/usb");
 
     /**
      * Destructor

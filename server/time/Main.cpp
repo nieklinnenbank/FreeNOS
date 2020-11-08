@@ -23,7 +23,7 @@ int main(int argc, char **argv)
 {
     KernelLog log;
     DeviceServer server("/dev/time");
-    server.registerDevice(new Time(), "rtc0");
+    server.registerDevice(new Time(server.getNextInode()), "rtc0");
 
     // Initialize
     const FileSystem::Result result = server.initialize();

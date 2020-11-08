@@ -19,12 +19,12 @@
 #include <Log.h>
 #include "SMSC95xx.h"
 
-SMSC95xx::SMSC95xx(u8 deviceId, const char *usbPath, NetworkServer &server)
-    : NetworkDevice(server)
+SMSC95xx::SMSC95xx(const u32 inode, const u32 inode2, u8 deviceId, const char *usbPath, NetworkServer &server)
+    : NetworkDevice(inode, server)
 {
     DEBUG("");
 
-    m_usb = new SMSC95xxUSB(deviceId, usbPath, &server, this);
+    m_usb = new SMSC95xxUSB(inode2, deviceId, usbPath, &server, this);
 }
 
 SMSC95xx::~SMSC95xx()

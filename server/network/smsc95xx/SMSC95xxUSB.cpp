@@ -26,11 +26,12 @@
 #define SMSC9512_HS_USB_PKT_SIZE 512
 #define SMSC9512_DEFAULT_HS_BURST_CAP_SIZE (16 * 1024 + 5 * SMSC9512_HS_USB_PKT_SIZE)
 
-SMSC95xxUSB::SMSC95xxUSB(u8 deviceId,
+SMSC95xxUSB::SMSC95xxUSB(const u32 inode,
+                         u8 deviceId,
                          const char *usbPath,
                          NetworkServer *server,
                          SMSC95xx *smsc)
-    : USBDevice(deviceId, usbPath)
+    : USBDevice(inode, deviceId, usbPath)
 {
     DEBUG("");
 

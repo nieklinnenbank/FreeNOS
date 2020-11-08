@@ -42,8 +42,12 @@ class ICMPFactory : public File
 
     /**
      * Constructor
+     *
+     * @param inode Inode number
+     * @param icmp ICMP object pointer
      */
-    ICMPFactory(ICMP *icmp);
+    ICMPFactory(const u32 inode,
+                ICMP *icmp);
 
     /**
      * Destructor

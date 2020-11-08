@@ -45,8 +45,13 @@ class ICMPSocket : public NetworkSocket
 
     /**
      * Constructor
+     *
+     * @param inode Inode number
+     * @param icmp ICMP object pointer
+     * @param pid ProcessID owning this socket
      */
-    ICMPSocket(ICMP *icmp,
+    ICMPSocket(const u32 inode,
+               ICMP *icmp,
                const ProcessID pid);
 
     /**

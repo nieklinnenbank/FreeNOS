@@ -39,8 +39,12 @@ class EthernetAddress : public File
 
     /**
      * Constructor
+     *
+     * @param inode Inode number
+     * @param eth Ethernet pointer
      */
-    EthernetAddress(Ethernet *eth);
+    EthernetAddress(const u32 inode,
+                    Ethernet *eth);
 
     /**
      * Destructor

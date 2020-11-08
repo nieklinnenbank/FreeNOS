@@ -23,7 +23,8 @@ int main(int argc, char **argv)
 {
     KernelLog log;
     DeviceServer server("/dev/video");
-    server.registerDevice(new VGA, "vga0");
+
+    server.registerDevice(new VGA(server.getNextInode()), "vga0");
 
     // Initialize
     const FileSystem::Result result = server.initialize();

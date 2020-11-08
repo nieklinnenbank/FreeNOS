@@ -18,9 +18,11 @@
 #include <MemoryBlock.h>
 #include "NetworkSocket.h"
 
-NetworkSocket::NetworkSocket(const Size packetSize,
+NetworkSocket::NetworkSocket(const u32 inode,
+                             const Size packetSize,
                              const ProcessID pid)
-    : m_pid(pid)
+    : File(inode)
+    , m_pid(pid)
     , m_receive(packetSize)
     , m_transmit(packetSize)
 {

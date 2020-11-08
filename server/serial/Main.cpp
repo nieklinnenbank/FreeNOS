@@ -26,10 +26,11 @@ int main(int argc, char **argv)
     DeviceServer server("/dev/serial");
 
     // Create serial device instance
+    SerialDevice::inodeNumber = server.getNextInode();
     SerialDevice *dev = SerialDevice::create();
 
     // Register to DeviceServer
-    Directory *dir = new Directory();
+    Directory *dir = new Directory(server.getNextInode());
     server.registerDirectory(dir, "/serial0");
     server.registerDevice(dev, "/serial0/io");
     server.registerInterrupt(dev, dev->getIrq());

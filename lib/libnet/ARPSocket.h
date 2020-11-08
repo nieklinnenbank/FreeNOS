@@ -43,8 +43,12 @@ class ARPSocket : public NetworkSocket
 
     /**
      * Constructor
+     *
+     * @param inode Inode number
+     * @param arp ARP object pointer
      */
-    ARPSocket(ARP *arp);
+    ARPSocket(const u32 inode,
+              ARP *arp);
 
     /**
      * Destructor

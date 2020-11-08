@@ -21,8 +21,9 @@
 #include "ARP.h"
 #include "ARPSocket.h"
 
-ARPSocket::ARPSocket(ARP *arp)
-    : NetworkSocket(arp->getMaximumPacketSize(), ANY)
+ARPSocket::ARPSocket(const u32 inode,
+                     ARP *arp)
+    : NetworkSocket(inode, arp->getMaximumPacketSize(), ANY)
 {
     m_arp = arp;
     m_ipAddr = 0;

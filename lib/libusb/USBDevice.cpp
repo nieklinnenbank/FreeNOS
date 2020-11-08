@@ -27,8 +27,8 @@
 #include "USBDevice.h"
 #include "USBDescriptor.h"
 
-USBDevice::USBDevice(u8 deviceId, const char *busPath)
-    : Device(FileSystem::CharacterDeviceFile)
+USBDevice::USBDevice(const u32 inode, u8 deviceId, const char *busPath)
+    : Device(inode, FileSystem::CharacterDeviceFile)
 {
     m_id = deviceId;
     m_busPath = busPath;

@@ -25,7 +25,7 @@ int main(int argc, char **argv)
     DeviceServer server("/dev/ps2");
 
     // Create a new keyboard object
-    Keyboard *kb = new Keyboard;
+    Keyboard *kb = new Keyboard(server.getNextInode());
 
     // Register it with the DeviceServer
     server.registerDevice(kb, "keyboard0");

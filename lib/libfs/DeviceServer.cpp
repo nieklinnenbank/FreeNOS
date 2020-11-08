@@ -18,7 +18,7 @@
 #include "DeviceServer.h"
 
 DeviceServer::DeviceServer(const char *path)
-    : FileSystemServer(new Directory(), path)
+    : FileSystemServer(new Directory(1), path)
 {
     m_interrupts.fill(ZERO);
 }

@@ -17,8 +17,9 @@
 
 #include "NetworkDevice.h"
 
-NetworkDevice::NetworkDevice(NetworkServer &server)
-    : Device(FileSystem::CharacterDeviceFile)
+NetworkDevice::NetworkDevice(const u32 inode,
+                             NetworkServer &server)
+    : Device(inode, FileSystem::CharacterDeviceFile)
     , m_maximumPacketSize(1500)
     , m_receive(m_maximumPacketSize)
     , m_transmit(m_maximumPacketSize)

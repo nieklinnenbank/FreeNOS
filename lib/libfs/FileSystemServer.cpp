@@ -61,6 +61,17 @@ const char * FileSystemServer::getMountPath() const
     return m_mountPath;
 }
 
+u32 FileSystemServer::getNextInode()
+{
+    static u32 next = 2;
+
+    // Ensure that the inode is not already used
+    while (m_inodeMap.get(++next) != ZERO)
+        ;
+
+    return next;
+}
+
 FileSystem::Result FileSystemServer::mount()
 {
     // The rootfs server manages the mounts table. Retrieve it from the datastore.
@@ -101,6 +112,12 @@ File * FileSystemServer::createFile(const FileSystem::FileType type)
 
 FileSystem::Result FileSystemServer::registerFile(File *file, const char *path)
 {
+    // Add file to the inode map
+    if (!m_inodeMap.insert(file->getInode(), file))
+    {
+        return FileSystem::IOError;
+    }
+
     // Add to the filesystem cache
     FileCache *cache = insertFileCache(file, path);
     if (cache == ZERO)
@@ -670,6 +687,7 @@ void FileSystemServer::clearFileCache(FileCache *cache)
             cache->parent->entries.remove(cache->name);
         }
 
+        m_inodeMap.remove(cache->file->getInode());
         delete cache->file;
     }
     delete cache;

@@ -49,12 +49,15 @@ class LinnDirectory : public Directory
      * Constructor function.
      *
      * @param fs Filesystem pointer.
-     * @param inode Inode pointer.
+     * @param inode Inode number
+     * @param inodeData Inode data pointer.
      *
      * @see LinnFileSystem
      * @see LinnInode
      */
-    LinnDirectory(LinnFileSystem *fs, LinnInode *inode);
+    LinnDirectory(LinnFileSystem *fs,
+                  const u32 inode,
+                  LinnInode *inodeData);
 
     /**
      * Read directory entries
@@ -102,10 +105,10 @@ class LinnDirectory : public Directory
   private:
 
     /** Filesystem pointer. */
-    LinnFileSystem *fs;
+    LinnFileSystem *m_fs;
 
     /** Inode which describes the directory. */
-    LinnInode *inode;
+    LinnInode *m_inodeData;
 };
 
 /**

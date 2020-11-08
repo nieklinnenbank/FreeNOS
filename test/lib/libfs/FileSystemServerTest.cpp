@@ -91,7 +91,7 @@ u8 DummyFileSystem::m_pages[PAGESIZE * 2 * 4];
 
 TestCase(FileSystemServerConstruct)
 {
-    Directory *root = new Directory();
+    Directory *root = new Directory(1);
     DummyFileSystem fs(root, "/mnt");
 
     // Validate members
@@ -107,7 +107,7 @@ TestCase(FileSystemServerConstruct)
 
 TestCase(FileSystemServerMount)
 {
-    DummyFileSystem fs(new Directory(), "/mnt");
+    DummyFileSystem fs(new Directory(1), "/mnt");
 
     // Prepare response
     FileSystemMessage msg;
@@ -123,13 +123,13 @@ TestCase(FileSystemServerMount)
 TestCase(FileSystemServerRegisterFile)
 {
     const char *path = "/myfile.txt";
-    FileSystemServer fs(new Directory(), "/mnt");
+    FileSystemServer fs(new Directory(1), "/mnt");
 
     // Initial state is no files present
     testAssert(fs.findFileCache(path) == ZERO);
 
     // Add the file
-    File *file = new File();
+    File *file = new File(fs.getNextInode());
     const FileSystem::Result result = fs.registerFile(file, path);
 
     // Verify the file is added
@@ -143,7 +143,7 @@ TestCase(FileSystemServerRegisterFile)
 
 TestCase(FileSystemServerStatFile)
 {
-    DummyFileSystem fs(new Directory(), "/mnt");
+    DummyFileSystem fs(new Directory(1), "/mnt");
 
     // Prepare message for non-existing file
     String path("/mnt/myfile.txt");
@@ -164,7 +164,7 @@ TestCase(FileSystemServerStatFile)
     testAssert(msg.result == FileSystem::NotFound);
 
     // Add the file
-    File *file = new File(FileSystem::CharacterDeviceFile, 1, 2);
+    File *file = new File(fs.getNextInode(), FileSystem::CharacterDeviceFile, 1, 2);
     testAssert(fs.registerFile(file, "myfile.txt") == FileSystem::Success);
 
     // Send another request
@@ -184,7 +184,7 @@ TestCase(FileSystemServerStatFile)
 
 TestCase(FileSystemServerReadFile)
 {
-    DummyFileSystem fs(new Directory(), "/mnt");
+    DummyFileSystem fs(new Directory(1), "/mnt");
 
     // Prepare message for non-existing file
     String path("/mnt/myfile.txt");
@@ -205,7 +205,7 @@ TestCase(FileSystemServerReadFile)
     testAssert(msg.result == FileSystem::NotFound);
 
     // Add the file
-    File *file = new PseudoFile("mydata");
+    File *file = new PseudoFile(fs.getNextInode(), "mydata");
     testAssert(fs.registerFile(file, "myfile.txt") == FileSystem::Success);
 
     // Send another request
@@ -225,7 +225,7 @@ TestCase(FileSystemServerReadFile)
 
 TestCase(FileSystemServerWriteFile)
 {
-    DummyFileSystem fs(new Directory(), "/mnt");
+    DummyFileSystem fs(new Directory(1), "/mnt");
 
     // Prepare message for non-existing file
     String path("/mnt/myfile.txt");
@@ -247,7 +247,7 @@ TestCase(FileSystemServerWriteFile)
     testAssert(msg.result == FileSystem::NotFound);
 
     // Add the file
-    File *file = new PseudoFile();
+    File *file = new PseudoFile(fs.getNextInode());
     testAssert(fs.registerFile(file, "myfile.txt") == FileSystem::Success);
 
     // Send another request
@@ -277,7 +277,7 @@ TestCase(FileSystemServerWriteFile)
 
 TestCase(FileSystemServerDeleteFile)
 {
-    DummyFileSystem fs(new Directory(), "/mnt");
+    DummyFileSystem fs(new Directory(1), "/mnt");
 
     // Prepare message for non-existing file
     String path("/mnt/myfile.txt");
@@ -295,7 +295,7 @@ TestCase(FileSystemServerDeleteFile)
     testAssert(msg.result == FileSystem::NotFound);
 
     // Add the file
-    File *file = new PseudoFile();
+    File *file = new PseudoFile(fs.getNextInode());
     testAssert(fs.registerFile(file, "myfile.txt") == FileSystem::Success);
 
     // Send another request
