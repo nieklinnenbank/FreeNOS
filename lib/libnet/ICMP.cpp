@@ -155,12 +155,17 @@ FileSystem::Result ICMP::sendPacket(const IPV4::Address ip,
             readBe16(&headerInput->sequence) << " payloadSize = " << payloadSize);
 
     // Get a fresh packet
-    NetworkQueue::Packet *pkt = m_parent.getTransmitPacket(&ip, sizeof(ip),
-                                                           NetworkProtocol::ICMP,
-                                                           sizeof(ICMP::Header) + payloadSize);
-    if (pkt == ZERO)
+    NetworkQueue::Packet *pkt;
+    const FileSystem::Result result = m_parent.getTransmitPacket(&pkt, &ip, sizeof(ip),
+                                                                 NetworkProtocol::ICMP,
+                                                                 sizeof(ICMP::Header) + payloadSize);
+    if (result != FileSystem::Success)
     {
-        return FileSystem::RetryAgain;
+        if (result != FileSystem::RetryAgain)
+        {
+            ERROR("failed to get transmit packet: result = " << (int) result);
+        }
+        return result;
     }
 
     // Fill header

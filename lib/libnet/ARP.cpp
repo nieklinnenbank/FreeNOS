@@ -157,11 +157,16 @@ FileSystem::Result ARP::sendRequest(const IPV4::Address address)
     MemoryBlock::set(&destAddr, 0xff, sizeof(destAddr));
 
     // Get a fresh ethernet packet
-    NetworkQueue::Packet *pkt = m_parent.getTransmitPacket(&destAddr, sizeof(destAddr),
-                                                           NetworkProtocol::ARP, sizeof(Header));
-    if (!pkt)
+    NetworkQueue::Packet *pkt;
+    const FileSystem::Result result = m_parent.getTransmitPacket(&pkt, &destAddr, sizeof(destAddr),
+                                                                 NetworkProtocol::ARP, sizeof(Header));
+    if (result != FileSystem::Success)
     {
-        return FileSystem::RetryAgain;
+        if (result != FileSystem::RetryAgain)
+        {
+            ERROR("failed to get transmit packet: result = " << (int) result);
+        }
+        return result;
     }
 
     Ethernet::Header *ether = (Ethernet::Header *) (pkt->data + pkt->size - sizeof(Ethernet::Header));
@@ -199,11 +204,16 @@ FileSystem::Result ARP::sendReply(const Ethernet::Address *ethAddr, const IPV4::
     }
 
     // Get a fresh ethernet packet
-    NetworkQueue::Packet *pkt = m_parent.getTransmitPacket(ethAddr, sizeof(*ethAddr),
-                                                           NetworkProtocol::ARP, sizeof(Header));
-    if (!pkt)
+    NetworkQueue::Packet *pkt;
+    const FileSystem::Result result = m_parent.getTransmitPacket(&pkt, ethAddr, sizeof(*ethAddr),
+                                                                 NetworkProtocol::ARP, sizeof(Header));
+    if (result != FileSystem::Success)
     {
-        return FileSystem::RetryAgain;
+        if (result != FileSystem::RetryAgain)
+        {
+            ERROR("failed to get transmit packet: result = " << (int) result);
+        }
+        return result;
     }
 
     IPV4::Address myip;

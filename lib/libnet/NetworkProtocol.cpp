@@ -36,10 +36,11 @@ const Size NetworkProtocol::getMaximumPacketSize() const
     return m_device.getMaximumPacketSize();
 }
 
-NetworkQueue::Packet * NetworkProtocol::getTransmitPacket(const void *address,
-                                                          const Size addressSize,
-                                                          const NetworkProtocol::Identifier protocol,
-                                                          const Size payloadSize)
+FileSystem::Result NetworkProtocol::getTransmitPacket(NetworkQueue::Packet **pkt,
+                                                      const void *address,
+                                                      const Size addressSize,
+                                                      const NetworkProtocol::Identifier protocol,
+                                                      const Size payloadSize)
 {
-    return ZERO;
+    return FileSystem::NotSupported;
 }

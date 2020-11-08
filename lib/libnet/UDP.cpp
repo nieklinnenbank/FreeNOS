@@ -150,11 +150,15 @@ FileSystem::Result UDP::sendPacket(const NetworkClient::SocketInfo *src,
           " port = " << dest.port << " size = " << size);
 
     // Get a fresh packet
-    pkt = m_parent.getTransmitPacket(&dest.address, sizeof(dest.address),
-                                     NetworkProtocol::UDP, sizeof(Header) + size - sizeof(dest));
-    if (pkt == ZERO)
+    const FileSystem::Result result = m_parent.getTransmitPacket(&pkt, &dest.address, sizeof(dest.address),
+                                                                 NetworkProtocol::UDP, sizeof(Header) + size - sizeof(dest));
+    if (result != FileSystem::Success)
     {
-        return FileSystem::RetryAgain;
+        if (result != FileSystem::RetryAgain)
+        {
+            ERROR("failed to get transmit packet: result = " << (int) result);
+        }
+        return result;
     }
 
     // Fill UDP header

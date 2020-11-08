@@ -88,18 +88,19 @@ const String Ethernet::toString(const Ethernet::Address address)
     return s;
 }
 
-NetworkQueue::Packet * Ethernet::getTransmitPacket(const void *address,
-                                                   const Size addressSize,
-                                                   const NetworkProtocol::Identifier protocol,
-                                                   const Size payloadSize)
+FileSystem::Result Ethernet::getTransmitPacket(NetworkQueue::Packet **pkt,
+                                               const void *address,
+                                               const Size addressSize,
+                                               const NetworkProtocol::Identifier protocol,
+                                               const Size payloadSize)
 {
-    NetworkQueue::Packet *pkt = m_device.getTransmitQueue()->get();
-    if (!pkt)
+    *pkt = m_device.getTransmitQueue()->get();
+    if (!*pkt)
     {
-        return ZERO;
+        return FileSystem::RetryAgain;
     }
 
-    Ethernet::Header *ether = (Ethernet::Header *) (pkt->data + pkt->size);
+    Ethernet::Header *ether = (Ethernet::Header *) ((*pkt)->data + (*pkt)->size);
     MemoryBlock::copy(&ether->source, &m_address, sizeof(Address));
     MemoryBlock::copy(&ether->destination, address, sizeof(Address));
 
@@ -115,11 +116,11 @@ NetworkQueue::Packet * Ethernet::getTransmitPacket(const void *address,
 
         default:
             ERROR("unsupported protocol: " << (int) protocol);
-            return ZERO;
+            return FileSystem::NotSupported;
     }
 
-    pkt->size += sizeof(Ethernet::Header);
-    return pkt;
+    (*pkt)->size += sizeof(Ethernet::Header);
+    return FileSystem::Success;
 }
 
 FileSystem::Result Ethernet::process(const NetworkQueue::Packet *pkt,

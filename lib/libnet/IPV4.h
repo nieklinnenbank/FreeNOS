@@ -168,17 +168,19 @@ class IPV4 : public NetworkProtocol
     /**
      * Get a new packet for transmission
      *
+     * @param pkt On output contains a pointer to a Packet
      * @param address Address of the destination of this packet
      * @param addressSize Number of bytes of the address
      * @param protocol Identifier for the protocol to create the packet for
      * @param payloadSize Number of payload bytes
      *
-     * @return Packet pointer on success, ZERO on failure
+     * @return Result code
      */
-    virtual NetworkQueue::Packet * getTransmitPacket(const void *address,
-                                                     const Size addressSize,
-                                                     const Identifier protocol,
-                                                     const Size payloadSize);
+    virtual FileSystem::Result getTransmitPacket(NetworkQueue::Packet **pkt,
+                                                 const void *address,
+                                                 const Size addressSize,
+                                                 const Identifier protocol,
+                                                 const Size payloadSize);
 
     /**
      * Process incoming network packet.
