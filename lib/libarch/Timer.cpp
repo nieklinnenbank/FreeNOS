@@ -41,10 +41,18 @@ Timer::Result Timer::setFrequency(Size hertz)
     return Success;
 }
 
-Timer::Result Timer::getCurrent(Info *info)
+Timer::Result Timer::getCurrent(Info *info,
+                                const Size msecOffset)
 {
     info->frequency = m_frequency;
     info->ticks     = m_info.ticks;
+
+    if (msecOffset != 0 && m_frequency != 0)
+    {
+        const Size msecPerTick = 1000 / m_frequency;
+        info->ticks += ((msecOffset / msecPerTick) + 1);
+    }
+
     return Success;
 }
 
