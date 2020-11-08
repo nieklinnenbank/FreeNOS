@@ -65,6 +65,7 @@ FileSystem::Result File::status(FileSystemMessage *msg)
 
     // Fill in the status structure
     st.type     = m_type;
+    st.inode    = m_inode;
     st.access   = m_access;
     st.size     = m_size;
     st.userID   = m_uid;

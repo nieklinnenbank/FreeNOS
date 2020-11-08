@@ -170,6 +170,7 @@ struct stat
      */
     void fromFileStat(FileSystem::FileStat *stat)
     {
+        this->st_ino   = stat->inode;
         this->st_mode  = stat->access;
         this->st_mode |= stat->type << FILEMODE_BITS;
         this->st_size  = stat->size;
@@ -183,7 +184,7 @@ struct stat
     /** Device ID of device containing file. */
     dev_t st_dev;
 
-    /** File serial number. */
+    /** File inode number. */
     ino_t st_ino;
 
     /** Mode of file. */
