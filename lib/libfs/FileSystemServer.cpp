@@ -235,7 +235,6 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
     char buf[FileSystemPath::MaximumLength];
     FileCache *cache = ZERO;
     File *file = ZERO;
-    Directory *parent;
     FileSystemMessage *msg = req.getMessage();
 
     // Copy the file path
@@ -280,27 +279,21 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
     {
         case FileSystem::CreateFile:
             if (cache)
+            {
                 msg->result = FileSystem::AlreadyExists;
+            }
             else
             {
-                /* Attempt to create the new file. */
-                if ((file = createFile(msg->filetype)) != ZERO)
+                // Attempt to create the new file
+                file = createFile(msg->filetype);
+                if (!file)
                 {
-                    insertFileCache(file, *path.full());
-
-                    /* Add directory entry to our parent. */
-                    if (path.parent().length() > 0)
-                    {
-                        parent = (Directory *) findFileCache(*path.parent())->file;
-                    }
-                    else
-                        parent = (Directory *) m_root->file;
-
-                    parent->insert(file->getType(), *path.full());
-                    msg->result = FileSystem::Success;
+                    msg->result = FileSystem::IOError;
                 }
                 else
-                    msg->result = FileSystem::IOError;
+                {
+                    msg->result = registerFile(file, *path.full());
+                }
             }
             DEBUG(m_self << ": create = " << (int)msg->result);
             break;
