@@ -19,10 +19,10 @@
 #include "Timer.h"
 
 Timer::Timer()
+    : m_ticks(0)
+    , m_frequency(0)
+    , m_int(0)
 {
-    m_frequency = 0;
-    m_int       = 0;
-    MemoryBlock::set(&m_info, 0, sizeof(m_info));
 }
 
 Size Timer::getInterrupt() const
@@ -45,7 +45,7 @@ Timer::Result Timer::getCurrent(Info *info,
                                 const Size msecOffset)
 {
     info->frequency = m_frequency;
-    info->ticks     = m_info.ticks;
+    info->ticks     = m_ticks;
 
     if (msecOffset != 0 && m_frequency != 0)
     {
@@ -73,7 +73,7 @@ Timer::Result Timer::stop()
 
 Timer::Result Timer::tick()
 {
-    m_info.ticks++;
+    m_ticks++;
     return Success;
 }
 
@@ -87,5 +87,5 @@ bool Timer::isExpired(const Timer::Info & info) const
     if (!info.frequency)
         return false;
 
-    return m_info.ticks >= info.ticks;
+    return m_ticks >= info.ticks;
 }

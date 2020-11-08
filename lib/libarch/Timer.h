@@ -153,8 +153,8 @@ class Timer
 
   protected:
 
-    /** The current Timer information. */
-    Info m_info;
+    /** The current timer ticks */
+    Size m_ticks;
 
     /** Frequency of the Timer. */
     Size m_frequency;
