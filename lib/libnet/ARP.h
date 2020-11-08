@@ -21,6 +21,7 @@
 #include <Types.h>
 #include <HashTable.h>
 #include <Timer.h>
+#include <KernelTimer.h>
 #include "Ethernet.h"
 #include "IPV4.h"
 #include "NetworkProtocol.h"
@@ -222,6 +223,9 @@ class ARP : public NetworkProtocol
 
     /** Contains a cached mapping from IP to Ethernet addresses */
     HashTable<IPV4::Address, ARPCache *> m_cache;
+
+    /** Provides access to the kernel timer */
+    KernelTimer m_kernelTimer;
 };
 
 /**

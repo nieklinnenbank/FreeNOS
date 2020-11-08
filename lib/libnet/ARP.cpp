@@ -103,15 +103,29 @@ FileSystem::Result ARP::lookupAddress(const IPV4::Address *ipAddr,
         return FileSystem::Success;
     }
 
-    // Send an ARP request
-    const FileSystem::Result result = sendRequest(*ipAddr);
-    if (result != FileSystem::Success && result != FileSystem::RetryAgain)
+    // See if timeout has expired for re-transmission
+    m_kernelTimer.tick();
+    Timer::Info inf;
+    m_kernelTimer.getCurrent(&inf);
+    DEBUG("entry->time.ticks = " << entry->time.ticks <<
+          " entry->time.freq = " << entry->time.frequency <<
+          " kernelTimer.ticks = " << inf.ticks <<
+          " kernelTimer.freq = " << inf.frequency);
+
+    if (!entry->time.ticks || m_kernelTimer.isExpired(entry->time))
     {
-        ERROR("failed to send request: result = " << (int) result);
-        return result;
+        DEBUG("entry timeout: re-transmitting");
+
+        // Send an ARP request
+        const FileSystem::Result result = sendRequest(*ipAddr);
+        if (result != FileSystem::Success && result != FileSystem::RetryAgain)
+        {
+            ERROR("failed to send request: result = " << (int) result);
+            return result;
+        }
     }
 
-    // Make sure we are called again in about 500msec
+    // Make sure we are called again in about 500msec (or earlier)
     m_server.setTimeout(500);
     return FileSystem::RetryAgain;
 }
@@ -135,6 +149,8 @@ FileSystem::Result ARP::sendRequest(const IPV4::Address address)
         entry->retryCount = 0;
         return FileSystem::NotFound;
     }
+    m_kernelTimer.tick();
+    m_kernelTimer.getCurrent(&entry->time, 500);
 
     // Destination is broadcast ethernet address
     Ethernet::Address destAddr;
