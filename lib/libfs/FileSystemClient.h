@@ -153,6 +153,21 @@ class FileSystemClient
     FileSystem::Result deleteFile(const char *path) const;
 
     /**
+     * Wait for one or more files to become readable/writable
+     *
+     * @param filesystemPath Path to the destination mounted filesystem
+     * @param waitSet Pointer to a WaitSet array
+     * @param count Number of WaitSet entries
+     * @param msecTimeout Timeout in milliseconds of the wait or ZERO for infinite wait
+     *
+     * @return Result code
+     */
+    FileSystem::Result waitFile(const char *filesystemPath,
+                                const FileSystem::WaitSet *waitSet,
+                                const Size count,
+                                const Size msecTimeout) const;
+
+    /**
      * Mount the current process as a file system on the rootfs.
      *
      * @param path Absolute path for the mount point to use.

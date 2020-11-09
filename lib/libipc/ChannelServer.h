@@ -542,8 +542,6 @@ template <class Base, class MsgType> class ChannelServer
     /** ProcessID of ourselves */
     ProcessID m_self;
 
-  private:
-
     /** System timer value */
     Timer::Info m_time;
 

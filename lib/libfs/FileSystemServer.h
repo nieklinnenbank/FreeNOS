@@ -48,6 +48,9 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
     /** Maximum number of supported file system mount entries */
     static const Size MaximumFileSystemMounts = 32;
 
+    /** Maximum number of WaitSet entries supported */
+    static const Size MaximumWaitSetCount = 32;
+
   public:
 
     /**

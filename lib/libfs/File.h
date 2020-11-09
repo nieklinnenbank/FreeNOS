@@ -109,6 +109,24 @@ class File
      */
     virtual FileSystem::Result status(FileSystemMessage *msg);
 
+    /**
+     * Check if the File has data ready for reading.
+     *
+     * When this function returns true, it can be read without blocking.
+     *
+     * @return Boolean
+     */
+    virtual bool canRead() const;
+
+    /**
+     * Check if the File can be written to.
+     *
+     * When this function returns true, it can be written without blocking.
+     *
+     * @return Boolean
+     */
+    virtual bool canWrite() const;
+
   protected:
 
     /** Inode number */

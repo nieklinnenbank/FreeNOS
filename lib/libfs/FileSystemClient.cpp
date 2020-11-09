@@ -17,6 +17,7 @@
 
 #include <Log.h>
 #include <ChannelClient.h>
+#include <KernelTimer.h>
 #include "FileSystemMessage.h"
 #include "FileSystemClient.h"
 
@@ -242,6 +243,34 @@ FileSystem::Result FileSystemClient::deleteFile(const char *path) const
     msg.path   = (char *)path;
 
     return request(path, msg);
+}
+
+FileSystem::Result FileSystemClient::waitFile(const char *filesystemPath,
+                                              const FileSystem::WaitSet *waitSet,
+                                              const Size count,
+                                              const Size msecTimeout) const
+{
+
+    FileSystemMessage msg;
+    msg.type = ChannelMessage::Request;
+    msg.action = FileSystem::WaitFile;
+    msg.path = (char *) filesystemPath;
+    msg.buffer = (char *) waitSet;
+    msg.size = count * sizeof(FileSystem::WaitSet);
+
+    if (msecTimeout != 0)
+    {
+        KernelTimer timer;
+        timer.tick();
+        timer.getCurrent(&msg.timeout, 500);
+    }
+    else
+    {
+        msg.timeout.ticks = 0;
+        msg.timeout.frequency = 0;
+    }
+
+    return request(filesystemPath, msg);
 }
 
 FileSystem::Result FileSystemClient::mountFileSystem(const char *mountPath) const

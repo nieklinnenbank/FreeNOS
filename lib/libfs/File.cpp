@@ -84,3 +84,13 @@ FileSystem::Result File::status(FileSystemMessage *msg)
         return FileSystem::IOError;
     }
 }
+
+bool File::canRead() const
+{
+    return true;
+}
+
+bool File::canWrite() const
+{
+    return true;
+}

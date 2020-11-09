@@ -21,6 +21,7 @@
 #include <HashTable.h>
 #include <HashIterator.h>
 #include <DatastoreClient.h>
+#include <KernelTimer.h>
 #include "FileSystemClient.h"
 #include "FileSystemMount.h"
 #include "FileSystemServer.h"
@@ -41,6 +42,7 @@ FileSystemServer::FileSystemServer(Directory *root, const char *path)
     addIPCHandler(FileSystem::DeleteFile, &FileSystemServer::pathHandler, false);
     addIPCHandler(FileSystem::ReadFile,   &FileSystemServer::pathHandler, false);
     addIPCHandler(FileSystem::WriteFile,  &FileSystemServer::pathHandler, false);
+    addIPCHandler(FileSystem::WaitFile,   &FileSystemServer::pathHandler, false);
     addIPCHandler(FileSystem::MountFileSystem, &FileSystemServer::mountHandler);
     addIPCHandler(FileSystem::WaitFileSystem,  &FileSystemServer::pathHandler, false);
     addIPCHandler(FileSystem::GetFileSystems,  &FileSystemServer::getFileSystemsHandler);
@@ -283,7 +285,9 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
         file = cache->file;
     }
     // File not found
-    else if (msg->action != FileSystem::CreateFile && msg->action != FileSystem::WaitFileSystem)
+    else if (msg->action != FileSystem::CreateFile &&
+             msg->action != FileSystem::WaitFileSystem &&
+             msg->action != FileSystem::WaitFile)
     {
         DEBUG(m_self << ": not found");
         msg->result = FileSystem::NotFound;
@@ -370,6 +374,78 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
 
             msg->result = file->write(req.getBuffer(), msg->size, msg->offset);
             DEBUG(m_self << ": write = " << (int)msg->result);
+            break;
+        }
+
+        case FileSystem::WaitFile:
+        {
+            static FileSystem::WaitSet waitBuf[MaximumWaitSetCount];
+            const Size count = msg->size / sizeof(FileSystem::WaitSet) < MaximumWaitSetCount ?
+                               msg->size / sizeof(FileSystem::WaitSet) : MaximumWaitSetCount;
+            IOBuffer & ioBuffer = req.getBuffer();
+
+            // Read waitset input struct
+            msg->result = ioBuffer.read(&waitBuf, count * sizeof(FileSystem::WaitSet), 0);
+            if (msg->result != FileSystem::Success)
+            {
+                ERROR("failed to read WaitSet input from PID " << msg->from << ": result = " << (int) msg->result);
+                break;
+            }
+
+            // By default, retry again
+            msg->result = FileSystem::RetryAgain;
+
+            // fill the struct
+            for (Size i = 0; i < count; i++)
+            {
+                File *const *f = m_inodeMap.get(waitBuf[i].inode);
+                if (f != ZERO)
+                {
+                    waitBuf[i].current = 0;
+
+                    if ((waitBuf[i].requested & FileSystem::Readable) && (*f)->canRead())
+                    {
+                        DEBUG("inode " << waitBuf[i].inode << " is readable");
+                        waitBuf[i].current |= FileSystem::Readable;
+                        msg->result = FileSystem::Success;
+                    }
+
+                    if ((waitBuf[i].requested & FileSystem::Writable) && (*f)->canWrite())
+                    {
+                        DEBUG("inode " << waitBuf[i].inode << " is writable");
+                        waitBuf[i].current |= FileSystem::Writable;
+                        msg->result = FileSystem::Success;
+                    }
+                }
+            }
+
+            // write back
+            ioBuffer.write(&waitBuf, count * sizeof(FileSystem::WaitSet), 0);
+            if (msg->result != FileSystem::Success && msg->result != FileSystem::RetryAgain)
+            {
+                ERROR("failed to write WaitSet output to PID " << msg->from << ": result = " << (int) msg->result);
+                break;
+            }
+
+            // Check for timeout
+            if (msg->timeout.frequency != 0 && msg->result == FileSystem::RetryAgain)
+            {
+                KernelTimer timer;
+                timer.tick();
+
+                if (timer.isExpired(msg->timeout))
+                {
+                    msg->result = FileSystem::TimedOut;
+                }
+                else
+                {
+                    if (!m_expiry.frequency || m_expiry.ticks > msg->timeout.ticks)
+                    {
+                        m_expiry.ticks = msg->timeout.ticks;
+                    }
+                    m_expiry.frequency = msg->timeout.frequency;
+                }
+            }
             break;
         }
 

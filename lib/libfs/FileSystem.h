@@ -87,6 +87,7 @@ namespace FileSystem
         WriteFile,
         StatFile,
         DeleteFile,
+        WaitFile,
         MountFileSystem,
         WaitFileSystem,
         GetFileSystems
@@ -106,7 +107,8 @@ namespace FileSystem
         AlreadyExists    = -6,
         NotSupported     = -7,
         RedirectRequest  = -8,
-        IpcError         = -9
+        IpcError         = -9,
+        TimedOut         = -10
     };
 
     /**
@@ -163,6 +165,25 @@ namespace FileSystem
         Size size;          /**< Size of the file in bytes. */
         UserID userID;      /**< User identity. */
         GroupID groupID;    /**< Group identity. */
+    };
+
+    /**
+     * Provides information about an inode
+     */
+    struct WaitSet
+    {
+        u32 inode;     /**@< Inode number */
+        u16 requested; /**@< Requested status flags of the inode */
+        u16 current;   /**@< Indicates the currently active status flags */
+    };
+
+    /**
+     * WaitSet status flags
+     */
+    enum WaitStatus
+    {
+        Readable = (1 << 0), /**@< File can be read without blocking */
+        Writable = (1 << 1)  /**@< File can be written without blocking */
     };
 };
 
