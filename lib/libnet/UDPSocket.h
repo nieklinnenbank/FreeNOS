@@ -77,7 +77,7 @@ class UDPSocket : public NetworkSocket
                                     const Size offset);
 
     /**
-     * Send UPD data
+     * Send UDP data
      *
      * @param buffer Input/Output buffer to input bytes from.
      * @param size Maximum number of bytes to write on input.
@@ -89,6 +89,15 @@ class UDPSocket : public NetworkSocket
     virtual FileSystem::Result write(IOBuffer & buffer,
                                      Size & size,
                                      const Size offset);
+
+    /**
+     * Check if the File has data ready for reading.
+     *
+     * When this function returns true, it can be read without blocking.
+     *
+     * @return Boolean
+     */
+    virtual bool canRead() const;
 
     /**
      * Process incoming network packet.

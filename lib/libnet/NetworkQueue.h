@@ -87,6 +87,13 @@ class NetworkQueue
      */
     Packet * pop();
 
+    /**
+     * Check if data packets are available
+     *
+     * @return Boolean
+     */
+    bool hasData() const;
+
   private:
 
     /** Contains unused packets */

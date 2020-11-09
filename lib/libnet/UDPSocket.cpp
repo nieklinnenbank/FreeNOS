@@ -97,6 +97,11 @@ FileSystem::Result UDPSocket::write(IOBuffer & buffer,
     }
 }
 
+bool UDPSocket::canRead() const
+{
+    return m_queue.hasData();
+}
+
 FileSystem::Result UDPSocket::process(const NetworkQueue::Packet *pkt)
 {
     DEBUG("");

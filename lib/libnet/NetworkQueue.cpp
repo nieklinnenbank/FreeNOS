@@ -84,3 +84,8 @@ NetworkQueue::Packet * NetworkQueue::pop()
     }
     return ZERO;
 }
+
+bool NetworkQueue::hasData() const
+{
+    return m_data.count() > 0;
+}

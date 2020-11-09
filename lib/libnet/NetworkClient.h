@@ -86,7 +86,8 @@ class NetworkClient
     {
         Success,
         IOError,
-        NotFound
+        NotFound,
+        NotSupported
     };
 
   public:
@@ -146,6 +147,19 @@ class NetworkClient
     Result bindSocket(const int sock,
                       const IPV4::Address addr = 0,
                       const u16 port = 0);
+
+    /**
+     * Wait until the given socket has data to receive.
+     *
+     * @param type Type of socket to wait for
+     * @param sock Socket index
+     * @param msecTimeout Timeout in milliseconds to wait or ZERO for infinite wait
+     *
+     * @return Result code
+     */
+    Result waitSocket(const NetworkClient::SocketType type,
+                      const int sock,
+                      const Size msecTimeout);
 
     /**
      * Close the socket.

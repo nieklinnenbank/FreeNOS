@@ -127,6 +127,50 @@ NetworkClient::Result NetworkClient::bindSocket(const int sock,
     return writeSocketInfo(sock, addr, port, Listen);
 }
 
+NetworkClient::Result NetworkClient::waitSocket(const NetworkClient::SocketType type,
+                                                const int sock,
+                                                const Size msecTimeout)
+{
+    const FileSystemClient fs;
+    FileSystem::FileStat st;
+
+    DEBUG("type = " << (int) type << " sock = " << sock);
+
+    if (type != NetworkClient::UDP)
+    {
+        return NetworkClient::NotSupported;
+    }
+
+    // Get file descriptor of the socket
+    FileDescriptor *fd = &getFiles()[sock];
+
+    // Retrieve socket status
+    const FileSystem::Result statResult = fs.statFile(fd->path, &st);
+    if (statResult != FileSystem::Success)
+    {
+        ERROR("failed to stat socket " << sock << " at " << fd->path << ": result = " << (int) statResult);
+        return IOError;
+    }
+
+    // Prepare a wait set
+    FileSystem::WaitSet waitSet;
+    waitSet.inode     = st.inode;
+    waitSet.requested = FileSystem::Readable;
+    waitSet.current   = 0;
+
+    // Wait until the file is readable (has data)
+    const FileSystem::Result waitResult = fs.waitFile(fd->path, &waitSet, 1, msecTimeout);
+    if (waitResult != FileSystem::Success)
+    {
+        ERROR("failed to wait for socket " << sock << " with inode " <<
+               waitSet.inode << ": result = " << (int) waitResult);
+        return IOError;
+    }
+
+    // File is ready for reading
+    return Success;
+}
+
 NetworkClient::Result NetworkClient::writeSocketInfo(const int sock,
                                                      const IPV4::Address addr,
                                                      const u16 port,
