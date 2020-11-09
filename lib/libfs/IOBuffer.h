@@ -117,7 +117,7 @@ class IOBuffer
                              const Size offset = ZERO);
 
     /**
-     * Buffered read bytes from message to the I/O buffer.
+     * Buffered read bytes from the I/O buffer.
      *
      * @return Result code
      */

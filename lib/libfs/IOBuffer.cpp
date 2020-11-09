@@ -129,15 +129,17 @@ u8 * IOBuffer::getBuffer()
 
 FileSystem::Result IOBuffer::bufferedRead()
 {
-    if (m_directMapped)
+    if (!m_directMapped)
     {
-        m_count = m_message->size;
-    }
-    else
-    {
-        m_count = read(m_buffer, m_message->size, 0);
+        const FileSystem::Result result = read(m_buffer, m_message->size, 0);
+        if (result != FileSystem::Success)
+        {
+            m_count = 0;
+            return result;
+        }
     }
 
+    m_count = m_message->size;
     return FileSystem::Success;
 }
 
