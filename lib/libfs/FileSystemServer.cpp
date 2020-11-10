@@ -301,15 +301,28 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
             }
             else
             {
-                // Attempt to create the new file
-                file = createFile(msg->filetype);
-                if (!file)
+                FileSystem::FileStat st;
+                const API::Result stResult = VMCopy(msg->from, API::Read, (Address) &st,
+                                                 (Address) msg->stat, sizeof(st));
+                if (stResult != API::Success)
                 {
+                    ERROR("VMCopy failed for FileStat: result = " << (int) stResult <<
+                          " from = " << msg->from << " addr = " << (void *) msg->stat <<
+                          " action = " << (int) msg->action);
                     msg->result = FileSystem::IOError;
                 }
                 else
                 {
-                    msg->result = registerFile(file, *path.full());
+                    // Attempt to create the new file
+                    file = createFile(st.type);
+                    if (!file)
+                    {
+                        msg->result = FileSystem::IOError;
+                    }
+                    else
+                    {
+                        msg->result = registerFile(file, *path.full());
+                    }
                 }
             }
             DEBUG(m_self << ": create = " << (int)msg->result);

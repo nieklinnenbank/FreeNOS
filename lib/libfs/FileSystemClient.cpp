@@ -166,12 +166,15 @@ FileSystem::Result FileSystemClient::createFile(const char *path,
                                                 const FileSystem::FileType type,
                                                 const FileSystem::FileModes mode) const
 {
+    FileSystem::FileStat st;
+    st.type    = type;
+    st.access  = mode;
+
     FileSystemMessage msg;
-    msg.type     = ChannelMessage::Request;
-    msg.action   = FileSystem::CreateFile;
-    msg.path     = (char *)path;
-    msg.filetype = type;
-    msg.mode     = mode;
+    msg.type   = ChannelMessage::Request;
+    msg.action = FileSystem::CreateFile;
+    msg.path   = (char *)path;
+    msg.stat   = &st;
 
     return request(path, msg);
 }

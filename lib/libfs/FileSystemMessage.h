@@ -41,8 +41,6 @@ typedef struct FileSystemMessage : public ChannelMessage
     Size size;                     /**< Size of the buffer. */
     Size offset;                   /**< Offset in the file for I/O. */
     char *path;                    /**< Path name of the file. */
-    FileSystem::FileType filetype; /**< Filetype. */
-    FileSystem::FileModes mode;    /**< File mode permissions. */
     FileSystem::FileStat *stat;    /**< File Statistics. */
     ProcessID pid;                 /**< Process identifier (used for redirection) */
     Size pathMountLength;          /**< Length of the mounted path (used for redirection) */
