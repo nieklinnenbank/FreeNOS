@@ -141,7 +141,7 @@ mv ~vagrant/freebsd12.node.xml $JENKINS_HOME/nodes/freebsd12/config.xml
 
 # Apply proper GIT branch to job files
 if [ ! -z "$GIT_BRANCH" ] ; then
-    sed -i "s/<name>\*\/master<\/name>/<name>refs\/heads\/$GIT_BRANCH<\/name>/g" `find $JENKINS_HOME/jobs -maxdepth 2 -name 'config.xml'`
+    sed -i "s,<name>\*/master</name>,<name>refs/heads/$GIT_BRANCH</name>,g" `find $JENKINS_HOME/jobs -maxdepth 2 -name 'config.xml'`
 fi
 
 # Jenkins plugin list with its dependencies
