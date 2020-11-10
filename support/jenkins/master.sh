@@ -142,16 +142,18 @@ fi
 
 # Jenkins plugin list with its dependencies
 JENKINS_PLUGINS=(
-    git/4.2.2 workflow-scm-step/2.11 workflow-step-api/2.22 credentials/2.3.9 git-client/3.2.1
-              mailer/1.32 scm-api/2.6.3 script-security/1.73 ssh-credentials/1.18.1 structs/1.20
-              apache-httpcomponents-client-4-api/4.5.10-2.0 jsch/0.1.55.2 display-url-api/2.3.2
-    matrix-project/1.14 trilead-api/1.0.8
-    matrix-combinations-parameter/1.3.1 bouncycastle-api/2.18 command-launcher/1.4 jdk-tool/1.4 jaxb/2.3.0.1
+    git/4.4.5 workflow-scm-step/2.11 workflow-step-api/2.23 credentials/2.3.13 git-client/3.5.1
+              mailer/1.32.1 scm-api/2.6.4 script-security/1.75 ssh-credentials/1.18.1 structs/1.20
+              apache-httpcomponents-client-4-api/4.5.10-2.0 jsch/0.1.55.2 display-url-api/2.3.3
+    matrix-project/1.18 trilead-api/1.0.12
+    matrix-combinations-parameter/1.3.1 bouncycastle-api/2.18 command-launcher/1.5 jdk-tool/1.4 jaxb/2.3.0.1
     nodelabelparameter/1.7.2 jquery/1.12.4-1 token-macro/2.12
-    ws-cleanup/0.38 workflow-durable-task-step/2.35 workflow-api/2.40 workflow-support/3.5 durable-task/1.34 resource-disposer/0.14
-    junit/1.29 valgrind/0.24 jquery-detached/1.2.1 workflow-cps/2.83 workflow-job/2.40 ace-editor/1.1
+    ws-cleanup/0.38 workflow-durable-task-step/2.36 workflow-api/2.40 workflow-support/3.6 durable-task/1.35 resource-disposer/0.14
+    junit/1.43 valgrind/0.28 jquery-detached/1.2.1 workflow-cps/2.84 workflow-job/2.40 ace-editor/1.1
+    bootstrap4-api/4.5.3-1 plugin-util-api/1.4.0 echarts-api/4.9.0-2 jackson2-api/2.11.3 checks-api/1.1.0
+    jquery3-api/3.5.1-2 popper-api/1.16.0-7 font-awesome-api/5.15.1-1 snakeyaml-api/1.27.0
     ssh-slaves/1.31.2
-    timestamper/1.11.3
+    timestamper/1.11.8
 )
 
 # Install plugins
