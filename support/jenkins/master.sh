@@ -79,6 +79,10 @@ mv /usr/bin/daemon.bak /usr/bin/daemon
 if [ "`grep runSetupWizard /etc/default/jenkins|wc -l`" -eq "0" ] ; then
    echo 'JAVA_ARGS="$JAVA_ARGS -Djenkins.install.runSetupWizard=false"' >> /etc/default/jenkins
    echo 'JAVA_ARGS="$JAVA_ARGS -Dhudson.security.csrf.DefaultCrumbIssuer.EXCLUDE_SESSION_ID=true"' >> /etc/default/jenkins
+
+    if [ ! -z "$TIMEZONE" ] ; then
+       echo "JAVA_ARGS=\"\$JAVA_ARGS -Duser.timezone='$TIMEZONE'\"" >> /etc/default/jenkins
+    fi
 fi
 
 source /etc/default/jenkins
