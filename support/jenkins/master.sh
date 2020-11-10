@@ -23,7 +23,7 @@
 # See the README file for more details on the automated Jenkins setup.
 #
 
-JENKINS_VERSION="2.240"
+JENKINS_VERSION="2.249.3"
 
 # Include common functions
 source common.sh
@@ -57,9 +57,9 @@ run_command_retry "apt-get dist-upgrade -y"
 run_command_retry "apt-get install -y git default-jre daemon"
 
 # Add jenkins repository
-run_command_retry "wget -q -O jenkins.io.key http://pkg.jenkins.io/debian/jenkins.io.key"
+run_command_retry "wget -q -O jenkins.io.key http://pkg.jenkins.io/debian-stable/jenkins.io.key"
 apt-key add jenkins.io.key
-echo deb http://pkg.jenkins.io/debian binary/ > /etc/apt/sources.list.d/jenkins.list
+echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list
 run_command_retry "apt-get update"
 
 # Prevent automatic start of jenkins
