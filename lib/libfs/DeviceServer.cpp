@@ -20,7 +20,6 @@
 DeviceServer::DeviceServer(const char *path)
     : FileSystemServer(new Directory(1), path)
 {
-    m_interrupts.fill(ZERO);
 }
 
 DeviceServer::~DeviceServer()
@@ -61,20 +60,32 @@ void DeviceServer::registerDevice(Device *dev, const char *path)
     FileSystemServer::registerFile(dev, path);
 
     // Add to the list of Devices
-    m_devices.insert(dev);
+    const bool result = m_devices.insert(dev);
+    assert(result);
 }
 
 void DeviceServer::registerInterrupt(Device *dev, Size vector)
 {
-    if (!m_interrupts[vector])
+    if (!m_interrupts.get(vector))
     {
-        m_interrupts.insert(vector, new List<Device *>);
+        m_interrupts.insertAt(vector, new List<Device *>);
     }
     m_interrupts[vector]->append(dev);
 
     // Register to kernel
-    ProcessCtl(SELF, WatchIRQ, vector);
-    ProcessCtl(SELF, EnableIRQ, vector);
+    const API::Result watchResult = ProcessCtl(SELF, WatchIRQ, vector);
+    if (watchResult != API::Success)
+    {
+        ERROR("failed to register IRQ handler using WatchIRQ: result = " << (int) watchResult);
+        return;
+    }
+
+    const API::Result enableResult = ProcessCtl(SELF, EnableIRQ, vector);
+    if (enableResult != API::Success)
+    {
+        ERROR("failed to enable IRQ handler using EnableIRQ: result = " << (int) enableResult);
+        return;
+    }
 
     // Register interrupt handler
     addIRQHandler(vector, (IRQHandlerFunction) &DeviceServer::interruptHandler);
@@ -82,7 +93,7 @@ void DeviceServer::registerInterrupt(Device *dev, Size vector)
 
 void DeviceServer::interruptHandler(Size vector)
 {
-    List<Device *> *lst = m_interrupts.at(vector);
+    List<Device *> *lst = m_interrupts.get(vector);
 
     // Do we have any Devices with this interrupt vector?
     if (lst)

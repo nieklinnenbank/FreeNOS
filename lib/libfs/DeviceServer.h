@@ -18,6 +18,8 @@
 #ifndef __LIB_LIBFS_DEVICESERVER_H
 #define __LIB_LIBFS_DEVICESERVER_H
 
+#include <Index.h>
+#include <List.h>
 #include "FileSystemServer.h"
 
 /**
@@ -40,6 +42,14 @@
  */
 class DeviceServer : public FileSystemServer
 {
+  private:
+
+    /** Maximum number of Devices that can be registered */
+    static const Size MaximumDevices = 32;
+
+    /** Maximum number of interrupts that can be registered */
+    static const Size MaximumInterrupts = 256;
+
   public:
 
     /**
@@ -99,19 +109,19 @@ class DeviceServer : public FileSystemServer
   private:
 
     /** Contains all Devices served by this DeviceServer. */
-    Vector<Device *> m_devices;
+    Index<Device, MaximumDevices> m_devices;
 
     /**
      * @brief Registers Devices using interrupts.
      *
-     * An Vector with Lists of Devices using the
+     * An Index with Lists of Devices using the
      * interrupt vector as index.
      *
-     * @see Vector
+     * @see Index
      * @see List
      * @see Device
      */
-    Vector<List<Device *> *> m_interrupts;
+    Index<List<Device *>, MaximumInterrupts> m_interrupts;
 };
 
 /**
