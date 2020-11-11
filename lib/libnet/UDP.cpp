@@ -234,8 +234,8 @@ const u16 UDP::checksum(const IPV4::Header *ip,
     // Setup a pseudo header
     phr.reserved = 0;
     phr.protocol = IPV4::UDP;
-    write32(&phr.source, ip->source);
-    write32(&phr.destination, ip->destination);
+    phr.source = read32(&ip->source);
+    phr.destination = read32(&ip->destination);
     writeBe16(&phr.length, sizeof(Header) + datalen);
     DEBUG("ip src = " << *IPV4::toString(phr.source) <<
           " dst = " << *IPV4::toString(phr.destination));
