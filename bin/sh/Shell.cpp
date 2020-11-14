@@ -188,7 +188,7 @@ int Shell::executeInput(const Size argc, const char **argv, const bool backgroun
         }
 
         // Try to find it on the filesystem. (temporary hardcoded PATH)
-        else if (snprintf(tmp, sizeof(tmp), "/bin/%s", argv[0]) &&
+        else if (argv[0][0] != '/' && snprintf(tmp, sizeof(tmp), "/bin/%s", argv[0]) &&
                 (pid = runProgram(tmp, argv)) != -1)
         {
             if (!background)
