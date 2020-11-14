@@ -15,10 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __HOST__
 #include <FreeNOS/System.h>
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -30,26 +27,6 @@
 #include <MemoryBlock.h>
 #include <ByteOrder.h>
 #include "NetSend.h"
-
-//
-// Send manual formatted network packets:
-//
-//   $ netsend smsc --arp --dest=192.168.1.123
-//
-// Receive and dump network packets:
-//
-//   $ netrecv smsc
-//
-// Change device parameters:
-//
-//   $ devctl smsc ip_address=192.168.1.2 ether_address=00:11:22:33:44:55
-//   $ devctl serial0 baudrate=9600
-//
-// Show device status and statistics:
-//
-//   $ devstat smsc
-//   $ devstat serial0
-//
 
 NetSend::NetSend(int argc, char **argv)
     : POSIXApplication(argc, argv)
@@ -77,7 +54,6 @@ NetSend::Result NetSend::exec()
 NetSend::Result NetSend::arpRequest(IPV4::Address ipAddr,
                                     Ethernet::Address *ethAddr)
 {
-#ifndef __HOST__
     u8 packet[ sizeof(Ethernet::Header) +
                sizeof(ARP::Header) ];
 
@@ -125,7 +101,7 @@ NetSend::Result NetSend::arpRequest(IPV4::Address ipAddr,
         exit(EXIT_FAILURE);
     }
     printf("send %d bytes\r\n", r);
-#endif
+
     // Done
     return Success;
 }

@@ -28,26 +28,6 @@
 #include <MemoryBlock.h>
 #include "NetReceive.h"
 
-//
-// Send manual formatted network packets:
-//
-//   $ netsend smsc --arp --dest=192.168.1.123
-//
-// Receive and dump network packets:
-//
-//   $ netrecv smsc
-//
-// Change device parameters:
-//
-//   $ devctl smsc ip_address=192.168.1.2 ether_address=00:11:22:33:44:55
-//   $ devctl serial0 baudrate=9600
-//
-// Show device status and statistics:
-//
-//   $ devstat smsc
-//   $ devstat serial0
-//
-
 NetReceive::NetReceive(int argc, char **argv)
     : POSIXApplication(argc, argv)
 {
@@ -69,8 +49,7 @@ NetReceive::Result NetReceive::exec()
 
 NetReceive::Result NetReceive::receiveArp()
 {
-    u8 packet[1500];// sizeof(Ethernet::Header) +
-                    // sizeof(ARP::Header) ];
+    u8 packet[1500];
 
     while (true)
     {
