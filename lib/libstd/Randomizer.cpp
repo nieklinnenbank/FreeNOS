@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Niek Linnenbank
+ * Copyright (C) 2020 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,16 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Randomizer.h>
+#include "Randomizer.h"
 
-extern C void srandom(unsigned int new_seed)
+ulong Randomizer::m_value = 1;
+
+void Randomizer::seed(const ulong value)
 {
-    Randomizer rand;
-    rand.seed(new_seed);
+    m_value = value;
 }
 
-extern C long int random(void)
+ulong Randomizer::next()
 {
-    Randomizer rand;
-    return rand.next();
+    m_value = (Multiplier * m_value + Constant) % Modulus;
+    return m_value;
 }
