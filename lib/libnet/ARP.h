@@ -218,9 +218,6 @@ class ARP : public NetworkProtocol
     /** IPV4 instance object */
     ::IPV4 *m_ip;
 
-    /** Ethernet instance */
-    ::Ethernet *m_ether;
-
     /** Contains a cached mapping from IP to Ethernet addresses */
     HashTable<IPV4::Address, ARPCache *> m_cache;
 
