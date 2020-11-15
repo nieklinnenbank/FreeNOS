@@ -25,6 +25,7 @@
 #include <FileDescriptor.h>
 #include <MemoryMap.h>
 #include <Memory.h>
+#include <Randomizer.h>
 #include "PageAllocator.h"
 #include "KernelLog.h"
 #include "Runtime.h"
@@ -147,6 +148,16 @@ void setupMappings()
     }
 }
 
+void setupRandomizer()
+{
+    const ProcessID pid = ProcessCtl(SELF, GetPID);
+    Timer::Info timer;
+    ProcessCtl(SELF, InfoTimer, (Address) &timer);
+
+    Randomizer rand;
+    rand.seed(pid + timer.ticks);
+}
+
 extern C void SECTION(".entry") _entry()
 {
     int ret, argc;
@@ -162,6 +173,7 @@ extern C void SECTION(".entry") _entry()
     setupHeap();
     runConstructors();
     setupMappings();
+    setupRandomizer();
 
     // Allocate buffer for arguments
     argc = 0;
