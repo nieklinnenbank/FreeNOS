@@ -16,7 +16,7 @@
  */
 
 #include <ByteOrder.h>
-#include <stdlib.h>
+#include <Randomizer.h>
 #include "Ethernet.h"
 #include "UDP.h"
 #include "UDPSocket.h"
@@ -85,7 +85,10 @@ FileSystem::Result UDPSocket::write(IOBuffer & buffer,
         buffer.read(&m_info, sizeof(m_info));
 
         if (m_info.port == 0)
-            m_info.port = random() % 65535;
+        {
+            Randomizer rand;
+            m_info.port = rand.next() % 65535;
+        }
 
         DEBUG("addr =" << m_info.address << " port = " << m_info.port);
 
