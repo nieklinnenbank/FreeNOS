@@ -26,41 +26,6 @@ IntelPaging::IntelPaging(MemoryMap *map, SplitAllocator *alloc)
     , m_pageDirectoryAddr(0)
     , m_pageDirectoryAllocated(false)
 {
-    IntelCore core;
-    Allocator::Range phys, virt;
-
-    phys.address = 0;
-    phys.size = sizeof(IntelPageDirectory);
-    phys.alignment = sizeof(IntelPageDirectory);
-
-    // Allocate page directory from low physical memory.
-    if (alloc->allocate(phys, virt) == Allocator::Success)
-    {
-        m_pageDirectoryAllocated = true;
-        m_pageDirectoryAddr = phys.address;
-        m_pageDirectory = (IntelPageDirectory *) virt.address;
-
-        // Initialize the page directory
-        MemoryBlock::set(m_pageDirectory, 0, sizeof(IntelPageDirectory));
-
-        // Lookup the currently active page directory
-        IntelPageDirectory *currentDirectory =
-            (IntelPageDirectory *) alloc->toVirtual(core.readCR3());
-
-        // Inherit kernel mappings. The kernel has permanently mapped 1GB of
-        // physical memory (i.e. the "low memory" in SplitAllocator). The low
-        // memory starts at its physical base address offset (varies per core).
-        Memory::Range kdata = m_map->range(MemoryMap::KernelData);
-        m_pageDirectory->copy(currentDirectory,
-                              kdata.virt,
-                              kdata.virt + kdata.size);
-
-        // Also inherit kernel private mappings, such as APIC mappings.
-        kdata = m_map->range(MemoryMap::KernelPrivate);
-        m_pageDirectory->copy(currentDirectory,
-                              kdata.virt,
-                              kdata.virt + kdata.size);
-    }
 }
 
 IntelPaging::IntelPaging(MemoryMap *map, Address pageDirectory, SplitAllocator *alloc)
@@ -77,6 +42,54 @@ IntelPaging::~IntelPaging()
     {
         m_alloc->release(m_pageDirectoryAddr);
     }
+}
+
+MemoryContext::Result IntelPaging::initialize()
+{
+    if (m_pageDirectoryAddr != 0)
+    {
+        return MemoryContext::Success;
+    }
+
+    IntelCore core;
+    Allocator::Range phys, virt;
+
+    phys.address = 0;
+    phys.size = sizeof(IntelPageDirectory);
+    phys.alignment = sizeof(IntelPageDirectory);
+
+    // Allocate page directory from low physical memory.
+    if (m_alloc->allocate(phys, virt) != Allocator::Success)
+    {
+        return MemoryContext::OutOfMemory;
+    }
+
+    m_pageDirectoryAllocated = true;
+    m_pageDirectoryAddr = phys.address;
+    m_pageDirectory = (IntelPageDirectory *) virt.address;
+
+    // Initialize the page directory
+    MemoryBlock::set(m_pageDirectory, 0, sizeof(IntelPageDirectory));
+
+    // Lookup the currently active page directory
+    IntelPageDirectory *currentDirectory =
+        (IntelPageDirectory *) m_alloc->toVirtual(core.readCR3());
+
+    // Inherit kernel mappings. The kernel has permanently mapped 1GB of
+    // physical memory (i.e. the "low memory" in SplitAllocator). The low
+    // memory starts at its physical base address offset (varies per core).
+    Memory::Range kdata = m_map->range(MemoryMap::KernelData);
+    m_pageDirectory->copy(currentDirectory,
+                          kdata.virt,
+                          kdata.virt + kdata.size);
+
+    // Also inherit kernel private mappings, such as APIC mappings.
+    kdata = m_map->range(MemoryMap::KernelPrivate);
+    m_pageDirectory->copy(currentDirectory,
+                          kdata.virt,
+                          kdata.virt + kdata.size);
+
+    return MemoryContext::Success;
 }
 
 MemoryContext::Result IntelPaging::activate(bool initializeMMU)

@@ -48,6 +48,7 @@ IntelKernel::IntelKernel(CoreInfo *info)
 
     // Refresh MemoryContext::current()
     IntelPaging memContext(&map, core.readCR3(), m_alloc);
+    memContext.initialize();
     memContext.activate();
 
     // Install interruptRun() callback

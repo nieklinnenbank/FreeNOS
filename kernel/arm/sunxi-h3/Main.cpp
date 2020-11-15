@@ -63,6 +63,7 @@ extern C int kernel_main(void)
     ARMPaging paging(&mem, (Address) &tmpPageDir, memoryBaseAddr);
 
     // Activate MMU
+    paging.initialize();
     paging.activate(true);
 
     // Fill coreInfo for boot core

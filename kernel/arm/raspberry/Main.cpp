@@ -59,6 +59,7 @@ extern C int kernel_main(void)
     ARMPaging paging(&mem, (Address) &tmpPageDir, RAM_ADDR);
 
     // Activate MMU
+    paging.initialize();
     paging.activate(true);
 
     // Clear BSS

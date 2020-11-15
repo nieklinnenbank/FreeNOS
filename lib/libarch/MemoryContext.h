@@ -76,6 +76,13 @@ class MemoryContext
     static MemoryContext * getCurrent();
 
     /**
+     * Initialize the MemoryContext
+     *
+     * @return Result code
+     */
+    virtual Result initialize() = 0;
+
+    /**
      * Activate the MemoryContext.
      *
      * This function applies this MemoryContext on the hardware MMU.

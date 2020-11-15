@@ -40,6 +40,14 @@ Process::Result IntelProcess::initialize()
         return OutOfMemory;
     }
 
+    // Initialize MMU context
+    const MemoryContext::Result memResult = m_memoryContext->initialize();
+    if (memResult != MemoryContext::Success)
+    {
+        ERROR("failed to initialize MemoryContext: result = " << (int) memResult);
+        return OutOfMemory;
+    }
+
     // Allocate User stack
     range = m_map.range(MemoryMap::UserStack);
     range.access = Memory::Readable | Memory::Writable | Memory::User;

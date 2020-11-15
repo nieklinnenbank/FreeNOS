@@ -66,6 +66,13 @@ class ARMPaging : public MemoryContext
     virtual ~ARMPaging();
 
     /**
+     * Initialize the MemoryContext
+     *
+     * @return Result code
+     */
+    virtual Result initialize();
+
+    /**
      * Activate the MemoryContext.
      *
      * This function applies this MemoryContext on the hardware MMU.
@@ -166,6 +173,9 @@ class ARMPaging : public MemoryContext
 
     /** Physical address of the first level page table. */
     Address m_firstTableAddr;
+
+    /** Kernel base address */
+    Address m_kernelBaseAddr;
 
     /** Caching implementation */
     Arch::Cache m_cache;

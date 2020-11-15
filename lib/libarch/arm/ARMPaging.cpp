@@ -27,40 +27,50 @@
 
 ARMPaging::ARMPaging(MemoryMap *map, SplitAllocator *alloc)
     : MemoryContext(map, alloc)
+    , m_firstTable(0)
+    , m_firstTableAddr(0)
+    , m_kernelBaseAddr(coreInfo.memory.phys)
 {
-    Allocator::Range phys, virt;
-    phys.address = 0;
-    phys.size = sizeof(ARMFirstTable);
-    phys.alignment = sizeof(ARMFirstTable);
-
-    // Allocate page directory
-    if (alloc->allocate(phys, virt) == Allocator::Success)
-    {
-        m_firstTable = (ARMFirstTable *) virt.address;
-        setupFirstTable(map, phys.address, coreInfo.memory.phys);
-    }
 }
 
 ARMPaging::~ARMPaging()
 {
-    for (Size i = 0; i < sizeof(ARMFirstTable); i += PAGESIZE)
-        m_alloc->release(m_firstTableAddr + i);
+    if (m_firstTableAddr != 0)
+    {
+        for (Size i = 0; i < sizeof(ARMFirstTable); i += PAGESIZE)
+            m_alloc->release(m_firstTableAddr + i);
+    }
 }
 
 ARMPaging::ARMPaging(MemoryMap *map,
                      Address firstTableAddress,
                      Address kernelBaseAddress)
     : MemoryContext(map, ZERO)
+    , m_firstTable((ARMFirstTable *) firstTableAddress)
+    , m_firstTableAddr(firstTableAddress)
+    , m_kernelBaseAddr(kernelBaseAddress)
 {
-    m_firstTable = (ARMFirstTable *) firstTableAddress;
-    setupFirstTable(map, firstTableAddress, kernelBaseAddress);
 }
 
-void ARMPaging::setupFirstTable(MemoryMap *map,
-                                Address firstTableAddress,
-                                Address kernelBaseAddress)
+MemoryContext::Result ARMPaging::initialize()
 {
-    m_firstTableAddr = firstTableAddress;
+    // Allocate first page table if needed
+    if (m_firstTable == 0)
+    {
+        Allocator::Range phys, virt;
+        phys.address = 0;
+        phys.size = sizeof(ARMFirstTable);
+        phys.alignment = sizeof(ARMFirstTable);
+
+        // Allocate page directory
+        if (m_alloc->allocate(phys, virt) != Allocator::Success)
+        {
+            return MemoryContext::OutOfMemory;
+        }
+
+        m_firstTable = (ARMFirstTable *) virt.address;
+        m_firstTableAddr = phys.address;
+    }
 
     // Initialize the page directory
     MemoryBlock::set(m_firstTable, 0, sizeof(ARMFirstTable));
@@ -69,7 +79,7 @@ void ARMPaging::setupFirstTable(MemoryMap *map,
     // physical memory. This 1GiB memory region starts at its physical
     // base address offset which varies per core.
     Memory::Range kernelRange = m_map->range(MemoryMap::KernelData);
-    kernelRange.phys = kernelBaseAddress;
+    kernelRange.phys = m_kernelBaseAddr;
     m_firstTable->mapLarge(kernelRange, m_alloc);
 
 #ifndef BCM2835
@@ -95,6 +105,8 @@ void ARMPaging::setupFirstTable(MemoryMap *map,
     io.size = IO_SIZE;
     io.access = Memory::Readable | Memory::Writable | Memory::Device;
     m_firstTable->mapLarge(io, m_alloc);
+
+    return MemoryContext::Success;
 }
 
 #ifdef ARMV6

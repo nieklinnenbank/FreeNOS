@@ -72,6 +72,13 @@ class IntelPaging : public MemoryContext
     virtual ~IntelPaging();
 
     /**
+     * Initialize the MemoryContext
+     *
+     * @return Result code
+     */
+    virtual Result initialize();
+
+    /**
      * Activate the MemoryContext.
      *
      * This function applies this MemoryContext on the hardware MMU.
