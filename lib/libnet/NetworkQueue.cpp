@@ -19,7 +19,6 @@
 
 NetworkQueue::NetworkQueue(const Size packetSize,
                            const Size queueSize)
-    : m_packetSize(packetSize)
 {
     assert(queueSize <= MaxPackets);
 

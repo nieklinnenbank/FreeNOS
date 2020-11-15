@@ -101,9 +101,6 @@ class NetworkQueue
 
     /** Contains packets with data */
     Index<Packet, MaxPackets> m_data;
-
-    /** Size of each packet */
-    const Size m_packetSize;
 };
 
 /**
