@@ -22,7 +22,7 @@
 #include <mpi.h>
 #include <unistd.h>
 #include <String.h>
-#include <sys/time.h>
+#include <SystemClock.h>
 
 // Start and end
 #define PERNODE(id, nids, base, n)  (((n) - (base)) / (nids))
@@ -86,21 +86,20 @@ void search_sequential(int k, int n, unsigned *map, int argc, char **argv)
 
 void search_parallel(int k, int n, unsigned *map, int argc, char **argv)
 {
-    struct timeval t1, t2;
-    struct timezone tz;
-    gettimeofday(&t1, &tz);
+    SystemClock t1, t2;
     int i, last, sqrt_of_n = sqrt(n);
 
     // Find all primes below sqrt(n) sequentially
+    t1.now();
     search_sequential(k, sqrt_of_n, map, argc, argv);
 
     if (rank == 0)
     {
-        gettimeofday(&t2, &tz);
+        t2.now();
         printf("sequential: ");
-        printtimediff(&t1, &t2);
-        printf("\r\n");
-        gettimeofday(&t1, &tz);
+        t1.printDiff(t2);
+
+        t1.now();
     }
 
     // Every worker calculates all primes k .. sqrt(n) sequentially
@@ -132,22 +131,22 @@ void search_parallel(int k, int n, unsigned *map, int argc, char **argv)
     }
     if (rank == 0)
     {
-        gettimeofday(&t2, &tz);
+        t2.now();
         printf("parallel: ");
-        printtimediff(&t1, &t2);
-        printf("\r\n");
+        t1.printDiff(t2);
     }
 
     // Collect results of all workers
-    gettimeofday(&t1, &tz);
+    t1.now();
     collect(n, map);
 
     if (rank == 0)
     {
-        gettimeofday(&t2, &tz);
+        t2.now();
         printf("collect: ");
-        printtimediff(&t1, &t2);
-        printf("\r\n");
+        t1.printDiff(t2);
+
+        t1.now();
     }
 }
 
@@ -156,22 +155,20 @@ int main(int argc, char **argv)
     int n, k, i;
     unsigned *map;
     String output;
-    struct timeval t1, t2;
-    struct timezone tz;
+    SystemClock t1, t2;
 
     // Initialize MPI
-    gettimeofday(&t1, &tz);
+    t1.now();
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &total);
     MPI_Get_processor_name(name, &length);
-    gettimeofday(&t2, &tz);
+    t2.now();
 
     if (rank == 0)
     {
         printf("MPI_Init: ");
-        printtimediff(&t1, &t2);
-        printf("\r\n");
+        t1.printDiff(t2);
     }
 
     // Check arguments
@@ -180,7 +177,7 @@ int main(int argc, char **argv)
         printf("usage: %s <number> [--stdout]\r\n", argv[0]);
         return EXIT_FAILURE;
     }
-    gettimeofday(&t1, &tz);
+    t1.now();
     n = atoi(argv[1]);
 
     // Make sure n is divisible by the number of workers
@@ -197,25 +194,22 @@ int main(int argc, char **argv)
 
     // We start with 2
     k = 2;
-    gettimeofday(&t2, &tz);
+    t2.now();
 
     if (rank == 0)
     {
         printf("Setup: ");
-        printtimediff(&t1, &t2);
-        printf("\r\n");
+        t1.printDiff(t2);
     }
 
     // Search for primes until done
-    gettimeofday(&t1, &tz);
+    t1.now();
     search_parallel(k, n, map, argc, argv);
-    gettimeofday(&t2, &tz);
-    
-    printf("Search_parallel: ");
-    printtimediff(&t1, &t2);
-    printf("\r\n");
+    t2.now();
 
-    gettimeofday(&t1, &tz);
+    printf("Search_parallel: ");
+    t1.printDiff(t2);
+    t1.now();
 
     // Only the master reports the results.
     if (rank == 0 && argc >= 3 && strcmp(argv[2], "--stdout") == 0)
@@ -236,10 +230,9 @@ int main(int argc, char **argv)
 
     if (rank == 0)
     {
-        gettimeofday(&t2, &tz);
+        t2.now();
         printf("Finalize: ");
-        printtimediff(&t1, &t2);
-        printf("\r\n");
+        t1.printDiff(t2);
     }
     return EXIT_SUCCESS;
 }

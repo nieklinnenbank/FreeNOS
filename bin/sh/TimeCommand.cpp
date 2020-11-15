@@ -22,8 +22,8 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/wait.h>
-#include <sys/time.h>
 #include <Log.h>
+#include <SystemClock.h>
 #include "Shell.h"
 #include "TimeCommand.h"
 
@@ -34,26 +34,12 @@ TimeCommand::TimeCommand(Shell *shell)
     m_help = "Measure the execution time of a program";
 }
 
-static int local_printtimediff(const struct timeval *t1,
-                               const struct timeval *t2)
-{
-    u64 usec1 = (t1->tv_sec * 1000000) + (t1->tv_usec);
-    u64 usec2 = (t2->tv_sec * 1000000) + (t2->tv_usec);
-
-    // Print time measured
-    printf("%us %uusec",
-            (uint) ((usec2 - usec1) / 1000000),
-            (uint) ((usec2 - usec1) % 1000000));
-    return 0;
-}
-
 int TimeCommand::execute(const Size nparams, const char **params)
 {
-    struct timeval t1, t2;
-    struct timezone zone;
+    SystemClock t1, t2;
 
     // Get timestamp before
-    gettimeofday(&t1, &zone);
+    t1.now();
 
     // Run command
     int result = m_shell->executeInput(nparams, params, false);
@@ -63,11 +49,10 @@ int TimeCommand::execute(const Size nparams, const char **params)
     }
 
     // Get timestamp after
-    gettimeofday(&t2, &zone);
+    t2.now();
 
     // Print time measured
     printf("\r\nTime: ");
-    local_printtimediff(&t1, &t2);
-    printf("\r\n");
+    t1.printDiff(t2);
     return result;
 }

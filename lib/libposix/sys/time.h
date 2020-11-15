@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBPOSIX_TIME_H
-#define __LIBPOSIX_TIME_H
+#ifndef __LIB_LIBPOSIX_TIME_H
+#define __LIB_LIBPOSIX_TIME_H
 
 #include <Macros.h>
 #include "types.h"
@@ -64,18 +64,8 @@ struct timezone
 extern C int gettimeofday(struct timeval *tv, struct timezone *tz);
 
 /**
- * Print time difference.
- *
- * @param t1 First timeval struct.
- * @param t2 Second timeval struct.
- *
- * @return Zero on success or -1 on failure.
- */
-extern C int printtimediff(struct timeval *t1, struct timeval *t2);
-
-/**
  * @}
  * @}
  */
 
-#endif /* __LIBPOSIX_TIME_H */
+#endif /* __LIB_LIBPOSIX_TIME_H */
