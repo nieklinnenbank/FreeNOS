@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBPOSIX_STAT_H
-#define __LIBPOSIX_STAT_H
+#ifndef __LIB_LIBPOSIX_SYS_STAT_H
+#define __LIB_LIBPOSIX_SYS_STAT_H
 
 #include <FileSystem.h>
 #include <Macros.h>
@@ -31,6 +31,18 @@
  * @addtogroup libposix
  * @{
  */
+
+/** Number of bits needed to store a FileType. */
+#define FILETYPE_BITS   3
+
+/** Masker value for all FileTypes. */
+#define FILETYPE_MASK   7
+
+/** Number of bits required for all FileModes. */
+#define FILEMODE_BITS 9
+
+/** Masker value for all FileMode values. */
+#define FILEMODE_MASK 0777
 
 /**
  * @name File stat type bits.
@@ -309,4 +321,4 @@ extern C int creat(const char *path, mode_t mode);
  * @}
  */
 
-#endif /* __LIBPOSIX_STAT_H */
+#endif /* __LIB_LIBPOSIX_SYS_STAT_H */

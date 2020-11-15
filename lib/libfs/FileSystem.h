@@ -28,53 +28,6 @@
  * @{
  */
 
-/** Number of bits needed to store a FileType. */
-#define FILETYPE_BITS   3
-
-/** Masker value for all FileTypes. */
-#define FILETYPE_MASK   7
-
-/**
- * Convert from a (host system's) POSIX struct stat into a FileType.
- *
- * @param st struct stat pointer.
- *
- * @return FileType value.
- */
-#define FILETYPE_FROM_ST(st) \
-({ \
-    FileSystem::FileType t = FileSystem::UnknownFile; \
-    \
-    switch ((st)->st_mode & S_IFMT) \
-    { \
-        case S_IFBLK:  t = FileSystem::BlockDeviceFile; break; \
-        case S_IFCHR:  t = FileSystem::CharacterDeviceFile; break; \
-        case S_IFIFO:  t = FileSystem::FIFOFile; break; \
-        case S_IFREG:  t = FileSystem::RegularFile; break; \
-        case S_IFDIR:  t = FileSystem::DirectoryFile; break; \
-        case S_IFLNK:  t = FileSystem::SymlinkFile; break; \
-        case S_IFSOCK: t = FileSystem::SocketFile; break; \
-        default: break; \
-    } \
-    t; \
-})
-
-/** Number of bits required for all FileModes. */
-#define FILEMODE_BITS 9
-
-/** Masker value for all FileMode values. */
-#define FILEMODE_MASK 0777
-
-/**
- * Converts an (host system's) POSIX struct st into a FileMode.
- *
- * @param st struct st pointer.
- *
- * @return FileMode value.
- */
-#define FILEMODE_FROM_ST(st) \
-    (FileSystem::FileMode)((st)->st_mode & FILEMODE_MASK)
-
 namespace FileSystem
 {
     /**
