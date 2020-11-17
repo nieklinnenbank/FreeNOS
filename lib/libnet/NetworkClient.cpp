@@ -142,7 +142,11 @@ NetworkClient::Result NetworkClient::waitSocket(const NetworkClient::SocketType 
     }
 
     // Get file descriptor of the socket
-    FileDescriptor *fd = &getFiles()[sock];
+    FileDescriptor::Entry *fd = FileDescriptor::instance()->getEntry(sock);
+    if (!fd || !fd->open)
+    {
+        return NetworkClient::NotFound;
+    }
 
     // Retrieve socket status
     const FileSystem::Result statResult = fs.statFile(fd->path, &st);
@@ -189,8 +193,14 @@ NetworkClient::Result NetworkClient::writeSocketInfo(const int sock,
         return IOError;
     }
 
+    // Get file descriptor of the socket
+    FileDescriptor::Entry *fd = FileDescriptor::instance()->getEntry(sock);
+    if (!fd || !fd->open)
+    {
+        return NetworkClient::NotFound;
+    }
+
     // Update the file descriptor path
-    FileDescriptor *fd = &getFiles()[sock];
     MemoryBlock::copy(fd->path, buf, sizeof(buf));
 
     // Write address+port+action info to the socket

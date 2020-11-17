@@ -27,42 +27,31 @@
 int open(const char *path, int oflag, ...)
 {
     const FileSystemClient filesystem;
-    FileDescriptor *files = getFiles();
     FileSystem::FileStat st;
 
     // Ask the FileSystem for the file.
-    if (files != NULL)
+    const FileSystem::Result result = filesystem.statFile(path, &st);
+    if (result == FileSystem::Success)
     {
-        const FileSystem::Result result = filesystem.statFile(path, &st);
-
-        // Set errno
-        if (result == FileSystem::Success)
+        // Insert into file descriptor table
+        Size idx = 0;
+        const FileDescriptor::Result result = FileDescriptor::instance()->openEntry(path, idx);
+        if (result != FileDescriptor::Success)
         {
-            errno = ESUCCESS;
-
-            // Insert into file descriptor table
-            for (Size i = 0; i < FILE_DESCRIPTOR_MAX; i++)
-            {
-                if (!files[i].open)
-                {
-                    files[i].open  = true;
-                    files[i].identifier = 0;
-                    files[i].position = 0;
-                    strlcpy(files[i].path, path, PATH_MAX);
-                    return i;
-                }
-            }
-
             // Too many open files
             errno = ENFILE;
+            return -1;
         }
         else
         {
-            errno = EIO;
+            errno = ESUCCESS;
+            return (int) idx;
         }
     }
     else
+    {
+        // File not found
         errno = ENOENT;
-
-    return -1;
+        return -1;
+    }
 }

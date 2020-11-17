@@ -21,23 +21,16 @@
 
 off_t lseek(int fildes, off_t offset, int whence)
 {
-    FileDescriptor *files = getFiles();
-
-    if (fildes >= FILE_DESCRIPTOR_MAX || fildes < 0)
-    {
-        errno = ERANGE;
-        return -1;
-    }
-
     // Do we have this file descriptor?
-    if (!files[fildes].open)
+    FileDescriptor::Entry *fd = FileDescriptor::instance()->getEntry(fildes);
+    if (!fd || !fd->open)
     {
         errno = ENOENT;
         return -1;
     }
 
-    // Update the file pointer
-    files[fildes].position = offset;
+    // Update the file position pointer
+    fd->position = offset;
 
     // Done
     return 0;

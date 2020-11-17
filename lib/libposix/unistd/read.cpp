@@ -22,16 +22,9 @@
 
 ssize_t read(int fildes, void *buf, size_t nbyte)
 {
-    FileDescriptor *files = getFiles();
-
-    if (fildes >= FILE_DESCRIPTOR_MAX || fildes < 0)
-    {
-        errno = ERANGE;
-        return -1;
-    }
-
     // Do we have this file descriptor?
-    if (!files[fildes].open)
+    FileDescriptor::Entry *fd = FileDescriptor::instance()->getEntry(fildes);
+    if (!fd || !fd->open)
     {
         errno = ENOENT;
         return -1;
@@ -39,10 +32,10 @@ ssize_t read(int fildes, void *buf, size_t nbyte)
 
     // Read the file.
     const FileSystemClient filesystem;
-    const FileSystem::Result result = filesystem.readFile(files[fildes].path,
+    const FileSystem::Result result = filesystem.readFile(fd->path,
                                                           (char *)buf,
                                                          &nbyte,
-                                                          files[fildes].position);
+                                                          fd->position);
 
     // Did the read succeed?
     if (result != FileSystem::Success)
@@ -51,6 +44,6 @@ ssize_t read(int fildes, void *buf, size_t nbyte)
         return -1;
     }
 
-    files[fildes].position += nbyte;
+    fd->position += nbyte;
     return nbyte;
 }

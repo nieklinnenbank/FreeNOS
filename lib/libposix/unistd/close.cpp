@@ -21,20 +21,12 @@
 
 int close(int fildes)
 {
-    FileDescriptor *files = getFiles();
-
-    if (fildes >= FILE_DESCRIPTOR_MAX || fildes < 0)
-    {
-        errno = ERANGE;
-        return -1;
-    }
-
-    if (!files[fildes].open)
+    const FileDescriptor::Result result = FileDescriptor::instance()->closeEntry(fildes);
+    if (result != FileDescriptor::Success)
     {
         errno = ENOENT;
         return -1;
     }
 
-    files[fildes].open = false;
     return 0;
 }

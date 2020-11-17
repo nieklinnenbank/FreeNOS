@@ -155,7 +155,7 @@ int spawn(Address program, Size programSize, const char *argv[])
     }
 
     // Copy fds into the new process.
-    if (VMCopy(pid, API::Write, (Address) getFiles(),
+    if (VMCopy(pid, API::Write, (Address) FileDescriptor::instance()->getArray(count),
                range.virt + (PAGESIZE * 2), range.size - (PAGESIZE * 2)) != API::Success)
     {
         delete[] arguments;

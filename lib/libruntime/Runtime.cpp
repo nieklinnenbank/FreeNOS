@@ -137,13 +137,17 @@ void setupMappings()
     filesystem.setCurrentDirectory(new String((char *) argRange.virt + PAGESIZE, false));
 
     // Third page and above contain the file descriptors table
-    setFiles((FileDescriptor *) (argRange.virt + (PAGESIZE * 2)));
+    FileDescriptor::instance()->setArray((FileDescriptor::Entry *) (argRange.virt + (PAGESIZE * 2)),
+                                         (argRange.size - (PAGESIZE * 2)) / sizeof(FileDescriptor::Entry));
 
     // Inherit file descriptors table from parent (if any).
     // Without a parent, just clear the file descriptors
     if (ProcessCtl(SELF, GetParent) == 0)
     {
-        MemoryBlock::set(getFiles(), 0, argRange.size - (PAGESIZE * 2));
+        Size count = 0;
+        FileDescriptor::Entry *array = FileDescriptor::instance()->getArray(count);
+
+        MemoryBlock::set(array, 0, count * sizeof(FileDescriptor::Entry));
         filesystem.setCurrentDirectory(String("/"));
     }
 }
