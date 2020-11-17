@@ -19,10 +19,6 @@
 #include <String.h>
 #include <FileSystemClient.h>
 #include <FileDescriptor.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <string.h>
-#include <errno.h>
 #include "NetworkClient.h"
 #include "ARP.h"
 #include "ARPSocket.h"
@@ -49,7 +45,9 @@ NetworkClient::Result NetworkClient::initialize()
     // Find closest matching device
     for (Size i = 0; i < numberOfMounts; i++)
     {
-        if (mounts[i].path[0] && strncmp(mounts[i].path, "/network/", 9) == 0)
+        const String mountPath(mounts[i].path);
+
+        if (mountPath.length() > 0 && mountPath.compareTo("/network/", true, 9) == 0)
         {
             Size len = 0;
 
@@ -82,6 +80,8 @@ NetworkClient::Result NetworkClient::initialize()
 NetworkClient::Result NetworkClient::createSocket(const NetworkClient::SocketType type,
                                                   int *sock)
 {
+    const FileSystemClient fs;
+    FileSystem::FileStat st;
     String path = m_deviceName;
 
     switch (type)
@@ -102,10 +102,19 @@ NetworkClient::Result NetworkClient::createSocket(const NetworkClient::SocketTyp
             return NotFound;
     }
 
-    if ((*sock = ::open(*path, O_RDWR)) == -1)
+    const FileSystem::Result result = fs.statFile(*path, &st);
+    if (result != FileSystem::Success)
     {
-        ERROR("failed to create socket: " << strerror(errno));
+        ERROR("failed to stat socket factory at " << *path <<
+              ": result = " << (int) result);
         return IOError;
+    }
+
+    FileDescriptor::Result fdResult = FileDescriptor::instance()->openEntry(*path, (Size &) *sock);
+    if (fdResult != FileDescriptor::Success)
+    {
+        ERROR("failed to add FileDescriptor for socket factory at " << *path <<
+              ": result = "<< (int) fdResult);
     }
 
     return Success;
@@ -180,24 +189,27 @@ NetworkClient::Result NetworkClient::writeSocketInfo(const int sock,
                                                      const u16 port,
                                                      const NetworkClient::SocketAction action)
 {
+    FileSystemClient fs;
     char buf[64];
+    Size sz = sizeof(buf);
 
     DEBUG("");
-
-    // Read socket factory. The factory will create
-    // a new socket for us. We need to read the new file path
-    int r = ::read(sock, buf, sizeof(buf));
-    if (r < 0)
-    {
-        ERROR("failed to read from socket factory: " << strerror(errno));
-        return IOError;
-    }
 
     // Get file descriptor of the socket
     FileDescriptor::Entry *fd = FileDescriptor::instance()->getEntry(sock);
     if (!fd || !fd->open)
     {
         return NetworkClient::NotFound;
+    }
+
+    // Read socket factory. The factory will create
+    // a new socket for us. We need to read the new file path
+    const FileSystem::Result readResult = fs.readFile(fd->path, buf, &sz, 0);
+    if (readResult != FileSystem::Success)
+    {
+        ERROR("failed to read from socket factory at " << fd->path <<
+              ": result = " << (int) readResult);
+        return IOError;
     }
 
     // Update the file descriptor path
@@ -208,11 +220,13 @@ NetworkClient::Result NetworkClient::writeSocketInfo(const int sock,
     info.address = addr;
     info.port    = port;
     info.action  = action;
+    sz = sizeof(info);
 
-    r = ::write(sock, &info, sizeof(info));
-    if (r < 0)
+    const FileSystem::Result writeResult = fs.writeFile(fd->path, &info, &sz, 0);
+    if (writeResult != FileSystem::Success)
     {
-        ERROR("failed to write socket info: " << strerror(errno));
+        ERROR("failed to write info to socket at " << fd->path <<
+              ": result = " << (int) writeResult);
         return IOError;
     }
 
@@ -220,9 +234,14 @@ NetworkClient::Result NetworkClient::writeSocketInfo(const int sock,
     return Success;
 }
 
-
 NetworkClient::Result NetworkClient::close(const int sock)
 {
-    ::close(sock);
+    const FileDescriptor::Result result = FileDescriptor::instance()->closeEntry(sock);
+    if (result != FileDescriptor::Success)
+    {
+        ERROR("failed to close socket " << sock << ": result = " << (int) result);
+        return IOError;
+    }
+
     return Success;
 }
