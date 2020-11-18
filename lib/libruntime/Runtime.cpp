@@ -26,6 +26,7 @@
 #include <MemoryMap.h>
 #include <Memory.h>
 #include <Randomizer.h>
+#include "ProcessClient.h"
 #include "PageAllocator.h"
 #include "KernelLog.h"
 #include "Runtime.h"
@@ -154,7 +155,9 @@ void setupMappings()
 
 void setupRandomizer()
 {
-    const ProcessID pid = ProcessCtl(SELF, GetPID);
+    const ProcessClient proc;
+    const ProcessID pid = proc.getProcessID();
+
     Timer::Info timer;
     ProcessCtl(SELF, InfoTimer, (Address) &timer);
 

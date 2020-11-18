@@ -20,9 +20,18 @@
 #include <Macros.h>
 #include "ProcessClient.h"
 
-ProcessClient::ProcessClient()
-    : m_pid(ProcessCtl(SELF, GetPID, 0))
+const ProcessID ProcessClient::m_pid = ProcessCtl(SELF, GetPID, 0);
+
+const ProcessID ProcessClient::m_parent = ProcessCtl(SELF, GetParent, 0);
+
+ProcessID ProcessClient::getProcessID() const
 {
+    return m_pid;
+}
+
+ProcessID ProcessClient::getParentID() const
+{
+    return m_parent;
 }
 
 ProcessClient::Result ProcessClient::processInfo(const ProcessID pid,

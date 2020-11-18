@@ -15,10 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/User.h>
+#include <ProcessClient.h>
 #include "unistd.h"
 
 pid_t getppid()
 {
-    return ProcessCtl(SELF, GetParent);
+    const ProcessClient proc;
+    return proc.getParentID();
 }

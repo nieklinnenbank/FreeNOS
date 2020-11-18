@@ -72,9 +72,18 @@ class ProcessClient
   public:
 
     /**
-     * Constructor
+     * Get current process identifier
+     *
+     * @return Current Process ID
      */
-    ProcessClient();
+    ProcessID getProcessID() const;
+
+    /**
+     * Get parent process identifier
+     *
+     * @return Parent Process ID
+     */
+    ProcessID getParentID() const;
 
     /**
      * Get process information by its ID.
@@ -115,7 +124,10 @@ class ProcessClient
   private:
 
     /** Our own process identifier */
-    const ProcessID m_pid;
+    static const ProcessID m_pid;
+
+    /** Our parent process identifier */
+    static const ProcessID m_parent;
 };
 
 /**
