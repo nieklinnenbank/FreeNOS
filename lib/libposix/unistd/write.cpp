@@ -16,34 +16,23 @@
  */
 
 #include <FileSystemClient.h>
-#include <FileDescriptor.h>
 #include "errno.h"
 #include "unistd.h"
 
 ssize_t write(int fildes, const void *buf, size_t nbyte)
 {
-    // Do we have this file descriptor?
-    FileDescriptor::Entry *fd = FileDescriptor::instance()->getEntry(fildes);
-    if (!fd || !fd->open)
+    // Write the file.
+    const FileSystemClient filesystem;
+    const FileSystem::Result result = filesystem.writeFile(fildes,
+                                                          (const char *)buf,
+                                                          &nbyte);
+
+    // Did the write succeed?
+    if (result != FileSystem::Success)
     {
         errno = ENOENT;
         return -1;
     }
 
-    // Write the file.
-    const FileSystemClient filesystem;
-    const FileSystem::Result result = filesystem.writeFile(fd->path,
-                                                          (const char *)buf,
-                                                         &nbyte,
-                                                           fd->position);
-
-    // Did the write succeed?
-    if (result != FileSystem::Success)
-    {
-        errno = EIO;
-        return -1;
-    }
-
-    fd->position += nbyte;
     return nbyte;
 }

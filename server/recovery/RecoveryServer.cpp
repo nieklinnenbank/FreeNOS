@@ -116,6 +116,7 @@ bool RecoveryServer::reloadProgram(const ProcessID pid,
 {
     const FileSystemClient fs;
     FileSystem::FileStat st;
+    Size fd;
 
     DEBUG("pid = " << pid << " path = " << path);
 
@@ -142,13 +143,33 @@ bool RecoveryServer::reloadProgram(const ProcessID pid,
         return false;
     }
 
+    // Open file
+    const FileSystem::Result openResult = fs.openFile(path, fd);
+    if (openResult != FileSystem::Success)
+    {
+        ERROR("failed to openFile() for " << path <<
+              ": result = " << (int) openResult);
+        VMCtl(SELF, Release, &compressed);
+        return false;
+    }
+
     // Read the program image
     Size num = st.size;
-    const FileSystem::Result readResult = fs.readFile(path, (void *) compressed.virt, &num, 0);
+    const FileSystem::Result readResult = fs.readFile(fd, (void *) compressed.virt, &num);
     if (readResult != FileSystem::Success || num != st.size)
     {
         ERROR("failed to readFile() for " << path <<
               ": result = " << (int) readResult << ", num = " << num);
+        VMCtl(SELF, Release, &compressed);
+        return false;
+    }
+
+    // Close file
+    const FileSystem::Result closeResult = fs.closeFile(fd);
+    if (closeResult != FileSystem::Success)
+    {
+        ERROR("failed to closeFile() for " << path <<
+              ": result = " << (int) closeResult);
         VMCtl(SELF, Release, &compressed);
         return false;
     }

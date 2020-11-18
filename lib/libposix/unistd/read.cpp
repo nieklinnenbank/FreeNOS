@@ -16,34 +16,22 @@
  */
 
 #include <FileSystemClient.h>
-#include <FileDescriptor.h>
 #include "errno.h"
 #include "unistd.h"
 
 ssize_t read(int fildes, void *buf, size_t nbyte)
 {
-    // Do we have this file descriptor?
-    FileDescriptor::Entry *fd = FileDescriptor::instance()->getEntry(fildes);
-    if (!fd || !fd->open)
+    // Read the file.
+    const FileSystemClient filesystem;
+    const FileSystem::Result result = filesystem.readFile(fildes,
+                                                         (char *)buf,
+                                                          &nbyte);
+    // Did the read succeed?
+    if (result != FileSystem::Success)
     {
         errno = ENOENT;
         return -1;
     }
 
-    // Read the file.
-    const FileSystemClient filesystem;
-    const FileSystem::Result result = filesystem.readFile(fd->path,
-                                                          (char *)buf,
-                                                         &nbyte,
-                                                          fd->position);
-
-    // Did the read succeed?
-    if (result != FileSystem::Success)
-    {
-        errno = EIO;
-        return -1;
-    }
-
-    fd->position += nbyte;
     return nbyte;
 }

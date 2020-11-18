@@ -151,7 +151,7 @@ TestCase(FileSystemServerStatFile)
     FileSystemMessage msg;
     msg.from   = fs.m_pid;
     msg.action = FileSystem::StatFile;
-    msg.path   = *path;
+    msg.buffer = *path;
     msg.stat   = &st;
     msg.size   = sizeof(st);
     msg.offset = 0;
@@ -187,12 +187,11 @@ TestCase(FileSystemServerReadFile)
     DummyFileSystem fs(new Directory(1), "/mnt");
 
     // Prepare message for non-existing file
-    String path("/mnt/myfile.txt");
     char buf[128];
     FileSystemMessage msg;
     msg.from   = fs.m_pid;
     msg.action = FileSystem::ReadFile;
-    msg.path   = *path;
+    msg.inode  = 12356;
     msg.buffer = buf;
     msg.size   = sizeof(buf);
     msg.offset = 0;
@@ -205,10 +204,12 @@ TestCase(FileSystemServerReadFile)
     testAssert(msg.result == FileSystem::NotFound);
 
     // Add the file
-    File *file = new PseudoFile(fs.getNextInode(), "mydata");
+    const u32 inode = fs.getNextInode();
+    File *file = new PseudoFile(inode, "mydata");
     testAssert(fs.registerFile(file, "myfile.txt") == FileSystem::Success);
 
     // Send another request
+    msg.inode = inode;
     fs.pathHandler(&msg);
 
     // Receive response
@@ -228,13 +229,12 @@ TestCase(FileSystemServerWriteFile)
     DummyFileSystem fs(new Directory(1), "/mnt");
 
     // Prepare message for non-existing file
-    String path("/mnt/myfile.txt");
     String buf("something");
     char buf2[128];
     FileSystemMessage msg;
     msg.from   = fs.m_pid;
     msg.action = FileSystem::WriteFile;
-    msg.path   = *path;
+    msg.inode  = 54321;
     msg.buffer = *buf;
     msg.size   = buf.length();
     msg.offset = 0;
@@ -247,10 +247,12 @@ TestCase(FileSystemServerWriteFile)
     testAssert(msg.result == FileSystem::NotFound);
 
     // Add the file
-    File *file = new PseudoFile(fs.getNextInode());
+    const u32 inode = fs.getNextInode();
+    File *file = new PseudoFile(inode);
     testAssert(fs.registerFile(file, "myfile.txt") == FileSystem::Success);
 
     // Send another request
+    msg.inode = inode;
     fs.pathHandler(&msg);
 
     // Receive response
@@ -285,7 +287,7 @@ TestCase(FileSystemServerDeleteFile)
     FileSystemMessage msg;
     msg.from   = fs.m_pid;
     msg.action = FileSystem::DeleteFile;
-    msg.path   = *path;
+    msg.buffer = *path;
 
     // Process the message
     fs.pathHandler(&msg);
@@ -295,7 +297,8 @@ TestCase(FileSystemServerDeleteFile)
     testAssert(msg.result == FileSystem::NotFound);
 
     // Add the file
-    File *file = new PseudoFile(fs.getNextInode());
+    const u32 inode = fs.getNextInode();
+    File *file = new PseudoFile(inode);
     testAssert(fs.registerFile(file, "myfile.txt") == FileSystem::Success);
 
     // Send another request
@@ -307,6 +310,7 @@ TestCase(FileSystemServerDeleteFile)
 
     // Read out the file again (should be removed)
     msg.action = FileSystem::ReadFile;
+    msg.inode = inode;
     msg.buffer = buf2;
     msg.size   = sizeof(buf2);
     fs.pathHandler(&msg);

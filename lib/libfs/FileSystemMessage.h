@@ -41,7 +41,7 @@ typedef struct FileSystemMessage : public ChannelMessage
     char *buffer;                  /**< Points to a buffer for I/O. */
     Size size;                     /**< Size of the buffer. */
     Size offset;                   /**< Offset in the file for I/O. */
-    char *path;                    /**< Path name of the file. */
+    u32 inode;                     /**< Inode number of the file */
     FileSystem::FileStat *stat;    /**< File Statistics. */
     Timer::Info timeout;           /**< Timeout value for the action */
     ProcessID pid;                 /**< Process identifier (used for redirection) */

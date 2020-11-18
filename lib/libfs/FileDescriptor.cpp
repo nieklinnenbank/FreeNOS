@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <MemoryBlock.h>
 #include "FileDescriptor.h"
 
 FileDescriptor::FileDescriptor()
@@ -36,7 +35,8 @@ void FileDescriptor::setArray(Entry *array,
     m_count = count;
 }
 
-FileDescriptor::Result FileDescriptor::openEntry(const char *path,
+FileDescriptor::Result FileDescriptor::openEntry(const u32 inode,
+                                                 const ProcessID filesystem,
                                                  Size & index)
 {
     // Insert into file descriptor table
@@ -46,7 +46,8 @@ FileDescriptor::Result FileDescriptor::openEntry(const char *path,
         {
             m_array[index].open  = true;
             m_array[index].position = 0;
-            MemoryBlock::copy(m_array[index].path, path, FileSystemPath::MaximumLength);
+            m_array[index].inode = inode;
+            m_array[index].pid = filesystem;
             return FileDescriptor::Success;
         }
     }

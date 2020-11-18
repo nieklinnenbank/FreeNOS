@@ -61,7 +61,6 @@ FileSystem::Result File::write(IOBuffer & buffer,
 
 FileSystem::Result File::status(FileSystem::FileStat &st)
 {
-    // Fill in the status structure
     st.type     = m_type;
     st.inode    = m_inode;
     st.access   = m_access;

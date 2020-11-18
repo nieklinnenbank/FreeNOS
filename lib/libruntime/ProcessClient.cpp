@@ -37,6 +37,7 @@ ProcessID ProcessClient::getParentID() const
 ProcessClient::Result ProcessClient::processInfo(const ProcessID pid,
                                                  ProcessClient::Info &info) const
 {
+#ifndef __HOST__
     const char * textStates[] = {
         "Ready",
         "Sleeping",
@@ -67,6 +68,7 @@ ProcessClient::Result ProcessClient::processInfo(const ProcessID pid,
     // Fill output
     info.command = cmd;
     info.textState = (pid == m_pid ? "Running" : textStates[info.kernelState.state]);
+#endif /* __HOST__ */
 
     return Success;
 }

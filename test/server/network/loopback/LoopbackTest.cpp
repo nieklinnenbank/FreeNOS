@@ -84,18 +84,32 @@ TestCase(LoopbackUdpPing)
     testAssert(server.initialize() == FileSystem::Success);
     server.m_mountPath = mountPath;
 
-    // Create UDP socket message
-    char buf[128];
-    MemoryBlock::set(&buf, 0, sizeof(buf));
-
+    // Stat the UDP socket factory
+    FileSystem::FileStat st;
     FileSystemMessage msg;
     MemoryBlock::set(&msg, 0, sizeof(msg));
+    MemoryBlock::set(&st, 0, sizeof(st));
     msg.from = server.m_pid;
-    msg.action = FileSystem::ReadFile;
-    msg.path = (char *) "/networktest/loopback/udp/factory";
-    msg.buffer = buf;
-    msg.size = sizeof(buf);
+    msg.action = FileSystem::StatFile;
+    msg.buffer = (char *) "/networktest/loopback/udp/factory";
+    msg.stat = &st;
+    msg.size = sizeof(st);
     msg.offset = 0;
+
+    // Process the message
+    server.pathHandler(&msg);
+    const u32 factoryInode = st.inode;
+    testAssert(msg.result == FileSystem::Success);
+    testAssert(st.type == FileSystem::RegularFile);
+    testAssert(factoryInode != 0);
+
+    // Read new UDP socket path message
+    char buf[128];
+    MemoryBlock::set(&buf, 0, sizeof(buf));
+    msg.action = FileSystem::ReadFile;
+    msg.buffer = buf;
+    msg.inode = factoryInode;
+    msg.size = sizeof(buf);
 
     // Process the message
     server.pathHandler(&msg);
@@ -105,10 +119,25 @@ TestCase(LoopbackUdpPing)
     testAssert(str.equals("/networktest/loopback/udp/0"));
     testAssert(loop->m_udp->m_sockets.count() == 1);
 
+    // Stat UDP socket to retrieve inode
+    MemoryBlock::set(&st, 0, sizeof(st));
+    msg.action = FileSystem::StatFile;
+    msg.buffer = (char *) "/networktest/loopback/udp/0";
+    msg.stat = &st;
+    msg.size = sizeof(st);
+
+    // Process the message
+    server.pathHandler(&msg);
+    const u32 udp0 = st.inode;
+    testAssert(msg.result == FileSystem::Success);
+    testAssert(st.type == FileSystem::RegularFile);
+    testAssert(udp0 != 0);
+
     // Bind the UDP socket to a port
     msg.action = FileSystem::WriteFile;
-    msg.path = (char *) "/networktest/loopback/udp/0";
+    msg.buffer = buf;
     msg.size = sizeof(NetworkClient::SocketInfo);
+    msg.inode = udp0;
 
     NetworkClient::SocketInfo *info = (NetworkClient::SocketInfo *) &buf;
     info->address = IPV4::toAddress("127.0.0.1");
@@ -122,7 +151,7 @@ TestCase(LoopbackUdpPing)
     // Create a second UDP socket
     msg.from = server.m_pid;
     msg.action = FileSystem::ReadFile;
-    msg.path = (char *) "/networktest/loopback/udp/factory";
+    msg.inode = factoryInode;
     msg.buffer = buf;
     msg.size = sizeof(buf);
     msg.offset = 0;
@@ -133,9 +162,25 @@ TestCase(LoopbackUdpPing)
     testAssert(str.equals("/networktest/loopback/udp/1"));
     testAssert(loop->m_udp->m_sockets.count() == 2);
 
+    // Stat second UDP socket to retrieve inode
+    MemoryBlock::set(&st, 0, sizeof(st));
+    msg.action = FileSystem::StatFile;
+    msg.buffer = (char *) "/networktest/loopback/udp/1";
+    msg.stat = &st;
+    msg.size = sizeof(st);
+
+    // Process the message
+    server.pathHandler(&msg);
+    const u32 udp1 = st.inode;
+    testAssert(msg.result == FileSystem::Success);
+    testAssert(st.type == FileSystem::RegularFile);
+    testAssert(udp1 != 0);
+    testAssert(udp1 != udp0);
+
     // Bind the second UDP socket to a port
     msg.action = FileSystem::WriteFile;
-    msg.path = (char *) "/networktest/loopback/udp/1";
+    msg.buffer = buf;
+    msg.inode = udp1;
     msg.size = sizeof(NetworkClient::SocketInfo);
     info->address = IPV4::toAddress("127.0.0.1");
     info->port = 54321;
@@ -149,7 +194,7 @@ TestCase(LoopbackUdpPing)
     const char *payload = "testing 1234";
     msg.from = server.m_pid;
     msg.action = FileSystem::WriteFile;
-    msg.path = (char *) "/networktest/loopback/udp/1";
+    msg.inode = udp1;
     msg.buffer = buf;
     msg.size = sizeof(buf);
     msg.offset = 0;
@@ -169,7 +214,7 @@ TestCase(LoopbackUdpPing)
     MemoryBlock::set(buf, 0, sizeof(buf));
     msg.from = server.m_pid;
     msg.action = FileSystem::ReadFile;
-    msg.path = (char *) "/networktest/loopback/udp/0";
+    msg.inode = udp0;
     msg.buffer = buf;
     msg.size = sizeof(buf);
     msg.offset = 0;

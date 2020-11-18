@@ -15,14 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FileDescriptor.h>
+#include <FileSystemClient.h>
 #include "errno.h"
 #include "unistd.h"
 
 int close(int fildes)
 {
-    const FileDescriptor::Result result = FileDescriptor::instance()->closeEntry(fildes);
-    if (result != FileDescriptor::Success)
+    const FileSystemClient fs;
+
+    const FileSystem::Result result = fs.closeFile(fildes);
+    if (result != FileSystem::Success)
     {
         errno = ENOENT;
         return -1;

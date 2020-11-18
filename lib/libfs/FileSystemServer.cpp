@@ -243,6 +243,143 @@ bool FileSystemServer::redirectRequest(const char *path, FileSystemMessage *msg)
     return true;
 }
 
+FileSystem::Result FileSystemServer::inodeHandler(FileSystemRequest &req)
+{
+    FileSystemMessage *msg = req.getMessage();
+    File *file = ZERO;
+
+    DEBUG(m_self << ": inode = " << msg->inode << " action = " << msg->action);
+
+    File *const *f = m_inodeMap.get(msg->inode);
+    if (f == ZERO)
+    {
+
+        msg->result = FileSystem::NotFound;
+        sendResponse(msg);
+        return msg->result;
+    }
+    file = (*f);
+
+    if (msg->action == FileSystem::ReadFile)
+    {
+        msg->result = file->read(req.getBuffer(), msg->size, msg->offset);
+
+        if (msg->result == FileSystem::Success)
+        {
+            if (req.getBuffer().getCount())
+            {
+                req.getBuffer().flushWrite();
+            }
+        }
+
+        DEBUG(m_self << ": read = " << (int)msg->result);
+    }
+    else if (msg->action == FileSystem::WriteFile)
+    {
+        if (!req.getBuffer().getCount())
+        {
+            req.getBuffer().bufferedRead();
+        }
+
+        msg->result = file->write(req.getBuffer(), msg->size, msg->offset);
+        DEBUG(m_self << ": write = " << (int)msg->result);
+    }
+    else
+    {
+        msg->result = FileSystem::NotSupported;
+    }
+
+    // Only send reply if completed (not RetryAgain)
+    if (msg->result != FileSystem::RetryAgain)
+    {
+        sendResponse(msg);
+    }
+
+    return msg->result;
+}
+
+FileSystem::Result FileSystemServer::waitFileHandler(FileSystemRequest &req)
+{
+    FileSystemMessage *msg = req.getMessage();
+    static FileSystem::WaitSet waitBuf[MaximumWaitSetCount];
+    const Size count = msg->size / sizeof(FileSystem::WaitSet) < MaximumWaitSetCount ?
+                       msg->size / sizeof(FileSystem::WaitSet) : MaximumWaitSetCount;
+    IOBuffer & ioBuffer = req.getBuffer();
+
+    // Read waitset input struct
+    msg->result = ioBuffer.read(&waitBuf, count * sizeof(FileSystem::WaitSet), 0);
+    if (msg->result != FileSystem::Success)
+    {
+        ERROR("failed to read WaitSet input from PID " << msg->from << ": result = " << (int) msg->result);
+        sendResponse(msg);
+        return msg->result;
+    }
+
+    // By default, retry again
+    msg->result = FileSystem::RetryAgain;
+
+    // fill the struct
+    for (Size i = 0; i < count; i++)
+    {
+        File *const *f = m_inodeMap.get(waitBuf[i].inode);
+        if (f != ZERO)
+        {
+            waitBuf[i].current = 0;
+
+            if ((waitBuf[i].requested & FileSystem::Readable) && (*f)->canRead())
+            {
+                DEBUG("inode " << waitBuf[i].inode << " is readable");
+                waitBuf[i].current |= FileSystem::Readable;
+                msg->result = FileSystem::Success;
+            }
+
+            if ((waitBuf[i].requested & FileSystem::Writable) && (*f)->canWrite())
+            {
+                DEBUG("inode " << waitBuf[i].inode << " is writable");
+                waitBuf[i].current |= FileSystem::Writable;
+                msg->result = FileSystem::Success;
+            }
+        }
+    }
+
+    // write back
+    ioBuffer.write(&waitBuf, count * sizeof(FileSystem::WaitSet), 0);
+    if (msg->result != FileSystem::Success && msg->result != FileSystem::RetryAgain)
+    {
+        ERROR("failed to write WaitSet output to PID " << msg->from << ": result = " << (int) msg->result);
+        sendResponse(msg);
+        return msg->result;
+    }
+
+    // Check for timeout
+    if (msg->timeout.frequency != 0 && msg->result == FileSystem::RetryAgain)
+    {
+        KernelTimer timer;
+        timer.tick();
+
+        if (timer.isExpired(msg->timeout))
+        {
+            msg->result = FileSystem::TimedOut;
+        }
+        else
+        {
+            if (!m_expiry.frequency || m_expiry.ticks > msg->timeout.ticks)
+            {
+                m_expiry.ticks = msg->timeout.ticks;
+            }
+            m_expiry.frequency = msg->timeout.frequency;
+        }
+    }
+
+    // Only send reply if completed (not RetryAgain)
+    if (msg->result != FileSystem::RetryAgain)
+    {
+        sendResponse(msg);
+    }
+
+    return msg->result;
+}
+
 FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
 {
     char buf[FileSystemPath::MaximumLength];
@@ -251,13 +388,23 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
     FileSystemMessage *msg = req.getMessage();
     FileSystem::FileStat st;
 
+    // Retrieve file by inode or by file path?
+    if (msg->action == FileSystem::ReadFile || msg->action == FileSystem::WriteFile)
+    {
+        return inodeHandler(req);
+    }
+    else if (msg->action == FileSystem::WaitFile)
+    {
+        return waitFileHandler(req);
+    }
+
     // Copy the file path
     const API::Result result = VMCopy(msg->from, API::Read, (Address) buf,
-                                     (Address) msg->path, FileSystemPath::MaximumLength);
+                                     (Address) msg->buffer, FileSystemPath::MaximumLength);
     if (result != API::Success)
     {
         ERROR("VMCopy failed: result = " << (int)result << " from = " << msg->from <<
-              " addr = " << (void *) msg->path << " action = " << (int) msg->action);
+              " addr = " << (void *) msg->buffer << " action = " << (int) msg->action);
         msg->result = FileSystem::IOError;
         sendResponse(msg);
         return msg->result;
@@ -279,10 +426,11 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
     {
         file = cache->file;
     }
-    // File not found
-    else if (msg->action != FileSystem::CreateFile &&
-             msg->action != FileSystem::WaitFileSystem &&
-             msg->action != FileSystem::WaitFile)
+
+    // Check for File not found
+    if (file == ZERO &&
+        msg->action != FileSystem::CreateFile &&
+        msg->action != FileSystem::WaitFileSystem)
     {
         DEBUG(m_self << ": not found");
         msg->result = FileSystem::NotFound;
@@ -334,6 +482,8 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
         case FileSystem::StatFile:
             if (file->status(st) == FileSystem::Success)
             {
+                st.pid = m_self;
+
                 // Copy to the remote process
                 const API::Result stResult = VMCopy(msg->from, API::Write, (Address) &st,
                                                    (Address) msg->stat, sizeof(st));
@@ -355,104 +505,9 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
             break;
 
         case FileSystem::ReadFile:
-        {
-            msg->result = file->read(req.getBuffer(), msg->size, msg->offset);
-
-            if (msg->result == FileSystem::Success)
-            {
-                if (req.getBuffer().getCount())
-                {
-                    req.getBuffer().flushWrite();
-                }
-            }
-
-            DEBUG(m_self << ": read = " << (int)msg->result);
-            break;
-        }
-
         case FileSystem::WriteFile:
-        {
-            if (!req.getBuffer().getCount())
-            {
-                req.getBuffer().bufferedRead();
-            }
-
-            msg->result = file->write(req.getBuffer(), msg->size, msg->offset);
-            DEBUG(m_self << ": write = " << (int)msg->result);
-            break;
-        }
-
         case FileSystem::WaitFile:
-        {
-            static FileSystem::WaitSet waitBuf[MaximumWaitSetCount];
-            const Size count = msg->size / sizeof(FileSystem::WaitSet) < MaximumWaitSetCount ?
-                               msg->size / sizeof(FileSystem::WaitSet) : MaximumWaitSetCount;
-            IOBuffer & ioBuffer = req.getBuffer();
-
-            // Read waitset input struct
-            msg->result = ioBuffer.read(&waitBuf, count * sizeof(FileSystem::WaitSet), 0);
-            if (msg->result != FileSystem::Success)
-            {
-                ERROR("failed to read WaitSet input from PID " << msg->from << ": result = " << (int) msg->result);
-                break;
-            }
-
-            // By default, retry again
-            msg->result = FileSystem::RetryAgain;
-
-            // fill the struct
-            for (Size i = 0; i < count; i++)
-            {
-                File *const *f = m_inodeMap.get(waitBuf[i].inode);
-                if (f != ZERO)
-                {
-                    waitBuf[i].current = 0;
-
-                    if ((waitBuf[i].requested & FileSystem::Readable) && (*f)->canRead())
-                    {
-                        DEBUG("inode " << waitBuf[i].inode << " is readable");
-                        waitBuf[i].current |= FileSystem::Readable;
-                        msg->result = FileSystem::Success;
-                    }
-
-                    if ((waitBuf[i].requested & FileSystem::Writable) && (*f)->canWrite())
-                    {
-                        DEBUG("inode " << waitBuf[i].inode << " is writable");
-                        waitBuf[i].current |= FileSystem::Writable;
-                        msg->result = FileSystem::Success;
-                    }
-                }
-            }
-
-            // write back
-            ioBuffer.write(&waitBuf, count * sizeof(FileSystem::WaitSet), 0);
-            if (msg->result != FileSystem::Success && msg->result != FileSystem::RetryAgain)
-            {
-                ERROR("failed to write WaitSet output to PID " << msg->from << ": result = " << (int) msg->result);
-                break;
-            }
-
-            // Check for timeout
-            if (msg->timeout.frequency != 0 && msg->result == FileSystem::RetryAgain)
-            {
-                KernelTimer timer;
-                timer.tick();
-
-                if (timer.isExpired(msg->timeout))
-                {
-                    msg->result = FileSystem::TimedOut;
-                }
-                else
-                {
-                    if (!m_expiry.frequency || m_expiry.ticks > msg->timeout.ticks)
-                    {
-                        m_expiry.ticks = msg->timeout.ticks;
-                    }
-                    m_expiry.frequency = msg->timeout.frequency;
-                }
-            }
             break;
-        }
 
         case FileSystem::WaitFileSystem: {
             // Do nothing here. Once the targeted file system is mounted
@@ -482,6 +537,10 @@ void FileSystemServer::sendResponse(FileSystemMessage *msg) const
 {
     msg->type = ChannelMessage::Response;
 
+    DEBUG(m_self << ": sending response to PID " << msg->from <<
+                    " for action = " << (int) msg->action <<
+                    " with result = " << (int) msg->result);
+
     Channel *channel = m_registry.getProducer(msg->from);
     if (channel == ZERO)
     {
@@ -505,7 +564,7 @@ void FileSystemServer::mountHandler(FileSystemMessage *msg)
 
     // Copy the file path
     const API::Result result = VMCopy(msg->from, API::Read, (Address) buf,
-                                     (Address) msg->path, FileSystemPath::MaximumLength);
+                                     (Address) msg->buffer, FileSystemPath::MaximumLength);
     if (result != API::Success)
     {
         ERROR("failed to copy mount path: result = " << (int) result);

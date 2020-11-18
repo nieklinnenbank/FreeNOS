@@ -24,7 +24,7 @@ env.UseServers([ 'filesystem', 'core', 'datastore', 'recovery' ])
 
 if env['ARCH'] == 'host':
     srclist = [ 'CoreClient.cpp', 'DatastoreClient.cpp',
-                'KernelLog.cpp', 'RecoveryClient.cpp' ]
+                'KernelLog.cpp', 'RecoveryClient.cpp', 'ProcessClient.cpp' ]
 else:
     srclist = [ Glob('*.cpp') ]
 

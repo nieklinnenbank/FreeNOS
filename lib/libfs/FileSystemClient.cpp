@@ -19,6 +19,7 @@
 #include <ChannelClient.h>
 #include <KernelTimer.h>
 #include "FileSystemMessage.h"
+#include "FileDescriptor.h"
 #include "FileSystemClient.h"
 
 FileSystemMount FileSystemClient::m_mounts[MaximumFileSystemMounts] = {};
@@ -49,7 +50,7 @@ inline FileSystem::Result FileSystemClient::request(const char *path,
         MemoryBlock::copy(fullpath, path, sizeof(fullpath));
     }
 
-    msg.path = fullpath;
+    msg.buffer = fullpath;
 
     return request(mnt, msg);
 }
@@ -61,7 +62,7 @@ inline FileSystem::Result FileSystemClient::request(const ProcessID pid,
     if (r != ChannelClient::Success)
     {
         ERROR("failed to send request to PID " << pid <<
-              " for path " << msg.path << ": result = " << (int) r);
+              " for path " << msg.buffer << ": result = " << (int) r);
         return FileSystem::IpcError;
     }
     else if (msg.result != FileSystem::RedirectRequest)
@@ -72,6 +73,8 @@ inline FileSystem::Result FileSystemClient::request(const ProcessID pid,
     // If the path is mounted by a different file system process, the request is re-directed.
     // Update the cached file system mounts table and re-send the request.
     assert(msg.pid != ROOTFS_PID);
+    assert(msg.action != FileSystem::ReadFile);
+    assert(msg.action != FileSystem::WriteFile);
 
     // Extend mounts table
     for (Size i = 0; i < MaximumFileSystemMounts; i++)
@@ -79,7 +82,7 @@ inline FileSystem::Result FileSystemClient::request(const ProcessID pid,
         if (m_mounts[i].path[0] == ZERO)
         {
             assert(msg.pathMountLength + 1 <= sizeof(m_mounts[i].path));
-            MemoryBlock::copy(m_mounts[i].path, msg.path, msg.pathMountLength + 1);
+            MemoryBlock::copy(m_mounts[i].path, msg.buffer, msg.pathMountLength + 1);
             m_mounts[i].procID  = msg.pid;
             m_mounts[i].options = ZERO;
             break;
@@ -91,7 +94,7 @@ inline FileSystem::Result FileSystemClient::request(const ProcessID pid,
     if (r != ChannelClient::Success)
     {
         ERROR("failed to redirect request to PID " << msg.pid <<
-              " for path " << msg.path << ": result = " << (int) r);
+              " for path " << msg.buffer << ": result = " << (int) r);
         return FileSystem::IpcError;
     }
 
@@ -174,73 +177,118 @@ FileSystem::Result FileSystemClient::createFile(const char *path,
     FileSystemMessage msg;
     msg.type   = ChannelMessage::Request;
     msg.action = FileSystem::CreateFile;
-    msg.path   = (char *)path;
+    msg.buffer = (char *)path;
     msg.stat   = &st;
 
     return request(path, msg);
 }
 
-FileSystem::Result FileSystemClient::readFile(const char *path,
-                                              void *buf,
-                                              Size *size,
-                                              const Size offset) const
-{
-    FileSystemMessage msg;
-    msg.type     = ChannelMessage::Request;
-    msg.action   = FileSystem::ReadFile;
-    msg.path     = (char *)path;
-    msg.buffer   = (char *)buf;
-    msg.size     = *size;
-    msg.offset   = offset;
-
-    const FileSystem::Result result = request(path, msg);
-    if (result == FileSystem::Success)
-    {
-        *size = msg.size;
-    }
-
-    return result;
-}
-
-FileSystem::Result FileSystemClient::writeFile(const char *path,
-                                               const void *buf,
-                                               Size *size,
-                                               const Size offset) const
-{
-    FileSystemMessage msg;
-    msg.type     = ChannelMessage::Request;
-    msg.action   = FileSystem::WriteFile;
-    msg.path     = (char *)path;
-    msg.buffer   = (char *)buf;
-    msg.size     = *size;
-    msg.offset   = offset;
-
-    const FileSystem::Result result = request(path, msg);
-    if (result == FileSystem::Success)
-    {
-        *size = msg.size;
-    }
-
-    return result;
-}
-
-FileSystem::Result FileSystemClient::statFile(const char *path, FileSystem::FileStat *st) const
+FileSystem::Result FileSystemClient::statFile(const char *path,
+                                              FileSystem::FileStat *st) const
 {
     FileSystemMessage msg;
     msg.type   = ChannelMessage::Request;
     msg.action = FileSystem::StatFile;
-    msg.path   = (char *)path;
+    msg.buffer = (char *)path;
     msg.stat   = st;
 
     return request(path, msg);
 }
+
+FileSystem::Result FileSystemClient::openFile(const char *path,
+                                              Size & descriptor) const
+{
+    FileSystem::FileStat st;
+
+    const FileSystem::Result result = statFile(path, &st);
+    if (result == FileSystem::Success)
+    {
+        FileDescriptor *fd = FileDescriptor::instance();
+
+        const FileDescriptor::Result fdResult = fd->openEntry(st.inode, st.pid, descriptor);
+        if (fdResult != FileDescriptor::Success)
+        {
+            return FileSystem::IOError;
+        }
+    }
+
+    return result;
+}
+
+FileSystem::Result FileSystemClient::closeFile(const Size descriptor) const
+{
+    const FileDescriptor::Result result = FileDescriptor::instance()->closeEntry(descriptor);
+    if (result != FileDescriptor::Success)
+    {
+        return FileSystem::IOError;
+    }
+
+    return FileSystem::Success;
+}
+
+FileSystem::Result FileSystemClient::readFile(const Size descriptor,
+                                              void *buf,
+                                              Size *size) const
+{
+    FileDescriptor::Entry *fd = FileDescriptor::instance()->getEntry(descriptor);
+    if (!fd || !fd->open)
+    {
+        return FileSystem::NotFound;
+    }
+
+    FileSystemMessage msg;
+    msg.type     = ChannelMessage::Request;
+    msg.action   = FileSystem::ReadFile;
+    msg.inode    = fd->inode;
+    msg.buffer   = (char *)buf;
+    msg.size     = *size;
+    msg.offset   = fd->position;
+
+    const FileSystem::Result result = request(fd->pid, msg);
+    if (result == FileSystem::Success)
+    {
+        *size = msg.size;
+        fd->position += msg.size;
+    }
+
+    return result;
+}
+
+FileSystem::Result FileSystemClient::writeFile(const Size descriptor,
+                                               const void *buf,
+                                               Size *size) const
+{
+    FileDescriptor::Entry *fd = FileDescriptor::instance()->getEntry(descriptor);
+    if (!fd || !fd->open)
+    {
+        return FileSystem::NotFound;
+    }
+
+    FileSystemMessage msg;
+    msg.type     = ChannelMessage::Request;
+    msg.action   = FileSystem::WriteFile;
+    msg.inode    = fd->inode;
+    msg.buffer   = (char *)buf;
+    msg.size     = *size;
+    msg.offset   = fd->position;
+
+    const FileSystem::Result result = request(fd->pid, msg);
+    if (result == FileSystem::Success)
+    {
+        *size = msg.size;
+        fd->position += msg.size;
+    }
+
+    return result;
+}
+
 
 FileSystem::Result FileSystemClient::deleteFile(const char *path) const
 {
     FileSystemMessage msg;
     msg.type   = ChannelMessage::Request;
     msg.action = FileSystem::DeleteFile;
-    msg.path   = (char *)path;
+    msg.buffer = (char *)path;
 
     return request(path, msg);
 }
@@ -250,11 +298,11 @@ FileSystem::Result FileSystemClient::waitFile(const char *filesystemPath,
                                               const Size count,
                                               const Size msecTimeout) const
 {
+    const ProcessID pid = findMount(filesystemPath);
 
     FileSystemMessage msg;
     msg.type = ChannelMessage::Request;
     msg.action = FileSystem::WaitFile;
-    msg.path = (char *) filesystemPath;
     msg.buffer = (char *) waitSet;
     msg.size = count * sizeof(FileSystem::WaitSet);
 
@@ -270,7 +318,7 @@ FileSystem::Result FileSystemClient::waitFile(const char *filesystemPath,
         msg.timeout.frequency = 0;
     }
 
-    return request(filesystemPath, msg);
+    return request(pid, msg);
 }
 
 FileSystem::Result FileSystemClient::mountFileSystem(const char *mountPath) const
@@ -278,7 +326,7 @@ FileSystem::Result FileSystemClient::mountFileSystem(const char *mountPath) cons
     FileSystemMessage msg;
     msg.type   = ChannelMessage::Request;
     msg.action = FileSystem::MountFileSystem;
-    msg.path   = (char *) mountPath;
+    msg.buffer = (char *) mountPath;
 
     return request(ROOTFS_PID, msg);
 }
@@ -288,7 +336,7 @@ FileSystem::Result FileSystemClient::waitFileSystem(const char *path) const
     FileSystemMessage msg;
     msg.type   = ChannelMessage::Request;
     msg.action = FileSystem::WaitFileSystem;
-    msg.path   = (char *) path;
+    msg.buffer = (char *) path;
 
     return request(ROOTFS_PID, msg);
 }

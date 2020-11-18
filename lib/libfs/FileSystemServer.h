@@ -173,6 +173,24 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
     FileSystem::Result processRequest(FileSystemRequest &req);
 
     /**
+     * Handle a request for a File specified by its inode
+     *
+     * @param req FileSystemRequest reference
+     *
+     * @return Result code
+     */
+    FileSystem::Result inodeHandler(FileSystemRequest &req);
+
+    /**
+     * Handle a WaitFile request
+     *
+     * @param req FileSystemRequest reference
+     *
+     * @return Result code
+     */
+    FileSystem::Result waitFileHandler(FileSystemRequest &req);
+
+    /**
      * Send response for a FileSystemMessage
      *
      * @param msg The FileSystemMessage to send response for

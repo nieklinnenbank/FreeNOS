@@ -45,7 +45,8 @@ class FileDescriptor : public StrictSingleton<FileDescriptor>
      */
     struct Entry
     {
-        char path[FileSystemPath::MaximumLength]; /**@< Path to the file. */
+        u32 inode;     /**@< Inode number of the file */
+        ProcessID pid; /**@< Process identifier of the filesystem */
         Size position; /**@< Current position indicator. */
         bool open;     /**@< State of the file descriptor. */
     };
@@ -88,12 +89,14 @@ class FileDescriptor : public StrictSingleton<FileDescriptor>
     /**
      * Add new file descriptor entry
      *
-     * @param path Path to the file to add
+     * @param inode Inode number of the file to add
+     * @param filesystem Process identifier of the filesystem
      * @param index On output contains the index number for the entry
      *
      * @return Result code
      */
-    Result openEntry(const char *path,
+    Result openEntry(const u32 inode,
+                     const ProcessID filesystem,
                      Size & index);
 
     /**

@@ -24,6 +24,7 @@
 #include <TestMain.h>
 #include <FileSystem.h>
 #include <FileSystemPath.h>
+#include <FileDescriptor.h>
 #include <ApplicationLauncher.h>
 #include <ProcessClient.h>
 #include <RecoveryClient.h>
@@ -36,30 +37,36 @@ TestCase(TmpFileSystemReadWrite)
     const FileSystemClient fs;
     char buf[128];
     Size sz = sizeof(buf);
+    Size descriptor = 3;
     FileSystem::FileStat st;
 
     // Attemp to read a non-existing file
     testAssert(fs.statFile(path, &st) == FileSystem::NotFound);
-    testAssert(fs.readFile(path, buf, &sz, 0) == FileSystem::NotFound);
-    testAssert(fs.writeFile(path, data, &sz, 0) == FileSystem::NotFound);
+    testAssert(fs.openFile(path, descriptor) == FileSystem::NotFound);
+    testAssert(fs.readFile(descriptor, buf, &sz) == FileSystem::NotFound);
+    testAssert(fs.writeFile(descriptor, data, &sz) == FileSystem::NotFound);
 
     // Create new file
     testAssert(fs.createFile(path, FileSystem::RegularFile, FileSystem::OwnerRW) == FileSystem::Success);
 
     // File should now exist
     testAssert(fs.statFile(path, &st) == FileSystem::Success);
+    testAssert(fs.openFile(path, descriptor) == FileSystem::Success);
 
     // Attemp to read the file again (empty file)
-    testAssert(fs.readFile(path, buf, &sz, 0) == FileSystem::Success);
+    testAssert(fs.readFile(descriptor, buf, &sz) == FileSystem::Success);
     testAssert(sz == 0);
 
     // Write content to the file
     sz = String::length(data);
-    testAssert(fs.writeFile(path, data, &sz, 0) == FileSystem::Success);
+    testAssert(fs.writeFile(descriptor, data, &sz) == FileSystem::Success);
     testAssert(sz == String::length(data));
 
     // Read the file data
-    testAssert(fs.readFile(path, buf, &sz, 0) == FileSystem::Success);
+    FileDescriptor::Entry *fd = FileDescriptor::instance()->getEntry(descriptor);
+    testAssert(fd != ZERO);
+    fd->position = 0;
+    testAssert(fs.readFile(descriptor, buf, &sz) == FileSystem::Success);
     testAssert(sz == String::length(data));
     buf[sz] = ZERO;
     testString(buf, data);
@@ -69,8 +76,8 @@ TestCase(TmpFileSystemReadWrite)
 
     // The file must be gone now
     testAssert(fs.statFile(path, &st) == FileSystem::NotFound);
-    testAssert(fs.readFile(path, buf, &sz, 0) == FileSystem::NotFound);
-    testAssert(fs.writeFile(path, data, &sz, 0) == FileSystem::NotFound);
+    testAssert(fs.readFile(descriptor, buf, &sz) == FileSystem::NotFound);
+    testAssert(fs.writeFile(descriptor, data, &sz) == FileSystem::NotFound);
 
     return OK;
 }

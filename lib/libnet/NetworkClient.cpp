@@ -81,7 +81,6 @@ NetworkClient::Result NetworkClient::createSocket(const NetworkClient::SocketTyp
                                                   int *sock)
 {
     const FileSystemClient fs;
-    FileSystem::FileStat st;
     String path = m_deviceName;
 
     switch (type)
@@ -102,19 +101,12 @@ NetworkClient::Result NetworkClient::createSocket(const NetworkClient::SocketTyp
             return NotFound;
     }
 
-    const FileSystem::Result result = fs.statFile(*path, &st);
+    const FileSystem::Result result = fs.openFile(*path, *(Size *) sock);
     if (result != FileSystem::Success)
     {
-        ERROR("failed to stat socket factory at " << *path <<
+        ERROR("failed to open socket factory at " << *path <<
               ": result = " << (int) result);
         return IOError;
-    }
-
-    FileDescriptor::Result fdResult = FileDescriptor::instance()->openEntry(*path, (Size &) *sock);
-    if (fdResult != FileDescriptor::Success)
-    {
-        ERROR("failed to add FileDescriptor for socket factory at " << *path <<
-              ": result = "<< (int) fdResult);
     }
 
     return Success;
@@ -141,7 +133,6 @@ NetworkClient::Result NetworkClient::waitSocket(const NetworkClient::SocketType 
                                                 const Size msecTimeout)
 {
     const FileSystemClient fs;
-    FileSystem::FileStat st;
 
     DEBUG("type = " << (int) type << " sock = " << sock);
 
@@ -157,22 +148,14 @@ NetworkClient::Result NetworkClient::waitSocket(const NetworkClient::SocketType 
         return NetworkClient::NotFound;
     }
 
-    // Retrieve socket status
-    const FileSystem::Result statResult = fs.statFile(fd->path, &st);
-    if (statResult != FileSystem::Success)
-    {
-        ERROR("failed to stat socket " << sock << " at " << fd->path << ": result = " << (int) statResult);
-        return IOError;
-    }
-
     // Prepare a wait set
     FileSystem::WaitSet waitSet;
-    waitSet.inode     = st.inode;
+    waitSet.inode     = fd->inode;
     waitSet.requested = FileSystem::Readable;
     waitSet.current   = 0;
 
     // Wait until the file is readable (has data)
-    const FileSystem::Result waitResult = fs.waitFile(fd->path, &waitSet, 1, msecTimeout);
+    const FileSystem::Result waitResult = fs.waitFile(*m_deviceName, &waitSet, 1, msecTimeout);
     if (waitResult != FileSystem::Success)
     {
         ERROR("failed to wait for socket " << sock << " with inode " <<
@@ -204,16 +187,25 @@ NetworkClient::Result NetworkClient::writeSocketInfo(const int sock,
 
     // Read socket factory. The factory will create
     // a new socket for us. We need to read the new file path
-    const FileSystem::Result readResult = fs.readFile(fd->path, buf, &sz, 0);
+    const FileSystem::Result readResult = fs.readFile(sock, buf, &sz);
     if (readResult != FileSystem::Success)
     {
-        ERROR("failed to read from socket factory at " << fd->path <<
+        ERROR("failed to read from socket " << sock <<
               ": result = " << (int) readResult);
         return IOError;
     }
 
-    // Update the file descriptor path
-    MemoryBlock::copy(fd->path, buf, sizeof(buf));
+    // Update the file descriptor inode and PID
+    FileSystem::FileStat st;
+    const FileSystem::Result statResult = fs.statFile(buf, &st);
+    if (statResult != FileSystem::Success)
+    {
+        ERROR("failed to stat socket at path " << buf << ": result = " << (int) statResult);
+        return IOError;
+    }
+
+    fd->inode = st.inode;
+    fd->pid = st.pid;
 
     // Write address+port+action info to the socket
     SocketInfo info;
@@ -222,10 +214,10 @@ NetworkClient::Result NetworkClient::writeSocketInfo(const int sock,
     info.action  = action;
     sz = sizeof(info);
 
-    const FileSystem::Result writeResult = fs.writeFile(fd->path, &info, &sz, 0);
+    const FileSystem::Result writeResult = fs.writeFile(sock, &info, &sz);
     if (writeResult != FileSystem::Success)
     {
-        ERROR("failed to write info to socket at " << fd->path <<
+        ERROR("failed to write info to socket " << sock <<
               ": result = " << (int) writeResult);
         return IOError;
     }
@@ -236,8 +228,10 @@ NetworkClient::Result NetworkClient::writeSocketInfo(const int sock,
 
 NetworkClient::Result NetworkClient::close(const int sock)
 {
-    const FileDescriptor::Result result = FileDescriptor::instance()->closeEntry(sock);
-    if (result != FileDescriptor::Success)
+    const FileSystemClient fs;
+
+    const FileSystem::Result result = fs.closeFile(sock);
+    if (result != FileSystem::Success)
     {
         ERROR("failed to close socket " << sock << ": result = " << (int) result);
         return IOError;

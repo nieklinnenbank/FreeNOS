@@ -112,12 +112,13 @@ namespace FileSystem
      */
     struct FileStat
     {
-        FileType type;      /**< File type. */
-        u32 inode;          /**< Inode number */
-        FileModes access;   /**< File access permission bits. */
-        Size size;          /**< Size of the file in bytes. */
-        UserID userID;      /**< User identity. */
-        GroupID groupID;    /**< Group identity. */
+        FileType type;      /**@< File type. */
+        u32 inode;          /**@< Inode number */
+        ProcessID pid;      /**@< Process identifier of filesystem */
+        FileModes access;   /**@< File access permission bits. */
+        Size size;          /**@< Size of the file in bytes. */
+        UserID userID;      /**@< User identity. */
+        GroupID groupID;    /**@< Group identity. */
     };
 
     /**

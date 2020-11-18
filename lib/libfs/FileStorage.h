@@ -88,6 +88,9 @@ class FileStorage : public Storage
     /** Path to the file */
     const char *m_path;
 
+    /** File descriptor of the file */
+    Size m_fd;
+
     /** Client for file system I/O */
     FileSystemClient m_file;
 
