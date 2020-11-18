@@ -103,11 +103,11 @@ class File
     /**
      * Retrieve file statistics.
      *
-     * @param st Buffer to write statistics to.
+     * @param st File statistics output struct
      *
      * @return Result code
      */
-    virtual FileSystem::Result status(FileSystemMessage *msg);
+    virtual FileSystem::Result status(FileSystem::FileStat &st);
 
     /**
      * Check if the File has data ready for reading.

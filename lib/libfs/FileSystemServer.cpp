@@ -255,6 +255,7 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
     FileCache *cache = ZERO;
     File *file = ZERO;
     FileSystemMessage *msg = req.getMessage();
+    FileSystem::FileStat st;
 
     // Copy the file path
     const API::Result result = VMCopy(msg->from, API::Read, (Address) buf,
@@ -305,7 +306,6 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
             }
             else
             {
-                FileSystem::FileStat st;
                 const API::Result stResult = VMCopy(msg->from, API::Read, (Address) &st,
                                                  (Address) msg->stat, sizeof(st));
                 if (stResult != API::Success)
@@ -338,9 +338,20 @@ FileSystem::Result FileSystemServer::processRequest(FileSystemRequest &req)
             break;
 
         case FileSystem::StatFile:
-            if (file->status(msg) == FileSystem::Success)
+            if (file->status(st) == FileSystem::Success)
             {
-                msg->result = FileSystem::Success;
+                // Copy to the remote process
+                const API::Result stResult = VMCopy(msg->from, API::Write, (Address) &st,
+                                                   (Address) msg->stat, sizeof(st));
+                if (stResult == API::Success)
+                {
+                    msg->result = FileSystem::Success;
+                }
+                else
+                {
+                    ERROR("VMCopy failed of FileStat for PID " << msg->from << ": result = " << (int) stResult);
+                    msg->result = FileSystem::IOError;
+                }
             }
             else
             {

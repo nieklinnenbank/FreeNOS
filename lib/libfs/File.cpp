@@ -59,10 +59,8 @@ FileSystem::Result File::write(IOBuffer & buffer,
     return FileSystem::NotSupported;
 }
 
-FileSystem::Result File::status(FileSystemMessage *msg)
+FileSystem::Result File::status(FileSystem::FileStat &st)
 {
-    FileSystem::FileStat st;
-
     // Fill in the status structure
     st.type     = m_type;
     st.inode    = m_inode;
@@ -71,18 +69,7 @@ FileSystem::Result File::status(FileSystemMessage *msg)
     st.userID   = m_uid;
     st.groupID  = m_gid;
 
-    // Copy to the remote process
-    const API::Result result = VMCopy(msg->from, API::Write, (Address) &st,
-                                     (Address) msg->stat, sizeof(st));
-    if (result == API::Success)
-    {
-        return FileSystem::Success;
-    }
-    else
-    {
-        ERROR("VMCopy failed for PID " << msg->from << ": result = " << (int) result);
-        return FileSystem::IOError;
-    }
+    return FileSystem::Success;
 }
 
 bool File::canRead() const
