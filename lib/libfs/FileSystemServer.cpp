@@ -114,12 +114,6 @@ File * FileSystemServer::createFile(const FileSystem::FileType type)
 
 FileSystem::Result FileSystemServer::registerFile(File *file, const char *path)
 {
-    // Add file to the inode map
-    if (!m_inodeMap.insert(file->getInode(), file))
-    {
-        return FileSystem::IOError;
-    }
-
     // Add to the filesystem cache
     FileCache *cache = insertFileCache(file, path);
     if (cache == ZERO)
@@ -652,6 +646,12 @@ FileCache * FileSystemServer::lookupFile(const FileSystemPath &path)
             // Insert into the FileCache
             c = new FileCache(file, *i.current(), c);
             assert(c != NULL);
+
+            // Add file to the inode map
+            if (!m_inodeMap.insert(file->getInode(), file))
+            {
+                return ZERO;
+            }
         }
         // Move to the next entry
         else if (c != ZERO)
@@ -663,6 +663,7 @@ FileCache * FileSystemServer::lookupFile(const FileSystemPath &path)
             break;
         }
     }
+
 
     // All done
     return c;
@@ -679,6 +680,12 @@ FileCache * FileSystemServer::insertFileCache(File *file, const char *pathStr)
         parent = m_root;
     }
     else if (!(parent = findFileCache(path.parent())))
+    {
+        return ZERO;
+    }
+
+    // Add file to the inode map
+    if (!m_inodeMap.insert(file->getInode(), file))
     {
         return ZERO;
     }
