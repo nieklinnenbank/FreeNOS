@@ -51,17 +51,17 @@ namespace FileSystem
      */
     enum Result
     {
-        Success          =  0,
-        InvalidArgument  = -1,
-        NotFound         = -2,
-        RetryAgain       = -3,
-        IOError          = -4,
-        PermissionDenied = -5,
-        AlreadyExists    = -6,
-        NotSupported     = -7,
-        RedirectRequest  = -8,
-        IpcError         = -9,
-        TimedOut         = -10
+        Success = 0,
+        InvalidArgument,
+        NotFound,
+        RetryAgain,
+        IOError,
+        PermissionDenied,
+        AlreadyExists,
+        NotSupported,
+        RedirectRequest,
+        IpcError,
+        TimedOut
     };
 
     /**
