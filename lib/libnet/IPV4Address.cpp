@@ -61,17 +61,14 @@ FileSystem::Result IPV4Address::write(IOBuffer & buffer,
     buffer.read(tmp, size < sizeof(tmp) ? size : sizeof(tmp));
     tmp[sizeof(tmp) - 1] = 0;
 
-    // Try to convert from a text dotted notation to IPV4::Address
-    addr = IPV4::toAddress(tmp);
-    if (!addr)
+    // Address can be provided in 32-bit format or dotted text format
+    if (size == sizeof(IPV4::Address))
     {
-        // If not in text format, it must be given in 32-bit value
-        if (size != sizeof(IPV4::Address))
-        {
-            ERROR("invalid IP addresss format given");
-            return FileSystem::InvalidArgument;
-        }
         MemoryBlock::copy(&addr, tmp, sizeof(addr));
+    }
+    else
+    {
+        addr = IPV4::toAddress(tmp);
     }
 
     DEBUG("address = " << *IPV4::toString(addr));
