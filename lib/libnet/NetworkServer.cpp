@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <Assert.h>
 #include "NetworkServer.h"
 
 NetworkServer::NetworkServer(const char *path)
@@ -47,4 +48,24 @@ void NetworkServer::onProcessTerminated(const ProcessID pid)
     {
         m_device->unregisterSockets(pid);
     }
+}
+
+bool NetworkServer::retryRequests()
+{
+    assert(m_device != ZERO);
+
+    // Process all pending requests
+    while (DeviceServer::retryRequests())
+    {
+    }
+
+    // Start DMA engine
+    const FileSystem::Result result = m_device->startDMA();
+    if (result != FileSystem::Success)
+    {
+        ERROR("failed to start DMA: result = " << (int) result);
+    }
+
+    // All requests done
+    return false;
 }

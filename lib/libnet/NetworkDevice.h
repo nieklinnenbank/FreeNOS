@@ -106,7 +106,7 @@ class NetworkDevice : public Device
     void unregisterSockets(const ProcessID pid);
 
     /**
-     * Transmit one network packet
+     * Add a network packet to the transmit queue.
      *
      * @param buffer Input/Output buffer to input bytes from.
      * @param size Size of the network packet.
@@ -125,6 +125,13 @@ class NetworkDevice : public Device
      */
     virtual FileSystem::Result process(const NetworkQueue::Packet *packet,
                                        const Size offset = 0);
+
+    /**
+     * Start DMA processing
+     *
+     * @return Result code
+     */
+    virtual FileSystem::Result startDMA();
 
   protected:
 

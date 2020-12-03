@@ -97,3 +97,10 @@ FileSystem::Result NetworkDevice::process(const NetworkQueue::Packet *pkt,
     // Let the protocols process the packet
     return m_eth->process(pkt, offset);
 }
+
+FileSystem::Result NetworkDevice::startDMA()
+{
+    DEBUG("");
+
+    return FileSystem::Success;
+}

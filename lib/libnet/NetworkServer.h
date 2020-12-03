@@ -72,6 +72,13 @@ class NetworkServer : public DeviceServer
      */
     virtual void onProcessTerminated(const ProcessID pid);
 
+    /**
+     * Starts DMA on NetworkDevices after all pending requests are done
+     *
+     * @return True if retry is needed again, false if all requests processed
+     */
+    virtual bool retryRequests();
+
   private:
 
     /** Network device instance */

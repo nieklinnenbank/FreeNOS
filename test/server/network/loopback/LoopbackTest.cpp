@@ -55,7 +55,7 @@ TestCase(LoopbackInitialize)
     Loopback *loop = new Loopback(server.getNextInode(), server);
 
     // Initialize
-    server.registerDevice(loop, "io");
+    server.registerNetworkDevice(loop);
     server.m_mountPath = ZERO;
     testAssert(server.initialize() == FileSystem::Success);
     server.m_mountPath = mountPath;
@@ -79,7 +79,7 @@ TestCase(LoopbackUdpPing)
 #endif /* __HOST__ */
 
     // Initialize the server
-    server.registerDevice(loop, "io");
+    server.registerNetworkDevice(loop);
     server.m_mountPath = ZERO;
     testAssert(server.initialize() == FileSystem::Success);
     server.m_mountPath = mountPath;
