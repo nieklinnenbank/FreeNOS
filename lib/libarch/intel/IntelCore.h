@@ -20,6 +20,7 @@
 
 #include <Types.h>
 #include <Macros.h>
+#include "Endian.h"
 #include "IntelIO.h"
 
 /**
@@ -63,7 +64,7 @@ inline u64 timestamp()
 #define cpu_shutdown() \
 ({ \
     IntelIO io; \
-    io.outw(0xB004, 0x0 | 0x2000); \
+    io.outw(0x604, 0x0 | 0x2000); \
 })
 
 /**
