@@ -145,9 +145,24 @@ static API::Result hostVMCtlHandler(ProcessID procID,
         {
             if (range->virt == ZERO)
             {
-                range->virt = range->phys;
+                if (range->phys == ZERO)
+                {
+                    range->virt = (Address) new u8[range->size];
+                }
+                else
+                {
+                    range->virt = range->phys;
+                }
             }
             return API::Success;
+        }
+
+        case Release:
+        {
+            if (range->virt != 0 && range->size != 0)
+            {
+                delete[] (u8 *)(range->virt);
+            }
         }
 
         default:
