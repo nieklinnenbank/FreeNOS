@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/User.h>
+#include <Log.h>
 #include "NetworkQueue.h"
 
 NetworkQueue::NetworkQueue(const Size packetSize,
@@ -22,12 +24,33 @@ NetworkQueue::NetworkQueue(const Size packetSize,
 {
     assert(queueSize <= MaxPackets);
 
-    for (Size i = 0; i < queueSize; i++)
+    m_payloadRange.virt = ZERO;
+    m_payloadRange.phys = ZERO;
+    m_payloadRange.size = PayloadBufferSize * queueSize;
+    m_payloadRange.access = Memory::User | Memory::Readable | Memory::Writable;
+
+    // Ensure size is page aligned
+    if (m_payloadRange.size % PAGESIZE)
     {
-        Packet *packet = new Packet;
-        packet->size = 0;
-        packet->data = new u8[packetSize];
-        m_free.insertAt(i, packet);
+        m_payloadRange.size += PAGESIZE - (m_payloadRange.size % PAGESIZE);
+    }
+
+    // Allocate memory pages for the payload
+    const API::Result result = VMCtl(SELF, MapContiguous, &m_payloadRange);
+    if (result != API::Success)
+    {
+        ERROR("failed to allocate payload buffer: result = " << (int) result);
+    }
+    else
+    {
+        // Allocate packet objects
+        for (Size i = 0; i < queueSize; i++)
+        {
+            Packet *packet = new Packet;
+            packet->size = 0;
+            packet->data = (u8 *) (m_payloadRange.virt + (i * PayloadBufferSize));
+            m_free.insertAt(i, packet);
+        }
     }
 }
 
@@ -38,10 +61,11 @@ NetworkQueue::~NetworkQueue()
         Packet *p = m_free.get(i);
         if (p)
         {
-            delete[] p->data;
             delete p;
         }
     }
+
+    VMCtl(SELF, Release, &m_payloadRange);
 }
 
 NetworkQueue::Packet * NetworkQueue::get()

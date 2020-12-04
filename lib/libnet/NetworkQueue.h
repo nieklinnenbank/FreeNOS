@@ -20,6 +20,7 @@
 
 #include <Types.h>
 #include <Index.h>
+#include <Memory.h>
 
 /**
  * @addtogroup lib
@@ -35,6 +36,9 @@
 class NetworkQueue
 {
   private:
+
+    /** Size of payload memory buffer */
+    static const Size PayloadBufferSize = 2048;
 
     /** Maximum number of packets available */
     static const Size MaxPackets = 64u;
@@ -101,6 +105,9 @@ class NetworkQueue
 
     /** Contains packets with data */
     Index<Packet, MaxPackets> m_data;
+
+    /** Defines the memory range of mapped payload data */
+    Memory::Range m_payloadRange;
 };
 
 /**
