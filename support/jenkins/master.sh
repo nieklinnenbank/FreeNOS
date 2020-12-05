@@ -23,7 +23,7 @@
 # See the README file for more details on the automated Jenkins setup.
 #
 
-JENKINS_VERSION="2.249.3"
+JENKINS_VERSION="2.263.1"
 
 # Include common functions
 source common.sh
