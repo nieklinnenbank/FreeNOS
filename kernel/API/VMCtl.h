@@ -44,6 +44,7 @@ typedef enum MemoryOperation
     ReserveMem,
     AddMem,
     CacheClean,
+    CacheInvalidate,
     CacheCleanInvalidate
 }
 MemoryOperation;

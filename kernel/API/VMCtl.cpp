@@ -123,6 +123,18 @@ API::Result VMCtlHandler(const ProcessID procID,
             break;
         }
 
+        case CacheInvalidate: {
+            Arch::Cache cache;
+            const Cache::Result r = cache.invalidateAddress(Cache::Data, range->virt);
+            if (r != Cache::Success)
+            {
+                ERROR("failed to invalidate cache at address " << (void *) range->virt <<
+                      ": result = " << (int) r);
+                return API::IOError;
+            }
+            break;
+        }
+
         case CacheCleanInvalidate: {
             Arch::Cache cache;
             cache.cleanInvalidate(Cache::Data);

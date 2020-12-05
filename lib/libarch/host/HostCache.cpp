@@ -36,3 +36,8 @@ HostCache::Result HostCache::cleanAddress(HostCache::Type type, Address addr)
 {
     return Success;
 }
+
+HostCache::Result HostCache::invalidateAddress(HostCache::Type type, Address addr)
+{
+    return Success;
+}

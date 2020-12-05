@@ -109,3 +109,8 @@ ARMCacheV6::Result ARMCacheV6::cleanAddress(ARMCacheV6::Type type, Address addr)
     }
     return Success;
 }
+
+ARMCacheV6::Result ARMCacheV6::invalidateAddress(ARMCacheV6::Type type, Address addr)
+{
+    return ARMCacheV6::NotSupported;
+}

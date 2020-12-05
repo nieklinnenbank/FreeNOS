@@ -43,7 +43,8 @@ class Cache
     {
         Success,
         InvalidArgument,
-        IOError
+        IOError,
+        NotSupported
     };
 
     /**
@@ -94,6 +95,16 @@ class Cache
      * @return Result code
      */
     virtual Result cleanAddress(Type type, Address addr) = 0;
+
+    /**
+     * Invalidate one memory page.
+     *
+     * @param type Cache type to invalidate
+     * @param addr Virtual memory address of the page to invalidate
+     *
+     * @return Result code
+     */
+    virtual Result invalidateAddress(Type type, Address addr) = 0;
 
     /**
      * Clean one data page.

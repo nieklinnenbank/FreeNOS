@@ -97,6 +97,16 @@ class ARMCacheV7 : public Cache
      */
     virtual Result cleanAddress(Type type, Address addr);
 
+    /**
+     * Invalidate one memory page.
+     *
+     * @param type Cache type to invalidate
+     * @param addr Virtual memory address of the page to invalidate
+     *
+     * @return Result code
+     */
+    virtual Result invalidateAddress(Type type, Address addr);
+
   private:
 
     /**

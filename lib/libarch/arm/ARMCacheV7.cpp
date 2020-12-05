@@ -120,6 +120,24 @@ ARMCacheV7::Result ARMCacheV7::cleanAddress(ARMCacheV7::Type type, Address addr)
     return Success;
 }
 
+ARMCacheV7::Result ARMCacheV7::invalidateAddress(ARMCacheV7::Type type, Address addr)
+{
+    switch (type)
+    {
+        case Instruction:
+            break;
+
+        case Data:
+            mcr(p15, 0, 1, c7, c6, addr);
+            break;
+
+        case Unified:
+            break;
+    }
+
+    return Success;
+}
+
 u32 ARMCacheV7::getCacheLevelId() const
 {
     u32 levelId;
