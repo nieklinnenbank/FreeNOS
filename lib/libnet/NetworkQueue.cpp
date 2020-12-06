@@ -17,6 +17,7 @@
 
 #include <FreeNOS/User.h>
 #include <Log.h>
+#include <String.h>
 #include "NetworkQueue.h"
 
 NetworkQueue::NetworkQueue(const Size packetSize,
@@ -111,4 +112,27 @@ NetworkQueue::Packet * NetworkQueue::pop()
 bool NetworkQueue::hasData() const
 {
     return m_data.count() > 0;
+}
+
+Log & operator << (Log &log, const NetworkQueue::Packet & pkt)
+{
+    String s;
+
+    for (Size i = 0; i < pkt.size; i++)
+    {
+        if ((i % 16) == 0)
+            s << "\r\n";
+
+        const uint val = pkt.data[i];
+        s << Number::Hex << val;
+
+        if (val >= 0x10)
+            s << " ";
+        else
+            s << "  ";
+    }
+    s << "\r\n";
+
+    log.append(*s);
+    return log;
 }

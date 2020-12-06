@@ -21,6 +21,7 @@
 #include <Types.h>
 #include <Index.h>
 #include <Memory.h>
+#include <Log.h>
 
 /**
  * @addtogroup lib
@@ -109,6 +110,8 @@ class NetworkQueue
     /** Defines the memory range of mapped payload data */
     Memory::Range m_payloadRange;
 };
+
+Log & operator << (Log &log, const NetworkQueue::Packet & pkt);
 
 /**
  * @}

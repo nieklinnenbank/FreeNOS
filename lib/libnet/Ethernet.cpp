@@ -129,7 +129,7 @@ FileSystem::Result Ethernet::process(const NetworkQueue::Packet *pkt,
     const Ethernet::Header *ether = (const Ethernet::Header *) (pkt->data + offset);
     const u16 type = readBe16(&ether->type);
 
-    DEBUG("");
+    DEBUG("packet: size = " << pkt->size << " payload = " << *pkt);
 
     switch (type)
     {
