@@ -126,6 +126,13 @@ class ARMCacheV7 : public Cache
     u32 getCacheLevelId() const;
 
     /**
+     * Get cache line size in bytes
+     *
+     * @return Cache line in bytes
+     */
+    u32 getCacheLineSize() const;
+
+    /**
      * Get cache size.
      *
      * @param level Cache level to get size for
