@@ -53,8 +53,7 @@ int MPI_Init(int *argc, char ***argv)
     // If we are master (node 0):
     if (info.coreId == 0)
     {
-        // provide -n COUNT, --help and other stuff in here too.
-        // to influence the launching of more MPI programs
+        // Retrieve number of cores on the system
         const Core::Result result = coreClient.getCoreCount(coreCount);
         if (result != Core::Success)
         {
@@ -168,7 +167,7 @@ int MPI_Init(int *argc, char ***argv)
         MemoryBlock::set((void *) memChannelBase.virt, 0, memChannelBase.size);
 
         // Format program command
-        snprintf(cmd, MPI_PROG_CMDLEN, "%s -a %x -c %d",
+        snprintf(cmd, MPI_PROG_CMDLEN, "%s %x %d",
                  programPath, memChannelBase.phys, coreCount);
         for (int j = 1; j < *argc; j++)
         {
@@ -191,37 +190,20 @@ int MPI_Init(int *argc, char ***argv)
     }
     else
     {
-        // If we are slave (node N):
-        // read the -addr argument, and map the UniChannels into our address space.
-        for (int i = 1; i < (*argc); i++)
+        // If we are slave (node N): read the memory channel base, corecount arguments
+        if ((*argc) < 3)
         {
-            if (!strcmp((*argv)[i], "--addr") ||
-                !strcmp((*argv)[i], "-a"))
-            {
-                if ((*argc) < i+1)
-                    return MPI_ERR_ARG;
-
-                String s = (*argv)[i+1];
-                memChannelBase.phys = s.toLong(Number::Hex);
-                i++;
-            }
-            else if (!strcmp((*argv)[i], "--cores") ||
-                     !strcmp((*argv)[i], "-c"))
-            {
-                if ((*argc) < i+1)
-                    return MPI_ERR_ARG;
-                coreCount = atoi((*argv)[i+1]);
-                i++;
-            }
-            // Unknown MPI argument. Pass the rest to the user program.
-            else
-            {
-                (*argc) -= (i-1);
-                (*argv)[i-1] = (*argv)[0];
-                (*argv) += (i-1);
-                break;
-            }
+            return MPI_ERR_ARG;
         }
+
+        String s = (*argv)[1];
+        memChannelBase.phys = s.toLong(Number::Hex);
+        coreCount = atoi((*argv)[2]);
+
+        // Pass the rest of the arguments to the user program
+        (*argc) -= 2;
+        (*argv)[1] = (*argv)[0];
+        (*argv) += 2;
     }
 
     // Create MemoryChannels
