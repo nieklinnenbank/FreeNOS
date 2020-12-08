@@ -20,6 +20,7 @@
 
 #include <Types.h>
 #include <Macros.h>
+#include "Endian.h"
 #include "IntelIO.h"
 
 /**
@@ -57,13 +58,12 @@ inline u64 timestamp()
 /**
  * Shutdown the machine via ACPI.
  *
- * @note We do not have ACPI yet. Shutdown now has a bit naive implementation.
- * @see http://forum.osdev.org/viewtopic.php?t=16990
+ * Changes made: changed the outw arguments to support the newer versions of the QEMU. 
  */
 #define cpu_shutdown() \
 ({ \
     IntelIO io; \
-    io.outw(0xB004, 0x0 | 0x2000); \
+    io.outw(0x604, 0x0 | 0x2000); \
 })
 
 /**
