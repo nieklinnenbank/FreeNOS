@@ -21,13 +21,11 @@
 #include <Lz4Decompressor.h>
 #include <Index.h>
 #include <String.h>
-#include <Log.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <fcntl.h>
+#include <BufferedFile.h>
 #include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
+#include <Log.h>
 #include "MPIMessage.h"
 #include "mpi.h"
 
@@ -42,12 +40,10 @@ int MPI_Init(int *argc, char ***argv)
 {
     SystemInformation info;
     const CoreClient coreClient;
-    struct stat st;
     char *programName = (*argv)[0];
     char programPath[64];
     char cmd[MPI_PROG_CMDLEN];
     u8 *programBuffer;
-    int fd;
     Memory::Range memChannelBase;
 
     // If we are master (node 0):
@@ -72,46 +68,17 @@ int MPI_Init(int *argc, char ***argv)
             strlcpy(programPath, programName, sizeof(programPath));
         }
 
-        if (stat(programPath, &st) != 0)
+        // Try to read the raw ELF program data (compressed)
+        BufferedFile programFile(programPath);
+        const BufferedFile::Result readResult = programFile.read();
+        if (readResult != BufferedFile::Success)
         {
-            ERROR("failed to stat program at path '" << programName << "': " << strerror(errno));
-            return MPI_ERR_BAD_FILE;
-        }
-
-        Memory::Range progRange;
-        progRange.virt = 0;
-        progRange.phys = 0;
-        progRange.size = st.st_size;
-        progRange.access = Memory::User | Memory::Readable | Memory::Writable;
-        API::Result vmResult = VMCtl(SELF, MapContiguous, &progRange);
-        if (vmResult != API::Success)
-        {
-            ERROR("failed to allocate program buffer: result = " << (int) vmResult);
-            return MPI_ERR_NO_MEM;
-        }
-
-        programBuffer = (u8 *) progRange.virt;
-        assert(programBuffer != NULL);
-
-        // Read ELF program
-        if ((fd = open(programPath, O_RDONLY)) == -1)
-        {
-            ERROR("failed to open '" << programPath << "': " << strerror(errno));
-            return MPI_ERR_BAD_FILE;
-        }
-        if (read(fd, programBuffer, st.st_size) != st.st_size)
-        {
-            ERROR("failed to read '" << programPath << "': " << strerror(errno));
-            return MPI_ERR_BAD_FILE;
-        }
-        if (close(fd) != 0)
-        {
-            ERROR("failed to close '" << programPath << "': " << strerror(errno));
+            ERROR("failed to read program at path '" << programPath << "': result = " << (int) readResult);
             return MPI_ERR_BAD_FILE;
         }
 
         // Initialize decompressor
-        Lz4Decompressor lz4(programBuffer, st.st_size);
+        Lz4Decompressor lz4(programFile.buffer(), programFile.size());
         Lz4Decompressor::Result lz4Result = lz4.initialize();
         if (lz4Result != Lz4Decompressor::Success)
         {
@@ -125,7 +92,7 @@ int MPI_Init(int *argc, char ***argv)
         uncompProgRange.phys = 0;
         uncompProgRange.size = lz4.getUncompressedSize();
         uncompProgRange.access = Memory::User | Memory::Readable | Memory::Writable;
-        vmResult = VMCtl(SELF, MapContiguous, &uncompProgRange);
+        API::Result vmResult = VMCtl(SELF, MapContiguous, &uncompProgRange);
         if (vmResult != API::Success)
         {
             ERROR("failed to allocate program buffer: result = " << (int) vmResult);
@@ -136,10 +103,10 @@ int MPI_Init(int *argc, char ***argv)
         assert(programBuffer != NULL);
 
         // Decompress entire file
-        const Lz4Decompressor::Result readResult = lz4.read(programBuffer, lz4.getUncompressedSize());
-        if (readResult != Lz4Decompressor::Success)
+        const Lz4Decompressor::Result decompResult = lz4.read(programBuffer, lz4.getUncompressedSize());
+        if (decompResult != Lz4Decompressor::Success)
         {
-            ERROR("failed to decompress program buffer: result = " << (int) readResult);
+            ERROR("failed to decompress program buffer: result = " << (int) decompResult);
             return MPI_ERR_NO_MEM;
         }
 
