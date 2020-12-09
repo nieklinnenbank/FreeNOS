@@ -81,17 +81,26 @@ bool MemoryBlock::compare(const void *p1, const void *p2, const Size count)
     return true;
 }
 
-bool MemoryBlock::compare(const char *p1, const char *p2, Size count)
+bool MemoryBlock::compare(const char *p1, const char *p2, const Size count)
 {
-    for (Size i = count; i > 0 || !count; i--)
+    const char *ch1 = (const char *) p1;
+    const char *ch2 = (const char *) p2;
+    Size bytes = 0;
+
+    while (*ch1 == *ch2)
     {
-        if (!count && (*p1 == ZERO || *p2 == ZERO))
+        if (*ch1 == ZERO || *ch2 == ZERO)
+        {
             break;
+        }
 
-        if (*p1 != *p2)
-            break;
+        ch1++, ch2++, bytes++;
 
-        p1++, p2++;
+        if (count != 0 && bytes >= count)
+        {
+            return true;
+        }
     }
-    return (*p1 == *p2);
+
+    return *ch1 == *ch2;
 }

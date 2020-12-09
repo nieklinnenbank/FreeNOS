@@ -87,7 +87,7 @@ class MemoryBlock
      *
      * @return True if equal, false otherwise.
      */
-    static bool compare(const char *p1, const char *p2, Size count = 0);
+    static bool compare(const char *p1, const char *p2, const Size count = 0);
 };
 
 /**
