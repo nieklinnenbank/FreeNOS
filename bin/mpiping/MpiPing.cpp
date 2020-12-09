@@ -64,22 +64,37 @@ MpiPing::Result MpiPing::exec()
         }
         NOTICE("ping " << (cores - 1) << " cores");
 
+        // Master send a ping and receives a pong from each node
         for (int i = 1; i < cores; i++)
         {
-            const Result recvResult = receivePing(i);
-            if (recvResult != Success)
+            const Result pingResult = sendNumber(i, PingMagicNumber);
+            if (pingResult != Success)
             {
-                ERROR("failed to receive ping from core" << i << ": result = " << (int) recvResult);
+                ERROR("failed to send ping to core" << i << ": result = " << (int) pingResult);
+                return pingResult;
             }
-            else
+
+            const Result pongResult = receiveNumber(i, PongMagicNumber);
+            if (pongResult != Success)
             {
-                NOTICE("ping received from core" << i);
+                ERROR("failed to receive pong from core" << i << ": result = " << (int) pongResult);
+                return pongResult;
             }
+
+            NOTICE("pong received from core" << i);
         }
     }
     else
     {
-        const Result sendResult = sendPing(0);
+        // Slaves first receive a ping from the master, then reply with a pong
+        const Result recvResult = receiveNumber(0, PingMagicNumber);
+        if (recvResult != Success)
+        {
+            ERROR("failed to receive ping from core0: result = " << (int) recvResult);
+            return recvResult;
+        }
+
+        const Result sendResult = sendNumber(0, PongMagicNumber);
         if (sendResult != Success)
         {
             ERROR("failed to send message to core0: result = " << (int) sendResult);
@@ -97,11 +112,12 @@ MpiPing::Result MpiPing::exec()
     return Success;
 }
 
-MpiPing::Result MpiPing::sendPing(const Size coreId) const
+MpiPing::Result MpiPing::sendNumber(const Size coreId,
+                                    const int number) const
 {
-    int buf = PingMagicNumber;
+    int buf = number;
 
-    DEBUG("coreId = " << coreId);
+    DEBUG("coreId = " << coreId << " number = " << (void *)(number));
 
     int result = MPI_Send(&buf, 1, MPI_INT, coreId, 0, MPI_COMM_WORLD);
     if (result != MPI_SUCCESS)
@@ -113,12 +129,13 @@ MpiPing::Result MpiPing::sendPing(const Size coreId) const
     return Success;
 }
 
-MpiPing::Result MpiPing::receivePing(const Size coreId) const
+MpiPing::Result MpiPing::receiveNumber(const Size coreId,
+                                       const int expectedNumber) const
 {
     int buf = 0;
     MPI_Status status;
 
-    DEBUG("coreId = " << coreId);
+    DEBUG("coreId = " << coreId << " expectedNumber = " << (void *)(expectedNumber));
 
     int result = MPI_Recv(&buf, 1, MPI_INT, coreId, 0, MPI_COMM_WORLD, &status);
     if (result != MPI_SUCCESS)
@@ -127,9 +144,10 @@ MpiPing::Result MpiPing::receivePing(const Size coreId) const
         return IOError;
     }
 
-    if (buf != PingMagicNumber)
+    if (buf != expectedNumber)
     {
-        ERROR("invalid message " << (void *)(buf) << " received from core" << coreId);
+        ERROR("invalid message " << (void *)(buf) << " != " << (void *)(expectedNumber) <<
+              " received from core" << coreId);
         return IOError;
     }
 

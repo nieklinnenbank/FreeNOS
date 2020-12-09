@@ -35,6 +35,9 @@ class MpiPing : public POSIXApplication
     /** Magic number to send as ping message */
     static const int PingMagicNumber = 0xaabbccdd;
 
+    /** Magic number send for the pong message */
+    static const int PongMagicNumber = 0x12345678;
+
   public:
 
     /**
@@ -67,22 +70,26 @@ class MpiPing : public POSIXApplication
   private:
 
     /**
-     * Send a ping message
+     * Send a message containing a number
      *
      * @param coreId Core identifier to send the message to
+     * @param number Number value to send
      *
      * @return Result code
      */
-    Result sendPing(const Size coreId) const;
+    Result sendNumber(const Size coreId,
+                      const int number) const;
 
     /**
-     * Receive a ping message
+     * Receive a message containing a number
      *
      * @param coreId Core identifier to receive the message from
+     * @param expectedNumber The expected number value to receive
      *
      * @return Result code
      */
-    Result receivePing(const Size coreId) const;
+    Result receiveNumber(const Size coreId,
+                         const int expectedNumber) const;
 
   private:
 
