@@ -21,15 +21,12 @@
 #include <Lz4Decompressor.h>
 #include <Index.h>
 #include <String.h>
+#include <MemoryBlock.h>
 #include <BufferedFile.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <Log.h>
 #include "MPIMessage.h"
 #include "mpi.h"
 
-#define MPI_PROG_CMDLEN 512
 #define MEMBASE(id) (memChannelBase.phys + (coreCount * PAGESIZE * 2 * (id)))
 
 Size coreCount = 0;
@@ -41,8 +38,8 @@ int MPI_Init(int *argc, char ***argv)
     SystemInformation info;
     const CoreClient coreClient;
     char *programName = (*argv)[0];
-    char programPath[64];
-    char cmd[MPI_PROG_CMDLEN];
+    String programPath;
+    String programCmd;
     u8 *programBuffer;
     Memory::Range memChannelBase;
 
@@ -59,21 +56,21 @@ int MPI_Init(int *argc, char ***argv)
 
         // Read our own ELF program to a buffer and pass it to CoreServer
         // for creating new programs on the remote core.
-        if (strncmp(programName, "/bin/", 5) != 0)
+        if (!MemoryBlock::compare(programName, "/bin/", 5))
         {
-            snprintf(programPath, sizeof(programPath), "/bin/%s", programName);
+            programPath << "/bin/" << programName;
         }
         else
         {
-            strlcpy(programPath, programName, sizeof(programPath));
+            programPath << programName;
         }
 
         // Try to read the raw ELF program data (compressed)
-        BufferedFile programFile(programPath);
+        BufferedFile programFile(*programPath);
         const BufferedFile::Result readResult = programFile.read();
         if (readResult != BufferedFile::Success)
         {
-            ERROR("failed to read program at path '" << programPath << "': result = " << (int) readResult);
+            ERROR("failed to read program at path '" << *programPath << "': result = " << (int) readResult);
             return MPI_ERR_BAD_FILE;
         }
 
@@ -129,20 +126,21 @@ int MPI_Init(int *argc, char ***argv)
         // Clear channel pages
         MemoryBlock::set((void *) memChannelBase.virt, 0, memChannelBase.size);
 
-        // Format program command
-        snprintf(cmd, MPI_PROG_CMDLEN, "%s %x %d",
-                 programPath, memChannelBase.phys, coreCount);
+        // Format program command with MPI specific arguments
+        programCmd << programPath << " " << Number::Hex << (void *)(memChannelBase.phys) <<
+                                     " " << Number::Dec << coreCount;
+
+        // Append additional user arguments
         for (int j = 1; j < *argc; j++)
         {
-            strcat(cmd, " ");
-            strcat(cmd, (*argv)[j]);
+            programCmd << " " << (*argv)[j];
         }
 
         // now create the slaves using coreservers.
         for (Size i = 1; i < coreCount; i++)
         {
             const Core::Result result = coreClient.createProcess(i, (const Address) programBuffer,
-                                                                 lz4.getUncompressedSize(), cmd);
+                                                                 lz4.getUncompressedSize(), *programCmd);
             if (result != Core::Success)
             {
                 ERROR("failed to create process on core" << i << ": result = " << (int) result);
@@ -161,7 +159,8 @@ int MPI_Init(int *argc, char ***argv)
 
         String s = (*argv)[1];
         memChannelBase.phys = s.toLong(Number::Hex);
-        coreCount = atoi((*argv)[2]);
+        s = (*argv)[2];
+        coreCount = s.toLong(Number::Dec);
 
         // Pass the rest of the arguments to the user program
         (*argc) -= 2;
