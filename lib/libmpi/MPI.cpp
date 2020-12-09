@@ -21,11 +21,11 @@
 #include <Lz4Decompressor.h>
 #include <Index.h>
 #include <String.h>
+#include <Log.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include "MPIMessage.h"
@@ -57,22 +57,24 @@ int MPI_Init(int *argc, char ***argv)
         const Core::Result result = coreClient.getCoreCount(coreCount);
         if (result != Core::Success)
         {
-            printf("%s: failed to retrieve core count from CoreServer: %d\n",
-                    programName, (int) result);
+            ERROR("failed to retrieve core count from CoreServer: result = " << (int) result);
             return MPI_ERR_BAD_FILE;
         }
 
         // Read our own ELF program to a buffer and pass it to CoreServer
         // for creating new programs on the remote core.
         if (strncmp(programName, "/bin/", 5) != 0)
+        {
             snprintf(programPath, sizeof(programPath), "/bin/%s", programName);
+        }
         else
+        {
             strlcpy(programPath, programName, sizeof(programPath));
+        }
 
         if (stat(programPath, &st) != 0)
         {
-            printf("%s: failed to stat '%s': %s\n",
-                    programName, programPath, strerror(errno));
+            ERROR("failed to stat program at path '" << programName << "': " << strerror(errno));
             return MPI_ERR_BAD_FILE;
         }
 
@@ -84,7 +86,7 @@ int MPI_Init(int *argc, char ***argv)
         API::Result vmResult = VMCtl(SELF, MapContiguous, &progRange);
         if (vmResult != API::Success)
         {
-            printf("%s: failed to allocate program buffer: result = %d\n", (int)vmResult);
+            ERROR("failed to allocate program buffer: result = " << (int) vmResult);
             return MPI_ERR_NO_MEM;
         }
 
@@ -94,20 +96,17 @@ int MPI_Init(int *argc, char ***argv)
         // Read ELF program
         if ((fd = open(programPath, O_RDONLY)) == -1)
         {
-            printf("%s: failed to open '%s': %s\n",
-                    programName, programPath, strerror(errno));
+            ERROR("failed to open '" << programPath << "': " << strerror(errno));
             return MPI_ERR_BAD_FILE;
         }
         if (read(fd, programBuffer, st.st_size) != st.st_size)
         {
-            printf("%s: failed to read '%s': %s\n",
-                    programName, programPath, strerror(errno));
+            ERROR("failed to read '" << programPath << "': " << strerror(errno));
             return MPI_ERR_BAD_FILE;
         }
         if (close(fd) != 0)
         {
-            printf("%s: failed to close '%s': %s\n",
-                    programName, programPath, strerror(errno));
+            ERROR("failed to close '" << programPath << "': " << strerror(errno));
             return MPI_ERR_BAD_FILE;
         }
 
@@ -116,8 +115,7 @@ int MPI_Init(int *argc, char ***argv)
         Lz4Decompressor::Result lz4Result = lz4.initialize();
         if (lz4Result != Lz4Decompressor::Success)
         {
-            printf("%s: failed to initialize LZ4 decompressor: result = %d\n",
-                    programName, (int) lz4Result);
+            ERROR("failed to initialize LZ4 decompressor: result = " << (int) lz4Result);
             return MPI_ERR_BAD_FILE;
         }
 
@@ -130,8 +128,7 @@ int MPI_Init(int *argc, char ***argv)
         vmResult = VMCtl(SELF, MapContiguous, &uncompProgRange);
         if (vmResult != API::Success)
         {
-            printf("%s: failed to allocate program buffer: result = %d\n",
-                   programName, (int)vmResult);
+            ERROR("failed to allocate program buffer: result = " << (int) vmResult);
             return MPI_ERR_NO_MEM;
         }
 
@@ -142,8 +139,7 @@ int MPI_Init(int *argc, char ***argv)
         const Lz4Decompressor::Result readResult = lz4.read(programBuffer, lz4.getUncompressedSize());
         if (readResult != Lz4Decompressor::Success)
         {
-            printf("failed to decompress program buffer: result = %d\n",
-                    programName, (int) readResult);
+            ERROR("failed to decompress program buffer: result = " << (int) readResult);
             return MPI_ERR_NO_MEM;
         }
 
@@ -154,14 +150,14 @@ int MPI_Init(int *argc, char ***argv)
         memChannelBase.phys = 0;
         memChannelBase.virt = 0;
         memChannelBase.access = Memory::Readable | Memory::Writable | Memory::User;
-        if (VMCtl(SELF, MapContiguous, &memChannelBase) != API::Success)
+        vmResult = VMCtl(SELF, MapContiguous, &memChannelBase);
+        if (vmResult != API::Success)
         {
-            printf("%s: failed to allocate MemoryChannel\n",
-                    programName);
+            ERROR("failed to allocate MemoryChannel: result = " << (int) vmResult);
             return MPI_ERR_NO_MEM;
         }
-        printf("%s: MemoryChannel at physical address %x\n",
-                programName, memChannelBase.phys);
+
+        DEBUG("MemoryChannel at physical address " << (void *) memChannelBase.phys);
 
         // Clear channel pages
         MemoryBlock::set((void *) memChannelBase.virt, 0, memChannelBase.size);
@@ -182,8 +178,7 @@ int MPI_Init(int *argc, char ***argv)
                                                                  lz4.getUncompressedSize(), cmd);
             if (result != Core::Success)
             {
-                printf("%s: failed to create process on core%d: result = %d\n",
-                        programName, i, (int) result);
+                ERROR("failed to create process on core" << i << ": result = " << (int) result);
                 return MPI_ERR_SPAWN;
             }
         }
@@ -193,6 +188,7 @@ int MPI_Init(int *argc, char ***argv)
         // If we are slave (node N): read the memory channel base, corecount arguments
         if ((*argc) < 3)
         {
+            ERROR("invalid number of arguments given");
             return MPI_ERR_ARG;
         }
 
@@ -224,10 +220,9 @@ int MPI_Init(int *argc, char ***argv)
 
         if (info.coreId == 0)
         {
-            printf("%s: read: core%d: data=%x feedback=%x base%d=%x\n", (*argv)[0], i,
-                    MEMBASE(info.coreId) + (PAGESIZE * 2 * i),
-                    MEMBASE(info.coreId) + (PAGESIZE * 2 * i) + PAGESIZE,
-                    i, MEMBASE(i));
+            DEBUG("readChannel: core" << i << ": data = " << (void *) (MEMBASE(info.coreId) + (PAGESIZE * 2 * i)) <<
+                  " feedback = " << (void *) (MEMBASE(info.coreId) + (PAGESIZE * 2 * i) + PAGESIZE) <<
+                  " base" << i << " = " << (void *) (MEMBASE(i)));
         }
     }
 
@@ -242,10 +237,9 @@ int MPI_Init(int *argc, char ***argv)
 
         if (info.coreId == 0)
         {
-            printf("%s: write: core%d: data=%x feedback=%x base%d=%x\n", (*argv)[0], i,
-                    MEMBASE(i) + (PAGESIZE * 2 * info.coreId),
-                    MEMBASE(i) + (PAGESIZE * 2 * info.coreId) + PAGESIZE,
-                    i, MEMBASE(i));
+            DEBUG("writeChannel: core" << i << ": data = " << (void *) (MEMBASE(i) + (PAGESIZE * 2 * info.coreId)) <<
+                  " feedback = " << (void *) (MEMBASE(i) + (PAGESIZE * 2 * info.coreId) + PAGESIZE) <<
+                  " base" << i << " = " << (void *) (MEMBASE(i)));
         }
     }
 
