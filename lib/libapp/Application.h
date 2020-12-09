@@ -149,6 +149,14 @@ class Application
      */
     void usage() const;
 
+  protected:
+
+    /** Input argument count */
+    int m_argc;
+
+    /** Input argument values */
+    char ** m_argv;
+
   private:
 
     /** Program argument parser object */
@@ -156,12 +164,6 @@ class Application
 
     /** Parsed Arguments */
     ArgumentContainer m_arguments;
-
-    /** Input argument count */
-    int m_argc;
-
-    /** Input argument values */
-    char ** m_argv;
 
     /** Program version */
     String m_version;
