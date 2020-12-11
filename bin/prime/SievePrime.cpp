@@ -110,14 +110,24 @@ SievePrime::Result SievePrime::exec()
     // Print the result
     if (arguments().get("stdout"))
     {
+        int written = 0;
+
         for (i = 2; i < n; i++)
         {
             if (map[i] == 1)
+            {
                 output << " " << i;
+                written++;
+            }
+
+            if (written >= 32 || i == n - 1)
+            {
+                output << "\r\n";
+                write(1, *output, output.length());
+                output = "";
+                written = 0;
+            }
         }
-        // Done
-        output << "\r\n";
-        write(1, *output, output.length());
     }
 
     // Done
