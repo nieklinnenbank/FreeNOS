@@ -21,6 +21,11 @@
 
 extern C void * malloc(size_t size)
 {
-    errno = 0;
-    return (void *) new char[size];
+    void *buf = new char[size];
+    if (buf == 0)
+    {
+        errno = ENOMEM;
+    }
+
+    return buf;
 }
