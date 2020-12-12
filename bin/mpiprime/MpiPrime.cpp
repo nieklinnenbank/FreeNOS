@@ -26,11 +26,6 @@
 #include <unistd.h>
 #include "MpiPrime.h"
 
-// Start and end
-#define PERNODE(id, nids, base, n)  (((n) - (base)) / (nids))
-#define START(id, nids, base, n)    ((base) + ((id) * PERNODE(id, nids, base, n)))
-#define END(id, nids, base, n)      (START(id, nids, base, n) + PERNODE(id, nids, base, n))
-
 MpiPrime::MpiPrime(int argc, char **argv)
     : SievePrime(argc, argv)
     , m_mpiInitResult(MPI_Init(&m_argc, &m_argv))
@@ -59,7 +54,7 @@ MpiPrime::Result MpiPrime::initialize()
         return IOError;
     }
 
-    result = MPI_Comm_size(MPI_COMM_WORLD, &m_cores);
+    result = MPI_Comm_size(MPI_COMM_WORLD, (int *) &m_cores);
     if (result != MPI_SUCCESS)
     {
         ERROR("failed to lookup total number of cores: result = " << result);
@@ -86,6 +81,11 @@ MpiPrime::Result MpiPrime::exec()
         n += m_cores;
         n -= (n % m_cores);
     }
+
+    int n_root = sqrt(n);
+    m_numbersPerCore = (n - n_root) / m_cores;
+    m_numberStart = n_root + (m_id * m_numbersPerCore);
+    m_numberEnd = m_numberStart + m_numbersPerCore;
 
     // Try to allocate memory
     if ((map = (u8 *) malloc(n * sizeof(u8))) == NULL)
@@ -140,7 +140,7 @@ MpiPrime::Result MpiPrime::exec()
 MpiPrime::Result MpiPrime::searchParallel(int k, int n, u8 *map)
 {
     SystemClock t1, t2;
-    int i, last, sqrt_of_n = sqrt(n);
+    int sqrt_of_n = sqrt(n);
 
     // Find all primes below sqrt(n) sequentially
     t1.now();
@@ -168,20 +168,19 @@ MpiPrime::Result MpiPrime::searchParallel(int k, int n, u8 *map)
         }
 
         // Mark multiples of k in my range
-        i    = START(m_id, m_cores, sqrt_of_n, n);
-        last = END(m_id, m_cores, sqrt_of_n, n);
-
-        while (i < last)
+        for (Size i = m_numberStart; i < m_numberEnd; i++)
         {
             // Do we need to unmark this number? (no prime)
             if (!(i % k))
+            {
                 map[i] = 0;
-
-            i++;
+            }
         }
+
         // Look for the next prime
         k++;
     }
+
     if (m_id == 0)
     {
         t2.now();
@@ -207,11 +206,11 @@ MpiPrime::Result MpiPrime::searchParallel(int k, int n, u8 *map)
 
 MpiPrime::Result MpiPrime::collect(int n, u8 *map)
 {
-    int i, j, sqrt_of_n = sqrt(n), z;
+    Size copyIndex = m_numbersPerCore + sqrt(n);
     MPI_Status status;
 
     // Allocate temporary buffer
-    u8 *mybuf = (u8 *) malloc(sizeof(u8) * PERNODE(m_id, m_cores, sqrt_of_n, n));
+    u8 *mybuf = (u8 *) malloc(sizeof(u8) * m_numbersPerCore);
     if (mybuf == NULL)
     {
         ERROR("malloc failed: " << strerror(errno));
@@ -221,20 +220,20 @@ MpiPrime::Result MpiPrime::collect(int n, u8 *map)
     if (m_id != 0)
     {
         // Send mybuf to the master
-        MPI_Send(&map[START(m_id, m_cores, sqrt_of_n, n)], PERNODE(m_id, m_cores, sqrt_of_n, n), MPI_UNSIGNED_CHAR, 0, 0, MPI_COMM_WORLD);
+        MPI_Send(&map[m_numberStart], m_numbersPerCore, MPI_UNSIGNED_CHAR, 0, 0, MPI_COMM_WORLD);
     }
     // The master gathers the parts of the list from every worker
     else
     {
-        for (i = 1; i < m_cores; i++)
+        for (Size i = 1; i < m_cores; i++)
         {
             // Receive from worker
-            MPI_Recv(mybuf, PERNODE(m_id, m_cores, sqrt_of_n, n), MPI_UNSIGNED_CHAR, i, 0, MPI_COMM_WORLD, &status);
+            MPI_Recv(mybuf, m_numbersPerCore, MPI_UNSIGNED_CHAR, i, 0, MPI_COMM_WORLD, &status);
 
             // Copy inside our buffer
-            for (j = START(i, m_cores, sqrt_of_n, n), z = 0; j < END(i, m_cores, sqrt_of_n, n); j++)
+            for (Size j = 0; j < m_numbersPerCore; j++)
             {
-                map[j] = mybuf[z++];
+                map[copyIndex++] = mybuf[j];
             }
         }
     }

@@ -94,7 +94,16 @@ class MpiPrime : public SievePrime
     int m_id;
 
     /** Total number of cores */
-    int m_cores;
+    Size m_cores;
+
+    /** Prime numbers calculated per core */
+    Size m_numbersPerCore;
+
+    /** Prime numbers array range start for this core */
+    Size m_numberStart;
+
+    /** Prime numbers array range end for this core */
+    Size m_numberEnd;
 };
 
 /**
