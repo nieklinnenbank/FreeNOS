@@ -73,7 +73,7 @@ class MpiPrime : public SievePrime
      *
      * @return Result code
      */
-    Result searchParallel(int k, int n, unsigned *map);
+    Result searchParallel(int k, int n, u8 *map);
 
     /**
      * Collect prime number results
@@ -83,7 +83,7 @@ class MpiPrime : public SievePrime
      *
      * @return Result code
      */
-    Result collect(int n, unsigned *map);
+    Result collect(int n, u8 *map);
 
   private:
 

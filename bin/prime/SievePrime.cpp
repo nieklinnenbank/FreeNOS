@@ -38,7 +38,7 @@ SievePrime::~SievePrime()
 
 SievePrime::Result SievePrime::exec()
 {
-    uint *map;
+    u8 *map;
     int n, k = 2, i, last, sqrt_of_n;
 
     // Read max number
@@ -46,7 +46,7 @@ SievePrime::Result SievePrime::exec()
     sqrt_of_n = sqrt(n);
 
     // Try to allocate memory
-    if ((map = (uint *) malloc(n * sizeof(uint))) == NULL)
+    if ((map = (u8 *) malloc(n * sizeof(u8))) == NULL)
     {
         ERROR("malloc failed: " << strerror(errno));
         return IOError;
@@ -92,7 +92,7 @@ SievePrime::Result SievePrime::exec()
 }
 
 SievePrime::Result SievePrime::reportResult(const int n,
-                                            const unsigned *map) const
+                                            const u8 *map) const
 {
     // Print the result
     if (arguments().get("stdout"))
@@ -121,7 +121,8 @@ SievePrime::Result SievePrime::reportResult(const int n,
     return Success;
 }
 
-SievePrime::Result SievePrime::searchSequential(int n, unsigned *map) const
+SievePrime::Result SievePrime::searchSequential(const int n,
+                                                u8 *map) const
 {
     int i, j;
 

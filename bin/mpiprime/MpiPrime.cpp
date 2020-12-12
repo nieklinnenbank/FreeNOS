@@ -72,7 +72,7 @@ MpiPrime::Result MpiPrime::initialize()
 MpiPrime::Result MpiPrime::exec()
 {
     int n, k, i;
-    unsigned *map;
+    u8 *map;
     String output;
     SystemClock t1, t2;
 
@@ -88,7 +88,7 @@ MpiPrime::Result MpiPrime::exec()
     }
 
     // Initialize map. Clear all entries
-    map = (unsigned *) malloc(sizeof(unsigned) * n);
+    map = (u8 *) malloc(sizeof(u8) * n);
     for (i = 0; i < n; i++)
         map[i] = 1;
 
@@ -131,7 +131,7 @@ MpiPrime::Result MpiPrime::exec()
     return Success;
 }
 
-MpiPrime::Result MpiPrime::searchParallel(int k, int n, unsigned *map)
+MpiPrime::Result MpiPrime::searchParallel(int k, int n, u8 *map)
 {
     SystemClock t1, t2;
     int i, last, sqrt_of_n = sqrt(n);
@@ -199,17 +199,17 @@ MpiPrime::Result MpiPrime::searchParallel(int k, int n, unsigned *map)
     return Success;
 }
 
-MpiPrime::Result MpiPrime::collect(int n, unsigned *map)
+MpiPrime::Result MpiPrime::collect(int n, u8 *map)
 {
     int i, j, sqrt_of_n = sqrt(n), z;
     MPI_Status status;
-    unsigned *mybuf = (unsigned *) malloc(sizeof(unsigned) * PERNODE(m_id, m_cores, sqrt_of_n, n));
+    u8 *mybuf = (u8 *) malloc(sizeof(u8) * PERNODE(m_id, m_cores, sqrt_of_n, n));
 
     // Every worker sends it's results to the master
     if (m_id != 0)
     {
         // Send mybuf to the master
-        MPI_Send(&map[START(m_id, m_cores, sqrt_of_n, n)], PERNODE(m_id, m_cores, sqrt_of_n, n), MPI_INT, 0, 0, MPI_COMM_WORLD);
+        MPI_Send(&map[START(m_id, m_cores, sqrt_of_n, n)], PERNODE(m_id, m_cores, sqrt_of_n, n), MPI_UNSIGNED_CHAR, 0, 0, MPI_COMM_WORLD);
     }
     // The master gathers the parts of the list from every worker
     else
@@ -217,7 +217,7 @@ MpiPrime::Result MpiPrime::collect(int n, unsigned *map)
         for (i = 1; i < m_cores; i++)
         {
             // Receive from worker
-            MPI_Recv(mybuf, PERNODE(m_id, m_cores, sqrt_of_n, n), MPI_INT, i, 0, MPI_COMM_WORLD, &status);
+            MPI_Recv(mybuf, PERNODE(m_id, m_cores, sqrt_of_n, n), MPI_UNSIGNED_CHAR, i, 0, MPI_COMM_WORLD, &status);
 
             // Copy inside our buffer
             for (j = START(i, m_cores, sqrt_of_n, n), z = 0; j < END(i, m_cores, sqrt_of_n, n); j++)

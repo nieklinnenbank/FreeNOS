@@ -63,7 +63,7 @@ class SievePrime : public POSIXApplication
      * @return Result code
      */
     Result reportResult(const int n,
-                        const unsigned *map) const;
+                        const u8 *map) const;
 
     /**
      * Perform sequential search for prime numbers
@@ -72,7 +72,7 @@ class SievePrime : public POSIXApplication
      * @param map Pointer to array with prime numbers marked
      */
     Result searchSequential(const int n,
-                            unsigned *map) const;
+                            u8 *map) const;
 };
 
 /**
