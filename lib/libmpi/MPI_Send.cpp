@@ -32,18 +32,28 @@ int MPI_Send(const void *buf,
     MPIMessage msg;
     MemoryChannel *ch;
 
-    if (datatype != MPI_INT)
-        return MPI_ERR_UNSUPPORTED_DATAREP;
-
     if (!(ch = writeChannel->get(dest)))
         return MPI_ERR_RANK;
 
     for (int i = 0; i < count; i++)
     {
-        msg.integer = *(((int *) buf) + i);
+        switch (datatype)
+        {
+            case MPI_INT:
+                msg.integer = *(((int *) buf) + i);
+                break;
+
+            case MPI_UNSIGNED_CHAR:
+                msg.uchar = *(((u8 *) buf) + i);
+                break;
+
+            default:
+                return MPI_ERR_UNSUPPORTED_DATAREP;
+        }
 
         while (ch->write(&msg) != Channel::Success)
             ;
     }
+
     return MPI_SUCCESS;
 }

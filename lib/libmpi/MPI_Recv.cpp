@@ -33,9 +33,6 @@ int MPI_Recv(void *buf,
     MPIMessage msg;
     MemoryChannel *ch;
 
-    if (datatype != MPI_INT)
-        return MPI_ERR_UNSUPPORTED_DATAREP;
-
     if (!(ch = readChannel->get(source)))
         return MPI_ERR_RANK;
 
@@ -43,7 +40,21 @@ int MPI_Recv(void *buf,
     {
         while (ch->read(&msg) != Channel::Success)
             ;
-        *(((int *) buf) + i) = msg.integer;
+
+        switch (datatype)
+        {
+            case MPI_INT:
+                *(((int *) buf) + i) = msg.integer;
+                break;
+
+            case MPI_UNSIGNED_CHAR:
+                *(((u8 *) buf) + i) = msg.uchar;
+                break;
+
+            default:
+                return MPI_ERR_UNSUPPORTED_DATAREP;
+        }
     }
+
     return MPI_SUCCESS;
 }

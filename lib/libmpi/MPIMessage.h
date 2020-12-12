@@ -31,6 +31,7 @@ typedef struct MPIMessage
     union
     {
         int integer;
+        u8 uchar;
     };
 }
 MPIMessage;
