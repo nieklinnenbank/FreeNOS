@@ -19,6 +19,7 @@
 #define __BIN_MPIPRIME_MPIPRIME_H
 
 #include <POSIXApplication.h>
+#include "SievePrime.h"
 
 /**
  * @addtogroup bin
@@ -28,7 +29,7 @@
 /**
  * Calculate prime numbers in parallel.
  */
-class MpiPrime : public POSIXApplication
+class MpiPrime : public SievePrime
 {
   private:
 
@@ -63,10 +64,25 @@ class MpiPrime : public POSIXApplication
 
   private:
 
-    Result search_parallel(int k, int n, unsigned *map);
+    /**
+     * Calculate prime numbers in parallel
+     *
+     * @param k Start number to search for primes
+     * @param n Upper limit to search for primes
+     * @param map Pointer to results array
+     *
+     * @return Result code
+     */
+    Result searchParallel(int k, int n, unsigned *map);
 
-    Result search_sequential(int n, unsigned *map);
-
+    /**
+     * Collect prime number results
+     *
+     * @param n Upper limit to search for primes
+     * @param map Pointer to results array
+     *
+     * @return Result code
+     */
     Result collect(int n, unsigned *map);
 
   private:

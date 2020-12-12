@@ -52,15 +52,27 @@ class SievePrime : public POSIXApplication
      */
     virtual Result exec();
 
-  private:
+  protected:
+
+    /**
+     * Report the calculated results
+     *
+     * @param n Maximum number to search for prime numbers
+     * @param map Pointer to array with prime numbers
+     *
+     * @return Result code
+     */
+    Result reportResult(const int n,
+                        const unsigned *map) const;
 
     /**
      * Perform sequential search for prime numbers
      *
-     * @param number Maximum number to search for prime numbers
+     * @param n Maximum number to search for prime numbers
      * @param map Pointer to array with prime numbers marked
      */
-    void searchSequential(int number, unsigned *map) const;
+    Result searchSequential(const int n,
+                            unsigned *map) const;
 };
 
 /**

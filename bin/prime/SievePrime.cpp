@@ -36,31 +36,9 @@ SievePrime::~SievePrime()
 {
 }
 
-void SievePrime::searchSequential(int n, unsigned *map) const
-{
-    int i, j;
-
-    // Sequential algorithm
-    // Next is a prime
-    for (i = 2; i < n; i++)
-    {
-        // Prime number?
-        if (map[i])
-        {
-            // Mask off all multiples
-            for (j = i + 1; j < n; j++)
-            {
-                if (!(j % i))
-                    map[j] = 0;
-            }
-        }
-    }
-}
-
 SievePrime::Result SievePrime::exec()
 {
     uint *map;
-    String output;
     int n, k = 2, i, last, sqrt_of_n;
 
     // Read max number
@@ -107,12 +85,22 @@ SievePrime::Result SievePrime::exec()
         k++;
     }
 
+    reportResult(n, map);
+
+    // Done
+    return Success;
+}
+
+SievePrime::Result SievePrime::reportResult(const int n,
+                                            const unsigned *map) const
+{
     // Print the result
     if (arguments().get("stdout"))
     {
+        String output;
         int written = 0;
 
-        for (i = 2; i < n; i++)
+        for (int i = 2; i < n; i++)
         {
             if (map[i] == 1)
             {
@@ -130,6 +118,28 @@ SievePrime::Result SievePrime::exec()
         }
     }
 
-    // Done
+    return Success;
+}
+
+SievePrime::Result SievePrime::searchSequential(int n, unsigned *map) const
+{
+    int i, j;
+
+    // Sequential algorithm
+    // Next is a prime
+    for (i = 2; i < n; i++)
+    {
+        // Prime number?
+        if (map[i])
+        {
+            // Mask off all multiples
+            for (j = i + 1; j < n; j++)
+            {
+                if (!(j % i))
+                    map[j] = 0;
+            }
+        }
+    }
+
     return Success;
 }

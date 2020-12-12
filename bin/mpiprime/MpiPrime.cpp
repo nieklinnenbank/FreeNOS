@@ -32,13 +32,11 @@
 #define END(id, nids, base, n)      (START(id, nids, base, n) + PERNODE(id, nids, base, n))
 
 MpiPrime::MpiPrime(int argc, char **argv)
-    : POSIXApplication(argc, argv)
+    : SievePrime(argc, argv)
     , m_mpiInitResult(MPI_Init(&m_argc, &m_argv))
     , m_id(0)
 {
     parser().setDescription("Calculate prime numbers in parallel");
-    parser().registerPositional("NUMBER", "Calculate primes up till this upper number limit");
-    parser().registerFlag('o', "stdout", "Write result to standard output");
 }
 
 MpiPrime::~MpiPrime()
@@ -106,7 +104,7 @@ MpiPrime::Result MpiPrime::exec()
 
     // Search for primes until done
     t1.now();
-    search_parallel(k, n, map);
+    searchParallel(k, n, map);
     t2.now();
 
     printf("Search_parallel: ");
@@ -114,26 +112,9 @@ MpiPrime::Result MpiPrime::exec()
     t1.now();
 
     // Only the master reports the results.
-    if (m_id == 0 && arguments().get("stdout") != 0)
+    if (m_id == 0)
     {
-        int written = 0;
-
-        for (i = 2; i < n; i++)
-        {
-            if (map[i] == 1)
-            {
-                output << " " << i;
-                written++;
-            }
-
-            if (written >= 32 || i == n - 1)
-            {
-                output << "\r\n";
-                write(1, *output, output.length());
-                output = "";
-                written = 0;
-            }
-        }
+        reportResult(n, map);
     }
 
     // Free resources
@@ -150,37 +131,14 @@ MpiPrime::Result MpiPrime::exec()
     return Success;
 }
 
-MpiPrime::Result MpiPrime::search_sequential(int n, unsigned *map)
-{
-    int i, j;
-
-    // Sequential algorithm
-    // Next is a prime
-    for (i = 2; i < n; i++)
-    {
-        // Prime number?
-        if (map[i])
-        {
-            // Mask off all multiples
-            for (j = i + 1; j < n; j++)
-            {
-                if (!(j % i))
-                    map[j] = 0;
-            }
-        }
-    }
-
-    return Success;
-}
-
-MpiPrime::Result MpiPrime::search_parallel(int k, int n, unsigned *map)
+MpiPrime::Result MpiPrime::searchParallel(int k, int n, unsigned *map)
 {
     SystemClock t1, t2;
     int i, last, sqrt_of_n = sqrt(n);
 
     // Find all primes below sqrt(n) sequentially
     t1.now();
-    search_sequential(sqrt_of_n, map);
+    searchSequential(sqrt_of_n, map);
 
     if (m_id == 0)
     {
