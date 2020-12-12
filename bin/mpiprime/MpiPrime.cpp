@@ -87,8 +87,14 @@ MpiPrime::Result MpiPrime::exec()
         n -= (n % m_cores);
     }
 
+    // Try to allocate memory
+    if ((map = (u8 *) malloc(n * sizeof(u8))) == NULL)
+    {
+        ERROR("malloc failed: " << strerror(errno));
+        return IOError;
+    }
+
     // Initialize map. Clear all entries
-    map = (u8 *) malloc(sizeof(u8) * n);
     for (i = 0; i < n; i++)
         map[i] = 1;
 
@@ -203,7 +209,13 @@ MpiPrime::Result MpiPrime::collect(int n, u8 *map)
 {
     int i, j, sqrt_of_n = sqrt(n), z;
     MPI_Status status;
+
+    // Allocate temporary buffer
     u8 *mybuf = (u8 *) malloc(sizeof(u8) * PERNODE(m_id, m_cores, sqrt_of_n, n));
+    if (mybuf == NULL)
+    {
+        ERROR("malloc failed: " << strerror(errno));
+    }
 
     // Every worker sends it's results to the master
     if (m_id != 0)
