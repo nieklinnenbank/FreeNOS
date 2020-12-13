@@ -66,8 +66,8 @@ MpiPrime::Result MpiPrime::initialize()
 
 MpiPrime::Result MpiPrime::exec()
 {
-    int n, k, i;
-    u8 *map;
+    int n, k;
+    u8 *root_map, *map;
     String output;
     SystemClock t1, t2;
 
@@ -87,15 +87,26 @@ MpiPrime::Result MpiPrime::exec()
     m_numberStart = n_root + (m_id * m_numbersPerCore);
     m_numberEnd = m_numberStart + m_numbersPerCore;
 
-    // Try to allocate memory
-    if ((map = (u8 *) malloc(n * sizeof(u8))) == NULL)
+    // Allocate memory for root map
+    if ((root_map = (u8 *) malloc(n_root * sizeof(u8))) == NULL)
     {
         ERROR("malloc failed: " << strerror(errno));
         return IOError;
     }
 
-    // Initialize map. Clear all entries
-    for (i = 0; i < n; i++)
+    // Initialize root map. Clear all entries
+    for (int i = 0; i < n_root; i++)
+        root_map[i] = 1;
+
+    // Try to allocate memory for results
+    if ((map = (u8 *) malloc(m_numbersPerCore * sizeof(u8))) == NULL)
+    {
+        ERROR("malloc failed: " << strerror(errno));
+        return IOError;
+    }
+
+    // Initialize results map. Clear all entries
+    for (Size i = 0; i < m_numbersPerCore; i++)
         map[i] = 1;
 
     // We start with 2
@@ -110,7 +121,7 @@ MpiPrime::Result MpiPrime::exec()
 
     // Search for primes until done
     t1.now();
-    searchParallel(k, n, map);
+    searchParallel(k, n, root_map, map);
     t2.now();
 
     printf("Search_parallel: ");
@@ -131,14 +142,14 @@ MpiPrime::Result MpiPrime::exec()
     return Success;
 }
 
-MpiPrime::Result MpiPrime::searchParallel(int k, int n, u8 *map)
+MpiPrime::Result MpiPrime::searchParallel(int k, int n, u8 *rootMap, u8 *map)
 {
     SystemClock t1, t2;
     int sqrt_of_n = sqrt(n);
 
     // Find all primes below sqrt(n) sequentially
     t1.now();
-    searchSequential(sqrt_of_n, map);
+    searchSequential(sqrt_of_n, rootMap);
 
     if (m_id == 0)
     {
@@ -155,7 +166,7 @@ MpiPrime::Result MpiPrime::searchParallel(int k, int n, u8 *map)
     while (k < sqrt_of_n)
     {
         // Prime number?
-        if (!map[k])
+        if (!rootMap[k])
         {
             k++;
             continue;
@@ -167,7 +178,7 @@ MpiPrime::Result MpiPrime::searchParallel(int k, int n, u8 *map)
             // Do we need to unmark this number? (no prime)
             if (!(i % k))
             {
-                map[i] = 0;
+                map[i - m_numberStart] = 0;
             }
         }
 
@@ -184,7 +195,7 @@ MpiPrime::Result MpiPrime::searchParallel(int k, int n, u8 *map)
 
     // Collect results of all workers
     t1.now();
-    collect(n, map);
+    collect(n, rootMap, map);
 
     if (m_id == 0)
     {
@@ -198,44 +209,36 @@ MpiPrime::Result MpiPrime::searchParallel(int k, int n, u8 *map)
     return Success;
 }
 
-MpiPrime::Result MpiPrime::collect(int n, u8 *map)
+MpiPrime::Result MpiPrime::collect(int n, u8 *rootMap, u8 *map)
 {
     MPI_Status status;
     const int sqrt_of_n = sqrt(n);
-
-    // Allocate temporary buffer
-    u8 *mybuf = (u8 *) malloc(sizeof(u8) * m_numbersPerCore);
-    if (mybuf == NULL)
-    {
-        ERROR("malloc failed: " << strerror(errno));
-    }
 
     // Every worker sends it's results to the master
     if (m_id != 0)
     {
         // Send mybuf to the master
-        MPI_Send(&map[m_numberStart], m_numbersPerCore, MPI_UNSIGNED_CHAR, 0, 0, MPI_COMM_WORLD);
+        MPI_Send(map, m_numbersPerCore, MPI_UNSIGNED_CHAR, 0, 0, MPI_COMM_WORLD);
     }
     // The master gathers the parts of the list from every worker
     else
     {
         Size resultsWritten = 0;
-        reportResult(sqrt_of_n, map, resultsWritten);
-        reportResult(m_numbersPerCore, map + sqrt_of_n, resultsWritten, sqrt_of_n);
+        reportResult(sqrt_of_n, rootMap, resultsWritten);
+        reportResult(m_numbersPerCore, map, resultsWritten, sqrt_of_n);
 
         for (Size i = 1; i < m_cores; i++)
         {
             // Receive from worker
-            MPI_Recv(mybuf, m_numbersPerCore, MPI_UNSIGNED_CHAR, i, 0, MPI_COMM_WORLD, &status);
+            MPI_Recv(map, m_numbersPerCore, MPI_UNSIGNED_CHAR, i, 0, MPI_COMM_WORLD, &status);
 
             // Only the master reports the results.
-            reportResult(m_numbersPerCore, mybuf, resultsWritten, (m_numbersPerCore * i) + sqrt_of_n);
+            reportResult(m_numbersPerCore, map, resultsWritten, (m_numbersPerCore * i) + sqrt_of_n);
         }
 
         write(1, "\r\n", 2);
     }
 
     // Cleanup
-    free(mybuf);
     return Success;
 }

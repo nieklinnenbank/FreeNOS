@@ -69,21 +69,23 @@ class MpiPrime : public SievePrime
      *
      * @param k Start number to search for primes
      * @param n Upper limit to search for primes
+     * @param rootMap Pointer to the root primes array
      * @param map Pointer to results array
      *
      * @return Result code
      */
-    Result searchParallel(int k, int n, u8 *map);
+    Result searchParallel(int k, int n, u8 *rootMap, u8 *map);
 
     /**
      * Collect prime number results
      *
      * @param n Upper limit to search for primes
+     * @param rootMap Pointer to the root primes array
      * @param map Pointer to results array
      *
      * @return Result code
      */
-    Result collect(int n, u8 *map);
+    Result collect(int n, u8 *rootMap, u8 *map);
 
   private:
 
