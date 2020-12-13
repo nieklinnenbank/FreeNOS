@@ -40,6 +40,7 @@ SievePrime::Result SievePrime::exec()
 {
     u8 *map;
     int n, k = 2, i, last, sqrt_of_n;
+    Size resultsWritten = 0;
 
     // Read max number
     n = atoi(arguments().get("NUMBER"));
@@ -85,36 +86,43 @@ SievePrime::Result SievePrime::exec()
         k++;
     }
 
-    reportResult(n, map);
+    reportResult(n, map, resultsWritten);
+    write(1, "\r\n", 2);
 
     // Done
     return Success;
 }
 
 SievePrime::Result SievePrime::reportResult(const int n,
-                                            const u8 *map) const
+                                            const u8 *map,
+                                            Size & resultsWritten,
+                                            const Size offsetNumber) const
 {
     // Print the result
     if (arguments().get("stdout"))
     {
         String output;
-        int written = 0;
 
-        for (int i = 2; i < n; i++)
+        for (int i = 0; i < n; i++)
         {
             if (map[i] == 1)
             {
-                output << " " << i;
-                written++;
+                output << " " << (i + offsetNumber);
+                resultsWritten++;
             }
 
-            if (written >= 32 || i == n - 1)
+            if (resultsWritten >= 32)
             {
                 output << "\r\n";
                 write(1, *output, output.length());
                 output = "";
-                written = 0;
+                resultsWritten = 0;
             }
+        }
+
+        if (output.length() > 0)
+        {
+            write(1, *output, output.length());
         }
     }
 

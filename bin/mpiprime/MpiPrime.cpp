@@ -117,12 +117,6 @@ MpiPrime::Result MpiPrime::exec()
     t1.printDiff(t2);
     t1.now();
 
-    // Only the master reports the results.
-    if (m_id == 0)
-    {
-        reportResult(n, map);
-    }
-
     // Free resources
     MPI_Finalize();
     free(map);
@@ -206,8 +200,8 @@ MpiPrime::Result MpiPrime::searchParallel(int k, int n, u8 *map)
 
 MpiPrime::Result MpiPrime::collect(int n, u8 *map)
 {
-    Size copyIndex = m_numbersPerCore + sqrt(n);
     MPI_Status status;
+    const int sqrt_of_n = sqrt(n);
 
     // Allocate temporary buffer
     u8 *mybuf = (u8 *) malloc(sizeof(u8) * m_numbersPerCore);
@@ -225,17 +219,20 @@ MpiPrime::Result MpiPrime::collect(int n, u8 *map)
     // The master gathers the parts of the list from every worker
     else
     {
+        Size resultsWritten = 0;
+        reportResult(sqrt_of_n, map, resultsWritten);
+        reportResult(m_numbersPerCore, map + sqrt_of_n, resultsWritten, sqrt_of_n);
+
         for (Size i = 1; i < m_cores; i++)
         {
             // Receive from worker
             MPI_Recv(mybuf, m_numbersPerCore, MPI_UNSIGNED_CHAR, i, 0, MPI_COMM_WORLD, &status);
 
-            // Copy inside our buffer
-            for (Size j = 0; j < m_numbersPerCore; j++)
-            {
-                map[copyIndex++] = mybuf[j];
-            }
+            // Only the master reports the results.
+            reportResult(m_numbersPerCore, mybuf, resultsWritten, (m_numbersPerCore * i) + sqrt_of_n);
         }
+
+        write(1, "\r\n", 2);
     }
 
     // Cleanup
