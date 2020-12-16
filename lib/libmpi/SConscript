@@ -20,5 +20,15 @@ Import('build_env')
 env = build_env.Clone()
 env.UseLibraries(['libposix', 'libstd', 'libarch', 'libipc',
                   'libfs', 'libexec', 'libapp', 'libruntime' ])
-env.UseServers(['core', 'filesystem'])
-env.TargetLibrary('libmpi', [ Glob('*.cpp') ])
+env.UseLibraries(['libstd', 'libapp'], 'host')
+
+env.UseServers(['core', 'mpiproxy'])
+
+sources = [ 'mpi.cpp' ]
+
+if env['ARCH'] == 'host':
+    sources.append('MpiHost.cpp')
+else:
+    sources.append('MpiTarget.cpp')
+
+env.Library('libmpi', sources)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Niek Linnenbank
+ * Copyright (C) 2020 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,19 +23,28 @@
 #include <String.h>
 #include <MemoryBlock.h>
 #include <BufferedFile.h>
+#include <MemoryChannel.h>
+#include <Index.h>
 #include <Log.h>
 #include "MPIMessage.h"
-#include "mpi.h"
+#include "MpiTarget.h"
 
-#define MEMBASE(id) (memChannelBase.phys + (coreCount * PAGESIZE * 2 * (id)))
+#define MEMBASE(id) (memChannelBase.phys + (m_coreCount * PAGESIZE * 2 * (id)))
 
-Size coreCount = 0;
-Index<MemoryChannel, MPI_MAX_CHANNELS> *readChannel  = 0;
-Index<MemoryChannel, MPI_MAX_CHANNELS> *writeChannel = 0;
-
-int MPI_Init(int *argc, char ***argv)
+template<> MpiBackend* AbstractFactory<MpiBackend>::create()
 {
-    SystemInformation info;
+    return new MpiTarget();
+}
+
+MpiTarget::MpiTarget()
+    : m_coreId(0)
+    , m_coreCount(0)
+{
+}
+
+MpiTarget::Result MpiTarget::initialize(int *argc,
+                                        char ***argv)
+{
     const CoreClient coreClient;
     char *programName = (*argv)[0];
     String programPath;
@@ -43,11 +52,15 @@ int MPI_Init(int *argc, char ***argv)
     u8 *programBuffer;
     Memory::Range memChannelBase;
 
+    // Retrieve our core identifier
+    SystemInformation info;
+    m_coreId = info.coreId;
+
     // If we are master (node 0):
-    if (info.coreId == 0)
+    if (m_coreId == 0)
     {
         // Retrieve number of cores on the system
-        const Core::Result result = coreClient.getCoreCount(coreCount);
+        const Core::Result result = coreClient.getCoreCount(m_coreCount);
         if (result != Core::Success)
         {
             ERROR("failed to retrieve core count from CoreServer: result = " << (int) result);
@@ -110,7 +123,7 @@ int MPI_Init(int *argc, char ***argv)
         // Allocate memory space on the local processor for the whole
         // UniChannel array, NxN communication with MPI.
         // Then pass the channel offset physical address as an argument -addr 0x.... to spawn()
-        memChannelBase.size = (PAGESIZE * 2) * (coreCount * coreCount);
+        memChannelBase.size = (PAGESIZE * 2) * (m_coreCount * m_coreCount);
         memChannelBase.phys = 0;
         memChannelBase.virt = 0;
         memChannelBase.access = Memory::Readable | Memory::Writable | Memory::User;
@@ -128,7 +141,7 @@ int MPI_Init(int *argc, char ***argv)
 
         // Format program command with MPI specific arguments
         programCmd << programPath << " " << Number::Hex << (void *)(memChannelBase.phys) <<
-                                     " " << Number::Dec << coreCount;
+                                     " " << Number::Dec << m_coreCount;
 
         // Append additional user arguments
         for (int j = 1; j < *argc; j++)
@@ -137,7 +150,7 @@ int MPI_Init(int *argc, char ***argv)
         }
 
         // now create the slaves using coreservers.
-        for (Size i = 1; i < coreCount; i++)
+        for (Size i = 1; i < m_coreCount; i++)
         {
             const Core::Result result = coreClient.createProcess(i, (const Address) programBuffer,
                                                                  lz4.getUncompressedSize(), *programCmd);
@@ -160,7 +173,7 @@ int MPI_Init(int *argc, char ***argv)
         String s = (*argv)[1];
         memChannelBase.phys = s.toLong(Number::Hex);
         s = (*argv)[2];
-        coreCount = s.toLong(Number::Dec);
+        m_coreCount = s.toLong(Number::Dec);
 
         // Pass the rest of the arguments to the user program
         (*argc) -= 2;
@@ -169,42 +182,39 @@ int MPI_Init(int *argc, char ***argv)
     }
 
     // Create MemoryChannels
-    assert(coreCount <= MPI_MAX_CHANNELS);
-    readChannel  = new Index<MemoryChannel, MPI_MAX_CHANNELS>();
-    assert(readChannel != NULL);
-    writeChannel = new Index<MemoryChannel, MPI_MAX_CHANNELS>();
-    assert(writeChannel != NULL);
+    assert(m_coreCount > 0);
+    assert(m_coreCount <= MaximumChannels);
 
     // Fill read channels
-    for (Size i = 0; i < coreCount; i++)
+    for (Size i = 0; i < m_coreCount; i++)
     {
         MemoryChannel *ch = new MemoryChannel(Channel::Consumer, sizeof(MPIMessage));
         assert(ch != NULL);
-        ch->setPhysical(MEMBASE(info.coreId) + (PAGESIZE * 2 * i),
-                        MEMBASE(info.coreId) + (PAGESIZE * 2 * i) + PAGESIZE);
-        readChannel->insertAt(i, ch);
+        ch->setPhysical(MEMBASE(m_coreId) + (PAGESIZE * 2 * i),
+                        MEMBASE(m_coreId) + (PAGESIZE * 2 * i) + PAGESIZE);
+        m_readChannels.insertAt(i, ch);
 
-        if (info.coreId == 0)
+        if (m_coreId == 0)
         {
-            DEBUG("readChannel: core" << i << ": data = " << (void *) (MEMBASE(info.coreId) + (PAGESIZE * 2 * i)) <<
-                  " feedback = " << (void *) (MEMBASE(info.coreId) + (PAGESIZE * 2 * i) + PAGESIZE) <<
+            DEBUG("readChannel: core" << i << ": data = " << (void *) (MEMBASE(m_coreId) + (PAGESIZE * 2 * i)) <<
+                  " feedback = " << (void *) (MEMBASE(m_coreId) + (PAGESIZE * 2 * i) + PAGESIZE) <<
                   " base" << i << " = " << (void *) (MEMBASE(i)));
         }
     }
 
     // Fill write channels
-    for (Size i = 0; i < coreCount; i++)
+    for (Size i = 0; i < m_coreCount; i++)
     {
         MemoryChannel *ch = new MemoryChannel(Channel::Producer, sizeof(MPIMessage));
         assert(ch != NULL);
-        ch->setPhysical(MEMBASE(i) + (PAGESIZE * 2 * info.coreId),
-                        MEMBASE(i) + (PAGESIZE * 2 * info.coreId) + PAGESIZE);
-        writeChannel->insertAt(i, ch);
+        ch->setPhysical(MEMBASE(i) + (PAGESIZE * 2 * m_coreId),
+                        MEMBASE(i) + (PAGESIZE * 2 * m_coreId) + PAGESIZE);
+        m_writeChannels.insertAt(i, ch);
 
-        if (info.coreId == 0)
+        if (m_coreId == 0)
         {
-            DEBUG("writeChannel: core" << i << ": data = " << (void *) (MEMBASE(i) + (PAGESIZE * 2 * info.coreId)) <<
-                  " feedback = " << (void *) (MEMBASE(i) + (PAGESIZE * 2 * info.coreId) + PAGESIZE) <<
+            DEBUG("writeChannel: core" << i << ": data = " << (void *) (MEMBASE(i) + (PAGESIZE * 2 * m_coreId)) <<
+                  " feedback = " << (void *) (MEMBASE(i) + (PAGESIZE * 2 * m_coreId) + PAGESIZE) <<
                   " base" << i << " = " << (void *) (MEMBASE(i)));
         }
     }
@@ -212,24 +222,98 @@ int MPI_Init(int *argc, char ***argv)
     return MPI_SUCCESS;
 }
 
-int MPI_Finalize(void)
+MpiTarget::Result MpiTarget::terminate()
 {
     return MPI_SUCCESS;
 }
 
-int MPI_Get_processor_name(char *name, int *resultlen)
+MpiTarget::Result MpiTarget::getCommRank(MPI_Comm comm,
+                                         int *rank)
 {
+    *rank = m_coreId;
     return MPI_SUCCESS;
 }
 
-int MPI_Get_version(int *version, int *subversion)
+MpiTarget::Result MpiTarget::getCommSize(MPI_Comm comm,
+                                         int *size)
 {
-    *version = 3;
-    *subversion = 1;
+    *size = m_coreCount;
     return MPI_SUCCESS;
 }
 
-int MPI_Get_library_version(char *version, int *resultlen)
+MpiTarget::Result MpiTarget::send(const void *buf,
+                                  int count,
+                                  MPI_Datatype datatype,
+                                  int dest,
+                                  int tag,
+                                  MPI_Comm comm)
 {
+    MPIMessage msg;
+    MemoryChannel *ch;
+
+    if (!(ch = m_writeChannels.get(dest)))
+    {
+        return MPI_ERR_RANK;
+    }
+
+    for (int i = 0; i < count; i++)
+    {
+        switch (datatype)
+        {
+            case MPI_INT:
+                msg.integer = *(((int *) buf) + i);
+                break;
+
+            case MPI_UNSIGNED_CHAR:
+                msg.uchar = *(((u8 *) buf) + i);
+                break;
+
+            default:
+                return MPI_ERR_UNSUPPORTED_DATAREP;
+        }
+
+        while (ch->write(&msg) != Channel::Success)
+            ;
+    }
+
+    return MPI_SUCCESS;
+}
+
+MpiTarget::Result MpiTarget::receive(void *buf,
+                                     int count,
+                                     MPI_Datatype datatype,
+                                     int source,
+                                     int tag,
+                                     MPI_Comm comm,
+                                     MPI_Status *status)
+{
+    MPIMessage msg;
+    MemoryChannel *ch;
+
+    if (!(ch = m_readChannels.get(source)))
+    {
+        return MPI_ERR_RANK;
+    }
+
+    for (int i = 0; i < count; i++)
+    {
+        while (ch->read(&msg) != Channel::Success)
+            ;
+
+        switch (datatype)
+        {
+            case MPI_INT:
+                *(((int *) buf) + i) = msg.integer;
+                break;
+
+            case MPI_UNSIGNED_CHAR:
+                *(((u8 *) buf) + i) = msg.uchar;
+                break;
+
+            default:
+                return MPI_ERR_UNSUPPORTED_DATAREP;
+        }
+    }
+
     return MPI_SUCCESS;
 }
