@@ -117,7 +117,7 @@ MpiPing::Result MpiPing::sendNumber(const Size coreId,
 {
     int buf = number;
 
-    DEBUG("coreId = " << coreId << " number = " << (void *)(number));
+    DEBUG("coreId = " << coreId << " number = " << Number::Hex << number);
 
     int result = MPI_Send(&buf, 1, MPI_INT, coreId, 0, MPI_COMM_WORLD);
     if (result != MPI_SUCCESS)
@@ -135,7 +135,7 @@ MpiPing::Result MpiPing::receiveNumber(const Size coreId,
     int buf = 0;
     MPI_Status status;
 
-    DEBUG("coreId = " << coreId << " expectedNumber = " << (void *)(expectedNumber));
+    DEBUG("coreId = " << coreId << " expectedNumber = " << Number::Hex << expectedNumber);
 
     int result = MPI_Recv(&buf, 1, MPI_INT, coreId, 0, MPI_COMM_WORLD, &status);
     if (result != MPI_SUCCESS)
@@ -146,7 +146,7 @@ MpiPing::Result MpiPing::receiveNumber(const Size coreId,
 
     if (buf != expectedNumber)
     {
-        ERROR("invalid message " << (void *)(buf) << " != " << (void *)(expectedNumber) <<
+        ERROR("invalid message " << Number::Hex << buf << " != " << Number::Hex << expectedNumber <<
               " received from core" << coreId);
         return IOError;
     }

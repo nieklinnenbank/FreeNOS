@@ -20,4 +20,5 @@ Import('build_env')
 env = build_env.Clone()
 env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libipc', 'libapp',
                    'libmpi', 'libarch', 'libfs', 'libexec', 'libruntime' ])
-env.TargetProgram('mpiping', Glob('*.cpp'), env['bin'])
+env.UseLibraries([ 'libstd', 'libapp', 'libmpi' ], 'host')
+env.TargetHostProgram('mpiping', Glob('*.cpp'), env['bin'])
