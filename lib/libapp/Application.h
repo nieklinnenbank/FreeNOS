@@ -57,7 +57,8 @@ class Application
         IOError,
         InvalidArgument,
         ShowUsage,
-        TimedOut
+        TimedOut,
+        OutOfMemory
     };
 
   public:

@@ -223,9 +223,9 @@
  */
 
 /**
- * @defgroup server_ipctest ipctest
+ * @defgroup mpiproxy MpiProxy Server
  *
- * Server for testing inter-process communication (IPC) using libipc.
+ * Server that bridges IP/UDP to local MPI communication channels.
  */
 
 /**

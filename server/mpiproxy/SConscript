@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2015 Niek Linnenbank
+# Copyright (C) 2020 Niek Linnenbank
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,17 +18,7 @@
 Import('build_env')
 
 env = build_env.Clone()
-env.UseLibraries(['libposix', 'libstd', 'libarch', 'libipc',
-                  'libfs', 'libexec', 'libapp', 'libruntime' ])
-env.UseLibraries(['libstd', 'libapp', 'libarch' ], 'host')
-
-env.UseServers(['core', 'mpiproxy'])
-
-sources = [ 'mpi.cpp' ]
-
-if env['ARCH'] == 'host':
-    sources.append('MpiHost.cpp')
-else:
-    sources.append('MpiTarget.cpp')
-
-env.Library('libmpi', sources)
+env.UseLibraries([ 'libapp', 'libposix', 'liballoc', 'libstd', 'libexec',
+                   'libarch', 'libipc', 'libruntime', 'libfs', 'libnet', 'libmpi' ])
+env.UseServers(['core'])
+env.TargetProgram('server', [ Glob('*.cpp') ])
