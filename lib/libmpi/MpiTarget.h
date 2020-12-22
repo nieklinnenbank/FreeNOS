@@ -130,11 +130,25 @@ class MpiTarget : public MpiBackend
 
   private:
 
+    /**
+     * Get physical memory base address for local MPI communication
+     *
+     * @param coreId Core identifier
+     *
+     * @return Physical memory base address
+     */
+    Address getMemoryBase(const Size coreId) const;
+
+  private:
+
     /** Core identifier is a unique number on each core */
     Size m_coreId;
 
     /** Total number of cores */
     Size m_coreCount;
+
+    /** Memory base address for local MPI communication */
+    Memory::Range m_memChannelBase;
 
     /** Stores all channels for receiving data from other cores */
     Index<MemoryChannel, MaximumChannels> m_readChannels;

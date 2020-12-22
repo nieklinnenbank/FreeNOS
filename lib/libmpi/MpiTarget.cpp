@@ -29,7 +29,6 @@
 #include "MPIMessage.h"
 #include "MpiTarget.h"
 
-#define MEMBASE(id) (memChannelBase.phys + (m_coreCount * PAGESIZE * 2 * (id)))
 
 template<> MpiBackend* AbstractFactory<MpiBackend>::create()
 {
@@ -40,6 +39,7 @@ MpiTarget::MpiTarget()
     : m_coreId(0)
     , m_coreCount(0)
 {
+    MemoryBlock::set(&m_memChannelBase, 0, sizeof(m_memChannelBase));
 }
 
 MpiTarget::Result MpiTarget::initialize(int *argc,
@@ -50,7 +50,6 @@ MpiTarget::Result MpiTarget::initialize(int *argc,
     String programPath;
     String programCmd;
     u8 *programBuffer;
-    Memory::Range memChannelBase;
 
     // Retrieve our core identifier
     SystemInformation info;
@@ -123,24 +122,24 @@ MpiTarget::Result MpiTarget::initialize(int *argc,
         // Allocate memory space on the local processor for the whole
         // UniChannel array, NxN communication with MPI.
         // Then pass the channel offset physical address as an argument -addr 0x.... to spawn()
-        memChannelBase.size = (PAGESIZE * 2) * (m_coreCount * m_coreCount);
-        memChannelBase.phys = 0;
-        memChannelBase.virt = 0;
-        memChannelBase.access = Memory::Readable | Memory::Writable | Memory::User;
-        vmResult = VMCtl(SELF, MapContiguous, &memChannelBase);
+        m_memChannelBase.size = (PAGESIZE * 2) * (m_coreCount * m_coreCount);
+        m_memChannelBase.phys = 0;
+        m_memChannelBase.virt = 0;
+        m_memChannelBase.access = Memory::Readable | Memory::Writable | Memory::User;
+        vmResult = VMCtl(SELF, MapContiguous, &m_memChannelBase);
         if (vmResult != API::Success)
         {
             ERROR("failed to allocate MemoryChannel: result = " << (int) vmResult);
             return MPI_ERR_NO_MEM;
         }
 
-        DEBUG("MemoryChannel at physical address " << (void *) memChannelBase.phys);
+        DEBUG("MemoryChannel at physical address " << (void *) m_memChannelBase.phys);
 
         // Clear channel pages
-        MemoryBlock::set((void *) memChannelBase.virt, 0, memChannelBase.size);
+        MemoryBlock::set((void *) m_memChannelBase.virt, 0, m_memChannelBase.size);
 
         // Format program command with MPI specific arguments
-        programCmd << programPath << " " << Number::Hex << (void *)(memChannelBase.phys) <<
+        programCmd << programPath << " " << Number::Hex << (void *)(m_memChannelBase.phys) <<
                                      " " << Number::Dec << m_coreCount;
 
         // Append additional user arguments
@@ -171,7 +170,7 @@ MpiTarget::Result MpiTarget::initialize(int *argc,
         }
 
         String s = (*argv)[1];
-        memChannelBase.phys = s.toLong(Number::Hex);
+        m_memChannelBase.phys = s.toLong(Number::Hex);
         s = (*argv)[2];
         m_coreCount = s.toLong(Number::Dec);
 
@@ -190,15 +189,15 @@ MpiTarget::Result MpiTarget::initialize(int *argc,
     {
         MemoryChannel *ch = new MemoryChannel(Channel::Consumer, sizeof(MPIMessage));
         assert(ch != NULL);
-        ch->setPhysical(MEMBASE(m_coreId) + (PAGESIZE * 2 * i),
-                        MEMBASE(m_coreId) + (PAGESIZE * 2 * i) + PAGESIZE);
+        ch->setPhysical(getMemoryBase(m_coreId) + (PAGESIZE * 2 * i),
+                        getMemoryBase(m_coreId) + (PAGESIZE * 2 * i) + PAGESIZE);
         m_readChannels.insertAt(i, ch);
 
         if (m_coreId == 0)
         {
-            DEBUG("readChannel: core" << i << ": data = " << (void *) (MEMBASE(m_coreId) + (PAGESIZE * 2 * i)) <<
-                  " feedback = " << (void *) (MEMBASE(m_coreId) + (PAGESIZE * 2 * i) + PAGESIZE) <<
-                  " base" << i << " = " << (void *) (MEMBASE(i)));
+            DEBUG("readChannel: core" << i << ": data = " << (void *) (getMemoryBase(m_coreId) + (PAGESIZE * 2 * i)) <<
+                  " feedback = " << (void *) (getMemoryBase(m_coreId) + (PAGESIZE * 2 * i) + PAGESIZE) <<
+                  " base" << i << " = " << (void *) (getMemoryBase(i)));
         }
     }
 
@@ -207,15 +206,15 @@ MpiTarget::Result MpiTarget::initialize(int *argc,
     {
         MemoryChannel *ch = new MemoryChannel(Channel::Producer, sizeof(MPIMessage));
         assert(ch != NULL);
-        ch->setPhysical(MEMBASE(i) + (PAGESIZE * 2 * m_coreId),
-                        MEMBASE(i) + (PAGESIZE * 2 * m_coreId) + PAGESIZE);
+        ch->setPhysical(getMemoryBase(i) + (PAGESIZE * 2 * m_coreId),
+                        getMemoryBase(i) + (PAGESIZE * 2 * m_coreId) + PAGESIZE);
         m_writeChannels.insertAt(i, ch);
 
         if (m_coreId == 0)
         {
-            DEBUG("writeChannel: core" << i << ": data = " << (void *) (MEMBASE(i) + (PAGESIZE * 2 * m_coreId)) <<
-                  " feedback = " << (void *) (MEMBASE(i) + (PAGESIZE * 2 * m_coreId) + PAGESIZE) <<
-                  " base" << i << " = " << (void *) (MEMBASE(i)));
+            DEBUG("writeChannel: core" << i << ": data = " << (void *) (getMemoryBase(i) + (PAGESIZE * 2 * m_coreId)) <<
+                  " feedback = " << (void *) (getMemoryBase(i) + (PAGESIZE * 2 * m_coreId) + PAGESIZE) <<
+                  " base" << i << " = " << (void *) (getMemoryBase(i)));
         }
     }
 
@@ -316,4 +315,11 @@ MpiTarget::Result MpiTarget::receive(void *buf,
     }
 
     return MPI_SUCCESS;
+}
+
+Address MpiTarget::getMemoryBase(const Size coreId) const
+{
+    assert(coreId < m_coreCount);
+
+    return m_memChannelBase.phys + (m_coreCount * PAGESIZE * 2 * (coreId));
 }
