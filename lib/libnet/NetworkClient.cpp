@@ -158,9 +158,16 @@ NetworkClient::Result NetworkClient::waitSocket(const NetworkClient::SocketType 
     const FileSystem::Result waitResult = fs.waitFile(*m_deviceName, &waitSet, 1, msecTimeout);
     if (waitResult != FileSystem::Success)
     {
-        ERROR("failed to wait for socket " << sock << " with inode " <<
-               waitSet.inode << ": result = " << (int) waitResult);
-        return IOError;
+        if (waitResult == FileSystem::TimedOut)
+        {
+            return TimedOut;
+        }
+        else
+        {
+            ERROR("failed to wait for socket " << sock << " with inode " <<
+                   waitSet.inode << ": result = " << (int) waitResult);
+            return IOError;
+        }
     }
 
     // File is ready for reading

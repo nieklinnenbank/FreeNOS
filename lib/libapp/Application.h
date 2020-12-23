@@ -56,7 +56,8 @@ class Application
         NotFound,
         IOError,
         InvalidArgument,
-        ShowUsage
+        ShowUsage,
+        TimedOut
     };
 
   public:

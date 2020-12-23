@@ -87,7 +87,8 @@ class NetworkClient
         Success,
         IOError,
         NotFound,
-        NotSupported
+        NotSupported,
+        TimedOut
     };
 
   public:
