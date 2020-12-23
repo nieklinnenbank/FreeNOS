@@ -29,7 +29,6 @@
 #include "MPIMessage.h"
 #include "MpiTarget.h"
 
-
 template<> MpiBackend* AbstractFactory<MpiBackend>::create()
 {
     return new MpiTarget();
@@ -119,10 +118,9 @@ MpiTarget::Result MpiTarget::initialize(int *argc,
             return MPI_ERR_NO_MEM;
         }
 
-        // Allocate memory space on the local processor for the whole
-        // UniChannel array, NxN communication with MPI.
-        // Then pass the channel offset physical address as an argument -addr 0x.... to spawn()
-        m_memChannelBase.size = (PAGESIZE * 2) * (m_coreCount * m_coreCount);
+        // Allocate memory space for two-way communication
+        // between the master and the other processors
+        m_memChannelBase.size = (PAGESIZE * 2) * (m_coreCount) * 2;
         m_memChannelBase.phys = 0;
         m_memChannelBase.virt = 0;
         m_memChannelBase.access = Memory::Readable | Memory::Writable | Memory::User;
@@ -159,6 +157,28 @@ MpiTarget::Result MpiTarget::initialize(int *argc,
                 return MPI_ERR_SPAWN;
             }
         }
+
+        // Fill read channels
+        for (Size i = 1; i < m_coreCount; i++)
+        {
+            const Result readResult = createReadChannel(i, getMemoryBaseRead(i));
+            if (readResult != MPI_SUCCESS)
+            {
+                ERROR("failed to create read MemoryChannel for core" << i << ": result = " << (int) readResult);
+                return readResult;
+            }
+        }
+
+        // Fill write channels
+        for (Size i = 1; i < m_coreCount; i++)
+        {
+            const Result writeResult = createWriteChannel(i, getMemoryBaseWrite(i));
+            if (writeResult != MPI_SUCCESS)
+            {
+                ERROR("failed to create write MemoryChannel for core" << i << ": result = " << (int) writeResult);
+                return writeResult;
+            }
+        }
     }
     else
     {
@@ -171,50 +191,30 @@ MpiTarget::Result MpiTarget::initialize(int *argc,
 
         String s = (*argv)[1];
         m_memChannelBase.phys = s.toLong(Number::Hex);
+
         s = (*argv)[2];
         m_coreCount = s.toLong(Number::Dec);
+        assert(m_coreCount > 0);
+        assert(m_coreCount <= MaximumChannels);
 
         // Pass the rest of the arguments to the user program
         (*argc) -= 2;
         (*argv)[1] = (*argv)[0];
         (*argv) += 2;
-    }
 
-    // Create MemoryChannels
-    assert(m_coreCount > 0);
-    assert(m_coreCount <= MaximumChannels);
-
-    // Fill read channels
-    for (Size i = 0; i < m_coreCount; i++)
-    {
-        MemoryChannel *ch = new MemoryChannel(Channel::Consumer, sizeof(MPIMessage));
-        assert(ch != NULL);
-        ch->setPhysical(getMemoryBase(m_coreId) + (PAGESIZE * 2 * i),
-                        getMemoryBase(m_coreId) + (PAGESIZE * 2 * i) + PAGESIZE);
-        m_readChannels.insertAt(i, ch);
-
-        if (m_coreId == 0)
+        // Create MemoryChannels for communication with the master
+        const Result readResult = createReadChannel(0, getMemoryBaseRead(m_coreId));
+        if (readResult != MPI_SUCCESS)
         {
-            DEBUG("readChannel: core" << i << ": data = " << (void *) (getMemoryBase(m_coreId) + (PAGESIZE * 2 * i)) <<
-                  " feedback = " << (void *) (getMemoryBase(m_coreId) + (PAGESIZE * 2 * i) + PAGESIZE) <<
-                  " base" << i << " = " << (void *) (getMemoryBase(i)));
+            ERROR("failed to create read MemoryChannel for master: result = " << (int) readResult);
+            return readResult;
         }
-    }
 
-    // Fill write channels
-    for (Size i = 0; i < m_coreCount; i++)
-    {
-        MemoryChannel *ch = new MemoryChannel(Channel::Producer, sizeof(MPIMessage));
-        assert(ch != NULL);
-        ch->setPhysical(getMemoryBase(i) + (PAGESIZE * 2 * m_coreId),
-                        getMemoryBase(i) + (PAGESIZE * 2 * m_coreId) + PAGESIZE);
-        m_writeChannels.insertAt(i, ch);
-
-        if (m_coreId == 0)
+        const Result writeResult = createWriteChannel(0, getMemoryBaseWrite(m_coreId));
+        if (writeResult != MPI_SUCCESS)
         {
-            DEBUG("writeChannel: core" << i << ": data = " << (void *) (getMemoryBase(i) + (PAGESIZE * 2 * m_coreId)) <<
-                  " feedback = " << (void *) (getMemoryBase(i) + (PAGESIZE * 2 * m_coreId) + PAGESIZE) <<
-                  " base" << i << " = " << (void *) (getMemoryBase(i)));
+            ERROR("failed to create write MemoryChannel for master: result = " << (int) writeResult);
+            return writeResult;
         }
     }
 
@@ -317,9 +317,78 @@ MpiTarget::Result MpiTarget::receive(void *buf,
     return MPI_SUCCESS;
 }
 
-Address MpiTarget::getMemoryBase(const Size coreId) const
+MpiTarget::Result MpiTarget::createReadChannel(const Size coreId,
+                                               const Address memoryBase)
+{
+    MemoryChannel *ch = new MemoryChannel(Channel::Consumer, sizeof(MPIMessage));
+    if (!ch)
+    {
+        ERROR("failed to allocate consumer MemoryChannel for coreId = " << coreId);
+        return MPI_ERR_NO_MEM;
+    }
+
+    ch->setPhysical(memoryBase, memoryBase + PAGESIZE);
+    m_readChannels.insertAt(coreId, ch);
+
+    if (m_coreId == 0)
+    {
+        DEBUG(m_coreId << ": readChannel: core" << coreId << ": data = " << (void *) memoryBase <<
+              " feedback = " << (void *) (memoryBase + PAGESIZE));
+    }
+
+    return MPI_SUCCESS;
+}
+
+MpiTarget::Result MpiTarget::createWriteChannel(const Size coreId,
+                                                const Address memoryBase)
+{
+    MemoryChannel *ch = new MemoryChannel(Channel::Producer, sizeof(MPIMessage));
+    if (!ch)
+    {
+        ERROR("failed to allocate producer MemoryChannel for coreId = " << coreId);
+        return MPI_ERR_NO_MEM;
+    }
+
+    ch->setPhysical(memoryBase, memoryBase + PAGESIZE);
+    m_writeChannels.insertAt(coreId, ch);
+
+    if (m_coreId == 0)
+    {
+        DEBUG(m_coreId << ": writeChannel: core" << coreId << ": data = " << (void *) memoryBase <<
+              " feedback = " << (void *) (memoryBase + PAGESIZE));
+    }
+
+    return MPI_SUCCESS;
+}
+
+Address MpiTarget::getMemoryBaseRead(const Size coreId) const
 {
     assert(coreId < m_coreCount);
 
-    return m_memChannelBase.phys + (m_coreCount * PAGESIZE * 2 * (coreId));
+    const Address base = m_memChannelBase.phys + (PAGESIZE * 2 * (coreId));
+
+    if (m_coreId == 0)
+    {
+        return base;
+    }
+    else
+    {
+        return base + (PAGESIZE * 2 * m_coreCount);
+    }
+}
+
+Address MpiTarget::getMemoryBaseWrite(const Size coreId) const
+{
+    assert(coreId < m_coreCount);
+
+    const Address base = m_memChannelBase.phys + (PAGESIZE * 2 * (coreId));
+
+    if (m_coreId == 0)
+    {
+        return base + (PAGESIZE * 2 * m_coreCount);
+    }
+    else
+    {
+        return base;
+    }
 }

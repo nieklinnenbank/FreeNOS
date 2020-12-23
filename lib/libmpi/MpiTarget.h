@@ -131,13 +131,44 @@ class MpiTarget : public MpiBackend
   private:
 
     /**
-     * Get physical memory base address for local MPI communication
+     * Create a new MPI channel for reading
+     *
+     * @param coreId Source coreId for reading
+     * @param memoryBase Physical memory base address
+     *
+     * @return Result code
+     */
+    Result createReadChannel(const Size coreId,
+                             const Address memoryBase);
+
+    /**
+     * Create a new MPI channel for writing
+     *
+     * @param coreId Destination coreId for writing
+     * @param memoryBase Physical memory base address
+     *
+     * @return Result code
+     */
+    Result createWriteChannel(const Size coreId,
+                              const Address memoryBase);
+
+    /**
+     * Get memory address for MPI read communication
      *
      * @param coreId Core identifier
      *
      * @return Physical memory base address
      */
-    Address getMemoryBase(const Size coreId) const;
+    Address getMemoryBaseRead(const Size coreId) const;
+
+    /**
+     * Get memory address for MPI write communication
+     *
+     * @param coreId Core identifier
+     *
+     * @return Physical memory base address
+     */
+    Address getMemoryBaseWrite(const Size coreId) const;
 
   private:
 
