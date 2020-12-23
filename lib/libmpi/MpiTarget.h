@@ -131,6 +131,28 @@ class MpiTarget : public MpiBackend
   private:
 
     /**
+     * Initialize the master
+     *
+     * @param argc Argument count pointer
+     * @param argv Argument values array pointer
+     *
+     * @return Result code
+     */
+    Result initializeMaster(int *argc,
+                            char ***argv);
+
+    /**
+     * Initialize a slave
+     *
+     * @param argc Argument count pointer
+     * @param argv Argument values array pointer
+     *
+     * @return Result code
+     */
+    Result initializeSlave(int *argc,
+                           char ***argv);
+
+    /**
      * Create a new MPI channel for reading
      *
      * @param coreId Source coreId for reading
