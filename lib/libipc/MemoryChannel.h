@@ -106,6 +106,13 @@ class MemoryChannel : public Channel
                        const bool hardReset = true);
 
     /**
+     * Unmap memory pages from virtual address space
+     *
+     * @return Result code
+     */
+    Result unmap();
+
+    /**
      * Read a message.
      *
      * @param buffer Output buffer for the message.

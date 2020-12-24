@@ -96,6 +96,23 @@ MemoryChannel::Result MemoryChannel::setPhysical(const Address data,
     return reset(hardReset);
 }
 
+MemoryChannel::Result MemoryChannel::unmap()
+{
+    Result result = Success;
+
+    if (m_data.unmap() != IO::Success)
+    {
+        result = IOError;
+    }
+
+    if (m_feedback.unmap() != IO::Success)
+    {
+        result = IOError;
+    }
+
+    return result;
+}
+
 MemoryChannel::Result MemoryChannel::read(void *buffer)
 {
     RingHead head;
