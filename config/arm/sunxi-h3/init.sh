@@ -17,6 +17,8 @@ stdio /dev/serial/serial0/io /dev/serial/serial0/io
 /server/network/sun8i/server &
 /bin/mount --wait=/network/sun8i
 
+/server/mpiproxy/server sun8i &
+
 # This ensures we wait until all cores
 # are booted by the CoreServer.
 sysinfo
