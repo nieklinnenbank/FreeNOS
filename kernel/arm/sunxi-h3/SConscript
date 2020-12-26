@@ -71,17 +71,18 @@ env.Command('kernel.ub', 'kernel.img', 'mkimage -T kernel -A arm -a 0x40100000 -
 # First part of the Qemu command arguments
 qemu_args = build_env['QEMUCMD'] + ' -kernel ' + build_env['BUILDROOT'] + \
             '/kernel/arm/' + build_env['SYSTEM'] + '/kernel ' + \
-            '-chardev socket,id=charmonitor,path=monitor.dev,server,nowait -monitor chardev:charmonitor '
+            '-chardev socket,id=charmonitor,path=monitor.dev,server,nowait -monitor chardev:charmonitor ' + \
+            '-nographic'
 
 #
 # Qemu targets
 #
-env.Targets(qemu = qemu_args + '-nographic')
+env.Targets(qemu = qemu_args)
 
-env.Targets(qemu_debug = qemu_args + '-nographic -s -S')
+env.Targets(qemu_debug = qemu_args + ' -s -S')
 
-env.Targets(qemu_debugs = qemu_args + '-nographic -s -S -d int,cpu_reset')
+env.Targets(qemu_mpi = qemu_args + ' -net nic,id=net0 -netdev user,id=hub0port0,hostfwd=udp:127.0.0.1:6661-:6660')
 
-env.AutoTester(qemu_test = qemu_args + '-nographic')
+env.AutoTester(qemu_test = qemu_args)
 
-env.AutoTesterLoop(qemu_loop = qemu_args + '-nographic')
+env.AutoTesterLoop(qemu_loop = qemu_args)
