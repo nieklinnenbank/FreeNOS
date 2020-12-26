@@ -21,6 +21,9 @@ stdio /dev/serial/serial0/io /dev/serial/serial0/io
 # are booted by the CoreServer.
 sysinfo
 
+# Try to get an IP address with DHCP
+dhcpc sun8i
+
 #
 # Serial Console
 #
