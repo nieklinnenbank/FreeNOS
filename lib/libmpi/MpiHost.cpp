@@ -278,7 +278,7 @@ MpiHost::Result MpiHost::receive(void *buf,
 
         // The packet must be a data response
         const MpiProxy::Header *header = (const MpiProxy::Header *) packet;
-        if (header->operation != MpiProxy::MpiOpRecvData)
+        if (header->operation != MpiProxy::MpiOpRecv)
         {
             ERROR("invalid response received: op = " << header->operation);
             continue;

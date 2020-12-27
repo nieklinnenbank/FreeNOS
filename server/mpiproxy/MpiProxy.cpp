@@ -280,47 +280,57 @@ MpiProxy::Result MpiProxy::processRecv(const Header *header,
     }
 
     // Read from the channel and send out packet(s)
-    for (Size i = 0; i < header->datacount; i++)
+    for (Size i = 0; i < header->datacount;)
     {
         MPIMessage msg;
         Header *hdr = (Header *) pkt;
         u8 *buf = (u8 *)(hdr + 1);
         Size pktSize = sizeof(Header);
 
-        while (ch->read(&msg) != Channel::Success)
-            ;
-
-        switch (header->datatype)
-        {
-            case MPI_INT:
-                *(((int *) buf) + i) = msg.integer;
-                pktSize += sizeof(int);
-                break;
-
-            case MPI_UNSIGNED_CHAR:
-                *(((u8 *) buf) + i) = msg.uchar;
-                pktSize += sizeof(u8);
-                break;
-
-            default:
-            {
-                ERROR("unsupported datatype = " << header->datatype);
-                return NotFound;
-            }
-        }
-
         // Prepare header
-        hdr->operation = MpiOpRecvData;
+        hdr->operation = MpiOpRecv;
         hdr->result = MPI_SUCCESS;
         hdr->datatype = header->datatype;
-        hdr->datacount = 1;
+        hdr->datacount = 0;
 
-        // UDP send
-        const Result sendResult = udpSend(pkt, pktSize, addr);
-        if (sendResult != Success)
+        while (pktSize < sizeof(pkt) && i < header->datacount)
         {
-            ERROR("failed to send UDP packet: result = " << (int) sendResult);
-            return sendResult;
+            while (ch->read(&msg) != Channel::Success)
+                ;
+
+            switch (header->datatype)
+            {
+                case MPI_INT:
+                    *(((int *) buf) + hdr->datacount) = msg.integer;
+                    pktSize += sizeof(int);
+                    break;
+
+                case MPI_UNSIGNED_CHAR:
+                    *(((u8 *) buf) + hdr->datacount) = msg.uchar;
+                    pktSize += sizeof(u8);
+                    break;
+
+                default:
+                {
+                    ERROR("unsupported datatype = " << header->datatype);
+                    return NotFound;
+                }
+            }
+            // Move to the next data item
+            i++;
+            pktSize++;
+            hdr->datacount++;
+        }
+
+        if (hdr->datacount != 0)
+        {
+            // UDP send
+            const Result sendResult = udpSend(pkt, pktSize, addr);
+            if (sendResult != Success)
+            {
+                ERROR("failed to send UDP packet: result = " << (int) sendResult);
+                return sendResult;
+            }
         }
     }
 

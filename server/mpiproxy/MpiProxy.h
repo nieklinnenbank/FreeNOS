@@ -66,7 +66,6 @@ class MpiProxy : public POSIXApplication
     {
         MpiOpSend = 0,
         MpiOpRecv,
-        MpiOpRecvData,
         MpiOpExec,
         MpiOpTerminate
     };
