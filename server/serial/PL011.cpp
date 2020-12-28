@@ -75,6 +75,7 @@ FileSystem::Result PL011::initialize()
     {
         // Enable Rx/Tx interrupts
         m_io.write(PL011_IMSC, PL011_IMSC_RXIM);
+        ProcessCtl(SELF, EnableIRQ, m_irq);
     }
 
     // Enable PL011, receive & transfer part of UART.

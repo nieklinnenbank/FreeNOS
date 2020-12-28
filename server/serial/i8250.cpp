@@ -35,6 +35,12 @@ i8250::i8250(const u32 irq, const u16 base)
 
 FileSystem::Result i8250::initialize()
 {
+    // Temporary disable interrupts
+    if (!isKernel)
+    {
+        ProcessCtl(SELF, DisableIRQ, m_irq);
+    }
+
     // 8bit Words, no parity
     m_io.outb(LINECONTROL, 3);
 
@@ -52,6 +58,12 @@ FileSystem::Result i8250::initialize()
     m_io.outb(DIVISORLOW,  (11500 / BAUDRATE) & 0xff);
     m_io.outb(DIVISORHIGH, (11500 / BAUDRATE) >> 8);
     m_io.outb(LINECONTROL, m_io.inb(LINECONTROL) & ~(DLAB));
+
+    // Re-Enable interrupts
+    if (!isKernel)
+    {
+        ProcessCtl(SELF, EnableIRQ, m_irq);
+    }
 
     // Done
     return FileSystem::Success;
