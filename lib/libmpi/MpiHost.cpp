@@ -355,6 +355,12 @@ MpiHost::Result MpiHost::parseHostsFile(const char *hostsfile)
     // Add each line as IP address of Execute each command
     for (ListIterator<String> i(lines); i.hasCurrent(); i++)
     {
+        // Skip comment lines
+        if (i.current()[0] == '#')
+        {
+            continue;
+        }
+
         List<String> nodeLine = i.current().split(':');
         Size idx;
 
