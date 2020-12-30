@@ -206,7 +206,7 @@ MpiProxy::Result MpiProxy::processRequest(const u8 *packet,
             return processRecv(hdr, packet, size, addr);
 
         case MpiOpExec:
-            return processExec(hdr, packet, size);
+            return processExec(hdr, packet, size, addr);
 
         case MpiOpTerminate:
             return processTerminate(hdr, packet, size, addr);
@@ -339,9 +339,11 @@ MpiProxy::Result MpiProxy::processRecv(const Header *header,
 
 MpiProxy::Result MpiProxy::processExec(const Header *header,
                                        const u8 *packet,
-                                       const Size size)
+                                       const Size size,
+                                       const struct sockaddr & addr)
 {
     char cmd[FileSystemPath::MaximumLength + 1];
+    Result result = Success;
 
     MemoryBlock::copy(cmd, header + 1, size - sizeof(*header));
     cmd[FileSystemPath::MaximumLength] = 0;
@@ -359,14 +361,28 @@ MpiProxy::Result MpiProxy::processExec(const Header *header,
 
     if (header->coreId == 0)
     {
-        return startLocalProcess(cmd, header->rankId, header->coreCount);
+        result = startLocalProcess(cmd, header->rankId, header->coreCount);
     }
     else
     {
-        return startRemoteProcess(header->coreId, cmd, header->rankId, header->coreCount);
+        result = startRemoteProcess(header->coreId, cmd, header->rankId, header->coreCount);
     }
 
-    return Success;
+    // Send acknowledge of start
+    static u8 pkt[MaximumPacketSize];
+    Header *hdr = (Header *) pkt;
+    hdr->operation = MpiOpExec;
+    hdr->result = result == Success ? MPI_SUCCESS : MPI_ERR_IO;
+    Size pktSize = sizeof(hdr);
+
+    const Result sendResult = udpSend(pkt, pktSize, addr);
+    if (sendResult != Success)
+    {
+        ERROR("failed to send UDP packet: result = " << (int) sendResult);
+        return sendResult;
+    }
+
+    return result;
 }
 
 MpiProxy::Result MpiProxy::processTerminate(const Header *header,

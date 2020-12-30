@@ -192,12 +192,14 @@ class MpiProxy : public POSIXApplication
      * @param header Packet header pointer
      * @param packet Full packet input
      * @param size Number of bytes received
+     * @param addr Source IP and port of the packet
      *
      * @return Result code
      */
     Result processExec(const Header *header,
                        const u8 *packet,
-                       const Size size);
+                       const Size size,
+                       const struct sockaddr & addr);
 
     /**
      * Process MPI terminate request

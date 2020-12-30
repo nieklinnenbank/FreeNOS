@@ -465,6 +465,16 @@ MpiHost::Result MpiHost::startProcesses(int argc,
             ERROR("failed to send packet to nodeId " << i << ": result = " << (int) sendResult);
             return sendResult;
         }
+
+        // Wait for acknowledge
+        Size sz;
+        const Result recvResult = receivePacket(i, MpiProxy::MpiOpExec, packet, sz);
+        if (recvResult != MPI_SUCCESS)
+        {
+            ERROR("failed to receive acknowledge for MpiOpExec from nodeId " <<
+                   i << ": result = " << (int) recvResult);
+            return recvResult;
+        }
     }
 
     return MPI_SUCCESS;
