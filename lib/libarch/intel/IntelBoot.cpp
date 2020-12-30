@@ -37,7 +37,7 @@ void multibootToCoreInfo(MultibootInfo *info)
     // where the upper 128MiB is needed for the KernelPrivate section.
     // Mapping more than that will not work with SplitAllocator::toVirtual().
     // Therefore, use at maximum 1GiB minus 128MiB.
-    if (info->memUpper <= (1024 * 1024)) {
+    if (info->memUpper <= (1024 * (1024 - 128))) {
         coreInfo.memory.size = (info->memUpper * 1024) + MegaByte(1);
     } else {
         coreInfo.memory.size = 1024 * 1024 * (1024 - 128);
