@@ -123,7 +123,7 @@ MpiHost::Result MpiHost::terminate()
         }
 
         // Wait for reply
-        const Result recvResult = receivePacket(packet, packetSize);
+        const Result recvResult = receivePacket(i, MpiProxy::MpiOpTerminate, packet, packetSize);
         if (recvResult != MPI_SUCCESS)
         {
             ERROR("failed to receive UDP packet for rankId = " << i << ": result = " << (int) recvResult);
@@ -269,7 +269,7 @@ MpiHost::Result MpiHost::receive(void *buf,
         Size packetSize = sizeof(packet);
 
         // Receive data packet from the source node
-        const Result recvResult = receivePacket(packet, packetSize);
+        const Result recvResult = receivePacket(source, MpiProxy::MpiOpRecv, packet, packetSize);
         if (recvResult != MPI_SUCCESS)
         {
             ERROR("failed to receive UDP packet for rankId = " << source << ": result = " << (int) recvResult);
@@ -392,6 +392,16 @@ MpiHost::Result MpiHost::parseHostsFile(const char *hostsfile)
             return MPI_ERR_IO;
         }
 
+        // Add packet buffer list
+        List<Packet *> *lst = new List<Packet *>();
+        if (!lst)
+        {
+            ERROR("failed to allocate List<..> object: " << strerror(errno));
+            delete[] contents;
+            return MPI_ERR_NO_MEM;
+        }
+        m_packetBuffers.insertAt(idx, lst);
+
         NOTICE("m_nodes[" << idx << "]: ip = " << *nodeLine[0] << ", port = " << *nodeLine[1] <<
                ", core = " << *nodeLine[2]);
     }
@@ -491,26 +501,98 @@ MpiHost::Result MpiHost::sendPacket(const Size nodeId,
     return MPI_SUCCESS;
 }
 
-MpiHost::Result MpiHost::receivePacket(void *packet,
-                                       Size & size) const
+MpiHost::Result MpiHost::receivePacket(const Size nodeId,
+                                       const MpiProxy::Operation operation,
+                                       void *packet,
+                                       Size & size)
 {
-    DEBUG("");
-
-    struct sockaddr_in addr;
-    socklen_t len = sizeof(addr);
-
-    // Receive UDP datagram
-    int r = recvfrom(m_sock, packet, size, 0,
-                     (struct sockaddr *) &addr, &len);
-    if (r < 0)
+    // Lookup the given node
+    const Node *node = m_nodes.get(nodeId);
+    if (node == ZERO)
     {
-        ERROR("failed to receive UDP datagram: " << strerror(errno));
-        return MPI_ERR_IO;
+        ERROR("nodeId " << nodeId << " not found");
+        return MPI_ERR_ARG;
     }
 
-    size = r;
-    DEBUG("received " << r << " bytes from " << inet_ntoa(addr.sin_addr) <<
-          " at port " << htons(addr.sin_port));
+    in_addr nodeAddr;
+    nodeAddr.s_addr = node->ipAddress;
+    DEBUG("node = " << inet_ntoa(nodeAddr) << " operation = " << (int) operation);
+
+    // Process buffered packets first
+    for (ListIterator<Packet *> i(m_packetBuffers[nodeId]); i.hasCurrent(); i++)
+    {
+        Packet *pkt = i.current();
+        const MpiProxy::Header *hdr = (const MpiProxy::Header *) pkt->data;
+
+        if (hdr->operation == operation)
+        {
+            DEBUG("buffered packet: " << pkt->size << " bytes");
+            MemoryBlock::copy(packet, pkt->data, pkt->size);
+            size = pkt->size;
+            delete[] pkt->data;
+            delete pkt;
+            i.remove();
+            return MPI_SUCCESS;
+        }
+    }
+
+
+    // Keep receiving new packets until we have a matching packet
+    while (true)
+    {
+        struct sockaddr_in addr;
+        socklen_t len = sizeof(addr);
+
+        // Receive UDP datagram
+        int r = recvfrom(m_sock, packet, size, 0,
+                         (struct sockaddr *) &addr, &len);
+        if (r < 0)
+        {
+            ERROR("failed to receive UDP datagram: " << strerror(errno));
+            return MPI_ERR_IO;
+        }
+
+        size = r;
+        DEBUG("received " << r << " bytes from " << inet_ntoa(addr.sin_addr) <<
+              " at port " << htons(addr.sin_port));
+
+        // Is this packet targeted for the given node?
+        if (addr.sin_addr.s_addr == node->ipAddress && htons(addr.sin_port) == node->udpPort)
+        {
+            const MpiProxy::Header *hdr = (const MpiProxy::Header *) packet;
+
+            // Verify the MPI operation
+            if (hdr->operation != operation)
+            {
+                ERROR("invalid MPI operation received in packet from node" << nodeId <<
+                      " (" << inet_ntoa(nodeAddr) << "): " << (int) hdr->operation <<
+                      " != " << (int) operation);
+                return MPI_ERR_IO;
+            }
+
+            return MPI_SUCCESS;
+        }
+        // Add the packet to internal buffers for later retrieval
+        else
+        {
+            Packet *pkt = new Packet;
+            if (!pkt)
+            {
+                ERROR("failed to allocate Packet struct for buffering: " << strerror(errno));
+                return MPI_ERR_NO_MEM;
+            }
+
+            pkt->data = new u8[size];
+            if (!pkt->data)
+            {
+                ERROR("failed to allocate memory for buffered packet: " << strerror(errno));
+                return MPI_ERR_NO_MEM;
+            }
+
+            pkt->size = size;
+            m_packetBuffers[nodeId]->append(pkt);
+        }
+    }
 
     return MPI_SUCCESS;
 }

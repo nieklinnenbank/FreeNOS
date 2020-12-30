@@ -22,6 +22,7 @@
 #include <netinet/in.h>
 #include <Types.h>
 #include <Index.h>
+#include <List.h>
 #include "MpiBackend.h"
 
 /**
@@ -52,6 +53,15 @@ class MpiHost : public MpiBackend
         in_addr_t ipAddress; /**@< IP address of the node */
         u16 udpPort;         /**@< UDP port of the node */
         u32 coreId;          /**@< Local identifier of the core at the node */
+    };
+
+    /**
+     * Describes data received via UDP
+     */
+    struct Packet
+    {
+        u8 *data;            /**@< Payload data */
+        Size size;           /**@< Payload size in bytes */
     };
 
   public:
@@ -179,13 +189,17 @@ class MpiHost : public MpiBackend
     /**
      * Receive UDP packet from remote node
      *
+     * @param nodeId Identification number of the node to receive from
+     * @param operation Expected MPI operation value of the packet
      * @param packet Payload output
      * @param size Output for number of bytes received
      *
      * @return Result code
      */
-    Result receivePacket(void *packet,
-                         Size & size) const;
+    Result receivePacket(const Size nodeId,
+                         const MpiProxy::Operation operation,
+                         void *packet,
+                         Size & size);
 
   private:
 
@@ -194,6 +208,9 @@ class MpiHost : public MpiBackend
 
     /** Contains all known nodes that participate in the computation */
     Index<Node, MaximumNodes> m_nodes;
+
+    /** Buffers incoming packets for later processing */
+    Index<List<Packet *>, MaximumNodes> m_packetBuffers;
 };
 
 /**
