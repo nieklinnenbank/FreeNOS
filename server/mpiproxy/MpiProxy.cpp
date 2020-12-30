@@ -580,6 +580,7 @@ MpiProxy::Result MpiProxy::startLocalProcess(const char *command,
     {
         ERROR("failed to start program on local core: result = " << (int) execResult);
         delete[] argv;
+        return IOError;
     }
 
     NOTICE("started with PID = " << launcher.getPid());
