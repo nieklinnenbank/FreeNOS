@@ -345,6 +345,7 @@ MpiProxy::Result MpiProxy::processExec(const Header *header,
     char cmd[FileSystemPath::MaximumLength + 1];
     Result result = Success;
 
+    MemoryBlock::set(cmd, 0, sizeof(cmd));
     MemoryBlock::copy(cmd, header + 1, size - sizeof(*header));
     cmd[FileSystemPath::MaximumLength] = 0;
 
