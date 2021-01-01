@@ -23,6 +23,7 @@
 #include <Memory.h>
 #include <Array.h>
 #include <POSIXApplication.h>
+#include <sys/socket.h>
 
 class NetworkClient;
 class MemoryChannel;
@@ -136,6 +137,19 @@ class MpiProxy : public POSIXApplication
     Result udpSend(const void *packet,
                    const Size size,
                    const struct sockaddr & addr) const;
+
+    /**
+     * Send multiple UDP packets
+     *
+     * @param vec I/O vector with multiple packets
+     * @param count Number of entries in the I/O vector
+     * @param addr The destination IP and port
+     *
+     * @return Result code
+     */
+    Result udpSendMultiple(const struct iovec *vec,
+                           const Size count,
+                           const struct sockaddr & addr) const;
 
     /**
      * Receive UDP packet

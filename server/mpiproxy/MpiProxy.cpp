@@ -26,6 +26,7 @@
 #include <MemoryChannel.h>
 #include <FileSystemPath.h>
 #include <NetworkClient.h>
+#include <NetworkQueue.h>
 #include <BufferedFile.h>
 #include <MPIMessage.h>
 #include <ApplicationLauncher.h>
@@ -152,6 +153,31 @@ MpiProxy::Result MpiProxy::udpSend(const void *packet,
     return Success;
 }
 
+MpiProxy::Result MpiProxy::udpSendMultiple(const struct iovec *vec,
+                                           const Size count,
+                                           const struct sockaddr & addr) const
+{
+    struct msghdr msg;
+
+    DEBUG("count = " << count);
+
+    // Prepare the message header
+    msg.msg_name = (void *) &addr;
+    msg.msg_namelen = sizeof(addr);
+    msg.msg_iov = (struct iovec *) vec;
+    msg.msg_iovlen = count;
+
+    // Send the packet
+    int result = ::sendmsg(m_sock, &msg, 0);
+    if (result <= 0)
+    {
+        ERROR("failed to send multiple UDP datagrams: " << strerror(errno));
+        return IOError;
+    }
+
+    return Success;
+}
+
 MpiProxy::Result MpiProxy::udpReceive(void *packet,
                                       Size & size,
                                       struct sockaddr & addr) const
@@ -268,7 +294,11 @@ MpiProxy::Result MpiProxy::processRecv(const Header *header,
                                        const struct sockaddr & addr)
 {
     MemoryChannel *ch;
-    static u8 pkt[MaximumPacketSize];
+    static u8 pkts[NetworkQueue::MaxPackets][NetworkQueue::PayloadBufferSize];
+    static struct iovec vec[NetworkQueue::MaxPackets];
+    Size packetCount = 0;
+
+    assert(NetworkQueue::PayloadBufferSize >= MaximumPacketSize);
 
     NOTICE("rankId = " << header->rankId << " datatype = " <<
            header->datatype << " datacount = " << header->datacount);
@@ -283,7 +313,7 @@ MpiProxy::Result MpiProxy::processRecv(const Header *header,
     for (Size i = 0; i < header->datacount;)
     {
         MPIMessage msg;
-        Header *hdr = (Header *) pkt;
+        Header *hdr = (Header *) pkts[packetCount];
         u8 *buf = (u8 *)(hdr + 1);
         Size pktSize = sizeof(Header);
 
@@ -293,7 +323,7 @@ MpiProxy::Result MpiProxy::processRecv(const Header *header,
         hdr->datatype = header->datatype;
         hdr->datacount = 0;
 
-        while (pktSize < sizeof(pkt) && i < header->datacount)
+        while (pktSize < MaximumPacketSize && i < header->datacount)
         {
             while (ch->read(&msg) != Channel::Success)
                 ;
@@ -322,15 +352,21 @@ MpiProxy::Result MpiProxy::processRecv(const Header *header,
             hdr->datacount++;
         }
 
-        if (hdr->datacount != 0)
+        // Fill the I/O vector struct
+        vec[packetCount].iov_base = (void *) hdr;
+        vec[packetCount].iov_len = pktSize;
+        packetCount++;
+
+        if (hdr->datacount != 0 && (packetCount == NetworkQueue::MaxPackets || i >= header->datacount))
         {
             // UDP send
-            const Result sendResult = udpSend(pkt, pktSize, addr);
+            const Result sendResult = udpSendMultiple(vec, packetCount, addr);
             if (sendResult != Success)
             {
-                ERROR("failed to send UDP packet: result = " << (int) sendResult);
+                ERROR("failed to send multiple UDP packets: result = " << (int) sendResult);
                 return sendResult;
             }
+            packetCount = 0;
         }
     }
 
