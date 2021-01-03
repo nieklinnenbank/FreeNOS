@@ -60,7 +60,7 @@ class SunxiSystemControl
         EmacClockDefault  = 0x58000,
         EmacClockMask     = 0xffff8000,
         EmacClockPhyShift = 20,
-        EmacClockLedPol   = (1 << 17),
+        EmacClockLedPoll  = (1 << 17),
         EmacClockShutdown = (1 << 16),
         EmacClockSelect   = (1 << 15),
         EmacClockRmiiEn   = (1 << 13),

@@ -40,6 +40,7 @@ SunxiSystemControl::Result SunxiSystemControl::setupEmac(const uint phyAddr)
     val &= ~(u32)(EmacClockMask);
     val |= EmacClockDefault;
     val |= phyAddr << EmacClockPhyShift;
+    val |= EmacClockLedPoll;
     val &= ~(u32)(EmacClockShutdown);
     val |= EmacClockSelect;
     val &= ~(u32)(EmacClockRmiiEn);
