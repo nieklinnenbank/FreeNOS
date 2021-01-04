@@ -90,7 +90,12 @@ FileSystem::Result Sun8iEmac::initialize()
     }
 
     // Reset the hardware
-    reset();
+    const FileSystem::Result resetResult = reset();
+    if (resetResult != FileSystem::Success)
+    {
+        ERROR("hardware reset failed: result = " << (int) resetResult);
+        return resetResult;
+    }
 
     // Initialize network protocols stack
     const FileSystem::Result result = NetworkDevice::initialize();
