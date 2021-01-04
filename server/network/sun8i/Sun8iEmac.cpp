@@ -477,8 +477,8 @@ FileSystem::Result Sun8iEmac::configPhy()
     if (!((val & MiiStatusAutoCompl) &&
           (val & MiiStatusLink)))
     {
-        ERROR("timeout waiting for auto negociation/link: status = " << (void *) val);
-        return FileSystem::IOError;
+        WARNING("timeout waiting for auto negociation/link: status = " << (void *) val);
+        return FileSystem::Success;
     }
 
     DEBUG("status = " << (void *) val);
