@@ -61,7 +61,10 @@ void DeviceServer::registerDevice(Device *dev, const char *path)
 
     // Add to the list of Devices
     const bool result = m_devices.insert(dev);
-    assert(result);
+    if (!result)
+    {
+        FATAL("failed to register device on path: " << path);
+    }
 }
 
 void DeviceServer::registerInterrupt(Device *dev, Size vector)
