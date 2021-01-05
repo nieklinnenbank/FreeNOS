@@ -54,7 +54,7 @@ class Sun8iEmac : public NetworkDevice
     static const u8 PhyMdioAddress = 0x1;
 
     /** Maximum number of polling reads for MII-busy flag */
-    static const Size MaximumMiiPoll = 1000000;
+    static const Size MaximumMiiPoll = 100000;
 
     /**
      * Hardware registers
