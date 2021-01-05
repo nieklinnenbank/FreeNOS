@@ -56,6 +56,9 @@ class Sun8iEmac : public NetworkDevice
     /** Maximum number of polling reads for MII-busy flag */
     static const Size MaximumMiiPoll = 100000;
 
+    /** Maximum number of polling reset iterations */
+    static const Size MaximumResetPoll = 100000;
+
     /**
      * Hardware registers
      */

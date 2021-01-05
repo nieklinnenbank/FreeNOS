@@ -604,7 +604,20 @@ FileSystem::Result Sun8iEmac::reset()
     m_io.write(BasicCtl1, BasicCtl1Reset);
 
     // Wait for reset to complete
-    while (m_io.read(BasicCtl1) & BasicCtl1Reset);
+    for (Size i = 0; i < MaximumResetPoll; i++)
+    {
+        if (!(m_io.read(BasicCtl1) & BasicCtl1Reset))
+        {
+            break;
+        }
+    }
+
+    // Did the hardware reset complete?
+    if (m_io.read(BasicCtl1) & BasicCtl1Reset)
+    {
+        ERROR("basic hardware reset failed");
+        return FileSystem::IOError;
+    }
 
     // Apply saved MAC address
     const FileSystem::Result macWrite = setAddress(&mac);
