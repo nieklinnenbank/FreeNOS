@@ -30,6 +30,10 @@
 
 /**
  * Memory block operations class
+ *
+ * @todo Add architecture specific implementations for extra speed. The alternative
+ *       implementations should be placed in libarch without creating a new dependency in libstd,
+ *       for example using weak symbols.
  */
 class MemoryBlock
 {

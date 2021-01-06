@@ -29,6 +29,12 @@
 
 /**
  * Generic Kernel API implementation.
+ *
+ * @todo System calls currently do not verify whether a process has permission to use it.
+ *       Possible solution is to add a capability based mechanism, that defines whether a Process
+ *       is allowed to execute the system call. Capabilities can describe any resource owned by the Process.
+ *       For example, a virtual or physical memory range. Capabilities may be transferred between core local
+ *       and remote processes.
  */
 class API
 {

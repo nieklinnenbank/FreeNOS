@@ -56,6 +56,9 @@ extern C void __cxa_guard_release(u32 *guard)
     *guard = 1;
 }
 
+/**
+ * @todo Actually invoke the list of static destructors
+ */
 extern C int __cxa_atexit(void (*func) (void *),
                           void * arg, void * dso_handle)
 {

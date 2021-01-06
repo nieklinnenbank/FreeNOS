@@ -59,6 +59,10 @@ inline API::Result VMCopy(const ProcessID proc,
  * @{
  */
 
+/**
+ * @bug VMCopyHandler assumes the theirs parameter points to memory mapped as a small page (PAGESIZE, 4KiB)
+ *      When that memory is actually a large mapping (for example 1MiB on ARM), the internal pageOff variable will be zero.
+ */
 extern API::Result VMCopyHandler(const ProcessID proc,
                                  const API::Operation how,
                                  const Address ours,

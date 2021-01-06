@@ -38,8 +38,13 @@ class MemoryChannel;
 /**
  * Server that bridges IP/UDP to local MPI communication channels
  *
- * @note This server should only be used on a trusted network.
- *       No authentication or encryption supported!
+ * @warning This server should only be used on a trusted network.
+ *          No authentication or encryption supported!
+ *
+ * @todo This server might be able re-use the MpiTarget class by inheritance or as a member instance
+ *
+ * @todo MpiProxy protocol currently uses UDP which does not protect against packet loss or corruption.
+ *       A simple solution can be implemented by using retransmissions and acknowledge packets
  */
 class MpiProxy : public POSIXApplication
 {
@@ -195,6 +200,8 @@ class MpiProxy : public POSIXApplication
      * @param addr Source IP and port of the packet
      *
      * @return Result code
+     *
+     * @todo Check if a computation is already running and reject the request if so
      */
     Result processExec(const Header *header,
                        const u8 *packet,

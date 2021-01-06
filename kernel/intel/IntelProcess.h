@@ -31,6 +31,9 @@
 
 /**
  * Process which may execute on an Intel CPU.
+ *
+ * @todo IntelProcess currently has a per-process kernel stack, while the ARMProcess does not.
+ *       The kernel stack should not be needed anymore, and can be removed to reduce overhead.
  */
 class IntelProcess : public Process
 {

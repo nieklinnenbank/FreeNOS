@@ -73,6 +73,9 @@ class IOBuffer
      * Set filesystem message
      *
      * @param msg FileSystemMessage pointer
+     *
+     * @todo Only allow direct-mapping if the remote buffer size is a multiple of PAGESIZE.
+     *       If the size isnt a full page, the rest of the page might contain other data.
      */
     void setMessage(const FileSystemMessage *msg);
 

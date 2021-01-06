@@ -30,7 +30,7 @@
  */
 
 /**
- * @brief Defined Constants
+ * @name Defined Constants
  * @{
  */
 
@@ -152,7 +152,7 @@ enum
  */
 
 /**
- * @brief Environmental Management
+ * @name Environmental Management
  * @{
  */
 
@@ -165,7 +165,7 @@ extern C int MPI_Finalize(void);
  */
 
 /**
- * @brief Communicator Contexts
+ * @name Communicator Contexts
  * @{
  */
 
@@ -180,7 +180,10 @@ extern C int MPI_Comm_size(MPI_Comm comm,
  */
 
 /**
- * @brief Point-to-Point Communication
+ * @name Point-to-Point Communication
+ *
+ * @todo MPI_Scatter, MPI_Gather not yet supported.
+ *
  * @{
  */
 

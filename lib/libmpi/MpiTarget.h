@@ -32,7 +32,10 @@
  */
 
 /**
- * Represents a Message Passing Interface (MPI) implementation backend.
+ * Implements a Message Passing Interface (MPI) for communication between local cores.
+ *
+ * @todo Currently only supports communication between the master and slaves.
+ *       Direct communication between slave cores is not implemented.
  */
 class MpiTarget : public MpiBackend
 {

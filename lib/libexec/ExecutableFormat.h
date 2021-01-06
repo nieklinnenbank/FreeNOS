@@ -113,7 +113,10 @@ class ExecutableFormat
      * @param image Program image to read.
      * @param size Program image size.
      * @param fmt ExecutableFormat object pointer on output.
+     *
      * @return Result code.
+     *
+     * @todo Invoke Lz4Decompressor inside this function so that the various callers do not need to anymore
      */
     static Result find(const u8 *image, const Size size, ExecutableFormat **fmt);
 

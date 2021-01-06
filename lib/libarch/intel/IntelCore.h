@@ -57,7 +57,8 @@ inline u64 timestamp()
 /**
  * Shutdown the machine via ACPI.
  *
- * @note We do not have ACPI yet. Shutdown now has a bit naive implementation.
+ * @todo FreeNOS does not yet have a full ACPI implementation. Shutdown now has a bit naive implementation.
+ *
  * @see http://forum.osdev.org/viewtopic.php?t=16990
  */
 #define cpu_shutdown() \

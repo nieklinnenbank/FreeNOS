@@ -35,6 +35,20 @@
  * Recovery Server
  *
  * Provides fault tolerance to servers by restarting on errors (recovery)
+ *
+ * @todo Support automatic restart of a process when a CPU exception occurs
+ *
+ * @todo Pro-actively send ping/pong requests to processes to verify they
+ *       are still running properly and are not inside an infinite loop.
+ *
+ * @todo Modify FileSystemServer to use new peek() and seek()
+ *       functions of MemoryChannel to support mid-transaction recovery.
+ *
+ * @todo Update various servers to actually use the DatastoreServer for storing persistent data
+ *       that needs to be preserved on restart. For example, the block cache in TmpFileSystem.
+ *
+ * @todo Add a fault injection tester that modifies the memory of running programs to introduce/simulate
+ *       software errors and verify that the system keeps running while the programs are restarted.
  */
 class RecoveryServer : public ChannelServer<RecoveryServer, RecoveryMessage>
 {

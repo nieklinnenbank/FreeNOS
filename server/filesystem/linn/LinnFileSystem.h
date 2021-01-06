@@ -65,6 +65,8 @@
  * static in size, i.e. 64-bytes. Those changes make it easier to program
  * the FileSystem implementation, thus easier to understand and learn from.
  *
+ * @todo Currently the LinnFileSystem is read-only and does not support writing.
+ *
  * @see FileSystemServer
  * @see Ext2FileSystem
  */

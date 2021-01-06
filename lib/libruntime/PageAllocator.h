@@ -70,9 +70,14 @@ class PageAllocator : public Allocator
      * Release memory.
      *
      * @param addr Points to memory previously returned by allocate().
+     *
      * @return Result value.
      *
      * @see allocate
+     *
+     * @todo Currently this function does not actually release memory back to the system.
+     *       A potential problem with the current implementation is that releasing memory
+     *       may result in fragmented virtual memory that may break higher-level allocators.
      */
     virtual Result release(const Address addr);
 

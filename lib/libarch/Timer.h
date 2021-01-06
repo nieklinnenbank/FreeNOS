@@ -148,6 +148,8 @@ class Timer
      * @param info Timer info value to compare
      *
      * @return True if expired, false otherwise
+     *
+     * @bug This function does not take into account a potential wrap-around of the m_ticks member (integer overflow)
      */
     bool isExpired(const Info & info) const;
 

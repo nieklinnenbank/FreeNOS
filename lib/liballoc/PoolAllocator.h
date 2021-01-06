@@ -36,6 +36,11 @@
  *
  * Allocates memory from pools each having the size of a power of two.
  * Each pool is pre-allocated and has a bitmap representing free blocks.
+ *
+ * @todo While this Allocator works well, its performance can be improved. The BitAllocator
+ *       contains a BitArray that scans its internal array for "free bits". If the caller
+ *       is unfortunate, the whole array needs to be scanned, adding overhead. The Linux kernel
+ *       uses a buddy allocator, that basically combines a bit array and a linked list for optimal performance.
  */
 class PoolAllocator : public Allocator
 {

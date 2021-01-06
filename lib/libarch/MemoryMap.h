@@ -32,6 +32,8 @@
 
 /**
  * Describes virtual memory map layout
+ *
+ * @todo Currently the total supported system memory is limited to 1GiB
  */
 class MemoryMap
 {

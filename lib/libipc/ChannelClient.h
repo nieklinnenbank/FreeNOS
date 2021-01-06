@@ -34,7 +34,12 @@
  */
 
 /**
- * Client for using Channels.
+ * Client for using Channels on the local processor.
+ *
+ * @todo Intra-core communication is not yet supported by this client.
+ *       For intra-core channels, the local CoreServer should be contacted
+ *       which communicates with the remote CoreServer to properly setup
+ *       the channel between cores.
  */
 class ChannelClient : public StrictSingleton<ChannelClient>
 {
