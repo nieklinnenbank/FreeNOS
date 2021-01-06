@@ -233,7 +233,7 @@ void cursor(Terminal *term, const teken_pos_t *pos);
 /**
  * Fills the Terminal buffer with a character.
  *
- * @param term Terminal object pointer.
+ * @param ctx Terminal object pointer.
  * @param rect Indicates where to fill.
  * @param ch Character to be used for filling.
  * @param attr Attributes for this character.

@@ -38,7 +38,7 @@ typedef struct FileCache
      * @brief Constructor function.
      *
      * @param f File to insert into the cache.
-     * @param name Entry name of the File in the parent, if any.
+     * @param n Entry name of the File in the parent, if any.
      * @param p Our parent. ZERO if we have no parent.
      */
     FileCache(File *f, const char *n, FileCache *p)

@@ -51,7 +51,7 @@ class IntelPageTable
      */
     MemoryContext::Result map(Address virt,
                               Address phys,
-                              Memory::Access);
+                              Memory::Access access);
 
     /**
      * Remove virtual address mapping.
@@ -65,7 +65,8 @@ class IntelPageTable
     /**
      * Translate virtual address to physical address.
      *
-     * @param virt Virtual address to lookup on input, physical address on output.
+     * @param virt Virtual address to lookup
+     * @param phys On output contains the translated physical memory address
      *
      * @return Result code
      */

@@ -59,6 +59,7 @@ class MemoryContext
     /**
      * Constructor.
      *
+     * @param map Pointer to memory map to use.
      * @param alloc Allocator used to allocate page tables.
      */
     MemoryContext(MemoryMap *map, SplitAllocator *alloc);
@@ -119,7 +120,8 @@ class MemoryContext
     /**
      * Translate virtual address to physical address.
      *
-     * @param virt Virtual address to lookup on input, physical address on output.
+     * @param virt Virtual address to lookup
+     * @param phys On output contains the translated physical address
      *
      * @return Result code
      */
@@ -133,7 +135,7 @@ class MemoryContext
      *
      * @return Result code.
      */
-    virtual Result access(Address addr, Memory::Access *access) const = 0;
+    virtual Result access(Address virt, Memory::Access *access) const = 0;
 
     /**
      * Map a range of contiguous physical pages to virtual addresses.

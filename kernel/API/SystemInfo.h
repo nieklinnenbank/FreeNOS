@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __API_SYSTEMINFO_H
-#define __API_SYSTEMINFO_H
+#ifndef __KERNEL_API_SYSTEMINFO_H
+#define __KERNEL_API_SYSTEMINFO_H
 
 #include <Types.h>
 
@@ -54,7 +54,11 @@ inline API::Result SystemInfo(SystemInformation *info)
  */
 
 /**
- * Kernel prototype.
+ * Kernel prototype. Retrieves system information.
+ *
+ * @param info Pointer to SystemInformation output buffer.
+ *
+ * @return API::Success on success and other API::ErrorCode on failure.
  */
 extern API::Result SystemInfoHandler(SystemInformation *info);
 
@@ -119,4 +123,4 @@ SystemInformation;
  * @}
  */
 
-#endif /* __API_SYSTEMINFO_H */
+#endif /* __KERNEL_API_SYSTEMINFO_H */

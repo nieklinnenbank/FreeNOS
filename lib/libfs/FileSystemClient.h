@@ -140,7 +140,7 @@ class FileSystemClient
     /**
      * Write a file.
      *
-     * @param path Path to the file
+     * @param descriptor File descriptor number of the file
      * @param buf Input buffer for bytes to write.
      * @param size On input, number of bytes to write. On output, actual bytes written.
      *
@@ -177,7 +177,7 @@ class FileSystemClient
     /**
      * Mount the current process as a file system on the rootfs.
      *
-     * @param path Absolute path for the mount point to use.
+     * @param mountPath Absolute path for the mount point to use.
      *
      * @return Result code
      */

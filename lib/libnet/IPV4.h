@@ -126,8 +126,18 @@ class IPV4 : public NetworkProtocol
      */
     void setICMP(::ICMP *icmp);
 
+    /**
+     * Set ARP instance
+     *
+     * @param arp ARP instance
+     */
     void setARP(::ARP *arp);
 
+    /**
+     * Set UDP instance
+     *
+     * @param udp UDP instance
+     */
     void setUDP(::UDP *udp);
 
     /**
@@ -209,7 +219,7 @@ class IPV4 : public NetworkProtocol
     /**
      * Convert protocol identifier
      *
-     * @param identifier NetworkProtocol identifier
+     * @param id NetworkProtocol identifier
      *
      * @return Protocol value for IPV4 header
      */

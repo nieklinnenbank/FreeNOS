@@ -47,7 +47,6 @@ class TmpFileSystem : public FileSystemServer
     /**
      * @brief Creates a new TmpFile.
      *
-     * @param path Full path to the file to create.
      * @param type Describes the file type to create.
      *
      * @return Pointer to a new File on success, or ZERO on failure.

@@ -73,7 +73,7 @@ template <class T> class WeakSingleton
     /**
      * Constructor
      *
-     * @param instance New instance of T.
+     * @param obj New instance of T.
      */
     WeakSingleton<T>(T *obj)
     {

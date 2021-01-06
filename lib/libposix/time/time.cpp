@@ -17,22 +17,22 @@
 
 #include <time.h>
 
-unsigned long mktime(const unsigned int year0, const unsigned int month0,
+unsigned long mktime(const unsigned int year, const unsigned int month,
                      const unsigned int day, const unsigned int hour,
                      const unsigned int min, const unsigned int sec)
 {
-    unsigned int month = month0, year = year0;
+    unsigned int monthVal = month, yearVal = year;
 
     // 1..12 -> 11,12,1..10
-    if( 0 >= (int) (month -= 2))
+    if( 0 >= (int) (monthVal -= 2))
     {
-        month += 12; // Puts Feb last since it has leap day
-        year -= 1;
+        monthVal += 12; // Puts Feb last since it has leap day
+        yearVal -= 1;
     }
 
     return ((((unsigned long)
-                (year/4 - year/100 + year/400 + 367*month/12 + day) +
-                year*365 - 719499
+                (yearVal/4 - yearVal/100 + yearVal/400 + 367*monthVal/12 + day) +
+                yearVal*365 - 719499
             )*24 + hour // now have hours
         )*60 + min // now have minutes
     )*60 + sec; // finally seconds

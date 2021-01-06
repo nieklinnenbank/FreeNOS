@@ -51,7 +51,7 @@ class CoreClient
     /**
      * Get number of processor cores in the system.
      *
-     * @param size On output, contains the number of processor cores.
+     * @param numCores On output, contains the number of processor cores.
      *
      * @return Result code
      */

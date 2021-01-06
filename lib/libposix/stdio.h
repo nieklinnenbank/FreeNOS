@@ -217,7 +217,7 @@ extern C int printf(const char *format, ...);
  * Output a formatted string to standard output, using a variable argument list.
  *
  * @param format Formatted string.
- * @param ... Argument list.
+ * @param args Argument list.
  *
  * @return Number of bytes written or error code on failure.
  */

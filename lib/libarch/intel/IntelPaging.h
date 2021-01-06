@@ -115,7 +115,8 @@ class IntelPaging : public MemoryContext
     /**
      * Translate virtual address to physical address.
      *
-     * @param virt Virtual address to lookup on input, physical address on output.
+     * @param virt Virtual address to lookup
+     * @param phys Translated physical memory address on output
      *
      * @return Result code
      */
@@ -129,7 +130,7 @@ class IntelPaging : public MemoryContext
      *
      * @return Result code.
      */
-    virtual Result access(Address addr, Memory::Access *access) const;
+    virtual Result access(Address virt, Memory::Access *access) const;
 
     /**
      * Release memory sections.

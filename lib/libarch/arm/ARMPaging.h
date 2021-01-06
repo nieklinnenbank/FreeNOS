@@ -56,7 +56,8 @@ class ARMPaging : public MemoryContext
      * Secondary constructor with pre-allocated 1st page table.
      *
      * @param map Virtual memory map
-     * @param firstTableAddr Physical address of 1st page table
+     * @param firstTableAddress Physical address of 1st page table
+     * @param kernelBaseAddress Physical base address of the kernel
      */
     ARMPaging(MemoryMap *map, Address firstTableAddress, Address kernelBaseAddress);
 
@@ -109,7 +110,8 @@ class ARMPaging : public MemoryContext
     /**
      * Translate virtual address to physical address.
      *
-     * @param virt Virtual address to lookup on input, physical address on output.
+     * @param virt Virtual address to lookup on input
+     * @param phys Contains the physical address on output.
      *
      * @return Result code
      */
@@ -123,7 +125,7 @@ class ARMPaging : public MemoryContext
      *
      * @return Result code.
      */
-    virtual Result access(Address addr, Memory::Access *access) const;
+    virtual Result access(Address virt, Memory::Access *access) const;
 
     /**
      * Release memory sections.
@@ -156,6 +158,7 @@ class ARMPaging : public MemoryContext
      *
      * @param map Virtual memory map
      * @param firstTableAddress Physical address of 1st level page table
+     * @param kernelBaseAddress Physical address of the kernel base
      */
     void setupFirstTable(MemoryMap *map, Address firstTableAddress, Address kernelBaseAddress);
 

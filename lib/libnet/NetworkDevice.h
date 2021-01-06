@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBNET_NETWORKDEVICE_H
-#define __LIBNET_NETWORKDEVICE_H
+#ifndef __LIB_LIBNET_NETWORKDEVICE_H
+#define __LIB_LIBNET_NETWORKDEVICE_H
 
 #include <Types.h>
 #include <Device.h>
@@ -108,8 +108,7 @@ class NetworkDevice : public Device
     /**
      * Add a network packet to the transmit queue.
      *
-     * @param buffer Input/Output buffer to input bytes from.
-     * @param size Size of the network packet.
+     * @param packet Pointer to the packet to transmit
      *
      * @return Result code
      */
@@ -160,4 +159,4 @@ class NetworkDevice : public Device
  * @}
  */
 
-#endif /* __LIBNET_NETWORKDEVICE_H */
+#endif /* __LIB_LIBNET_NETWORKDEVICE_H */

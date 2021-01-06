@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __API_VMCOPY_H
-#define __API_VMCOPY_H
+#ifndef __KERNEL_API_VMCOPY_H
+#define __KERNEL_API_VMCOPY_H
 
 #include <Types.h>
 
@@ -60,6 +60,16 @@ inline API::Result VMCopy(const ProcessID proc,
  */
 
 /**
+ * Kernel handler prototype. Copies virtual memory between two processes.
+ *
+ * @param proc Remote process.
+ * @param how Read or Write.
+ * @param ours Virtual address of the buffer of this process.
+ * @param theirs Virtual address of the remote process' buffer.
+ * @param sz Amount of memory to copy.
+ *
+ * @return API::Success on success and any other value on error.
+ *
  * @bug VMCopyHandler assumes the theirs parameter points to memory mapped as a small page (PAGESIZE, 4KiB)
  *      When that memory is actually a large mapping (for example 1MiB on ARM), the internal pageOff variable will be zero.
  */
@@ -79,4 +89,4 @@ extern API::Result VMCopyHandler(const ProcessID proc,
  * @}
  */
 
-#endif /* __API_VMCOPY_H */
+#endif /* __KERNEL_API_VMCOPY_H */

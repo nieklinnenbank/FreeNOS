@@ -57,7 +57,7 @@ class Decompress : public POSIXApplication
     /**
      * Decompress the given file
      *
-     * @param file Path to the file to decompress
+     * @param inputFilename Path to the file to decompress
      *
      * @return Result code
      */

@@ -198,7 +198,7 @@ template <class Base, class MsgType> class ChannelServer
      *
      * @param slot Action value to trigger h.
      * @param h Handler to execute.
-     * @param r Does the handler need to send a reply (per default) ?
+     * @param sendReply True if the handler needs to send a reply
      */
     void addIPCHandler(const Size slot, IPCHandlerFunction h, const bool sendReply = true)
     {
@@ -307,6 +307,7 @@ template <class Base, class MsgType> class ChannelServer
      *
      * @param pid ProcessID
      * @param range Memory range of shared mapping
+     * @param hardReset True if the channel contents should be reset to initial state.
      *
      * @return Result code
      */

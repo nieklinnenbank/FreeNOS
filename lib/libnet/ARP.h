@@ -163,7 +163,7 @@ class ARP : public NetworkProtocol
      * Send ARP reply
      *
      * @param ethaddr Ethernet address to send reply to
-     * @param ipaddr IP address of the origin
+     * @param ipAddr IP address of the origin
      *
      * @return Result code
      */

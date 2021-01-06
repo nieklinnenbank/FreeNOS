@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __API_VMSHARE_H
-#define __API_VMSHARE_H
+#ifndef __KERNEL_API_VMSHARE_H
+#define __KERNEL_API_VMSHARE_H
 
 #include <FreeNOS/ProcessShares.h>
 #include <Types.h>
@@ -32,10 +32,9 @@
 /**
  * Prototype for user applications. Creates and removes shared virtual memory mappings.
  *
- * @param op Determines which operation to perform.
  * @param pid Remote process.
- * @param parameter Parameter for the operation.
- * @param size Size parameter for the operation.
+ * @param op Determines which operation to perform.
+ * @param share Pointer to the MemoryShare to use in the operation
  *
  * @return API::Success on success and other API::ErrorCode on failure.
  */
@@ -57,6 +56,15 @@ inline API::Result VMShare(const ProcessID pid,
  * @{
  */
 
+/**
+ * Kernel handler prototype. Creates and removes shared virtual memory mappings.
+ *
+ * @param pid Remote process.
+ * @param op Determines which operation to perform.
+ * @param share Pointer to the MemoryShare to use in the operation
+ *
+ * @return API::Success on success and other API::ErrorCode on failure.
+ */
 extern API::Result VMShareHandler(const ProcessID pid,
                                   const API::Operation op,
                                   ProcessShares::MemoryShare *share);
@@ -71,4 +79,4 @@ extern API::Result VMShareHandler(const ProcessID pid,
  * @}
  */
 
-#endif /* __API_VMSHARE_H */
+#endif /* __KERNEL_API_VMSHARE_H */

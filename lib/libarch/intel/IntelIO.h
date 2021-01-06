@@ -104,7 +104,7 @@ class IntelIO : public IO
      * Output a word to a port.
      *
      * @param port Port to write to.
-     * @param byte The word to output.
+     * @param word The word to output.
      */
     inline void outw(u16 port, u16 word)
     {

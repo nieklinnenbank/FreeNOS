@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __API_PROCESSCTL_H
-#define __API_PROCESSCTL_H
+#ifndef __KERNEL_API_PROCESSCTL_H
+#define __KERNEL_API_PROCESSCTL_H
 
 #include <FreeNOS/Process.h>
 #include <Types.h>
@@ -110,7 +110,18 @@ inline API::Result ProcessCtl(const ProcessID proc,
  */
 
 /**
- * Kernel handler prototype.
+ * Kernel handler prototype. Process management related operations.
+ *
+ * @param proc Target Process' ID.
+ * @param op The operation to perform.
+ * @param addr Input argument address, used for program entry point for Spawn,
+ *             ProcessInfo pointer for Info.
+ * @param output Output argument address (optional).
+ *
+ * @return API::Success on success and other API::ErrorCode on failure.
+ *         For WaitPID, the process exit status is stored in the upper 16-bits
+ *         of this return value on success. For Spawn, the new PID is stored in
+ *         the upper 16-bits.
  */
 extern API::Result ProcessCtlHandler(const ProcessID proc,
                                      const ProcessOperation op,
@@ -127,4 +138,4 @@ extern API::Result ProcessCtlHandler(const ProcessID proc,
  * @}
  */
 
-#endif /* __API_PROCESSCTL_H */
+#endif /* __KERNEL_API_PROCESSCTL_H */

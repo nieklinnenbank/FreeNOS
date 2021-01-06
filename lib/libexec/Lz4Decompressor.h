@@ -102,7 +102,6 @@ class Lz4Decompressor
     /**
      * Reads compressed data.
      *
-     * @param offset Offset to start reading from.
      * @param buffer Output buffer.
      * @param size Number of bytes of uncompressed data to copy.
      *

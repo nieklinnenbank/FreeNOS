@@ -49,7 +49,7 @@
  *
  * The <sys/stat.h> header shall define the following symbolic constants for
  * the file types encoded in type mode_t. The values shall be suitable for
- * use in #if preprocessing directives.
+ * use in \#if preprocessing directives.
  *
  * @{
  */
@@ -88,7 +88,7 @@
  * These macros shall expand to an expression which has a type that allows them
  * to be used, either singly or OR'ed together, as the third argument to open()
  * without the need for a mode_t cast. The values shall be suitable for use in
- * #if preprocessing directives.
+ * \#if preprocessing directives.
  *
  * @{
  */
@@ -271,6 +271,7 @@ extern C int stat(const char *path, struct stat *buf);
  * @param path The mknod() function shall create a new file
  *             named by the pathname to which the argument path points.
  * @param mode The file type for path is OR'ed into the mode argument.
+ * @param dev Device specific identifiers
  *
  * @return Upon successful completion, these functions shall return 0.
  *         Otherwise, these functions shall return -1 and set errno to

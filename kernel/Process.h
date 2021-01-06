@@ -79,6 +79,7 @@ class Process
      * @param id Process Identifier
      * @param entry Initial program counter value.
      * @param privileged If true, the process has unlimited access to hardware.
+     * @param map Memory map to use
      */
     Process(ProcessID id, Address entry, bool privileged, const MemoryMap &map);
 
@@ -142,7 +143,7 @@ class Process
     /**
      * Compare two processes.
      *
-     * @param p Process to compare with.
+     * @param proc Process to compare with.
      *
      * @return True if equal, false otherwise.
      */

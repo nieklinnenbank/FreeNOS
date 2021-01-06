@@ -75,6 +75,7 @@ class IntelPageDirectory
      * Remove virtual address mapping.
      *
      * @param virt Virtual address.
+     * @param alloc Memory allocator used by the caller
      *
      * @return Result code
      */
@@ -84,7 +85,9 @@ class IntelPageDirectory
     /**
      * Translate virtual address to physical address.
      *
-     * @param virt Virtual address to lookup on input, physical address on output.
+     * @param virt Virtual address to lookup on input.
+     * @param phys On output contains the translated physical memory address.
+     * @param alloc Memory allocator used by the caller
      *
      * @return Result code
      */
@@ -97,6 +100,7 @@ class IntelPageDirectory
      *
      * @param virt Virtual address to get Access flags for.
      * @param access MemoryAccess object pointer.
+     * @param alloc Memory allocator used by the caller
      *
      * @return Result code.
      */
@@ -152,7 +156,7 @@ class IntelPageDirectory
     /**
      * Convert Memory::Access to page directory flags.
      *
-     * @param acess Input memory access flags
+     * @param access Input memory access flags
      *
      * @return Page directory flags
      */

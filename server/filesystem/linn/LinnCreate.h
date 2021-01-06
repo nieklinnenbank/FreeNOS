@@ -65,6 +65,7 @@
  * Retrieve a given number of free contiguous blocks.
  *
  * @param sb LinnSuperBlock pointer.
+ * @param count Number of blocks
  *
  * @return Block number of the first block in the contiguous array of blocks.
  */

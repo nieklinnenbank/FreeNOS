@@ -92,9 +92,9 @@ void ArgumentParser::setName(const char *name)
     m_name = name;
 }
 
-void ArgumentParser::setDescription(const String & description)
+void ArgumentParser::setDescription(const String & desc)
 {
-    m_description = description;
+    m_description = desc;
 }
 
 ArgumentParser::Result ArgumentParser::registerFlag(char id,

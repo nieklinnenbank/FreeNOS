@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBSTD_LIST_H
-#define __LIBSTD_LIST_H
+#ifndef __LIB_LIBSTD_LIST_H
+#define __LIB_LIBSTD_LIST_H
 
 #include "Macros.h"
 #include "Assert.h"
@@ -138,7 +138,6 @@ template <class T> class List : public Sequence<T>
      */
     void append(T t)
     {
-
         Node *node = new Node(t);
         node->prev = m_tail;
 
@@ -161,13 +160,11 @@ template <class T> class List : public Sequence<T>
      * Remove all items which are equal to the given item.
      *
      * @param t Item to remove.
-     * @param single True to remove only one item, false to remove all matching items.
      *
      * @return Number of items removed from the list.
      */
     virtual int remove(T t)
     {
-
         Node *node = m_head;
         Node *next;
         int num = 0;
@@ -463,4 +460,4 @@ template <class T> class List : public Sequence<T>
  * @}
  */
 
-#endif /* __LIBSTD_LIST_H */
+#endif /* __LIB_LIBSTD_LIST_H */

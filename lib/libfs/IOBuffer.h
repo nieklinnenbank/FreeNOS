@@ -131,7 +131,6 @@ class IOBuffer
      *
      * @param buffer Contains the bytes to write.
      * @param size Number of bytes to write.
-     * @param offset The offset inside the I/O buffer to start writing.
      *
      * @return Result code
      */

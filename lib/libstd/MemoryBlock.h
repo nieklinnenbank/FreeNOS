@@ -44,6 +44,7 @@ class MemoryBlock
      *
      * @param dest Memory to write to.
      * @param ch Constant byte.
+     * @param count Number of bytes to fill.
      *
      * @return Pointer to dest.
      */

@@ -21,7 +21,7 @@
 #include "PrivExec.h"
 
 API::Result PrivExecHandler(const PrivOperation op,
-                            const Address addr)
+                            const Address param)
 {
     DEBUG("");
 
@@ -43,7 +43,7 @@ API::Result PrivExecHandler(const PrivOperation op,
 
     case WriteConsole:
         assert(Log::instance() != ZERO);
-        (*Log::instance()) << (char *)addr;
+        (*Log::instance()) << (char *) param;
         return API::Success;
 
     case Panic:

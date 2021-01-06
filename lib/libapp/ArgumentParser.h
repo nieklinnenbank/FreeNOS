@@ -90,7 +90,7 @@ class ArgumentParser
      *
      * @param desc Program description string.
      */
-    void setDescription(const String & desciption);
+    void setDescription(const String & desc);
 
     /**
      * Register a flag Argument

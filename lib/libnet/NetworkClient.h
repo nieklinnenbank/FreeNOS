@@ -165,7 +165,7 @@ class NetworkClient
     /**
      * Close the socket.
      *
-     * @param socket Network socket to close
+     * @param sock Network socket to close
      *
      * @return Result code
      */

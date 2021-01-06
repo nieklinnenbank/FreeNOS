@@ -108,6 +108,7 @@ extern C char *strndup(const char *s, size_t size);
  *
  * @param dest Memory to write to.
  * @param ch Constant byte.
+ * @param count Number of bytes to fill.
  *
  * @return Pointer to dest.
  */
@@ -196,7 +197,7 @@ extern C char * strcat(char *dest, const char *src);
  *
  * @param dest Destination string.
  * @param src Source string.
- * @param n Number of character to concatenate.
+ * @param siz Number of character to concatenate.
  *
  * @return The strncat() function shall return s1; no return value
  *         shall be reserved to indicate an error.

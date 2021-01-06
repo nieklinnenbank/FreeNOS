@@ -46,8 +46,8 @@
  * identifier __func__.
  *
  * Forcing a definition of the name NDEBUG, either from the compiler command
- * line or with the preprocessor control statement #define NDEBUG ahead of
- * the #include <assert.h> statement, shall stop assertions from being
+ * line or with the preprocessor control statement \#define NDEBUG ahead of
+ * the \#include <assert.h> statement, shall stop assertions from being
  * compiled into the program.
  *
  * @param exp Boolean expression.

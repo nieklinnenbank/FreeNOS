@@ -132,7 +132,9 @@ class UDP : public NetworkProtocol
     /**
      * Calculate ICMP checksum
      *
+     * @param ip Pointer to the IPV4 header to use
      * @param header ICMP header
+     * @param datalen Total number of bytes of the payload data
      *
      * @return ICMP checksum value for the given header
      */

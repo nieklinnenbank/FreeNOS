@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __API_PRIVEXEC_H
-#define __API_PRIVEXEC_H
+#ifndef __KERNEL_API_PRIVEXEC_H
+#define __KERNEL_API_PRIVEXEC_H
 
 /**
  * @addtogroup kernel
@@ -45,6 +45,7 @@ PrivOperation;
  * Prototype for user applications. Performs various privileged operations.
  *
  * @param op The operation to perform.
+ * @param param Optional parameter value for the given operation
  *
  * @return API::Success on success and other API::ErrorCode on failure.
  */
@@ -66,7 +67,12 @@ inline API::Result PrivExec(const PrivOperation op,
  */
 
 /**
- * Prototype for kernel handler.
+ * Prototype for kernel handler. Performs various privileged operations.
+ *
+ * @param op The operation to perform.
+ * @param param Optional parameter value for the given operation
+ *
+ * @return API::Success on success and other API::ErrorCode on failure.
  */
 extern API::Result PrivExecHandler(const PrivOperation op,
                                    const Address param);
@@ -81,4 +87,4 @@ extern API::Result PrivExecHandler(const PrivOperation op,
  * @}
  */
 
-#endif /* __API_PRIVEXEC_H */
+#endif /* __KERNEL_API_PRIVEXEC_H */

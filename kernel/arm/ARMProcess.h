@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __ARM_ARMPROCESS_H
-#define __ARM_ARMPROCESS_H
+#ifndef __KERNEL_ARM_ARMPROCESS_H
+#define __KERNEL_ARM_ARMPROCESS_H
 
 #include <FreeNOS/Process.h>
 
@@ -41,6 +41,7 @@ class ARMProcess : public Process
      * @param id Process Identifier
      * @param entry Initial program counter value.
      * @param privileged If true, the process has unlimited access to hardware.
+     * @param map Memory mapping to use to create the process.
      */
     ARMProcess(ProcessID id, Address entry, bool privileged, const MemoryMap &map);
 
@@ -109,4 +110,4 @@ namespace Arch
  * @}
  */
 
-#endif /* __ARM_ARMPROCESS_H */
+#endif /* __KERNEL_ARM_ARMPROCESS_H */

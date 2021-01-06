@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __API_VMCTL_H
-#define __API_VMCTL_H
+#ifndef __KERNEL_API_VMCTL_H
+#define __KERNEL_API_VMCTL_H
 
 #include <Types.h>
 #include <Memory.h>
@@ -76,6 +76,15 @@ inline API::Result VMCtl(const ProcessID procID,
  * @{
  */
 
+/**
+ * Kernel handler prototype. Examines and modifies virtual memory pages.
+ *
+ * @param procID Remote process.
+ * @param op Determines which operation to perform.
+ * @param range Describes the memory pages to operate on.
+ *
+ * @return API::Success on success and other API::ErrorCode on failure.
+ */
 extern API::Result VMCtlHandler(const ProcessID procID,
                                 const MemoryOperation op,
                                 Memory::Range *range);
@@ -90,4 +99,4 @@ extern API::Result VMCtlHandler(const ProcessID procID,
  * @}
  */
 
-#endif /* __API_VMCTL_H */
+#endif /* __KERNEL_API_VMCTL_H */

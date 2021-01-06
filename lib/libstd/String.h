@@ -55,7 +55,7 @@ class String : public Sequence<char>
     /**
      * Copy constructor.
      *
-     * @param s String reference.
+     * @param str String reference.
      */
     String(const String & str);
 
@@ -227,7 +227,7 @@ class String : public Sequence<char>
     /**
      * Compares this String to the given String.
      *
-     * @param s The String to compare us to.
+     * @param str The String to compare us to.
      *
      * @return int < 0, 0, > 0 if we are greater than, equal to
      *         or less then the given String.
@@ -237,7 +237,7 @@ class String : public Sequence<char>
     /**
      * Compare with another String.
      *
-     * @param s String instance to compare against.
+     * @param str String instance to compare against.
      * @param caseSensitive True if uppercase characters are considered
      *                      not equal to lowercase, false otherwise.
      *
@@ -262,6 +262,8 @@ class String : public Sequence<char>
 
     /**
      * Alias for compareTo().
+     *
+     * @param str String instance to compare against
      */
     virtual bool equals(const String &str) const;
 
@@ -351,6 +353,8 @@ class String : public Sequence<char>
     /**
      * Set text-representation of a signed number.
      *
+     * @param number Number value to use
+     * @param base Numeric base of the given value
      * @param string Destination character string buffer or ZERO to fill internal String buffer.
      */
     Size set(const long number,
@@ -373,7 +377,7 @@ class String : public Sequence<char>
     /**
      * Assignment operator.
      *
-     * @param s Constant string.
+     * @param str Constant string.
      */
     void operator = (const char *str);
 
