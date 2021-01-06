@@ -29,16 +29,14 @@
 class Scheduler;
 
 /**
- * Maximum number of processes.
- *
- * @group kernel
- */
-#define MAX_PROCS 1024
-
-/**
  * @addtogroup kernel
  * @{
  */
+
+/**
+ * Maximum number of processes.
+ */
+#define MAX_PROCS 1024
 
 /**
  * Represents a process which may run on the host.
@@ -258,4 +256,4 @@ class ProcessManager
  * @}
  */
 
-#endif /* __KERNEL_PROCESS_H */
+#endif /* __KERNEL_PROCESS_MANAGER_H */

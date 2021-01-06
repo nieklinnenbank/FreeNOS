@@ -100,7 +100,7 @@ inline u64 timestamp()
                  "mov %eax, %cr3\n")
 
 /**
- * @group Intel CPU Exceptions
+ * @name Intel CPU Exceptions
  * @{
  */
 
@@ -130,7 +130,7 @@ inline u64 timestamp()
  */
 
 /**
- * @group Intel EFLAGS Register
+ * @name Intel EFLAGS Register
  * @{
  */
 

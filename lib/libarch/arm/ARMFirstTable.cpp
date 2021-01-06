@@ -23,16 +23,22 @@
 #include "ARMFirstTable.h"
 
 /**
- * First Level Entry Types.
+ * @name First Level Entry Types.
  *
  * @see ARM Architecture Reference Manual, page 731.
+ *
+ * @{
  */
 #define PAGE1_NONE       0
 #define PAGE1_TABLE     (1 << 0)
 #define PAGE1_SECTION   (1 << 1)
 
 /**
- * @group First Level Memory Types
+ * @}
+ */
+
+/**
+ * @name First Level Memory Types
  *
  * Inner cache: local L1 cache for one core.
  * Outer cache: shared L2 cache for a subset of multiple cores.
@@ -70,7 +76,7 @@
  */
 
 /**
- * Access permission flags
+ * @name Access permission flags
  * @{
  */
 
