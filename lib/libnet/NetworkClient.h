@@ -51,7 +51,9 @@ class NetworkClient
     enum SocketAction
     {
         Connect,
-        Listen
+        Listen,
+        SendSingle,
+        SendMultiple
     };
 
     /**
@@ -64,9 +66,21 @@ class NetworkClient
     {
         IPV4::Address address;
         u16 port;
-        SocketAction action;
+        u16 action;
     }
     SocketInfo;
+
+    /**
+     * Describes a single packet.
+     *
+     * This structure is used for operations that involve multiple packets,
+     * for example: SendMultiple.
+     */
+    struct PacketInfo
+    {
+        Address address;
+        Size size;
+    };
 
     /**
      * Socket types

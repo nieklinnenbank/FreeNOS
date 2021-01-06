@@ -135,23 +135,20 @@ FileSystem::Result UDP::process(const NetworkQueue::Packet *pkt,
 }
 
 FileSystem::Result UDP::sendPacket(const NetworkClient::SocketInfo *src,
+                                   const NetworkClient::SocketInfo *dest,
                                    IOBuffer & buffer,
-                                   const Size size)
+                                   const Size size,
+                                   const Size offset)
 {
-    NetworkClient::SocketInfo dest;
     NetworkQueue::Packet *pkt;
     Header *hdr;
 
-    DEBUG("");
-
-    // Read destination
-    buffer.read(&dest, sizeof(dest));
-    DEBUG("send payload to: ipAddr = " << *IPV4::toString(dest.address) <<
-          " port = " << dest.port << " size = " << size);
+    DEBUG("address = " << *IPV4::toString(dest->address) <<
+          " port = " << dest->port << " size = " << size);
 
     // Get a fresh packet
-    const FileSystem::Result result = m_parent.getTransmitPacket(&pkt, &dest.address, sizeof(dest.address),
-                                                                 NetworkProtocol::UDP, sizeof(Header) + size - sizeof(dest));
+    const FileSystem::Result result = m_parent.getTransmitPacket(&pkt, &dest->address, sizeof(dest->address),
+                                                                 NetworkProtocol::UDP, sizeof(Header) + size);
     if (result != FileSystem::Success)
     {
         if (result != FileSystem::RetryAgain)
@@ -164,25 +161,25 @@ FileSystem::Result UDP::sendPacket(const NetworkClient::SocketInfo *src,
     // Fill UDP header
     hdr = (Header *) (pkt->data + pkt->size);
     writeBe16(&hdr->sourcePort, src->port);
-    writeBe16(&hdr->destPort, dest.port);
-    writeBe16(&hdr->length, size - sizeof(dest) + sizeof(Header));
+    writeBe16(&hdr->destPort, dest->port);
+    writeBe16(&hdr->length, size + sizeof(Header));
     writeBe16(&hdr->checksum, 0);
 
-    // Insert payload. The payload is just after the 'dest' struct in the IOBuffer.
+    // Insert payload. The payload is read from the given offset in the IOBuffer.
     // Note that the payload must not overwrite past the packet buffer
     const Size maximum = getMaximumPacketSize();
-    const Size needed = pkt->size + size - sizeof(dest);
+    const Size needed = pkt->size + size;
 
     buffer.read(pkt->data + pkt->size + sizeof(Header),
-                needed > maximum ? maximum : needed, sizeof(dest));
+                needed > maximum ? maximum : needed, offset);
 
     // Calculate final checksum
     write16(&hdr->checksum, checksum((IPV4::Header *)(pkt->data + pkt->size - sizeof(IPV4::Header)),
-                                      hdr, size - sizeof(dest)));
+                                      hdr, size));
     DEBUG("checksum = " << (uint) hdr->checksum);
 
     // Increment packet size
-    pkt->size += sizeof(Header) + size - sizeof(dest);
+    pkt->size += sizeof(Header) + size;
 
     // Transmit now
     return m_device.transmit(pkt);

@@ -38,7 +38,30 @@ struct sockaddr
     u16 port;
 };
 
+/**
+ * Input/Output vector for multi-packet operations
+ */
+struct iovec
+{
+    void *iov_base;
+    size_t iov_len;
+};
+
 typedef Size socklen_t;
+
+/**
+ * Describes one or more datagrams
+ */
+struct msghdr
+{
+    void         *msg_name;
+    socklen_t     msg_namelen;
+    struct iovec *msg_iov;
+    size_t        msg_iovlen;
+    void         *msg_control;
+    size_t        msg_controllen;
+    int           msg_flags;
+};
 
 /**
  * Connect a socket to an address/port.
@@ -80,6 +103,17 @@ extern C int recvfrom(int sockfd, void *buf, size_t len, int flags,
  */
 extern C int sendto(int sockfd, const void *buf, size_t len, int flags,
                     const struct sockaddr *addr, socklen_t addrlen);
+
+/**
+ * Send multiple datagrams to a remote host.
+ *
+ * @param sockfd Socket file descriptor
+ * @param msg Pointer to the messages to send
+ * @param flags Optional flags for the send operation
+ *
+ * @return Number of bytes send on success and -1 on error
+ */
+extern C int sendmsg(int sockfd, const struct msghdr *msg, int flags);
 
 /**
  * @}

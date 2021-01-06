@@ -202,6 +202,7 @@ TestCase(LoopbackUdpPing)
     // Fill the packet contents
     info->address = IPV4::toAddress("127.0.0.1");
     info->port = 12345;
+    info->action = NetworkClient::SendSingle;
     MemoryBlock::copy(info + 1, payload, String::length(payload));
 
     // Process the message two times: first for ARP lookup, second for actual packet

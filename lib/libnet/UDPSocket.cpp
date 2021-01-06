@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/System.h>
 #include <ByteOrder.h>
 #include <Randomizer.h>
 #include "Ethernet.h"
@@ -79,24 +80,74 @@ FileSystem::Result UDPSocket::write(IOBuffer & buffer,
 {
     DEBUG("");
 
-    // Receive socket information first?
-    if (!m_info.port)
-    {
-        buffer.read(&m_info, sizeof(m_info));
+    // Read socket info and action
+    NetworkClient::SocketInfo dest;
+    buffer.read(&dest, sizeof(dest));
 
-        if (m_info.port == 0)
+    // Handle the socket operation
+    switch (dest.action)
+    {
+        case NetworkClient::Listen:
         {
-            Randomizer rand;
-            m_info.port = rand.next() % 65535;
+            MemoryBlock::copy(&m_info, &dest, sizeof(m_info));
+
+            if (m_info.port == 0)
+            {
+                Randomizer rand;
+                m_info.port = rand.next() % 65535;
+            }
+
+            DEBUG("addr =" << m_info.address << " port = " << m_info.port);
+            return m_udp->bind(this, m_info.port);
         }
 
-        DEBUG("addr =" << m_info.address << " port = " << m_info.port);
+        case NetworkClient::SendSingle:
+            return m_udp->sendPacket(&m_info, &dest, buffer, size - sizeof(dest), sizeof(dest));
 
-        return m_udp->bind(this, m_info.port);
-    }
-    else
-    {
-        return m_udp->sendPacket(&m_info, buffer, size);
+        case NetworkClient::SendMultiple:
+        {
+            NetworkClient::PacketInfo packetInfo;
+            FileSystemMessage msg;
+            IOBuffer io;
+            Size packetOffset = 0;
+
+            // Read the first packet info to find the base address for all packets.
+            //
+            // Note that it is assumed here that all packet buffers
+            // originate from the same base address and that each new packet
+            // starts after NetworkQueue::PayloadBufferSize bytes.
+            buffer.read(&packetInfo, sizeof(packetInfo), sizeof(dest));
+
+            // Prepare dummy filesystem message for the I/O buffer
+            msg.from = buffer.getMessage()->from;
+            msg.action = FileSystem::WriteFile;
+            msg.buffer = (char *)packetInfo.address;
+            msg.size = NetworkQueue::MaxPackets * PAGESIZE;
+            io.setMessage(&msg);
+
+            // read the array of PacketInfo structs that describe
+            // all the packets that need to be transferred
+            for (Size i = sizeof(dest); i < size; i += sizeof(NetworkClient::PacketInfo))
+            {
+                buffer.read(&packetInfo, sizeof(packetInfo), i);
+                DEBUG("packet[" << ((i - sizeof(dest)) / sizeof(NetworkClient::PacketInfo)) <<
+                      "] size = " << packetInfo.size << " offset = " << packetOffset);
+
+                const FileSystem::Result r = m_udp->sendPacket(&m_info, &dest, io, packetInfo.size, packetOffset);
+                if (r != FileSystem::Success)
+                {
+                    ERROR("failed to send packet: result = " << (int) r);
+                    return r;
+                }
+
+                packetOffset += NetworkQueue::PayloadBufferSize;
+            }
+
+            return FileSystem::Success;
+        }
+
+        default:
+            return FileSystem::NotSupported;
     }
 }
 

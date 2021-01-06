@@ -125,9 +125,11 @@ class UDP : public NetworkProtocol
      *
      * @return Result code
      */
-    FileSystem::Result sendPacket(const NetworkClient::SocketInfo *info,
+    FileSystem::Result sendPacket(const NetworkClient::SocketInfo *src,
+                                  const NetworkClient::SocketInfo *dest,
                                   IOBuffer & buffer,
-                                  const Size size);
+                                  const Size size,
+                                  const Size offset);
 
     /**
      * Calculate ICMP checksum
