@@ -15,12 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __ASSERT_H
-#define __ASSERT_H
-
-#if defined(__ASSERT__)
-
-#include "Log.h"
+#ifndef __LIB_LIBSTD_ASSERT_H
+#define __LIB_LIBSTD_ASSERT_H
 
 /**
  * @addtogroup lib
@@ -29,6 +25,10 @@
  * @addtogroup libstd
  * @{
  */
+
+#if defined(__ASSERT__)
+
+#include "Log.h"
 
 /**
  * @name Preprocessor assertion
@@ -68,10 +68,11 @@
  * @}
  */
 
+#endif /* defined(__ASSERT__) */
+
 /**
  * @}
  * @}
  */
 
-#endif /* defined(__ASSERT__) */
-#endif /* __ASSERT_H */
+#endif /* __LIB_LIBSTD_ASSERT_H */

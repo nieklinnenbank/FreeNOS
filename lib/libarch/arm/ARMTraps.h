@@ -173,6 +173,7 @@ inline ulong trapKernel5(ulong api, ulong arg1, ulong arg2, ulong arg3,
  * @}
  * @}
  * @}
+ * @}
  */
 
 #endif /* __LIB_LIBARCH_ARM_ARMTRAPS_H */

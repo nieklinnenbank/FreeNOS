@@ -36,7 +36,7 @@
 #define PAGE2_PRESENT   (1 << 1)
 
 /**
- * @group Second Level Memory Types
+ * @name Second Level Memory Types
  *
  * Inner cache: local L1 cache for one core.
  * Outer cache: shared L2 cache for a subset of multiple cores.
@@ -70,7 +70,11 @@
 #define PAGE2_SHARED    (1 << 10)
 
 /**
- * Access permission flags
+ * @}
+ */
+
+/**
+ * @name Access permission flags
  * @{
  */
 

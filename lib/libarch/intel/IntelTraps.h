@@ -135,6 +135,7 @@ inline ulong trapKernel5(ulong num, ulong arg1, ulong arg2, ulong arg3,
  * @}
  * @}
  * @}
+ * @}
  */
 
 #endif /* __LIB_LIBARCH_INTEL_INTELTRAPS_H */

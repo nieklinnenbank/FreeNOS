@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SH_CHANGE_DIR_COMMAND
-#define __SH_CHANGE_DIR_COMMAND
+#ifndef __BIN_SH_CHANGE_DIR_COMMAND
+#define __BIN_SH_CHANGE_DIR_COMMAND
 
 #include <Types.h>
 #include "ShellCommand.h"
@@ -52,6 +52,7 @@ class ChangeDirCommand : public ShellCommand
 
 /**
  * @}
+ * @}
  */
 
-#endif /* __SH_CHANGE_DIR_COMMAND */
+#endif /* __BIN_SH_CHANGE_DIR_COMMAND */

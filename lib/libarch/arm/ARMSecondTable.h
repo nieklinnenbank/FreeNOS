@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBARCH_ARM_SECONDTABLE_H
-#define __LIBARCH_ARM_SECONDTABLE_H
+#ifndef __LIB_LIBARCH_ARM_SECONDTABLE_H
+#define __LIB_LIBARCH_ARM_SECONDTABLE_H
 
 #include <Types.h>
 #include <Memory.h>
@@ -105,4 +105,4 @@ class ARMSecondTable
  * @}
  */
 
-#endif /* __LIBARCH_ARM_SECONDTABLE_H */
+#endif /* __LIB_LIBARCH_ARM_SECONDTABLE_H */
