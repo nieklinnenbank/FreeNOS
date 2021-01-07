@@ -326,7 +326,9 @@ MpiProxy::Result MpiProxy::processRecv(const Header *header,
         while (pktSize < MaximumPacketSize && i < header->datacount)
         {
             while (ch->read(&msg) != Channel::Success)
-                ;
+            {
+                ProcessCtl(SELF, Schedule, 0);
+            }
 
             switch (header->datatype)
             {
