@@ -107,7 +107,9 @@ MpiTarget::Result MpiTarget::send(const void *buf,
         }
 
         while (ch->write(&msg) != Channel::Success)
-            ;
+        {
+            ProcessCtl(SELF, Schedule, 0);
+        }
     }
 
     return MPI_SUCCESS;
@@ -132,7 +134,9 @@ MpiTarget::Result MpiTarget::receive(void *buf,
     for (int i = 0; i < count; i++)
     {
         while (ch->read(&msg) != Channel::Success)
-            ;
+        {
+            ProcessCtl(SELF, Schedule, 0);
+        }
 
         switch (datatype)
         {
