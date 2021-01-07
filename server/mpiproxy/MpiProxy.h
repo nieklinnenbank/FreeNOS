@@ -63,7 +63,7 @@ class MpiProxy : public POSIXApplication
   public:
 
     /** Maximum size of packet payload */
-    static const Size MaximumPacketSize = 1024;
+    static const Size MaximumPacketSize = 1448;
 
     /**
      * Encodes various MPI operations
