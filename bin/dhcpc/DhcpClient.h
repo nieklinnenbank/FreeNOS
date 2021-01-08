@@ -44,7 +44,7 @@ class DhcpClient : public POSIXApplication
     static const u16 ClientPort = 68;
 
     /** Maximum number of retries to receive an IP address */
-    static const Size MaximumRetries = 10;
+    static const Size MaximumRetries = 25;
 
     /** Magic number value for the packet header */
     static const u32 MagicValue = 0x63825363;
