@@ -392,6 +392,14 @@ class Sun8iEmac : public NetworkDevice
      */
     FileSystem::Result reset();
 
+    /**
+     * Print diagnostic information about the receive queue (RX)
+     */
+    void printRx();
+
+    /**
+     * Print diagnostic information about the transmit queue (TX)
+     */
     void printTx();
 
   private:

@@ -136,6 +136,27 @@ FileSystem::Result Sun8iEmac::setAddress(const Ethernet::Address *address)
     return FileSystem::Success;
 }
 
+void Sun8iEmac::printRx()
+{
+    DEBUG("");
+
+    FrameDescriptor *desc = m_receiveDesc[m_receiveIndex];
+
+    DEBUG("receive: current receiveIndex = " << m_receiveIndex << " rx:desc.status = " << (void *)desc->status);
+    DEBUG("receive: current desc: = " << (void *) m_io.read(ReceiveCurDesc));
+    DEBUG("receive: desc base = " << (void *) m_receiveDescRange.phys << " desc size = " << sizeof(FrameDescriptor));
+    DEBUG("receive: DMA status = " << (void *) m_io.read(ReceiveStatus));
+
+    for (Size i = 0; i < m_receiveDesc.count(); i++)
+    {
+        FrameDescriptor *d = m_receiveDesc[i];
+
+        DEBUG("m_receiveDesc[" << i << "]: status = " << (void *)d->status <<
+              ", bufsize = " << d->bufsize << ", bufaddr = " << (void *) d->bufaddr <<
+              ", next = " << (void *) d->next)
+    }
+}
+
 void Sun8iEmac::printTx()
 {
     FrameDescriptor *desc = m_transmitDesc[m_transmitIndex];
@@ -265,6 +286,8 @@ FileSystem::Result Sun8iEmac::startDMA()
 FileSystem::Result Sun8iEmac::receive()
 {
     DEBUG("");
+
+    printRx();
 
     while (true)
     {
