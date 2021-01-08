@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "LogLevelFile.h"
 #include "DeviceServer.h"
 
 DeviceServer::DeviceServer(const char *path)
@@ -42,6 +43,14 @@ FileSystem::Result DeviceServer::initialize()
                 return result;
             }
         }
+    }
+
+    // Add log level pseudo file
+    const FileSystem::Result logResult = registerFile(new LogLevelFile(getNextInode()), "loglevel");
+    if (logResult != FileSystem::Success)
+    {
+        ERROR("failed to register LogLevelFile: result = " << (int) logResult);
+        return logResult;
     }
 
     // Mount on the root file system
