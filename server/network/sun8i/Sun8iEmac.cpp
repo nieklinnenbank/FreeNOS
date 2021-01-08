@@ -551,10 +551,10 @@ FileSystem::Result Sun8iEmac::resetReceive()
 
     // Finalize receive administration
     m_receiveIndex = 0;
+    m_io.write(ReceiveDescList, m_receiveDescRange.phys);
     m_io.write(ReceiveCtl0, ReceiveCtl0Enable);
     m_io.write(ReceiveCtl1, ReceiveCtl1DmaEnable | ReceiveCtl1DmaStart |
                             ReceiveCtl1ErrorFrame | ReceiveCtl1UnderFrame | ReceiveCtl1FullFrame);
-    m_io.write(ReceiveDescList, m_receiveDescRange.phys);
 
     return FileSystem::Success;
 }
@@ -585,9 +585,9 @@ FileSystem::Result Sun8iEmac::resetTransmit()
 
     // Finalize administration
     m_transmitIndex = 0;
+    m_io.write(TransmitDescList, m_transmitDescRange.phys);
     m_io.write(TransmitCtl0, TransmitCtl0Enable);
     m_io.write(TransmitCtl1, TransmitCtl1FullFrame | TransmitCtl1NextFrame);
-    m_io.write(TransmitDescList, m_transmitDescRange.phys);
 
     return FileSystem::Success;
 }
