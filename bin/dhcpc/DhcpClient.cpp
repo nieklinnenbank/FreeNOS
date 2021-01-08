@@ -402,7 +402,7 @@ DhcpClient::Result DhcpClient::udpReceive(void *packet,
     const NetworkClient::Result result = m_client->waitSocket(NetworkClient::UDP, m_socket, ReceiveTimeoutMs);
     if (result != NetworkClient::Success)
     {
-        ERROR("failed to wait for UDP socket " << m_socket);
+        ERROR("failed to wait for UDP socket " << m_socket << ": result = " << (int) result);
         return IOError;
     }
 

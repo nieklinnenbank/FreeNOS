@@ -138,6 +138,7 @@ NetworkClient::Result NetworkClient::waitSocket(const NetworkClient::SocketType 
 
     if (type != NetworkClient::UDP)
     {
+        ERROR("protocol not supported: " << (int) type);
         return NetworkClient::NotSupported;
     }
 
@@ -145,6 +146,7 @@ NetworkClient::Result NetworkClient::waitSocket(const NetworkClient::SocketType 
     FileDescriptor::Entry *fd = FileDescriptor::instance()->getEntry(sock);
     if (!fd || !fd->open)
     {
+        ERROR("failed to get FileDescriptor for socket " << sock << ": " << (fd ? "closed" : "not found"));
         return NetworkClient::NotFound;
     }
 
@@ -160,6 +162,7 @@ NetworkClient::Result NetworkClient::waitSocket(const NetworkClient::SocketType 
     {
         if (waitResult == FileSystem::TimedOut)
         {
+            DEBUG("operation timed out");
             return TimedOut;
         }
         else
