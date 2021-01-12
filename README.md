@@ -163,8 +163,17 @@ In the second terminal, start GDB and connect to the Qemu internal gdbserver usi
     (gdb) target remote localhost:1234
 
 You can now use standard GDB commands to interactively debug the FreeNOS kernel for intel.
-Similarly, you can also debug a user program (./build/intel/pc/bin/XXX) or the FreeNOS
-kernel for ARM (./build/arm/raspberry2/kernel/arm/raspberry2/kernel).
+Similarly, you can also debug a user program (./build/intel/pc/bin/XXX). Note that when
+debugging user programs, the mapped virtual memory changes frequently due to scheduling.
+When you set a breakpoint on a virtual memory address, for example a function, it can happen
+that another program is scheduled and executes on the same virtual address which incorrectly
+triggers the breakpoint. In order to only trigger the breakpoint for a selected user program,
+you can put a condition on a breakpoint that matches the process name:
+
+    (gdb) condition 1 $_streq((char *)0xe0000000, "./server/datastore/server")
+
+The above command puts a condition on the breakpoint with index number 1 that says it should
+only halt execution when the program name string equals "./server/datastore/server".
 
 intel/pc
 --------
