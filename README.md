@@ -330,6 +330,23 @@ in the U-Boot interactive console to load and start FreeNOS:
     14757888 bytes read in 670 ms (21 MiB/s)
     => bootm 0x400fffc0
 
+You may also choose to download the FreeNOS kernel image via the network. To use a static IP address and server use:
+
+    => setenv image kernel.ub
+    => setenv image_addr 0x400fffc0
+    => setenv bootm_boot_mode sec
+    => setenv ipaddr 172.16.10.120
+    => setenv serverip 172.16.10.1
+    => tftp $image_addr $serverip:$image
+    => bootm $image_addr
+
+To retrieve an IP address using DHCP, use the 'dhcp' command prior to downloading and booting:
+
+    => setenv bootm_boot_mode sec
+    => dhcp
+    => tftp 0x400fffc0 kernel.ub
+    => bootm 0x400fffc0
+
 ### U-Boot on SPI Flash ###
 
 Alternatively, the Orange Pi Zero board contains a small SPI flash which can also be used to install U-Boot.
@@ -411,14 +428,31 @@ to view all the built-in shell commands:
 
     (localhost) / # help
 
+FreeNOS on Allwinner H2+/H3 boards support networking. You can see the current state
+of the network stack with:
+
+    (localhost) / # netctl
+
+To assign a static IP address you can write the IPV4 address file in the corresponding device:
+
+    (localhost) / # write /network/sun8i/ipv4/address 172.16.10.90
+
+To obtain an address via DHCP, you can start the DHCP client with:
+
+    (localhost) / # dhcpc sun8i
+
+When the device has a valid IPV4 address you can send out an ICMP ping using:
+
+    (localhost) / # netping -i sun8i 172.16.10.1
+
 Example application program for calculating prime numbers is the /bin/prime command.
 To let it compute all prime numbers up to 1024 and output the prime number results use:
 
     (localhost) / # prime --stdout 1024
 
-For Intel, the prime command also has a MPI variant called 'mpiprime' which can
-compute the prime numbers in parallel using multiple cores. To run it and let the
-shell measure the time taken use:
+The prime command also has a multicore capable variant variant called 'mpiprime' which uses
+the Message Passing Interface (MPI) library. The mpiprime program can compute the prime numbers
+in parallel using multiple cores. To run it via the console and let the shell measure the time taken use:
 
     (localhost) / # time mpiprime 2000000
 
@@ -426,6 +460,26 @@ You can compare the time result versus the time take of the single core program
 where it computes the same number of primes:
 
     (localhost) / # time prime 2000000
+
+Additionally, it is possible on the Allwinner H2+/H3 (arm/sunxi-h3) target to start MPI programs
+via the network on multiple nodes running FreeNOS. You can do that by starting the corresponding
+MPI program which is compiled on your host OS and uses the MPI library host code to communicate with
+the remote nodes via ethernet. You need to provide a configuration file that specifies the list of
+IP addresses and core identifiers. For example, see the file config/host/mpihosts.txt which is configured
+to use the local Qemu program for testing. Start the QEMU instance with MPI enabled using:
+
+    $ scons qemu_mpi
+
+In another terminate, start the MPI ping test program that communicates with the Qemu instance with:
+
+    $ ./build/host/bin/mpiping/mpiping ./config/host/mpihosts.txt
+
+You can also start the MPI variant of the prime program via the network with:
+
+    $ ./build/host/bin/mpiprime/mpiprime ./config/host/mpihosts.txt 3000000
+
+Provide your own configuration file with an arbitrary list of IP addresses to run
+MPI programs on your own compute cluster.
 
 Jenkins Continuous Integration
 ==============================
