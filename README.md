@@ -14,20 +14,20 @@ Features
 * Virtual memory
 * Simple task scheduling
 * Inter Process Communication (IPC)
-* Symmetric Multi Processing with MPI support
+* Symmetric Multi Processing with MPI support (via console and ethernet)
 * Devices:
     * VGA/Keyboard consoles (also supported by Ed's libteken http://80386.nl/projects/libteken/)
     * i8250 serial UART
     * PCI host controller
     * CMOS RTC clock
     * ATA host controller
-    * USB controller and (root)hub (Raspberry Pi only)
-    * Loopback network and SMSC95xx ethernet (Raspberry Pi only)
+    * Allwinner H2+/H3 ethernet controller
+    * Loopback ethernet controller
 * Filesystems:
     * Virtual file system (VFS)
     * Temporary file system (TmpFS)
     * Linnenbank file system (LinnFS)
-* Networking (IP, UDP, ICMP, for Raspberry pi 1 only)
+* Networking (IP, UDP, ICMP, ARP)
 * POSIX, ANSI C libraries
 * Dynamic and Shared memory
 * Fully automatic autotester
