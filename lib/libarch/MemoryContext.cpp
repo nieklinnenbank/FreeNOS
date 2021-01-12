@@ -15,6 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma clang optimize off
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
+
 #include <FreeNOS/System.h>
 #include <SplitAllocator.h>
 #include "MemoryContext.h"

@@ -19,6 +19,10 @@
 #include <Log.h>
 #include "Sun8iEmac.h"
 
+#pragma clang optimize off
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
+
 Sun8iEmac::Sun8iEmac(const u32 inode,
                      NetworkServer &server)
     : NetworkDevice(inode, server)
