@@ -25,7 +25,7 @@
 
 NAME="freebsd12"
 JENKINS_PACKAGES="git openjdk11 bash"
-COMPILER_PACKAGES="gcc gcc7 gcc8 gcc9 \
+COMPILER_PACKAGES="gcc gcc8 gcc9 gcc10 \
                    llvm60 llvm70 llvm80 llvm90 llvm10 \
                    arm-none-eabi-gcc"
 MISC_PACKAGES="scons-py37 cdrkit-genisoimage xorriso u-boot-tools liblz4"

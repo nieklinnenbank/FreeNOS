@@ -83,7 +83,7 @@
         <string>ARCH=arm SYSTEM=raspberry2 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=10</string>
         <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=gcc CROSS_COMPILE=arm-none-eabi- VERSION_SUFFIX=</string>
         <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=10</string>
-        <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=9</string>
+        <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=10</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=10</string>
       </values>
     </hudson.matrix.TextAxis>
