@@ -108,11 +108,13 @@ MpiHost::Result MpiHost::terminate()
     for (Size i = 1; i < m_nodes.count(); i++)
     {
         static u8 packet[MpiProxy::MaximumPacketSize];
-        Size packetSize = sizeof(packet);
+        Size packetSize = sizeof(MpiProxy::Header);
 
         // Send terminate request to the remote node
         MpiProxy::Header *hdr = (MpiProxy::Header *) packet;
         hdr->operation = MpiProxy::MpiOpTerminate;
+        hdr->coreId = m_nodes[i]->coreId;
+        hdr->rankId = i;
 
         // Send the packet
         const Result sendResult = sendPacket(i, packet, sizeof(MpiProxy::Header));
@@ -130,7 +132,7 @@ MpiHost::Result MpiHost::terminate()
             return recvResult;
         }
 
-        // The packet must be a data response
+        // The packet must be a terminate response
         const MpiProxy::Header *header = (const MpiProxy::Header *) packet;
         if (header->operation != MpiProxy::MpiOpTerminate)
         {
@@ -212,6 +214,7 @@ MpiHost::Result MpiHost::send(const void *buf,
     MpiProxy::Header *hdr = (MpiProxy::Header *) packet;
     hdr->operation = MpiProxy::MpiOpSend;
     hdr->result = 0;
+    hdr->coreId = node->coreId;
     hdr->rankId = dest;
     hdr->datatype = datatype;
     hdr->datacount = count;
@@ -251,6 +254,7 @@ MpiHost::Result MpiHost::receive(void *buf,
     // Send receive data request to the remote node
     MpiProxy::Header *hdr = (MpiProxy::Header *) packet;
     hdr->operation = MpiProxy::MpiOpRecv;
+    hdr->coreId = node->coreId;
     hdr->rankId = source;
     hdr->datatype = datatype;
     hdr->datacount = count;
@@ -414,7 +418,11 @@ MpiHost::Result MpiHost::parseHostsFile(const char *hostsfile)
 MpiHost::Result MpiHost::startProcesses(int argc,
                                         char **argv)
 {
+    const Size NumOfParallelStart = 32;
+    static u8 packet[MpiProxy::MaximumPacketSize];
+    MpiProxy::Header *hdr = (MpiProxy::Header *) packet;
     String cmdline;
+    Size startIndex = 1, startCount = 0;
 
     DEBUG("argc = " << argc);
 
@@ -439,45 +447,57 @@ MpiHost::Result MpiHost::startProcesses(int argc,
     // Start remote processes with the constructed command line
     NOTICE("cmdline = " << *cmdline);
 
-    for (Size i = 1; i < m_nodes.count(); i++)
+    // Send out packets to all the hosts
+    while (startIndex < m_nodes.count())
     {
-        in_addr nodeAddr;
-        nodeAddr.s_addr = m_nodes[i]->ipAddress;
+        const Size receiveIndex = startIndex;
 
-        NOTICE("nodes[" << i << "] = " << inet_ntoa(nodeAddr) <<
-               ":" << m_nodes[i]->udpPort << ":" << m_nodes[i]->coreId);
-
-        // Construct packet to send
-        u8 packet[MpiProxy::MaximumPacketSize];
-        MpiProxy::Header *hdr = (MpiProxy::Header *) packet;
-        hdr->operation = MpiProxy::MpiOpExec;
-        hdr->result = 0;
-        hdr->rankId = i;
-        hdr->coreId = m_nodes[i]->coreId;
-
-        hdr->coreCount = m_nodes.count();
-
-        // Append command-line after the header
-        MemoryBlock::copy(packet + sizeof(MpiProxy::Header), *cmdline,
-                          sizeof(packet) - sizeof(MpiProxy::Header));
-
-        // Send the packet
-        const Result sendResult = sendPacket(i, packet, sizeof(MpiProxy::Header) + cmdline.length());
-        if (sendResult != MPI_SUCCESS)
+        // Limit the number of parallel requests
+        while (startIndex < m_nodes.count() && startCount < NumOfParallelStart)
         {
-            ERROR("failed to send packet to nodeId " << i << ": result = " << (int) sendResult);
-            return sendResult;
+            in_addr nodeAddr;
+            nodeAddr.s_addr = m_nodes[startIndex]->ipAddress;
+
+            NOTICE("nodes[" << startIndex << "] = " << inet_ntoa(nodeAddr) <<
+                   ":" << m_nodes[startIndex]->udpPort << ":" << m_nodes[startIndex]->coreId);
+
+            // Construct packet to send
+            hdr->operation = MpiProxy::MpiOpExec;
+            hdr->result = 0;
+            hdr->rankId = startIndex;
+            hdr->coreId = m_nodes[startIndex]->coreId;
+            hdr->coreCount = m_nodes.count();
+
+            // Append command-line after the header
+            MemoryBlock::copy((char *)packet + sizeof(MpiProxy::Header), *cmdline,
+                               sizeof(packet) - sizeof(MpiProxy::Header));
+
+            // Send the packet
+            const Result sendResult = sendPacket(startIndex, packet, sizeof(MpiProxy::Header) + cmdline.length());
+            if (sendResult != MPI_SUCCESS)
+            {
+                ERROR("failed to send packet to nodeId " << startIndex << ": result = " << (int) sendResult);
+                return sendResult;
+            }
+            startIndex++;
+            startCount++;
         }
 
-        // Wait for acknowledge
-        Size sz;
-        const Result recvResult = receivePacket(i, MpiProxy::MpiOpExec, packet, sz);
-        if (recvResult != MPI_SUCCESS)
+        // Wait for acknowledge of each node
+        for (Size i = receiveIndex; i < startIndex; i++)
         {
-            ERROR("failed to receive acknowledge for MpiOpExec from nodeId " <<
-                   i << ": result = " << (int) recvResult);
-            return recvResult;
+            Size sz;
+            sz = sizeof(MpiProxy::Header);
+
+            const Result recvResult = receivePacket(i, MpiProxy::MpiOpExec, &packet, sz);
+            if (recvResult != MPI_SUCCESS)
+            {
+                ERROR("failed to receive acknowledge for MpiOpExec from nodeId " <<
+                       i << ": result = " << (int) recvResult);
+                return recvResult;
+            }
         }
+        startCount = 0;
     }
 
     return MPI_SUCCESS;
@@ -529,7 +549,8 @@ MpiHost::Result MpiHost::receivePacket(const Size nodeId,
 
     in_addr nodeAddr;
     nodeAddr.s_addr = node->ipAddress;
-    DEBUG("node = " << inet_ntoa(nodeAddr) << " operation = " << (int) operation);
+    DEBUG("nodeId = " << nodeId << " addr = " << inet_ntoa(nodeAddr) <<
+          " operation = " << (int) operation << " size = " << size);
 
     // Process buffered packets first
     for (ListIterator<Packet *> i(m_packetBuffers[nodeId]); i.hasCurrent(); i++)
@@ -539,7 +560,6 @@ MpiHost::Result MpiHost::receivePacket(const Size nodeId,
 
         if (hdr->operation == operation)
         {
-            DEBUG("buffered packet: " << pkt->size << " bytes");
             MemoryBlock::copy(packet, pkt->data, pkt->size);
             size = pkt->size;
             delete[] pkt->data;
@@ -555,25 +575,28 @@ MpiHost::Result MpiHost::receivePacket(const Size nodeId,
     {
         struct sockaddr_in addr;
         socklen_t len = sizeof(addr);
+        const Size recvSize = size;
 
         // Receive UDP datagram
-        int r = recvfrom(m_sock, packet, size, 0,
+        int r = recvfrom(m_sock, packet, recvSize, 0,
                          (struct sockaddr *) &addr, &len);
         if (r < 0)
         {
-            ERROR("failed to receive UDP datagram: " << strerror(errno));
+            ERROR("failed to receive UDP datagram on socket " << m_sock << ": " << strerror(errno));
             return MPI_ERR_IO;
         }
 
-        size = r;
+        const MpiProxy::Header *hdr = (const MpiProxy::Header *) packet;
+
         DEBUG("received " << r << " bytes from " << inet_ntoa(addr.sin_addr) <<
-              " at port " << htons(addr.sin_port));
+              ":" << htons(addr.sin_port) << " with coreId = " << hdr->coreId <<
+              " rankId = " << hdr->rankId);
 
         // Is this packet targeted for the given node?
-        if (addr.sin_addr.s_addr == node->ipAddress && htons(addr.sin_port) == node->udpPort)
+        if (addr.sin_addr.s_addr == node->ipAddress &&
+            htons(addr.sin_port) == node->udpPort &&
+            hdr->coreId == node->coreId)
         {
-            const MpiProxy::Header *hdr = (const MpiProxy::Header *) packet;
-
             // Verify the MPI operation
             if (hdr->operation != operation)
             {
@@ -583,27 +606,52 @@ MpiHost::Result MpiHost::receivePacket(const Size nodeId,
                 return MPI_ERR_IO;
             }
 
+            DEBUG("done");
+            size = r;
             return MPI_SUCCESS;
         }
         // Add the packet to internal buffers for later retrieval
         else
         {
-            Packet *pkt = new Packet;
-            if (!pkt)
+            Size otherNodeId = 0;
+
+            // Find the corresponding node
+            for (Size i = 0; i < m_nodes.count(); i++)
             {
-                ERROR("failed to allocate Packet struct for buffering: " << strerror(errno));
-                return MPI_ERR_NO_MEM;
+                if (addr.sin_addr.s_addr == m_nodes[i]->ipAddress &&
+                    htons(addr.sin_port) == m_nodes[i]->udpPort &&
+                    hdr->coreId == m_nodes[i]->coreId)
+                {
+                    otherNodeId = i;
+                    break;
+                }
             }
 
-            pkt->data = new u8[size];
-            if (!pkt->data)
+            if (otherNodeId == 0)
             {
-                ERROR("failed to allocate memory for buffered packet: " << strerror(errno));
-                return MPI_ERR_NO_MEM;
+                ERROR("nodeId not found for packet from " << inet_ntoa(addr.sin_addr) <<
+                      " at port " << htons(addr.sin_port));
             }
+            else
+            {
+                Packet *pkt = new Packet;
+                if (!pkt)
+                {
+                    ERROR("failed to allocate Packet struct for buffering: " << strerror(errno));
+                    return MPI_ERR_NO_MEM;
+                }
 
-            pkt->size = size;
-            m_packetBuffers[nodeId]->append(pkt);
+                pkt->data = new u8[r];
+                if (!pkt->data)
+                {
+                    ERROR("failed to allocate memory for buffered packet: " << strerror(errno));
+                    return MPI_ERR_NO_MEM;
+                }
+
+                MemoryBlock::copy(pkt->data, hdr, r);
+                pkt->size = r;
+                m_packetBuffers[otherNodeId]->append(pkt);
+            }
         }
     }
 

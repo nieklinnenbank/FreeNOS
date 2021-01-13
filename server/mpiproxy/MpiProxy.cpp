@@ -35,6 +35,10 @@
 #include <mpi.h>
 #include "MpiProxy.h"
 
+#pragma clang optimize off
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
+
 MpiProxy::MpiProxy(int argc, char **argv)
     : POSIXApplication(argc, argv)
     , m_sock(-1)
@@ -320,6 +324,8 @@ MpiProxy::Result MpiProxy::processRecv(const Header *header,
         // Prepare header
         hdr->operation = MpiOpRecv;
         hdr->result = MPI_SUCCESS;
+        hdr->coreId = header->coreId;
+        hdr->rankId = header->rankId;
         hdr->datatype = header->datatype;
         hdr->datacount = 0;
 
@@ -412,7 +418,9 @@ MpiProxy::Result MpiProxy::processExec(const Header *header,
     Header *hdr = (Header *) pkt;
     hdr->operation = MpiOpExec;
     hdr->result = result == Success ? MPI_SUCCESS : MPI_ERR_IO;
-    Size pktSize = sizeof(hdr);
+    hdr->coreId = header->coreId;
+    hdr->rankId = header->rankId;
+    Size pktSize = sizeof(*hdr);
 
     const Result sendResult = udpSend(pkt, pktSize, addr);
     if (sendResult != Success)
@@ -433,7 +441,7 @@ MpiProxy::Result MpiProxy::processTerminate(const Header *header,
     Header *hdr = (Header *) pkt;
     Size pktSize = sizeof(Header);
 
-    NOTICE("");
+    NOTICE("size = " << size);
 
     // Loop PIDs of active processes and wait for each to terminate
     for (Size i = 0; i < m_pids.size(); i++)
@@ -471,6 +479,8 @@ MpiProxy::Result MpiProxy::processTerminate(const Header *header,
     // Prepare header for response
     hdr->operation = MpiOpTerminate;
     hdr->result = MPI_SUCCESS;
+    hdr->rankId = header->rankId;
+    hdr->coreId = header->coreId;
 
     // UDP send
     const Result sendResult = udpSend(pkt, pktSize, addr);
