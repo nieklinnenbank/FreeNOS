@@ -402,8 +402,8 @@ MpiHost::Result MpiHost::parseHostsFile(const char *hostsfile)
         }
         m_packetBuffers.insertAt(idx, lst);
 
-        NOTICE("m_nodes[" << idx << "]: ip = " << *nodeLine[0] << ", port = " << *nodeLine[1] <<
-               ", core = " << *nodeLine[2]);
+        DEBUG("m_nodes[" << idx << "]: ip = " << *nodeLine[0] << ", port = " << *nodeLine[1] <<
+              ", core = " << *nodeLine[2]);
     }
 
     // Cleanup
@@ -441,7 +441,10 @@ MpiHost::Result MpiHost::startProcesses(int argc,
 
     for (Size i = 1; i < m_nodes.count(); i++)
     {
-        NOTICE("nodes[" << i << "] = " << m_nodes[i]->ipAddress <<
+        in_addr nodeAddr;
+        nodeAddr.s_addr = m_nodes[i]->ipAddress;
+
+        NOTICE("nodes[" << i << "] = " << inet_ntoa(nodeAddr) <<
                ":" << m_nodes[i]->udpPort << ":" << m_nodes[i]->coreId);
 
         // Construct packet to send
