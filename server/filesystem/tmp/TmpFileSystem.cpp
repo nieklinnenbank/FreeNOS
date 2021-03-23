@@ -22,26 +22,23 @@
 #include "TmpFileSystem.h"
 
 TmpFileSystem::TmpFileSystem(const char *path)
-    : FileSystemServer(path)
+    : FileSystemServer(new Directory(1), path)
 {
-    Directory *dir = new Directory;
-    assert(dir != NULL);
-    setRoot(dir);
 }
 
-File * TmpFileSystem::createFile(FileSystem::FileType type, DeviceID deviceID)
+File * TmpFileSystem::createFile(const FileSystem::FileType type)
 {
     // Create the appropriate file type
     switch (type)
     {
         case FileSystem::RegularFile: {
-            PseudoFile *file = new PseudoFile;
+            PseudoFile *file = new PseudoFile(getNextInode());
             assert(file != NULL);
             return file;
         }
 
         case FileSystem::DirectoryFile: {
-            Directory *dir = new Directory;
+            Directory *dir = new Directory(getNextInode());
             assert(dir != NULL);
             return dir;
         }

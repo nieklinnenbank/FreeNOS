@@ -18,9 +18,9 @@
 #ifndef __ARM_CORE_H
 #define __ARM_CORE_H
 
+#include <FreeNOS/Constant.h>
 #include <Types.h>
 #include <Macros.h>
-#include "Endian.h"
 #include "ARMControl.h"
 
 /**
@@ -179,7 +179,11 @@ inline void tlb_flush_all()
  */
 inline void dmb()
 {
+#ifdef ARMV7
+    asm volatile ("dmb" ::: "memory");
+#else
     asm volatile ("mcr p15, 0, %0, c7, c10, 5" : : "r" (0));
+#endif /* ARMV7 */
 }
 
 /**
@@ -197,17 +201,7 @@ inline void dsb()
     asm volatile ("dsb" ::: "memory");
 #else
     asm volatile ("mcr p15, 0, %0, c7, c10, 4" : : "r" (0));
-#endif
-}
-
-/**
- * Flush Prefetch Buffer.
- */
-inline void flushPrefetchBuffer()
-{
-#ifdef ARMV6
-    asm volatile ("mcr p15, 0, %0, c7, c5, 4" : : "r" (0) : "memory");
-#endif
+#endif /* ARMV7 */
 }
 
 /**
@@ -229,6 +223,19 @@ inline void isb()
     asm volatile ("mcr p15, 0, %0, c7, c5, 4" : : "r" (0) : "memory");
 #endif
 }
+
+/**
+ * Flush Prefetch Buffer.
+ */
+inline void flushPrefetchBuffer()
+{
+#ifdef ARMV7
+    isb();
+#else
+    asm volatile ("mcr p15, 0, %0, c7, c5, 4" : : "r" (0) : "memory");
+#endif /* ARMV7 */
+}
+
 
 /** 
  * Contains all the CPU registers.

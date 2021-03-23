@@ -20,20 +20,27 @@
 #include <CoreInfo.h>
 #include "IntelBoot.h"
 
+extern Address __start, __end;
+
 void multibootToCoreInfo(MultibootInfo *info)
 {
     // Fill coreId and memory info
     MemoryBlock::set(&coreInfo, 0, sizeof(CoreInfo));
     coreInfo.coreId = 0;
-    coreInfo.kernel.phys = 0;
-    coreInfo.kernel.size = MegaByte(4);
+    coreInfo.kernel.phys = (Address) &__start;
+    coreInfo.kernel.size = ((Address) &__end - (Address) &__start);
     coreInfo.memory.phys = 0;
 
-    // Limit maximum supported memory to 1GiB
-    if (info->memUpper <= (1024 * 1024)) {
+    // Limit maximum supported memory to 1GiB minus 128MiB
+    // Unfortunately, libarch does not support RAM sizes of 1GiB and higher.
+    // The reason is that the kernel maps only 1GiB minus 128MiB of RAM,
+    // where the upper 128MiB is needed for the KernelPrivate section.
+    // Mapping more than that will not work with SplitAllocator::toVirtual().
+    // Therefore, use at maximum 1GiB minus 128MiB.
+    if (info->memUpper <= (1024 * (1024 - 128))) {
         coreInfo.memory.size = (info->memUpper * 1024) + MegaByte(1);
     } else {
-        coreInfo.memory.size = 1024 * 1024 * 1024;
+        coreInfo.memory.size = 1024 * 1024 * (1024 - 128);
     }
 
     // Fill the kernel command line
@@ -47,13 +54,11 @@ void multibootToCoreInfo(MultibootInfo *info)
         String str((char *)(mod->string), false);
 
         // Is this the BootImage?
-        if (str.match("*.img.gz"))
+        if (str.match("*.img"))
         {
             coreInfo.bootImageAddress = mod->modStart;
             coreInfo.bootImageSize    = mod->modEnd - mod->modStart;
             break;
         }
     }
-
-    coreInfo.coreChannelAddress = coreInfo.bootImageAddress + coreInfo.bootImageSize;
 }

@@ -58,7 +58,7 @@ SunxiKernel::SunxiKernel(CoreInfo *info)
 
 void SunxiKernel::interrupt(volatile CPUState state)
 {
-    SunxiKernel *kernel = (SunxiKernel *) Kernel::instance;
+    SunxiKernel *kernel = (SunxiKernel *) Kernel::instance();
     ARMProcess *proc = (ARMProcess *) kernel->getProcessManager()->current(), *next;
     uint irq;
     bool tick = false;

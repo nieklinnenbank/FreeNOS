@@ -15,34 +15,45 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <errno.h>
 #include "UDP.h"
 #include "UDPFactory.h"
 #include "UDPSocket.h"
 
-UDPFactory::UDPFactory(UDP *udp)
+UDPFactory::UDPFactory(const u32 inode,
+                       UDP *udp)
+    : File(inode)
+    , m_udp(udp)
 {
-    m_udp = udp;
 }
 
 UDPFactory::~UDPFactory()
 {
 }
 
-Error UDPFactory::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result UDPFactory::read(IOBuffer & buffer,
+                                    Size & size,
+                                    const Size offset)
 {
     DEBUG("");
 
     String path;
     UDPSocket *sock;
+    const FileSystemMessage *msg = buffer.getMessage();
 
     if (offset > 0)
-        return 0;
+    {
+        size = 0;
+        return FileSystem::Success;
+    }
 
-    sock = m_udp->createSocket(path);
+    sock = m_udp->createSocket(path, msg->from);
     if (!sock)
-        return EIO;
+    {
+        ERROR("failed to create UDP socket");
+        return FileSystem::IOError;
+    }
 
     buffer.write(*path, path.length() + 1);
-    return path.length() + 1;
+    size = path.length() + 1;
+    return FileSystem::Success;
 }

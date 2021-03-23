@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBPOSIX_STAT_H
-#define __LIBPOSIX_STAT_H
+#ifndef __LIB_LIBPOSIX_SYS_STAT_H
+#define __LIB_LIBPOSIX_SYS_STAT_H
 
 #include <FileSystem.h>
 #include <Macros.h>
@@ -32,12 +32,24 @@
  * @{
  */
 
+/** Number of bits needed to store a FileType. */
+#define FILETYPE_BITS   3
+
+/** Masker value for all FileTypes. */
+#define FILETYPE_MASK   7
+
+/** Number of bits required for all FileModes. */
+#define FILEMODE_BITS 9
+
+/** Masker value for all FileMode values. */
+#define FILEMODE_MASK 0777
+
 /**
  * @name File stat type bits.
  *
  * The <sys/stat.h> header shall define the following symbolic constants for
  * the file types encoded in type mode_t. The values shall be suitable for
- * use in #if preprocessing directives.
+ * use in \#if preprocessing directives.
  *
  * @{
  */
@@ -76,7 +88,7 @@
  * These macros shall expand to an expression which has a type that allows them
  * to be used, either singly or OR'ed together, as the third argument to open()
  * without the need for a mode_t cast. The values shall be suitable for use in
- * #if preprocessing directives.
+ * \#if preprocessing directives.
  *
  * @{
  */
@@ -170,19 +182,21 @@ struct stat
      */
     void fromFileStat(FileSystem::FileStat *stat)
     {
+        this->st_ino   = stat->inode;
         this->st_mode  = stat->access;
         this->st_mode |= stat->type << FILEMODE_BITS;
         this->st_size  = stat->size;
         this->st_uid   = stat->userID;
         this->st_gid   = stat->groupID;
-        this->st_dev   = stat->deviceID;
+        this->st_dev.major = 0;
+        this->st_dev.minor = 0;
     }
 #endif /* CPP */
 
     /** Device ID of device containing file. */
     dev_t st_dev;
 
-    /** File serial number. */
+    /** File inode number. */
     ino_t st_ino;
 
     /** Mode of file. */
@@ -257,6 +271,7 @@ extern C int stat(const char *path, struct stat *buf);
  * @param path The mknod() function shall create a new file
  *             named by the pathname to which the argument path points.
  * @param mode The file type for path is OR'ed into the mode argument.
+ * @param dev Device specific identifiers
  *
  * @return Upon successful completion, these functions shall return 0.
  *         Otherwise, these functions shall return -1 and set errno to
@@ -307,4 +322,4 @@ extern C int creat(const char *path, mode_t mode);
  * @}
  */
 
-#endif /* __LIBPOSIX_STAT_H */
+#endif /* __LIB_LIBPOSIX_SYS_STAT_H */

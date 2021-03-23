@@ -15,64 +15,110 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <errno.h>
+#include <ByteOrder.h>
 #include "NetworkServer.h"
 #include "NetworkDevice.h"
 #include "UDP.h"
 #include "UDPSocket.h"
 #include "UDPFactory.h"
 
-UDP::UDP(NetworkServer *server,
-         NetworkDevice *device)
-    : NetworkProtocol(server, device)
+UDP::UDP(NetworkServer &server,
+         NetworkDevice &device,
+         NetworkProtocol &parent)
+    : NetworkProtocol(server, device, parent)
 {
-    m_ipv4 = 0;
 }
 
 UDP::~UDP()
 {
 }
 
-void UDP::setIP(::IPV4 *ip)
-{
-    m_ipv4 = ip;
-}
-
-Error UDP::initialize()
-{
-    DEBUG("");
-    m_factory = new UDPFactory(this);
-    m_server->registerFile(this, "/udp");
-    m_server->registerFile(m_factory, "/udp/factory");
-    return ESUCCESS;
-}
-
-UDPSocket * UDP::createSocket(String & path)
+FileSystem::Result UDP::initialize()
 {
     DEBUG("");
 
-    UDPSocket *sock = new UDPSocket(this);
+    m_factory = new UDPFactory(m_server.getNextInode(), this);
+    m_server.registerDirectory(this, "/udp");
+    m_server.registerFile(m_factory, "/udp/factory");
+
+    return FileSystem::Success;
+}
+
+UDPSocket * UDP::createSocket(String & path,
+                              const ProcessID pid)
+{
+    Size pos = 0;
+
+    DEBUG("");
+
+    UDPSocket *sock = new UDPSocket(m_server.getNextInode(), this, pid);
     if (!sock)
-        return ZERO;
-
-    int pos = m_sockets.insert(*sock);
-    if (pos == -1)
     {
+        ERROR("failed to allocate UDP socket");
+        return ZERO;
+    }
+
+    if (!m_sockets.insert(pos, sock))
+    {
+        ERROR("failed to insert UDP socket");
         delete sock;
         return ZERO;
     }
     String filepath;
     filepath << "/udp/" << pos;
 
-    path << m_server->getMountPath() << filepath;
-    m_server->registerFile(sock, *filepath);
+    path << m_server.getMountPath() << filepath;
+    const FileSystem::Result result = m_server.registerFile(sock, *filepath);
+    if (result != FileSystem::Success)
+    {
+        ERROR("failed to register UDP socket: result = " << (int) result);
+        delete sock;
+        m_sockets.remove(pos);
+    }
+
     return sock;
 }
 
-Error UDP::process(NetworkQueue::Packet *pkt, Size offset)
+void UDP::unregisterSockets(const ProcessID pid)
 {
-    Header *hdr = (Header *)(pkt->data + sizeof(Ethernet::Header) + sizeof(IPV4::Header));
-    u16 port = be16_to_cpu(hdr->destPort);
+    DEBUG("pid = " << pid);
+
+    for (HashIterator<u16, UDPSocket *> it(m_ports); it.hasCurrent();)
+    {
+        UDPSocket *sock = it.current();
+        if (sock->getProcessID() == pid)
+        {
+            it.remove();
+        }
+        else
+        {
+            it++;
+        }
+    }
+
+    for (Size i = 0; i < MaxUdpSockets; i++)
+    {
+        UDPSocket *sock = m_sockets[i];
+        if (sock != ZERO && sock->getProcessID() == pid)
+        {
+            m_sockets.remove(i);
+            String path;
+            path << "/udp/" << i;
+            const FileSystem::Result result = m_server.unregisterFile(*path);
+            if (result != FileSystem::Success)
+            {
+                ERROR("failed to unregister UDPSocket at " << *path <<
+                      " for PID " << pid << ": result = " << (int) result);
+            }
+        }
+    }
+}
+
+FileSystem::Result UDP::process(const NetworkQueue::Packet *pkt,
+                                const Size offset)
+{
+    const Header *hdr = (const Header *)(pkt->data + sizeof(Ethernet::Header) + sizeof(IPV4::Header));
+    const u16 port = be16_to_cpu(hdr->destPort);
 
     DEBUG("port = " << port);
 
@@ -81,78 +127,97 @@ Error UDP::process(NetworkQueue::Packet *pkt, Size offset)
     if (!sock)
     {
         DEBUG("dropped");
-        return EINVAL;
+        return FileSystem::NotFound;
     }
+
     (*sock)->process(pkt);
-    return ESUCCESS;
+    return FileSystem::Success;
 }
 
-Error UDP::sendPacket(NetworkClient::SocketInfo *src, IOBuffer & buffer, Size size)
+FileSystem::Result UDP::sendPacket(const NetworkClient::SocketInfo *src,
+                                   const NetworkClient::SocketInfo *dest,
+                                   IOBuffer & buffer,
+                                   const Size size,
+                                   const Size offset)
 {
-    NetworkClient::SocketInfo dest;
     NetworkQueue::Packet *pkt;
     Header *hdr;
-    Error r;
 
-    DEBUG("");
+    DEBUG("address = " << *IPV4::toString(dest->address) <<
+          " port = " << dest->port << " size = " << size);
 
-    // Read destination
-    buffer.read(&dest, sizeof(dest));
-    DEBUG("send payload to: " << dest.address << " port: " << dest.port << " size: " << size);
-
-    // Get a fresh IP packet
-    r = m_ipv4->getTransmitPacket(
-        &pkt, dest.address, IPV4::UDP, sizeof(Header) + size - sizeof(dest)
-    );
-    if (r != ESUCCESS)
-        return r;
+    // Get a fresh packet
+    const FileSystem::Result result = m_parent.getTransmitPacket(&pkt, &dest->address, sizeof(dest->address),
+                                                                 NetworkProtocol::UDP, sizeof(Header) + size);
+    if (result != FileSystem::Success)
+    {
+        if (result != FileSystem::RetryAgain)
+        {
+            ERROR("failed to get transmit packet: result = " << (int) result);
+        }
+        return result;
+    }
 
     // Fill UDP header
     hdr = (Header *) (pkt->data + pkt->size);
-    hdr->sourcePort = cpu_to_be16(src->port);
-    hdr->destPort   = cpu_to_be16(dest.port);
-    hdr->length     = cpu_to_be16(size - sizeof(dest) + sizeof(Header));
-    hdr->checksum   = 0;
+    writeBe16(&hdr->sourcePort, src->port);
+    writeBe16(&hdr->destPort, dest->port);
+    writeBe16(&hdr->length, size + sizeof(Header));
+    writeBe16(&hdr->checksum, 0);
 
-    // Insert payload. The payload is just after the 'dest' struct in the IOBuffer.
-    buffer.read(pkt->data + pkt->size + sizeof(Header), size - sizeof(dest), sizeof(dest));
+    // Insert payload. The payload is read from the given offset in the IOBuffer.
+    // Note that the payload must not overwrite past the packet buffer
+    const Size maximum = getMaximumPacketSize();
+    const Size needed = pkt->size + size;
+
+    buffer.read(pkt->data + pkt->size + sizeof(Header),
+                needed > maximum ? maximum : needed, offset);
 
     // Calculate final checksum
-    hdr->checksum = checksum((IPV4::Header *)(pkt->data + pkt->size - sizeof(IPV4::Header)),
-                             hdr, size - sizeof(dest));
+    write16(&hdr->checksum, checksum((IPV4::Header *)(pkt->data + pkt->size - sizeof(IPV4::Header)),
+                                      hdr, size));
     DEBUG("checksum = " << (uint) hdr->checksum);
 
     // Increment packet size
-    pkt->size += sizeof(Header) + size - sizeof(dest);
+    pkt->size += sizeof(Header) + size;
 
     // Transmit now
-    return m_device->transmit(pkt);
+    return m_device.transmit(pkt);
 }
 
-Error UDP::bind(UDPSocket *sock, u16 port)
+FileSystem::Result UDP::bind(UDPSocket *sock,
+                             const u16 port)
 {
     DEBUG("port = " << port);
 
     if (!port)
-        return EINVAL;
+    {
+        return FileSystem::InvalidArgument;
+    }
 
     m_ports.insert(port, sock);
-    return ESUCCESS;
+    return FileSystem::Success;
 }
 
-const ulong UDP::calculateSum(const u16 *ptr, Size bytes)
+const ulong UDP::calculateSum(const u16 *ptr,
+                              const Size bytes)
 {
     ulong sum = 0;
+    Size remain = bytes;
 
-    for (;bytes > 0; bytes -= 2, ptr++)
+    for (;remain > 0; remain -= sizeof(u16), ptr++)
     {
-        if (bytes == 1) {
-            sum += *(u8 *)ptr;
+        if (remain == sizeof(u8))
+        {
+            sum += read8(ptr);
             break;
         }
         else
-            sum += *ptr;
+        {
+            sum += read16(ptr);
+        }
     }
+
     return sum;
 }
 
@@ -164,12 +229,13 @@ const u16 UDP::checksum(const IPV4::Header *ip,
     ulong sum = 0;
 
     // Setup a pseudo header
-    phr.reserved    = 0;
-    phr.source      = ip->source;
-    phr.destination = ip->destination;
-    phr.protocol    = IPV4::UDP;
-    phr.length      = cpu_to_be16((sizeof(Header) + datalen));
-    DEBUG("ip src = " << phr.source << " dst = " << phr.destination);
+    phr.reserved = 0;
+    phr.protocol = IPV4::UDP;
+    phr.source = read32(&ip->source);
+    phr.destination = read32(&ip->destination);
+    writeBe16(&phr.length, sizeof(Header) + datalen);
+    DEBUG("ip src = " << *IPV4::toString(phr.source) <<
+          " dst = " << *IPV4::toString(phr.destination));
 
     // Sum the pseudo header
     sum += calculateSum((u16 *) &phr, sizeof(phr));

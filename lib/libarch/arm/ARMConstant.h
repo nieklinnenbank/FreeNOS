@@ -34,9 +34,6 @@
  * @{
  */
 
-/** ARM is little endian. */
-#define CPU_LITTLE_ENDIAN 1
-
 /**
  * @}
  */

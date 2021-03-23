@@ -23,7 +23,7 @@
 #include "ProcessManager.h"
 
 ProcessManager::ProcessManager()
-    : m_procs(MAX_PROCS)
+    : m_procs()
     , m_interruptNotifyList(256)
 {
     DEBUG("m_procs = " << MAX_PROCS);
@@ -47,30 +47,54 @@ Process * ProcessManager::create(const Address entry,
                                  const bool readyToRun,
                                  const bool privileged)
 {
-    Process *proc = new Arch::Process(m_procs.count(), entry, privileged, map);
+    Size pid = 0;
 
-    // Insert to the process table
-    if (proc && proc->initialize() == Process::Success)
+    // Insert a dummy to determine the next available PID
+    if (!m_procs.insert(pid, (Process *) ~ZERO))
     {
-        m_procs.insert(proc);
-
-        if (readyToRun)
-        {
-            wakeup(proc);
-        }
-
-        if (m_current != 0)
-            proc->setParent(m_current->getID());
-
-        return proc;
+        return ZERO;
     }
-    return ZERO;
+
+    // Create the new Process
+    Process *proc = new Arch::Process(pid, entry, privileged, map);
+    if (!proc)
+    {
+        ERROR("failed to allocate Process");
+        m_procs.remove(pid);
+        return ZERO;
+    }
+
+    // Initialize the Process
+    const Process::Result result = proc->initialize();
+    if (result != Process::Success)
+    {
+        ERROR("failed to initialize Process: result = " << (int) result);
+        m_procs.remove(pid);
+        delete proc;
+        return ZERO;
+    }
+
+    // Overwrite dummy with actual Process
+    m_procs.insertAt(pid, proc);
+
+    // Report to scheduler, if requested
+    if (readyToRun)
+    {
+        resume(proc);
+    }
+
+    // Assign parent, if any
+    if (m_current != 0)
+    {
+        proc->setParent(m_current->getID());
+    }
+
+    return proc;
 }
 
 Process * ProcessManager::get(const ProcessID id)
 {
-    Process **p = (Process **) m_procs.get(id);
-    return p ? *p : ZERO;
+    return m_procs.get(id);
 }
 
 void ProcessManager::remove(Process *proc, const uint exitStatus)
@@ -81,18 +105,27 @@ void ProcessManager::remove(Process *proc, const uint exitStatus)
     if (proc == m_current)
         m_current = ZERO;
 
-    // Wakeup any Processes which are waiting for this Process
+    // Notify processes which are waiting for this Process
     const Size size = m_procs.size();
-
     for (Size i = 0; i < size; i++)
     {
         if (m_procs[i] != ZERO &&
             m_procs[i]->getState() == Process::Waiting &&
             m_procs[i]->getWait() == proc->getID())
         {
-            m_procs[i]->setWaitResult(exitStatus);
-            const Result result = wakeup(m_procs[i]);
-            assert(result == Success);
+            const Process::Result result = m_procs[i]->join(exitStatus);
+            if (result != Process::Success)
+            {
+                FATAL("failed to join() PID " << m_procs[i]->getID() <<
+                      ": result = " << (int) result);
+            }
+
+            const Result r = enqueueProcess(m_procs[i]);
+            if (r != Success)
+            {
+                FATAL("failed to enqueue() PID " << m_procs[i]->getID() <<
+                      ": result = " << (int) r);
+            }
         }
     }
 
@@ -100,12 +133,20 @@ void ProcessManager::remove(Process *proc, const uint exitStatus)
     unregisterInterruptNotify(proc);
 
     // Remove process from administration and schedule
-    m_procs[proc->getID()] = ZERO;
-    const Result result = dequeueProcess(proc, true);
-    assert(result == Success);
+    m_procs.remove(proc->getID());
+
+    if (proc->getState() == Process::Ready)
+    {
+        const Result result = dequeueProcess(proc, true);
+        if (result != Success)
+        {
+            FATAL("failed to dequeue PID " << proc->getID());
+        }
+    }
 
     const Size countRemoved = m_sleepTimerQueue.remove(proc);
     assert(countRemoved <= 1U);
+    (void) countRemoved;
 
     // Free the process memory
     delete proc;
@@ -113,7 +154,7 @@ void ProcessManager::remove(Process *proc, const uint exitStatus)
 
 ProcessManager::Result ProcessManager::schedule()
 {
-    const Timer *timer = Kernel::instance->getTimer();
+    const Timer *timer = Kernel::instance()->getTimer();
     const Size sleepTimerCount = m_sleepTimerQueue.count();
 
     // Let the scheduler select a new process
@@ -137,7 +178,10 @@ ProcessManager::Result ProcessManager::schedule()
         if (timer->isExpired(procTimer))
         {
             const Result result = wakeup(p);
-            assert(result == Success);
+            if (result != Success)
+            {
+                FATAL("failed to wakeup PID " << p->getID());
+            }
         }
         else
         {
@@ -164,14 +208,12 @@ Process * ProcessManager::current()
 void ProcessManager::setIdle(Process *proc)
 {
     const Result result = dequeueProcess(proc, true);
-    assert(result == Success);
+    if (result != Success)
+    {
+        FATAL("failed to dequeue PID " << proc->getID());
+    }
 
     m_idle = proc;
-}
-
-Vector<Process *> * ProcessManager::getProcessTable()
-{
-    return &m_procs;
 }
 
 ProcessManager::Result ProcessManager::wait(Process *proc)
@@ -185,6 +227,50 @@ ProcessManager::Result ProcessManager::wait(Process *proc)
     return dequeueProcess(m_current);
 }
 
+ProcessManager::Result ProcessManager::stop(Process *proc)
+{
+    const Process::State state = proc->getState();
+    const Process::Result result = proc->stop();
+    if (result != Process::Success)
+    {
+        ERROR("failed to stop PID " << proc->getID() << ": result = " << (int) result);
+        return IOError;
+    }
+
+    if (state == Process::Ready)
+    {
+        return dequeueProcess(proc);
+    }
+    else
+    {
+        return Success;
+    }
+}
+
+ProcessManager::Result ProcessManager::resume(Process *proc)
+{
+    const Process::Result result = proc->resume();
+    if (result != Process::Success)
+    {
+        ERROR("failed to resume PID " << proc->getID() << ": result = " << (int) result);
+        return IOError;
+    }
+
+    return enqueueProcess(proc);
+}
+
+ProcessManager::Result ProcessManager::reset(Process *proc, const Address entry)
+{
+    if (proc == m_current)
+    {
+        ERROR("cannot reset current Process");
+        return IOError;
+    }
+
+    proc->reset(entry);
+    return Success;
+}
+
 ProcessManager::Result ProcessManager::sleep(const Timer::Info *timer, const bool ignoreWakeups)
 {
     const Process::Result result = m_current->sleep(timer, ignoreWakeups);
@@ -195,7 +281,10 @@ ProcessManager::Result ProcessManager::sleep(const Timer::Info *timer, const boo
 
         case Process::Success: {
             const Result res = dequeueProcess(m_current);
-            assert(res == Success);
+            if (res != Success)
+            {
+                FATAL("failed to dequeue PID " << m_current->getID());
+            }
 
             if (timer)
             {
@@ -216,45 +305,39 @@ ProcessManager::Result ProcessManager::sleep(const Timer::Info *timer, const boo
 
 ProcessManager::Result ProcessManager::wakeup(Process *proc)
 {
-    const Process::State state = proc->getState();
     const Process::Result result = proc->wakeup();
 
-    if (result != Process::Success)
+    switch (result)
     {
-        ERROR("failed to wakeup process ID " << proc->getID() <<
-              ": result: " << (uint) result);
-        return IOError;
-    }
+        case Process::WakeupPending:
+            return Success;
 
-    if (state != Process::Ready)
-    {
-        return enqueueProcess(proc);
-    }
-    else
-    {
-        return Success;
+        case Process::Success:
+            return enqueueProcess(proc);
+
+        default:
+            ERROR("failed to wakeup process ID " << proc->getID() <<
+                  ": result: " << (uint) result);
+            return IOError;
     }
 }
 
 ProcessManager::Result ProcessManager::raiseEvent(Process *proc, const struct ProcessEvent *event)
 {
-    const Process::State state = proc->getState();
     const Process::Result result = proc->raiseEvent(event);
 
-    if (result != Process::Success)
+    switch (result)
     {
-        ERROR("failed to raise event in process ID " << proc->getID() <<
-              ": result: " << (uint) result);
-        return IOError;
-    }
+        case Process::WakeupPending:
+            return Success;
 
-    if (state != Process::Ready)
-    {
-        return enqueueProcess(proc);
-    }
-    else
-    {
-        return Success;
+        case Process::Success:
+            return enqueueProcess(proc);
+
+        default:
+            ERROR("failed to raise event in process ID " << proc->getID() <<
+                  ": result: " << (uint) result);
+            return IOError;
     }
 }
 
@@ -323,6 +406,7 @@ ProcessManager::Result ProcessManager::enqueueProcess(Process *proc, const bool 
 
     const Size countRemoved = m_sleepTimerQueue.remove(proc);
     assert(countRemoved <= 1U);
+    (void) countRemoved;
 
     return Success;
 }

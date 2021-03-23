@@ -20,25 +20,33 @@
 
 DatastoreServer::DatastoreServer()
     : ChannelServer<DatastoreServer, DatastoreMessage>(this)
+    , m_buffers()
 {
     addIPCHandler(Datastore::RegisterBuffer, &DatastoreServer::registerBuffer);
 }
 
 HashTable<String, Address> * DatastoreServer::getBufferTable(const ProcessID pid)
 {
-    if (m_buffers.get(pid) == NULL)
-    {
-        HashTable<String, Address> *table = new HashTable<String, Address>();
+    HashTable<String, Address> * const *table = m_buffers.get(pid);
 
-        if (table != ZERO)
-            m_buffers.insert(pid, table);
+    if (table == NULL)
+    {
+        HashTable<String, Address> *h = new HashTable<String, Address>();
+
+        if (h != ZERO)
+            m_buffers.insert(pid, h);
+
+        table = m_buffers.get(pid);
     }
 
-    HashTable<String, Address> * const *table = m_buffers.get(pid);
-    if (table != ZERO)
+    if (table != NULL)
+    {
         return *table;
+    }
     else
+    {
         return ZERO;
+    }
 }
 
 void DatastoreServer::registerBuffer(DatastoreMessage *msg)

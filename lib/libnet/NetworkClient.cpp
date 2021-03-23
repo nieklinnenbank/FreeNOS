@@ -19,9 +19,6 @@
 #include <String.h>
 #include <FileSystemClient.h>
 #include <FileDescriptor.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <string.h>
 #include "NetworkClient.h"
 #include "ARP.h"
 #include "ARPSocket.h"
@@ -37,18 +34,20 @@ NetworkClient::~NetworkClient()
 
 NetworkClient::Result NetworkClient::initialize()
 {
-    FileSystemClient filesystem;
+    const FileSystemClient filesystem;
     Size numberOfMounts = 0;
 
     // Get a list of mounts
-    FileSystemMount *mounts = filesystem.getFileSystems(numberOfMounts);
-    FileSystemMount *match = 0;
+    const FileSystemMount *mounts = filesystem.getFileSystems(numberOfMounts);
+    const FileSystemMount *match = 0;
     Size matchLen = 0;
 
     // Find closest matching device
     for (Size i = 0; i < numberOfMounts; i++)
     {
-        if (mounts[i].path[0] && strncmp(mounts[i].path, "/network/", 9) == 0)
+        const String mountPath(mounts[i].path);
+
+        if (mountPath.length() > 0 && mountPath.compareTo("/network/", true, 9) == 0)
         {
             Size len = 0;
 
@@ -67,18 +66,21 @@ NetworkClient::Result NetworkClient::initialize()
             }
         }
     }
+
     if (!match)
     {
         ERROR("network device not found: " << *m_deviceName);
         return IOError;
     }
+
     m_deviceName = match->path;
     return Success;
 }
 
-NetworkClient::Result NetworkClient::createSocket(NetworkClient::SocketType type,
+NetworkClient::Result NetworkClient::createSocket(const NetworkClient::SocketType type,
                                                   int *sock)
 {
+    const FileSystemClient fs;
     String path = m_deviceName;
 
     switch (type)
@@ -98,61 +100,152 @@ NetworkClient::Result NetworkClient::createSocket(NetworkClient::SocketType type
         default:
             return NotFound;
     }
-    if ((*sock = ::open(*path, O_RDWR)) != -1)
-        return Success;
-    else
+
+    const FileSystem::Result result = fs.openFile(*path, *(Size *) sock);
+    if (result != FileSystem::Success)
+    {
+        ERROR("failed to open socket factory at " << *path <<
+              ": result = " << (int) result);
         return IOError;
+    }
+
+    return Success;
 }
 
-NetworkClient::Result NetworkClient::connectSocket(int sock, IPV4::Address addr, u16 port)
+NetworkClient::Result NetworkClient::connectSocket(const int sock,
+                                                   const IPV4::Address addr,
+                                                   const u16 port)
 {
     DEBUG("");
     return writeSocketInfo(sock, addr, port, Connect);
 }
 
-NetworkClient::Result NetworkClient::bindSocket(int sock, IPV4::Address addr, u16 port)
+NetworkClient::Result NetworkClient::bindSocket(const int sock,
+                                                const IPV4::Address addr,
+                                                const u16 port)
 {
     DEBUG("");
     return writeSocketInfo(sock, addr, port, Listen);
 }
 
-NetworkClient::Result NetworkClient::writeSocketInfo(
-    int sock,
-    IPV4::Address addr,
-    u16 port,
-    NetworkClient::SocketAction action)
+NetworkClient::Result NetworkClient::waitSocket(const NetworkClient::SocketType type,
+                                                const int sock,
+                                                const Size msecTimeout)
 {
+    const FileSystemClient fs;
+
+    DEBUG("type = " << (int) type << " sock = " << sock);
+
+    if (type != NetworkClient::UDP)
+    {
+        ERROR("protocol not supported: " << (int) type);
+        return NetworkClient::NotSupported;
+    }
+
+    // Get file descriptor of the socket
+    FileDescriptor::Entry *fd = FileDescriptor::instance()->getEntry(sock);
+    if (!fd || !fd->open)
+    {
+        ERROR("failed to get FileDescriptor for socket " << sock << ": " << (fd ? "closed" : "not found"));
+        return NetworkClient::NotFound;
+    }
+
+    // Prepare a wait set
+    FileSystem::WaitSet waitSet;
+    waitSet.inode     = fd->inode;
+    waitSet.requested = FileSystem::Readable;
+    waitSet.current   = 0;
+
+    // Wait until the file is readable (has data)
+    const FileSystem::Result waitResult = fs.waitFile(*m_deviceName, &waitSet, 1, msecTimeout);
+    if (waitResult != FileSystem::Success)
+    {
+        if (waitResult == FileSystem::TimedOut)
+        {
+            DEBUG("operation timed out");
+            return TimedOut;
+        }
+        else
+        {
+            ERROR("failed to wait for socket " << sock << " with inode " <<
+                   waitSet.inode << ": result = " << (int) waitResult);
+            return IOError;
+        }
+    }
+
+    // File is ready for reading
+    return Success;
+}
+
+NetworkClient::Result NetworkClient::writeSocketInfo(const int sock,
+                                                     const IPV4::Address addr,
+                                                     const u16 port,
+                                                     const NetworkClient::SocketAction action)
+{
+    FileSystemClient fs;
     char buf[64];
+    Size sz = sizeof(buf);
 
     DEBUG("");
 
+    // Get file descriptor of the socket
+    FileDescriptor::Entry *fd = FileDescriptor::instance()->getEntry(sock);
+    if (!fd || !fd->open)
+    {
+        return NetworkClient::NotFound;
+    }
+
     // Read socket factory. The factory will create
     // a new socket for us. We need to read the new file path
-    Error r = ::read(sock, buf, sizeof(buf));
-    if (r < 0)
+    const FileSystem::Result readResult = fs.readFile(sock, buf, &sz);
+    if (readResult != FileSystem::Success)
+    {
+        ERROR("failed to read from socket " << sock <<
+              ": result = " << (int) readResult);
         return IOError;
+    }
 
-    // Update the file descriptor path
-    FileDescriptor *fd = &getFiles()[sock];
-    MemoryBlock::copy(fd->path, buf, sizeof(buf));
+    // Update the file descriptor inode and PID
+    FileSystem::FileStat st;
+    const FileSystem::Result statResult = fs.statFile(buf, &st);
+    if (statResult != FileSystem::Success)
+    {
+        ERROR("failed to stat socket at path " << buf << ": result = " << (int) statResult);
+        return IOError;
+    }
+
+    fd->inode = st.inode;
+    fd->pid = st.pid;
 
     // Write address+port+action info to the socket
     SocketInfo info;
     info.address = addr;
     info.port    = port;
     info.action  = action;
+    sz = sizeof(info);
 
-    r = ::write(sock, &info, sizeof(info));
-    if (r < 0)
+    const FileSystem::Result writeResult = fs.writeFile(sock, &info, &sz);
+    if (writeResult != FileSystem::Success)
+    {
+        ERROR("failed to write info to socket " << sock <<
+              ": result = " << (int) writeResult);
         return IOError;
+    }
 
     // Done
     return Success;
 }
 
-
-NetworkClient::Result NetworkClient::close(int sock)
+NetworkClient::Result NetworkClient::close(const int sock)
 {
-    ::close(sock);
+    const FileSystemClient fs;
+
+    const FileSystem::Result result = fs.closeFile(sock);
+    if (result != FileSystem::Success)
+    {
+        ERROR("failed to close socket " << sock << ": result = " << (int) result);
+        return IOError;
+    }
+
     return Success;
 }

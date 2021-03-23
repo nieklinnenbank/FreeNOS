@@ -15,14 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <errno.h>
+#include <FreeNOS/API/ProcessID.h>
 #include "Ethernet.h"
 #include "IPV4.h"
 #include "ARP.h"
 #include "ARPSocket.h"
 
-ARPSocket::ARPSocket(ARP *arp)
-    : NetworkSocket(arp->getMaximumPacketSize())
+ARPSocket::ARPSocket(const u32 inode,
+                     ARP *arp)
+    : NetworkSocket(inode, arp->getMaximumPacketSize(), ANY)
 {
     m_arp = arp;
     m_ipAddr = 0;
@@ -33,25 +34,37 @@ ARPSocket::~ARPSocket()
 {
 }
 
-Error ARPSocket::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result ARPSocket::read(IOBuffer & buffer,
+                                   Size & size,
+                                   const Size offset)
 {
     DEBUG("");
 
     if (size != sizeof(Ethernet::Address))
-        return ERANGE;
+    {
+        return FileSystem::InvalidArgument;
+    }
 
     if (offset >= sizeof(Ethernet::Address))
-        return 0;
+    {
+        size = 0;
+        return FileSystem::Success;
+    }
 
-    Error r = m_arp->lookupAddress(&m_ipAddr, &m_ethAddr);
-    if (r != ESUCCESS)
-        return r;
+    const FileSystem::Result result = m_arp->lookupAddress(&m_ipAddr, &m_ethAddr);
+    if (result != FileSystem::Success)
+    {
+        return result;
+    }
 
     buffer.write(&m_ethAddr, sizeof(Ethernet::Address));
-    return sizeof(Ethernet::Address);
+    size = sizeof(Ethernet::Address);
+    return FileSystem::Success;
 }
 
-Error ARPSocket::write(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result ARPSocket::write(IOBuffer & buffer,
+                                    Size & size,
+                                    const Size offset)
 {
     DEBUG("");
 
@@ -59,21 +72,19 @@ Error ARPSocket::write(IOBuffer & buffer, Size size, Size offset)
     buffer.read(&m_ipAddr, sizeof(IPV4::Address));
 
     // Send request
-    // return m_arp->sendRequest(m_ipAddr);
-    Error r = m_arp->lookupAddress(&m_ipAddr, &m_ethAddr);
-    if (r != ESUCCESS)
-        return r;
-    else
-        return size;
+    const FileSystem::Result result = m_arp->lookupAddress(&m_ipAddr, &m_ethAddr);
+    if (result != FileSystem::Success)
+    {
+        return result;
+    }
+
+    size = sizeof(IPV4::Address);
+    return FileSystem::Success;
 }
 
-Error ARPSocket::process(NetworkQueue::Packet *pkt)
+FileSystem::Result ARPSocket::process(const NetworkQueue::Packet *pkt)
 {
     DEBUG("");
-    return ESUCCESS;
-}
 
-void ARPSocket::error(Error err)
-{
-    DEBUG("");
+    return FileSystem::Success;
 }

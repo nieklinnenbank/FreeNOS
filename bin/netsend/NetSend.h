@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Niek Linnenbank
+ * Copyright (C) 2021 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,11 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __BIN_NETSEND_H
-#define __BIN_NETSEND_H
+#ifndef __BIN_NETSEND_NETSEND_H
+#define __BIN_NETSEND_NETSEND_H
 
-#include <IPV4.h>
-#include <Ethernet.h>
+#include <NetworkClient.h>
+#include <NetworkQueue.h>
 #include <POSIXApplication.h>
 
 /**
@@ -28,16 +28,28 @@
  */
 
 /**
- * Network send application.
+ * Diagnostic program for sending network packets
  */
 class NetSend : public POSIXApplication
 {
+  private:
+
+    /** Size of each packet to send in bytes */
+    static const Size PacketSize = 1448;
+
+    /** Number of packets to submit for transmission each iteration */
+    static const Size QueueSize = NetworkQueue::MaxPackets;
+
   public:
 
     /**
      * Class constructor.
+     *
+     * @param argc Argument count
+     * @param argv Argument values
      */
-    NetSend(int argc, char **argv);
+    NetSend(int argc,
+            char **argv);
 
     /**
      * Class destructor.
@@ -45,20 +57,45 @@ class NetSend : public POSIXApplication
     virtual ~NetSend();
 
     /**
+     * Initialize the application.
+     *
+     * @return Result code
+     */
+    virtual Result initialize();
+
+    /**
      * Execute the application event loop.
+     *
+     * @return Result code
      */
     virtual Result exec();
 
   private:
 
     /**
-     * Send ARP request.
+     * Send multiple UDP packets
+     *
+     * @param vec I/O vector with multiple packets
+     * @param count Number of entries in the I/O vector
+     * @param addr The destination IP and port
+     *
+     * @return Result code
      */
-    Result arpRequest(IPV4::Address ipAddr, Ethernet::Address *ethAddr);
+    Result udpSendMultiple(const struct iovec *vec,
+                           const Size count,
+                           const struct sockaddr & addr) const;
+
+  private:
+
+    /** Network client */
+    NetworkClient *m_client;
+
+    /** UDP socket */
+    int m_socket;
 };
 
 /**
  * @}
  */
 
-#endif /* __BIN_NETSEND_H */
+#endif /* __BIN_NETSEND_NETSEND_H */

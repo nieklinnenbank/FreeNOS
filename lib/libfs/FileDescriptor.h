@@ -15,88 +15,120 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBPOSIX_FILEDESCRIPTOR_H
-#define __LIBPOSIX_FILEDESCRIPTOR_H
+#ifndef __LIB_LIBFS_FILEDESCRIPTOR_H
+#define __LIB_LIBFS_FILEDESCRIPTOR_H
 
 #include <Types.h>
-#include <Macros.h>
-#include <String.h>
-#include <MemoryBlock.h>
+#include <Singleton.h>
 #include "FileSystemPath.h"
 
 /**
  * @addtogroup lib
  * @{
  *
- * @addtogroup libposix
+ * @addtogroup libfs
  * @{
  */
 
-#define FILE_DESCRIPTOR_MAX 1024
-
 /**
- * Abstracts a file which is opened by a user process.
+ * Abstracts files which are opened by a user process.
  */
-class FileDescriptor
+class FileDescriptor : public StrictSingleton<FileDescriptor>
 {
   public:
 
-    FileDescriptor()
+    /** Default maximum number of files which can be opened */
+    static const Size MaximumFiles = 1024;
+
+    /**
+     * Describes a single file opened by a user process
+     */
+    struct Entry
     {
-        path[0]  = ZERO;
-        position = 0;
-        open     = false;
-    }
+        u32 inode;     /**@< Inode number of the file */
+        ProcessID pid; /**@< Process identifier of the filesystem */
+        Size position; /**@< Current position indicator. */
+        bool open;     /**@< State of the file descriptor. */
+    };
 
-    FileDescriptor(const FileDescriptor & fd)
+    /**
+     * Result code
+     */
+    enum Result
     {
-        position = fd.position;
-        open     = fd.open;
-        MemoryBlock::copy(path, fd.path, PATHLEN);
-    }
+        Success,
+        InvalidArgument,
+        OutOfFiles
+    };
 
-    bool operator == (const FileDescriptor & fd) const
-    {
-        const String str(path, false);
-        return str.equals(fd.path);
-    }
+  public:
 
-    bool operator != (const FileDescriptor & fd) const
-    {
-        const String str(path, false);
-        return !(str.equals(fd.path));
-    }
+    /**
+     * Constructor
+     */
+    FileDescriptor();
 
-    /** Unique identifier, used by a device driver (minor device ID). */
-    Address identifier;
+    /**
+     * Get entry table
+     *
+     * @param count Maximum number of entries
+     *
+     * @return Entry table pointer
+     */
+    Entry * getArray(Size & count);
 
-    /** Path to the file. */
-    char path[PATHLEN];
+    /**
+     * Assign entry table
+     *
+     * @param array Pointer to array with file descriptor entries
+     * @param count Number of Entry structures in the array
+     */
+    void setArray(Entry *array,
+                  const Size count);
 
-    /** Current position indicator. */
-    Size position;
+    /**
+     * Add new file descriptor entry
+     *
+     * @param inode Inode number of the file to add
+     * @param filesystem Process identifier of the filesystem
+     * @param index On output contains the index number for the entry
+     *
+     * @return Result code
+     */
+    Result openEntry(const u32 inode,
+                     const ProcessID filesystem,
+                     Size & index);
 
-    /** State of the file descriptor. */
-    bool open;
+    /**
+     * Retrieve a file descriptor Entry
+     *
+     * @param index Index in the array of entries
+     *
+     * @return Pointer to the Entry on success or ZERO on failure
+     */
+    Entry * getEntry(const Size index);
+
+    /**
+     * Remove file descriptor entry
+     *
+     * @param index Index in the array of entries
+     *
+     * @return Result code
+     */
+    Result closeEntry(const Size index);
+
+  private:
+
+    /** Pointer to array of entries */
+    Entry *m_array;
+
+    /** Number of entries in the array */
+    Size m_count;
 };
 
 /**
- * Get File Descriptors table.
- *
- * @return FileDescriptor array pointer
- */
-FileDescriptor * getFiles();
-
-/**
- * Set a new FileDescriptor table.
- *
- * @param files FileDescriptor array pointer to use
- */
-void setFiles(FileDescriptor *files);
-
-/**
  * @}
  * @}
  */
 
-#endif /* __LIBPOSIX_FILEDESCRIPTOR_H */
+#endif /* __LIB_LIBFS_FILEDESCRIPTOR_H */

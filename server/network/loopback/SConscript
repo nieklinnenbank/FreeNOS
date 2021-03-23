@@ -19,8 +19,9 @@ Import('build_env')
 
 env = build_env.Clone()
 
-if env['ARCH'] == 'arm' and env['SYSTEM'] == 'raspberry':
-    env.UseServers(['log', 'filesystem', 'core'])
-    env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libarch',
-                       'libexec', 'libipc', 'libfs', 'libnet', 'librt' ])
-    env.TargetProgram('server', [ Glob('*.cpp') ])
+env.UseServers(['log', 'filesystem', 'core'])
+env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libarch',
+                   'libexec', 'libipc', 'libfs', 'libnet', 'libruntime' ])
+env.UseLibraries([ 'libtest', 'libapp', 'libruntime', 'libipc', 'libarch',
+                   'libstd', 'libnet', 'libfs', 'rt' ], 'host')
+env.TargetHostProgram('server', [ Glob('*.cpp') ])

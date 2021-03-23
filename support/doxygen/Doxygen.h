@@ -169,6 +169,12 @@
  */
 
 /**
+ * @defgroup libruntime libruntime
+ *
+ * This library provides basic runtime support needed to start a program from a main() function.
+ */
+
+/**
  * @defgroup server server
  *
  * Servers are programs that provide a part of the operating system in userspace, for example device drivers or filesystems.
@@ -211,15 +217,15 @@
  */
 
 /**
- * @defgroup grovepi grovepi
+ * @defgroup recovery RecoveryServer
  *
- * The GrovePI is an I/O extension platform for the Raspberry Pi 1/2/3.
+ * Provides fault tolerance to servers by restarting on errors (recovery).
  */
 
 /**
- * @defgroup server_ipctest ipctest
+ * @defgroup mpiproxy MpiProxy Server
  *
- * Server for testing inter-process communication (IPC) using libipc.
+ * Server that bridges IP/UDP to local MPI communication channels.
  */
 
 /**
@@ -232,6 +238,12 @@
  * @defgroup smsc95xx smsc95xx
  *
  * Network interface driver for the SMSC95xx family of ethernet over USB devices.
+ */
+
+/**
+ * @defgroup sun8iemac sun8iemac
+ *
+ * Network device of the Allwinner Sun8i family System-on-Chips.
  */
 
 /**

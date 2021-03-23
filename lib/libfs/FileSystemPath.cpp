@@ -19,115 +19,53 @@
 #include <MemoryBlock.h>
 #include "FileSystemPath.h"
 
-/** Shortcut to the separator field. */
-#define SEPARATOR(x) \
-    (this->separator == (x))
-
-/** Test for an End of Line. */
-#define EOL(s,x) \
-    ((x) == (s) + length - 1)
-
-FileSystemPath::FileSystemPath()
-    : m_fullPath(ZERO)
-    , m_fullLength(0)
-    , m_parentPath(ZERO)
-    , m_separator(DEFAULT_SEPARATOR)
+FileSystemPath::FileSystemPath(const char *path, const char separator)
+    : m_separator(separator)
+    , m_full(path)
+    , m_path(m_full.split(m_separator))
+    , m_base(m_path.count() > 0 ? m_path.last() : "")
+    , m_parent()
 {
-}
-
-FileSystemPath::FileSystemPath(char *path, char separator)
-    : m_fullPath(ZERO)
-    , m_fullLength(ZERO)
-    , m_parentPath(ZERO)
-{
-    parse(path, separator);
-}
-
-FileSystemPath::FileSystemPath(String *s, char separator)
-    : m_fullPath(ZERO)
-    , m_fullLength(ZERO)
-    , m_parentPath(ZERO)
-{
-    parse((char *) **s, separator);
-}
-
-FileSystemPath::~FileSystemPath()
-{
-    for (ListIterator<String *> i(m_path); i.hasCurrent(); i++)
-        delete i.current();
-
-    m_path.clear();
-
-    if (m_parentPath) delete m_parentPath;
-    if (m_fullPath) delete m_fullPath;
-}
-
-void FileSystemPath::parse(const char *p, char sep)
-{
-    const char *cur = p;
-
-    // Skip heading separators
-    while (*cur && *cur == sep) cur++;
-
-    // Save parameters
-    p            = (char *) cur;
-    m_separator  = sep;
-    m_fullLength = String::length((char *)cur);
-    m_fullPath   = new String(cur);
-    assert(m_fullPath != NULL);
-    String str(p);
-
-    // Split the path into parts
-    List<String> parts = str.split(sep);
-    for (ListIterator<String> i(parts); i.hasCurrent(); i++)
-    {
-        String *s = new String(i.current());
-        assert(s != NULL);
-        m_path.append(s);
-    }
-
     // Create parent, if any
     if (m_path.head() && m_path.head()->next)
     {
-        // Allocate buffer
-        m_parentPath = new String();
-        assert(m_parentPath != NULL);
+        const char tmp[] = { m_separator, ZERO };
+        m_parent << tmp;
 
         // Construct parent path
-        for (List<String *>::Node *l = m_path.head(); l && l->next; l = l->next)
+        for (const List<String>::Node *l = m_path.head(); l && l->next; l = l->next)
         {
-            (*m_parentPath) << **l->data;
+            m_parent << *l->data;
 
             if (l->next && l->next->next)
             {
-                char tmp[2] = { m_separator, ZERO };
-                (*m_parentPath) << &tmp;
+                m_parent << tmp;
             }
         }
     }
 }
 
-String * FileSystemPath::parent() const
+const String & FileSystemPath::parent() const
 {
-    return m_parentPath;
+    return m_parent;
 }
 
-String * FileSystemPath::base() const
+const String & FileSystemPath::base() const
 {
-    return m_path.last();
+    return m_base;
 }
 
-String * FileSystemPath::full() const
+const String & FileSystemPath::full() const
 {
-    return m_fullPath;
+    return m_full;
 }
 
-List<String *> * FileSystemPath::split()
+const List<String> & FileSystemPath::split() const
 {
-    return &m_path;
+    return m_path;
 }
 
 Size FileSystemPath::length() const
 {
-    return m_fullLength;
+    return m_full.length();
 }

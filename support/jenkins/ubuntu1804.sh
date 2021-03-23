@@ -22,6 +22,8 @@ COMPILER_PACKAGES="gcc-4.8 gcc-4.8-multilib g++-4.8 g++-4.8-multilib \
                    gcc-6 gcc-6-multilib g++-6 g++-6-multilib \
                    gcc-7 gcc-7-multilib g++-7 g++-7-multilib \
                    gcc-8 gcc-8-multilib g++-8 g++-8-multilib \
+                   gcc-9 gcc-9-multilib g++-9 g++-9-multilib \
+                   gcc-10 gcc-10-multilib g++-10 g++-10-multilib \
                    clang \
                    clang-3.9 \
                    clang-4.0 \
@@ -30,11 +32,12 @@ COMPILER_PACKAGES="gcc-4.8 gcc-4.8-multilib g++-4.8 g++-4.8-multilib \
                    clang-7 \
                    clang-8 \
                    clang-9 \
+                   clang-10 \
                    gcc-5-arm-linux-gnueabi g++-5-arm-linux-gnueabi \
                    gcc-6-arm-linux-gnueabi g++-6-arm-linux-gnueabi \
                    gcc-7-arm-linux-gnueabi g++-7-arm-linux-gnueabi \
                    gcc-8-arm-linux-gnueabi g++-8-arm-linux-gnueabi"
-MISC_PACKAGES="build-essential scons genisoimage xorriso binutils-multiarch u-boot-tools"
+MISC_PACKAGES="build-essential scons genisoimage xorriso binutils-multiarch u-boot-tools valgrind liblz4-tool"
 PACKAGES="$JENKINS_PACKAGES $COMPILER_PACKAGES $MISC_PACKAGES"
 
 # Include common functions
@@ -62,6 +65,7 @@ debconf-set-selections /tmp/input.txt
 rm -f /tmp/input.txt
 
 # Update system to latest patches
+add-apt-repository -y ppa:ubuntu-toolchain-r/test
 run_command_retry "apt-get update"
 run_command_retry "apt-get dist-upgrade -y"
 

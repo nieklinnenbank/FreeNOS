@@ -15,17 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/Constant.h>
 #include <FreeNOS/User.h>
 #include "NS16550.h"
 
-NS16550::NS16550(u32 irq)
-    : Device(FileSystem::CharacterDeviceFile)
+template<> SerialDevice* AbstractFactory<SerialDevice>::create()
 {
-    m_irq = irq;
+    return new NS16550(UART0_IRQ);
+}
+
+NS16550::NS16550(const u32 irq)
+    : SerialDevice(irq)
+{
     m_identifier << "serial0";
 }
 
-FileSystem::Error NS16550::initialize()
+FileSystem::Result NS16550::initialize()
 {
     if (!isKernel)
     {
@@ -57,15 +62,12 @@ FileSystem::Error NS16550::initialize()
     if (isKernel)
     {
         // Mask all interrupts.
-        // TODO: overlap: m_io.write(InterruptIdentity, 0);
         m_io.write(InterruptEnable, 0);
     }
     else
     {
         // Enable Rx/Tx interrupts and FIFOs
         m_io.write(FifoControl, FifoControlTrigger1 | FifoControlEnable);
-        // TODO: they overlap? Perhaps DLAB must be used here too?
-        // m_io.write(InterruptIdentity, InterruptIdentityFifoEnable);
         m_io.write(InterruptEnable, ReceiveDataInterrupt);
         ProcessCtl(SELF, EnableIRQ, m_irq);
     }
@@ -73,14 +75,16 @@ FileSystem::Error NS16550::initialize()
     return FileSystem::Success;
 }
 
-FileSystem::Error NS16550::interrupt(u32 vector)
+FileSystem::Result NS16550::interrupt(const Size vector)
 {
     // Mask interrupt until FIFOs are empty
     m_io.write(InterruptEnable, 0);
     return FileSystem::Success;
 }
 
-FileSystem::Error NS16550::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result NS16550::read(IOBuffer & buffer,
+                                 Size & size,
+                                 const Size offset)
 {
     Size bytes = 0;
 
@@ -103,12 +107,19 @@ FileSystem::Error NS16550::read(IOBuffer & buffer, Size size, Size offset)
     }
 
     if (buffer.getCount())
-        return (FileSystem::Error) buffer.getCount();
+    {
+        size = buffer.getCount();
+        return FileSystem::Success;
+    }
     else
+    {
         return FileSystem::RetryAgain;
+    }
 }
 
-FileSystem::Error NS16550::write(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result NS16550::write(IOBuffer & buffer,
+                                  Size & size,
+                                  const Size offset)
 {
     Size bytes = 0;
 
@@ -116,7 +127,6 @@ FileSystem::Error NS16550::write(IOBuffer & buffer, Size size, Size offset)
     while (bytes < size)
     {
         // Wait until TX fifo is empty
-        // TODO: optimize later
         while (!(m_io.read(LineStatus) & LineStatusTxEmpty))
         {
             ;
@@ -126,25 +136,18 @@ FileSystem::Error NS16550::write(IOBuffer & buffer, Size size, Size offset)
     }
 
     if (bytes)
-        return (FileSystem::Error) bytes;
+    {
+        size = bytes;
+        return FileSystem::Success;
+    }
     else
+    {
         return FileSystem::RetryAgain;
-}
-
-void NS16550::delay(s32 count) const
-{
-    asm volatile("1: subs %0, %0, #1; bne 1b"
-         : "=r"(count) : "0"(count));
+    }
 }
 
 void NS16550::setDivisorLatch(bool enabled)
 {
-    // Must wait until the busy flag is cleared
-    //while (m_io.read(UartStatus) & UartStatusBusy)
-    //{
-    //    ;
-    //}
-
     // Set the divisor latch register
     u32 lc = m_io.read(LineControl);
 

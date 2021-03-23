@@ -15,13 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBSTD_INDEX_H
-#define __LIBSTD_INDEX_H
+#ifndef __LIB_LIBSTD_INDEX_H
+#define __LIB_LIBSTD_INDEX_H
 
 #include "Assert.h"
 #include "Types.h"
 #include "Macros.h"
-#include "Sequence.h"
 
 /**
  * @addtogroup lib
@@ -31,63 +30,74 @@
  * @{
  */
 
-/** Default size of an Index */
-#define INDEX_DEFAULT_SIZE  64
-
 /**
- * Index is a resizable array of pointers to items.
+ * Index is a N-sized array of pointers to items of type T.
  */
-template <class T> class Index : public Sequence<T>
+template <class T, const Size N> class Index
 {
-  using Sequence<T>::remove;
-  using Sequence<T>::contains;
-  using Sequence<T>::compareTo;
-
   public:
 
     /**
      * Constructor.
      */
-    Index(Size size = INDEX_DEFAULT_SIZE)
+    Index()
+        : m_count(0)
     {
-        m_size  = size;
-        m_count = 0;
-        m_array = new T*[size];
-
-        for (Size i = 0; i < size; i++)
-            m_array[i] = ZERO;
-    }
-
-    /**
-     * Destructor.
-     */
-    virtual ~Index()
-    {
-        delete[] m_array;
-    }
-
-    /**
-     * Adds the given item to the Sequence, if possible.
-     *
-     * @param item The item to add to the Sequence.
-     *
-     * @return Position of the item in the Sequence or -1 on failure.
-     */
-    virtual int insert(const T & item)
-    {
-        if (m_count == m_size)
-            this->resize(m_size * 2);
-
-        for (Size i = 0; i < m_size; i++)
+        for (Size i = 0; i < N; i++)
         {
-            if (!m_array[i])
+            m_array[i] = ZERO;
+        }
+    }
+
+    /**
+     * Adds the given item, if possible.
+     *
+     * @param position On output the position of the item in the Index.
+     * @param item Pointer to the item to add.
+     *
+     * @return True on success, false otherwise.
+     */
+    virtual bool insert(Size & position, T *item)
+    {
+        // Check if we are full
+        if (m_count == N)
+        {
+            return false;
+        }
+        // The item must point to an object
+        else if (item == ZERO)
+        {
+            return false;
+        }
+
+        // There is space, add the item.
+        for (Size i = 0; i < N; i++)
+        {
+            if (m_array[i] == ZERO)
             {
-                m_array[i] = (T *) &item;
+                m_array[i] = item;
                 m_count++;
-                return (int) i;
+                position = i;
+                return true;
             }
         }
-        return -1;
+
+        // Should not be reached
+        assert(false);
+        return false;
+    }
+
+    /**
+     * Adds the given item, if possible.
+     *
+     * @param item Pointer to the item to add.
+     *
+     * @return True on success, false otherwise.
+     */
+    virtual bool insert(T *item)
+    {
+        Size ignored = 0;
+        return insert(ignored, item);
     }
 
     /**
@@ -98,28 +108,29 @@ template <class T> class Index : public Sequence<T>
      * @param position The position to insert the item.
      * @param item The item to insert
      *
-     * @return bool Whether inserting the item at the given position succeeded.
+     * @return True on success, false otherwise.
      */
-    virtual bool insert(Size position, const T & item)
+    virtual bool insertAt(const Size position, T *item)
     {
-        if (position <= m_size)
-            this->resize(position * 2);
+        // Position must be in range of the array
+        if (position >= N)
+        {
+            return false;
+        }
+        // The item must point to an object
+        else if (item == ZERO)
+        {
+            return false;
+        }
 
-        if (!m_array[position])
+        // Increment counter only when needed
+        if (m_array[position] == ZERO)
+        {
             m_count++;
+        }
 
-        m_array[position] = (T *) &item;
+        m_array[position] = item;
         return true;
-    }
-
-    /**
-     * Fill the Sequence with the given value.
-     *
-     * @param value New value to fill the Sequence.
-     */
-    virtual void fill(T value)
-    {
-        return;
     }
 
     /**
@@ -129,17 +140,41 @@ template <class T> class Index : public Sequence<T>
      *
      * @return bool Whether removing the item succeeded.
      */
-    virtual bool remove(Size position)
+    virtual bool remove(const Size position)
     {
-        if (position >= m_size)
+        // Position must be in range of the array
+        if (position >= N)
+        {
             return false;
+        }
 
+        // See if the item exists
         if (!m_array[position])
+        {
             return false;
+        }
 
         m_array[position] = ZERO;
+        assert(m_count >= 1);
         m_count--;
         return true;
+    }
+
+    /**
+     * Removes and delete()'s all items.
+     */
+    void deleteAll()
+    {
+        for (Size i = 0; i < N; i++)
+        {
+            if (m_array[i] != ZERO)
+            {
+                delete m_array[i];
+                m_array[i] = ZERO;
+            }
+        }
+
+        m_count = 0;
     }
 
     /**
@@ -149,90 +184,65 @@ template <class T> class Index : public Sequence<T>
      *
      * @return Pointer to the item at the given position or ZERO if no item available.
      */
-    virtual const T * get(Size position) const
+    virtual T * get(const Size position) const
     {
-        if (position >= m_size)
+        // Position must be in range of the array
+        if (position >= N)
+        {
             return ZERO;
+        }
 
         return m_array[position];
     }
 
     /**
-     * Returns a reference to the item at the given position.
-     *
-     * @param position Valid index inside this array.
-     *
-     * @return Reference to the item at the given position
-     *
-     * @note This function does not perform bounds checking. Position must be a valid index.
-     */
-    virtual const T & at(Size position) const
-    {
-        return (*m_array[position]);
-    }
-
-    /**
      * Check if the given item is stored in this Sequence.
      */
-    virtual bool contains(T value)
+    virtual bool contains(const T *item) const
     {
-        for (Size i = 0; i < m_size; i++)
-            if (m_array[i] && (*m_array[i]) == value)
+        for (Size i = 0; i < N; i++)
+        {
+            if (m_array[i] == item)
+            {
                 return true;
+            }
+        }
 
         return false;
     }
 
     /**
-     * Compare this Sequence to another Sequence.
-     */
-    virtual int compareTo(const Index<T> &idx) const
-    {
-        Size sz  = this->size();
-        Size cnt = this->count();
-
-        // Size must be equal
-        if (idx.size() != sz)
-            return idx.size() - sz;
-
-        // Count must be equal
-        if (idx.count() != cnt)
-            return idx.count() - cnt;
-
-        // All elements must be equal
-        for (Size i = 0; i < cnt; i++)
-        {
-            if (!(idx.m_array[i] && m_array[i] && (*idx.m_array[i]) == (*m_array[i])))
-            {
-                return i + 1;
-            }
-        }
-        return 0;
-    }
-
-    /**
-     * Size of the index.
+     * Size of the Index.
      */
     virtual Size size() const
     {
-        return m_size;
+        return N;
     }
 
     /**
-     * Item count of the index.
+     * Item count in the Index.
      */
     virtual Size count() const
     {
         return m_count;
     }
 
+   /**
+     * Returns the item at the given position in the Index.
+     *
+     * @param i The position of the item to return.
+     *
+     * @return the Item at position i or ZERO if no item available.
+     */
+    T * operator [] (const Size i)
+    {
+        return get(i);
+    }
+
   private:
 
     /** Array of pointers to items. */
-    T** m_array;
-
-    /** Size of the pointer array. */
-    Size m_size;
+    T* m_array[N];
 
     /** Amount of valid pointers in the array. */
     Size m_count;
@@ -243,4 +253,4 @@ template <class T> class Index : public Sequence<T>
  * @}
  */
 
-#endif /* __LIBSTD_INDEX_H */
+#endif /* __LIB_LIBSTD_INDEX_H */

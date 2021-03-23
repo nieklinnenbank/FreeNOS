@@ -19,9 +19,16 @@ Import('build_env')
 
 env = build_env.Clone()
 env.UseServers(['log', 'filesystem', 'core'])
-env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libarch', 'libexec', 'libfs', 'libipc', 'librt' ])
+env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libarch',
+                   'libexec', 'libfs', 'libipc', 'libruntime' ])
 
-if env['ARCH'] == 'arm':
-    env.TargetProgram('server', [ 'Main.cpp', 'PL011.cpp', 'NS16550.cpp' ])
-else:
-    env.TargetProgram('server', [ 'Main.cpp', 'i8250.cpp' ])
+src = [ 'Main.cpp', 'SerialDevice.cpp' ]
+
+if env['ARCH'] == 'arm' and env['SYSTEM'].startswith('raspberry'):
+    src += [ 'PL011.cpp' ]
+elif env['SYSTEM'] == 'sunxi-h3':
+    src += [ 'NS16550.cpp' ]
+elif env['ARCH'] == 'intel':
+    src += [ 'i8250.cpp' ]
+
+env.TargetProgram('server', src)

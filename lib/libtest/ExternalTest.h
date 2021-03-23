@@ -45,6 +45,11 @@ class ExternalTest : public TestInstance
     ExternalTest(const char *name, int argc, char **argv);
 
     /**
+     * Destructor
+     */
+    virtual ~ExternalTest();
+
+    /**
      * Run the external test
      *
      * @return TestResult

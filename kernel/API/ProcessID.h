@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __API_PROCESSID_H
-#define __API_PROCESSID_H
+#ifndef __KERNEL_API_PROCESSID_H
+#define __KERNEL_API_PROCESSID_H
 
 /**
  * @addtogroup kernel
@@ -37,7 +37,8 @@
 
 #define CORESRV_PID     0
 #define DATASTORE_PID   1
-#define ROOTFS_PID      2
+#define RECOVERY_PID    2
+#define ROOTFS_PID      3
 
 /**
  * @}
@@ -45,4 +46,4 @@
  * @}
  */
 
-#endif /* __API_PROCESSID_H */
+#endif /* __KERNEL_API_PROCESSID_H */

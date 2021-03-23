@@ -15,13 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "LogLevelFile.h"
 #include "DeviceServer.h"
 
 DeviceServer::DeviceServer(const char *path)
-    : FileSystemServer(path)
+    : FileSystemServer(new Directory(1), path)
 {
-    m_interrupts.fill(ZERO);
-    setRoot(new Directory());
 }
 
 DeviceServer::~DeviceServer()
@@ -36,14 +35,22 @@ FileSystem::Result DeviceServer::initialize()
         Device *dev = m_devices[i];
         if (dev != ZERO)
         {
-            const FileSystem::Error result = dev->initialize();
+            const FileSystem::Result result = dev->initialize();
             if (result != FileSystem::Success)
             {
                 ERROR("failed to initialize device " << (*dev->getIdentifier()) <<
                       ": result = " << (int)result);
-                return FileSystem::IOError;
+                return result;
             }
         }
+    }
+
+    // Add log level pseudo file
+    const FileSystem::Result logResult = registerFile(new LogLevelFile(getNextInode()), "loglevel");
+    if (logResult != FileSystem::Success)
+    {
+        ERROR("failed to register LogLevelFile: result = " << (int) logResult);
+        return logResult;
     }
 
     // Mount on the root file system
@@ -62,20 +69,35 @@ void DeviceServer::registerDevice(Device *dev, const char *path)
     FileSystemServer::registerFile(dev, path);
 
     // Add to the list of Devices
-    m_devices.insert(dev);
+    const bool result = m_devices.insert(dev);
+    if (!result)
+    {
+        FATAL("failed to register device on path: " << path);
+    }
 }
 
 void DeviceServer::registerInterrupt(Device *dev, Size vector)
 {
-    if (!m_interrupts[vector])
+    if (!m_interrupts.get(vector))
     {
-        m_interrupts.insert(vector, new List<Device *>);
+        m_interrupts.insertAt(vector, new List<Device *>);
     }
     m_interrupts[vector]->append(dev);
 
     // Register to kernel
-    ProcessCtl(SELF, WatchIRQ, vector);
-    ProcessCtl(SELF, EnableIRQ, vector);
+    const API::Result watchResult = ProcessCtl(SELF, WatchIRQ, vector);
+    if (watchResult != API::Success)
+    {
+        ERROR("failed to register IRQ handler using WatchIRQ: result = " << (int) watchResult);
+        return;
+    }
+
+    const API::Result enableResult = ProcessCtl(SELF, EnableIRQ, vector);
+    if (enableResult != API::Success)
+    {
+        ERROR("failed to enable IRQ handler using EnableIRQ: result = " << (int) enableResult);
+        return;
+    }
 
     // Register interrupt handler
     addIRQHandler(vector, (IRQHandlerFunction) &DeviceServer::interruptHandler);
@@ -83,7 +105,7 @@ void DeviceServer::registerInterrupt(Device *dev, Size vector)
 
 void DeviceServer::interruptHandler(Size vector)
 {
-    List<Device *> *lst = m_interrupts.at(vector);
+    List<Device *> *lst = m_interrupts.get(vector);
 
     // Do we have any Devices with this interrupt vector?
     if (lst)

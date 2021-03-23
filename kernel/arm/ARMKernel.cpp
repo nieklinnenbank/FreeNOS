@@ -50,6 +50,9 @@ ARMKernel::ARMKernel(CoreInfo *info)
     ctrl.unset(ARMControl::BigEndian);
 #endif
 
+    // First page is used for exception handlers
+    m_alloc->allocate(info->memory.phys);
+
     // Allocate physical memory for the temporary stack.
     //
     // This is an area of 1MiB which must not be used. It is re-mapped on the
@@ -64,7 +67,7 @@ ARMKernel::ARMKernel(CoreInfo *info)
             m_alloc->allocate(TMPSTACKADDR + i);
     } else {
         for (Size i = 0; i < MegaByte(1); i += PAGESIZE)
-            m_alloc->allocate(info->kernel.phys + TMPSTACKOFF + i);
+            m_alloc->allocate(info->memory.phys + TMPSTACKOFF + i);
     }
 }
 
@@ -74,7 +77,7 @@ void ARMKernel::interrupt(CPUState state)
     core.logException(&state);
 
     FATAL("core" << coreInfo.coreId << ": unhandled IRQ in procId = " <<
-           Kernel::instance->getProcessManager()->current()->getID());
+           Kernel::instance()->getProcessManager()->current()->getID());
 }
 
 void ARMKernel::undefinedInstruction(CPUState state)
@@ -83,7 +86,7 @@ void ARMKernel::undefinedInstruction(CPUState state)
     core.logException(&state);
 
     FATAL("core" << coreInfo.coreId << ": procId = " <<
-           Kernel::instance->getProcessManager()->current()->getID());
+           Kernel::instance()->getProcessManager()->current()->getID());
 }
 
 void ARMKernel::prefetchAbort(CPUState state)
@@ -92,7 +95,7 @@ void ARMKernel::prefetchAbort(CPUState state)
     core.logException(&state);
 
     FATAL("core" << coreInfo.coreId << ": procId = " <<
-           Kernel::instance->getProcessManager()->current()->getID());
+           Kernel::instance()->getProcessManager()->current()->getID());
 }
 
 void ARMKernel::dataAbort(CPUState state)
@@ -101,7 +104,7 @@ void ARMKernel::dataAbort(CPUState state)
     core.logException(&state);
 
     FATAL("core" << coreInfo.coreId << ": procId = " <<
-           Kernel::instance->getProcessManager()->current()->getID());
+           Kernel::instance()->getProcessManager()->current()->getID());
 }
 
 
@@ -111,19 +114,19 @@ void ARMKernel::reserved(CPUState state)
     core.logException(&state);
 
     FATAL("core" << coreInfo.coreId << ": procId = " <<
-           Kernel::instance->getProcessManager()->current()->getID());
+           Kernel::instance()->getProcessManager()->current()->getID());
 }
 
 void ARMKernel::trap(volatile CPUState state)
 {
-    ProcessManager *mgr = Kernel::instance->getProcessManager();
+    ProcessManager *mgr = Kernel::instance()->getProcessManager();
     ARMProcess *proc = (ARMProcess *) mgr->current(), *proc2;
     ProcessID procId = proc->getID();
 
     DEBUG("coreId = " << coreInfo.coreId << " procId = " << procId << " api = " << state.r0);
 
     // Execute the kernel call
-    u32 r = Kernel::instance->getAPI()->invoke(
+    u32 r = Kernel::instance()->getAPI()->invoke(
         (API::Number) state.r0,
                       state.r1,
                       state.r2,

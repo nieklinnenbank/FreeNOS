@@ -39,15 +39,22 @@ u8 tekenToVGA[] =
     LIGHTGREY,
 };
 
-Terminal::Terminal(const char *in, const char *out,
-                   Size w, Size h)
-    : Device(FileSystem::CharacterDeviceFile), inputFile(in), outputFile(out), width(w), height(h)
+Terminal::Terminal(const u32 inode,
+                   const char *in,
+                   const char *out,
+                   const Size w,
+                   const Size h)
+    : Device(inode, FileSystem::CharacterDeviceFile)
+    , inputFile(in)
+    , outputFile(out)
+    , width(w)
+    , height(h)
 {
     m_identifier << "tty0";
     buffer = new u16[width * height];
 }
 
-FileSystem::Error Terminal::initialize()
+FileSystem::Result Terminal::initialize()
 {
     teken_pos_t winsz;
 
@@ -92,12 +99,7 @@ FileSystem::Error Terminal::initialize()
     teken_set_winsize(&state, &winsz);
 
     // Print banners
-    FileSystemMessage msg;
-    msg.type = ChannelMessage::Request;
-    msg.size = 512;
-    IOBuffer io(&msg);
-    io.bufferedWrite((void *)(BANNER COPYRIGHT "\r\n"), strlen(BANNER)+strlen(COPYRIGHT)+2);
-    write(io, io.getCount(), 0);
+    writeTerminal((const u8 *)(BANNER COPYRIGHT "\r\n"), strlen(BANNER)+strlen(COPYRIGHT)+2);
 
     // Done
     return FileSystem::Success;
@@ -140,19 +142,36 @@ u16 * Terminal::getCursorValue()
     return &cursorValue;
 }
 
-FileSystem::Error Terminal::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result Terminal::read(IOBuffer & buffer,
+                                  Size & size,
+                                  const Size offset)
 {
     char tmp[255];
     int n;
 
     n = ::read(input, tmp, size < sizeof(tmp) ? size : sizeof(tmp));
-    if (n > 0)
+    if (n < 0)
+    {
+        return FileSystem::IOError;
+    }
+    else if (n > 0)
+    {
         buffer.write(tmp, n);
+    }
 
-    return n;
+    size = n;
+    return FileSystem::Success;
 }
 
-Error Terminal::write(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result Terminal::write(IOBuffer & buffer,
+                                   Size & size,
+                                   const Size offset)
+{
+    return writeTerminal(buffer.getBuffer(), size);
+}
+
+FileSystem::Result Terminal::writeTerminal(const u8 *bytes,
+                                           const Size size)
 {
     char cr = '\r', ch;
 
@@ -164,11 +183,11 @@ Error Terminal::write(IOBuffer & buffer, Size size, Size offset)
     // whenever a linefeed is detected.
     for (Size i = 0; i < size; i++)
     {
-        if (buffer[i] == '\n')
+        if (bytes[i] == '\n')
         {
             teken_input(&state, &cr, 1);
         }
-        ch = buffer[i];
+        ch = bytes[i];
         teken_input(&state, &ch, 1);
     }
 
@@ -177,7 +196,7 @@ Error Terminal::write(IOBuffer & buffer, Size size, Size offset)
     ::write(output, this->buffer, width * height * 2);
 
     // Done
-    return size;
+    return FileSystem::Success;
 }
 
 void Terminal::hideCursor()

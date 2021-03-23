@@ -29,6 +29,7 @@
 
 /** Forward declarations. */
 class API;
+class BootImageStorage;
 class MemoryContext;
 class Process;
 class ProcessManager;
@@ -88,7 +89,7 @@ InterruptHook;
 /**
  * FreeNOS kernel implementation.
  */
-class Kernel : public Singleton<Kernel>
+class Kernel : public WeakSingleton<Kernel>
 {
   public:
 
@@ -120,7 +121,7 @@ class Kernel : public Singleton<Kernel>
      *
      * @return Zero on success or error code on failure.
      */
-    static Error heap(Address base, Size size);
+    static Error initializeHeap();
 
     /**
      * Get physical memory allocator.
@@ -214,11 +215,11 @@ class Kernel : public Singleton<Kernel>
     /**
      * Load a boot program.
      *
-     * @param image BootImage pointer loaded by the bootloader in kernel virtual memory.
-     * @param imagePAddr Physical memory address of the boot image.
-     * @param index Index in the BootProcess table.
+     * @param bootImage Reference to the BootImageStorage
+     * @param program Reference to the BootSymbol of the program to load.
      */
-    virtual Result loadBootProcess(BootImage *image, Address imagePAddr, Size index);
+    virtual Result loadBootProgram(const BootImageStorage &bootImage,
+                                   const BootSymbol &program);
 
   protected:
 

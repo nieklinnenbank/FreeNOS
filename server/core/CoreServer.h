@@ -51,6 +51,9 @@ class CoreServer : public ChannelServer<CoreServer, CoreMessage>
 {
   private:
 
+    /** Maximum number of cores currently supported */
+    static const Size MaxCores = 256;
+
     /** Number of times to busy wait on receiving a message */
     static const Size MaxMessageRetry = 128;
 
@@ -139,11 +142,18 @@ class CoreServer : public ChannelServer<CoreServer, CoreMessage>
     Core::Result prepareCoreInfo();
 
     /**
-     * Load operating system kernel
+     * Load operating system kernel program
      *
      * @return Result code
      */
     Core::Result loadKernel();
+
+    /**
+     * Unload operating system kernel program
+     *
+     * @return Result code
+     */
+    Core::Result unloadKernel();
 
     /**
      * Boot all processor cores
@@ -232,17 +242,17 @@ class CoreServer : public ChannelServer<CoreServer, CoreMessage>
   private:
 
     ExecutableFormat *m_kernel;
-    u8 *m_kernelImage;
+    Memory::Range m_kernelImage;
 
     ExecutableFormat::Region m_regions[16];
 
     Size m_numRegions;
 
-    Index<CoreInfo> *m_coreInfo;
+    Index<CoreInfo, MaxCores> *m_coreInfo;
     SystemInformation m_info;
 
-    Index<MemoryChannel> *m_fromSlave;
-    Index<MemoryChannel> *m_toSlave;
+    Index<MemoryChannel, MaxCores> *m_fromSlave;
+    Index<MemoryChannel, MaxCores> *m_toSlave;
 
     MemoryChannel *m_toMaster;
     MemoryChannel *m_fromMaster;

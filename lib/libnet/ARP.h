@@ -15,12 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBNET_ARP_H
-#define __LIBNET_ARP_H
+#ifndef __LIB_LIBNET_ARP_H
+#define __LIB_LIBNET_ARP_H
 
 #include <Types.h>
 #include <HashTable.h>
 #include <Timer.h>
+#include <KernelTimer.h>
 #include "Ethernet.h"
 #include "IPV4.h"
 #include "NetworkProtocol.h"
@@ -110,9 +111,14 @@ class ARP : public NetworkProtocol
 
     /**
      * Constructor
+     *
+     * @param server Reference to the NetworkServer instance
+     * @param device Reference to the NetworkDevice instance
+     * @param parent Parent upper-layer protocol
      */
-    ARP(NetworkServer *server,
-        NetworkDevice *device);
+    ARP(NetworkServer &server,
+        NetworkDevice &device,
+        NetworkProtocol &parent);
 
     /**
      * Destructor
@@ -121,8 +127,10 @@ class ARP : public NetworkProtocol
 
     /**
      * Perform initialization.
+     *
+     * @return Result code
      */
-    virtual Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
      * Set IPV4 instance
@@ -132,44 +140,35 @@ class ARP : public NetworkProtocol
     void setIP(::IPV4 *ip);
 
     /**
-     * Set Ethernet instance
-     *
-     * @param ether Ethernet intstance
-     */
-    void setEthernet(::Ethernet *ether);
-
-    /**
      * Lookup Ethernet address for an IP
      *
      * @param ipAddr Input IP address to lookup
      * @param ethAddr Output Ethernet address when found
      *
-     * @return EAGAIN when the lookup is in progress
-     *         ESUCCESS on success
-     *         Other error code on error
+     * @return Result code
      */
-    Error lookupAddress(IPV4::Address *ipAddr,
-                        Ethernet::Address *ethAddr);
+    FileSystem::Result lookupAddress(const IPV4::Address *ipAddr,
+                                     Ethernet::Address *ethAddr);
 
     /**
      * Send ARP request
      *
      * @param address IPV4 address to lookup
      *
-     * @return Error code
+     * @return Result code
      */
-    Error sendRequest(IPV4::Address address);
+    FileSystem::Result sendRequest(const IPV4::Address address);
 
     /**
      * Send ARP reply
      *
      * @param ethaddr Ethernet address to send reply to
-     * @param ipaddr IP address of the origin
+     * @param ipAddr IP address of the origin
      *
-     * @return Error code
+     * @return Result code
      */
-    Error sendReply(const Ethernet::Address *ethaddr,
-                    const IPV4::Address ipAddr);
+    FileSystem::Result sendReply(const Ethernet::Address *ethaddr,
+                                 const IPV4::Address ipAddr);
 
     /**
      * Process incoming network packet.
@@ -177,9 +176,10 @@ class ARP : public NetworkProtocol
      * @param pkt Incoming packet pointer
      * @param offset Offset for processing
      *
-     * @return Error code
+     * @return Result code
      */
-    virtual Error process(NetworkQueue::Packet *pkt, Size offset);
+    virtual FileSystem::Result process(const NetworkQueue::Packet *pkt,
+                                       const Size offset);
 
   private:
 
@@ -190,7 +190,7 @@ class ARP : public NetworkProtocol
      *
      * @return ARPCache object pointer
      */
-    ARPCache * insertCacheEntry(IPV4::Address ipAddr);
+    ARPCache * insertCacheEntry(const IPV4::Address ipAddr);
 
     /**
      * Retrieve cache entry by IP
@@ -199,7 +199,7 @@ class ARP : public NetworkProtocol
      *
      * @return ARPCache object pointer or ZERO if not found
      */
-    ARPCache * getCacheEntry(IPV4::Address ipAddr);
+    ARPCache * getCacheEntry(const IPV4::Address ipAddr);
 
     /**
      * Update cache entry
@@ -207,8 +207,8 @@ class ARP : public NetworkProtocol
      * @param ipAddr IP address for update
      * @param ethAddr Ethernet address for update
      */
-    void updateCacheEntry(IPV4::Address ipAddr,
-                          Ethernet::Address ethAddr);
+    void updateCacheEntry(const IPV4::Address ipAddr,
+                          const Ethernet::Address *ethAddr);
 
   private:
 
@@ -218,11 +218,11 @@ class ARP : public NetworkProtocol
     /** IPV4 instance object */
     ::IPV4 *m_ip;
 
-    /** Ethernet instance */
-    ::Ethernet *m_ether;
-
     /** Contains a cached mapping from IP to Ethernet addresses */
     HashTable<IPV4::Address, ARPCache *> m_cache;
+
+    /** Provides access to the kernel timer */
+    KernelTimer m_kernelTimer;
 };
 
 /**
@@ -230,4 +230,4 @@ class ARP : public NetworkProtocol
  * @}
  */
 
-#endif /* __LIBNET_ARP_H */
+#endif /* __LIB_LIBNET_ARP_H */

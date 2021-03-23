@@ -30,6 +30,15 @@
  */
 
 /**
+ * Returns the exit status of the child process
+ *
+ * @param st Contains the stat_loc value from waitpid()
+ *
+ * @return Exit status of the child process
+ */
+#define WEXITSTATUS(st) (st)
+
+/**
  * @brief Wait for a child process to stop or terminate
  *
  * The wait() and waitpid() functions shall obtain status information

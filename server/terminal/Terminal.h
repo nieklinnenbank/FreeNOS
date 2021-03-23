@@ -48,14 +48,18 @@ class Terminal : public Device
     /**
      * @brief Class constructor.
      *
+     * @param inode Inode number
      * @param inputFile Path to the (device) file to use as input source.
      * @param outputFile Path to the (device) file to use as
-     *        an output source.
+     *                   an output source.
      * @param width Width of the Terminal.
      * @param height Height of the Terminal.
      */
-    Terminal(const char *inputFile, const char *outputFile,
-             Size width = 80, Size height = 25);
+    Terminal(const u32 inode,
+             const char *inputFile,
+             const char *outputFile,
+             const Size width = 80,
+             const Size height = 25);
 
     /**
      * @brief Class destructor.
@@ -122,33 +126,52 @@ class Terminal : public Device
     void showCursor();
 
     /**
-     * @brief Initializes the Terminal.
+     * Initialize the Terminal.
      *
-     * @return Error result code.
+     * @return Result code
      */
-    virtual FileSystem::Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
-     * Read bytes from the Terminal.
+     * Read bytes from the Terminal
      *
-     * @param buffer Output buffer.
-     * @param size Number of bytes to read.
-     * @param offset Unused.
+     * @param buffer Input/Output buffer to output bytes to.
+     * @param size Maximum number of bytes to read on input.
+     *             On output, the actual number of bytes read.
+     * @param offset Offset inside the file to start reading.
      *
-     * @return Number of bytes read or error code on failure.
+     * @return Result code
      */
-    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result read(IOBuffer & buffer,
+                                    Size & size,
+                                    const Size offset);
 
     /**
-     * Write bytes to the Terminal (vga memory).
+     * Write bytes to the Terminal
      *
-     * @param buffer Contains the bytes to write.
-     * @param size Number of bytes to write.
-     * @param offset Unused.
+     * @param buffer Input/Output buffer to input bytes from.
+     * @param size Maximum number of bytes to write on input.
+     *             On output, the actual number of bytes written.
+     * @param offset Offset inside the file to start writing.
      *
-     * @return Number of bytes written or error code on failure.
+     * @return Result code
      */
-    virtual FileSystem::Error write(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result write(IOBuffer & buffer,
+                                     Size & size,
+                                     const Size offset);
+
+  private:
+
+    /**
+     * Write bytes to the output device
+     *
+     * @param bytes Input bytes
+     * @param size Number of input bytes
+     *
+     * @return Result code
+     */
+    FileSystem::Result writeTerminal(const u8 *bytes,
+                                     const Size size);
 
   private:
 
@@ -210,7 +233,7 @@ void cursor(Terminal *term, const teken_pos_t *pos);
 /**
  * Fills the Terminal buffer with a character.
  *
- * @param term Terminal object pointer.
+ * @param ctx Terminal object pointer.
  * @param rect Indicates where to fill.
  * @param ch Character to be used for filling.
  * @param attr Attributes for this character.

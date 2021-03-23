@@ -1,5 +1,6 @@
 BootProgram ./server/core/server
 BootProgram ./server/datastore/server
+BootProgram ./server/recovery/server
 BootProgram ./server/filesystem/linn/server
 BootProgram ./server/idle/server
 BootProgram ./bin/init/init

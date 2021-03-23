@@ -15,46 +15,52 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <errno.h>
+#include <ByteOrder.h>
+#include <MemoryBlock.h>
 #include "NetworkServer.h"
 #include "NetworkDevice.h"
 #include "Ethernet.h"
 #include "EthernetAddress.h"
 #include "ICMP.h"
 
-Ethernet::Ethernet(NetworkServer *server, NetworkDevice *device)
-    : NetworkProtocol(server, device)
+Ethernet::Ethernet(NetworkServer &server,
+                   NetworkDevice &device)
+    : NetworkProtocol(server, device, *this)
 {
     m_arp  = ZERO;
     m_ipv4 = ZERO;
-    device->getAddress(&m_address);
+    MemoryBlock::set(&m_address, 0, sizeof(m_address));
 }
 
 Ethernet::~Ethernet()
 {
 }
 
-Error Ethernet::initialize()
+FileSystem::Result Ethernet::initialize()
 {
-    m_server->registerFile(this, "/ethernet");
-    m_server->registerFile(new EthernetAddress(this), "/ethernet/address");
-    return ESUCCESS;
+    m_device.getAddress(&m_address);
+
+    m_server.registerDirectory(this, "/ethernet");
+    m_server.registerFile(new EthernetAddress(m_server.getNextInode(), this), "/ethernet/address");
+
+    return FileSystem::Success;
 }
 
-Error Ethernet::getAddress(Ethernet::Address *address)
+FileSystem::Result Ethernet::getAddress(Ethernet::Address *address)
 {
     MemoryBlock::copy(address, &m_address, sizeof(Ethernet::Address));
-    return ESUCCESS;
+    return FileSystem::Success;
 }
 
-Error Ethernet::setAddress(Ethernet::Address *address)
+FileSystem::Result Ethernet::setAddress(const Ethernet::Address *address)
 {
-    Error r = m_device->setAddress(address);
-    if (r == ESUCCESS)
+    const FileSystem::Result result = m_device.setAddress(address);
+    if (result == FileSystem::Success)
     {
         MemoryBlock::copy(&m_address, address, sizeof(Ethernet::Address));
     }
-    return r;
+
+    return result;
 }
 
 void Ethernet::setARP(::ARP *arp)
@@ -67,7 +73,7 @@ void Ethernet::setIP(::IPV4 *ip)
     m_ipv4 = ip;
 }
 
-const String Ethernet::toString(Ethernet::Address address)
+const String Ethernet::toString(const Ethernet::Address address)
 {
     String s;
 
@@ -82,28 +88,48 @@ const String Ethernet::toString(Ethernet::Address address)
     return s;
 }
 
-NetworkQueue::Packet * Ethernet::getTransmitPacket(const Ethernet::Address *destination,
-                                                   Ethernet::PayloadType type)
+FileSystem::Result Ethernet::getTransmitPacket(NetworkQueue::Packet **pkt,
+                                               const void *address,
+                                               const Size addressSize,
+                                               const NetworkProtocol::Identifier protocol,
+                                               const Size payloadSize)
 {
-    NetworkQueue::Packet *pkt = m_device->getTransmitQueue()->get();
-    if (!pkt)
-        return ZERO;
+    *pkt = m_device.getTransmitQueue()->get();
+    if (!*pkt)
+    {
+        return FileSystem::RetryAgain;
+    }
 
-    Ethernet::Header *ether = (Ethernet::Header *) (pkt->data + pkt->size);
+    Ethernet::Header *ether = (Ethernet::Header *) ((*pkt)->data + (*pkt)->size);
     MemoryBlock::copy(&ether->source, &m_address, sizeof(Address));
-    MemoryBlock::copy(&ether->destination, destination, sizeof(Address));
-    ether->type = cpu_to_be16(type);
+    MemoryBlock::copy(&ether->destination, address, sizeof(Address));
 
-    pkt->size += sizeof(Ethernet::Header);
-    return pkt;
+    switch (protocol)
+    {
+        case NetworkProtocol::IPV4:
+            writeBe16(&ether->type, IPV4);
+            break;
+
+        case NetworkProtocol::ARP:
+            writeBe16(&ether->type, ARP);
+            break;
+
+        default:
+            ERROR("unsupported protocol: " << (int) protocol);
+            return FileSystem::NotSupported;
+    }
+
+    (*pkt)->size += sizeof(Ethernet::Header);
+    return FileSystem::Success;
 }
 
-Error Ethernet::process(NetworkQueue::Packet *pkt, Size offset)
+FileSystem::Result Ethernet::process(const NetworkQueue::Packet *pkt,
+                                     const Size offset)
 {
-    DEBUG("");
+    const Ethernet::Header *ether = (const Ethernet::Header *) (pkt->data + offset);
+    const u16 type = readBe16(&ether->type);
 
-    const Ethernet::Header *ether = (Ethernet::Header *) (pkt->data + offset);
-    u16 type = be16_to_cpu(ether->type);
+    DEBUG("packet: size = " << pkt->size << " payload = " << *pkt);
 
     switch (type)
     {
@@ -118,10 +144,11 @@ Error Ethernet::process(NetworkQueue::Packet *pkt, Size offset)
             break;
 
         default:
-            DEBUG("dropped unknown ethernet type: " << (int) ether->type);
+            DEBUG("dropped unknown ethernet type: " << (int) type);
             break;
     }
-    return EINVAL;
+
+    return FileSystem::InvalidArgument;
 }
 
 Log & operator << (Log &log, const Ethernet::Address & addr)

@@ -21,16 +21,26 @@
 #include <Types.h>
 #include "i8250.h"
 
-i8250::i8250(const u16 base, const u16 irq)
-    : Device(FileSystem::CharacterDeviceFile)
-    , m_irq(irq)
+template<> SerialDevice* AbstractFactory<SerialDevice>::create()
+{
+    return new i8250(4, 0x3f8);
+}
+
+i8250::i8250(const u32 irq, const u16 base)
+    : SerialDevice(irq)
 {
     m_io.setPortBase(base);
     m_identifier << "serial0";
 }
 
-FileSystem::Error i8250::initialize()
+FileSystem::Result i8250::initialize()
 {
+    // Temporary disable interrupts
+    if (!isKernel)
+    {
+        ProcessCtl(SELF, DisableIRQ, m_irq);
+    }
+
     // 8bit Words, no parity
     m_io.outb(LINECONTROL, 3);
 
@@ -49,17 +59,25 @@ FileSystem::Error i8250::initialize()
     m_io.outb(DIVISORHIGH, (11500 / BAUDRATE) >> 8);
     m_io.outb(LINECONTROL, m_io.inb(LINECONTROL) & ~(DLAB));
 
+    // Re-Enable interrupts
+    if (!isKernel)
+    {
+        ProcessCtl(SELF, EnableIRQ, m_irq);
+    }
+
     // Done
     return FileSystem::Success;
 }
 
-FileSystem::Error i8250::interrupt(Size vector)
+FileSystem::Result i8250::interrupt(const Size vector)
 {
     ProcessCtl(SELF, EnableIRQ, m_irq);
     return FileSystem::Success;
 }
 
-FileSystem::Error i8250::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result i8250::read(IOBuffer & buffer,
+                               Size & size,
+                               const Size offset)
 {
     Size bytes = 0;
     u8 byte;
@@ -73,12 +91,19 @@ FileSystem::Error i8250::read(IOBuffer & buffer, Size size, Size offset)
     }
 
     if (bytes)
-        return (FileSystem::Error) bytes;
+    {
+        size = bytes;
+        return FileSystem::Success;
+    }
     else
+    {
         return FileSystem::RetryAgain;
+    }
 }
 
-FileSystem::Error i8250::write(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result i8250::write(IOBuffer & buffer,
+                                Size & size,
+                                const Size offset)
 {
     Size bytes = 0;
 
@@ -89,7 +114,12 @@ FileSystem::Error i8250::write(IOBuffer & buffer, Size size, Size offset)
     }
 
     if (bytes)
-        return (FileSystem::Error) bytes;
+    {
+        size = bytes;
+        return FileSystem::Success;
+    }
     else
+    {
         return FileSystem::RetryAgain;
+    }
 }

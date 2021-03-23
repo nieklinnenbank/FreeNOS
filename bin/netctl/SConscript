@@ -19,8 +19,7 @@ Import('build_env')
 
 env = build_env.Clone()
 
-if env['ARCH'] == 'arm' and env['SYSTEM'] == 'raspberry':
-    env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libexec',
-                       'libarch', 'libnet', 'libipc', 'libfs', 'librt', 'libapp' ])
-    env.UseServers(['core'])
-    env.TargetProgram('netctl', Glob('*.cpp'), env['bin'])
+env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libexec',
+                   'libarch', 'libnet', 'libipc', 'libfs', 'libruntime', 'libapp' ])
+env.UseServers(['core'])
+env.TargetProgram('netctl', Glob('*.cpp'), env['bin'])

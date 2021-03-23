@@ -19,7 +19,8 @@
 #include "TestCase.h"
 #include "TestSuite.h"
 
-TestSuite::TestSuite() : Singleton<TestSuite>(this)
+TestSuite::TestSuite()
+    : StrictSingleton<TestSuite>()
 {
 }
 

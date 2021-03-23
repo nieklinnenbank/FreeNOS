@@ -56,7 +56,8 @@ class ARMPaging : public MemoryContext
      * Secondary constructor with pre-allocated 1st page table.
      *
      * @param map Virtual memory map
-     * @param firstTableAddr Physical address of 1st page table
+     * @param firstTableAddress Physical address of 1st page table
+     * @param kernelBaseAddress Physical base address of the kernel
      */
     ARMPaging(MemoryMap *map, Address firstTableAddress, Address kernelBaseAddress);
 
@@ -64,6 +65,13 @@ class ARMPaging : public MemoryContext
      * Destructor.
      */
     virtual ~ARMPaging();
+
+    /**
+     * Initialize the MemoryContext
+     *
+     * @return Result code
+     */
+    virtual Result initialize();
 
     /**
      * Activate the MemoryContext.
@@ -102,7 +110,8 @@ class ARMPaging : public MemoryContext
     /**
      * Translate virtual address to physical address.
      *
-     * @param virt Virtual address to lookup on input, physical address on output.
+     * @param virt Virtual address to lookup on input
+     * @param phys Contains the physical address on output.
      *
      * @return Result code
      */
@@ -116,27 +125,31 @@ class ARMPaging : public MemoryContext
      *
      * @return Result code.
      */
-    virtual Result access(Address addr, Memory::Access *access) const;
+    virtual Result access(Address virt, Memory::Access *access) const;
 
     /**
-     * Release region of memory.
+     * Release memory sections.
      *
-     * @param region Memory region input
-     * @param tablesOnly Set to true to only release page tables and not mapped pages.
+     * Deallocate all associated physical memory
+     * which resides in the given memory section range.
      *
-     * @return Result code.
+     * @param range Range of memory sections to release
+     * @param tablesOnly True to only release associated page tables
+     *                   and do not release the actual mapped pages
+     *
+     * @return Result code
      */
-    virtual Result releaseRegion(MemoryMap::Region region, bool tablesOnly);
+    virtual Result releaseSection(const Memory::Range & range,
+                                  const bool tablesOnly = false);
 
     /**
      * Release range of memory.
      *
      * @param range Memory range input
-     * @param tablesOnly Set to true to only release page tables and not mapped pages.
      *
      * @return Result code.
      */
-    virtual Result releaseRange(Memory::Range *range, bool tablesOnly);
+    virtual Result releaseRange(Memory::Range *range);
 
   private:
 
@@ -145,6 +158,7 @@ class ARMPaging : public MemoryContext
      *
      * @param map Virtual memory map
      * @param firstTableAddress Physical address of 1st level page table
+     * @param kernelBaseAddress Physical address of the kernel base
      */
     void setupFirstTable(MemoryMap *map, Address firstTableAddress, Address kernelBaseAddress);
 
@@ -162,6 +176,9 @@ class ARMPaging : public MemoryContext
 
     /** Physical address of the first level page table. */
     Address m_firstTableAddr;
+
+    /** Kernel base address */
+    Address m_kernelBaseAddr;
 
     /** Caching implementation */
     Arch::Cache m_cache;

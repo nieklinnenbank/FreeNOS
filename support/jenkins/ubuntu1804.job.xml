@@ -83,6 +83,8 @@
         <string>ARCH=arm SYSTEM=raspberry COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=-6.0</string>
         <string>ARCH=arm SYSTEM=raspberry COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=-7</string>
         <string>ARCH=arm SYSTEM=raspberry COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=-8</string>
+        <string>ARCH=arm SYSTEM=raspberry COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=-9</string>
+        <string>ARCH=arm SYSTEM=raspberry COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=-10</string>
         <string>ARCH=arm SYSTEM=raspberry2 COMPILER=gcc CROSS_COMPILE=arm-linux-gnueabi- VERSION_SUFFIX=-5</string>
         <string>ARCH=arm SYSTEM=raspberry2 COMPILER=gcc CROSS_COMPILE=arm-linux-gnueabi- VERSION_SUFFIX=-6</string>
         <string>ARCH=arm SYSTEM=raspberry2 COMPILER=gcc CROSS_COMPILE=arm-linux-gnueabi- VERSION_SUFFIX=-7</string>
@@ -93,6 +95,8 @@
         <string>ARCH=arm SYSTEM=raspberry2 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=-6.0</string>
         <string>ARCH=arm SYSTEM=raspberry2 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=-7</string>
         <string>ARCH=arm SYSTEM=raspberry2 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=-8</string>
+        <string>ARCH=arm SYSTEM=raspberry2 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=-9</string>
+        <string>ARCH=arm SYSTEM=raspberry2 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=-10</string>
         <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=gcc CROSS_COMPILE=arm-linux-gnueabi- VERSION_SUFFIX=-5</string>
         <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=gcc CROSS_COMPILE=arm-linux-gnueabi- VERSION_SUFFIX=-6</string>
         <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=gcc CROSS_COMPILE=arm-linux-gnueabi- VERSION_SUFFIX=-7</string>
@@ -103,11 +107,15 @@
         <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=-6.0</string>
         <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=-7</string>
         <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=-8</string>
+        <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=-9</string>
+        <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=-10</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=-4.8</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=-5</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=-6</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=-7</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=-8</string>
+        <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=-9</string>
+        <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=-10</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=-3.9</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=-4.0</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=-5.0</string>
@@ -115,6 +123,7 @@
         <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=-7</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=-8</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=-9</string>
+        <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=-10</string>
         <string>HOST_MINIMAL_BUILD=False COMPILER=gcc</string>
         <string>HOST_MINIMAL_BUILD=False COMPILER=clang</string>
       </values>
@@ -123,6 +132,8 @@
   <builders>
     <hudson.tasks.Shell>
       <command>#!/bin/bash
+set -x
+set -e
 export $sysargs
 
 if [ ! -z &quot;$ARCH&quot; ]; then
@@ -132,8 +143,8 @@ else
     test_target=&quot;xml_test&quot;
 fi
 
-scons $sysargs $debugging VERBOSE=True HOST_VERBOSE=True QEMU_BUILD=True QEMU_KVM=False || exit 1
-scons $sysargs $debugging VERBOSE=True HOST_VERBOSE=True QEMU_BUILD=True QEMU_KVM=False &quot;$test_target&quot; || exit 1
+scons $sysargs $debugging VERBOSE=True HOST_VERBOSE=True QEMU_BUILD=True QEMU_KVM=False
+scons $sysargs $debugging VERBOSE=True HOST_VERBOSE=True QEMU_BUILD=True QEMU_KVM=False &quot;$test_target&quot;
 </command>
     </hudson.tasks.Shell>
   </builders>

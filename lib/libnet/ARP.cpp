@@ -15,30 +15,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <errno.h>
+#include <ByteOrder.h>
 #include "NetworkClient.h"
 #include "NetworkServer.h"
 #include "NetworkDevice.h"
 #include "ARP.h"
 #include "ARPSocket.h"
 
-ARP::ARP(NetworkServer *server, NetworkDevice *device)
-    : NetworkProtocol(server, device)
+ARP::ARP(NetworkServer &server,
+         NetworkDevice &device,
+         NetworkProtocol &parent)
+    : NetworkProtocol(server, device, parent)
 {
     m_ip = 0;
-    m_ether = 0;
 }
 
 ARP::~ARP()
 {
+    for (HashIterator<IPV4::Address, ARPCache *> i(m_cache); i.hasCurrent(); i++)
+    {
+        delete i.current();
+    }
 }
 
-Error ARP::initialize()
+FileSystem::Result ARP::initialize()
 {
-    m_sock = new ARPSocket(this);
-    m_server->registerFile(this, "/arp");
-    m_server->registerFile(m_sock, "/arp/socket");
-    return ESUCCESS;
+    m_sock = new ARPSocket(m_server.getNextInode(), this);
+    m_server.registerDirectory(this, "/arp");
+    m_server.registerFile(m_sock, "/arp/socket");
+
+    return FileSystem::Success;
 }
 
 void ARP::setIP(::IPV4 *ip)
@@ -46,12 +52,7 @@ void ARP::setIP(::IPV4 *ip)
     m_ip = ip;
 }
 
-void ARP::setEthernet(::Ethernet *eth)
-{
-    m_ether = eth;
-}
-
-ARP::ARPCache * ARP::getCacheEntry(IPV4::Address ipAddr)
+ARP::ARPCache * ARP::getCacheEntry(const IPV4::Address ipAddr)
 {
     ARPCache **entry = (ARPCache **) m_cache.get(ipAddr);
     if (entry)
@@ -60,7 +61,7 @@ ARP::ARPCache * ARP::getCacheEntry(IPV4::Address ipAddr)
         return insertCacheEntry(ipAddr);
 }
 
-ARP::ARPCache * ARP::insertCacheEntry(IPV4::Address ipAddr)
+ARP::ARPCache * ARP::insertCacheEntry(const IPV4::Address ipAddr)
 {
     ARPCache *entry = new ARPCache;
     MemoryBlock::set(entry, 0, sizeof(*entry));
@@ -71,47 +72,74 @@ ARP::ARPCache * ARP::insertCacheEntry(IPV4::Address ipAddr)
     return entry;
 }
 
-void ARP::updateCacheEntry(IPV4::Address ipAddr,
-                           Ethernet::Address ethAddr)
+void ARP::updateCacheEntry(const IPV4::Address ipAddr,
+                           const Ethernet::Address *ethAddr)
 {
     ARPCache *entry = getCacheEntry(ipAddr);
     if (entry)
     {
         entry->valid = true;
-        MemoryBlock::copy(&entry->ethAddr, &ethAddr, sizeof(Ethernet::Address));
+        MemoryBlock::copy(&entry->ethAddr, ethAddr, sizeof(Ethernet::Address));
     }
 }
 
-Error ARP::lookupAddress(IPV4::Address *ipAddr,
-                         Ethernet::Address *ethAddr)
+FileSystem::Result ARP::lookupAddress(const IPV4::Address *ipAddr,
+                                      Ethernet::Address *ethAddr)
 {
     DEBUG("");
 
     // See if we have the IP cached
-    ARPCache *entry = getCacheEntry(*ipAddr);
+    const ARPCache *entry = getCacheEntry(*ipAddr);
     if (entry && entry->valid)
     {
         MemoryBlock::copy(ethAddr, &entry->ethAddr, sizeof(Ethernet::Address));
-        return ESUCCESS;
+        return FileSystem::Success;
     }
-    // Send an ARP request
-    Error r = sendRequest(*ipAddr);
-    if (r < 0)
-        return r;
 
-    // Make sure we are called again in about 500msec
-    m_server->setTimeout(500);
+    // Is this a broadcast address?
+    if (*ipAddr == 0xffffffff)
+    {
+        MemoryBlock::set(ethAddr, 0xff, sizeof(Ethernet::Address));
+        return FileSystem::Success;
+    }
+
+    // See if timeout has expired for re-transmission
+    m_kernelTimer.tick();
+    Timer::Info inf;
+    m_kernelTimer.getCurrent(&inf);
+    DEBUG("entry->time.ticks = " << entry->time.ticks <<
+          " entry->time.freq = " << entry->time.frequency <<
+          " kernelTimer.ticks = " << inf.ticks <<
+          " kernelTimer.freq = " << inf.frequency);
+
+    if (!entry->time.ticks || m_kernelTimer.isExpired(entry->time))
+    {
+        DEBUG("entry timeout: re-transmitting");
+
+        // Send an ARP request
+        const FileSystem::Result result = sendRequest(*ipAddr);
+        if (result != FileSystem::Success && result != FileSystem::RetryAgain)
+        {
+            ERROR("failed to send request: result = " << (int) result);
+            return result;
+        }
+    }
+
+    // Make sure we are called again in about 500msec (or earlier)
+    m_server.setTimeout(500);
     return FileSystem::RetryAgain;
 }
 
-Error ARP::sendRequest(IPV4::Address address)
+FileSystem::Result ARP::sendRequest(const IPV4::Address address)
 {
-    DEBUG("");
+    DEBUG("address = " << *IPV4::toString(address));
 
     // Get cache entry
     ARPCache *entry = getCacheEntry(address);
     if (!entry)
-        return EHOSTUNREACH;
+    {
+        return FileSystem::NotFound;
+    }
 
     // Update the cache entry administration
     entry->valid = false;
@@ -119,31 +147,38 @@ Error ARP::sendRequest(IPV4::Address address)
     if (entry->retryCount > MaxRetries)
     {
         entry->retryCount = 0;
-        return EHOSTUNREACH;
+        return FileSystem::NotFound;
     }
+    m_kernelTimer.tick();
+    m_kernelTimer.getCurrent(&entry->time, 500);
 
     // Destination is broadcast ethernet address
     Ethernet::Address destAddr;
     MemoryBlock::set(&destAddr, 0xff, sizeof(destAddr));
 
     // Get a fresh ethernet packet
-    NetworkQueue::Packet *pkt = m_ether->getTransmitPacket(
-        &destAddr,
-        Ethernet::ARP
-    );
-    if (!pkt)
-        return FileSystem::RetryAgain;
+    NetworkQueue::Packet *pkt;
+    const FileSystem::Result result = m_parent.getTransmitPacket(&pkt, &destAddr, sizeof(destAddr),
+                                                                 NetworkProtocol::ARP, sizeof(Header));
+    if (result != FileSystem::Success)
+    {
+        if (result != FileSystem::RetryAgain)
+        {
+            ERROR("failed to get transmit packet: result = " << (int) result);
+        }
+        return result;
+    }
 
     Ethernet::Header *ether = (Ethernet::Header *) (pkt->data + pkt->size - sizeof(Ethernet::Header));
     ARP::Header *arp = (ARP::Header *) (pkt->data + pkt->size);
     pkt->size += sizeof(ARP::Header);
 
     // Fill the ARP packet
-    arp->hardwareType   = cpu_to_be16(ARP::Ethernet);
-    arp->protocolType   = cpu_to_be16(ARP::IPV4);
+    writeBe16(&arp->hardwareType, ARP::Ethernet);
+    writeBe16(&arp->protocolType, ARP::IPV4);
+    writeBe16(&arp->operation, ARP::Request);
     arp->hardwareLength = sizeof(Ethernet::Address);
     arp->protocolLength = sizeof(IPV4::Address);
-    arp->operation      = cpu_to_be16(ARP::Request);
 
     // Get our current IP
     IPV4::Address ipaddr;
@@ -151,28 +186,35 @@ Error ARP::sendRequest(IPV4::Address address)
 
     // Fill source and destinations
     MemoryBlock::copy(&arp->etherSender, &ether->source, sizeof(Ethernet::Address));
-    arp->ipSender = cpu_to_be32(ipaddr);
     MemoryBlock::copy(&arp->etherTarget, &ether->destination, sizeof(Ethernet::Address));
-    arp->ipTarget = cpu_to_be32(address);
+    writeBe32(&arp->ipSender, ipaddr);
+    writeBe32(&arp->ipTarget, address);
 
     // Send the packet using the network device
-    return m_device->transmit(pkt);
+    return m_device.transmit(pkt);
 }
 
-Error ARP::sendReply(const Ethernet::Address *ethAddr, const IPV4::Address ipAddr)
+FileSystem::Result ARP::sendReply(const Ethernet::Address *ethAddr, const IPV4::Address ipAddr)
 {
     DEBUG("");
 
-    // Get a fresh ethernet packet
-    NetworkQueue::Packet *pkt = m_ether->getTransmitPacket(
-        ethAddr,
-        Ethernet::ARP
-    );
-    if (!pkt)
-        return FileSystem::RetryAgain;
-
     if (!m_ip)
-        return EINVAL;
+    {
+        return FileSystem::InvalidArgument;
+    }
+
+    // Get a fresh ethernet packet
+    NetworkQueue::Packet *pkt;
+    const FileSystem::Result result = m_parent.getTransmitPacket(&pkt, ethAddr, sizeof(*ethAddr),
+                                                                 NetworkProtocol::ARP, sizeof(Header));
+    if (result != FileSystem::Success)
+    {
+        if (result != FileSystem::RetryAgain)
+        {
+            ERROR("failed to get transmit packet: result = " << (int) result);
+        }
+        return result;
+    }
 
     IPV4::Address myip;
     m_ip->getAddress(&myip);
@@ -185,53 +227,54 @@ Error ARP::sendReply(const Ethernet::Address *ethAddr, const IPV4::Address ipAdd
     DEBUG("eth: source=" << ether->source << " dest=" << ether->destination);
 
     // ARP packet
-    arp->hardwareType   = cpu_to_be16(ARP::Ethernet);
-    arp->protocolType   = cpu_to_be16(ARP::IPV4);
+    writeBe16(&arp->hardwareType, ARP::Ethernet);
+    writeBe16(&arp->protocolType, ARP::IPV4);
+    writeBe16(&arp->operation, ARP::Reply);
     arp->hardwareLength = sizeof(Ethernet::Address);
     arp->protocolLength = sizeof(IPV4::Address);
-    arp->operation      = cpu_to_be16(ARP::Reply);
 
     // Fill source and destinations
     MemoryBlock::copy(&arp->etherSender, &ether->source, sizeof(Ethernet::Address));
-    arp->ipSender = cpu_to_be32(myip);
     MemoryBlock::copy(&arp->etherTarget, &ether->destination, sizeof(Ethernet::Address));
-    arp->ipTarget = ipAddr;
+    writeBe32(&arp->ipSender, myip);
+    writeBe32(&arp->ipTarget, ipAddr);
 
     // Send the packet using the network device
-    return m_device->transmit(pkt);
+    return m_device.transmit(pkt);
 }
 
-Error ARP::process(NetworkQueue::Packet *pkt, Size offset)
+FileSystem::Result ARP::process(const NetworkQueue::Packet *pkt, const Size offset)
 {
-    DEBUG("");
-
-    const Ethernet::Header *ether = (Ethernet::Header *) (pkt->data + offset - sizeof(Ethernet::Header));
-    const Header *arp = (Header *) (pkt->data + offset);
+    const Ethernet::Header *ether = (const Ethernet::Header *) (pkt->data + offset - sizeof(Ethernet::Header));
+    const Header *arp = (const Header *) (pkt->data + offset);
+    const u16 operation = readBe16(&arp->operation);
+    const u32 ipTarget  = readBe32(&arp->ipTarget);
+    const u32 ipSender  = readBe32(&arp->ipSender);
     IPV4::Address ipAddr;
-
-    if (!m_ip)
-        return EINVAL;
 
     m_ip->getAddress(&ipAddr);
 
-    switch (be16_to_cpu(arp->operation))
+    DEBUG("target = " << *IPV4::toString(ipTarget) << " sender = " << *IPV4::toString(ipSender) <<
+          " ipAddr = " << *IPV4::toString(ipAddr) << " operation = " << operation <<
+          " etherSender = " << arp->etherSender << " etherTarget = " << arp->etherTarget);
+
+    switch (operation)
     {
         case Request:
             // Only send reply if the request is for our IP
-            if (be32_to_cpu(arp->ipTarget) == ipAddr)
+            if (ipTarget == ipAddr)
             {
-                updateCacheEntry(be32_to_cpu(arp->ipSender),
-                                 arp->etherSender);
-                return sendReply(&ether->source, arp->ipSender);
+                updateCacheEntry(ipSender, &arp->etherSender);
+                return sendReply(&ether->source, ipSender);
             }
-            break;
+            return FileSystem::Success;
 
         case Reply: {
-            updateCacheEntry(be32_to_cpu(arp->ipSender),
-                             arp->etherSender);
+            updateCacheEntry(ipSender, &arp->etherSender);
             return m_sock->process(pkt);
         }
     }
+
     // Unknown ARP operation
-    return ENOTSUP;
+    return FileSystem::InvalidArgument;
 }

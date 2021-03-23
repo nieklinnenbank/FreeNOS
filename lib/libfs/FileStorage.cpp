@@ -15,41 +15,57 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "FileDescriptor.h"
 #include "FileStorage.h"
 
 FileStorage::FileStorage(const char *path, const Size offset)
     : m_path(path)
+    , m_fd(0)
     , m_offset(offset)
 {
-    m_file.statFile(path, &m_stat);
 }
 
-FileSystem::Error FileStorage::read(u64 offset, void *buffer, Size size)
+FileSystem::Result FileStorage::initialize()
 {
-    const FileSystem::Result result = m_file.readFile(m_path, buffer, &size, m_offset + offset);
+    const FileSystem::Result statResult = m_file.statFile(m_path, &m_stat);
+    if (statResult != FileSystem::Success)
+    {
+        return statResult;
+    }
 
-    if (result == FileSystem::Success)
-    {
-        return size;
-    }
-    else
-    {
-        return result;
-    }
+    return m_file.openFile(m_path, m_fd);
 }
 
-FileSystem::Error FileStorage::write(u64 offset, void *buffer, Size size)
+FileSystem::Result FileStorage::read(const u64 offset, void *buffer, const Size size) const
 {
-    const FileSystem::Result result = m_file.writeFile(m_path, buffer, &size, m_offset + offset);
+    Size sz = size;
 
-    if (result == FileSystem::Success)
+    FileDescriptor::Entry *fd = FileDescriptor::instance()->getEntry(m_fd);
+    if (!fd || !fd->open)
     {
-        return size;
+        return FileSystem::IOError;
     }
-    else
+
+    // Update the file position pointer
+    fd->position = m_offset + offset;
+
+    return m_file.readFile(m_fd, buffer, &sz);
+}
+
+FileSystem::Result FileStorage::write(const u64 offset, void *buffer, const Size size)
+{
+    Size sz = size;
+
+    FileDescriptor::Entry *fd = FileDescriptor::instance()->getEntry(m_fd);
+    if (!fd || !fd->open)
     {
-        return result;
+        return FileSystem::IOError;
     }
+
+    // Update the file position pointer
+    fd->position = m_offset + offset;
+
+    return m_file.writeFile(m_fd, buffer, &sz);
 }
 
 u64 FileStorage::capacity() const

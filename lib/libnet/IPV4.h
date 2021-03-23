@@ -15,17 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBNET_IPV4_H
-#define __LIBNET_IPV4_H
+#ifndef __LIB_LIBNET_IPV4_H
+#define __LIB_LIBNET_IPV4_H
 
 #include <Types.h>
-#include "Ethernet.h"
-#include "IPV4.h"
+#include <String.h>
+#include "NetworkProtocol.h"
 
 class ICMP;
 class ARP;
 class UDP;
-class Ethernet;
 
 /**
  * @addtogroup lib
@@ -99,9 +98,14 @@ class IPV4 : public NetworkProtocol
 
     /**
      * Constructor
+     *
+     * @param server Reference to the NetworkServer instance
+     * @param device Reference to the NetworkDevice instance
+     * @param parent Parent upper-layer protocol
      */
-    IPV4(NetworkServer *server,
-       NetworkDevice *device);
+    IPV4(NetworkServer &server,
+         NetworkDevice &device,
+         NetworkProtocol &parent);
 
     /**
      * Destructor
@@ -111,9 +115,9 @@ class IPV4 : public NetworkProtocol
     /**
      * Perform initialization.
      *
-     * @return Error code
+     * @return Result code
      */
-    virtual Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
      * Set ICMP instance
@@ -122,37 +126,46 @@ class IPV4 : public NetworkProtocol
      */
     void setICMP(::ICMP *icmp);
 
+    /**
+     * Set ARP instance
+     *
+     * @param arp ARP instance
+     */
     void setARP(::ARP *arp);
 
+    /**
+     * Set UDP instance
+     *
+     * @param udp UDP instance
+     */
     void setUDP(::UDP *udp);
-
-    void setEthernet(::Ethernet *ether);
 
     /**
      * Get current IP address
      *
      * @param address IPV4 address buffer
      *
-     * @return Error code
+     * @return Result code
      */
-    virtual Error getAddress(Address *address);
+    virtual FileSystem::Result getAddress(Address *address);
 
     /**
      * Set current IP address
      *
      * @param address IPV4 address buffer
      *
-     * @return Error code
+     * @return Result code
      */
-    virtual Error setAddress(Address *address);
+    virtual FileSystem::Result setAddress(const Address *address);
 
     /**
      * Convert address to string
      *
      * @param address Input IP address
+     *
      * @return Text value of the IP
      */
-    static const String toString(Address address);
+    static const String toString(const Address address);
 
     /**
      * Convert string to IPV4 address.
@@ -165,21 +178,30 @@ class IPV4 : public NetworkProtocol
     /**
      * Get a new packet for transmission
      *
-     * @param destination
+     * @param pkt On output contains a pointer to a Packet
+     * @param address Address of the destination of this packet
+     * @param addressSize Number of bytes of the address
+     * @param protocol Identifier for the protocol to create the packet for
+     * @param payloadSize Number of payload bytes
      *
-     * @return Error code
+     * @return Result code
      */
-    Error getTransmitPacket(NetworkQueue::Packet **pkt,
-                            Address destination,
-                            Protocol type,
-                            Size size);
+    virtual FileSystem::Result getTransmitPacket(NetworkQueue::Packet **pkt,
+                                                 const void *address,
+                                                 const Size addressSize,
+                                                 const Identifier protocol,
+                                                 const Size payloadSize);
 
     /**
      * Process incoming network packet.
      *
-     * @return Error code
+     * @param pkt Incoming packet pointer
+     * @param offset Offset for processing
+     *
+     * @return Result code
      */
-    virtual Error process(NetworkQueue::Packet *pkt, Size offset);
+    virtual FileSystem::Result process(const NetworkQueue::Packet *pkt,
+                                       const Size offset);
 
     /**
      * Calculate IP checksum
@@ -189,7 +211,19 @@ class IPV4 : public NetworkProtocol
      *
      * @return IP checksum value for the given buffer
      */
-    static const u16 checksum(const void *buffer, Size length);
+    static const u16 checksum(const void *buffer,
+                              const Size length);
+
+  private:
+
+    /**
+     * Convert protocol identifier
+     *
+     * @param id NetworkProtocol identifier
+     *
+     * @return Protocol value for IPV4 header
+     */
+    Protocol getProtocolByIdentifier(const NetworkProtocol::Identifier id) const;
 
   private:
 
@@ -205,9 +239,6 @@ class IPV4 : public NetworkProtocol
     /** UDP instance */
     ::UDP *m_udp;
 
-    /** Ethernet instance */
-    ::Ethernet *m_ether;
-
     /** Packet ID for IPV4 */
     u16 m_id;
 };
@@ -217,4 +248,4 @@ class IPV4 : public NetworkProtocol
  * @}
  */
 
-#endif /* __LIBNET_IPV4_H */
+#endif /* __LIB_LIBNET_IPV4_H */

@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBNET_NETWORKCLIENT_H
-#define __LIBNET_NETWORKCLIENT_H
+#ifndef __LIB_LIBNET_NETWORKCLIENT_H
+#define __LIB_LIBNET_NETWORKCLIENT_H
 
 #include <Types.h>
 #include "IPV4.h"
@@ -51,7 +51,9 @@ class NetworkClient
     enum SocketAction
     {
         Connect,
-        Listen
+        Listen,
+        SendSingle,
+        SendMultiple
     };
 
     /**
@@ -64,9 +66,21 @@ class NetworkClient
     {
         IPV4::Address address;
         u16 port;
-        SocketAction action;
+        u16 action;
     }
     SocketInfo;
+
+    /**
+     * Describes a single packet.
+     *
+     * This structure is used for operations that involve multiple packets,
+     * for example: SendMultiple.
+     */
+    struct PacketInfo
+    {
+        Address address;
+        Size size;
+    };
 
     /**
      * Socket types
@@ -86,7 +100,9 @@ class NetworkClient
     {
         Success,
         IOError,
-        NotFound
+        NotFound,
+        NotSupported,
+        TimedOut
     };
 
   public:
@@ -118,7 +134,8 @@ class NetworkClient
      *
      * @return Result code
      */
-    Result createSocket(SocketType type, int *socket);
+    Result createSocket(const SocketType type,
+                        int *socket);
 
     /**
      * Connect socket to address/port.
@@ -129,7 +146,9 @@ class NetworkClient
      *
      * @return Result code
      */
-    Result connectSocket(int sock, IPV4::Address addr, u16 port = 0);
+    Result connectSocket(const int sock,
+                         const IPV4::Address addr,
+                         const u16 port = 0);
 
     /**
      * Bind socket to address/port.
@@ -140,24 +159,41 @@ class NetworkClient
      *
      * @return Result code
      */
-    Result bindSocket(int sock, IPV4::Address addr = 0, u16 port = 0);
+    Result bindSocket(const int sock,
+                      const IPV4::Address addr = 0,
+                      const u16 port = 0);
+
+    /**
+     * Wait until the given socket has data to receive.
+     *
+     * @param type Type of socket to wait for
+     * @param sock Socket index
+     * @param msecTimeout Timeout in milliseconds to wait or ZERO for infinite wait
+     *
+     * @return Result code
+     */
+    Result waitSocket(const NetworkClient::SocketType type,
+                      const int sock,
+                      const Size msecTimeout);
 
     /**
      * Close the socket.
      *
-     * @param socket Network socket to close
+     * @param sock Network socket to close
      *
      * @return Result code
      */
-    Result close(int sock);
+    Result close(const int sock);
 
   private:
 
     /**
      * Set socket to new state.
      */
-    Result writeSocketInfo(int sock, IPV4::Address addr,
-                           u16 port, SocketAction action);
+    Result writeSocketInfo(const int sock,
+                           const IPV4::Address addr,
+                           const u16 port,
+                           const SocketAction action);
 
   private:
 
@@ -170,4 +206,4 @@ class NetworkClient
  * @}
  */
 
-#endif /* __LIBNET_NETWORKCLIENT_H */
+#endif /* __LIB_LIBNET_NETWORKCLIENT_H */

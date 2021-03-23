@@ -22,15 +22,14 @@
 #include "string.h"
 #include "sys/stat.h"
 
-int mknod(const char *path, mode_t mode, dev_t dev)
+int mknod(const char *path, mode_t mode, dev_t)
 {
     const FileSystemClient filesystem;
 
     // Ask FileSystem to create the file for us
     const FileSystem::Result result = filesystem.createFile(path,
                                                            (FileSystem::FileType) ((mode >> FILEMODE_BITS) & FILETYPE_MASK),
-                                                           (FileSystem::FileModes) (mode & FILEMODE_MASK),
-                                                            dev);
+                                                           (FileSystem::FileModes) (mode & FILEMODE_MASK));
     // Set errno
     if (result == FileSystem::Success)
         errno = ESUCCESS;

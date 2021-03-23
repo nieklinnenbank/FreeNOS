@@ -38,9 +38,14 @@ class Process;
  */
 class ProcessShares
 {
+  private:
+
+    /** Maximum number of memory shares that a single process can have. */
+    static const Size MaximumMemoryShares = 32u;
+
   public:
 
-    typedef struct MemoryShare
+    struct MemoryShare
     {
         /** Remote process id for this share */
         ProcessID pid;
@@ -56,17 +61,7 @@ class ProcessShares
 
         /** True if the share is attached (used by both processes) */
         bool attached;
-
-        bool operator == (const struct MemoryShare & sh) const
-        {
-            return true;
-        }
-        bool operator != (const struct MemoryShare & sh) const
-        {
-            return false;
-        }
-    }
-    MemoryShare;
+    };
 
     enum Result
     {
@@ -75,6 +70,7 @@ class ProcessShares
         MemoryMapError,
         OutOfMemory,
         AlreadyExists,
+        DetachInProgress,
         NotFound
     };
 
@@ -162,6 +158,19 @@ class ProcessShares
      */
     Result releaseShare(MemoryShare *share, Size idx);
 
+    /**
+     * Retrieve MemoryShare object.
+     *
+     * @param pid ProcessID value to match
+     * @param coreId CoreID value to match
+     * @param tagId TagID value to match
+     *
+     * @return MemoryShare pointer if found or ZERO if not
+     */
+    MemoryShare * findShare(const ProcessID pid,
+                            const Size coreId,
+                            const Size tagId);
+
   private:
 
     /** ProcessID associated to these shares */
@@ -170,11 +179,8 @@ class ProcessShares
     /** MemoryContext instance */
     MemoryContext *m_memory;
 
-    /** Memory channel for sending kernel events to the associated Process */
-    MemoryChannel *m_kernelChannel;
-
     /** Contains all memory shares */
-    Index<MemoryShare> m_shares;
+    Index<MemoryShare, MaximumMemoryShares> m_shares;
 };
 
 /**

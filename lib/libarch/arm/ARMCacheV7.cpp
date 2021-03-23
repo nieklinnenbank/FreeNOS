@@ -58,11 +58,11 @@ ARMCacheV7::Result ARMCacheV7::cleanInvalidate(ARMCacheV7::Type type)
             // Invalidate all instruction caches to PoU.
             // Also flushes branch target cache.
             //
-            dsb();
             mcr(p15, 0, 0, c7, c5, 0);
 
             // Invalidate entire branch predictor array
             flushBranchPrediction();
+            dsb();
             isb();
             break;
 
@@ -81,42 +81,82 @@ ARMCacheV7::Result ARMCacheV7::cleanInvalidate(ARMCacheV7::Type type)
 
 ARMCacheV7::Result ARMCacheV7::cleanInvalidateAddress(Type type, Address addr)
 {
-    switch (type)
+    const u32 lineSize = getCacheLineSize();
+    const u32 pageAddr = addr & PAGEMASK;
+
+    for (Address i = 0; i < PAGESIZE; i += lineSize)
     {
-        case Instruction:
-            mcr(p15, 0, 1, c7, c5, addr);
-            isb();
-            break;
+        switch (type)
+        {
+            case Instruction:
+                mcr(p15, 0, 1, c7, c5, pageAddr + i);
+                break;
 
-        case Data:
-            mcr(p15, 0, 1, c7, c14, addr);
-            dsb();
-            break;
+            case Data:
+                mcr(p15, 0, 1, c7, c14, pageAddr + i);
+                break;
 
-        case Unified:
-            break;
+            case Unified:
+                return ARMCacheV7::IOError;
+        }
     }
+
+    isb();
+    dsb();
+
     return Success;
 }
 
 ARMCacheV7::Result ARMCacheV7::cleanAddress(ARMCacheV7::Type type, Address addr)
 {
-    switch (type)
+    const u32 lineSize = getCacheLineSize();
+    const u32 pageAddr = addr & PAGEMASK;
+
+    for (Address i = 0; i < PAGESIZE; i += lineSize)
     {
-        case Instruction:
-            mcr(p15, 0, 1, c7,  c5, addr);
-            isb();
-            break;
+        switch (type)
+        {
+            case Instruction:
+                mcr(p15, 0, 1, c7,  c5, pageAddr + i);
+                break;
 
-        case Data:
-            mcr(p15, 0, 1, c7, c10, addr);
-            dsb();
-            isb();
-            break;
+            case Data:
+                mcr(p15, 0, 1, c7, c10, pageAddr + i);
+                break;
 
-        case Unified:
-            break;
+            case Unified:
+                return ARMCacheV7::IOError;
+        }
     }
+
+    dsb();
+    isb();
+
+    return Success;
+}
+
+ARMCacheV7::Result ARMCacheV7::invalidateAddress(ARMCacheV7::Type type, Address addr)
+{
+    const u32 lineSize = getCacheLineSize();
+    const u32 pageAddr = addr & PAGEMASK;
+
+    for (Address i = 0; i < PAGESIZE; i += lineSize)
+    {
+        switch (type)
+        {
+            case Instruction:
+                return ARMCacheV7::IOError;
+
+            case Data:
+                mcr(p15, 0, 1, c7, c6, pageAddr + i);
+                break;
+
+            case Unified:
+                return ARMCacheV7::IOError;
+        }
+    }
+
+    dsb();
     return Success;
 }
 
@@ -125,6 +165,24 @@ u32 ARMCacheV7::getCacheLevelId() const
     u32 levelId;
     asm volatile ("mrc p15,1,%0,c0,c0,1" : "=r" (levelId));
     return levelId;
+}
+
+u32 ARMCacheV7::getCacheLineSize() const
+{
+    u32 ccsidr, line_len;
+
+    // Read current CP15 Cache Size ID Register
+    asm volatile ("mrc p15, 1, %0, c0, c0, 0" : "=r" (ccsidr));
+
+    line_len = ((ccsidr & CCSIDR_LINE_SIZE_MASK) >>
+                          CCSIDR_LINE_SIZE_OFFSET) + 2;
+
+    // Converting from words to bytes
+    line_len += 2;
+
+    // converting from log2(linelen) to linelen
+    line_len = 1 << line_len;
+    return line_len;
 }
 
 u32 ARMCacheV7::readCacheSize(u32 level, u32 type) const

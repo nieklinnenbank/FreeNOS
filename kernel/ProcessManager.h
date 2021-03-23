@@ -29,16 +29,14 @@
 class Scheduler;
 
 /**
- * Maximum number of processes.
- *
- * @group kernel
- */
-#define MAX_PROCS 1024
-
-/**
  * @addtogroup kernel
  * @{
  */
+
+/**
+ * Maximum number of processes.
+ */
+#define MAX_PROCS 1024
 
 /**
  * Represents a process which may run on the host.
@@ -117,6 +115,32 @@ class ProcessManager
     Result wait(Process *proc);
 
     /**
+     * Remove given Process from the Scheduler
+     *
+     * @param proc Process pointer
+     *
+     * @return Result code
+     */
+    Result stop(Process *proc);
+
+    /**
+     * Resume scheduling of the given Process.
+     *
+     * @param proc Process pointer
+     *
+     * @return Result code
+     */
+    Result resume(Process *proc);
+
+    /**
+     * Restart execution of a Process at the given entry point.
+     *
+     * @param proc Process pointer
+     * @param entry Address to begin execution.
+     */
+    Result reset(Process *proc, const Address entry);
+
+    /**
      * Let current Process sleep until a timer expires or wakeup occurs.
      *
      * @param timer Timer on which the process must be woken up (if expired), or ZERO for no limit
@@ -185,13 +209,6 @@ class ProcessManager
      */
     Process * current();
 
-    /**
-     * Retrieve the process table.
-     *
-     * @return Pointer to the process table.
-     */
-    Vector<Process *> * getProcessTable();
-
   private:
 
     /**
@@ -217,7 +234,7 @@ class ProcessManager
   private:
 
     /** All known Processes. */
-    Vector<Process *> m_procs;
+    Index<Process, MAX_PROCS> m_procs;
 
     /** Object which selects processes to run. */
     Scheduler *m_scheduler;
@@ -239,4 +256,4 @@ class ProcessManager
  * @}
  */
 
-#endif /* __KERNEL_PROCESS_H */
+#endif /* __KERNEL_PROCESS_MANAGER_H */

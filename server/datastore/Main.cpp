@@ -16,10 +16,12 @@
  */
 
 #include <FreeNOS/User.h>
+#include <KernelLog.h>
 #include "DatastoreServer.h"
 
 int main(int argc, char **argv)
 {
+    KernelLog log;
     DatastoreServer server;
     return server.run();
 }

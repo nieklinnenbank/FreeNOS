@@ -89,10 +89,12 @@ class Timer
      * Get current timer info.
      *
      * @param info Timer Info object pointer for output.
+     * @param msecOffset Optional offset in milliseconds to add
      *
      * @return Result code.
      */
-    virtual Result getCurrent(Info *info);
+    virtual Result getCurrent(Info *info,
+                              const Size msecOffset = 0);
 
     /**
      * Initialize the timer.
@@ -126,6 +128,8 @@ class Timer
      *
      * Should be called on each Timer interrupt to
      * keep the m_info variable synchronized with the actual hardware.
+     *
+     * @return Result code
      */
     virtual Result tick();
 
@@ -144,13 +148,15 @@ class Timer
      * @param info Timer info value to compare
      *
      * @return True if expired, false otherwise
+     *
+     * @bug This function does not take into account a potential wrap-around of the m_ticks member (integer overflow)
      */
     bool isExpired(const Info & info) const;
 
   protected:
 
-    /** The current Timer information. */
-    Info m_info;
+    /** The current timer ticks */
+    Size m_ticks;
 
     /** Frequency of the Timer. */
     Size m_frequency;

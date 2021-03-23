@@ -19,10 +19,12 @@
 #define __LIBIPC_CHANNELSERVER_H
 
 #include <FreeNOS/User.h>
+#include <FreeNOS/ProcessManager.h>
 #include <FreeNOS/ProcessEvent.h>
 #include <FreeNOS/ProcessShares.h>
 #include <HashIterator.h>
 #include <Timer.h>
+#include <Vector.h>
 #include "MemoryChannel.h"
 #include "ChannelClient.h"
 #include "ChannelRegistry.h"
@@ -52,6 +54,16 @@ template <class Func> struct MessageHandler
     {
     }
 
+    const bool operator == (const struct MessageHandler<Func> & h) const
+    {
+        return false;
+    }
+
+    const bool operator != (const struct MessageHandler<Func> & h) const
+    {
+        return false;
+    }
+
     /** Handler function. */
     const Func exec;
 
@@ -66,6 +78,11 @@ template <class Func> struct MessageHandler
  */
 template <class Base, class MsgType> class ChannelServer
 {
+  private:
+
+    /** Maximum number of IPC/IRQ handlers. */
+    static const Size MaximumHandlerCount = 255u;
+
   protected:
 
     /** Member function pointer inside Base, to handle IPC messages. */
@@ -87,25 +104,20 @@ template <class Base, class MsgType> class ChannelServer
         IOError,
     };
 
+  public:
+
     /**
      * Constructor function.
-     *
-     * @param num Number of message handlers to support.
      */
-    ChannelServer(Base *inst, const Size num = 32U)
-        : m_kernelEvent(Channel::Consumer, sizeof(ProcessEvent))
-        , m_sendReply(true)
-        , m_instance(inst)
+    ChannelServer(Base *inst)
+        : m_instance(inst)
+        , m_client(ChannelClient::instance())
+        , m_registry(m_client->getRegistry())
+        , m_kernelEvent(Channel::Consumer, sizeof(ProcessEvent))
+        , m_ipcHandlers()
+        , m_irqHandlers()
     {
         m_self = ProcessCtl(SELF, GetPID, 0);
-
-        m_client   = ChannelClient::instance;
-        m_registry = m_client->getRegistry();
-
-        m_ipcHandlers = new Vector<MessageHandler<IPCHandlerFunction> *>(num);
-        m_ipcHandlers->fill(ZERO);
-        m_irqHandlers = new Vector<MessageHandler<IRQHandlerFunction> *>(num);
-        m_irqHandlers->fill(ZERO);
 
         // Reset timeout values
         m_expiry.frequency = 0;
@@ -120,13 +132,16 @@ template <class Base, class MsgType> class ChannelServer
 
         if (VMShare(SELF, API::Read, &share) != API::Success)
         {
-            ERROR("failed to get kernel event channel");
+            FATAL("failed to get kernel event channel");
         }
         else
         {
             m_kernelEvent.setVirtual(share.range.virt,
-                                     share.range.virt + PAGESIZE);
+                                     share.range.virt + PAGESIZE, false);
         }
+
+        // Try to recover channels after a restart
+        recoverChannels();
     }
 
     /**
@@ -134,10 +149,8 @@ template <class Base, class MsgType> class ChannelServer
      */
     virtual ~ChannelServer()
     {
-        delete m_client;
-        delete m_registry;
-        delete m_ipcHandlers;
-        delete m_irqHandlers;
+        m_ipcHandlers.deleteAll();
+        m_irqHandlers.deleteAll();
     }
 
     /**
@@ -150,42 +163,8 @@ template <class Base, class MsgType> class ChannelServer
         // Enter loop
         while (true)
         {
-            // Reset
-            m_sendReply = true;
-
-            // Process kernel events
-            readKernelEvents();
-
-            // Process user messages
-            readChannels();
-
-            // Retry requests until all served (EAGAIN or return value)
-            retryAllRequests();
-
-            // Sleep with timeout or return in case the process is
-            // woken up by an external (wakeup) interrupt.
-            DEBUG("EnterSleep");
-            Address expiry = 0;
-
-            if (m_expiry.frequency)
-                expiry = (Address) &m_expiry;
-
-            const Error r = ProcessCtl(SELF, EnterSleep, expiry, (Address) (m_expiry.frequency ? &m_time : 0));
-            DEBUG("EnterSleep returned: " << (int)r);
-
-            // Check for sleep timeout
-            if (m_expiry.frequency)
-            {
-                if (ProcessCtl(SELF, InfoTimer, (Address) &m_time) != API::Success)
-                {
-                    ERROR("failed to retrieve system timer");
-                }
-                else if (m_expiry.ticks < m_time.ticks)
-                {
-                    m_expiry.frequency = 0;
-                    timeout();
-                }
-            }
+            processAll();
+            sleepUntilWakeup();
         }
 
         // Satify compiler
@@ -193,15 +172,37 @@ template <class Base, class MsgType> class ChannelServer
     }
 
     /**
+     * Set a sleep timeout
+     *
+     * @param msec Milliseconds to sleep (approximately)
+     */
+    void setTimeout(const uint msec)
+    {
+        DEBUG("msec = " << msec);
+
+        if (ProcessCtl(SELF, InfoTimer, (Address) &m_time) != API::Success)
+        {
+            ERROR("failed to retrieve system timer info");
+            return;
+        }
+
+        const Size msecPerTick = 1000 / m_time.frequency;
+        m_expiry.frequency = m_time.frequency;
+        m_expiry.ticks     = m_time.ticks + ((msec / msecPerTick) + 1);
+    }
+
+  protected:
+
+    /**
      * Register a new IPC message action handler.
      *
      * @param slot Action value to trigger h.
      * @param h Handler to execute.
-     * @param r Does the handler need to send a reply (per default) ?
+     * @param sendReply True if the handler needs to send a reply
      */
     void addIPCHandler(const Size slot, IPCHandlerFunction h, const bool sendReply = true)
     {
-        m_ipcHandlers->insert(slot, new MessageHandler<IPCHandlerFunction>(h, sendReply));
+        m_ipcHandlers.insertAt(slot, new MessageHandler<IPCHandlerFunction>(h, sendReply));
     }
 
     /**
@@ -212,7 +213,7 @@ template <class Base, class MsgType> class ChannelServer
      */
     void addIRQHandler(const Size slot, IRQHandlerFunction h)
     {
-        m_irqHandlers->insert(slot, new MessageHandler<IRQHandlerFunction>(h, false));
+        m_irqHandlers.insertAt(slot, new MessageHandler<IRQHandlerFunction>(h, false));
     }
 
     /**
@@ -236,23 +237,12 @@ template <class Base, class MsgType> class ChannelServer
     }
 
     /**
-     * Set a sleep timeout
+     * Called whenever another Process is terminated
      *
-     * @param msec Milliseconds to sleep (approximately)
+     * @param pid ProcessID of the terminating process
      */
-    void setTimeout(const uint msec)
+    virtual void onProcessTerminated(const ProcessID pid)
     {
-        DEBUG("msec = " << msec);
-
-        if (ProcessCtl(SELF, InfoTimer, (Address) &m_time) != API::Success)
-        {
-            ERROR("failed to retrieve system timer info");
-            return;
-        }
-
-        const Size msecPerTick = 1000 / m_time.frequency;
-        m_expiry.frequency = m_time.frequency;
-        m_expiry.ticks     = m_time.ticks + ((msec / msecPerTick) + 1);
     }
 
     /**
@@ -267,34 +257,129 @@ template <class Base, class MsgType> class ChannelServer
   private:
 
     /**
+     * Process all current events and channels.
+     */
+    inline void processAll()
+    {
+        // Process kernel events
+        readKernelEvents();
+
+        // Process user messages
+        readChannels();
+
+        // Retry requests until all served (EAGAIN or return value)
+        retryAllRequests();
+    }
+
+    /**
+     * Let this process sleep until more events are raised.
+     */
+    inline void sleepUntilWakeup()
+    {
+        // Sleep with timeout or return in case the process is
+        // woken up by an external (wakeup) interrupt.
+        DEBUG("EnterSleep");
+        Address expiry = 0;
+
+        if (m_expiry.frequency)
+            expiry = (Address) &m_expiry;
+
+        const Error r = ProcessCtl(SELF, EnterSleep, expiry, (Address) (m_expiry.frequency ? &m_time : 0));
+        DEBUG("EnterSleep returned: " << (int)r);
+
+        // Check for sleep timeout
+        if (m_expiry.frequency)
+        {
+            if (ProcessCtl(SELF, InfoTimer, (Address) &m_time) != API::Success)
+            {
+                ERROR("failed to retrieve system timer");
+            }
+            else if (m_expiry.ticks < m_time.ticks)
+            {
+                m_expiry.frequency = 0;
+                timeout();
+            }
+        }
+    }
+
+    /**
      * Accept new channel connection.
      *
      * @param pid ProcessID
      * @param range Memory range of shared mapping
+     * @param hardReset True if the channel contents should be reset to initial state.
      *
      * @return Result code
      */
-    Result accept(const ProcessID pid, const Memory::Range range)
+    Result accept(const ProcessID pid,
+                  const Memory::Range range,
+                  const bool hardReset = true)
     {
+        Address prodAddr, consAddr;
+
+        // ProcessID's determine where the producer/consumer is placed
+        if (m_self < pid)
+        {
+            prodAddr = range.virt;
+            consAddr = range.virt + (PAGESIZE * 2);
+        }
+        else
+        {
+            prodAddr = range.virt + (PAGESIZE * 2);
+            consAddr = range.virt;
+        }
+
         // Create consumer
-        if (!m_registry->getConsumer(pid))
+        if (!m_registry.getConsumer(pid))
         {
             MemoryChannel *consumer = new MemoryChannel(Channel::Consumer, sizeof(MsgType));
             assert(consumer != NULL);
-            consumer->setVirtual(range.virt, range.virt + PAGESIZE);
-            m_registry->registerConsumer(pid, consumer);
+            consumer->setVirtual(consAddr, consAddr + PAGESIZE, hardReset);
+            m_registry.registerConsumer(pid, consumer);
         }
+
         // Create producer
-        if (!m_registry->getProducer(pid))
+        if (!m_registry.getProducer(pid))
         {
             MemoryChannel *producer = new MemoryChannel(Channel::Producer, sizeof(MsgType));
             assert(producer != NULL);
-            producer->setVirtual(range.virt + (PAGESIZE*2),
-                                 range.virt + (PAGESIZE*3));
-            m_registry->registerProducer(pid, producer);
+            producer->setVirtual(prodAddr,
+                                 prodAddr + PAGESIZE,
+                                 hardReset);
+            m_registry.registerProducer(pid, producer);
         }
+
         // Done
         return Success;
+    }
+
+    /**
+     * Read existing shares to recover MemoryChannels after restart.
+     */
+    void recoverChannels()
+    {
+        const SystemInformation info;
+
+        for (ProcessID i = 0; i < MAX_PROCS; i++)
+        {
+            if (i != m_self && i != KERNEL_PID)
+            {
+                ProcessShares::MemoryShare share;
+                share.pid    = i;
+                share.coreId = info.coreId;
+                share.tagId  = 0;
+
+                const API::Result result = VMShare(SELF, API::Read, &share);
+                if (result == API::Success)
+                {
+                    const Result r = accept(i, share.range, false);
+                    if (r != Success)
+                    {
+                        ERROR("failed to recover share for PID " << i << ": " << (int)r);
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -324,23 +409,28 @@ template <class Base, class MsgType> class ChannelServer
                 {
                     DEBUG(m_self << ": interrupt: " << event.number);
 
-                    if (m_irqHandlers->at(event.number))
+                    const MessageHandler<IRQHandlerFunction> *h = m_irqHandlers.get(event.number);
+                    if (h)
                     {
-                        (m_instance->*(m_irqHandlers->at(event.number))->exec) (event.number);
+                        (m_instance->*h->exec) (event.number);
+                    }
+                    else
+                    {
+                        ERROR(m_self << ": unhandled IRQ raised: " << event.number);
                     }
                     break;
                 }
                 case ProcessTerminated:
                 {
                     DEBUG(m_self << ": process terminated: PID " << event.number);
-                    result = m_registry->unregisterConsumer(event.number);
+                    result = m_registry.unregisterConsumer(event.number);
                     if (result != ChannelRegistry::Success)
                     {
                         ERROR("failed to unregister consumer for PID " <<
                                event.number << ": " << (int)result);
                     }
 
-                    result = m_registry->unregisterProducer(event.number);
+                    result = m_registry.unregisterProducer(event.number);
                     if (result != ChannelRegistry::Success)
                     {
                         ERROR("failed to unregister producer for PID " <<
@@ -354,6 +444,8 @@ template <class Base, class MsgType> class ChannelServer
                         ERROR("failed to remove shares with VMShare for PID " <<
                                event.number << ": " << (int)shareResult);
                     }
+
+                    onProcessTerminated(event.number);
                     break;
                 }
                 default:
@@ -374,7 +466,7 @@ template <class Base, class MsgType> class ChannelServer
         MsgType msg;
 
         // Try to receive message on each consumer channel
-        for (HashIterator<ProcessID, Channel *> i(m_registry->getConsumers()); i.hasCurrent(); i++)
+        for (HashIterator<ProcessID, Channel *> i(m_registry.getConsumers()); i.hasCurrent(); i++)
         {
             Channel *ch = i.current();
             DEBUG(m_self << ": trying to receive from PID " << i.key());
@@ -395,25 +487,32 @@ template <class Base, class MsgType> class ChannelServer
                     }
                 }
                 // Message is a request to us
-                else if (m_ipcHandlers->at(msg.action))
+                else
                 {
-                    m_sendReply = m_ipcHandlers->at(msg.action)->sendReply;
-                    (m_instance->*(m_ipcHandlers->at(msg.action))->exec) (&msg);
-
-                    // Send reply
-                    if (m_sendReply)
+                    const MessageHandler<IPCHandlerFunction> *h = m_ipcHandlers.get(msg.action);
+                    if (h)
                     {
-                        Channel *ch = m_registry->getProducer(i.key());
-                        if (!ch)
+                        (m_instance->*h->exec) (&msg);
+
+                        // Send reply
+                        if (h->sendReply)
                         {
-                            ERROR(m_self << ": no producer channel found for PID: " << i.key());
+                            Channel *ch = m_registry.getProducer(i.key());
+                            if (!ch)
+                            {
+                                ERROR(m_self << ": no producer channel found for PID: " << i.key());
+                            }
+                            else if (ch->write(&msg) != Channel::Success)
+                            {
+                                ERROR(m_self << ": failed to send reply message to PID: " << i.key());
+                            }
+                            else
+                                ProcessCtl(i.key(), Wakeup, 0);
                         }
-                        else if (ch->write(&msg) != Channel::Success)
-                        {
-                            ERROR(m_self << ": failed to send reply message to PID: " << i.key());
-                        }
-                        else
-                            ProcessCtl(i.key(), Resume, 0);
+                    }
+                    else
+                    {
+                        ERROR(m_self << ": invalid action " << (int)msg.action << " from PID " << i.key());
                     }
                 }
             }
@@ -423,34 +522,29 @@ template <class Base, class MsgType> class ChannelServer
 
   protected:
 
-    /** Contains registered channels */
-    ChannelRegistry *m_registry;
+    /** Server object instance. */
+    Base *m_instance;
 
     /** Client for sending replies */
     ChannelClient *m_client;
 
+    /** Contains registered channels */
+    ChannelRegistry &m_registry;
+
     /** Kernel event channel */
     MemoryChannel m_kernelEvent;
 
-    /** Should we send a reply message? */
-    bool m_sendReply;
-
     /** IPC handler functions. */
-    Vector<MessageHandler<IPCHandlerFunction> *> *m_ipcHandlers;
+    Index<MessageHandler<IPCHandlerFunction>, MaximumHandlerCount> m_ipcHandlers;
 
     /** IRQ handler functions. */
-    Vector<MessageHandler<IRQHandlerFunction> *> *m_irqHandlers;
-
-    /** Server object instance. */
-    Base *m_instance;
+    Index<MessageHandler<IRQHandlerFunction>, MaximumHandlerCount> m_irqHandlers;
 
     /** ProcessID of ourselves */
     ProcessID m_self;
 
     /** System timer value */
     Timer::Info m_time;
-
-  private:
 
     /** System timer expiration value */
     Timer::Info m_expiry;

@@ -17,6 +17,7 @@
 
 #include <FreeNOS/User.h>
 #include <ExecutableFormat.h>
+#include <Lz4Decompressor.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -32,7 +33,7 @@ CoreServer::CoreServer()
 {
     m_numRegions = 0;
     m_kernel = ZERO;
-    m_kernelImage = ZERO;
+    MemoryBlock::set(&m_kernelImage, 0, sizeof(m_kernelImage));
     m_coreInfo = ZERO;
 
     m_cores = ZERO;
@@ -60,15 +61,20 @@ int CoreServer::runCore()
         // wait from a message of the master core
         receiveFromMaster(&msg);
 
-        if (m_ipcHandlers->at(msg.action))
+        const MessageHandler<IPCHandlerFunction> *h = m_ipcHandlers.get(msg.action);
+        if (h)
         {
-            m_sendReply = m_ipcHandlers->at(msg.action)->sendReply;
-            (this->*(m_ipcHandlers->at(msg.action))->exec)(&msg);
+            const bool sendReply = h->sendReply;
+            (this->*h->exec) (&msg);
 
-            if (m_sendReply)
+            if (sendReply)
             {
                 sendToMaster(&msg);
             }
+        }
+        else
+        {
+            ERROR("invalid action " << (int)msg.action << " from master");
         }
     }
 }
@@ -122,15 +128,16 @@ void CoreServer::createProcess(CoreMessage *msg)
             return;
         }
         DEBUG("program created with result " << (int)msg->result << " at core" << msg->coreNumber);
-        ChannelClient::instance->syncSendTo(msg, sizeof(*msg), msg->from);
+        ChannelClient::instance()->syncSendTo(msg, sizeof(*msg), msg->from);
     }
     else
     {
         // Copy the program command
-        if (VMCopy(SELF, API::ReadPhys, (Address) cmd,
-                  (Address) msg->programCmd, sizeof(cmd)) != sizeof(cmd))
+        result = VMCopy(SELF, API::ReadPhys, (Address) cmd,
+                       (Address) msg->programCmd, sizeof(cmd));
+        if (result != API::Success)
         {
-            ERROR("failed to copy program command");
+            ERROR("failed to copy program command: result = " << (int) result);
             msg->result = Core::InvalidArgument;
             sendToMaster(msg);
             return;
@@ -268,7 +275,7 @@ CoreServer::Result CoreServer::initialize()
 
     if (loadKernel() != Core::Success)
     {
-        ERROR("failed to load kernel");
+        ERROR("failed to load kernel program");
         return IOError;
     }
 
@@ -296,6 +303,12 @@ CoreServer::Result CoreServer::initialize()
         return IOError;
     }
 
+    if (unloadKernel() != Core::Success)
+    {
+        ERROR("failed to unload kernel program");
+        return IOError;
+    }
+
     return Success;
 }
 
@@ -303,10 +316,11 @@ Core::Result CoreServer::loadKernel()
 {
     struct stat st;
     int fd, r;
+    API::Result result;
 
     DEBUG("Opening : " << kernelPath);
 
-    // Read the program image
+    // Stat the compressed program image
     if ((r = stat(kernelPath, &st)) != 0)
     {
         ERROR("failed to stat() kernel on path: " << kernelPath <<
@@ -314,6 +328,22 @@ Core::Result CoreServer::loadKernel()
         return Core::IOError;
     }
 
+    // Map memory buffer for the compressed program image
+    Memory::Range compressed;
+    compressed.virt   = ZERO;
+    compressed.phys   = ZERO;
+    compressed.size   = st.st_size;
+    compressed.access = Memory::User|Memory::Readable|Memory::Writable;
+
+    // Allocate compressed memory buffer
+    result = VMCtl(SELF, MapContiguous, &compressed);
+    if (result != API::Success)
+    {
+        ERROR("failed to allocate compressed kernel image with VMCtl: result = " << (int) result);
+        return Core::IOError;
+    }
+
+    // Open the file
     if ((fd = open(kernelPath, O_RDONLY)) < 0)
     {
         ERROR("failed to open() kernel on path: " << kernelPath <<
@@ -321,8 +351,8 @@ Core::Result CoreServer::loadKernel()
         return Core::IOError;
     }
 
-    m_kernelImage = new u8[st.st_size];
-    if ((r = read(fd, m_kernelImage, st.st_size)) != st.st_size)
+    // Read the file
+    if ((r = read(fd, (void *) compressed.virt, st.st_size)) != st.st_size)
     {
         ERROR("failed to read() kernel on path: " << kernelPath <<
               ": result " << r);
@@ -330,27 +360,81 @@ Core::Result CoreServer::loadKernel()
     }
     close(fd);
 
+    // Initialize decompressor
+    Lz4Decompressor lz4((void *)compressed.virt, st.st_size);
+    Lz4Decompressor::Result decompResult = lz4.initialize();
+    if (decompResult != Lz4Decompressor::Success)
+    {
+        ERROR("failed to initialize LZ4 decompressor: result = " << (int) decompResult);
+        return Core::IOError;
+    }
+
+    // Map memory buffer for the uncompressed program image
+    m_kernelImage.virt   = ZERO;
+    m_kernelImage.phys   = ZERO;
+    m_kernelImage.size   = lz4.getUncompressedSize();
+    m_kernelImage.access = Memory::User|Memory::Readable|Memory::Writable;
+
+    // Allocate uncompressed memory buffer
+    result = VMCtl(SELF, MapContiguous, &m_kernelImage);
+    if (result != API::Success)
+    {
+        ERROR("failed to allocate kernel image with VMCtl: result = " << (int) result);
+        return Core::IOError;
+    }
+
+    // Decompress the kernel program
+    decompResult = lz4.read((void *)m_kernelImage.virt, lz4.getUncompressedSize());
+    if (decompResult != Lz4Decompressor::Success)
+    {
+        ERROR("failed to decompress kernel image: result = " << (int) decompResult);
+        return Core::IOError;
+    }
+
     // Attempt to read executable format
-    ExecutableFormat::Result result = ExecutableFormat::find(m_kernelImage, st.st_size, &m_kernel);
-    if (result != ExecutableFormat::Success)
+    ExecutableFormat::Result execResult = ExecutableFormat::find((const u8 *)m_kernelImage.virt, st.st_size, &m_kernel);
+    if (execResult != ExecutableFormat::Success)
     {
         ERROR("failed to find ExecutableFormat of kernel on path: " << kernelPath <<
-             ": result " << (int) result);
+             ": result " << (int) execResult);
         return Core::ExecError;
     }
 
     // Retrieve memory regions
     m_numRegions = 16;
-    result = m_kernel->regions(m_regions, &m_numRegions);
+    execResult = m_kernel->regions(m_regions, &m_numRegions);
 
-    if (result != ExecutableFormat::Success)
+    if (execResult != ExecutableFormat::Success)
     {
         ERROR("failed to get ExecutableFormat regions of kernel on path: " << kernelPath <<
-              ": result " << (int) result);
+              ": result " << (int) execResult);
         return Core::ExecError;
     }
 
+    // Release compressed kernel image
+    result = VMCtl(SELF, Release, &compressed);
+    if (result != API::Success)
+    {
+        ERROR("failed to release compressed kernel image with VMCtl: result = " << (int) result);
+        return Core::IOError;
+    }
+
     DEBUG("kernel loaded");
+    return Core::Success;
+}
+
+Core::Result CoreServer::unloadKernel()
+{
+    // Cleanup program buffer
+    const API::Result r = VMCtl(SELF, Release, &m_kernelImage);
+    if (r != API::Success)
+    {
+        ERROR("failed to deallocate kernel image with VMCtl: result = " << (int) r);
+        return Core::IOError;
+    }
+
+    MemoryBlock::set(&m_kernelImage, 0, sizeof(m_kernelImage));
+    MemoryBlock::set(&m_regions, 0, sizeof(m_regions));
     return Core::Success;
 }
 
@@ -378,7 +462,7 @@ Core::Result CoreServer::prepareCore(uint coreId, CoreInfo *info,
     for (Size i = 0; i < m_numRegions; i++)
     {
         Memory::Range range;
-        range.phys = info->kernel.phys + (regions[i].virt - RAM_ADDR);
+        range.phys = info->memory.phys + (regions[i].virt - RAM_ADDR);
         range.virt = 0;
         range.size = regions[i].dataSize;
         range.access = Memory::Readable | Memory::Writable |
@@ -392,13 +476,10 @@ Core::Result CoreServer::prepareCore(uint coreId, CoreInfo *info,
             return Core::OutOfMemory;
         }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsign-compare"
-
         // Copy the kernel to the target core's memory
-        r = VMCopy(SELF, API::Write, ((Address) m_kernelImage) + regions[i].dataOffset,
+        r = VMCopy(SELF, API::Write, m_kernelImage.virt + regions[i].dataOffset,
                    range.virt, regions[i].dataSize);
-        if ((Size)r != regions[i].dataSize)
+        if (r != API::Success)
         {
             ERROR("VMCopy failed for kernel regions[" << i << "].dataOffset" <<
                   " at " << (void *)regions[i].dataOffset << ": result " << (int) r);
@@ -433,13 +514,13 @@ Core::Result CoreServer::prepareCore(uint coreId, CoreInfo *info,
     }
 
     // Copy the BootImage
-    Error err = VMCopy(SELF, API::Write, sysInfo.bootImageAddress,
-                     range.virt, sysInfo.bootImageSize);
-    if (err != (Error) sysInfo.bootImageSize)
+    r = VMCopy(SELF, API::Write, sysInfo.bootImageAddress,
+               range.virt, sysInfo.bootImageSize);
+    if (r != API::Success)
     {
         ERROR("VMCopy failed for BootIage on core" << coreId <<
               " at " << (void *)sysInfo.bootImageAddress <<
-              ": result " << (int)err);
+              ": result " << (int) r);
         return Core::MemoryError;
     }
 
@@ -475,7 +556,7 @@ Core::Result CoreServer::prepareCoreInfo()
             (memPerCore / 1024 / 1024) << "MB per core");
 
     // Allocate CoreInfo for each core
-    m_coreInfo = new Index<CoreInfo>(cores.count());
+    m_coreInfo = new Index<CoreInfo, MaxCores>();
 
     // Prepare CoreInfo for each core
     for (ListIterator<uint> i(cores); i.hasCurrent(); i++)
@@ -485,19 +566,25 @@ Core::Result CoreServer::prepareCoreInfo()
         if (coreId != 0)
         {
             CoreInfo *info = new CoreInfo;
-            m_coreInfo->insert(coreId, *info);
+            m_coreInfo->insertAt(coreId, info);
             MemoryBlock::set(info, 0, sizeof(CoreInfo));
 
             info->coreId = coreId;
             info->memory.phys = RAM_ADDR + (memPerCore * coreId);
             info->memory.size = memPerCore - PAGESIZE;
-            info->kernel.phys = info->memory.phys;
-            info->kernel.size = MegaByte(4);
+            info->kernel.phys = sysInfo.kernelAddress + (memPerCore * coreId);
+            info->kernel.size = sysInfo.kernelSize;
+
+            info->bootImageAddress = info->kernel.phys + info->kernel.size;
+            info->bootImageAddress += PAGESIZE - (info->kernel.size % PAGESIZE);
+            info->bootImageSize = sysInfo.bootImageSize;
+
+            info->heapAddress = info->bootImageAddress + info->bootImageSize;
+            info->heapAddress += PAGESIZE - (info->bootImageSize % PAGESIZE);
             info->heapSize = MegaByte(1);
-            info->bootImageAddress = info->kernel.phys + info->kernel.size + info->heapSize;
-            info->bootImageSize    = sysInfo.bootImageSize;
-            info->coreChannelAddress = info->bootImageAddress + info->bootImageSize;
-            info->coreChannelAddress += PAGESIZE - (info->bootImageSize % PAGESIZE);
+
+            info->coreChannelAddress = info->heapAddress + info->heapSize;
+            info->coreChannelAddress += PAGESIZE - (info->heapSize % PAGESIZE);
             info->coreChannelSize    = PAGESIZE * 4;
             clearPages(info->coreChannelAddress, info->coreChannelSize);
 
@@ -562,21 +649,21 @@ Core::Result CoreServer::setupChannels()
     {
         Size numCores = m_cores->getCores().count();
 
-        m_toSlave    = new Index<MemoryChannel>(numCores);
-        m_fromSlave  = new Index<MemoryChannel>(numCores);
+        m_toSlave    = new Index<MemoryChannel, MaxCores>();
+        m_fromSlave  = new Index<MemoryChannel, MaxCores>();
 
         for (Size i = 1; i < numCores; i++)
         {
             MemoryChannel *ch = new MemoryChannel(Channel::Producer, sizeof(CoreMessage));
-            CoreInfo *coreInfo = (CoreInfo *) m_coreInfo->get(i);
+            CoreInfo *coreInfo = m_coreInfo->get(i);
             ch->setPhysical(coreInfo->coreChannelAddress + (PAGESIZE * 2),
                             coreInfo->coreChannelAddress + (PAGESIZE * 3));
-            m_toSlave->insert(i, *ch);
+            m_toSlave->insertAt(i, ch);
 
             ch = new MemoryChannel(Channel::Consumer, sizeof(CoreMessage));
             ch->setPhysical(coreInfo->coreChannelAddress,
                             coreInfo->coreChannelAddress + PAGESIZE);
-            m_fromSlave->insert(i, *ch);
+            m_fromSlave->insertAt(i, ch);
         }
     }
     else
@@ -630,7 +717,7 @@ Core::Result CoreServer::sendToMaster(CoreMessage *msg)
 
 Core::Result CoreServer::receiveFromSlave(uint coreId, CoreMessage *msg)
 {
-    MemoryChannel *ch = (MemoryChannel *) m_fromSlave->get(coreId);
+    MemoryChannel *ch = m_fromSlave->get(coreId);
     if (!ch)
         return Core::IOError;
 
@@ -642,7 +729,7 @@ Core::Result CoreServer::receiveFromSlave(uint coreId, CoreMessage *msg)
 
 Core::Result CoreServer::sendToSlave(uint coreId, CoreMessage *msg)
 {
-    MemoryChannel *ch = (MemoryChannel *) m_toSlave->get(coreId);
+    MemoryChannel *ch = m_toSlave->get(coreId);
     if (!ch)
     {
         ERROR("cannot retrieve MemoryChannel for core" << coreId);

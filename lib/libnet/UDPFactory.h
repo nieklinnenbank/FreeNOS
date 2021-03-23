@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBNET_UDPFACTORY_H
-#define __LIBNET_UDPFACTORY_H
+#ifndef __LIB_LIBNET_UDPFACTORY_H
+#define __LIB_LIBNET_UDPFACTORY_H
 
 #include <File.h>
 
@@ -41,8 +41,12 @@ class UDPFactory : public File
 
     /**
      * Constructor
+     *
+     * @param inode Inode number
+     * @param udp UDP object pointer
      */
-    UDPFactory(UDP *udp);
+    UDPFactory(const u32 inode,
+               UDP *udp);
 
     /**
      * Destructor
@@ -50,15 +54,18 @@ class UDPFactory : public File
     virtual ~UDPFactory();
 
     /**
-     * Receive UDP socket information
+     * Create UDP socket
      *
      * @param buffer Input/Output buffer to output bytes to.
-     * @param size Number of bytes to read, at maximum.
+     * @param size Maximum number of bytes to read on input.
+     *             On output, the actual number of bytes read.
      * @param offset Offset inside the file to start reading.
      *
-     * @return Number of bytes read on success, Error on failure.
+     * @return Result code
      */
-    virtual Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result read(IOBuffer & buffer,
+                                    Size & size,
+                                    const Size offset);
 
   private:
 
@@ -71,4 +78,4 @@ class UDPFactory : public File
  * @}
  */
 
-#endif /* __LIBNET_UDPFACTORY_H */
+#endif /* __LIB_LIBNET_UDPFACTORY_H */

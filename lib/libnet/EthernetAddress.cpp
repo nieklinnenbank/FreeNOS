@@ -16,33 +16,42 @@
  */
 
 #include <Log.h>
-#include <errno.h>
 #include "EthernetAddress.h"
 
-EthernetAddress::EthernetAddress(Ethernet *eth)
+EthernetAddress::EthernetAddress(const u32 inode,
+                                 Ethernet *eth)
+    : File(inode)
+    , m_eth(eth)
 {
-    m_eth = eth;
+    m_size = sizeof(Ethernet::Address);
 }
 
 EthernetAddress::~EthernetAddress()
 {
 }
 
-Error EthernetAddress::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result EthernetAddress::read(IOBuffer & buffer,
+                                         Size & size,
+                                         const Size offset)
 {
     Ethernet::Address addr;
-
     m_eth->getAddress(&addr);
-    String s = Ethernet::toString(addr);
 
-    if (offset >= s.length())
-        return 0;
+    if (offset >= m_size)
+    {
+        size = 0;
+        return FileSystem::Success;
+    }
 
-    buffer.write(*s, s.length());
-    return s.length();
+    buffer.write(&addr, sizeof(addr));
+    size = sizeof(addr);
+
+    return FileSystem::Success;
 }
 
-Error EthernetAddress::write(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result EthernetAddress::write(IOBuffer & buffer,
+                                          Size & size,
+                                          const Size offset)
 {
-    return ENOTSUP;
+    return FileSystem::NotSupported;
 }

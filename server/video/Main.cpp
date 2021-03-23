@@ -15,13 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <KernelLog.h>
 #include <DeviceServer.h>
 #include "VGA.h"
 
 int main(int argc, char **argv)
 {
+    KernelLog log;
     DeviceServer server("/dev/video");
-    server.registerDevice(new VGA, "vga0");
+
+    server.registerDevice(new VGA(server.getNextInode()), "vga0");
 
     // Initialize
     const FileSystem::Result result = server.initialize();

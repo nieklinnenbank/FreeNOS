@@ -84,7 +84,7 @@ class BitAllocator : public Allocator
      * @param args Contains the requested size and alignment on input.
      *             The alignment value must be a multiple of the chunk size.
      *             On output, contains the actual allocated address.
-     * @param bit Bit position in the bitmap array to start searching at.
+     * @param startBit Bit position in the bitmap array to start searching at.
      *
      * @return Result value.
      */

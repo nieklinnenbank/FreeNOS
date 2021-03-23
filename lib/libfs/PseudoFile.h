@@ -39,15 +39,19 @@ class PseudoFile : public File
 
     /**
      * Default constructor.
+     *
+     * @param inode Inode number for this File
      */
-    PseudoFile();
+    PseudoFile(const u32 inode);
 
     /**
      * Constructor.
      *
+     * @param inode Inode number for this File
      * @param str Text string with file data
      */
-    PseudoFile(const char *str);
+    PseudoFile(const u32 inode,
+               const char *str);
 
     /**
      * Destructor.
@@ -55,28 +59,32 @@ class PseudoFile : public File
     virtual ~PseudoFile();
 
     /**
-     * Read bytes from the file.
+     * @brief Read bytes from the file.
      *
-     * @param buffer Output buffer.
-     * @param size Number of bytes to read, at maximum.
+     * @param buffer Input/Output buffer to output bytes to.
+     * @param size Maximum number of bytes to read on input.
+     *             On output, the actual number of bytes read.
      * @param offset Offset inside the file to start reading.
      *
-     * @return Number of bytes read on success, Error on failure.
-     *
-     * @see IOBuffer
+     * @return Result code
      */
-    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result read(IOBuffer & buffer,
+                                    Size & size,
+                                    const Size offset);
 
     /**
      * Write bytes to the file.
      *
      * @param buffer Input/Output buffer to input bytes from.
-     * @param size Number of bytes to write, at maximum.
+     * @param size Maximum number of bytes to write on input.
+     *             On output, the actual number of bytes written.
      * @param offset Offset inside the file to start writing.
      *
-     * @return Number of bytes written on success, Error on failure.
+     * @return Result code
      */
-    virtual FileSystem::Error write(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result write(IOBuffer & buffer,
+                                     Size & size,
+                                     const Size offset);
 
   private:
 

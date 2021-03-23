@@ -15,10 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <String.h>
+#include <ListIterator.h>
 #include <MemoryBlock.h>
 #include "Directory.h"
 
-Directory::Directory() : File(FileSystem::DirectoryFile)
+Directory::Directory(const u32 inode)
+    : File(inode, FileSystem::DirectoryFile)
 {
     insert(FileSystem::DirectoryFile, ".");
     insert(FileSystem::DirectoryFile, "..");
@@ -32,7 +35,9 @@ Directory::~Directory()
     entries.clear();
 }
 
-FileSystem::Error Directory::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result Directory::read(IOBuffer & buffer,
+                                   Size & size,
+                                   const Size offset)
 {
     Size bytes = 0;
 
@@ -47,8 +52,10 @@ FileSystem::Error Directory::read(IOBuffer & buffer, Size size, Size offset)
         }
         else break;
     }
+
     // Report results
-    return bytes;
+    size = bytes;
+    return FileSystem::Success;
 }
 
 File * Directory::lookup(const char *name)
@@ -66,7 +73,7 @@ void Directory::insert(FileSystem::FileType type, const char *name)
         // Create an fill entry object
         d = new Dirent;
         assert(d != NULL);
-        MemoryBlock::copy(d->name, name, DIRENT_LEN);
+        MemoryBlock::copy(d->name, (char *)name, DIRENT_LEN);
         d->type = type;
         entries.append(d);
         m_size += sizeof(*d);

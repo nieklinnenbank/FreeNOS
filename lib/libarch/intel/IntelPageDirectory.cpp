@@ -140,47 +140,88 @@ u32 IntelPageDirectory::flags(Memory::Access access) const
     return f;
 }
 
-MemoryContext::Result IntelPageDirectory::releaseRange(Memory::Range range,
-                                                       SplitAllocator *alloc,
-                                                       bool tablesOnly)
+inline void IntelPageDirectory::releasePhysical(SplitAllocator *alloc,
+                                                const Address phys)
+{
+    // Some pages that are part of the boot core's memory region
+    // are mapped on secondary cores. They can't be released there.
+    const Address allocBase = alloc->base();
+    const Size allocSize = alloc->size();
+    if (phys < allocBase || phys > allocBase + allocSize)
+    {
+        return;
+    }
+
+    // Note that some pages may have double mappings.
+    // Avoid attempting to release the same page twice or more.
+    if (alloc->isAllocated(phys))
+    {
+        alloc->release(phys);
+    }
+}
+
+MemoryContext::Result IntelPageDirectory::releaseRange(const Memory::Range range,
+                                                       SplitAllocator *alloc)
 {
     Address phys;
 
-    // Walk the page directory within the specified range
-    for (Size i = 0; i < range.size; i += MegaByte(4))
+    // Walk the full range of memory specified
+    for (Size addr = range.virt; addr < range.virt + range.size; addr += PAGESIZE)
     {
-        IntelPageTable *table = getPageTable(range.virt + i, alloc);
-        if (table)
+        IntelPageTable *table = getPageTable(addr, alloc);
+        if (table == ZERO)
         {
-            // Release mapped pages
-            if (!tablesOnly)
-            {
-                for (Size j = 0; j < MegaByte(4); j += PAGESIZE)
-                {
-                    if (table->translate(range.virt + i + j, &phys) == MemoryContext::Success)
-                    {
-                        // Some pages that are part of the boot core's memory region
-                        // are mapped on secondary cores. They can't be released there.
-                        const Address allocBase = alloc->base();
-                        const Size allocSize = alloc->size();
-                        if (phys < allocBase || phys > allocBase + allocSize)
-                        {
-                            continue;
-                        }
+            return MemoryContext::InvalidAddress;
+        }
 
-                        // Note that some pages may have double mappings.
-                        // Avoid attempting to release the same page twice or more.
-                        if (alloc->isAllocated(phys))
-                        {
-                            alloc->release(phys);
-                        }
-                    }
+        if (table->translate(addr, &phys) != MemoryContext::Success)
+        {
+            return MemoryContext::InvalidAddress;
+        }
+
+        releasePhysical(alloc, phys);
+        table->unmap(addr);
+    }
+
+    return MemoryContext::Success;
+}
+
+MemoryContext::Result IntelPageDirectory::releaseSection(const Memory::Range range,
+                                                         SplitAllocator *alloc,
+                                                         const bool tablesOnly)
+{
+    Address phys;
+
+    // Input must be aligned to section address
+    if (range.virt & ~SECTIONMASK)
+    {
+        return MemoryContext::InvalidAddress;
+    }
+
+    // Walk the page directory
+    for (Size addr = range.virt; addr < range.virt + range.size; addr += MegaByte(4))
+    {
+        IntelPageTable *table = getPageTable(addr, alloc);
+        if (!table)
+        {
+            continue;
+        }
+
+        // Release mapped pages, if requested
+        if (!tablesOnly)
+        {
+            for (Size i = 0; i < MegaByte(4); i += PAGESIZE)
+            {
+                if (table->translate(i, &phys) == MemoryContext::Success)
+                {
+                    releasePhysical(alloc, phys);
                 }
             }
-            // Release page table
-            alloc->release(m_tables[ DIRENTRY(range.virt + i) ] & PAGEMASK);
-            m_tables[ DIRENTRY(range.virt + i) ] = 0;
         }
+        // Release page table
+        alloc->release(m_tables[ DIRENTRY(addr) ] & PAGEMASK);
+        m_tables[ DIRENTRY(addr) ] = 0;
     }
+
     return MemoryContext::Success;
 }

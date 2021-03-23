@@ -17,54 +17,62 @@
 
 #include <Log.h>
 #include <String.h>
-#include <errno.h>
+#include <MemoryBlock.h>
 #include "IPV4Address.h"
 
-IPV4Address::IPV4Address(IPV4 *ipv4)
+IPV4Address::IPV4Address(const u32 inode,
+                         IPV4 *ipv4)
+    : File(inode)
+    , m_ipv4(ipv4)
 {
-    m_ipv4 = ipv4;
+    m_size = sizeof(IPV4::Address);
 }
 
 IPV4Address::~IPV4Address()
 {
 }
 
-Error IPV4Address::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result IPV4Address::read(IOBuffer & buffer,
+                                     Size & size,
+                                     const Size offset)
 {
     IPV4::Address addr;
-    String str;
-
     m_ipv4->getAddress(&addr);
-    str << IPV4::toString(addr);
 
-    if (offset >= str.length())
-        return 0;
+    if (offset >= m_size)
+    {
+        size = 0;
+        return FileSystem::Success;
+    }
 
-    DEBUG("address = " << *str);
+    buffer.write(&addr, sizeof(addr));
+    size = sizeof(addr);
 
-    buffer.write(*str, str.length());
-    return str.length();
+    return FileSystem::Success;
 }
 
-Error IPV4Address::write(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result IPV4Address::write(IOBuffer & buffer,
+                                      Size & size,
+                                      const Size offset)
 {
     IPV4::Address addr;
     char tmp[32];
-    Error r;
 
     buffer.read(tmp, size < sizeof(tmp) ? size : sizeof(tmp));
     tmp[sizeof(tmp) - 1] = 0;
 
-    DEBUG("address = " << tmp);
+    // Address can be provided in 32-bit format or dotted text format
+    if (size == sizeof(IPV4::Address))
+    {
+        MemoryBlock::copy(&addr, tmp, sizeof(addr));
+    }
+    else
+    {
+        addr = IPV4::toAddress(tmp);
+    }
 
-    // Try to convert text dotted notation to IPV4::Address
-    addr = IPV4::toAddress(tmp);
-    if (!addr)
-        return ERANGE;
+    DEBUG("address = " << *IPV4::toString(addr));
 
     // Set the address
-    if ((r = m_ipv4->setAddress(&addr)) == ESUCCESS)
-        return size;
-    else
-        return r;
+    return m_ipv4->setAddress(&addr);
 }

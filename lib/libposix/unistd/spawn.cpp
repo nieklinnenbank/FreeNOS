@@ -54,13 +54,14 @@ int spawn(Address program, Size programSize, const char *argv[])
     }
 
     // Create new process
-    pid = ProcessCtl(ANY, Spawn, entry);
-    if (pid == (pid_t) -1)
+    const ulong result = ProcessCtl(ANY, Spawn, entry);
+    if ((result & 0xffff) != API::Success)
     {
         delete fmt;
         errno = EIO;
         return -1;
     }
+    pid = (result >> 16);
 
     // Retrieve memory regions
     if (fmt->regions(regions, &numRegions) != ExecutableFormat::Success)
@@ -145,7 +146,7 @@ int spawn(Address program, Size programSize, const char *argv[])
     strlcpy(arguments + PAGESIZE, **filesystem.getCurrentDirectory(), PATH_MAX);
 
     // Copy argc/argv into the new process
-    if ((VMCopy(pid, API::Write, (Address) arguments, range.virt, PAGESIZE * 2)) < 0)
+    if (VMCopy(pid, API::Write, (Address) arguments, range.virt, PAGESIZE * 2) != API::Success)
     {
         delete[] arguments;
         errno = EFAULT;
@@ -154,8 +155,8 @@ int spawn(Address program, Size programSize, const char *argv[])
     }
 
     // Copy fds into the new process.
-    if ((VMCopy(pid, API::Write, (Address) getFiles(),
-                range.virt + (PAGESIZE * 2), range.size - (PAGESIZE * 2))) < 0)
+    if (VMCopy(pid, API::Write, (Address) FileDescriptor::instance()->getArray(count),
+               range.virt + (PAGESIZE * 2), range.size - (PAGESIZE * 2)) != API::Success)
     {
         delete[] arguments;
         errno = EFAULT;
@@ -164,7 +165,13 @@ int spawn(Address program, Size programSize, const char *argv[])
     }
 
     // Let the Child begin execution
-    ProcessCtl(pid, Resume);
+    if (ProcessCtl(pid, Resume) != API::Success)
+    {
+        delete[] arguments;
+        errno = EIO;
+        ProcessCtl(pid, KillPID);
+        return -1;
+    }
 
     // Done. Cleanup.
     delete[] arguments;

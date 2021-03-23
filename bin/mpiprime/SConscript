@@ -18,7 +18,10 @@
 Import('build_env')
 
 env = build_env.Clone()
-env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libexec',
-                   'libarch', 'libmpi', 'libipc', 'librt', 'libfs' ])
+env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libexec', 'libapp',
+                   'libarch', 'libmpi', 'libipc', 'libruntime', 'libfs' ])
+env.UseLibraries([ 'libstd', 'libapp', 'libmpi' ], 'host')
 env.UseServers(['core'])
-env.TargetProgram('mpiprime', 'Main.cpp', env['bin'])
+env.Append(CPPPATH = [ '#bin/prime' ])
+env.TargetHostProgram('mpiprime', 
+                     [ Glob('*.cpp'), '#' + env['BUILDROOT'] + '/bin/prime/SievePrime.o' ], env['bin'])

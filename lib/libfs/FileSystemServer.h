@@ -48,14 +48,18 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
     /** Maximum number of supported file system mount entries */
     static const Size MaximumFileSystemMounts = 32;
 
+    /** Maximum number of WaitSet entries supported */
+    static const Size MaximumWaitSetCount = 32;
+
   public:
 
     /**
      * Constructor function.
      *
-     * @param p Path to which we are mounted.
+     * @param root Root directory to use
+     * @param path Path to which we are mounted.
      */
-    FileSystemServer(const char *path);
+    FileSystemServer(Directory *root, const char *path);
 
     /**
      * Destructor function.
@@ -70,11 +74,11 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
     const char * getMountPath() const;
 
     /**
-     * Get root directory.
+     * Get next unused inode
      *
-     * @return Root directory pointer
+     * @return Inode number
      */
-    Directory * getRoot();
+    u32 getNextInode();
 
     /**
      * Mount the FileSystem.
@@ -96,24 +100,33 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
     FileSystem::Result registerFile(File *file, const char *path);
 
     /**
+     * Register a new Directory.
+     *
+     * @param dir Directory object pointer
+     * @param path Path to the directory
+     *
+     * @return Result code
+     */
+    FileSystem::Result registerDirectory(Directory *dir,
+                                         const char *path);
+
+    /**
+     * Remove a File from the FileSystemServer
+     *
+     * @param path Path to the file to remove
+     *
+     * @return Result code
+     */
+    FileSystem::Result unregisterFile(const char *path);
+
+    /**
      * Create a new file.
      *
      * @param type Describes the type of file to create.
-     * @param deviceID Optionally specifies the device identities to create.
      *
      * @return Pointer to a new File on success or ZERO on failure.
      */
-    virtual File * createFile(FileSystem::FileType type, DeviceID deviceID);
-
-    /**
-     * Inserts a file into the in-memory filesystem tree.
-     *
-     * @param file File to insert.
-     * @param pathFormat Full path to the file to insert.
-     *
-     * @return Pointer to the newly created FileCache, or NULL on failure.
-     */
-    FileCache * insertFileCache(File *file, const char *pathFormat);
+    virtual File * createFile(const FileSystem::FileType type);
 
     /**
      * Process an incoming filesystem request using a path.
@@ -160,11 +173,29 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
     FileSystem::Result processRequest(FileSystemRequest &req);
 
     /**
+     * Handle a request for a File specified by its inode
+     *
+     * @param req FileSystemRequest reference
+     *
+     * @return Result code
+     */
+    FileSystem::Result inodeHandler(FileSystemRequest &req);
+
+    /**
+     * Handle a WaitFile request
+     *
+     * @param req FileSystemRequest reference
+     *
+     * @return Result code
+     */
+    FileSystem::Result waitFileHandler(FileSystemRequest &req);
+
+    /**
      * Send response for a FileSystemMessage
      *
      * @param msg The FileSystemMessage to send response for
      */
-    void sendResponse(FileSystemMessage *msg);
+    void sendResponse(FileSystemMessage *msg) const;
 
     /**
      * Try to forward the given FileSystemMessage to a mount file system.
@@ -191,6 +222,15 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
     void setRoot(Directory *newRoot);
 
     /**
+     * Retrieve parent Directory for a file.
+     *
+     * @param path Path to the file
+     *
+     * @return Directory pointer on success or NULL on failure
+     */
+    Directory * getParentDirectory(const char *path);
+
+    /**
      * Retrieve a File from storage.
      *
      * This function is responsible for walking the
@@ -202,7 +242,7 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
      *
      * @return Pointer to a FileCache on success, ZERO otherwise.
      */
-    FileCache * lookupFile(FileSystemPath *path);
+    FileCache * lookupFile(const FileSystemPath &path);
 
     /**
      * Search the cache for an entry.
@@ -211,7 +251,7 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
      *
      * @return Pointer to FileCache object on success, NULL on failure.
      */
-    FileCache * findFileCache(char *path);
+    FileCache * findFileCache(const char *path) const;
 
     /**
      * Search the cache for an entry.
@@ -220,7 +260,7 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
      *
      * @return Pointer to FileCache object on success, NULL on failure.
      */
-    FileCache * findFileCache(String *path);
+    FileCache * findFileCache(const String &path) const;
 
     /**
      * Search the cache for an entry.
@@ -229,16 +269,25 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
      *
      * @return Pointer to FileCache object on success, NULL on failure.
      */
-    FileCache * findFileCache(FileSystemPath *p);
+    FileCache * findFileCache(const FileSystemPath &path) const;
 
     /**
-     * Process a cache hit.
+     * Inserts a file into the in-memory filesystem tree.
      *
-     * @param cache FileCache object which has just been referenced.
+     * @param file File to insert.
+     * @param pathFormat Full path to the file to insert.
      *
-     * @return FileCache object pointer.
+     * @return Pointer to the newly created FileCache, or NULL on failure.
      */
-    virtual FileCache * cacheHit(FileCache *cache);
+    FileCache * insertFileCache(File *file, const char *pathFormat);
+
+    /**
+     * Remove a File from the cache.
+     *
+     * @param cache Cache entry to start searching at
+     * @param file File pointer to remove
+     */
+    void removeFileFromCache(FileCache *cache, File *file);
 
     /**
      * Cleans up the entire file cache (except opened file caches and root).
@@ -254,6 +303,9 @@ class FileSystemServer : public ChannelServer<FileSystemServer, FileSystemMessag
 
     /** Root entry of the filesystem tree. */
     FileCache *m_root;
+
+    /** Contains a mapping of inode number to file of all cached files */
+    HashTable<u32, File *> m_inodeMap;
 
     /** Mount point path. */
     const char *m_mountPath;

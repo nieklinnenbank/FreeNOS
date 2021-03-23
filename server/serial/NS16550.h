@@ -18,10 +18,9 @@
 #ifndef __SERVER_SERIAL_NS16550_H
 #define __SERVER_SERIAL_NS16550_H
 
-#include <FreeNOS/System.h>
 #include <Log.h>
 #include <Types.h>
-#include <Device.h>
+#include "SerialDevice.h"
 
 /**
  * @addtogroup server
@@ -36,7 +35,7 @@
  *
  * @see libarch_arm
  */
-class NS16550 : public Device
+class NS16550 : public SerialDevice
 {
   private:
 
@@ -101,56 +100,53 @@ class NS16550 : public Device
     /**
      * Constructor.
      */
-    NS16550(u32 irq);
+    NS16550(const u32 irq);
 
     /**
-     * @brief Initializes the UART.
+     * Initializes the UART.
      *
-     * @return FileSystem::Error status code.
+     * @return Result code
      */
-    virtual FileSystem::Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
      * Called when an interrupt has been triggered for this device.
      *
      * @param vector Vector number of the interrupt.
      *
-     * @return FileSystem::Error result code.
+     * @return Result code
      */
-    virtual FileSystem::Error interrupt(Size vector);
+    virtual FileSystem::Result interrupt(const Size vector);
 
     /**
-     * Read bytes from the UART.
+     * Read bytes from the device
      *
-     * @param buffer Buffer to save the read bytes.
-     * @param size Number of bytes to read.
-     * @param offset Unused.
+     * @param buffer Input/Output buffer to output bytes to.
+     * @param size Maximum number of bytes to read on input.
+     *             On output, the actual number of bytes read.
+     * @param offset Offset inside the file to start reading.
      *
-     * @return Number of bytes on success and ZERO on failure. 
+     * @return Result code
      */
-    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result read(IOBuffer & buffer,
+                                    Size & size,
+                                    const Size offset);
 
     /**
-     * Write bytes to the device.
+     * Write bytes to the device
      *
-     * @param buffer Buffer containing bytes to write.
-     * @param size Number of bytes to write.
-     * @param offset Unused.
+     * @param buffer Input/Output buffer to input bytes from.
+     * @param size Maximum number of bytes to write on input.
+     *             On output, the actual number of bytes written.
+     * @param offset Offset inside the file to start writing.
      *
-     * @return Number of bytes on success and ZERO on failure.
+     * @return Result code
      */
-    virtual FileSystem::Error write(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result write(IOBuffer & buffer,
+                                     Size & size,
+                                     const Size offset);
 
   private:
-
-    /*
-     * delay function
-     * int32_t delay: number of cycles to delay
-     *
-     * This just loops <delay> times in a way that the compiler
-     * wont optimize away.
-     */
-    void delay(s32 count) const;
 
     /**
      * Enable access to the divisor latch registers
@@ -158,14 +154,6 @@ class NS16550 : public Device
      * @param enabled True to enable, false otherwise
      */
     void setDivisorLatch(bool enabled);
-
-  private:
-
-    /** interrupt vector */
-    u32 m_irq;
-
-    /** I/O instance */
-    Arch::IO m_io;
 };
 
 /**

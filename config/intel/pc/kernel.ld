@@ -22,7 +22,7 @@ OUTPUT_FORMAT("elf32-i386")
 SECTIONS
 {
     . = 0x00100000;
-    kernelStart = .;
+    __start = .;
 
     .text :
     {
@@ -76,15 +76,8 @@ SECTIONS
         *(.bss*)
         __bss_end = .;
         *(COMMON)
-
-        . += 4;
-        kernelEnd = .;
+        LONG(0)
     }
 
-    .heap 0x00400000 :
-    {
-        __heap_start = .;
-        . += (1024 * 1024);
-        __heap_end = .;
-    }
+    __end = .;
 }

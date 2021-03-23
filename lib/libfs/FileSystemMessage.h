@@ -19,6 +19,7 @@
 #define __FILESYSTEM_FILE_SYSTEM_MESSAGE_H
 
 #include <Types.h>
+#include <Timer.h>
 #include "ChannelMessage.h"
 #include "FileSystem.h"
 
@@ -40,11 +41,9 @@ typedef struct FileSystemMessage : public ChannelMessage
     char *buffer;                  /**< Points to a buffer for I/O. */
     Size size;                     /**< Size of the buffer. */
     Size offset;                   /**< Offset in the file for I/O. */
-    char *path;                    /**< Path name of the file. */
-    FileSystem::FileType filetype; /**< Filetype. */
-    FileSystem::FileModes mode;    /**< File mode permissions. */
+    u32 inode;                     /**< Inode number of the file */
     FileSystem::FileStat *stat;    /**< File Statistics. */
-    DeviceID deviceID;             /**< Device major/minor numbers. */
+    Timer::Info timeout;           /**< Timeout value for the action */
     ProcessID pid;                 /**< Process identifier (used for redirection) */
     Size pathMountLength;          /**< Length of the mounted path (used for redirection) */
 }

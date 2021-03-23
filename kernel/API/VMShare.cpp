@@ -22,11 +22,13 @@
 #include "VMShare.h"
 #include "ProcessID.h"
 
-API::Result VMShareHandler(ProcessID procID, API::Operation op, ProcessShares::MemoryShare *share)
+API::Result VMShareHandler(const ProcessID procID,
+                           const API::Operation op,
+                           ProcessShares::MemoryShare *share)
 {
-    ProcessManager *procs = Kernel::instance->getProcessManager();
+    ProcessManager *procs = Kernel::instance()->getProcessManager();
     Process *proc = ZERO;
-    Error ret = API::Success;
+    API::Result ret = API::Success;
 
     DEBUG("");
 
@@ -51,6 +53,7 @@ API::Result VMShareHandler(ProcessID procID, API::Operation op, ProcessShares::M
             {
                 case ProcessShares::Success: return API::Success;
                 case ProcessShares::AlreadyExists: return API::AlreadyExists;
+                case ProcessShares::DetachInProgress: return API::TemporaryUnavailable;
                 default: return API::IOError;
             }
             break;

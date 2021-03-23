@@ -23,7 +23,7 @@
 #include <BubbleAllocator.h>
 #include <PoolAllocator.h>
 #include <IntController.h>
-#include <BootImage.h>
+#include <BootImageStorage.h>
 #include <CoreInfo.h>
 #include "Kernel.h"
 #include "Memory.h"
@@ -31,13 +31,14 @@
 #include "ProcessManager.h"
 
 Kernel::Kernel(CoreInfo *info)
-    : Singleton<Kernel>(this), m_interrupts(256)
+    : WeakSingleton<Kernel>(this)
+    , m_interrupts(256)
 {
     // Output log banners on the boot core
     if (info->coreId == 0)
     {
-        Log::instance->append(BANNER);
-        Log::instance->append(COPYRIGHT "\r\n");
+        Log::instance()->append(BANNER);
+        Log::instance()->append(COPYRIGHT "\r\n");
     }
 
     // Setup physical memory allocator
@@ -54,11 +55,35 @@ Kernel::Kernel(CoreInfo *info)
     m_intControl = ZERO;
     m_timer      = ZERO;
 
+    // Print memory map
+    NOTICE("kernel @ " << (void *) info->kernel.phys << ".." <<
+                          (void *) (info->kernel.phys + info->kernel.size));
+    NOTICE("bootImage @ " << (void *) info->bootImageAddress << ".." <<
+                             (void *) (info->bootImageAddress + info->bootImageSize));
+    NOTICE("heap @ " << (void *) (m_alloc->toPhysical(info->heapAddress)) << ".." <<
+                        (void *) (m_alloc->toPhysical(info->heapAddress + info->heapSize)));
+
+    if (info->coreChannelSize)
+    {
+        NOTICE("coreChannel @ " << (void *) info->coreChannelAddress << ".." <<
+                                   (void *) (info->coreChannelAddress + info->coreChannelSize - 1));
+    }
+
     // Verify coreInfo memory ranges
     assert(info->kernel.phys >= info->memory.phys);
-    assert(m_alloc->toPhysical(m_coreInfo->heapAddress) >= info->kernel.phys + info->kernel.size);
-    assert(m_alloc->toPhysical(m_coreInfo->heapAddress) + m_coreInfo->heapSize <= m_coreInfo->bootImageAddress);
-    assert(m_coreInfo->coreChannelAddress >= m_coreInfo->bootImageAddress + m_coreInfo->bootImageSize);
+    assert(info->bootImageAddress >= info->kernel.phys + info->kernel.size);
+    assert(m_alloc->toPhysical(info->heapAddress) >= info->bootImageAddress + info->bootImageSize);
+
+    // Only secondary cores need to allocate coreChannels
+    if (info->coreId == 0)
+    {
+        assert(info->coreChannelAddress == ZERO);
+        assert(info->coreChannelSize == ZERO);
+    }
+    else
+    {
+        assert(info->coreChannelAddress >= m_alloc->toPhysical(info->heapAddress + info->heapSize));
+    }
 
     // Mark all kernel memory used
     for (Size i = 0; i < info->kernel.size; i += PAGESIZE)
@@ -80,18 +105,30 @@ Kernel::Kernel(CoreInfo *info)
     m_interrupts.fill(ZERO);
 }
 
-Error Kernel::heap(Address base, Size size)
+Error Kernel::initializeHeap()
 {
+    // Calculate proper heap address: heap starts after the boot image.
+    Size heapPhysical = coreInfo.bootImageAddress + coreInfo.bootImageSize;
+    heapPhysical += PAGESIZE - (coreInfo.bootImageSize % PAGESIZE);
+
+    // Heap must be a virtual address (see SplitAllocator)
+    const Arch::MemoryMap map;
+    const Memory::Range kernelData = map.range(MemoryMap::KernelData);
+    coreInfo.heapAddress = heapPhysical - (coreInfo.memory.phys - kernelData.virt);
+    coreInfo.heapSize    = MegaByte(1);
+
+    // Prepare allocators
     Size metaData = sizeof(BubbleAllocator) + sizeof(PoolAllocator);
     Allocator *bubble, *pool;
-    const Allocator::Range bubbleRange = { base + metaData, size - metaData, sizeof(u32) };
+    const Allocator::Range bubbleRange = { coreInfo.heapAddress + metaData,
+                                           coreInfo.heapSize - metaData, sizeof(u32) };
 
     // Clear the heap first
-    MemoryBlock::set((void *) base, 0, size);
+    MemoryBlock::set((void *) coreInfo.heapAddress, 0, coreInfo.heapSize);
 
     // Setup the dynamic memory heap
-    bubble = new (base) BubbleAllocator(bubbleRange);
-    pool   = new (base + sizeof(BubbleAllocator)) PoolAllocator(bubble);
+    bubble = new (coreInfo.heapAddress) BubbleAllocator(bubbleRange);
+    pool   = new (coreInfo.heapAddress + sizeof(BubbleAllocator)) PoolAllocator(bubble);
 
     // Set default allocator
     Allocator::setDefault(pool);
@@ -199,50 +236,69 @@ void Kernel::executeIntVector(u32 vec, CPUState *state)
 
 Kernel::Result Kernel::loadBootImage()
 {
-    BootImage *image = (BootImage *) (m_alloc->toVirtual(m_coreInfo->bootImageAddress));
+    BootImageStorage bootImage((const BootImage *) (m_alloc->toVirtual(m_coreInfo->bootImageAddress)));
 
-    NOTICE("bootimage: " << (void *) image <<
-           " (" << (unsigned) m_coreInfo->bootImageSize << " bytes)");
-
-    // Verify this is a correct BootImage
-    if (image->magic[0] == BOOTIMAGE_MAGIC0 &&
-        image->magic[1] == BOOTIMAGE_MAGIC1 &&
-        image->layoutRevision == BOOTIMAGE_REVISION)
+    // Initialize the BootImageStorage object
+    const FileSystem::Result result = bootImage.initialize();
+    if (result != FileSystem::Success)
     {
-        // Loop BootPrograms
-        for (Size i = 0; i < image->symbolTableCount; i++)
-            loadBootProcess(image, m_coreInfo->bootImageAddress, i);
-
-        return Success;
+        FATAL("failed to initialize BootImageStorage: result = " << (int) result);
     }
-    ERROR("invalid boot image signature: " << (unsigned) image->magic[0] << ", " << (unsigned) image->magic[1]);
-    return InvalidBootImage;
+
+    NOTICE("bootimage: " << (void *) m_coreInfo->bootImageAddress <<
+           " (" << m_coreInfo->bootImageSize << " bytes)");
+
+    // Read header
+    const BootImage image = bootImage.bootImage();
+
+    // Loop BootPrograms
+    for (Size i = 0; i < image.symbolTableCount; i++)
+    {
+        BootSymbol program;
+
+        const FileSystem::Result readResult = bootImage.read(
+            image.symbolTableOffset + (sizeof(BootSymbol) * i),
+            &program,
+            sizeof(BootSymbol)
+        );
+
+        if (readResult != FileSystem::Success)
+        {
+            FATAL("failed to read BootSymbol: result = " << (int) readResult);
+        }
+
+        // Ignore non-BootProgram entries
+        if (program.type != BootProgram && program.type != BootPrivProgram)
+        {
+            continue;
+        }
+
+        // Load the program
+        const Result loadResult = loadBootProgram(bootImage, program);
+        if (loadResult != Success)
+        {
+            FATAL("failed to load BootSymbol " << program.name << ": result = " << (int) loadResult);
+            return IOError;
+        }
+    }
+
+    return Success;
 }
 
-Kernel::Result Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Size index)
+Kernel::Result Kernel::loadBootProgram(const BootImageStorage &bootImage,
+                                       const BootSymbol &program)
 {
-    Address imageVAddr = (Address) image;
-    BootSymbol *program;
-    BootSegment *segment;
-    Process *proc;
-    char *vaddr;
-    Arch::MemoryMap map;
-    Memory::Range argRange;
-    Allocator::Range alloc_args;
+    const BootImage image = bootImage.bootImage();
+    const Arch::MemoryMap map;
 
-    // Point to the program and segments table
-    program = &((BootSymbol *) (imageVAddr + image->symbolTableOffset))[index];
-    segment = &((BootSegment *) (imageVAddr + image->segmentsTableOffset))[program->segmentsOffset];
-
-    // Ignore non-BootProgram entries
-    if (program->type != BootProgram && program->type != BootPrivProgram)
-        return InvalidBootImage;
+    // Only BootProgram entries allowed
+    assert(program.type == BootProgram || program.type == BootPrivProgram);
 
     // Create process
-    proc = m_procs->create(program->entry, map, true, program->type == BootPrivProgram);
+    Process *proc = m_procs->create(program.entry, map, true, program.type == BootPrivProgram);
     if (!proc)
     {
-        FATAL("failed to create boot program: " << program->name);
+        FATAL("failed to create boot program: " << program.name);
         return ProcessError;
     }
 
@@ -250,22 +306,61 @@ Kernel::Result Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Siz
     MemoryContext *mem = proc->getMemoryContext();
 
     // Map program segment into it's virtual memory
-    for (Size i = 0; i < program->segmentsCount; i++)
+    for (Size i = 0; i < program.segmentsCount; i++)
     {
-        for (Size j = 0; j < segment[i].size; j += PAGESIZE)
+        BootSegment segment;
+
+        // Read the next BootSegment
+        const FileSystem::Result result = bootImage.read(
+            image.segmentsTableOffset + ((program.segmentsOffset + i) * sizeof(BootSegment)),
+            &segment,
+            sizeof(BootSegment)
+        );
+
+        if (result != FileSystem::Success)
         {
-            mem->map(segment[i].virtualAddress + j,
-                     imagePAddr + segment[i].offset + j,
-                     Memory::User     |
-                     Memory::Readable |
-                     Memory::Writable |
-                     Memory::Executable);
+            FATAL("failed to read BootSegment for BootProgram " <<
+                   program.name << ": result = " << (int) result);
+            return ProcessError;
+        }
+
+        // Map memory
+        Memory::Range range;
+        range.phys = 0;
+        range.virt = segment.virtualAddress;
+        range.size = segment.size;
+        range.access = Memory::User | Memory::Readable | Memory::Writable | Memory::Executable;
+
+        const MemoryContext::Result mapResult = mem->mapRangeContiguous(&range);
+        if (mapResult != MemoryContext::Success)
+        {
+            FATAL("failed to map BootSegment at " << (void *) segment.virtualAddress <<
+                  " for BootProgram " << program.name << ": result = " << (int) mapResult);
+            return ProcessError;
+        }
+
+        // Read from BootImage to physical memory of the program
+        // This assumes direct access to that physical memory.
+        const FileSystem::Result readResult = bootImage.read(
+            segment.offset,
+            (void *) m_alloc->toVirtual(range.phys),
+            segment.size
+        );
+
+        if (readResult != FileSystem::Success)
+        {
+            FATAL("failed to read BootSegment data at " << (void *) segment.virtualAddress <<
+                  " for BootProgram " << program.name << ": result = " << (int) readResult);
+            return ProcessError;
+
         }
     }
 
     // Allocate page for program arguments
-    argRange = map.range(MemoryMap::UserArgs);
+    Memory::Range argRange = map.range(MemoryMap::UserArgs);
     argRange.access = Memory::User | Memory::Readable | Memory::Writable;
+
+    Allocator::Range alloc_args;
     alloc_args.address = 0;
     alloc_args.size = argRange.size;
     alloc_args.alignment = PAGESIZE;
@@ -285,12 +380,12 @@ Kernel::Result Kernel::loadBootProcess(BootImage *image, Address imagePAddr, Siz
     }
 
     // Copy program arguments
-    vaddr = (char *) m_alloc->toVirtual(argRange.phys);
-    MemoryBlock::set(vaddr, 0, argRange.size);
-    MemoryBlock::copy(vaddr, program->name, BOOTIMAGE_NAMELEN);
+    char *args = (char *) m_alloc->toVirtual(argRange.phys);
+    MemoryBlock::set(args, 0, argRange.size);
+    MemoryBlock::copy(args, program.name, BOOTIMAGE_NAMELEN);
 
     // Done
-    NOTICE("loaded: " << program->name);
+    NOTICE("loaded: " << program.name);
     return Success;
 }
 

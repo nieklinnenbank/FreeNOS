@@ -49,25 +49,29 @@ class LinnDirectory : public Directory
      * Constructor function.
      *
      * @param fs Filesystem pointer.
-     * @param inode Inode pointer.
+     * @param inode Inode number
+     * @param inodeData Inode data pointer.
      *
      * @see LinnFileSystem
      * @see LinnInode
      */
-    LinnDirectory(LinnFileSystem *fs, LinnInode *inode);
+    LinnDirectory(LinnFileSystem *fs,
+                  const u32 inode,
+                  LinnInode *inodeData);
 
     /**
-     * @brief Read directory entries.
+     * Read directory entries
      *
-     * @param buffer Input/Output buffer to write bytes to.
-     * @param size Number of bytes to copy at maximum.
-     * @param offset Offset in the file to start reading.
+     * @param buffer Input/Output buffer to output bytes to.
+     * @param size Maximum number of bytes to read on input.
+     *             On output, the actual number of bytes read.
+     * @param offset Offset inside the file to start reading.
      *
-     * @return Number of bytes read on success, Error on failure.
-     *
-     * @see IOBuffer
+     * @return Result code
      */
-    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result read(IOBuffer & buffer,
+                                    Size & size,
+                                    const Size offset);
 
     /**
      * @brief Retrieves a File pointer for the given entry name.
@@ -101,10 +105,10 @@ class LinnDirectory : public Directory
   private:
 
     /** Filesystem pointer. */
-    LinnFileSystem *fs;
+    LinnFileSystem *m_fs;
 
     /** Inode which describes the directory. */
-    LinnInode *inode;
+    LinnInode *m_inodeData;
 };
 
 /**

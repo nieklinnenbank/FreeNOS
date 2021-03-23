@@ -36,6 +36,9 @@
 
 /**
  * Implements an x86 compatible kernel.
+ *
+ * @todo Debugging the kernel under GDB 9.2 on Ubuntu 20.04 seems to give a malformed/corrupted stacktrace
+ *       It only happens with intel/pc on compilers g++-8 and g++-9 and g++-10.
  */
 class IntelKernel : public Kernel
 {

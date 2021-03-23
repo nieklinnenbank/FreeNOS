@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __FILESYSTEM_FILESYSTEMPATH_H
-#define __FILESYSTEM_FILESYSTEMPATH_H
+#ifndef __LIB_LIBFS_FILESYSTEMPATH_H
+#define __LIB_LIBFS_FILESYSTEMPATH_H
 
 #include <List.h>
 #include <ListIterator.h>
@@ -31,80 +31,59 @@
  * @{
  */
 
-/** Maximum length of a filesystem path. */
-#define PATHLEN 64
-
-/** The default FileSystemPath separator. */
-#define DEFAULT_SEPARATOR '/'
-
 /**
  * Simple filesystem path parser.
  */
 class FileSystemPath
 {
+  private:
+
+    /** The default path separator character */
+    static const char DefaultSeparator = '/';
+
+  public:
+
+    /** Maximum length of a filesystem path in bytes */
+    static const Size MaximumLength = 64u;
+
   public:
 
     /**
-     * Default constructor.
-     */
-    FileSystemPath();
-
-    /**
-     * Alternative Constructor.
+     * Constructor using char pointer.
      *
      * @param path The input path to parse.
      * @param separator Pathname separator.
      */
-    FileSystemPath(char *path, char separator = DEFAULT_SEPARATOR);
-
-    /**
-     * Constructor using a String.
-     *
-     * @param s String containing the path to parse.
-     * @param separator Pathname separator.
-     */
-    FileSystemPath(String *s, char separator = DEFAULT_SEPARATOR);
-
-    /**
-     * Destructor.
-     */
-    virtual ~FileSystemPath();
-
-    /**
-     * Parses a given character string as the path.
-     *
-     * @param p Path to parse.
-     * @param separator Pathname separator.
-     */
-    void parse(const char *p, char sep = DEFAULT_SEPARATOR);
+    FileSystemPath(const char *path,
+                   const char separator = DefaultSeparator);
 
     /**
      * Retrieve the full path of our parent.
      *
      * @return Path of our parent.
      */
-    String * parent() const;
+    const String & parent() const;
 
     /**
      * The name of the last element in the path.
      *
      * @return Name of the base.
      */
-    String * base() const;
+    const String & base() const;
 
     /**
-     * Get the full path as a String instance.
+     * Get the full path as a String
      *
      * @return String instance.
      */
-    String * full() const;
+    const String & full() const;
 
     /**
      * Returns a List of separate path elements.
      *
      * @return Pointer to a List.
      */
-    List<String *> * split();
+    const List<String> & split() const;
 
     /**
      * Get Length of our full path.
@@ -115,20 +94,20 @@ class FileSystemPath
 
   private:
 
-    /** The path split in pieces. */
-    List<String *> m_path;
+    /** Separator character. */
+    const char m_separator;
 
     /** Full input path. */
-    String *m_fullPath;
+    const String m_full;
 
-    /** Full length of the given path. */
-    Size m_fullLength;
+    /** The path split in pieces by the separator. */
+    const List<String> m_path;
+
+    /** Last element in the full path. */
+    const String m_base;
 
     /** Full path to our parent. */
-    String * m_parentPath;
-
-    /** Separator character. */
-    char m_separator;
+    String m_parent;
 };
 
 /**
@@ -136,4 +115,4 @@ class FileSystemPath
  * @}
  */
 
-#endif /* __FILESYSTEM_FILESYSTEMPATH_H */
+#endif /* __LIB_LIBFS_FILESYSTEMPATH_H */

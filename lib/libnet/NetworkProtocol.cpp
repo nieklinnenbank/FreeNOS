@@ -17,12 +17,16 @@
 
 #include "NetworkDevice.h"
 #include "NetworkProtocol.h"
+#include "NetworkServer.h"
 
-NetworkProtocol::NetworkProtocol(NetworkServer *server,
-                                 NetworkDevice *device)
+NetworkProtocol::NetworkProtocol(NetworkServer &server,
+                                 NetworkDevice &device,
+                                 NetworkProtocol &parent)
+    : Directory(server.getNextInode())
+    , m_server(server)
+    , m_device(device)
+    , m_parent(parent)
 {
-    m_server = server;
-    m_device = device;
 }
 
 NetworkProtocol::~NetworkProtocol()
@@ -31,5 +35,14 @@ NetworkProtocol::~NetworkProtocol()
 
 const Size NetworkProtocol::getMaximumPacketSize() const
 {
-    return m_device->getMaximumPacketSize();
+    return m_device.getMaximumPacketSize();
+}
+
+FileSystem::Result NetworkProtocol::getTransmitPacket(NetworkQueue::Packet **pkt,
+                                                      const void *address,
+                                                      const Size addressSize,
+                                                      const NetworkProtocol::Identifier protocol,
+                                                      const Size payloadSize)
+{
+    return FileSystem::NotSupported;
 }

@@ -59,6 +59,7 @@ class MemoryContext
     /**
      * Constructor.
      *
+     * @param map Pointer to memory map to use.
      * @param alloc Allocator used to allocate page tables.
      */
     MemoryContext(MemoryMap *map, SplitAllocator *alloc);
@@ -74,6 +75,13 @@ class MemoryContext
      * @return MemoryContext object pointer or NULL.
      */
     static MemoryContext * getCurrent();
+
+    /**
+     * Initialize the MemoryContext
+     *
+     * @return Result code
+     */
+    virtual Result initialize() = 0;
 
     /**
      * Activate the MemoryContext.
@@ -112,7 +120,8 @@ class MemoryContext
     /**
      * Translate virtual address to physical address.
      *
-     * @param virt Virtual address to lookup on input, physical address on output.
+     * @param virt Virtual address to lookup
+     * @param phys On output contains the translated physical address
      *
      * @return Result code
      */
@@ -126,7 +135,7 @@ class MemoryContext
      *
      * @return Result code.
      */
-    virtual Result access(Address addr, Memory::Access *access) const = 0;
+    virtual Result access(Address virt, Memory::Access *access) const = 0;
 
     /**
      * Map a range of contiguous physical pages to virtual addresses.
@@ -171,19 +180,22 @@ class MemoryContext
      *
      * @return Result code
      */
-    virtual Result releaseRange(Memory::Range *range, bool tablesOnly = false) = 0;
+    virtual Result releaseRange(Memory::Range *range) = 0;
 
     /**
-     * Release memory region.
+     * Release memory sections.
      *
      * Deallocate all associated physical memory
-     * which resides in the given memory region.
+     * which resides in the given memory section range.
      *
-     * @param region Memory region to release
+     * @param range Range of memory sections to release
+     * @param tablesOnly True to only release associated page tables
+     *                   and do not release the actual mapped pages
      *
      * @return Result code
      */
-    virtual Result releaseRegion(MemoryMap::Region region, bool tablesOnly = false) = 0;
+    virtual Result releaseSection(const Memory::Range & range,
+                                  const bool tablesOnly = false) = 0;
 
     /**
      * Find unused memory.

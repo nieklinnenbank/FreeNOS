@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <errno.h>
+#include <ByteOrder.h>
 #include "NetworkServer.h"
 #include "NetworkProtocol.h"
 #include "ICMP.h"
@@ -23,49 +23,52 @@
 #include "ICMPSocket.h"
 #include "IPV4.h"
 
-ICMP::ICMP(NetworkServer *server,
-           NetworkDevice *device)
-    : NetworkProtocol(server, device)
+ICMP::ICMP(NetworkServer &server,
+           NetworkDevice &device,
+           NetworkProtocol &parent)
+    : NetworkProtocol(server, device, parent)
 {
-    m_ipv4  = ZERO;
 }
 
 ICMP::~ICMP()
 {
 }
 
-void ICMP::setIP(::IPV4 *ip)
-{
-    m_ipv4 = ip;
-}
-
-Error ICMP::initialize()
+FileSystem::Result ICMP::initialize()
 {
     DEBUG("");
-    m_factory = new ICMPFactory(this);
-    m_server->registerFile(this, "/icmp");
-    m_server->registerFile(m_factory, "/icmp/factory");
-    return ESUCCESS;
+
+    m_factory = new ICMPFactory(m_server.getNextInode(), this);
+    m_server.registerDirectory(this, "/icmp");
+    m_server.registerFile(m_factory, "/icmp/factory");
+
+    return FileSystem::Success;
 }
 
-Error ICMP::process(NetworkQueue::Packet *pkt, Size offset)
+FileSystem::Result ICMP::process(const NetworkQueue::Packet *pkt,
+                                 const Size offset)
 {
-    IPV4::Header *iphdr = (IPV4::Header *) (pkt->data + offset - sizeof(IPV4::Header));
-    Header *hdr = (Header *) (pkt->data + offset);
-    IPV4::Address source = be32_to_cpu(iphdr->source);
+    const IPV4::Header *iphdr = (const IPV4::Header *) (pkt->data + offset - sizeof(IPV4::Header));
+    const ICMP::Header *hdr = (const ICMP::Header *) (pkt->data + offset);
+    const IPV4::Address source = readBe32(&iphdr->source);
 
-    DEBUG("source = " << (uint)source << " type = " << hdr->type << " code = " << hdr->code << " id = " << hdr->id);
+    DEBUG("source = " << *IPV4::toString(source) << " type = " <<
+          hdr->type << " code = " << hdr->code << " id = " << hdr->id);
 
     switch (hdr->type)
     {
-        case EchoRequest: {
+        case EchoRequest:
+        {
             DEBUG("request");
-            hdr->type     = EchoReply;
-            hdr->checksum = 0;
-            hdr->checksum = checksum(hdr);
-            return sendPacket(source, hdr);
+
+            ICMP::Header reply;
+            MemoryBlock::copy(&reply, hdr, sizeof(reply));
+            reply.type = EchoReply;
+
+            return sendPacket(source, &reply, hdr + 1, pkt->size - offset - sizeof(ICMP::Header));
         }
-        case EchoReply: {
+        case EchoReply:
+        {
             DEBUG("reply");
 
             for (Size i = 0; i < m_sockets.size(); i++)
@@ -77,54 +80,111 @@ Error ICMP::process(NetworkQueue::Packet *pkt, Size offset)
             break;
         }
     }
-    return ESUCCESS;
+
+    return FileSystem::Success;
 }
 
-ICMPSocket * ICMP::createSocket(String & path)
+ICMPSocket * ICMP::createSocket(String & path,
+                                const ProcessID pid)
 {
+    Size pos = 0;
+
     DEBUG("");
 
-    ICMPSocket *sock = new ICMPSocket(this);
+    // Allocate socket
+    ICMPSocket *sock = new ICMPSocket(m_server.getNextInode(), this, pid);
     if (!sock)
-        return ZERO;
-
-    int pos = m_sockets.insert(*sock);
-    if (pos == -1)
     {
+        ERROR("failed to allocate ICMP socket");
+        return ZERO;
+    }
+
+    // Insert to sockets array
+    if (!m_sockets.insert(pos, sock))
+    {
+        ERROR("failed to insert ICMP socket");
         delete sock;
         return ZERO;
     }
     String filepath;
     filepath << "/icmp/" << pos;
 
-    path << m_server->getMountPath() << filepath;
-    m_server->registerFile(sock, *filepath);
+    // Add socket to NetworkServer as a file
+    path << m_server.getMountPath() << filepath;
+    const FileSystem::Result result = m_server.registerFile(sock, *filepath);
+    if (result != FileSystem::Success)
+    {
+        ERROR("failed to register ICMP socket to NetworkServer: result = " << (int) result);
+        m_sockets.remove(pos);
+        delete sock;
+        return ZERO;
+    }
+
     return sock;
 }
 
-Error ICMP::sendPacket(IPV4::Address ip, ICMP::Header *header)
+void ICMP::unregisterSockets(const ProcessID pid)
 {
-    DEBUG("");
+    DEBUG("pid = " << pid);
 
-    NetworkQueue::Packet *pkt;
-    Error r;
-
-    // Get a fresh IP packet
-    r = m_ipv4->getTransmitPacket(
-        &pkt, ip, IPV4::ICMP, sizeof(Header)
-    );
-    if (r != ESUCCESS)
-        return r;
-
-    // Fill payload
-    MemoryBlock::copy(pkt->data + pkt->size, header, sizeof(ICMP::Header));
-    pkt->size += sizeof(ICMP::Header);
-
-    // Transmit the packet
-    return m_device->transmit(pkt);
+    for (Size i = 0; i < MaxIcmpSockets; i++)
+    {
+        ICMPSocket *sock = m_sockets[i];
+        if (sock != ZERO && sock->getProcessID() == pid)
+        {
+            m_sockets.remove(i);
+            String path;
+            path << "/icmp/" << i;
+            const FileSystem::Result result = m_server.unregisterFile(*path);
+            if (result != FileSystem::Success)
+            {
+                ERROR("failed to unregister ICMPSocket at " << *path <<
+                      " for PID " << pid << ": result = " << (int) result);
+            }
+        }
+    }
 }
 
-const u16 ICMP::checksum(Header *header)
+FileSystem::Result ICMP::sendPacket(const IPV4::Address ip,
+                                    const ICMP::Header *headerInput,
+                                    const void *payload,
+                                    const Size payloadSize)
 {
-    return IPV4::checksum(header, sizeof(*header));
+    DEBUG("ip = " << *IPV4::toString(ip) << " header.type = " << headerInput->type <<
+          " header.id = " << readBe16(&headerInput->id) << " header.seq = " <<
+            readBe16(&headerInput->sequence) << " payloadSize = " << payloadSize);
+
+    // Get a fresh packet
+    NetworkQueue::Packet *pkt;
+    const FileSystem::Result result = m_parent.getTransmitPacket(&pkt, &ip, sizeof(ip),
+                                                                 NetworkProtocol::ICMP,
+                                                                 sizeof(ICMP::Header) + payloadSize);
+    if (result != FileSystem::Success)
+    {
+        if (result != FileSystem::RetryAgain)
+        {
+            ERROR("failed to get transmit packet: result = " << (int) result);
+        }
+        return result;
+    }
+
+    // Fill header
+    ICMP::Header *header = (ICMP::Header *) (pkt->data + pkt->size);
+    MemoryBlock::copy(header, headerInput, sizeof(ICMP::Header));
+    pkt->size += sizeof(ICMP::Header);
+
+    // Fill payload
+    const Size maximum = getMaximumPacketSize();
+    const Size needed = pkt->size + payloadSize;
+    const Size amount = needed > maximum ? maximum - pkt->size : needed - pkt->size;
+
+    MemoryBlock::copy(pkt->data + pkt->size, payload, amount);
+    pkt->size += amount;
+
+    // Calculate checksum
+    write16(&header->checksum, 0);
+    write16(&header->checksum, IPV4::checksum(header, sizeof(ICMP::Header) + amount));
+
+    // Transmit the packet
+    return m_device.transmit(pkt);
 }

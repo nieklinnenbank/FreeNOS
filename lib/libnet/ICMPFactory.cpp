@@ -15,11 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <errno.h>
 #include "ICMPFactory.h"
 #include "ICMPSocket.h"
 
-ICMPFactory::ICMPFactory(ICMP *icmp)
+ICMPFactory::ICMPFactory(const u32 inode,
+                         ICMP *icmp)
+    : File(inode)
 {
     m_icmp = icmp;
 }
@@ -28,20 +29,30 @@ ICMPFactory::~ICMPFactory()
 {
 }
 
-Error ICMPFactory::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result ICMPFactory::read(IOBuffer & buffer,
+                                     Size & size,
+                                     const Size offset)
 {
     DEBUG("");
 
     String path;
     ICMPSocket *sock;
+    const FileSystemMessage *msg = buffer.getMessage();
 
     if (offset > 0)
-        return 0;
+    {
+        size = 0;
+        return FileSystem::Success;
+    }
 
-    sock = m_icmp->createSocket(path);
+    sock = m_icmp->createSocket(path, msg->from);
     if (!sock)
-        return EIO;
+    {
+        ERROR("failed to create ICMP socket");
+        return FileSystem::IOError;
+    }
 
     buffer.write(*path, path.length() + 1);
-    return path.length() + 1;
+    size = path.length() + 1;
+    return FileSystem::Success;
 }

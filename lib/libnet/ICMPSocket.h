@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBNET_ICMPSOCKET_H
-#define __LIBNET_ICMPSOCKET_H
+#ifndef __LIB_LIBNET_ICMPSOCKET_H
+#define __LIB_LIBNET_ICMPSOCKET_H
 
 #include "NetworkSocket.h"
 #include "NetworkQueue.h"
@@ -45,8 +45,14 @@ class ICMPSocket : public NetworkSocket
 
     /**
      * Constructor
+     *
+     * @param inode Inode number
+     * @param icmp ICMP object pointer
+     * @param pid ProcessID owning this socket
      */
-    ICMPSocket(ICMP *icmp);
+    ICMPSocket(const u32 inode,
+               ICMP *icmp,
+               const ProcessID pid);
 
     /**
      * Destructor
@@ -61,56 +67,48 @@ class ICMPSocket : public NetworkSocket
     const IPV4::Address getAddress() const;
 
     /**
-     * Receive ICMP response
+     * Read ICMP response
      *
      * @param buffer Input/Output buffer to output bytes to.
-     * @param size Number of bytes to read, at maximum.
+     * @param size Maximum number of bytes to read on input.
+     *             On output, the actual number of bytes read.
      * @param offset Offset inside the file to start reading.
      *
-     * @return Number of bytes read on success, Error on failure.
+     * @return Result code
      */
-    virtual Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result read(IOBuffer & buffer,
+                                    Size & size,
+                                    const Size offset);
 
     /**
      * Send ICMP request
      *
      * @param buffer Input/Output buffer to input bytes from.
-     * @param size Number of bytes to write, at maximum.
+     * @param size Maximum number of bytes to write on input.
+     *             On output, the actual number of bytes written.
      * @param offset Offset inside the file to start writing.
      *
-     * @return Number of bytes written on success, Error on failure.
+     * @return Result code
      */
-    virtual Error write(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result write(IOBuffer & buffer,
+                                     Size & size,
+                                     const Size offset);
 
     /**
      * Process incoming network packet.
      *
-     * @return Error code
-     */
-    virtual Error process(NetworkQueue::Packet *pkt);
-
-    /**
-     * Set error status
+     * @param pkt Incoming packet pointer
      *
-     * @param err Error code
+     * @return Result code
      */
-    virtual void error(Error err);
+    virtual FileSystem::Result process(const NetworkQueue::Packet *pkt);
 
     /**
      * Set ICMP reply
      *
      * @param reply ICMP reply header
      */
-    void setReply(ICMP::Header *reply);
-
-    bool operator == (const ICMPSocket & sock) const
-    {
-        return true;
-    }
-    bool operator != (const ICMPSocket & sock) const
-    {
-        return false;
-    }
+    void setReply(const ICMP::Header *reply);
 
   private:
 
@@ -127,4 +125,4 @@ class ICMPSocket : public NetworkSocket
  * @}
  */
 
-#endif /* __LIBNET_ICMPSOCKET_H */
+#endif /* __LIB_LIBNET_ICMPSOCKET_H */

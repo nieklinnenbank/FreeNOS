@@ -24,16 +24,16 @@
 #include <Log.h>
 #include "ProcessCtl.h"
 
-API::Result ProcessCtlHandler(ProcessID procID,
-                              ProcessOperation action,
-                              Address addr,
-                              Address output)
+API::Result ProcessCtlHandler(const ProcessID procID,
+                              const ProcessOperation action,
+                              const Address addr,
+                              const Address output)
 {
+    const Arch::MemoryMap map;
     Process *proc = ZERO;
     ProcessInfo *info = (ProcessInfo *) addr;
-    ProcessManager *procs = Kernel::instance->getProcessManager();
+    ProcessManager *procs = Kernel::instance()->getProcessManager();
     Timer *timer;
-    Arch::MemoryMap map;
 
     DEBUG("#" << procs->current()->getID() << " " << action << " -> " << procID << " (" << addr << ")");
 
@@ -55,24 +55,54 @@ API::Result ProcessCtlHandler(ProcessID procID,
             ERROR("failed to create process");
             return API::IOError;
         }
-        return proc->getID();
+        return (API::Result) (API::Success | (proc->getID() << 16));
 
     case KillPID:
         procs->remove(proc, addr); // Addr contains the exit status
-        procs->schedule();
+
+        if (procID == SELF)
+            procs->schedule();
         break;
 
     case GetPID:
-        return procs->current()->getID();
+        return (API::Result) procs->current()->getID();
 
     case GetParent:
-        return procs->current()->getParent();
+        return (API::Result) procs->current()->getParent();
 
     case Schedule:
         procs->schedule();
         break;
 
+    case Stop:
+        if (procs->stop(proc) != ProcessManager::Success)
+        {
+            ERROR("failed to stop PID " << proc->getID());
+            return API::IOError;
+        }
+        if (procID == SELF)
+        {
+            procs->schedule();
+        }
+        break;
+
     case Resume:
+        if (procs->resume(proc) != ProcessManager::Success)
+        {
+            ERROR("failed to resume PID " << proc->getID());
+            return API::IOError;
+        }
+        break;
+
+    case Reset:
+        if (procs->reset(proc, addr) != ProcessManager::Success)
+        {
+            ERROR("failed to reset PID " << proc->getID());
+            return API::IOError;
+        }
+        break;
+
+    case Wakeup:
         // increment wakeup counter and set process ready
         if (procs->wakeup(proc) != ProcessManager::Success)
         {
@@ -90,15 +120,15 @@ API::Result ProcessCtlHandler(ProcessID procID,
         break;
 
     case EnableIRQ:
-        Kernel::instance->enableIRQ(addr, true);
+        Kernel::instance()->enableIRQ(addr, true);
         break;
 
     case DisableIRQ:
-        Kernel::instance->enableIRQ(addr, false);
+        Kernel::instance()->enableIRQ(addr, false);
         break;
 
     case SendIRQ:
-        Kernel::instance->sendIRQ(addr >> 16, addr & 0xffff);
+        Kernel::instance()->sendIRQ(addr >> 16, addr & 0xffff);
         break;
 
     case InfoPID:
@@ -120,10 +150,13 @@ API::Result ProcessCtlHandler(ProcessID procID,
         // For ARM, the kernel continues executing here even after
         // the schedule() is done. For ARM, the actual wait result is
         // injected directly in the saved CPU registers.
-        return procs->current()->getWaitResult();
+        //
+        // Note that the API::Result is stored in the lower 16-bit of the
+        // return value and the process exit status is stored in the upper 16 bits.
+        return (API::Result) ((API::Success) | (procs->current()->getWaitResult() << 16));
 
     case InfoTimer:
-        if (!(timer = Kernel::instance->getTimer()))
+        if (!(timer = Kernel::instance()->getTimer()))
             return API::NotFound;
 
         timer->getCurrent((Timer::Info *) addr);
@@ -145,6 +178,7 @@ API::Result ProcessCtlHandler(ProcessID procID,
             procs->schedule();
         break;
     }
+
     return API::Success;
 }
 
@@ -164,7 +198,7 @@ Log & operator << (Log &log, ProcessOperation op)
         case InfoTimer: log.append("InfoTimer"); break;
         case EnterSleep: log.append("EnterSleep"); break;
         case Schedule:  log.append("Schedule"); break;
-        case Resume:    log.append("Resume"); break;
+        case Wakeup:    log.append("Wakeup"); break;
         default:        log.append("???"); break;
     }
     return log;

@@ -18,13 +18,7 @@
 Import('build_env')
 
 env = build_env.Clone()
-env.UseLibraries(['libstd', 'libarch', 'libipc', 'librt'])
-env.UseLibraries(['libstd'], 'host')
+env.UseLibraries(['libstd', 'libarch', 'libipc', 'libruntime'])
+env.UseLibraries(['libipc', 'libruntime', 'libarch', 'libstd'], 'host')
 env.UseServers(['datastore'])
-
-if env['ARCH'] != 'host':
-    sources = [ Glob('*.cpp') ]
-else:
-    sources = []
-
-env.Library('libfs', sources)
+env.Library('libfs', Glob('*.cpp'))

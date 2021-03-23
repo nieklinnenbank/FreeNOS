@@ -20,7 +20,6 @@
 
 #include <Types.h>
 #include <Macros.h>
-#include "Endian.h"
 #include "IntelIO.h"
 
 /**
@@ -58,7 +57,8 @@ inline u64 timestamp()
 /**
  * Shutdown the machine via ACPI.
  *
- * @note We do not have ACPI yet. Shutdown now has a bit naive implementation.
+ * @todo FreeNOS does not yet have a full ACPI implementation. Shutdown now has a bit naive implementation.
+ *
  * @see http://forum.osdev.org/viewtopic.php?t=16990
  */
 #define cpu_shutdown() \
@@ -100,7 +100,7 @@ inline u64 timestamp()
                  "mov %eax, %cr3\n")
 
 /**
- * @group Intel CPU Exceptions
+ * @name Intel CPU Exceptions
  * @{
  */
 
@@ -130,7 +130,7 @@ inline u64 timestamp()
  */
 
 /**
- * @group Intel EFLAGS Register
+ * @name Intel EFLAGS Register
  * @{
  */
 

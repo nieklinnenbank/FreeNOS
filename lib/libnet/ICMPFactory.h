@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBNET_ICMPFACTORY_H
-#define __LIBNET_ICMPFACTORY_H
+#ifndef __LIB_LIBNET_ICMPFACTORY_H
+#define __LIB_LIBNET_ICMPFACTORY_H
 
 #include <File.h>
 #include "ICMP.h"
@@ -42,8 +42,12 @@ class ICMPFactory : public File
 
     /**
      * Constructor
+     *
+     * @param inode Inode number
+     * @param icmp ICMP object pointer
      */
-    ICMPFactory(ICMP *icmp);
+    ICMPFactory(const u32 inode,
+                ICMP *icmp);
 
     /**
      * Destructor
@@ -51,15 +55,18 @@ class ICMPFactory : public File
     virtual ~ICMPFactory();
 
     /**
-     * Receive ICMP response
+     * Create ICMP socket
      *
      * @param buffer Input/Output buffer to output bytes to.
-     * @param size Number of bytes to read, at maximum.
+     * @param size Maximum number of bytes to read on input.
+     *             On output, the actual number of bytes read.
      * @param offset Offset inside the file to start reading.
      *
-     * @return Number of bytes read on success, Error on failure.
+     * @return Result code
      */
-    virtual Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result read(IOBuffer & buffer,
+                                    Size & size,
+                                    const Size offset);
 
   private:
 
@@ -72,4 +79,4 @@ class ICMPFactory : public File
  * @}
  */
 
-#endif /* __LIBNET_ICMPFACTORY_H */
+#endif /* __LIB_LIBNET_ICMPFACTORY_H */

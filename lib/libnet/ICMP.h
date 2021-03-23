@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBNET_ICMP_H
-#define __LIBNET_ICMP_H
+#ifndef __LIB_LIBNET_ICMP_H
+#define __LIB_LIBNET_ICMP_H
 
 #include <Types.h>
 #include <Index.h>
@@ -41,6 +41,10 @@ class ARP;
  */
 class ICMP : public NetworkProtocol
 {
+  private:
+
+    static const Size MaxIcmpSockets = 128u;
+
   public:
 
     /**
@@ -71,9 +75,14 @@ class ICMP : public NetworkProtocol
 
     /**
      * Constructor
+     *
+     * @param server Reference to the NetworkServer instance
+     * @param device Reference to the NetworkDevice instance
+     * @param parent Parent upper-layer protocol
      */
-    ICMP(NetworkServer *server,
-         NetworkDevice *device);
+    ICMP(NetworkServer &server,
+         NetworkDevice &device,
+         NetworkProtocol &parent);
 
     /**
      * Destructor
@@ -88,46 +97,56 @@ class ICMP : public NetworkProtocol
     /**
      * Perform initialization.
      *
-     * @return Error code
+     * @return Result code
      */
-    virtual Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
      * Creates an ICMP socket
      *
      * @return ICMPSocket object instance
      */
-    ICMPSocket * createSocket(String & path);
+    ICMPSocket * createSocket(String & path,
+                              const ProcessID pid);
+
+    /**
+     * Remove sockets for a process
+     *
+     * @param pid ProcessID to remove sockets for
+     */
+    void unregisterSockets(const ProcessID pid);
 
     /**
      * Process incoming network packet.
      *
-     * @return Error code
+     * @param pkt Incoming packet pointer
+     * @param offset Offset for processing
+     *
+     * @return Result code
      */
-    virtual Error process(NetworkQueue::Packet *pkt, Size offset);
+    virtual FileSystem::Result process(const NetworkQueue::Packet *pkt,
+                                       const Size offset);
 
     /**
      * Send packet
      *
-     * @return Error code
-     */
-    Error sendPacket(IPV4::Address ip, Header *header);
-
-    /**
-     * Calculate ICMP checksum
+     * @param ip Destination IP address
+     * @param header ICMP packet header
+     * @param payload ICMP packet payload
+     * @param payloadSize Payload size in bytes
      *
-     * @param header ICMP header
-     * @return ICMP checksum value for the given header
+     * @return Result code
      */
-    static const u16 checksum(Header *header);
+    FileSystem::Result sendPacket(const IPV4::Address ip,
+                                  const Header *header,
+                                  const void *payload,
+                                  const Size payloadSize);
 
   private:
 
     ICMPFactory *m_factory;
 
-    Index<ICMPSocket> m_sockets;
-
-    ::IPV4 *m_ipv4;
+    Index<ICMPSocket, MaxIcmpSockets> m_sockets;
 };
 
 /**
@@ -135,4 +154,4 @@ class ICMP : public NetworkProtocol
  * @}
  */
 
-#endif /* __LIBNET_ICMP_H */
+#endif /* __LIB_LIBNET_ICMP_H */

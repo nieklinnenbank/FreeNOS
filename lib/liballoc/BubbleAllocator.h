@@ -68,7 +68,7 @@ class BubbleAllocator : public Allocator
      *
      * Does nothing for BubbleAllocator.
      *
-     * @param address Points to memory previously returned by allocate().
+     * @param addr Points to memory previously returned by allocate().
      *
      * @see allocate
      */

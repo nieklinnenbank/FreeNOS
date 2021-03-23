@@ -15,13 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <KernelLog.h>
 #include <DeviceServer.h>
 #include "Time.h"
 
 int main(int argc, char **argv)
 {
+    KernelLog log;
     DeviceServer server("/dev/time");
-    server.registerDevice(new Time(), "rtc0");
+    server.registerDevice(new Time(server.getNextInode()), "rtc0");
 
     // Initialize
     const FileSystem::Result result = server.initialize();

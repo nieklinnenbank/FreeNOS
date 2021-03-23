@@ -71,14 +71,16 @@ FileStatus::Result FileStatus::printStatus(const String & file) const
     // Output file statistics
     printf("File: %s\r\n", *file);
     printf("Type: ");
-    
+
     // Print the right file type
     if (S_ISREG(st.st_mode))
+    {
         printf("Regular File\r\n");
-    
+    }
     else if (S_ISDIR(st.st_mode))
+    {
         printf("Directory\r\n");
-    
+    }
     else if (S_ISCHR(st.st_mode))
     {
         printf("Character Device\r\n");
@@ -92,11 +94,14 @@ FileStatus::Result FileStatus::printStatus(const String & file) const
         printf("Minor ID: %u\r\n", st.st_dev.minor);
     }
     else
+    {
         printf("Unknown\r\n");
+    }
 
     // Print additional file information fields
+    printf("Inode: %u\r\n", st.st_ino);
     printf("Mode: %u\r\n", st.st_mode);
-    printf("Size: %u\r\n", st.st_size);   
+    printf("Size: %u\r\n", st.st_size);
     printf("Uid:  %u\r\n", st.st_uid);
     printf("Gid:  %u\r\n", st.st_gid);
 

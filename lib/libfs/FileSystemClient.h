@@ -56,7 +56,6 @@ class FileSystemClient
      */
     FileSystemClient(const ProcessID pid = ANY);
 
-
     /**
      * Get current directory String.
      *
@@ -82,58 +81,17 @@ class FileSystemClient
     void setCurrentDirectory(String *directory);
 
     /**
-     * Retrieve the ProcessID of the FileSystemMount for the given path.
-     *
-     * @param path Path to lookup.
-     *
-     * @return ProcessID of the FileSystemMount on success and ZERO otherwise.
-     */
-    ProcessID findMount(const char *path) const;
-
-    /**
      * Create a new file.
      *
      * @param path Path to the file
      * @param type File type of the new file
      * @param mode Initial access permissions
-     * @param dev Optional device number specifier
      *
      * @return Result code
      */
     FileSystem::Result createFile(const char *path,
                                   const FileSystem::FileType type,
-                                  const FileSystem::FileModes mode,
-                                  const DeviceID deviceId) const;
-
-    /**
-     * Read a file.
-     *
-     * @param path Path to the file
-     * @param buf Buffer for storing bytes read.
-     * @param size On input, number of bytes to read. On output, actual bytes read.
-     * @param offset Specifies absolute starting point in bytes to read.
-     *
-     * @return Result code
-     */
-    FileSystem::Result readFile(const char *path,
-                                void *buf,
-                                Size *size,
-                                const Size offset) const;
-
-    /**
-     * Write a file.
-     *
-     * @param path Path to the file
-     * @param buf Input buffer for bytes to write.
-     * @param size On input, number of bytes to write. On output, actual bytes written.
-     * @param offset Specifies absolute starting point in bytes to write.
-     *
-     * @return Result code
-     */
-    FileSystem::Result writeFile(const char *path,
-                                 const void *buf,
-                                 Size *size,
-                                 const Size offset) const;
+                                  const FileSystem::FileModes mode) const;
 
     /**
      * Retrieve status of a file.
@@ -143,7 +101,54 @@ class FileSystemClient
      *
      * @return Result code
      */
-    FileSystem::Result statFile(const char *path, FileSystem::FileStat *st) const;
+    FileSystem::Result statFile(const char *path,
+                                FileSystem::FileStat *st) const;
+
+    /**
+     * Open a file
+     *
+     * @param path Path to the file
+     * @param descriptor Outputs the file descriptor number
+     *
+     * @return Result code
+     */
+    FileSystem::Result openFile(const char *path,
+                                Size & descriptor) const;
+
+    /**
+     * Close a file
+     *
+     * @param descriptor File descriptor number
+     *
+     * @return Result code
+     */
+    FileSystem::Result closeFile(const Size descriptor) const;
+
+    /**
+     * Read a file.
+     *
+     * @param descriptor File descriptor number of the file
+     * @param buf Buffer for storing bytes read.
+     * @param size On input, number of bytes to read. On output, actual bytes read.
+     *
+     * @return Result code
+     */
+    FileSystem::Result readFile(const Size descriptor,
+                                void *buf,
+                                Size *size) const;
+
+    /**
+     * Write a file.
+     *
+     * @param descriptor File descriptor number of the file
+     * @param buf Input buffer for bytes to write.
+     * @param size On input, number of bytes to write. On output, actual bytes written.
+     *
+     * @return Result code
+     */
+    FileSystem::Result writeFile(const Size descriptor,
+                                 const void *buf,
+                                 Size *size) const;
 
     /**
      * Remove a file from the file system.
@@ -155,9 +160,24 @@ class FileSystemClient
     FileSystem::Result deleteFile(const char *path) const;
 
     /**
+     * Wait for one or more files to become readable/writable
+     *
+     * @param filesystemPath Path to the destination mounted filesystem
+     * @param waitSet Pointer to a WaitSet array
+     * @param count Number of WaitSet entries
+     * @param msecTimeout Timeout in milliseconds of the wait or ZERO for infinite wait
+     *
+     * @return Result code
+     */
+    FileSystem::Result waitFile(const char *filesystemPath,
+                                const FileSystem::WaitSet *waitSet,
+                                const Size count,
+                                const Size msecTimeout) const;
+
+    /**
      * Mount the current process as a file system on the rootfs.
      *
-     * @param path Absolute path for the mount point to use.
+     * @param mountPath Absolute path for the mount point to use.
      *
      * @return Result code
      */
@@ -185,7 +205,6 @@ class FileSystemClient
 
   private:
 
-
     /**
      * Send an IPC request to the target file system
      *
@@ -205,6 +224,15 @@ class FileSystemClient
      * @return Result code
      */
     FileSystem::Result request(const ProcessID pid, FileSystemMessage &msg) const;
+
+    /**
+     * Retrieve the ProcessID of the FileSystemMount for the given path.
+     *
+     * @param path Path to lookup.
+     *
+     * @return ProcessID of the FileSystemMount on success and ZERO otherwise.
+     */
+    ProcessID findMount(const char *path) const;
 
   private:
 

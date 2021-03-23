@@ -91,9 +91,9 @@
         <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=80</string>
         <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=90</string>
         <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=10</string>
-        <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=7</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=8</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=9</string>
+        <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=10</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=60</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=70</string>
         <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=80</string>
@@ -108,6 +108,7 @@
     <hudson.tasks.Shell>
       <command>#!/usr/local/bin/bash
 set -x
+set -e
 export $sysargs $debugging
 
 if [ ! -z &quot;$ARCH&quot; ]; then

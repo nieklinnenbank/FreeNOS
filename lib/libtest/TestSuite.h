@@ -34,7 +34,7 @@ class TestInstance;
 /**
  * Maintains a list of test instances
  */
-class TestSuite : public Singleton<TestSuite>
+class TestSuite : public StrictSingleton<TestSuite>
 {
   public:
 

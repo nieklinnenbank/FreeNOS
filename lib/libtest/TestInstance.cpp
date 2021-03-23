@@ -21,11 +21,11 @@
 TestInstance::TestInstance(const char *name)
     : m_name(name, true)
 {
-    if (!TestSuite::instance)
-    {
-        TestSuite::instance = new TestSuite();
-    }
-    TestSuite::instance->addTest(this);
+    TestSuite::instance()->addTest(this);
+}
+
+TestInstance::~TestInstance()
+{
 }
 
 const String & TestInstance::getName() const

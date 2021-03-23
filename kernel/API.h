@@ -29,6 +29,12 @@
 
 /**
  * Generic Kernel API implementation.
+ *
+ * @todo System calls currently do not verify whether a process has permission to use it.
+ *       Possible solution is to add a capability based mechanism, that defines whether a Process
+ *       is allowed to execute the system call. Capabilities can describe any resource owned by the Process.
+ *       For example, a virtual or physical memory range. Capabilities may be transferred between core local
+ *       and remote processes.
  */
 class API
 {
@@ -52,23 +58,26 @@ class API
     Number;
 
     /**
-     * Enumeration of generic kernel API error codes.
+     * Enumeration of generic kernel API result codes.
+     *
+     * @note This type must have the same size as the native
+     *       register size of the underlying architecture (typically ulong).
+     *       Some API handlers will return additional data in upper bits of
+     *       return value which has the type API::Result 
      */
-    typedef enum ErrorCode
+    enum Result
     {
-        Success         =  0,
-        AccessViolation = -1,
-        RangeError      = -2,
-        NotFound        = -3,
-        InvalidArgument = -4,
-        OutOfMemory     = -5,
-        IOError         = -6,
-        AlreadyExists   = -7
-    }
-    Error;
-
-    /** Represents the result of an system call handler */
-    typedef ::Error Result;
+        Success = 0,
+        AccessViolation,
+        RangeError,
+        NotFound,
+        InvalidArgument,
+        OutOfMemory,
+        IOError,
+        AlreadyExists,
+        TemporaryUnavailable,
+        MaxValue = UINT_MAX
+    };
 
     /**
      * Function which handles an kernel API (system call) request.

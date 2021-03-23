@@ -21,12 +21,14 @@
 #include "VMCtl.h"
 #include "ProcessID.h"
 
-API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *range)
+API::Result VMCtlHandler(const ProcessID procID,
+                         const MemoryOperation op,
+                         Memory::Range *range)
 {
-    ProcessManager *procs = Kernel::instance->getProcessManager();
-    Process *proc = ZERO;
+    ProcessManager *procs = Kernel::instance()->getProcessManager();
     MemoryContext::Result memResult = MemoryContext::Success;
-    Error ret = API::Success;
+    API::Result ret = API::Success;
+    Process *proc = ZERO;
 
     DEBUG("");
 
@@ -105,9 +107,31 @@ API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *ra
             }
             break;
 
+        case ReleaseSections:
+            memResult = mem->releaseSection(*range);
+            if (memResult != MemoryContext::Success)
+            {
+                ERROR("failed to release sections at virtual address " << (void *)range->virt <<
+                      ": " << (int) memResult);
+                return API::IOError;
+            }
+            break;
+
         case CacheClean: {
             Arch::Cache cache;
             cache.cleanData(range->virt);
+            break;
+        }
+
+        case CacheInvalidate: {
+            Arch::Cache cache;
+            const Cache::Result r = cache.invalidateAddress(Cache::Data, range->virt);
+            if (r != Cache::Success)
+            {
+                ERROR("failed to invalidate cache at address " << (void *) range->virt <<
+                      ": result = " << (int) r);
+                return API::IOError;
+            }
             break;
         }
 
@@ -118,17 +142,17 @@ API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *ra
         }
 
         case Access: {
-            MemoryContext::Result mr = mem->access(range->virt, &range->access);
+            const MemoryContext::Result mr = mem->access(range->virt, &range->access);
             if (mr == MemoryContext::Success)
                 ret = API::Success;
             else
-                ret = (API::Result) mr;
+                ret = API::AccessViolation;
             break;
         }
 
         case ReserveMem:
         {
-            SplitAllocator *alloc = Kernel::instance->getAllocator();
+            SplitAllocator *alloc = Kernel::instance()->getAllocator();
             Allocator::Result allocResult = Allocator::Success;
 
             for (Size i = 0; i < range->size; i += PAGESIZE)
@@ -153,6 +177,7 @@ API::Result VMCtlHandler(ProcessID procID, MemoryOperation op, Memory::Range *ra
             ret = API::InvalidArgument;
             break;
     }
+
     // Done
     return ret;
 }

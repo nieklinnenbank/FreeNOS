@@ -31,18 +31,24 @@
 
 extern C void executeInterrupt(CPUState state)
 {
-    Kernel::instance->executeIntVector(state.vector, &state);
+    Kernel::instance()->executeIntVector(state.vector, &state);
 }
 
 IntelKernel::IntelKernel(CoreInfo *info)
     : Kernel(info)
 {
-
     IntelMap map;
     IntelCore core;
-    IntelPaging memContext(&map, core.readCR3(), m_alloc);
+
+    // First megabyte should not be used on Intel (I/O devices and tables)
+    for (Size i = 0; i < MegaByte(1); i += PAGESIZE)
+    {
+        m_alloc->allocate(info->memory.phys + i);
+    }
 
     // Refresh MemoryContext::current()
+    IntelPaging memContext(&map, core.readCR3(), m_alloc);
+    memContext.initialize();
     memContext.activate();
 
     // Install interruptRun() callback
@@ -128,6 +134,7 @@ IntelKernel::IntelKernel(CoreInfo *info)
     kernelTss.esp0   = 0;
     kernelTss.bitmap = sizeof(TSS);
     ltr(KERNEL_TSS_SEL);
+
 }
 
 void IntelKernel::enableIRQ(u32 irq, bool enabled)
@@ -148,7 +155,7 @@ void IntelKernel::enableIRQ(u32 irq, bool enabled)
 void IntelKernel::exception(CPUState *state, ulong param, ulong vector)
 {
     IntelCore core;
-    ProcessManager *procs = Kernel::instance->getProcessManager();
+    ProcessManager *procs = Kernel::instance()->getProcessManager();
 
     core.logException(state);
     FATAL("core" << coreInfo.coreId << ": Exception in Process: " << procs->current()->getID());
@@ -160,7 +167,7 @@ void IntelKernel::exception(CPUState *state, ulong param, ulong vector)
 
 void IntelKernel::interrupt(CPUState *state, ulong param, ulong vector)
 {
-    IntelKernel *kern = (IntelKernel *) Kernel::instance;
+    IntelKernel *kern = (IntelKernel *) Kernel::instance();
 
     if (kern->m_intControl)
     {
@@ -172,7 +179,7 @@ void IntelKernel::interrupt(CPUState *state, ulong param, ulong vector)
 
 void IntelKernel::trap(CPUState *state, ulong param, ulong vector)
 {
-    state->regs.eax = Kernel::instance->getAPI()->invoke(
+    state->regs.eax = Kernel::instance()->getAPI()->invoke(
         (API::Number) state->regs.eax,
                       state->regs.ecx,
                       state->regs.ebx,
@@ -184,7 +191,7 @@ void IntelKernel::trap(CPUState *state, ulong param, ulong vector)
 
 void IntelKernel::clocktick(CPUState *state, ulong param, ulong vector)
 {
-    IntelKernel *kern = (IntelKernel *) Kernel::instance;
+    IntelKernel *kern = (IntelKernel *) Kernel::instance();
     Size irq = kern->m_timer->getInterrupt();
 
     kern->enableIRQ(irq, true);

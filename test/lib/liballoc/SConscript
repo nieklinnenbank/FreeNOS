@@ -19,8 +19,8 @@ Import('build_env')
 
 env = build_env.Clone()
 env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libtest', 'libfs',
-                   'libexec', 'libarch', 'libipc', 'librt', 'libapp' ])
-env.UseLibraries([ 'libtest', 'liballoc', 'libarch', 'libstd', 'libapp' ], 'host')
+                   'libexec', 'libarch', 'libipc', 'libruntime', 'libapp' ])
+env.UseLibraries([ 'libtest', 'liballoc', 'libarch', 'libstd', 'libapp', 'rt' ], 'host')
 env.Append(CPPPATH = [ '#lib/liballoc' ])
 
 if env['ARCH'] != 'host':

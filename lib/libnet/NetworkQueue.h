@@ -15,11 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBNET_NETWORKQUEUE_H
-#define __LIBNET_NETWORKQUEUE_H
+#ifndef __LIB_LIBNET_NETWORKQUEUE_H
+#define __LIB_LIBNET_NETWORKQUEUE_H
 
 #include <Types.h>
 #include <Index.h>
+#include <Memory.h>
+#include <Log.h>
 
 /**
  * @addtogroup lib
@@ -36,6 +38,12 @@ class NetworkQueue
 {
   public:
 
+    /** Size of payload memory buffer */
+    static const Size PayloadBufferSize = 2048;
+
+    /** Maximum number of packets available */
+    static const Size MaxPackets = 64u;
+
     /**
      * Represents a network packet
      */
@@ -43,15 +51,6 @@ class NetworkQueue
     {
         Size size;
         u8 *data;
-
-        const bool operator == (const struct Packet & pkt) const
-        {
-            return pkt.size == size && pkt.data == data;
-        }
-        const bool operator != (const struct Packet & pkt) const
-        {
-            return pkt.size != size || pkt.data != data;
-        }
     }
     Packet;
 
@@ -61,20 +60,15 @@ class NetworkQueue
      * Constructor
      *
      * @param packetSize The size of each packet in bytes
-     * @param headerSize Size of the physical header, if any
      * @param queueSize The size of the queue in number of packets
      */
-    NetworkQueue(Size packetSize, Size headerSize = 0, Size queueSize = 8);
+    NetworkQueue(const Size packetSize,
+                 const Size queueSize = MaxPackets);
 
     /**
      * Destructor
      */
     virtual ~NetworkQueue();
-
-    /**
-     * Set default packet header size
-     */
-    void setHeaderSize(Size size);
 
     /**
      * Get unused packet
@@ -96,29 +90,30 @@ class NetworkQueue
      */
     Packet * pop();
 
+    /**
+     * Check if data packets are available
+     *
+     * @return Boolean
+     */
+    bool hasData() const;
+
   private:
 
     /** Contains unused packets */
-    Index<Packet> m_free;
+    Index<Packet, MaxPackets> m_free;
 
     /** Contains packets with data */
-    Index<Packet> m_data;
+    Index<Packet, MaxPackets> m_data;
 
-    /** Size of each packet */
-    Size m_packetSize;
-
-    /**
-     * Size of physical hardware header.
-     * This reserves some bytes at the start of
-     * the actual packet payload. Some hardware needs
-     * an extra physical header before the ethernet/ip headers.
-     */
-    Size m_packetHeader;
+    /** Defines the memory range of mapped payload data */
+    Memory::Range m_payloadRange;
 };
+
+Log & operator << (Log &log, const NetworkQueue::Packet & pkt);
 
 /**
  * @}
  * @}
  */
 
-#endif /* __LIBNET_NETWORKQUEUE_H */
+#endif /* __LIB_LIBNET_NETWORKQUEUE_H */

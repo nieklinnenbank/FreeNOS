@@ -17,10 +17,12 @@
 
 #include "Loopback.h"
 
-Loopback::Loopback(NetworkServer *server)
-    : NetworkDevice(server)
+Loopback::Loopback(const u32 inode,
+                   NetworkServer &server)
+    : NetworkDevice(inode, server)
 {
     DEBUG("");
+
     m_address.addr[0] = 0x11;
     m_address.addr[1] = 0x22;
     m_address.addr[2] = 0x33;
@@ -34,37 +36,49 @@ Loopback::~Loopback()
     DEBUG("");
 }
 
-FileSystem::Error Loopback::initialize()
+FileSystem::Result Loopback::initialize()
 {
     DEBUG("");
-    return NetworkDevice::initialize();
+
+    const FileSystem::Result result = NetworkDevice::initialize();
+    if (result != FileSystem::Success)
+    {
+        ERROR("failed to initialize NetworkDevice: result = " << (int) result);
+        return FileSystem::IOError;
+    }
+
+    IPV4::Address addr = IPV4::toAddress("127.0.0.1");
+    m_ipv4->setAddress(&addr);
+
+    return FileSystem::Success;
 }
 
-FileSystem::Error Loopback::getAddress(Ethernet::Address *address)
+FileSystem::Result Loopback::getAddress(Ethernet::Address *address)
 {
     DEBUG("");
+
     MemoryBlock::copy(address, &m_address, sizeof(Ethernet::Address));
     return FileSystem::Success;
 }
 
-FileSystem::Error Loopback::setAddress(Ethernet::Address *address)
+FileSystem::Result Loopback::setAddress(const Ethernet::Address *address)
 {
     DEBUG("");
+
     MemoryBlock::copy(&m_address, address, sizeof(Ethernet::Address));
     return FileSystem::Success;
 }
 
-FileSystem::Error Loopback::transmit(NetworkQueue::Packet *pkt)
+FileSystem::Result Loopback::transmit(NetworkQueue::Packet *pkt)
 {
     DEBUG("size = " << pkt->size);
 
     // Process the packet by protocols as input (loopback)
-    process(pkt);
+    const FileSystem::Result result = process(pkt);
 
     // Release packet buffer
     m_transmit.release(pkt);
 
-    // TODO: Restart FileSystem::Error flag triggers a restart of all other requests.
-    // This is required because we need to retry all read requests.
-    return pkt->size;
+    // Done
+    return result;
 }

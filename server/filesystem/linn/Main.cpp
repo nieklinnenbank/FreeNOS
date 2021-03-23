@@ -17,12 +17,15 @@
 
 #include <Types.h>
 #include <Assert.h>
+#include <KernelLog.h>
 #include <FileStorage.h>
 #include <BootImageStorage.h>
+#include <BootSymbolStorage.h>
 #include "LinnFileSystem.h"
 
 int main(int argc, char **argv)
 {
+    KernelLog log;
     Storage *storage = ZERO;
     const char *path = "/";
     SystemInformation info;
@@ -43,17 +46,31 @@ int main(int argc, char **argv)
     }
     else
     {
-        BootImageStorage *bm = new BootImageStorage(LINNFS_ROOTFS_FILE);
+        // Allocate BootImage
+        BootImageStorage *bm = new BootImageStorage();
         assert(bm != NULL);
-        if (bm->load())
+
+        // Load BootImage
+        const FileSystem::Result imageResult = bm->initialize();
+        if (imageResult != FileSystem::Success)
         {
-            NOTICE("boot image: " << LINNFS_ROOTFS_FILE);
-            storage = bm;
+            FATAL("unable to load BootImage: result = " << (int) imageResult);
         }
-        else
+
+        // Allocate BootSymbol
+        BootSymbolStorage *bs = new BootSymbolStorage(*bm, LINNFS_ROOTFS_FILE);
+        assert(bs != NULL);
+
+        // Load BootSymbol
+        const FileSystem::Result symbolResult = bs->initialize();
+        if (symbolResult != FileSystem::Success)
         {
-            FATAL("unable to load: " << LINNFS_ROOTFS_FILE);
+            FATAL("unable to load BootSymbol '" << LINNFS_ROOTFS_FILE <<
+                  "': result = " << (int) symbolResult);
         }
+
+        storage = bs;
+        NOTICE("boot image: " << LINNFS_ROOTFS_FILE);
     }
 
     // Mount, then start serving requests.

@@ -31,6 +31,11 @@ DirectoryScanner::DirectoryScanner(int argc, char **argv)
     m_argv = argv;
 }
 
+DirectoryScanner::~DirectoryScanner()
+{
+    m_externalTests.deleteAll();
+}
+
 int DirectoryScanner::scan(const char *path)
 {
     DIR *d;
@@ -62,7 +67,15 @@ int DirectoryScanner::scan(const char *path)
             // Regular file
             case DT_REG:
                 if (str.endsWith((const char *)"Test"))
-                    new ExternalTest(subPath, m_argc, m_argv);
+                {
+                    ExternalTest *test = new ExternalTest(subPath, m_argc, m_argv);
+                    if (!m_externalTests.insert(test))
+                    {
+                        printf("%s: failed to add test '%s' to internal Index\n",
+                                m_argv[0], path);
+                        return EXIT_FAILURE;
+                    }
+                }
                 break;
 
             default:

@@ -23,7 +23,6 @@
 #include <List.h>
 #include <MemoryMap.h>
 #include <Timer.h>
-#include <Index.h>
 #include "ProcessShares.h"
 
 /** @see IPCMessage.h. */
@@ -68,7 +67,8 @@ class Process
     {
         Ready,
         Sleeping,
-        Waiting
+        Waiting,
+        Stopped
     };
 
   public:
@@ -79,6 +79,7 @@ class Process
      * @param id Process Identifier
      * @param entry Initial program counter value.
      * @param privileged If true, the process has unlimited access to hardware.
+     * @param map Memory map to use
      */
     Process(ProcessID id, Address entry, bool privileged, const MemoryMap &map);
 
@@ -132,7 +133,6 @@ class Process
      */
     MemoryContext * getMemoryContext();
 
-
     /**
      * Get privilege.
      *
@@ -143,7 +143,7 @@ class Process
     /**
      * Compare two processes.
      *
-     * @param p Process to compare with.
+     * @param proc Process to compare with.
      *
      * @return True if equal, false otherwise.
      */
@@ -160,6 +160,13 @@ class Process
      * @return Result code
      */
     virtual Result initialize();
+
+    /**
+     * Restart execution at the given entry point.
+     *
+     * @param entry Address to begin execution.
+     */
+    virtual void reset(const Address entry) = 0;
 
     /**
      * Allow the Process to run on the CPU.
@@ -195,6 +202,27 @@ class Process
     Result wait(ProcessID id);
 
     /**
+     * Complete waiting for another Process.
+     *
+     * @param result Exit code of the other process
+     */
+    virtual Result join(const uint result);
+
+    /**
+     * Stop execution of this process.
+     *
+     * @return Result code
+     */
+    Result stop();
+
+    /**
+     * Resume execution when this process is stopped.
+     *
+     * @return Result code
+     */
+    Result resume();
+
+    /**
      * Raise kernel event
      *
      * @return Result code
@@ -212,13 +240,6 @@ class Process
      * Set parent process ID.
      */
     void setParent(ProcessID id);
-
-    /**
-     * Set wait result
-     *
-     * @param result Exit code of the other process
-     */
-    virtual void setWaitResult(uint result);
 
   protected:
 

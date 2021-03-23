@@ -61,7 +61,7 @@ void ARMControl::write(Register reg, u32 value)
         case DomainControl:         mcr(p15, 0, 0, c3,  c0, value); break;
         case CacheClear:            mcr(p15, 0, 0, c7,  c7, value); break;
         case DataCacheClean:        mcr(p15, 0, 0, c7, c14, value); break;
-        case FlushPrefetchBuffer:   mcr(p15, 0, 4, c7,  c5, value); break;
+        case FlushPrefetchBuffer:   flushPrefetchBuffer(); break;
         case InstructionCacheClear: mcr(p15, 0, 0, c7,  c5, value); break;
         case InstructionTLBClear:   mcr(p15, 0, 0, c8,  c5, value); break;
         case DataTLBClear:          mcr(p15, 0, 0, c8,  c6, value); break;

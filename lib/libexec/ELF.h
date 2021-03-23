@@ -59,6 +59,8 @@ class ELF : public ExecutableFormat
      *              Actual number of memory regions on output.
      *
      * @return Result code.
+     *
+     * @todo Rework executables to avoid giving all mapped regions read, write and execute permissions.
      */
     virtual Result regions(Region *regions, Size *count) const;
 

@@ -15,12 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBNET_ETHERNET_H
-#define __LIBNET_ETHERNET_H
+#ifndef __LIB_LIBNET_ETHERNET_H
+#define __LIB_LIBNET_ETHERNET_H
 
 #include <Types.h>
 #include <Macros.h>
 #include <Log.h>
+#include <String.h>
 #include "NetworkProtocol.h"
 
 class ARP;
@@ -82,8 +83,12 @@ class Ethernet : public NetworkProtocol
 
     /**
      * Constructor
+     *
+     * @param server Reference to the NetworkServer instance
+     * @param device Reference to the NetworkDevice instance
      */
-    Ethernet(NetworkServer *server, NetworkDevice *device);
+    Ethernet(NetworkServer &server,
+             NetworkDevice &device);
 
     /**
      * Destructor
@@ -92,35 +97,45 @@ class Ethernet : public NetworkProtocol
 
     /**
      * Perform initialization.
+     *
+     * @return Result code
      */
-    virtual Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
      * Retrieve Ethernet address
      *
      * @param address Output buffer to store the address
      *
-     * @return Error code
+     * @return Result code
      */
-    virtual Error getAddress(Address *address);
+    virtual FileSystem::Result getAddress(Address *address);
 
     /**
      * Set Ethernet address
      *
      * @param address Input address
      *
-     * @return Error code
+     * @return Result code
      */
-    virtual Error setAddress(Address *address);
+    virtual FileSystem::Result setAddress(const Address *address);
 
     /**
      * Get a new packet for transmission
      *
-     * @param destination
+     * @param pkt On output contains a pointer to a Packet
+     * @param address Address of the destination of this packet
+     * @param addressSize Number of bytes of the address
+     * @param protocol Identifier for the protocol to create the packet for
+     * @param payloadSize Number of payload bytes
+     *
+     * @return Result code
      */
-    NetworkQueue::Packet *getTransmitPacket(const Address *destination,
-                                            PayloadType type);
-
+    virtual FileSystem::Result getTransmitPacket(NetworkQueue::Packet **pkt,
+                                                 const void *address,
+                                                 const Size addressSize,
+                                                 const Identifier protocol,
+                                                 const Size payloadSize);
 
     /**
      * Convert address to string
@@ -128,7 +143,7 @@ class Ethernet : public NetworkProtocol
      * @param address Input ethernet address
      * @return Text value of the ethernet address
      */
-    static const String toString(Address address);
+    static const String toString(const Address address);
 
     /**
      * Set ARP instance
@@ -147,9 +162,13 @@ class Ethernet : public NetworkProtocol
     /**
      * Process incoming network packet.
      *
-     * @return Error code
+     * @param pkt Incoming packet pointer
+     * @param offset Offset for processing
+     *
+     * @return Result code
      */
-    virtual Error process(NetworkQueue::Packet *pkt, Size offset);
+    virtual FileSystem::Result process(const NetworkQueue::Packet *pkt,
+                                       const Size offset);
 
   private:
 
@@ -170,4 +189,4 @@ Log & operator << (Log &log, const Ethernet::Address & addr);
  * @}
  */
 
-#endif /* __LIBNET_ETHERNET_H */
+#endif /* __LIB_LIBNET_ETHERNET_H */

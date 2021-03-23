@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBSTD_HASHTABLE_H
-#define __LIBSTD_HASHTABLE_H
+#ifndef __LIB_LIBSTD_HASHTABLE_H
+#define __LIB_LIBSTD_HASHTABLE_H
 
 #include "Types.h"
 #include "Macros.h"
@@ -121,12 +121,12 @@ template <class K, class V> class HashTable : public Associative<K,V>
     }
 
     /**
-     * Inserts the given item to the Assocation.
+     * Inserts the given item to the HashTable.
      *
      * If an item exists for the given key, its value will be replaced.
      *
-     * @param position The position to insert the item.
-     * @param item The item to insert
+     * @param key The associated key for the given item to use.
+     * @param value The item to insert
      *
      * @return bool Whether inserting the item at the given position succeeded.
      */
@@ -154,8 +154,8 @@ template <class K, class V> class HashTable : public Associative<K,V>
     /**
      * Append a new item.
      *
-     * @param k Associated key.
-     * @param v New item to append.
+     * @param key Associated key.
+     * @param value New item to append.
      *
      * @return True if append successfull, false otherwise.
      */
@@ -171,7 +171,7 @@ template <class K, class V> class HashTable : public Associative<K,V>
     /**
      * Remove value(s) for the given key.
      *
-     * @param k Associated key.
+     * @param key Associated key.
      *
      * @return Number of values removed.
      */
@@ -373,4 +373,4 @@ template <class K, class V> class HashTable : public Associative<K,V>
  * @}
  */
 
-#endif /* __LIBSTD_HASHTABLE_H */
+#endif /* __LIB_LIBSTD_HASHTABLE_H */

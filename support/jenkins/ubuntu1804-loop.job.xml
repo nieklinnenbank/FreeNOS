@@ -78,21 +78,24 @@
       <name>sysargs</name>
       <values>
         <string>ARCH=arm SYSTEM=raspberry COMPILER=gcc CROSS_COMPILE=arm-linux-gnueabi- VERSION_SUFFIX=-8</string>
-        <string>ARCH=arm SYSTEM=raspberry COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=-8</string>
+        <string>ARCH=arm SYSTEM=raspberry COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=-10</string>
         <string>ARCH=arm SYSTEM=raspberry2 COMPILER=gcc CROSS_COMPILE=arm-linux-gnueabi- VERSION_SUFFIX=-8</string>
-        <string>ARCH=arm SYSTEM=raspberry2 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=-8</string>
+        <string>ARCH=arm SYSTEM=raspberry2 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=-10</string>
         <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=gcc CROSS_COMPILE=arm-linux-gnueabi- VERSION_SUFFIX=-8</string>
-        <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=-8</string>
-        <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=-8</string>
-        <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=-9</string>
+        <string>ARCH=arm SYSTEM=sunxi-h3 COMPILER=clang CROSS_COMPILE= VERSION_SUFFIX=-10</string>
+        <string>ARCH=intel SYSTEM=pc COMPILER=gcc VERSION_SUFFIX=-10</string>
+        <string>ARCH=intel SYSTEM=pc COMPILER=clang VERSION_SUFFIX=-10</string>
       </values>
     </hudson.matrix.TextAxis>
   </axes>
   <builders>
     <hudson.tasks.Shell>
       <command>#!/bin/bash
-scons $sysargs DEBUG=False VERBOSE=True HOST_VERBOSE=True HOST_MINIMAL_BUILD=True QEMU_BUILD=True KVMFLAGS=&quot;&quot; || exit 1
-scons $sysargs DEBUG=False VERBOSE=True HOST_VERBOSE=True HOST_MINIMAL_BUILD=True QEMU_BUILD=True KVMFLAGS=&quot;&quot; qemu_loop || exit 1
+set -x
+set -e
+
+scons $sysargs DEBUG=False VERBOSE=True HOST_VERBOSE=True HOST_MINIMAL_BUILD=True QEMU_BUILD=True KVMFLAGS=&quot;&quot;
+scons $sysargs DEBUG=False VERBOSE=True HOST_VERBOSE=True HOST_MINIMAL_BUILD=True QEMU_BUILD=True KVMFLAGS=&quot;&quot; qemu_loop
 </command>
     </hudson.tasks.Shell>
   </builders>

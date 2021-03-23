@@ -15,24 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FreeNOS/System.h>
-#include <FreeNOS/ProcessManager.h>
 #include <Types.h>
 #include <Macros.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
-#include <limits.h>
-#include <errno.h>
+#include <ProcessClient.h>
 #include "ProcessList.h"
-
-const char * ProcessList::ProcessStates[] =
-{
-    "Ready",
-    "Sleeping",
-    "Waiting"
-};
 
 ProcessList::ProcessList(int argc, char **argv)
     : POSIXApplication(argc, argv)
@@ -42,32 +30,28 @@ ProcessList::ProcessList(int argc, char **argv)
 
 ProcessList::Result ProcessList::exec()
 {
-    Arch::MemoryMap map;
-    Memory::Range range = map.range(MemoryMap::UserArgs);
-    ProcessInfo info;
+    const ProcessClient process;
     String out;
-    char line[256], cmd[PATH_MAX];
-    pid_t pid = getpid();
 
     // Print header
     out << "ID  PARENT  USER GROUP STATUS     CMD\r\n";
-    memset(&cmd, 0, sizeof(cmd));
 
     // Loop processes
-    for (uint i = 0; i < MAX_PROCS; i++)
+    for (ProcessID pid = 0; pid < ProcessClient::MaximumProcesses; pid++)
     {
-        // Request kernel's process information
-        if (ProcessCtl(i, InfoPID, (Address) &info) != API::NotFound)
-        {
-            DEBUG("PID " << i << " state = " << info.state);
+        ProcessClient::Info info;
 
-            // Get the command
-            VMCopy(i, API::Read, (Address) cmd, range.virt, PATH_MAX);
+        const ProcessClient::Result result = process.processInfo(pid, info);
+        if (result == ProcessClient::Success)
+        {
+            DEBUG("PID " << pid << " state = " << *info.textState);
 
             // Output a line
+            char line[128];
             snprintf(line, sizeof(line),
                     "%3d %7d %4d %5d %10s %32s\r\n",
-                     i, info.parent, 0, 0, i == pid ? "Running" : ProcessStates[info.state], cmd);
+                     pid, info.kernelState.parent,
+                     0, 0, *info.textState, *info.command);
             out << line;
         }
     }

@@ -26,11 +26,11 @@
 
 int chdir(const char *filepath)
 {
-    String *last = ZERO;
-    List<String *> lst;
+    String last;
+    List<String> lst;
     char cwd[PATH_MAX], buf[PATH_MAX], *path = ZERO;
     FileSystemClient filesystem;
-    FileSystemPath fspath;
+
     struct stat st;
 
     // What's the current working dir?
@@ -40,28 +40,29 @@ int chdir(const char *filepath)
     if (filepath[0] != '/')
     {
         snprintf(buf, sizeof(buf), "%s/%s", cwd, filepath);
-        fspath.parse(buf);
-        memset(buf, 0, sizeof(buf));
+        FileSystemPath fspath(buf);
 
         // Process '..'
-        for (ListIterator<String *> i(fspath.split()); i.hasCurrent(); i++)
+        for (ListIterator<String> i(fspath.split()); i.hasCurrent(); i++)
         {
-            if ((**i.current())[0] != '.')
+            if ((*i.current())[0] != '.')
             {
                 lst.append(i.current());
                 last = i.current();
             }
-            else if ((**i.current())[1] == '.' && last)
+            else if ((*i.current())[1] == '.' && last.length() > 0)
             {
                 lst.remove(last);
             }
         }
 
+        memset(buf, 0, sizeof(buf));
+
         // Construct final path
-        for (ListIterator<String *> i(&lst); i.hasCurrent(); i++)
+        for (ListIterator<String> i(&lst); i.hasCurrent(); i++)
         {
             strcat(buf, "/");
-            strcat(buf, **i.current());
+            strcat(buf, *i.current());
         }
         path = buf;
     }

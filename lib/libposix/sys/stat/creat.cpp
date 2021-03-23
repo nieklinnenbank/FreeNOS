@@ -29,8 +29,7 @@ int creat(const char *path, mode_t mode)
     // Ask FileSystem to create the file for us
     const FileSystem::Result result = filesystem.createFile(path,
                                                             FileSystem::RegularFile,
-                                                           (FileSystem::FileModes) (mode & FILEMODE_MASK),
-                                                            DeviceID());
+                                                           (FileSystem::FileModes) (mode & FILEMODE_MASK));
     // Set errno
     if (result == FileSystem::Success)
         errno = ESUCCESS;

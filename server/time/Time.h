@@ -97,27 +97,32 @@ class Time : public Device
     public:
 
     /**
-     * @brief Constructor function.
+     * Constructor
+     *
+     * @param inode Inode number
      */
-    Time();
+    Time(const u32 inode);
 
     /**
-     * @brief Initializes the time class.
+     * Initialize the time device
      *
-     * @return Error status code.
+     * @return Result code
      */
-    virtual FileSystem::Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
-     * @brief Read the system time.
+     * Read time
      *
-     * @param buffer Buffer to save the read bytes.
-     * @param size Number of bytes to read.
-     * @param offset Offset in the file to read.
+     * @param buffer Input/Output buffer to output bytes to.
+     * @param size Maximum number of bytes to read on input.
+     *             On output, the actual number of bytes read.
+     * @param offset Offset inside the file to start reading.
      *
-     * @return Number of bytes on success and ZERO on failure.
+     * @return Result code
      */
-    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result read(IOBuffer & buffer,
+                                    Size & size,
+                                    const Size offset);
 
   private:
 

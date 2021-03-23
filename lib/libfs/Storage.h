@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __FILESYSTEM_STORAGE_H
-#define __FILESYSTEM_STORAGE_H
+#ifndef __LIB_LIBFS_STORAGE_H
+#define __LIB_LIBFS_STORAGE_H
 
 #include <Types.h>
 #include "FileSystem.h"
@@ -47,6 +47,13 @@ class Storage
     virtual ~Storage();
 
     /**
+     * Initialize the Storage device
+     *
+     * @return Result code
+     */
+    virtual FileSystem::Result initialize() = 0;
+
+    /**
      * Read a contiguous set of data.
      *
      * @param offset Offset to start reading from.
@@ -55,7 +62,7 @@ class Storage
      *
      * @return Result code
      */
-    virtual FileSystem::Error read(u64 offset, void *buffer, Size size);
+    virtual FileSystem::Result read(const u64 offset, void *buffer, const Size size) const = 0;
 
     /**
      * Write a contiguous set of data.
@@ -66,7 +73,7 @@ class Storage
      *
      * @return Result code
      */
-    virtual FileSystem::Error write(u64 offset, void *buffer, Size size);
+    virtual FileSystem::Result write(const u64 offset, void *buffer, const Size size);
 
     /**
      * Retrieve maximum storage capacity.
@@ -81,4 +88,4 @@ class Storage
  * @}
  */
 
-#endif /* __FILESYSTEM_STORAGE_H */
+#endif /* __LIB_LIBFS_STORAGE_H */

@@ -15,13 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBFS_DIRECTORY_H
-#define __LIBFS_DIRECTORY_H
+#ifndef __LIB_LIBFS_DIRECTORY_H
+#define __LIB_LIBFS_DIRECTORY_H
 
 #include <List.h>
 #include "FileSystem.h"
 #include "File.h"
-#include "FileSystemPath.h"
 
 /**
  * @addtogroup lib
@@ -63,8 +62,10 @@ class Directory : public File
 
     /**
      * Constructor
+     *
+     * @param inode Inode number for this Directory
      */
-    Directory();
+    Directory(const u32 inode);
 
     /**
      * Destructor
@@ -81,16 +82,19 @@ class Directory : public File
      * implement their version of read().
      *
      * @param buffer Input/Output buffer to output bytes to.
-     * @param size Number of bytes to read, at maximum.
+     * @param size Maximum number of bytes to read on input.
+     *             On output, the actual number of bytes read.
      * @param offset Offset inside the file to start reading.
      *
-     * @return Number of bytes read on success, Error on failure.
+     * @return Result code
      *
      * @see FileSystem
      * @see Storage
      * @see Dirent
      */
-    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result read(IOBuffer & buffer,
+                                    Size & size,
+                                    const Size offset);
 
     /**
      * Retrieve a File from storage.
@@ -177,4 +181,4 @@ class Directory : public File
  * @}
  */
 
-#endif /* __LIBFS_DIRECTORY_H */
+#endif /* __LIB_LIBFS_DIRECTORY_H */

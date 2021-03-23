@@ -32,7 +32,7 @@ ProcessShares::ProcessShares(ProcessID pid)
 
 ProcessShares::~ProcessShares()
 {
-    ProcessManager *procs = Kernel::instance->getProcessManager();
+    ProcessManager *procs = Kernel::instance()->getProcessManager();
     List<ProcessID> pids;
 
     // Make a list of unique process IDs which
@@ -40,7 +40,7 @@ ProcessShares::~ProcessShares()
     Size size = m_shares.size();
     for (Size i = 0; i < size; i++)
     {
-        MemoryShare *sh = (MemoryShare *) m_shares.get(i);
+        MemoryShare *sh = m_shares.get(i);
         if (sh)
         {
             if (!pids.contains(sh->pid))
@@ -111,6 +111,9 @@ ProcessShares::Result ProcessShares::createShare(ProcessID pid,
     share->range.virt = virt;
     share->range.size = size;
 
+    // For the kernel channel, set to unattached to ensure releaseShare() always works
+    share->attached   = !(pid == KERNEL_PID);
+
     // Translate to physical address
     if ((result = m_memory->lookup(share->range.virt, &share->range.phys)) != MemoryContext::Success)
     {
@@ -131,7 +134,8 @@ ProcessShares::Result ProcessShares::createShare(ProcessID pid,
     }
 
     // insert into shares list
-    m_shares.insert(*share);
+    Size idx = 0;
+    m_shares.insert(idx, share);
     return Success;
 }
 
@@ -144,13 +148,21 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
     MemoryContext *remoteMem = instance.getMemoryContext();
     Arch::Cache cache;
     Allocator::Range allocPhys, allocVirt;
+    Size idx = 0;
 
     if (share->range.size == 0)
         return InvalidArgument;
 
     // Check if the share already exists
-    if (readShare(share) == Success)
+    if (findShare(share->pid, share->coreId, share->tagId) != ZERO)
         return AlreadyExists;
+
+    // Check if the remote share is still detaching
+    remoteShare = instance.findShare(m_pid, share->coreId, share->tagId);
+    if (remoteShare && !remoteShare->attached)
+    {
+        return DetachInProgress;
+    }
 
     // Allocate local
     localShare = new MemoryShare;
@@ -174,7 +186,7 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
     allocPhys.size = share->range.size;
     allocPhys.alignment = PAGESIZE;
 
-    if (Kernel::instance->getAllocator()->allocate(allocPhys, allocVirt) != Allocator::Success)
+    if (Kernel::instance()->getAllocator()->allocate(allocPhys, allocVirt) != Allocator::Success)
     {
         ERROR("failed to allocate pages for MemoryShare");
         return OutOfMemory;
@@ -187,7 +199,7 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
 
     // Fill the local share object
     localShare->pid        = instance.getProcessID();
-    localShare->coreId     = Kernel::instance->getCoreInfo()->coreId;
+    localShare->coreId     = Kernel::instance()->getCoreInfo()->coreId;
     localShare->tagId      = share->tagId;
     localShare->range.phys = allocPhys.address;
     localShare->range.size = share->range.size;
@@ -222,11 +234,11 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
         return OutOfMemory;
     }
     // insert into shares list
-    m_shares.insert(*localShare);
-    instance.m_shares.insert(*remoteShare);
+    m_shares.insert(idx, localShare);
+    instance.m_shares.insert(idx, remoteShare);
 
     // raise event on the remote process
-    ProcessManager *procs = Kernel::instance->getProcessManager();
+    ProcessManager *procs = Kernel::instance()->getProcessManager();
     Process *proc = procs->get(instance.getProcessID());
     ProcessEvent event;
     event.type   = ShareCreated;
@@ -241,12 +253,12 @@ ProcessShares::Result ProcessShares::createShare(ProcessShares & instance,
 
 ProcessShares::Result ProcessShares::removeShares(ProcessID pid)
 {
-    Size size = m_shares.size();
+    const Size size = m_shares.size();
     MemoryShare *s = 0;
 
     for (Size i = 0; i < size; i++)
     {
-        if ((s = (MemoryShare *) m_shares.get(i)) != ZERO)
+        if ((s = m_shares.get(i)) != ZERO)
         {
             if (s->pid != pid)
                 continue;
@@ -270,16 +282,16 @@ ProcessShares::Result ProcessShares::releaseShare(MemoryShare *s, Size idx)
     // other process.
     if (s->attached)
     {
-        Process *proc = Kernel::instance->getProcessManager()->get(s->pid);
+        Process *proc = Kernel::instance()->getProcessManager()->get(s->pid);
         if (proc)
         {
             ProcessShares & shares = proc->getShares();
-            Size size = shares.m_shares.size();
+            const Size size = shares.m_shares.size();
 
             // Mark all process shares detached in the other process
             for (Size i = 0; i < size; i++)
             {
-                MemoryShare *otherShare = (MemoryShare *) shares.m_shares.get(i);
+                MemoryShare *otherShare = shares.m_shares.get(i);
                 if (otherShare)
                 {
                     assert(otherShare->coreId == coreInfo.coreId);
@@ -292,43 +304,65 @@ ProcessShares::Result ProcessShares::releaseShare(MemoryShare *s, Size idx)
             }
         }
     }
-    else if (s->pid != KERNEL_PID)
+    else
     {
         // Only release physical memory pages if the other
         // process already detached earlier
-        Allocator *alloc = Kernel::instance->getAllocator();
+        Allocator *alloc = Kernel::instance()->getAllocator();
 
         for (Size i = 0; i < s->range.size; i += PAGESIZE)
             alloc->release(s->range.phys + i);
     }
+
     // Unmap the share
     m_memory->unmapRange(&s->range);
 
-    // Remove share from our administration
-    m_shares.remove(idx);
+    // Release the share object
     delete s;
-    return Success;
+
+    // Remove share from our administration
+    if (!m_shares.remove(idx))
+    {
+        return NotFound;
+    }
+    else
+    {
+        return Success;
+    }
+}
+
+ProcessShares::MemoryShare * ProcessShares::findShare(const ProcessID pid,
+                                                      const Size coreId,
+                                                      const Size tagId)
+{
+    const Size size = m_shares.size();
+
+    for (Size i = 0; i < size; i++)
+    {
+        MemoryShare *s = m_shares.get(i);
+
+        if (s != ZERO)
+        {
+            assert(s->coreId == coreInfo.coreId);
+
+            if (s->pid == pid && s->coreId == coreId && s->tagId == tagId)
+            {
+                return s;
+            }
+        }
+    }
+
+    return ZERO;
 }
 
 ProcessShares::Result ProcessShares::readShare(MemoryShare *share)
 {
-    Size size = m_shares.size();
-    const MemoryShare *s = 0;
-
-    for (Size i = 0; i < size; i++)
+    const MemoryShare *s = findShare(share->pid, share->coreId, share->tagId);
+    if (s != ZERO)
     {
-        if ((s = m_shares.get(i)) != ZERO)
-        {
-            assert(s->coreId == coreInfo.coreId);
-
-            if (s->pid == share->pid &&
-                s->coreId == share->coreId &&
-                s->tagId == share->tagId)
-            {
-                MemoryBlock::copy(share, s, sizeof(MemoryShare));
-                return Success;
-            }
-        }
+        MemoryBlock::copy(share, s, sizeof(MemoryShare));
+        return Success;
     }
+
     return NotFound;
 }

@@ -15,15 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <MemoryBlock.h>
 #include "NetworkSocket.h"
 
-NetworkSocket::NetworkSocket(Size packetSize)
-    : m_receive(packetSize),
-      m_transmit(packetSize)
+NetworkSocket::NetworkSocket(const u32 inode,
+                             const Size packetSize,
+                             const ProcessID pid)
+    : File(inode)
+    , m_pid(pid)
+    , m_receive(packetSize)
+    , m_transmit(packetSize)
 {
-    m_pid = 0;
+    MemoryBlock::set(&m_info, 0, sizeof(m_info));
 }
 
 NetworkSocket::~NetworkSocket()
 {
+}
+
+ProcessID NetworkSocket::getProcessID() const
+{
+    return m_pid;
 }

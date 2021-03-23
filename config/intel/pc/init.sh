@@ -3,7 +3,11 @@
 # VGA/keyboard console
 #
 /server/ps2/server &
+/bin/mount --wait=/dev/ps2
+
 /server/video/server &
+/bin/mount --wait=/dev/video
+
 /server/terminal/server &
 /bin/mount --wait=/console
 stdio /console/tty0 /console/tty0
@@ -12,7 +16,13 @@ stdio /console/tty0 /console/tty0
 # System Servers and Drivers.
 #
 /server/time/server &
+/bin/mount --wait=/dev/time
+
 /server/filesystem/tmp/server /tmp &
+/bin/mount --wait=/tmp
+
+/server/network/loopback/server &
+/bin/mount --wait=/network/loopback
 
 #
 # Serial console

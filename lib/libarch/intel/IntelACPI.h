@@ -111,7 +111,7 @@ class IntelACPI : public CoreManager
     {
         SystemDescriptorHeader header;
         u32 entry[];
-    }
+    } __attribute__((packed))
     RootSystemTable;
 
     /**
@@ -121,7 +121,7 @@ class IntelACPI : public CoreManager
     {
         SystemDescriptorHeader header;
         u64 entry[];
-    }
+    } __attribute__((packed))
     ExtendedSystemTable;
 
     /**
@@ -131,7 +131,7 @@ class IntelACPI : public CoreManager
     {
         u8 type;
         u8 length;
-    }
+    } __attribute__((packed))
     MultipleAPICTableEntry;
 
     /**
@@ -143,7 +143,7 @@ class IntelACPI : public CoreManager
         u8 coreId;
         u8 apicId;
         u32 flags;
-    }
+    } __attribute__((packed))
     MultipleAPICTableProc;
 
     /**
@@ -155,7 +155,7 @@ class IntelACPI : public CoreManager
         u32 ctrlAddress;
         u32 flags;
         MultipleAPICTableEntry entry[];
-    }
+    } __attribute__((packed))
     MultipleAPICTable;
 
     /**

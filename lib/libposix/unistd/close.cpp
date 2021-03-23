@@ -15,26 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FileDescriptor.h>
+#include <FileSystemClient.h>
 #include "errno.h"
 #include "unistd.h"
 
 int close(int fildes)
 {
-    FileDescriptor *files = getFiles();
+    const FileSystemClient fs;
 
-    if (fildes >= FILE_DESCRIPTOR_MAX || fildes < 0)
-    {
-        errno = ERANGE;
-        return -1;
-    }
-
-    if (!files[fildes].open)
+    const FileSystem::Result result = fs.closeFile(fildes);
+    if (result != FileSystem::Success)
     {
         errno = ENOENT;
         return -1;
     }
 
-    files[fildes].open = false;
     return 0;
 }

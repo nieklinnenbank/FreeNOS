@@ -20,7 +20,7 @@ Import('build_env')
 env = build_env.Clone()
 env.UseServers(['core'])
 env.UseLibraries(['liballoc', 'libstd'])
-env.UseLibraries(['liballoc', 'libstd'], 'host')
+env.UseLibraries(['liballoc', 'libstd', 'libipc'], 'host')
 env.Append(CPPPATH = [ '.' ])
 env.Library('libarch', [ Glob('*.cpp'),
             Glob( env['ARCH'] + '/*.cpp'),

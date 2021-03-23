@@ -36,7 +36,6 @@ SysInfo::~SysInfo()
 
 SysInfo::Result SysInfo::exec()
 {
-    SystemInformation info;
     const CoreClient coreClient;
     Size numCores = 1U;
     Timer::Info timer;
@@ -45,11 +44,19 @@ SysInfo::Result SysInfo::exec()
 
     // Retrieve number of cores from the CoreServer
     const Core::Result result = coreClient.getCoreCount(numCores);
-    assert(result == Core::Success);
+    if (result != Core::Success)
+    {
+        printf("failed to retrieve core count from CoreServer: %d\n",
+                (int) result);
+        return IOError;
+    }
 
     // Retrieve scheduler timer info from the kernel
     ProcessCtl(SELF, InfoTimer, (Address) &timer);
     gettimeofday(&tv, &tz);
+
+    // Retrieve system information
+    const SystemInformation info;
 
     // Print all information to standard output
     printf("Memory Total:     %u KB\r\n"

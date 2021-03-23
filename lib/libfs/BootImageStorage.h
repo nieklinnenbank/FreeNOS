@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __FILESYSTEM_BOOTIMAGESTORAGE_H
-#define __FILESYSTEM_BOOTIMAGESTORAGE_H
+#ifndef __LIB_LIBFS_BOOTIMAGESTORAGE_H
+#define __LIB_LIBFS_BOOTIMAGESTORAGE_H
 
 #include <Types.h>
 #include <String.h>
@@ -33,7 +33,7 @@
  */
 
 /**
- * Uses a BootImage symbol entry as filesystem storage provider (aka RamFS).
+ * Uses a BootImage as a storage provider.
  */
 class BootImageStorage : public Storage
 {
@@ -42,27 +42,34 @@ class BootImageStorage : public Storage
     /**
      * Constructor function.
      *
-     * @param name Name of the BootSymbol entry to use.
+     * @param image Pointer to mapped BootImage or ZERO to map via kernel
      */
-    BootImageStorage(const char *name);
+    BootImageStorage(const BootImage *image = ZERO);
 
     /**
-     * Loads the boot module into virtual memory.
+     * Get BootImage header.
      *
-     * @return True on success, false otherwise.
+     * @return BootImage header.
      */
-    bool load();
+    const BootImage bootImage() const;
 
     /**
-     * Reads data from the boot module.
+     * Initialize the Storage device
+     *
+     * @return Result code
+     */
+    virtual FileSystem::Result initialize();
+
+    /**
+     * Reads data from the boot image.
      *
      * @param offset Offset to start reading from.
      * @param buffer Output buffer.
      * @param size Number of bytes to copied.
      *
-     * @return Error code
+     * @return Result code
      */
-    virtual FileSystem::Error read(u64 offset, void *buffer, Size size);
+    virtual FileSystem::Result read(const u64 offset, void *buffer, const Size size) const;
 
     /**
      * Retrieve maximum storage capacity.
@@ -73,14 +80,17 @@ class BootImageStorage : public Storage
 
   private:
 
-    /** Name of the BootSymbol */
-    const String m_name;
+    /**
+     * Loads the BootImage into virtual memory.
+     *
+     * @return Pointer to the BootImage or ZERO on failure
+     */
+    const BootImage * load() const;
 
-    /** Data pointer */
-    u8 *m_data;
+  private:
 
-    /** Size of the BootSymbol. */
-    Size m_size;
+    /** Pointer to the BootImage */
+    const BootImage *m_image;
 };
 
 /**
@@ -88,4 +98,4 @@ class BootImageStorage : public Storage
  * @}
  */
 
-#endif /* __FILESYSTEM_BOOTIMAGESTORAGE_H */
+#endif /* __LIB_LIBFS_BOOTIMAGESTORAGE_H */

@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBMPI_MPI_H
-#define __LIBMPI_MPI_H
+#ifndef __LIB_LIBMPI_MPI_H
+#define __LIB_LIBMPI_MPI_H
 
 #include <Types.h>
 #include <Macros.h>
@@ -30,7 +30,7 @@
  */
 
 /**
- * @brief Defined Constants
+ * @name Defined Constants
  * @{
  */
 
@@ -45,7 +45,7 @@ typedef uint MPI_Status;
  */
 typedef enum
 {
-    MPI_CHAR,
+    MPI_CHAR = 0,
     MPI_SHORT,
     MPI_LONG,
     MPI_INT,
@@ -61,7 +61,7 @@ MPI_Datatype;
  */
 enum
 {
-    MPI_COMM_WORLD,
+    MPI_COMM_WORLD = 0,
     MPI_COMM_SELF
 };
 
@@ -70,7 +70,7 @@ enum
  */
 enum
 {
-    MPI_SUCCESS,
+    MPI_SUCCESS = 0,
     MPI_ERR_BUFFER,
     MPI_ERR_COUNT,
     MPI_ERR_TYPE,
@@ -152,7 +152,38 @@ enum
  */
 
 /**
- * @brief Point-to-Point Communication
+ * @name Environmental Management
+ * @{
+ */
+
+extern C int MPI_Init(int *argc, char ***argv);
+
+extern C int MPI_Finalize(void);
+
+/**
+ * @}
+ */
+
+/**
+ * @name Communicator Contexts
+ * @{
+ */
+
+extern C int MPI_Comm_rank(MPI_Comm comm,
+                           int *rank);
+
+extern C int MPI_Comm_size(MPI_Comm comm,
+                           int *size);
+
+/**
+ * @}
+ */
+
+/**
+ * @name Point-to-Point Communication
+ *
+ * @todo MPI_Scatter, MPI_Gather not yet supported.
+ *
  * @{
  */
 
@@ -176,42 +207,8 @@ extern C int MPI_Recv(void *buf,
  */
 
 /**
- * @brief Communicator Contexts
- * @{
- */
-
-extern C int MPI_Comm_rank(MPI_Comm comm,
-                           int *rank);
-
-extern C int MPI_Comm_size(MPI_Comm comm,
-                           int *size);
-
-/**
- * @}
- */
-
-/**
- * @brief Environmental Management
- * @{
- */
-
-extern C int MPI_Init(int *argc, char ***argv);
-
-extern C int MPI_Finalize(void);
-
-extern C int MPI_Get_processor_name(char *name, int *resultlen);
-
-extern C int MPI_Get_version(int *version, int *subversion);
-
-extern C int MPI_Get_library_version(char *version, int *resultlen);
-
-/**
- * @}
- */
-
-/**
  * @}
  * @}
  */
 
-#endif /* __LIBMPI_MPI_H */
+#endif /* __LIB_LIBMPI_MPI_H */

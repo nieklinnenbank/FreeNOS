@@ -80,6 +80,16 @@ class IntelCache : public Cache
      * @return Result code
      */
     virtual Result cleanAddress(Type type, Address addr);
+
+    /**
+     * Invalidate one memory page.
+     *
+     * @param type Cache type to invalidate
+     * @param addr Virtual memory address of the page to invalidate
+     *
+     * @return Result code
+     */
+    virtual Result invalidateAddress(Type type, Address addr);
 };
 
 namespace Arch

@@ -18,7 +18,7 @@
 Import('build_env')
 
 env = build_env.Clone()
-env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libarch', 'libexec', 'libfs', 'libipc', 'librt' ])
+env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libarch', 'libexec', 'libfs', 'libipc', 'libruntime' ])
 env.UseServers(['log', 'filesystem', 'core', 'pci'])
 
 if env['ARCH'] == 'intel':

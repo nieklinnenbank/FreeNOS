@@ -105,7 +105,7 @@ class Allocator
     /**
      * Set parent allocator.
      *
-     * @param p New parent allocator.
+     * @param parent New parent allocator.
      */
     void setParent(Allocator *parent);
 
@@ -147,12 +147,12 @@ class Allocator
     /**
      * Allocate memory.
      *
-     * @param args Contains the requested size and alignment on input.
-     *             On output, contains the actual allocated address.
+     * @param range Contains the requested size and alignment on input.
+     *              On output, contains the actual allocated address.
      *
      * @return Result value.
      */
-    virtual Result allocate(Range & args);
+    virtual Result allocate(Range & range);
 
     /**
      * Release memory.

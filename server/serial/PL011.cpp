@@ -16,17 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/Constant.h>
 #include <FreeNOS/User.h>
 #include "PL011.h"
 
-PL011::PL011(u32 irq)
-    : Device(FileSystem::CharacterDeviceFile)
+template<> SerialDevice* AbstractFactory<SerialDevice>::create()
 {
-    m_irq = irq;
+    return new PL011(UART0_IRQ);
+}
+
+PL011::PL011(const u32 irq)
+    : SerialDevice(irq)
+{
     m_identifier << "serial0";
 }
 
-FileSystem::Error PL011::initialize()
+FileSystem::Result PL011::initialize()
 {
     if (!isKernel)
     {
@@ -70,6 +75,7 @@ FileSystem::Error PL011::initialize()
     {
         // Enable Rx/Tx interrupts
         m_io.write(PL011_IMSC, PL011_IMSC_RXIM);
+        ProcessCtl(SELF, EnableIRQ, m_irq);
     }
 
     // Enable PL011, receive & transfer part of UART.
@@ -78,7 +84,7 @@ FileSystem::Error PL011::initialize()
     return FileSystem::Success;
 }
 
-FileSystem::Error PL011::interrupt(u32 vector)
+FileSystem::Result PL011::interrupt(const Size vector)
 {
     // Clear Receive Interrupts
     u32 mis = m_io.read(PL011_MIS);
@@ -99,7 +105,9 @@ FileSystem::Error PL011::interrupt(u32 vector)
     return FileSystem::Success;
 }
 
-FileSystem::Error PL011::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result PL011::read(IOBuffer & buffer,
+                               Size & size,
+                               const Size offset)
 {
     Size bytes = 0;
 
@@ -118,12 +126,19 @@ FileSystem::Error PL011::read(IOBuffer & buffer, Size size, Size offset)
     }
 
     if (buffer.getCount())
-        return (FileSystem::Error) buffer.getCount();
+    {
+        size = buffer.getCount();
+        return FileSystem::Success;
+    }
     else
+    {
         return FileSystem::RetryAgain;
+    }
 }
 
-FileSystem::Error PL011::write(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result PL011::write(IOBuffer & buffer,
+                                Size & size,
+                                const Size offset)
 {
     Size bytes = 0;
 
@@ -142,13 +157,12 @@ FileSystem::Error PL011::write(IOBuffer & buffer, Size size, Size offset)
     }
 
     if (bytes)
-        return (FileSystem::Error) bytes;
+    {
+        size = bytes;
+        return FileSystem::Success;
+    }
     else
+    {
         return FileSystem::RetryAgain;
-}
-
-void PL011::delay(s32 count)
-{
-    asm volatile("1: subs %0, %0, #1; bne 1b"
-         : "=r"(count) : "0"(count));
+    }
 }

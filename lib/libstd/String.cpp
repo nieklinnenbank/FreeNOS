@@ -39,7 +39,7 @@ String::String(const String & str)
     MemoryBlock::copy(m_string, str.m_string, m_count + 1);
 }
 
-String::String(char *str, bool copy)
+String::String(char *str, const bool copy)
 {
     m_count     = length(str);
     m_size      = m_count ? m_count + 1 : STRING_DEFAULT_SIZE;
@@ -55,7 +55,7 @@ String::String(char *str, bool copy)
         m_string = str;
 }
 
-String::String(const char *str, bool copy)
+String::String(const char *str, const bool copy)
 {
     m_count     = length(str);
     m_size      = m_count ? m_count + 1 : STRING_DEFAULT_SIZE;
@@ -71,7 +71,7 @@ String::String(const char *str, bool copy)
         m_string = (char *) str;
 }
 
-String::String(int number)
+String::String(const int number)
 {
     m_string    = new char[STRING_DEFAULT_SIZE];
     m_string[0] = ZERO;
@@ -122,7 +122,7 @@ Size String::length(const char *str)
     return len;
 }
 
-bool String::resize(Size size)
+bool String::resize(const Size size)
 {
     char *buffer;
 
@@ -154,7 +154,7 @@ bool String::resize(Size size)
     return true;
 }
 
-bool String::reserve(Size count)
+bool String::reserve(const Size count)
 {
     if (!m_allocated || count > m_size - 1)
         return resize(count + 1);
@@ -162,22 +162,22 @@ bool String::reserve(Size count)
         return true;
 }
 
-const char * String::get(Size position) const
+const char * String::get(const Size position) const
 {
     return position < m_count ? m_string + position : ZERO;
 }
 
-const char & String::at(Size position) const
+const char & String::at(const Size position) const
 {
     return m_string[position];
 }
 
-const char String::value(Size position) const
+const char String::value(const Size position) const
 {
     return m_string[position];
 }
 
-bool String::contains(char character) const
+bool String::contains(const char character) const
 {
     for (Size i = 0; i < m_count - 1; i++)
         if (m_string[i] == character)
@@ -186,7 +186,7 @@ bool String::contains(char character) const
     return false;
 }
 
-bool String::startsWith(String & prefix) const
+bool String::startsWith(const String & prefix) const
 {
     return startsWith(prefix.m_string);
 }
@@ -207,7 +207,7 @@ bool String::startsWith(const char *prefix) const
     return true;
 }
 
-bool String::endsWith(String & suffix) const
+bool String::endsWith(const String & suffix) const
 {
     return endsWith(suffix.m_string);
 }
@@ -233,12 +233,14 @@ int String::compareTo(const String & str) const
     return compareTo(str, true);
 }
 
-int String::compareTo(const String & str, bool caseSensitive) const
+int String::compareTo(const String & str, const bool caseSensitive) const
 {
     return compareTo(str.m_string, caseSensitive, 0);
 }
 
-int String::compareTo(const char *str, bool caseSensitive, Size count) const
+int String::compareTo(const char *str,
+                      const bool caseSensitive,
+                      const Size count) const
 {
     const char *dest = m_string, *src = str;
     Size n = count;
@@ -309,25 +311,25 @@ bool String::match(const char *mask) const
     return (*string == *mask);
 }
 
-String String::substring(Size index, Size size)
+String String::substring(const Size index, const Size size) const
 {
-    // Make sure index is within bounds.
-    if (index >= m_count)
-        index = m_count;
+    // Make sure index we copy from is within bounds.
+    const Size from = index >= m_count ? m_count : index;
 
-    // Copy the string from the index.
-    String str(m_string + index);
+    // Copy the string
+    String str(m_string + from);
 
     // Set a ZERO byte at the right place, if needed.
-    if (size && size < m_count-index)
+    if (size && size < m_count - from)
     {
         str.m_string[size] = ZERO;
         str.m_count = size;
     }
+
     return str;
 }
 
-String & String::pad(Size length)
+String & String::pad(const Size length)
 {
     Size idx = 0;
 
@@ -403,18 +405,15 @@ String & String::upper()
     return (*this);
 }
 
-List<String> String::split(char delimiter)
+List<String> String::split(const char delimiter) const
 {
-    char str[2];
-    str[0] = delimiter;
-    str[1] = ZERO;
-
-    String s(str);
+    const char str[] = { delimiter, ZERO };
+    const String s(str);
 
     return split(s);
 }
 
-List<String> String::split(const String & delimiter)
+List<String> String::split(const String & delimiter) const
 {
     List<String> lst;
     String copy(m_string);
@@ -454,7 +453,7 @@ List<String> String::split(const String & delimiter)
     return lst;
 }
 
-long String::toLong(Number::Base base) const
+long String::toLong(const Number::Base base) const
 {
     const char *s = m_string;
     long acc = 0, cutoff;
@@ -531,12 +530,15 @@ long String::toLong(Number::Base base) const
     return acc;
 }
 
-Size String::set(long number, Number::Base base, char *string)
+Size String::set(const long number, const Number::Base base, char *string)
 {
-    return setUnsigned((ulong) number, base, string, true);
+    return setUnsigned((const ulong) number, base, string, true);
 }
 
-Size String::setUnsigned(ulong number, Number::Base base, char *string, bool sign)
+Size String::setUnsigned(const ulong number,
+                         const Number::Base base,
+                         char *string,
+                         const bool sign)
 {
     char *p, *p1, *p2, *saved, tmp;
     unsigned long ud = number;
@@ -668,7 +670,7 @@ String & String::operator << (const String & str)
     return (*this);
 }
 
-String & String::operator << (int number)
+String & String::operator << (const int number)
 {
     if (reserve(m_count + 16))
         m_count += set(number, m_base, m_string + m_count);
@@ -676,7 +678,7 @@ String & String::operator << (int number)
     return (*this);
 }
 
-String & String::operator << (unsigned int number)
+String & String::operator << (const unsigned int number)
 {
     if (reserve(m_count + 16))
         m_count += setUnsigned(number, m_base, m_string + m_count);
@@ -684,15 +686,15 @@ String & String::operator << (unsigned int number)
     return (*this);
 }
 
-String & String::operator << (void *ptr)
+String & String::operator << (const void *ptr)
 {
     if (reserve(m_count + 16))
-        m_count += setUnsigned((unsigned long) ptr, Number::Hex, m_string + m_count);
+        m_count += setUnsigned((const unsigned long) ptr, Number::Hex, m_string + m_count);
 
     return (*this);
 }
 
-String & String::operator << (Number::Base base)
+String & String::operator << (const Number::Base base)
 {
     m_base = base;
     return (*this);

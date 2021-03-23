@@ -23,13 +23,15 @@
 
 API::Result SystemInfoHandler(SystemInformation *info)
 {
-    SplitAllocator *memory = Kernel::instance->getAllocator();
-    CoreInfo *core = Kernel::instance->getCoreInfo();
+    SplitAllocator *memory = Kernel::instance()->getAllocator();
+    CoreInfo *core = Kernel::instance()->getCoreInfo();
 
     DEBUG("");
 
     // Fill in our current information
     info->version          = VERSIONCODE;
+    info->kernelAddress    = core->kernel.phys;
+    info->kernelSize       = core->kernel.size;
     info->memorySize       = memory->size();
     info->memoryAvail      = memory->available();
     info->coreId           = core->coreId;

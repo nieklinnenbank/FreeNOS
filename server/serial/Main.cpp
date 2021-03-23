@@ -18,58 +18,22 @@
 #include <FreeNOS/User.h>
 #include <KernelLog.h>
 #include <DeviceServer.h>
-
-#ifdef ARM
-#include "PL011.h"
-#include "NS16550.h"
-#else
-#include "i8250.h"
-#endif
-
-struct SerialAddress
-{
-    u16 port;
-    u16 irq;
-}
-uarts[] =
-{
-#ifdef ARM
-    { 0x0, UART0_IRQ }
-#else
-    { 0x3f8, 4 },
-    { 0x2f8, 3 },
-    { 0x3e8, 4 },
-    { 0x2e8, 3 },
-#endif
-};
+#include "SerialDevice.h"
 
 int main(int argc, char **argv)
 {
+    KernelLog log;
     DeviceServer server("/dev/serial");
 
-    // Open the logging facilities
-    Log *log = new KernelLog();
-    log->setMinimumLogLevel(Log::Notice);
+    // Create serial device instance
+    SerialDevice::inodeNumber = server.getNextInode();
+    SerialDevice *dev = SerialDevice::create();
 
-#ifdef ARM
-#ifdef BCM2835
-    PL011 *dev = ZERO;
-    dev = new PL011(uarts[0].irq);
-#else
-    NS16550 *dev = ZERO;
-    dev = new NS16550(uarts[0].irq);
-#endif /* BCM2835 */
-#else
-    // Assume first UART is available
-    i8250 *dev = ZERO;
-    dev = new i8250(uarts[0].port, uarts[0].irq);
-#endif /* ARM */
-
-    server.insertFileCache(new Directory, "/serial0");
-    server.getRoot()->insert(FileSystem::DirectoryFile, "serial0");
-
+    // Register to DeviceServer
+    Directory *dir = new Directory(server.getNextInode());
+    server.registerDirectory(dir, "/serial0");
     server.registerDevice(dev, "/serial0/io");
-    server.registerInterrupt(dev, uarts[0].irq);
+    server.registerInterrupt(dev, dev->getIrq());
 
     // Initialize
     const FileSystem::Result result = server.initialize();
@@ -78,9 +42,6 @@ int main(int argc, char **argv)
         ERROR("failed to initialize: result = " << (int) result);
         return 1;
     }
-
-    // Perform log
-    INFO("detected at PORT=" << uarts[0].port << " IRQ=" << uarts[0].irq);
 
     // Start serving requests
     return server.run();

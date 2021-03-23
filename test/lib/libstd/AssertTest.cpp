@@ -25,11 +25,11 @@
     fatalCalled = true;
 
 #undef assert
-#undef __ASSERT_H
+#undef __LIB_LIBSTD_ASSERT_H
 #ifndef __ASSERT__
 #define __ASSERT__
 #endif
-#define _LOG_H
+#define __LIB_LIBSTD_LOG_H
 #include <Assert.h>
 
 TestCase(AssertCallsFatal)

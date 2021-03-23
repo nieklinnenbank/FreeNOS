@@ -43,16 +43,27 @@ class File
     /**
      * Constructor function.
      *
+     * @param inode The inode number of this file.
      * @param type Type of file.
      * @param uid User identity.
      * @param gid Group identity.
      */
-    File(FileSystem::FileType type = FileSystem::RegularFile, UserID uid = ZERO, GroupID gid = ZERO);
+    File(const u32 inode,
+         const FileSystem::FileType type = FileSystem::RegularFile,
+         const UserID uid = ZERO,
+         const GroupID gid = ZERO);
 
     /**
      * Destructor function.
      */
     virtual ~File();
+
+    /**
+     * Get inode number
+     *
+     * @return Inode number
+     */
+    u32 getInode() const;
 
     /**
      * Retrieve our filetype.
@@ -62,46 +73,67 @@ class File
     FileSystem::FileType getType() const;
 
     /**
-     * @brief Read bytes from the file.
+     * Read bytes from the file
      *
      * @param buffer Input/Output buffer to output bytes to.
-     * @param size Number of bytes to read, at maximum.
+     * @param size Maximum number of bytes to read on input.
+     *             On output, the actual number of bytes read.
      * @param offset Offset inside the file to start reading.
      *
-     * @return Number of bytes read on success, Error on failure.
+     * @return Result code
      */
-    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result read(IOBuffer & buffer,
+                                    Size & size,
+                                    const Size offset);
 
     /**
-     * Write bytes to the file.
+     * Write bytes to the file
      *
      * @param buffer Input/Output buffer to input bytes from.
-     * @param size Number of bytes to write, at maximum.
+     * @param size Maximum number of bytes to write on input.
+     *             On output, the actual number of bytes written.
      * @param offset Offset inside the file to start writing.
      *
-     * @return Number of bytes written on success, Error on failure.
+     * @return Result code
      */
-    virtual  FileSystem::Error write(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result write(IOBuffer & buffer,
+                                     Size & size,
+                                     const Size offset);
 
     /**
      * Retrieve file statistics.
      *
-     * @param st Buffer to write statistics to.
+     * @param st File statistics output struct
      *
-     * @return Error code
+     * @return Result code
      */
-    virtual FileSystem::Error status(FileSystemMessage *msg);
+    virtual FileSystem::Result status(FileSystem::FileStat &st);
+
+    /**
+     * Check if the File has data ready for reading.
+     *
+     * When this function returns true, it can be read without blocking.
+     *
+     * @return Boolean
+     */
+    virtual bool canRead() const;
+
+    /**
+     * Check if the File can be written to.
+     *
+     * When this function returns true, it can be written without blocking.
+     *
+     * @return Boolean
+     */
+    virtual bool canWrite() const;
 
   protected:
 
+    /** Inode number */
+    const u32 m_inode;
+
     /** Type of this file. */
-    FileSystem::FileType m_type;
-
-    /** Access permissions. */
-    FileSystem::FileModes m_access;
-
-    /** Size of the file, in bytes. */
-    Size m_size;
+    const FileSystem::FileType m_type;
 
     /** Owner of the file. */
     UserID m_uid;
@@ -109,8 +141,11 @@ class File
     /** Group of the file. */
     GroupID m_gid;
 
-    /** Device major/minor ID. */
-    DeviceID m_deviceId;
+    /** Access permissions. */
+    FileSystem::FileModes m_access;
+
+    /** Size of the file, in bytes. */
+    Size m_size;
 };
 
 /**

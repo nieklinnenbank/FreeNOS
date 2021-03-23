@@ -70,8 +70,8 @@ class SplitAllocator : public Allocator
     /**
      * Allocate sparse (non-contiguous) physical memory.
      *
-     * @param args Contains the requested size on input.
-     *             The alignment and address values are unused.
+     * @param range Contains the requested size on input.
+     *              The alignment and address values are unused.
      * @param function Called for each successful allocation of a page.
      *
      * @return Result value.

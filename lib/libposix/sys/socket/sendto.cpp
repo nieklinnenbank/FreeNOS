@@ -33,6 +33,7 @@ extern C int sendto(int sockfd, const void *buf, size_t len, int flags,
 
     info.address = addr->addr;
     info.port = addr->port;
+    info.action = NetworkClient::SendSingle;
 
     memcpy(packet, &info, sizeof(info));
     memcpy(packet + sizeof(info), buf, len);

@@ -35,7 +35,7 @@
 typedef struct FileSystemMount
 {
     /** Path of the mount. */
-    char path[PATHLEN];
+    char path[FileSystemPath::MaximumLength];
 
     /** Server which is responsible for the mount. */
     ProcessID procID;

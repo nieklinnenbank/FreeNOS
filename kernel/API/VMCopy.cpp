@@ -21,14 +21,18 @@
 #include <SplitAllocator.h>
 #include "VMCopy.h"
 
-API::Result VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
-                          Address theirs, Size sz)
+API::Result VMCopyHandler(const ProcessID procID,
+                          const API::Operation how,
+                          const Address ours,
+                          const Address theirs,
+                          const Size sz)
 {
-    ProcessManager *procs = Kernel::instance->getProcessManager();
-    Process *proc;
-    Address paddr, vaddr;
-    Size bytes = 0, pageOff, total = 0;
+    ProcessManager *procs = Kernel::instance()->getProcessManager();
     MemoryContext::Result memResult = MemoryContext::Success;
+    Size bytes = 0, pageOff, total = 0;
+    Address paddr, vaddr;
+    Address ourAddr = ours, theirAddr = theirs;
+    Process *proc;
 
     DEBUG("");
 
@@ -46,12 +50,12 @@ API::Result VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
     {
         // Update variables
         if (how == API::ReadPhys)
-            paddr = theirs & PAGEMASK;
-        else if (remote->lookup(theirs, &paddr) != MemoryContext::Success)
+            paddr = theirAddr & PAGEMASK;
+        else if (remote->lookup(theirAddr, &paddr) != MemoryContext::Success)
             return API::AccessViolation;
 
         assert(!(paddr & ~PAGEMASK));
-        pageOff = theirs & ~PAGEMASK;
+        pageOff = theirAddr & ~PAGEMASK;
         bytes   = (PAGESIZE - pageOff) < (sz - total) ?
                   (PAGESIZE - pageOff) : (sz - total);
 
@@ -74,11 +78,11 @@ API::Result VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
         {
             case API::Read:
             case API::ReadPhys:
-                MemoryBlock::copy((void *)ours, (void *)(vaddr + pageOff), bytes);
+                MemoryBlock::copy((void *)ourAddr, (void *)(vaddr + pageOff), bytes);
                 break;
 
             case API::Write:
-                MemoryBlock::copy((void *)(vaddr + pageOff), (void *)ours, bytes);
+                MemoryBlock::copy((void *)(vaddr + pageOff), (void *)ourAddr, bytes);
                 break;
 
             default:
@@ -90,9 +94,10 @@ API::Result VMCopyHandler(ProcessID procID, API::Operation how, Address ours,
         assert(memResult == MemoryContext::Success);
 
         // Update counters
-        ours   += bytes;
-        theirs += bytes;
-        total  += bytes;
+        ourAddr   += bytes;
+        theirAddr += bytes;
+        total     += bytes;
     }
-    return total;
+
+    return API::Success;
 }

@@ -19,6 +19,6 @@ Import('build_env')
 
 env = build_env.Clone()
 env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libexec',
-                   'libarch', 'libfs', 'libipc', 'librt', 'libapp' ])
+                   'libarch', 'libfs', 'libipc', 'libruntime', 'libapp' ])
 env.UseServers(['filesystem'])
 env.TargetProgram('mknod', Glob('*.cpp'), env['bin'])

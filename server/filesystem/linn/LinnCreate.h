@@ -65,6 +65,7 @@
  * Retrieve a given number of free contiguous blocks.
  *
  * @param sb LinnSuperBlock pointer.
+ * @param count Number of blocks
  *
  * @return Block number of the first block in the contiguous array of blocks.
  */
@@ -89,6 +90,41 @@
  */
 #define BLOCK(sb) \
     BLOCKS(sb, (ulong)1)
+
+/**
+ * Convert from a (host system's) POSIX struct stat into a FileType.
+ *
+ * @param st struct stat pointer.
+ *
+ * @return FileType value.
+ */
+#define FILETYPE_FROM_ST(st) \
+({ \
+    FileSystem::FileType t = FileSystem::UnknownFile; \
+    \
+    switch ((st)->st_mode & S_IFMT) \
+    { \
+        case S_IFBLK:  t = FileSystem::BlockDeviceFile; break; \
+        case S_IFCHR:  t = FileSystem::CharacterDeviceFile; break; \
+        case S_IFIFO:  t = FileSystem::FIFOFile; break; \
+        case S_IFREG:  t = FileSystem::RegularFile; break; \
+        case S_IFDIR:  t = FileSystem::DirectoryFile; break; \
+        case S_IFLNK:  t = FileSystem::SymlinkFile; break; \
+        case S_IFSOCK: t = FileSystem::SocketFile; break; \
+        default: break; \
+    } \
+    t; \
+})
+
+/**
+ * Converts an (host system's) POSIX struct st into a FileMode.
+ *
+ * @param st struct st pointer.
+ *
+ * @return FileMode value.
+ */
+#define FILEMODE_FROM_ST(st) \
+    (FileSystem::FileMode)((st)->st_mode & 0777)
 
 /**
  * Class for creating new Linnenbank FileSystems.
@@ -210,13 +246,13 @@ class LinnCreate
      * Inserts an indirect block address.
      *
      * @param ptr Buffer containing block addresses.
-     * @param blockNumber Block index number to insert in
-     *                    the buffer, minus LINN_INODE_DIR_BLOCKS
-     * @param blockValue The block address to insert indirectly.
+     * @param blockIndexNumber Block index number to insert in
+     *                         the buffer, minus LINN_INODE_DIR_BLOCKS
      * @param depth Level of indirection.
+     *
+     * @return Newly allocated block address
      */
-    void insertIndirect(le32 *ptr, le32 blockNumber,
-                        le32 blockValue, Size depth);
+    le32 insertIndirect(le32 *ptr, const le32 blockIndexNumber, const Size depth);
 
     /**
      * Writes the final image to disk.

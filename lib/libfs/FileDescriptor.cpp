@@ -17,15 +17,61 @@
 
 #include "FileDescriptor.h"
 
-/** Table with FileDescriptors. */
-static FileDescriptor *files = (FileDescriptor *) NULL;
-
-FileDescriptor * getFiles(void)
+FileDescriptor::FileDescriptor()
+    : m_array(ZERO)
 {
-    return files;
 }
 
-void setFiles(FileDescriptor *f)
+FileDescriptor::Entry * FileDescriptor::getArray(Size & count)
 {
-    files = f;
+    count = m_count;
+    return m_array;
+}
+
+void FileDescriptor::setArray(Entry *array,
+                              const Size count)
+{
+    m_array = array;
+    m_count = count;
+}
+
+FileDescriptor::Result FileDescriptor::openEntry(const u32 inode,
+                                                 const ProcessID filesystem,
+                                                 Size & index)
+{
+    // Insert into file descriptor table
+    for (index = 0; index < m_count; index++)
+    {
+        if (!m_array[index].open)
+        {
+            m_array[index].open  = true;
+            m_array[index].position = 0;
+            m_array[index].inode = inode;
+            m_array[index].pid = filesystem;
+            return FileDescriptor::Success;
+        }
+    }
+
+    return FileDescriptor::OutOfFiles;
+}
+
+FileDescriptor::Entry * FileDescriptor::getEntry(const Size index)
+{
+    if (index >= m_count)
+    {
+        return ZERO;
+    }
+
+    return &m_array[index];
+}
+
+FileDescriptor::Result FileDescriptor::closeEntry(const Size index)
+{
+    if (index >= m_count)
+    {
+        return FileDescriptor::InvalidArgument;
+    }
+
+    m_array[index].open = false;
+    return FileDescriptor::Success;
 }

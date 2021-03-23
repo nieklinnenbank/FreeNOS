@@ -15,19 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBNET_UDP_H
-#define __LIBNET_UDP_H
+#ifndef __LIB_LIBNET_UDP_H
+#define __LIB_LIBNET_UDP_H
 
 #include <Types.h>
 #include <Index.h>
 #include <String.h>
 #include <HashTable.h>
 #include "NetworkProtocol.h"
-#include "IPV4.h"
 #include "UDPSocket.h"
 
 class UDPFactory;
-class ARP;
 
 /**
  * @addtogroup lib
@@ -42,6 +40,10 @@ class ARP;
  */
 class UDP : public NetworkProtocol
 {
+  private:
+
+    static const Size MaxUdpSockets = 128u;
+
   public:
 
     /**
@@ -60,9 +62,14 @@ class UDP : public NetworkProtocol
 
     /**
      * Constructor
+     *
+     * @param server Reference to the NetworkServer instance
+     * @param device Reference to the NetworkDevice instance
+     * @param parent Parent upper-layer protocol
      */
-    UDP(NetworkServer *server,
-        NetworkDevice *device);
+    UDP(NetworkServer &server,
+        NetworkDevice &device,
+        NetworkProtocol &parent);
 
     /**
      * Destructor
@@ -70,47 +77,67 @@ class UDP : public NetworkProtocol
     virtual ~UDP();
 
     /**
-     * Set IP object
-     */
-    void setIP(::IPV4 *ip);
-
-    /**
      * Perform initialization.
+     *
+     * @return Result code
      */
-    virtual Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
      * Creates an UDP socket
      *
      * @return UDPSocket object instance
      */
-    UDPSocket * createSocket(String & path);
+    UDPSocket * createSocket(String & path,
+                             const ProcessID pid);
+
+    /**
+     * Remove sockets for a process
+     *
+     * @param pid ProcessID to remove sockets for
+     */
+    void unregisterSockets(const ProcessID pid);
 
     /**
      * Process incoming network packet.
      *
-     * @return Error code
+     * @param pkt Incoming packet pointer
+     * @param offset Offset for processing
+     *
+     * @return Result code
      */
-    virtual Error process(NetworkQueue::Packet *pkt, Size offset);
+    virtual FileSystem::Result process(const NetworkQueue::Packet *pkt,
+                                       const Size offset);
 
     /**
      * Bind to UDP port
      *
      * @param sock UDP socket
      * @param port The port to bind to
-     * @return Error code
+     *
+     * @return Result code
      */
-    Error bind(UDPSocket *sock, u16 port);
+    FileSystem::Result bind(UDPSocket *sock,
+                            const u16 port);
 
     /**
      * Send packet
+     *
+     * @return Result code
      */
-    Error sendPacket(NetworkClient::SocketInfo *info, IOBuffer & buffer, Size size);
+    FileSystem::Result sendPacket(const NetworkClient::SocketInfo *src,
+                                  const NetworkClient::SocketInfo *dest,
+                                  IOBuffer & buffer,
+                                  const Size size,
+                                  const Size offset);
 
     /**
      * Calculate ICMP checksum
      *
+     * @param ip Pointer to the IPV4 header to use
      * @param header ICMP header
+     * @param datalen Total number of bytes of the payload data
+     *
      * @return ICMP checksum value for the given header
      */
     static const u16 checksum(const IPV4::Header *ip,
@@ -119,19 +146,27 @@ class UDP : public NetworkProtocol
 
   private:
 
+    /**
+     * Calculate sum of artibrary data
+     *
+     * @param ptr Pointer to the data to sum
+     * @param bytes Number of bytes to add to the sum
+     *
+     * @return Sum value for the input data
+     */
     static const ulong calculateSum(const u16 *ptr,
-                                    Size bytes);
+                                    const Size bytes);
 
   private:
 
+    /** Factory for creating new UDP sockets */
     UDPFactory *m_factory;
 
-    Index<UDPSocket> m_sockets;
+    /** Contains all UDP sockets */
+    Index<UDPSocket, MaxUdpSockets> m_sockets;
 
     /** Maps UDP ports to UDP sockets */
     HashTable<u16, UDPSocket *> m_ports;
-
-    ::IPV4 *m_ipv4;
 };
 
 /**
@@ -139,4 +174,4 @@ class UDP : public NetworkProtocol
  * @}
  */
 
-#endif /* __LIBNET_UDP_H */
+#endif /* __LIB_LIBNET_UDP_H */

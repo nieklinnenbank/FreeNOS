@@ -17,7 +17,6 @@
 
 #include <FreeNOS/User.h>
 #include <FileSystemClient.h>
-#include <FileDescriptor.h>
 #include "limits.h"
 #include "string.h"
 #include "errno.h"
@@ -27,42 +26,19 @@
 int open(const char *path, int oflag, ...)
 {
     const FileSystemClient filesystem;
-    FileDescriptor *files = getFiles();
-    FileSystem::FileStat st;
+    Size fd = 0;
 
-    // Ask the FileSystem for the file.
-    if (files != NULL)
+    // Attempt to open the file
+    const FileSystem::Result result = filesystem.openFile(path, fd);
+    if (result == FileSystem::Success)
     {
-        const FileSystem::Result result = filesystem.statFile(path, &st);
-
-        // Set errno
-        if (result == FileSystem::Success)
-        {
-            errno = ESUCCESS;
-
-            // Insert into file descriptor table
-            for (Size i = 0; i < FILE_DESCRIPTOR_MAX; i++)
-            {
-                if (!files[i].open)
-                {
-                    files[i].open  = true;
-                    files[i].identifier = 0;
-                    files[i].position = 0;
-                    strlcpy(files[i].path, path, PATH_MAX);
-                    return i;
-                }
-            }
-
-            // Too many open files
-            errno = ENFILE;
-        }
-        else
-        {
-            errno = EIO;
-        }
+        errno = ESUCCESS;
+        return (int) fd;
     }
     else
+    {
+        // File not found
         errno = ENOENT;
-
-    return -1;
+        return -1;
+    }
 }

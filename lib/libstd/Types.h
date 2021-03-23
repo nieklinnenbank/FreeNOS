@@ -137,7 +137,7 @@ typedef unsigned short UserID;
 typedef unsigned short GroupID;
 
 /** Process Identification Number. */
-typedef u16 ProcessID;
+typedef u32 ProcessID;
 
 /**
  * Describes a device ID number.
@@ -174,10 +174,6 @@ namespace Number
 };
 
 #endif /* __cplusplus */
-
-/**
- * @}
- */
 
 /**
  * @}

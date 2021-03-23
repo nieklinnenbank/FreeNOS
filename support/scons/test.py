@@ -32,11 +32,11 @@ def timeoutChecker(proc, timeout):
     proc.kill()
     sys.exit(1)
 
-def writeXml(testname, data, env):
+def writeXml(testname, iteration, data, env):
     """
     Write XML test output
     """
-    outfile = env['BUILDROOT'] + '/xml/' + testname + '.xml'
+    outfile = env['BUILDROOT'] + '/xml/' + testname + '.' + str(iteration) + '.xml'
 
     try:
         os.makedirs(os.path.dirname(outfile))
@@ -169,7 +169,7 @@ def runTester(target, source, env):
                                '</testsuite>\r\n' + \
                                '</testsuites>\r\n'
 
-            writeXml(xml_testname, xml_data, env)
+            writeXml(xml_testname, iterations, xml_data, env)
             xml_data=""
             xml_testname=""
         else:

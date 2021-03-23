@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBNET_NETWORKPROTOCOL_H
-#define __LIBNET_NETWORKPROTOCOL_H
+#ifndef __LIB_LIBNET_NETWORKPROTOCOL_H
+#define __LIB_LIBNET_NETWORKPROTOCOL_H
 
 #include <Directory.h>
 #include <Types.h>
@@ -38,13 +38,33 @@ class NetworkDevice;
  */
 class NetworkProtocol : public Directory
 {
+  protected:
+
+    /**
+     * List of known network protocol identifiers
+     */
+    enum Identifier
+    {
+        Ethernet = 1,
+        IPV4,
+        ARP,
+        ICMP,
+        UDP,
+        TCP
+    };
+
   public:
 
     /**
      * Constructor
+     *
+     * @param server Reference to the NetworkServer instance
+     * @param device Reference to the NetworkDevice instance
+     * @param parent Parent upper-layer protocol (or use this for no parent)
      */
-    NetworkProtocol(NetworkServer *server,
-                    NetworkDevice *device);
+    NetworkProtocol(NetworkServer &server,
+                    NetworkDevice &device,
+                    NetworkProtocol &parent);
 
     /**
      * Destructor
@@ -62,24 +82,48 @@ class NetworkProtocol : public Directory
     /**
      * Perform initialization.
      *
-     * @return Error code
+     * @return Result code
      */
-    virtual Error initialize() = 0;
+    virtual FileSystem::Result initialize() = 0;
+
+    /**
+     * Get a new packet for transmission
+     *
+     * @param pkt On output contains a pointer to a Packet
+     * @param address Address of the destination of this packet
+     * @param addressSize Number of bytes of the address
+     * @param protocol Identifier for the protocol to create the packet for
+     * @param payloadSize Number of payload bytes
+     *
+     * @return Result code
+     */
+    virtual FileSystem::Result getTransmitPacket(NetworkQueue::Packet **pkt,
+                                                 const void *address,
+                                                 const Size addressSize,
+                                                 const Identifier protocol,
+                                                 const Size payloadSize);
 
     /**
      * Process incoming network packet.
      *
-     * @return Error code
+     * @param pkt Incoming packet pointer
+     * @param offset Offset for processing
+     *
+     * @return Result code
      */
-    virtual Error process(NetworkQueue::Packet *pkt, Size offset) = 0;
+    virtual FileSystem::Result process(const NetworkQueue::Packet *pkt,
+                                       const Size offset) = 0;
 
   protected:
 
     /** Network server instance */
-    NetworkServer *m_server;
+    NetworkServer &m_server;
 
     /** Network device instance */
-    NetworkDevice *m_device;
+    NetworkDevice &m_device;
+
+    /** Parent upper-layer protocol instance */
+    NetworkProtocol &m_parent;
 };
 
 /**
@@ -87,4 +131,4 @@ class NetworkProtocol : public Directory
  * @}
  */
 
-#endif /* __LIBNET_NETWORKPROTOCOL_H */
+#endif /* __LIB_LIBNET_NETWORKPROTOCOL_H */

@@ -19,7 +19,7 @@
 JENKINS_URL="http://192.168.50.10:8080"
 JENKINS_USER="admin"
 JENKINS_PASS="admin"
-WAITTIME=10
+WAITTIME=15
 RETRIES=20
 
 # Number of jobs to submit

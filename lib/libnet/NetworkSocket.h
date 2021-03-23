@@ -41,9 +41,13 @@ class NetworkSocket : public File
     /**
      * Constructor
      *
+     * @param inode Inode number
      * @param packetSize Size of each network packet
+     * @param pid ProcessID which owns this socket
      */
-    NetworkSocket(Size packetSize);
+    NetworkSocket(const u32 inode,
+                  const Size packetSize,
+                  const ProcessID pid);
 
     /**
      * Destructor
@@ -51,16 +55,25 @@ class NetworkSocket : public File
     virtual ~NetworkSocket();
 
     /**
+     * Get owner ProcessID
+     *
+     * @return ProcessID
+     */
+    ProcessID getProcessID() const;
+
+    /**
      * Process incoming network packet.
      *
-     * @return Error code
+     * @param pkt Incoming packet pointer
+     *
+     * @return Result code
      */
-    virtual Error process(NetworkQueue::Packet *pkt) = 0;
+    virtual FileSystem::Result process(const NetworkQueue::Packet *pkt) = 0;
 
   protected:
 
-    /** Process which owns the socket */
-    ProcessID m_pid;
+    /** ProcessID which owns this socket */
+    const ProcessID m_pid;
 
     /** Receive queue */
     NetworkQueue m_receive;

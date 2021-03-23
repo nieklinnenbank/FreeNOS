@@ -16,15 +16,16 @@
  */
 
 #include <MemoryBlock.h>
-#include <errno.h>
 #include "Ethernet.h"
 #include "IPV4.h"
 #include "ICMP.h"
 #include "ICMPSocket.h"
 #include "NetworkClient.h"
 
-ICMPSocket::ICMPSocket(ICMP *icmp)
-    : NetworkSocket(icmp->getMaximumPacketSize())
+ICMPSocket::ICMPSocket(const u32 inode,
+                       ICMP *icmp,
+                       const ProcessID pid)
+    : NetworkSocket(inode, icmp->getMaximumPacketSize(), pid)
 {
     m_icmp = icmp;
     m_gotReply = false;
@@ -40,19 +41,26 @@ const IPV4::Address ICMPSocket::getAddress() const
     return m_info.address;
 }
 
-Error ICMPSocket::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result ICMPSocket::read(IOBuffer & buffer,
+                                    Size & size,
+                                    const Size offset)
 {
     DEBUG("");
 
     if (!m_gotReply)
+    {
         return FileSystem::RetryAgain;
+    }
 
     m_gotReply = false;
     buffer.write(&m_reply, sizeof(m_reply));
-    return sizeof(m_reply);
+    size = sizeof(m_reply);
+    return FileSystem::Success;
 }
 
-Error ICMPSocket::write(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result ICMPSocket::write(IOBuffer & buffer,
+                                     Size & size,
+                                     const Size offset)
 {
     DEBUG("");
 
@@ -60,32 +68,25 @@ Error ICMPSocket::write(IOBuffer & buffer, Size size, Size offset)
     if (!m_info.address)
     {
         buffer.read(&m_info, sizeof(m_info));
-        return size;
+        return FileSystem::Success;
     }
     else
     {
         ICMP::Header header;
         buffer.read(&header, sizeof(header));
 
-        Error r = m_icmp->sendPacket(m_info.address, &header);
-        if (r != ESUCCESS)
-            return r;
+        return m_icmp->sendPacket(m_info.address, &header, ZERO, 0);
     }
-    return size;
 }
 
-Error ICMPSocket::process(NetworkQueue::Packet *pkt)
+FileSystem::Result ICMPSocket::process(const NetworkQueue::Packet *pkt)
 {
     DEBUG("");
-    return ESUCCESS;
+
+    return FileSystem::Success;
 }
 
-void ICMPSocket::error(Error err)
-{
-    DEBUG("");
-}
-
-void ICMPSocket::setReply(ICMP::Header *header)
+void ICMPSocket::setReply(const ICMP::Header *header)
 {
     DEBUG("");
 

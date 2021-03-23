@@ -34,13 +34,10 @@ BroadcomTimer::Result BroadcomTimer::setFrequency(Size hertz)
 
 BroadcomTimer::Result BroadcomTimer::tick()
 {
-    // Increment tick counter
-    m_info.ticks++;
-
     // Clear+acknowledge the timer interrupt
     m_io.write(SYSTIMER_CS, m_io.read(SYSTIMER_CS) | (1 << M1));
     m_io.write(SYSTIMER_C1, m_io.read(SYSTIMER_CLO) + m_cycles);
 
     // Done
-    return Success;
+    return Timer::tick();;
 }

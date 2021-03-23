@@ -22,6 +22,7 @@ import datetime
 import platform
 import re
 import glob
+import subprocess
 try:
     from SCons.Script import *
 except ModuleNotFoundError:
@@ -90,6 +91,10 @@ def initialize(target, host, params):
     # Apply default variables
     set_default_variables(target)
     set_default_variables(host)
+
+    # Set test root path (e.g. for launching compiled programs)
+    target['TESTROOT'] = ""
+    host['TESTROOT'] = host['BUILDPATH'] + '/' + host['BUILDROOT']
 
 def escape(obj):
     return str(obj).replace('"', '\\"').strip()
@@ -171,7 +176,8 @@ def set_default_variables(env):
 
     # Set the full version revision in environments.
     try:
-        env['RELEASE'] = env['VERSION'] + '-git(' + os.popen('git rev-parse --short HEAD').read().strip() + ')'
+        env['RELEASE'] = env['VERSION'] + '-git(' + \
+           str(subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], stderr=subprocess.STDOUT).decode('utf-8')).strip() + ')'
     except:
         env['RELEASE'] = env['VERSION']
 
@@ -181,8 +187,8 @@ def set_default_variables(env):
 
     # Mark with an asterisk if the user made any changes in the local git checkout (if any)
     try:
-        if os.system('git diff|grep -i git 2>&1 > /dev/null') == 0:
-            env['RELEASE'] += '*'
+        subprocess.check_call(["git status 2>&1 | grep modified > /dev/null"], shell=True)
+        env['RELEASE'] += '*'
     except:
         pass
 

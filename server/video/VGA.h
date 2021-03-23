@@ -98,49 +98,52 @@ class VGA : public Device
     /**
      * @brief Class constructor function.
      *
+     * @param inode Inode number
      * @param width Number of characters horizontally.
      * @param height Number of characters vertically.
      */
-    VGA(Size width = 80, Size height = 25);
+    VGA(const u32 inode,
+        const Size width = 80,
+        const Size height = 25);
 
     /**
-     * @brief Initializes the VGA device.
+     * Initialize the VGA device.
      *
      * First this function maps the VGA video memory
      * into our address space. It clears the screen
      * and finally disables the VGA hardware cursor.
      *
-     * @return Error status code.
+     * @return Result code
      */
-    virtual FileSystem::Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
-     * @brief Read from VGA video memory.
+     * Read video memory
      *
-     * This function copies bytes directly from VGA
-     * video memory into the target buffer.
+     * @param buffer Input/Output buffer to output bytes to.
+     * @param size Maximum number of bytes to read on input.
+     *             On output, the actual number of bytes read.
+     * @param offset Offset inside the file to start reading.
      *
-     * @param buffer Output buffer.
-     * @param size Number of bytes to copy into the buffer.
-     * @param offset Offset in VGA video memory to read in bytes.
-     *
-     * @return An error code describing the status of the operation.
+     * @return Result code
      */
-    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result read(IOBuffer & buffer,
+                                    Size & size,
+                                    const Size offset);
 
     /**
-     * @brief Write to VGA video memory.
+     * Write video memory
      *
-     * This function copies bytes directly into VGA
-     * video memory from the source buffer.
+     * @param buffer Input/Output buffer to input bytes from.
+     * @param size Maximum number of bytes to write on input.
+     *             On output, the actual number of bytes written.
+     * @param offset Offset inside the file to start writing.
      *
-     * @param buffer Input buffer.
-     * @param size Number of bytes to copy from the buffer.
-     * @param offset Offset in VGA video memory to write in bytes.
-     *
-     * @return An error code describing the status of the operation.
+     * @return Result code
      */
-    virtual FileSystem::Error write(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result write(IOBuffer & buffer,
+                                     Size & size,
+                                     const Size offset);
 
   private:
 

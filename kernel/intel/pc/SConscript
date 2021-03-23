@@ -32,7 +32,8 @@ env.TargetProgram('kernel', [ Glob('*.cpp'),
                               Glob('#' + env['BUILDROOT'] + '/kernel/intel/*.cpp'),
                               Glob('#' + env['BUILDROOT'] + '/kernel/intel/*.S'),
                               Glob('#' + env['BUILDROOT'] + '/kernel/API/*.cpp'),
-                              '#server/serial/i8250.cpp' ]
+                              '#' + env['BUILDROOT'] + '/server/serial/SerialDevice.o',
+                              '#' + env['BUILDROOT'] + '/server/serial/i8250.o' ]
                             , env['boot'])
 
 #
@@ -40,7 +41,7 @@ env.TargetProgram('kernel', [ Glob('*.cpp'),
 #
 cd = env.ISO('#${BUILDROOT}/boot.iso',
            [ '#${BUILDROOT}/kernel/intel/pc/kernel',
-             '#${BUILDROOT}/boot.img.gz' ])
+             '#${BUILDROOT}/boot.img' ])
 
 # Shortcut to build the ISO.
 Alias('iso', cd)

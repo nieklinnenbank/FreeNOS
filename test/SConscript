@@ -21,7 +21,7 @@ SubDirectories()
 
 env = build_env.Clone()
 env.UseLibraries([ 'libposix', 'libapp', 'liballoc', 'libstd', 'libfs',
-                   'libexec', 'libarch', 'libtest', 'libipc', 'librt' ])
+                   'libexec', 'libarch', 'libtest', 'libipc', 'libruntime' ])
 env.UseLibraries([ 'libtest', 'libapp', 'libstd' ], 'host')
 env.UseServers([ 'terminal', 'filesystem' ])
 
@@ -30,7 +30,19 @@ env.TargetHostProgram('run', ['Main.cpp'])
 if env['ARCH'] == 'host':
 
     env.Targets(test = env['BUILDROOT'] + '/test/run')
-    env.Depends('test', 'run')
+    env.Depends('test', '#' + env['BUILDROOT'] + '/server/datastore/server')
+    env.Depends('test', '.')
 
     env.LocalTester(xml_test = env['BUILDROOT'] + '/test/run ' + env['BUILDROOT'] + '/test --xml')
-    env.Depends('xml_test', 'run')
+    env.Depends('xml_test', '#' + env['BUILDROOT'] + '/server/datastore/server')
+    env.Depends('xml_test', '.')
+
+    valgrind_cmd = "valgrind --leak-check=full --leak-resolution=high --trace-children=yes "
+    env.Targets(valgrind = valgrind_cmd + env['BUILDROOT'] + "/test/run")
+    env.Depends('valgrind', '#' + env['BUILDROOT'] + '/server/datastore/server')
+    env.Depends('valgrind', '.')
+
+    env.Targets(valgrind_xml = valgrind_cmd + "--xml=yes --xml-file='%p.memcheck' " + \
+                env['BUILDROOT'] + "/test/run")
+    env.Depends('valgrind_xml', '#' + env['BUILDROOT'] + '/server/datastore/server')
+    env.Depends('valgrind_xml', '.')

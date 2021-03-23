@@ -15,29 +15,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <FreeNOS/Config.h>
 #include <TestCase.h>
 #include <TestRunner.h>
 #include <TestInt.h>
 #include <TestMain.h>
-#include <unistd.h>
-#include <sys/wait.h>
+#include <ApplicationLauncher.h>
 
 TestCase(RunMpiPing)
 {
-    const char *prog = "/bin/mpiping";
-    const char *args[] = { prog, (const char *)NULL };
-    int status;
-    int pid;
+    // Launch mpiping program
+    const char *args[] = { "/bin/mpiping", ZERO };
+    ApplicationLauncher mpiping(TESTROOT "/bin/mpiping", args);
 
-    // Start the MPI ping program
-    pid = forkexec(prog, args);
-    testAssert(pid != -1);
-    testAssert(pid > 0);
+    // Start the program
+    const ApplicationLauncher::Result resultCode = mpiping.exec();
+    testAssert(resultCode == ApplicationLauncher::Success);
 
-    // Wait for it to terminate. Exit status must be zero (success)
-    pid_t p = waitpid(pid, &status, 0);
-    testAssert(p == pid);
-    testAssert(status == 0);
+    // Wait for program to finish
+    const ApplicationLauncher::Result waitResult = mpiping.wait();
+    testAssert(waitResult == ApplicationLauncher::Success || waitResult == ApplicationLauncher::NotFound);
+    testAssert(mpiping.getExitCode() == 0);
 
     // Done
     return OK;

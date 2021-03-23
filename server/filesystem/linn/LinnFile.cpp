@@ -19,28 +19,31 @@
 #include "LinnFileSystem.h"
 #include "LinnFile.h"
 
-LinnFile::LinnFile(LinnFileSystem *f, LinnInode *i)
-    : fs(f), inode(i)
+LinnFile::LinnFile(LinnFileSystem *fs,
+                   const u32 inode,
+                   LinnInode *inodeData)
+    : File(inode)
+    , m_fs(fs)
+    , m_inodeData(inodeData)
 {
-    m_size   = inode->size;
-    m_access = inode->mode;
+    m_size   = m_inodeData->size;
+    m_access = m_inodeData->mode;
 }
 
 LinnFile::~LinnFile()
 {
 }
 
-FileSystem::Error LinnFile::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result LinnFile::read(IOBuffer & buffer,
+                                  Size & size,
+                                  const Size offset)
 {
-    LinnSuperBlock *sb;
-    Size bytes = 0, blockNr = 0;
+    const LinnSuperBlock *sb = m_fs->getSuperBlock();
+    const Size inodeNumBlocks = LINN_INODE_NUM_BLOCKS(sb, m_inodeData);
+    Size bytes = 0, blockNr = 0, blockCount;
     u64 storageOffset, copyOffset = offset;
-    static u8 block[LINN_MAX_BLOCK_SIZE];
     Size total = 0;
-    FileSystem::Error e;
 
-    // Initialize variables.
-    sb     = fs->getSuperBlock();
     assert(sb->blockSize <= LINN_MAX_BLOCK_SIZE);
 
     // Skip ahead blocks.
@@ -48,29 +51,23 @@ FileSystem::Error LinnFile::read(IOBuffer & buffer, Size size, Size offset)
     {
         blockNr++;
     }
+
     // Adjust the copy offset within this block.
     copyOffset -= sb->blockSize * blockNr;
 
     // Loop all blocks.
-    while (blockNr < LINN_INODE_NUM_BLOCKS(sb, inode) &&
-           total < size && inode->size - (offset + total) > 0)
+    while (blockNr < inodeNumBlocks && total < size && m_inodeData->size - (offset + total) > 0)
     {
         // Calculate the offset in storage for this block.
-        storageOffset = fs->getOffset(inode, blockNr);
-
-        // Fetch the next block.
-        if (fs->getStorage()->read(storageOffset, block, sb->blockSize) < 0)
-        {
-            return FileSystem::IOError;
-        }
+        storageOffset = m_fs->getOffsetRange(m_inodeData, blockNr, blockCount);
 
         // Calculate the number of bytes to copy.
-        bytes = sb->blockSize - copyOffset;
+        bytes = (blockCount * sb->blockSize) - copyOffset;
 
         // Respect the inode size.
-        if (bytes > inode->size - (offset + total))
+        if (bytes > m_inodeData->size - (offset + total))
         {
-            bytes = inode->size - (offset + total);
+            bytes = m_inodeData->size - (offset + total);
         }
 
         // Respect the remote process buffer.
@@ -79,17 +76,21 @@ FileSystem::Error LinnFile::read(IOBuffer & buffer, Size size, Size offset)
             bytes = size - total;
         }
 
-        // Copy into the buffer.
-        if ((e = buffer.write(block + copyOffset, bytes, total)) < 0)
+        // Fetch the next block.
+        if (m_fs->getStorage()->read(storageOffset + copyOffset,
+                                     buffer.getBuffer() + total, bytes) != FileSystem::Success)
         {
-            return e;
+            return FileSystem::IOError;
         }
+        buffer.addCount(bytes);
 
         // Update state.
-        total      += bytes;
-        copyOffset  = 0;
-        blockNr++;
+        total += bytes;
+        copyOffset = 0;
+        blockNr += blockCount;
     }
+
     // Success.
-    return (Error) total;
+    size = total;
+    return FileSystem::Success;
 }

@@ -20,12 +20,17 @@
 #include <MemoryBlock.h>
 #include "VGA.h"
 
-VGA::VGA(Size w, Size h) : Device(FileSystem::BlockDeviceFile), width(w), height(h)
+VGA::VGA(const u32 inode,
+         const Size w,
+         const Size h)
+    : Device(inode, FileSystem::BlockDeviceFile)
+    , width(w)
+    , height(h)
 {
     m_identifier << "vga0";
 }
 
-FileSystem::Error VGA::initialize()
+FileSystem::Result VGA::initialize()
 {
     Memory::Range range;
 
@@ -55,17 +60,22 @@ FileSystem::Error VGA::initialize()
     return FileSystem::Success;
 }
 
-FileSystem::Error VGA::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result VGA::read(IOBuffer & buffer,
+                             Size & size,
+                             const Size offset)
 {
     if (offset + size > width * height * sizeof(u16))
     {
         return FileSystem::InvalidArgument;
     }
+
     buffer.write(vga + (offset / sizeof(u16)), size);
-    return size;
+    return FileSystem::Success;
 }
 
-FileSystem::Error VGA::write(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result VGA::write(IOBuffer & buffer,
+                              Size & size,
+                              const Size offset)
 {
     if (offset + size > width * height * sizeof(u16))
     {
@@ -73,5 +83,5 @@ FileSystem::Error VGA::write(IOBuffer & buffer, Size size, Size offset)
     }
 
     MemoryBlock::copy(vga + (offset / sizeof(u16)), buffer.getBuffer(), size);
-    return size;
+    return FileSystem::Success;
 }

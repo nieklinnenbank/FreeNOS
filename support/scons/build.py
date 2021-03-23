@@ -61,8 +61,12 @@ def TargetProgram(env, target, source, install_dir = None):
             if install_dir is None:
                 install_dir = '${ROOTFS}/' + Dir('.').srcnode().path
 
-            env.Strip(install_dir + os.sep + os.path.basename(str(target)), target)
-            rootfs_files.append(install_dir + os.sep + os.path.basename(str(target)))
+            dest = install_dir + os.sep + os.path.basename(str(target))
+
+            env.Strip(str(target) + '.stripped', target)
+            env.Lz4Compress(dest, str(target) + '.stripped')
+
+            rootfs_files.append(dest)
 
 def TargetHostProgram(env, target, source, install_dir = None):
     HostProgram(env, target, source)
@@ -153,7 +157,7 @@ host.Append(QEMU    = 'qemu-system')
 host.Append(QEMUCMD = '${QEMU} ${QEMUFLAGS}')
 host.Append(QEMUFLAGS = '')
 
-target = host.Clone(tools    = ["default", "bootimage", "iso", "binary", "linn", "phony", "strip", "test", "compress"],
+target = host.Clone(tools    = ["default", "bootimage", "iso", "binary", "linn", "phony", "strip", "test", "lz4"],
                     toolpath = ["support/scons"])
 
 # Configuration build variables may come from, in order of priority:

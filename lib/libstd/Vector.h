@@ -219,7 +219,7 @@ template <class T> class Vector : public Sequence<T>
     /**
      * Resize the Vector.
      *
-     * @param increase Size to add to the Vector.
+     * @param size New size of the Vector
      */
     virtual bool resize(Size size)
     {

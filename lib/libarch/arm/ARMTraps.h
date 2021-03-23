@@ -52,6 +52,7 @@
  * Perform a kernel trap with 1 argument.
  *
  * @param api Unique number of the handler to execute.
+ * @param arg1 First argument
  *
  * @return An integer.
  */
@@ -170,6 +171,7 @@ inline ulong trapKernel5(ulong api, ulong arg1, ulong arg2, ulong arg3,
 }
 
 /**
+ * @}
  * @}
  * @}
  * @}

@@ -36,3 +36,8 @@ IntelCache::Result IntelCache::cleanAddress(IntelCache::Type type, Address addr)
 {
     return Success;
 }
+
+IntelCache::Result IntelCache::invalidateAddress(IntelCache::Type type, Address addr)
+{
+    return Success;
+}

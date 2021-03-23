@@ -55,7 +55,7 @@ template <class T> class Comparable
      * This function checks whether this Comparable is equal to,
      * less, or greater then the given Comparable.
      *
-     * @param c The Comparable to compare us to.
+     * @param t The Comparable to compare us to.
      *
      * @return an int < 0, 0, > 0 if we are respectively less then,
      *         equal to or greater then the given Comparable.

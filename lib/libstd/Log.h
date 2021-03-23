@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _LOG_H
-#define _LOG_H
+#ifndef __LIB_LIBSTD_LOG_H
+#define __LIB_LIBSTD_LOG_H
 
 #include "Singleton.h"
 #include "Macros.h"
@@ -38,8 +38,8 @@
  */
 #define MAKE_LOG(type, typestr, msg) \
     {\
-     if (Log::instance && type <= Log::instance->getMinimumLogLevel())  \
-        (*Log::instance) << "[" typestr "] " << __FILE__ ":" <<  __LINE__ << " " << __FUNCTION__ << " -- " << msg << "\r\n"; \
+     if (Log::instance() && type <= Log::instance()->getMinimumLogLevel())  \
+        (*Log::instance()) << "[" typestr "] " << __FILE__ ":" <<  __LINE__ << " " << __FUNCTION__ << " -- " << msg << "\r\n"; \
     }
 
 /**
@@ -50,7 +50,7 @@
 #define FATAL(msg) \
     { \
         MAKE_LOG(Log::Emergency, "Emergency", msg); \
-        if (Log::instance) Log::instance->terminate(); \
+        if (Log::instance()) Log::instance()->terminate(); \
     }
 
 /**
@@ -93,7 +93,7 @@
  *
  * @note This class is a singleton
  */
-class Log : public Singleton<Log>
+class Log : public WeakSingleton<Log>
 {
   private:
 
@@ -174,6 +174,22 @@ class Log : public Singleton<Log>
 
   private:
 
+    /**
+     * Flush internal buffer.
+     *
+     * This function reads the contents of the internal
+     * buffer and writes all available bytes to the actual
+     * output device using write().
+     *
+     * @param force True to always flush, even without newline
+     *              at the end of the buffer.
+     *
+     * @see write
+     */
+    void flush(const bool force = false);
+
+  private:
+
     /** Minimum log level required to log. */
     Level m_minimumLogLevel;
 
@@ -196,6 +212,8 @@ Log & operator << (Log &log, const char *str);
 
 Log & operator << (Log &log, int number);
 
+Log & operator << (Log &log, const char character);
+
 Log & operator << (Log &log, unsigned number);
 
 Log & operator << (Log &log, unsigned long number);
@@ -211,4 +229,4 @@ Log & operator << (Log &log, void *ptr);
  * @}
  */
 
-#endif /* _LOG_H */
+#endif /* __LIB_LIBSTD_LOG_H */

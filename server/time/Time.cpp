@@ -24,18 +24,20 @@
 #include <time.h>
 #include "Time.h"
 
-Time::Time()
-    : Device(FileSystem::CharacterDeviceFile)
+Time::Time(const u32 inode)
+    : Device(inode, FileSystem::CharacterDeviceFile)
 {
     m_identifier << "time0";
 }
 
-FileSystem::Error Time::initialize()
+FileSystem::Result Time::initialize()
 {
     return FileSystem::Success;
 }
 
-FileSystem::Error Time::read(IOBuffer & buffer, Size size, Size offset)
+FileSystem::Result Time::read(IOBuffer & buffer,
+                              Size & size,
+                              const Size offset)
 {
     unsigned int year, month, day, hour, min, sec = 0, time;
     char tmp[16];
@@ -44,7 +46,8 @@ FileSystem::Error Time::read(IOBuffer & buffer, Size size, Size offset)
     // PHONY read
     if(offset >= 10)
     {
-        return 0;
+        size = 0;
+        return FileSystem::Success;
     }
 
     // If UIP is clear, then we have >= 244 microseconds before
@@ -85,7 +88,7 @@ FileSystem::Error Time::read(IOBuffer & buffer, Size size, Size offset)
     buffer.write(tmp, n);
 
     // Done
-    return (Error) size;
+    return FileSystem::Success;
 }
 
 unsigned char Time::readCMOS(unsigned char addr)

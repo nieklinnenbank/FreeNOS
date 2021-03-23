@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBPOSIX_TIME_H
-#define __LIBPOSIX_TIME_H
+#ifndef __LIB_LIBPOSIX_TIME_H
+#define __LIB_LIBPOSIX_TIME_H
 
 #include <Macros.h>
 #include "sys/types.h"
@@ -63,4 +63,4 @@ extern C unsigned long mktime(const unsigned int year, const unsigned int month,
  * @}
  */
 
-#endif /* __LIBPOSIX_TIME_H */
+#endif /* __LIB_LIBPOSIX_TIME_H */

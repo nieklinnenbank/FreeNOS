@@ -36,39 +36,18 @@ SievePrime::~SievePrime()
 {
 }
 
-void SievePrime::searchSequential(int n, unsigned *map) const
-{
-    int i, j;
-
-    // Sequential algorithm
-    // Next is a prime
-    for (i = 2; i < n; i++)
-    {
-        // Prime number?
-        if (map[i])
-        {
-            // Mask off all multiples
-            for (j = i + 1; j < n; j++)
-            {
-                if (!(j % i))
-                    map[j] = 0;
-            }
-        }
-    }
-}
-
 SievePrime::Result SievePrime::exec()
 {
-    uint *map;
-    String output;
+    u8 *map;
     int n, k = 2, i, last, sqrt_of_n;
+    Size resultsWritten = 0;
 
     // Read max number
     n = atoi(arguments().get("NUMBER"));
     sqrt_of_n = sqrt(n);
 
     // Try to allocate memory
-    if ((map = (uint *) malloc(n * sizeof(uint))) == NULL)
+    if ((map = (u8 *) malloc(n * sizeof(u8))) == NULL)
     {
         ERROR("malloc failed: " << strerror(errno));
         return IOError;
@@ -107,19 +86,69 @@ SievePrime::Result SievePrime::exec()
         k++;
     }
 
+    reportResult(n, map, resultsWritten);
+    write(1, "\r\n", 2);
+
+    // Done
+    return Success;
+}
+
+SievePrime::Result SievePrime::reportResult(const int n,
+                                            const u8 *map,
+                                            Size & resultsWritten,
+                                            const Size offsetNumber) const
+{
     // Print the result
     if (arguments().get("stdout"))
     {
-        for (i = 2; i < n; i++)
+        String output;
+
+        for (int i = 0; i < n; i++)
         {
             if (map[i] == 1)
-                output << " " << i;
+            {
+                output << " " << (i + offsetNumber);
+                resultsWritten++;
+            }
+
+            if (resultsWritten >= 32)
+            {
+                output << "\r\n";
+                write(1, *output, output.length());
+                output = "";
+                resultsWritten = 0;
+            }
         }
-        // Done
-        output << "\r\n";
-        write(1, *output, output.length());
+
+        if (output.length() > 0)
+        {
+            write(1, *output, output.length());
+        }
     }
 
-    // Done
+    return Success;
+}
+
+SievePrime::Result SievePrime::searchSequential(const int n,
+                                                u8 *map) const
+{
+    int i, j;
+
+    // Sequential algorithm
+    // Next is a prime
+    for (i = 2; i < n; i++)
+    {
+        // Prime number?
+        if (map[i])
+        {
+            // Mask off all multiples
+            for (j = i + 1; j < n; j++)
+            {
+                if (!(j % i))
+                    map[j] = 0;
+            }
+        }
+    }
+
     return Success;
 }

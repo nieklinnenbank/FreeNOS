@@ -20,8 +20,7 @@
 
 #include <Macros.h>
 #include <Types.h>
-#include <Device.h>
-#include <intel/IntelIO.h>
+#include "SerialDevice.h"
 
 /**
  * @addtogroup server
@@ -34,9 +33,9 @@
 /**
  * i8250 serial UART.
  */
-class i8250 : public Device
+class i8250 : public SerialDevice
 {
-  public:
+  private:
 
     /**
      * Constants used to communicate with the UART.
@@ -59,58 +58,59 @@ class i8250 : public Device
         BAUDRATE     = 9600,
     };
 
+  public:
+
     /**
      * Constructor function.
      *
-     * @param base I/O base port.
+     * @param irq Interrupt vector
+     * @param base I/O base port
      */
-    i8250(const u16 base, const u16 irq);
+    i8250(const u32 irq, const u16 base);
 
     /**
-     * @brief Initializes the i8250 serial UART.
+     * Initializes the i8250 serial UART.
      *
-     * @return FileSystem::Error status code.
+     * @return Result code
      */
-    virtual FileSystem::Error initialize();
+    virtual FileSystem::Result initialize();
 
     /**
      * Called when an interrupt has been triggered for this device.
      *
      * @param vector Vector number of the interrupt.
      *
-     * @return FileSystem::Error result code.
+     * @return Result code
      */
-    virtual FileSystem::Error interrupt(Size vector);
+    virtual FileSystem::Result interrupt(const Size vector);
 
     /**
-     * Read bytes from the i8250.
+     * Read bytes from the device
      *
-     * @param buffer Buffer to save the read bytes.
-     * @param size Number of bytes to read.
-     * @param offset Unused.
+     * @param buffer Input/Output buffer to output bytes to.
+     * @param size Maximum number of bytes to read on input.
+     *             On output, the actual number of bytes read.
+     * @param offset Offset inside the file to start reading.
      *
-     * @return Number of bytes on success and ZERO on failure.
+     * @return Result code
      */
-    virtual FileSystem::Error read(IOBuffer & buffer, Size size, Size offset);
+    virtual FileSystem::Result read(IOBuffer & buffer,
+                                    Size & size,
+                                    const Size offset);
 
     /**
-     * Write bytes to the device.
+     * Write bytes to the device
      *
-     * @param buffer Buffer containing bytes to write.
-     * @param size Number of bytes to write.
-     * @param offset Unused.
+     * @param buffer Input/Output buffer to input bytes from.
+     * @param size Maximum number of bytes to write on input.
+     *             On output, the actual number of bytes written.
+     * @param offset Offset inside the file to start writing.
      *
-     * @return Number of bytes on success and ZERO on failure.
+     * @return Result code
      */
-    virtual FileSystem::Error write(IOBuffer & buffer, Size size, Size offset);
-
-  private:
-
-    /** Interrupt vector. */
-    const u16 m_irq;
-
-    /** I/O instance. */
-    IntelIO m_io;
+    virtual FileSystem::Result write(IOBuffer & buffer,
+                                     Size & size,
+                                     const Size offset);
 };
 
 /**

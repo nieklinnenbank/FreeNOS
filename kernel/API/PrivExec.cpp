@@ -20,14 +20,15 @@
 #include <Log.h>
 #include "PrivExec.h"
 
-API::Result PrivExecHandler(PrivOperation op, Address addr)
+API::Result PrivExecHandler(const PrivOperation op,
+                            const Address param)
 {
     DEBUG("");
 
     switch (op)
     {
     case Idle: {
-        ProcessManager *procs = Kernel::instance->getProcessManager();
+        ProcessManager *procs = Kernel::instance()->getProcessManager();
         procs->setIdle(procs->current());
         return API::Success;
     }
@@ -41,14 +42,12 @@ API::Result PrivExecHandler(PrivOperation op, Address addr)
         return API::Success;
 
     case WriteConsole:
-        if (Log::instance)
-        {
-            (*Log::instance) << (char *)addr;
-        }
+        assert(Log::instance() != ZERO);
+        (*Log::instance()) << (char *) param;
         return API::Success;
 
     case Panic:
-        FATAL("panic in PID " << Kernel::instance->getProcessManager()->current()->getID());
+        FATAL("panic in PID " << Kernel::instance()->getProcessManager()->current()->getID());
         return API::Success;
 
     default:

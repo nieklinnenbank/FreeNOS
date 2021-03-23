@@ -105,7 +105,7 @@ BitArray::Result BitArray::setNext(Size *bit,
     for (Size i = start; i < m_bitCount;)
     {
         // Try to fast-forward 32 bits to search
-        if (((u32 *)m_array)[i / 32] == 0xffffffff)
+        if (m_bitCount > 32 && i < m_bitCount - 32 && ((u32 *)m_array)[i / 32] == 0xffffffff)
         {
             from = found = 0;
 
@@ -116,7 +116,7 @@ BitArray::Result BitArray::setNext(Size *bit,
             continue;
         }
         // Try to fast-forward 8 bits to search
-        else if (m_array[i / 8] == 0xff)
+        else if (m_bitCount > 8 && i < m_bitCount - 8 && m_array[i / 8] == 0xff)
         {
             from = found = 0;
 

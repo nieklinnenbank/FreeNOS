@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __API_SYSTEMINFO_H
-#define __API_SYSTEMINFO_H
+#ifndef __KERNEL_API_SYSTEMINFO_H
+#define __KERNEL_API_SYSTEMINFO_H
 
 #include <Types.h>
 
@@ -39,7 +39,7 @@ struct SystemInformation;
  */
 inline API::Result SystemInfo(SystemInformation *info)
 {
-    return trapKernel1(API::SystemInfoNumber, (Address) info);
+    return (API::Result) trapKernel1(API::SystemInfoNumber, (Address) info);
 }
 
 /**
@@ -54,7 +54,11 @@ inline API::Result SystemInfo(SystemInformation *info)
  */
 
 /**
- * Kernel prototype.
+ * Kernel prototype. Retrieves system information.
+ *
+ * @param info Pointer to SystemInformation output buffer.
+ *
+ * @return API::Success on success and other API::ErrorCode on failure.
  */
 extern API::Result SystemInfoHandler(SystemInformation *info);
 
@@ -88,6 +92,12 @@ typedef struct SystemInformation
     /** Boot commandline. */
     char cmdline[64];
 
+    /** Physical start address of the kernel program */
+    Address kernelAddress;
+
+    /** Size of the kernel program in bytes */
+    Size kernelSize;
+
     /** Total and available memory in bytes. */
     Size memorySize, memoryAvail;
 
@@ -113,4 +123,4 @@ SystemInformation;
  * @}
  */
 
-#endif /* __API_SYSTEMINFO_H */
+#endif /* __KERNEL_API_SYSTEMINFO_H */

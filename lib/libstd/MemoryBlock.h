@@ -30,6 +30,10 @@
 
 /**
  * Memory block operations class
+ *
+ * @todo Add architecture specific implementations for extra speed. The alternative
+ *       implementations should be placed in libarch without creating a new dependency in libstd,
+ *       for example using weak symbols.
  */
 class MemoryBlock
 {
@@ -40,6 +44,7 @@ class MemoryBlock
      *
      * @param dest Memory to write to.
      * @param ch Constant byte.
+     * @param count Number of bytes to fill.
      *
      * @return Pointer to dest.
      */
@@ -70,13 +75,13 @@ class MemoryBlock
     /**
      * Compare memory.
      *
-     * @param dest Destination address
-     * @param src Source address
+     * @param p1 Memory pointer one.
+     * @param p2 Memory pointer two.
      * @param count Number of bytes to compare
      *
-     * @return Zero if equal or non-zero if not equal
+     * @return True if equal, false otherwise
      */
-    static bool compare(void *dest, void *src, Size count);
+    static bool compare(const void *p1, const void *p2, const Size count);
 
     /**
      * Compare memory.
@@ -87,7 +92,7 @@ class MemoryBlock
      *
      * @return True if equal, false otherwise.
      */
-    static bool compare(const char *p1, const char *p2, Size count = 0);
+    static bool compare(const char *p1, const char *p2, const Size count = 0);
 };
 
 /**
