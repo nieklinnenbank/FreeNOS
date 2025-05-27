@@ -60,6 +60,10 @@ Alternatively, you can install the LLVM/Clang compiler as well:
 
     $ sudo apt-get install clang
 
+If you want to compile 32bit RaspberryPi 2b in Ubuntu24.04:
+
+    $ sudo apt-get install crossbuild-essential-armel
+
 *FreeBSD*
 
 Update your system repository cache and install the required development tools using:
