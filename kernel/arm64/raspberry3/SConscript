@@ -1,0 +1,73 @@
+#
+# Copyright (C) 2015 Niek Linnenbank
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+Import('build_env')
+
+env = build_env.Clone()
+
+for item in env['LINKUSER']:
+    env['LINKFLAGS'].remove(item)
+
+env.Append(LINKFLAGS = env['LINKKERN'])
+env.Append(CPPFLAGS = '-D__KERNEL__')
+
+#env.UseLibraries(['liballoc', 'libstd', 'libarch', 'libipc', 'libfs'])
+#env.UseServers(['serial'])
+
+env.TargetProgram('kernel.empty', [ Glob('*.cpp'),
+                              Glob('#' + env['BUILDROOT'] + '/kernel/arm64/*.S'),
+                              ],
+                   False)
+
+#
+# Place the empty kernel in the rootfs for CoreServer
+#
+env.TargetInstallAs('kernel.empty', '${ROOTFS}/boot/kernel')
+
+#
+# Embed the boot.img in the kernel
+#
+env.Command('kernel', 'kernel.empty', env['OBJCOPY'] + ' ' +
+#            '--update-section .bootimg=' + env['BUILDROOT'] + '/boot.img ' +
+            env['BUILDROOT'] + '/kernel/arm64/' + env['SYSTEM'] + '/kernel.empty ' +
+            env['BUILDROOT'] + '/kernel/arm64/' + env['SYSTEM'] + '/kernel')
+#env.Depends('kernel', '#' + env['BUILDROOT'] + '/boot.img')
+
+#
+# Provide binary kernel image to write to the SD card.
+#
+env.Command('kernel.img', 'kernel', env['OBJCOPY'] + ' -O binary ' +
+            env['BUILDROOT'] + '/kernel/arm64/' + env['SYSTEM'] + '/kernel ' +
+            env['BUILDROOT'] + '/kernel/arm64/' + env['SYSTEM'] + '/kernel.img')
+
+# First part of the Qemu command arguments
+qemu_args = build_env['QEMUCMD'] + ' -kernel ' + build_env['BUILDROOT'] + \
+            '/kernel/arm64/' + build_env['SYSTEM'] + '/kernel ' + \
+            '-chardev socket,id=charmonitor,path=monitor.dev,server,nowait -monitor chardev:charmonitor '
+
+#
+# Qemu targets
+#
+env.Targets(qemu = qemu_args + '-nographic')
+
+env.Targets(qemu_debug = qemu_args + '-nographic -s -S')
+
+env.Targets(qemu_debugs = qemu_args + '-nographic -s -S -d int,cpu_reset')
+
+env.AutoTester(qemu_test = qemu_args + '-nographic')
+
+env.AutoTesterLoop(qemu_loop = qemu_args + '-nographic')

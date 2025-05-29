@@ -1,0 +1,44 @@
+#
+# Copyright (C) 2015 Niek Linnenbank
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+EnsureSConsVersion(2, 0)
+
+import sys
+
+sys.path.insert(1, './support/scons')
+
+from build import *
+
+#
+# Target build
+#
+build_env = target
+Export('build_env')
+
+# Build programs, libraries and servers.
+VariantDir(target['BUILDROOT'] + '/lib', '#lib', duplicate = 0)
+#VariantDir(target['BUILDROOT'] + '/bin', '#bin', duplicate = 0)
+#VariantDir(target['BUILDROOT'] + '/server', '#server', duplicate = 0)
+#VariantDir(target['BUILDROOT'] + '/test', '#test', duplicate = 0)
+VariantDir(target['BUILDROOT'] + '/kernel', '#kernel', duplicate = 0)
+
+
+SConscript(target['BUILDROOT'] + '/lib/SConscript')
+#SConscript(target['BUILDROOT'] + '/bin/SConscript')
+#SConscript(target['BUILDROOT'] + '/server/SConscript')
+#SConscript(target['BUILDROOT'] + '/test/SConscript')
+SConscript(target['BUILDROOT'] + '/kernel/' + target['ARCH'] + '/' + target['SYSTEM'] + '/SConscript')
