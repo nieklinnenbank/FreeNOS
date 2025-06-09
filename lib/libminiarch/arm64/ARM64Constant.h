@@ -18,6 +18,11 @@
 #ifndef __LIBARCH_ARM64_CONSTANT_H
 #define __LIBARCH_ARM64_CONSTANT_H
 
+/* FIXME: deprecated*/
+#define DIRSHIFT        20
+/** Mask for large 1MiB section mappings. */
+#define SECTIONMASK     0xfff00000
+
 /**
  * @addtogroup lib
  * @{
@@ -86,24 +91,26 @@
 /**
  * Page table bit shift.
  *
- * In ARM, the first-level page directory entry is selected
- * by bits [31:20] from the virtual address, plus two 0 bytes.
+ * In ARM64, the shifts of each level vary based on granule. Assume 4K granule.
  *
- * @see ARM Architecture Reference Manual, page 724.
+ * @see https://developer.arm.com/documentation/101811/0104/Translation-granule/The-starting-level-of-address-translation
  */
-#define DIRSHIFT        20
+#define L1_DIRSHIFT        30UL
+#define L2_DIRSHIFT        21UL
+#define L3_DIRSHIFT        12UL
+#define DIR_MASK           0x1FFUL
 
 /** ARM uses 4K pages. */
 #define PAGESIZE        4096
 
 /**
- * Number of entries in the first-level page table.
+ * Number of entries in the each level page table.
  *
  * TTBR0 is the first-level page table for the application.
  * TTBR1 is always 16KB, the first-level page table of the kernel/OS.
  */
-#define PAGEDIR_MAX     4096
-#define PAGEDIR_SIZE    (PAGEDIR_MAX * sizeof(u32))
+#define PAGEDIR_MAX     512
+#define PAGEDIR_SIZE    (PAGEDIR_MAX * sizeof(u64))
 
 /**
  * Number of entries in a second-level page table.
@@ -118,13 +125,21 @@
 #define PAGETAB_SPAN    (PAGETAB_MAX*PAGESIZE)
 
 /** Mask to find the page. */
-#define PAGEMASK        0xfffff000 
+#define PAGEMASK        0x3FFFFFFFFF000UL 
 
-/** Mask for large 1MiB section mappings. */
-#define SECTIONMASK     0xfff00000
+/** Mask for large 1GB block mappings. */
+#define L1_BLOCK_MASK     0x3FFFFC0000000UL
+#define L1_BLOCK_SIZE     0x40000000UL
+#define L1_BLOCK_RANGE    (L1_BLOCK_SIZE-1)
+/** Mask for large 2MB block mappings. */
+#define L2_BLOCK_MASK     0x3FFFFFFE00000UL
+#define L2_BLOCK_SIZE     0x200000UL
+#define L2_BLOCK_RANGE    (L2_BLOCK_SIZE-1)
 
 /** Memory address alignment. */
 #define MEMALIGN        4
+
+#define contain_flags(val, flags) (((val)&flags)==flags)
 
 /**
  * @}

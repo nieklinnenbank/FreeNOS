@@ -28,3 +28,4 @@ extern C void uart_send(unsigned int c);
 extern C char uart_getc();
 extern C void uart_puts(char *s);
 extern C void uart_hex(unsigned int d);
+extern C void uart_hex_u64(unsigned long d);
