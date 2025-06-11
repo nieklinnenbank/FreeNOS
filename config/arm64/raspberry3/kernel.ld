@@ -85,6 +85,13 @@ SECTIONS
 
     __end = .;
 
+    .bootimg :
+    {
+        __bootimg = .;
+        KEEP (*(.bootimg))
+        LONG(0)
+    }
+
     .ARM.exidx.text :
     {
         *(.ARM.exidx.text.*)

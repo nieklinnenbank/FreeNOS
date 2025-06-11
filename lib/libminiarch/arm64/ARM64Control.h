@@ -159,6 +159,17 @@ namespace ARM64Control
 #define dsb(type) { asm volatile ("dsb "#type ::: "memory"); }
 
 /**
+ * Data Memory Barrier
+ *
+ * Ensures that all memory transactions are complete when
+ * the next instruction runs. If the next instruction is not
+ * a memory instruction, it is allowed to run out of order.
+ * The DMB provides slightly looser memory barrier than DSB on ARM.
+ */
+//FIXME: sy isn't appropriate for all scenarioes
+#define dmb()  { asm volatile ("dmb sy" ::: "memory"); }
+
+/**
  * System Control flags.
  */
 namespace SystemControlFlags {

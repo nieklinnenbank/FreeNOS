@@ -29,6 +29,7 @@ env.UseLibraries(['liballoc', 'libstd', 'libminiarch'])
 #env.UseServers(['serial'])
 
 env.TargetProgram('kernel.empty', [ Glob('*.cpp'),
+                              Glob('#' + env['BUILDROOT'] + '/kernel/tiny/*.cpp'),
                               Glob('#' + env['BUILDROOT'] + '/kernel/arm64/*.S'),
                               ],
                    False)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Niek Linnenbank
+ * Copyright (C) 2019 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,24 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CONFIG_ARM64_RASPBERRY3_SYSTEM_H
-#define __CONFIG_ARM64_RASPBERRY3_SYSTEM_H
+#include <String.h>
+#include "DeviceLog.h"
 
-#include "Constant.h"
+OutputDevice::OutputDevice()
+{
+}
 
-#if 0
+void OutputDevice::write(const char *str, const Size size)
+{
+}
 
-#include <arm/ARMCore.h>
-#include <arm/ARMCacheV6.h>
-#include <arm/ARMIO.h>
-#include <arm/ARMKernel.h>
-#include <arm/ARMProcess.h>
-#include <arm/ARMTraps.h>
-#include <FreeNOS/API.h>
+DeviceLog::DeviceLog(OutputDevice & device)
+    : m_device(device)
+{
+}
 
-#endif
+void DeviceLog::write(const char *str)
+{
+    Size len = String::length(str);
 
-#include <arm64/ARM64Paging.h>
-#include <arm64/ARM64Map.h>
-
-#endif /* __CONFIG_ARM64_RASPBERRY3_SYSTEM_H */
+    m_device.write(str, len);
+}

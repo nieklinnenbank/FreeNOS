@@ -17,6 +17,7 @@
 
 
 /* https://github.com/bztsrc/raspi3-tutorial/blob/master/03_uart1 */
+extern Address __start, __end, __bootimg;
 static u64 ALIGN(16 * 1024) SECTION(".data") tmpPageDir[1024];
 
 #include "uart.h"
@@ -26,6 +27,11 @@ static u64 ALIGN(16 * 1024) SECTION(".data") tmpPageDir[1024];
 #include <MemoryBlock.h>
 #include <arm64/ARM64Map.h>
 #include <arm64/ARM64Paging.h>
+#include "CoreInfo.h"
+#include "BootImage.h"
+#include "Kernel.h"
+#include "Support.h"
+#include "PL011.h"
 
 extern C int kernel_main(void)
 {
@@ -64,56 +70,48 @@ extern C int kernel_main(void)
         uart_puts("Unable to query serial!\n");
     }
 
+    // Fill coreInfo
+    BootImage *bootimage = (BootImage *) &__bootimg;
+    MemoryBlock::set(&coreInfo, 0, sizeof(CoreInfo));
+    coreInfo.bootImageAddress = (Address) (bootimage);
+    coreInfo.bootImageSize    = bootimage->bootImageSize;
+    coreInfo.kernel.phys      = (Address) &__start;
+    coreInfo.kernel.size      = ((Address) &__end - (Address) &__start);
+    coreInfo.memory.phys      = RAM_ADDR;
+    coreInfo.memory.size      = RAM_SIZE;
+
+    uart_puts("BootImage Start: ");
+    uart_hex_u64(coreInfo.bootImageAddress);
+    uart_puts("\nSize: ");
+    uart_hex_u64(coreInfo.bootImageSize);
+    uart_puts("\n");
+
     Arch::MemoryMap mem;
-    for (int i = MemoryMap::KernelData; i <= MemoryMap::UserArgs; i++) {
-        uart_puts("Memory Region ");
-        uart_hex(i);
-        uart_puts("\n");
-        Memory::Range reg = mem.range(static_cast<MemoryMap::Region>(i));
-        uart_puts("virt: ");
-        uart_hex(reg.virt);
-        uart_puts(", ");
-
-        uart_puts("phys: ");
-        uart_hex(reg.phys);
-        uart_puts(", ");
-
-        uart_puts("size: ");
-        uart_hex(reg.size);
-        uart_puts("\n");
-    }
-
     uart_puts("MMU start\n");
     ARM64Paging paging(&mem, (Address) &tmpPageDir, RAM_ADDR);
 
     // Activate MMU
     paging.initialize();
-    uart_puts("MMU initialized\n");
     paging.activate(true);
     uart_puts("MMU enabled\n");
-
-#if 0
-    u64 tmp = (u64)&tmpPageDir;
-    tmp += 0xFFFFFFFFC0000000UL;
-
-    volatile u64 *higher_address = (volatile u64 *)tmp;
-    volatile u64 *lower_address = (volatile u64 *)&tmpPageDir;
-    uart_puts("after MMU: [");
-    uart_hex_u64(tmp);
-    uart_puts("] = ");
-    u64 test = *higher_address;
-    uart_hex_u64(test);
-    uart_puts("\nafter MMU: [");
-    uart_hex_u64((u64)lower_address);
-    uart_puts("] = ");
-    uart_hex_u64(*lower_address);
-    uart_puts("\n");
-#endif
 
     // Clear BSS
     clearBSS();
 
+    // Initialize heap
+    Kernel::initializeHeap();
 
+    // Run all constructors first
+    constructors();
+
+    // Open the serial console as default Log
+    PL011 pl011;
+    pl011.initialize();
+
+    DeviceLog console(pl011);
+    console.setMinimumLogLevel(Log::Notice);
+
+    NOTICE("This is a bare metal");
     // echo everything back
     while(1) {
         uart_send(uart_getc());
