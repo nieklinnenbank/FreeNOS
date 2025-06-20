@@ -79,7 +79,7 @@ _start:
     movk    x2, #0x30d0, lsl #16
     msr     sctlr_el1, x2
     // change execution level to EL1
-    mov     x2, #0x3c4
+    mov     x2, #0x3c5
     msr     spsr_el2, x2
     adr     x2, 5f
     msr     elr_el2, x2

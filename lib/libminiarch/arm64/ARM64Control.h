@@ -75,6 +75,7 @@ namespace ARM64Control
         //aarch64 new registers
         MemoryModelFeature,
         MemoryAttrIndirection,
+        VectorBaseAddress,
     };
 
 
@@ -185,5 +186,20 @@ namespace SystemControlFlags {
         EE                  = (1 << 25), //Endianness of data accesses at EL1, and stage 1 translation table walks in the EL1&0 translation regime.
     };
 };
+
+/** 
+ * Contains all the CPU registers.
+ */
+typedef struct CPUState
+{
+    u64 x0, x1, x2, x3, x4, x5;
+    u64 x6, x7, x8, x9, x10, x11;
+    u64 x12, x13, x14, x15, x16;
+    u64 x17, x18, fp, lr, sp; //sp_el0
+    u64 esr, far, cpsr, pc;
+}
+ALIGN(8) CPUState;
+
+#define exception_code(esr) (((esr)>>26)&0x3f)
 
 #endif /* __ARM64_CONTROL_H */

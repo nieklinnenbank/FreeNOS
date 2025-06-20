@@ -172,7 +172,7 @@ MemoryContext::Result ARM64Paging::enableMMU()
     tbl += 0x1UL;
 
     ARM64Control::write(ARM64Control::TranslationTable0, tbl);
-    ARM64Control::write(ARM64Control::TranslationTable1, tbl);
+    //ARM64Control::write(ARM64Control::TranslationTable1, tbl);
 
     // finally, toggle some bits in system control register to enable page translation
     dsb(ish);

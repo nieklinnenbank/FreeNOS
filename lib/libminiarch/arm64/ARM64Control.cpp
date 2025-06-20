@@ -92,6 +92,10 @@ void write(Register reg, u64 value)
         case UnifiedTLBClear:       mcr(p15, 0, 0, c8,  c7, value); break;
         case UserProcID:            mcr(p15, 0, 4, c13, c0, value); break;
 #endif
+        case VectorBaseAddress: {
+            asm volatile ("msr vbar_el1, %0" : : "r" (value));
+            break;
+        }
         case MemoryAttrIndirection: {
             asm volatile ("msr mair_el1, %0" : : "r" (value));
             break;

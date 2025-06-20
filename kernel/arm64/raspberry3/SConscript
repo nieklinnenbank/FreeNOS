@@ -31,6 +31,7 @@ env.UseLibraries(['liballoc', 'libstd', 'libminiarch'])
 env.TargetProgram('kernel.empty', [ Glob('*.cpp'),
                               Glob('#' + env['BUILDROOT'] + '/kernel/tiny/*.cpp'),
                               Glob('#' + env['BUILDROOT'] + '/kernel/arm64/*.S'),
+                              Glob('#' + env['BUILDROOT'] + '/kernel/arm64/*.cpp'),
                               ],
                    False)
 

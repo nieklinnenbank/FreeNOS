@@ -24,9 +24,12 @@ static u64 ALIGN(16 * 1024) SECTION(".data") tmpPageDir[1024];
 #include "mbox.h"
 
 #include <FreeNOS/System.h>
+#include <FreeNOS/arm64/ARM64Kernel.h>
 #include <MemoryBlock.h>
 #include <arm64/ARM64Map.h>
 #include <arm64/ARM64Paging.h>
+#include <arm64/ARM64Exception.h>
+#include <arm64/ARM64Control.h>
 #include "CoreInfo.h"
 #include "BootImage.h"
 #include "Kernel.h"
@@ -112,6 +115,14 @@ extern C int kernel_main(void)
     console.setMinimumLogLevel(Log::Notice);
 
     NOTICE("This is a bare metal");
+    ARM64Kernel kernel(&coreInfo);
+
+    NOTICE("Before accessing memory");
+    u64 val = *(volatile u64 *)0xffffffffffffaaffull;
+
+    NOTICE("After accessing memory");
+    asm volatile ("svc #1" ::: "memory");
+
     // echo everything back
     while(1) {
         uart_send(uart_getc());
