@@ -31,6 +31,8 @@
 class BootImageStorage;
 class MemoryContext;
 class SplitAllocator;
+class IntController;
+class Timer;
 
 /**
  * @addtogroup kernel
@@ -125,6 +127,12 @@ class Kernel : public WeakSingleton<Kernel>
 
     /** CoreInfo object for this core. */
     CoreInfo *m_coreInfo;
+
+    /** Interrupt Controller. */
+    IntController *m_intControl;
+
+    /** Timer device. */
+    Timer *m_timer;
 };
 
 /**

@@ -32,7 +32,7 @@ static u64 ALIGN(16 * 1024) SECTION(".data") tmpPageDir[1024];
 #include <arm64/ARM64Control.h>
 #include "CoreInfo.h"
 #include "BootImage.h"
-#include "Kernel.h"
+#include "RaspberryKernel.h"
 #include "Support.h"
 #include "PL011.h"
 
@@ -115,7 +115,7 @@ extern C int kernel_main(void)
     console.setMinimumLogLevel(Log::Notice);
 
     NOTICE("This is a bare metal");
-    ARM64Kernel kernel(&coreInfo);
+    RaspberryKernel kernel(&coreInfo);
 
     NOTICE("Before accessing memory");
     u64 val = *(volatile u64 *)0xffffffffffffaaffull;

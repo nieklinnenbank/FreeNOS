@@ -21,6 +21,7 @@
 #include <ListIterator.h>
 #include <SplitAllocator.h>
 #include <BubbleAllocator.h>
+#include <IntController.h>
 #include <PoolAllocator.h>
 #include <CoreInfo.h>
 #include "Kernel.h"
@@ -45,6 +46,8 @@ Kernel::Kernel(CoreInfo *info)
 
     // Initialize other class members
     m_coreInfo   = info;
+    m_intControl = ZERO;
+    m_timer      = ZERO;
 
     // Print memory map
     NOTICE("kernel @ " << (void *) info->kernel.phys << ".." <<

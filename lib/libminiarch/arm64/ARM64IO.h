@@ -39,6 +39,35 @@
 class ARM64IO : public IO
 {
   public:
+    /**
+     * write to memory mapped I/O register
+     */
+    inline void write32(u64 reg, u32 data)
+    {
+        dmb();
+        u64 addr = reg + m_base;
+        asm volatile("str %w[data], [%[reg]]"
+                 : : [reg]"r"(addr), [data]"r"(data));
+        dmb();
+    }
+
+    /**
+     * read from memory mapped I/O register
+     *
+     * @param reg Address to read
+     *
+     * @return 64-bit value
+     */
+    inline u32 read32(u64 reg) const
+    {
+        dmb();
+        u64 addr = reg + m_base;
+        u32 data;
+        asm volatile("ldr %w[data], [%[reg]]"
+                 : [data]"=r"(data) : [reg]"r"(addr));
+        dmb();
+        return data;
+    }
 
     /**
      * write to memory mapped I/O register
