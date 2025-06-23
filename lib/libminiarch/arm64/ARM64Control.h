@@ -72,6 +72,8 @@ namespace ARM64Control
         DataFaultAddress,
         DataFaultStatus,
         SystemFrequency,
+        PhysicalTimerValue,
+        PhysicalTimerControl,
         //aarch64 new registers
         MemoryModelFeature,
         MemoryAttrIndirection,

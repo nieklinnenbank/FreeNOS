@@ -154,6 +154,31 @@ class ARM64IO : public IO
         current &= ~(data);
         write(addr, current);
     }
+    /**
+     * Set bits in memory mapped register.
+     *
+     * @param addr Address of the register to write.
+     * @param data 64-bit value containing the bits to set (bitwise or).
+     */
+    inline void set32(Address addr, u32 data)
+    {
+        volatile u32 current = read32(addr);
+        current |= data;
+        write32(addr, current);
+    }
+
+    /**
+     * Unset bits in memory mapped register.
+     *
+     * @param addr Address of the register to write.
+     * @param data 64-bit value containing the bits to set (bitwise or).
+     */
+    inline void unset32(Address addr, u32 data)
+    {
+        volatile u32 current = read(addr);
+        current &= ~(data);
+        write32(addr, current);
+    }
 };
 
 namespace Arch

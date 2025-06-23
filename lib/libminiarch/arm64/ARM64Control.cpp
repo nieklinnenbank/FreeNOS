@@ -47,8 +47,11 @@ u64 read(Register reg)
         case InstructionFaultStatus:  return mrc(p15, 0, 1, c5, c0);
         case DataFaultAddress:        return mrc(p15, 0, 0, c6, c0);
         case DataFaultStatus:         return mrc(p15, 0, 0, c5, c0);
-        case SystemFrequency:         return mrc(p15, 0, 0, c14, c0);
 #endif
+        case SystemFrequency: {
+            asm volatile ("mrs %0, cntfrq_el0" : "=r" (r));
+            break;
+        }
         case MemoryModelFeature: {
             asm volatile ("mrs %0, id_aa64mmfr0_el1" : "=r" (r));
             break;
@@ -98,6 +101,14 @@ void write(Register reg, u64 value)
         }
         case MemoryAttrIndirection: {
             asm volatile ("msr mair_el1, %0" : : "r" (value));
+            break;
+        }
+        case PhysicalTimerValue: {
+            asm volatile ("msr cntp_tval_el0, %0" : "=r" (value));
+            break;
+        }
+        case PhysicalTimerControl: {
+            asm volatile ("msr cntp_ctl_el0, %0" : "=r" (value));
             break;
         }
         default: break;

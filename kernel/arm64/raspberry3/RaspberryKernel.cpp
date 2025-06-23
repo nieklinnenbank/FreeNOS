@@ -23,15 +23,12 @@
 #include <arm64/ARM64Exception.h>
 #include <arm64/ARM64Constant.h>
 #include <arm64/broadcom/BroadcomInterrupt.h>
+#include <arm64/broadcom/Broadcom2836.h>
 #include "RaspberryKernel.h"
 
 RaspberryKernel::RaspberryKernel(CoreInfo *info)
     : ARM64Kernel(info)
-#if 0
-#ifdef BCM2836
     , m_bcm(info->coreId)
-#endif /* BMC2836 */
-#endif
 {
     NOTICE("");
 
@@ -40,12 +37,11 @@ RaspberryKernel::RaspberryKernel(CoreInfo *info)
     m_exception.install(ARM64Exception::IRQ_SP_ELx, interrupt);
     m_exception.install(ARM64Exception::IRQ_Lower_EL, interrupt);
 
-#if 0
     // Configure clocks and irqs. For BCM2836, only use the generic ARM timer
     // when running under Qemu. Unfortunately, Qemu dropped support for the
     // broadcom timer in recent versions. On hardware, use the broadcom timer.
 #ifdef BCM2836
-    u32 system_frequency = ctrl.read(ARMControl::SystemFrequency);
+    u32 system_frequency = ARM64Control::read(ARM64Control::SystemFrequency);
     NOTICE("sysfreq = " << system_frequency);
     if (system_frequency == 62500000)
     {
@@ -54,11 +50,14 @@ RaspberryKernel::RaspberryKernel(CoreInfo *info)
         m_timerIrq = ARMTIMER_IRQ;
         m_armTimer.setFrequency(100);
 
+        NOTICE("before enable timer irq");
         // Setup IRQ routing
         m_bcm.setCoreTimerIrq(Broadcom2836::PhysicalTimer1, true);
     }
+        NOTICE("after enable timer irq");
 #endif /* BCM2836 */
 
+#if 0
     /* Default to broadcom timer and interrupt handling */
     if (m_timer == NULL)
     {

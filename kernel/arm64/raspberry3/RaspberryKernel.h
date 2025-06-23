@@ -20,14 +20,10 @@
 
 #include <FreeNOS/arm64/ARM64Kernel.h>
 #include <arm64/broadcom/BroadcomInterrupt.h>
+#include <arm64/broadcom/Broadcom2836.h>
+#include <arm64/ARM64Timer.h>
 #if 0
 #include <arm/broadcom/BroadcomTimer.h>
-
-#ifdef BCM2836
-#include <arm/broadcom/Broadcom2836.h>
-#include <arm/ARMTimer.h>
-#endif /* BCM2836 */
-
 #endif
 /**
  * @addtogroup kernel
@@ -65,22 +61,17 @@ class RaspberryKernel : public ARM64Kernel
     /** Broadcom specific interrupt controller */
     BroadcomInterrupt m_bcmIntr;
 
-#if 0
-#ifdef BCM2836
     /** Broadcom specific registers */
     Broadcom2836 m_bcm;
-
     /** ARM generic timer. Only used for QEMU */
-    ARMTimer m_armTimer;
-#endif /* BCM2836 */
+    ARM64Timer m_armTimer;
 
+#if 0
     /** Broadcom specific timer module */
     BroadcomTimer m_bcmTimer;
-
+#endif
     /** Interrupt number for the timer */
     u8 m_timerIrq;
-#endif
-
 };
 
 /**
