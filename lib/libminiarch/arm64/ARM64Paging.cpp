@@ -34,6 +34,7 @@ ARM64Paging::ARM64Paging(MemoryMap *map, SplitAllocator *alloc)
     : MemoryContext(map, alloc)
     , m_firstTable(0)
     , m_firstTableAddr(0)
+    , m_pageStage(KernelStage)
 #if 0
     , m_kernelBaseAddr(coreInfo.memory.phys)
 #endif
@@ -51,25 +52,22 @@ ARM64Paging::~ARM64Paging()
 
 ARM64Paging::ARM64Paging(MemoryMap *map,
                      Address firstTableAddress,
+                     Address secondTableAddress[2],
                      Address kernelBaseAddress)
     : MemoryContext(map, ZERO)
     , m_firstTable((ARM64PageTable *) firstTableAddress)
     , m_firstTableAddr(firstTableAddress)
     , m_kernelBaseAddr(kernelBaseAddress)
+    , m_pageStage(BootStage)
 {
+    m_secondTableAddr[0] = secondTableAddress[0];
+    m_secondTableAddr[1] = secondTableAddress[1];
 }
 
 MemoryContext::Result ARM64Paging::initialize()
 {
     // Allocate first page table if needed
-    // Which means at early boot stage, we use preallocated page table
-    // TODO: 
-    // Modify that if kernel address starts from high address, since level 2
-    // only supports 1G memory range
-    u8 level = 1;
-    if (m_firstTable != 0)
-        level = 2; /* start from level 2 */
-    else {
+    if (!m_firstTable) {
         Allocator::Range phys, virt;
         phys.address = 0;
         phys.size = sizeof(ARM64PageTable);
@@ -83,18 +81,32 @@ MemoryContext::Result ARM64Paging::initialize()
 
         m_firstTable = (ARM64PageTable *) virt.address;
         m_firstTableAddr = phys.address;
+
+        //TODO: allocate for two more pageTable from 0 to 2GB, which is ugly code
     }
 
     // Initialize the page directory
     MemoryBlock::set(m_firstTable, 0, sizeof(ARM64PageTable));
-    m_firstTable->m_level = level;
+    m_firstTable->m_level = 1;
+
+    if (m_pageStage == BootStage) {
+        ARM64PageTable *tbl = (ARM64PageTable *) m_secondTableAddr[0];
+        MemoryBlock::set(tbl, 0, sizeof(ARM64PageTable));
+        tbl->m_level = 2;
+        m_firstTable->setNextTable(0x0, (Address) tbl, m_alloc);
+
+        tbl = (ARM64PageTable *) m_secondTableAddr[2];
+        MemoryBlock::set(tbl, 0, sizeof(ARM64PageTable));
+        tbl->m_level = 2;
+        m_firstTable->setNextTable((Address)L1_BLOCK_SIZE, (Address) tbl, m_alloc);
+    }
 
     // Map the kernel. The kernel has permanently mapped 1GB of
     // physical memory. This 1GiB memory region starts at its physical
     // base address offset which varies per core.
     Memory::Range kernelRange = m_map->range(MemoryMap::KernelData);
     kernelRange.phys = m_kernelBaseAddr;
-    m_firstTable->mapBlock(kernelRange, m_alloc);
+    m_firstTable->mapBlock2(kernelRange, m_alloc);
 
 #if 0
 #ifndef BCM2835
@@ -120,7 +132,7 @@ MemoryContext::Result ARM64Paging::initialize()
     io.virt = IO_BASE;
     io.size = IO_SIZE;
     io.access = Memory::Readable | Memory::Writable | Memory::Device;
-    m_firstTable->mapBlock(io, m_alloc);
+    m_firstTable->mapBlock2(io, m_alloc);
 
     return MemoryContext::Success;
 }

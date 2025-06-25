@@ -65,7 +65,8 @@ class ARM64Paging : public MemoryContext
      * @param firstTableAddress Physical address of 1st page table
      * @param kernelBaseAddress Physical base address of the kernel
      */
-    ARM64Paging(MemoryMap *map, Address firstTableAddress, Address kernelBaseAddress);
+    ARM64Paging(MemoryMap *map, Address firstTableAddress,
+                Address secondTableAddress[2], Address kernelBaseAddress);
 
     /**
      * Destructor.
@@ -189,6 +190,12 @@ class ARM64Paging : public MemoryContext
     /** Caching implementation */
     Arch::Cache m_cache;
 #endif
+    /** Physical address of the second level page table. */
+    Address m_secondTableAddr[2]; //FIXME: make it flexible as a macro
+    enum {
+        BootStage,          // in early boot
+        KernelStage,        // in kernel run
+    } m_pageStage;
 };
 
 namespace Arch

@@ -18,7 +18,6 @@
 
 /* https://github.com/bztsrc/raspi3-tutorial/blob/master/03_uart1 */
 extern Address __start, __end, __bootimg;
-static u64 ALIGN(16 * 1024) SECTION(".data") tmpPageDir[1024];
 
 #include "uart.h"
 #include "mbox.h"
@@ -28,6 +27,7 @@ static u64 ALIGN(16 * 1024) SECTION(".data") tmpPageDir[1024];
 #include <MemoryBlock.h>
 #include <arm64/ARM64Map.h>
 #include <arm64/ARM64Paging.h>
+#include <arm64/ARM64PageTable.h>
 #include <arm64/ARM64Exception.h>
 #include <arm64/ARM64Control.h>
 #include "CoreInfo.h"
@@ -35,6 +35,10 @@ static u64 ALIGN(16 * 1024) SECTION(".data") tmpPageDir[1024];
 #include "RaspberryKernel.h"
 #include "Support.h"
 #include "PL011.h"
+
+static char ALIGN(16 * 1024) SECTION(".data") tmpPageDir[sizeof(ARM64PageTable)];
+static char ALIGN(16 * 1024) SECTION(".data") tmpPage1Dir[sizeof(ARM64PageTable)];
+static char ALIGN(16 * 1024) SECTION(".data") tmpPage2Dir[sizeof(ARM64PageTable)];
 
 extern C int kernel_main(void)
 {
@@ -91,7 +95,8 @@ extern C int kernel_main(void)
 
     Arch::MemoryMap mem;
     uart_puts("MMU start\n");
-    ARM64Paging paging(&mem, (Address) &tmpPageDir, RAM_ADDR);
+    Address tables[2] = { (Address) tmpPage1Dir, (Address) tmpPage2Dir };
+    ARM64Paging paging(&mem, (Address) &tmpPageDir, tables, RAM_ADDR);
 
     // Activate MMU
     paging.initialize();

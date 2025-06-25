@@ -29,7 +29,7 @@
 
 /** Default IO base on the Broadcom 2836 */
 #define IO_BASE 0x3F000000
-#define IO_SIZE (1024*1024*16) //FIXME: should be 128MB, while ARM64paging can not handle it.
+#define IO_SIZE (1024*1024*128)
 
 #define GPIO_BASE (IO_BASE + 0x200000)
 #define UART_BASE (GPIO_BASE + 0x1000)

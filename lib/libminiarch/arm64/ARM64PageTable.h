@@ -73,6 +73,19 @@ class ARM64PageTable
                                    SplitAllocator *alloc);
 
     /**
+     * Map a contigous range of virtual memory to physical memory, using next level table
+     *
+     * This function can map at the 1 block which depends on the level of table.
+     *
+     * @param range Virtual to physical memory range.
+     * @param alloc Physical memory allocator for extra page tables.
+     *
+     * @return Result code
+     */
+    MemoryContext::Result mapBlock2(Memory::Range range,
+                                   SplitAllocator *alloc);
+
+    /**
      * Remove virtual address mapping.
      *
      * @param virt Virtual address.
@@ -155,6 +168,8 @@ class ARM64PageTable
     ARM64PageTable * getNextTable(Address virt,
                                     SplitAllocator *alloc) const;
 
+    void setNextTable(Address virt, Address tbl, SplitAllocator *alloc);
+
     /**
      * Convert Memory::Access to first level page table flags.
      *
@@ -173,6 +188,7 @@ class ARM64PageTable
 
     /* Level of page table */
     u8 m_level;
+    u8 padding[7];
 };
 
 /**

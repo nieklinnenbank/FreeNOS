@@ -129,8 +129,15 @@ ARM64PageTable * ARM64PageTable::getNextTable(Address virt, SplitAllocator *allo
     // Check if the page table is present.
     if (m_level == 3 || !IS_PT_PAGE_TBL(entry))
         return ZERO;
+    else if (alloc == ZERO)
+        return (ARM64PageTable *) get_page_tbl_addr_from_entry(entry);
     else
         return (ARM64PageTable *) alloc->toVirtual(get_page_tbl_addr_from_entry(entry));
+}
+
+void ARM64PageTable::setNextTable(Address virt, Address tbl, SplitAllocator *alloc)
+{
+    m_tables[get_entry_idx(virt, m_level)] = tbl | PT_PAGE;
 }
 
 /* TODO: check again */
@@ -189,6 +196,58 @@ MemoryContext::Result ARM64PageTable::map(Address virt,
     return table->map(virt, phys, access, alloc);
 }
 
+MemoryContext::Result ARM64PageTable::mapBlock2(Memory::Range range,
+                                              SplitAllocator *alloc)
+{
+#if 0
+    Arch::Cache cache;
+#endif
+    if (m_level != 1)
+        return MemoryContext::InvaildArgs;
+
+#if MMU_DEBUG
+    uart_puts("Table base: [");
+    uart_hex_u64((u64)&m_tables[0]);
+    uart_puts("]\nVirt: ");
+    uart_hex_u64(range.virt);
+    uart_puts("\nPhys: ");
+    uart_hex_u64(range.phys);
+    uart_puts("\nLevel: ");
+    uart_hex(m_level);
+    uart_puts("\nSize: ");
+    uart_hex_u64(range.size);
+    uart_puts("\n");
+#endif
+    Size blk_size = get_block_size(m_level+1);
+    for (Size i = 0; i < range.size; i += blk_size)
+    {
+
+        ARM64PageTable *tbl = getNextTable(range.virt + i, alloc);
+
+        if (!tbl) {
+            //FIXME: for alloc table for second level page table
+        }
+
+        Memory::Range blk = {
+            range.virt + i,
+            range.phys + i,
+            blk_size,
+            range.access,
+        };
+        tbl->mapBlock(blk, alloc);
+#if MMU_DEBUG
+        uart_puts("m_tables[0x");
+        uart_hex(idx);
+        uart_puts("] = 0x");
+        uart_hex_u64(val);
+        uart_puts("\n");
+#endif
+#if 0
+        cache.cleanData(&m_tables[get_entry_idx(range.virt + i)]);
+#endif
+    }
+    return MemoryContext::Success;
+}
 MemoryContext::Result ARM64PageTable::mapBlock(Memory::Range range,
                                               SplitAllocator *alloc)
 {

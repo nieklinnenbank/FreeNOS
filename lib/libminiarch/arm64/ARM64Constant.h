@@ -18,11 +18,6 @@
 #ifndef __LIBARCH_ARM64_CONSTANT_H
 #define __LIBARCH_ARM64_CONSTANT_H
 
-/* FIXME: deprecated*/
-#define DIRSHIFT        20
-/** Mask for large 1MiB section mappings. */
-#define SECTIONMASK     0xfff00000
-
 /**
  * @addtogroup lib
  * @{
@@ -35,58 +30,9 @@
  */
 
 /**
- * ARM CPU Constants
- * @{
- */
-
-/**
- * @}
- */
-
-/**
- * ARM Program Status Register (CPSR)
- * @{
- */
-
-#define USR_MODE    16
-#define IRQ_MODE    18
-#define FIQ_MODE    17
-#define SVC_MODE    19
-#define ABT_MODE    23
-#define UND_MODE    27
-#define SYS_MODE    31
-#define HYP_MODE    0x1a
-#define MODE_MASK   0x1f
-#define IRQ_BIT         (1 << 7)
-#define FIQ_BIT         (1 << 6)
-#define ASYNC_ABORT_BIT (1 << 8)
-
-/**
- * @}
- */
-
-/**
- * ARM Model-Specific Instructions
- * @{
- */
-
-/** msr ELR_hyp, lr */
-#define ELR  .long 0xe12ef30e
-
-/** eret */
-#define ERET .long 0xe160006e
-
-/**
- * @}
- */
-
-/**
  * ARM Memory Constants.
  * @{
  */
-
-/** Page entry bit shift. */
-#define PAGESHIFT       12
 
 /**
  * Page table bit shift.
