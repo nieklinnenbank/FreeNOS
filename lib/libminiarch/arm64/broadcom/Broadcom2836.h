@@ -61,7 +61,7 @@ class Broadcom2836
      */
     enum Timer
     {
-        PhysicalTimer1
+        NonSecurePhysicalTimer
     };
 
     /**

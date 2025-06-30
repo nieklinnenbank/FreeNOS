@@ -74,10 +74,12 @@ namespace ARM64Control
         SystemFrequency,
         PhysicalTimerValue,
         PhysicalTimerControl,
+        PhysicalTimerCount,
         //aarch64 new registers
         MemoryModelFeature,
         MemoryAttrIndirection,
         VectorBaseAddress,
+        DAIF,
     };
 
 
@@ -171,6 +173,9 @@ namespace ARM64Control
  */
 //FIXME: sy isn't appropriate for all scenarioes
 #define dmb()  { asm volatile ("dmb sy" ::: "memory"); }
+
+#define enable_interrupt() { asm volatile ("msr daifclr, #2") ; }
+#define disable_interrupt() { asm volatile ("msr daifset, #2") ; }
 
 /**
  * System Control flags.

@@ -22,6 +22,7 @@
 #include <CoreInfo.h>
 #include <arm64/ARM64Exception.h>
 #include <arm64/ARM64Constant.h>
+#include <arm64/ARM64Control.h>
 #include <arm64/broadcom/BroadcomInterrupt.h>
 #include <arm64/broadcom/Broadcom2836.h>
 #include "RaspberryKernel.h"
@@ -50,11 +51,9 @@ RaspberryKernel::RaspberryKernel(CoreInfo *info)
         m_timerIrq = ARMTIMER_IRQ;
         m_armTimer.setFrequency(100);
 
-        NOTICE("before enable timer irq");
         // Setup IRQ routing
-        m_bcm.setCoreTimerIrq(Broadcom2836::PhysicalTimer1, true);
+        m_bcm.setCoreTimerIrq(Broadcom2836::NonSecurePhysicalTimer, true);
     }
-        NOTICE("after enable timer irq");
 #endif /* BCM2836 */
 
 #if 0
@@ -71,7 +70,7 @@ RaspberryKernel::RaspberryKernel(CoreInfo *info)
 
 void RaspberryKernel::interrupt(volatile CPUState state)
 {
-    NOTICE("Interrupt enter");
+    FATAL("Interrupt enter");
 #if 0
     RaspberryKernel *kernel = (RaspberryKernel *) Kernel::instance();
     ARMProcess *proc = (ARMProcess *) Kernel::instance()->getProcessManager()->current(), *next;

@@ -16,6 +16,7 @@
  */
 
 #include "ARM64Control.h"
+#include <Log.h>
 
 namespace ARM64Control {
 
@@ -56,6 +57,22 @@ u64 read(Register reg)
             asm volatile ("mrs %0, id_aa64mmfr0_el1" : "=r" (r));
             break;
         } 
+        case PhysicalTimerCount: {
+            asm volatile ("mrs %0, cntpct_el0" : "=r" (r));
+            break;
+        }
+        case PhysicalTimerValue: {
+            asm volatile ("mrs %0, cntp_tval_el0" : "=r" (r));
+            break;
+        }
+        case PhysicalTimerControl: {
+            asm volatile ("mrs %0, cntp_ctl_el0" : "=r" (r));
+            break;
+        }
+        case DAIF: {
+            asm volatile ("mrs %0, DAIF" : "=r" (r));
+            break;
+        }
         default: break;
     }
     return r;
@@ -104,11 +121,11 @@ void write(Register reg, u64 value)
             break;
         }
         case PhysicalTimerValue: {
-            asm volatile ("msr cntp_tval_el0, %0" : "=r" (value));
+            asm volatile ("msr cntp_tval_el0, %0" : : "r" (value));
             break;
         }
         case PhysicalTimerControl: {
-            asm volatile ("msr cntp_ctl_el0, %0" : "=r" (value));
+            asm volatile ("msr cntp_ctl_el0, %0" : : "r" (value));
             break;
         }
         default: break;
