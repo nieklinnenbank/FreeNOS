@@ -178,6 +178,32 @@ namespace ARM64Control
 #define disable_interrupt() { asm volatile ("msr daifset, #2") ; }
 
 /**
+ * Reads the CPU's timestamp counter.
+ *
+ * @return 64-bit integer.
+ */
+#define timestamp() 0
+
+/**
+ * Reboot the system
+ */
+#define cpu_reboot()
+
+/**
+ * Shutdown the machine via ACPI.
+ *
+ * @note We do not have ACPI yet. Shutdown now has a bit naive implementation.
+ * @see http://forum.osdev.org/viewtopic.php?t=16990
+ */
+#define cpu_shutdown()
+
+/**
+ * Puts the CPU in a lower power consuming state.
+ */
+#define idle() \
+    asm volatile ("wfi")
+
+/**
  * System Control flags.
  */
 namespace SystemControlFlags {

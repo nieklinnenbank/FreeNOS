@@ -25,13 +25,16 @@ for item in env['LINKUSER']:
 env.Append(LINKFLAGS = env['LINKKERN'])
 env.Append(CPPFLAGS = '-D__KERNEL__')
 
-env.UseLibraries(['liballoc', 'libstd', 'libminiarch'])
-#env.UseServers(['serial'])
+env.UseLibraries(['liballoc', 'libstd', 'libminiarch', 'libipc', 'libfs'])
+env.UseServers(['serial'])
 
 env.TargetProgram('kernel.empty', [ Glob('*.cpp'),
-                              Glob('#' + env['BUILDROOT'] + '/kernel/tiny/*.cpp'),
+                              Glob('#' + env['BUILDROOT'] + '/kernel/*.cpp'),
+                              Glob('#' + env['BUILDROOT'] + '/kernel/API/*.cpp'),
                               Glob('#' + env['BUILDROOT'] + '/kernel/arm64/*.S'),
                               Glob('#' + env['BUILDROOT'] + '/kernel/arm64/*.cpp'),
+                              '#' + env['BUILDROOT'] + '/server/serial/SerialDevice.o',
+                              '#' + env['BUILDROOT'] + '/server/serial/PL011.o'
                               ],
                    False)
 

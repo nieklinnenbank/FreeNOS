@@ -18,7 +18,7 @@
 #ifndef __ARM64_KERNEL_H
 #define __ARM64_KERNEL_H
 
-#include <FreeNOS/tiny/Kernel.h>
+#include <FreeNOS/Kernel.h>
 #include <arm64/ARM64Exception.h>
 #include <Types.h>
 
