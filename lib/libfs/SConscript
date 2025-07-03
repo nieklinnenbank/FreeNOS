@@ -18,7 +18,7 @@
 Import('build_env')
 
 env = build_env.Clone()
-env.UseLibraries(['libstd', 'libminiarch', 'libipc', 'libruntime'])
-env.UseLibraries(['libipc', 'libruntime', 'libminiarch', 'libstd'], 'host')
+env.UseLibraries(['libstd', 'libarch', 'libipc', 'libruntime'])
+env.UseLibraries(['libipc', 'libruntime', 'libarch', 'libstd'], 'host')
 env.UseServers(['datastore'])
 env.Library('libfs', Glob('*.cpp'))

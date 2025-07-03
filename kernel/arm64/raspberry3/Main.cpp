@@ -30,6 +30,7 @@ extern Address __start, __end, __bootimg;
 #include <arm64/ARM64PageTable.h>
 #include <arm64/ARM64Exception.h>
 #include <arm64/ARM64Control.h>
+#include <DeviceLog.h>
 #include "CoreInfo.h"
 #include "BootImage.h"
 #include "RaspberryKernel.h"

@@ -30,23 +30,17 @@ build_env = target
 Export('build_env')
 
 # Build programs, libraries and servers.
-VariantDir(target['BUILDROOT'] + '/lib/liballoc', '#lib/liballoc', duplicate = 0)
-VariantDir(target['BUILDROOT'] + '/lib/libstd', '#lib/libstd', duplicate = 0)
-VariantDir(target['BUILDROOT'] + '/lib/libminiarch', '#lib/libminiarch', duplicate = 0)
-VariantDir(target['BUILDROOT'] + '/lib/libfs', '#lib/libfs', duplicate = 0)
-VariantDir(target['BUILDROOT'] + '/lib/libipc', '#lib/libipc', duplicate = 0)
+VariantDir(target['BUILDROOT'] + '/lib', '#lib', duplicate = 0)
 #VariantDir(target['BUILDROOT'] + '/bin', '#bin', duplicate = 0)
 #VariantDir(target['BUILDROOT'] + '/server', '#server', duplicate = 0)
+VariantDir(target['BUILDROOT'] + '/server/serial', '#server/serial', duplicate = 0)
 #VariantDir(target['BUILDROOT'] + '/test', '#test', duplicate = 0)
 VariantDir(target['BUILDROOT'] + '/kernel', '#kernel', duplicate = 0)
 
 
-SConscript(target['BUILDROOT'] + '/lib/liballoc/SConscript')
-SConscript(target['BUILDROOT'] + '/lib/libstd/SConscript')
-SConscript(target['BUILDROOT'] + '/lib/libminiarch/SConscript')
-SConscript(target['BUILDROOT'] + '/lib/libfs/SConscript')
-SConscript(target['BUILDROOT'] + '/lib/libipc/SConscript')
+SConscript(target['BUILDROOT'] + '/lib/SConscript')
 #SConscript(target['BUILDROOT'] + '/bin/SConscript')
 #SConscript(target['BUILDROOT'] + '/server/SConscript')
+SConscript(target['BUILDROOT'] + '/server/serial/SConscript')
 #SConscript(target['BUILDROOT'] + '/test/SConscript')
 SConscript(target['BUILDROOT'] + '/kernel/' + target['ARCH'] + '/' + target['SYSTEM'] + '/SConscript')
