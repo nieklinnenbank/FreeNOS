@@ -28,8 +28,6 @@
 #include "ARM64PageTable.h"
 #include "ARM64Control.h"
 
-extern C void uart_puts(char *s);
-
 ARM64Paging::ARM64Paging(MemoryMap *map, SplitAllocator *alloc)
     : MemoryContext(map, alloc)
     , m_firstTable(0)
@@ -150,7 +148,6 @@ MemoryContext::Result ARM64Paging::enableMMU()
     r = ARM64Control::read(ARM64Control::MemoryModelFeature);
     b = PA_RANGE(r);
     if(TGRAN4(r)/*4k*/ || b<1/*36 bits*/) {
-        uart_puts("ERROR: 4k granule or 36 bit address space not supported\n");
         return MemoryContext::InvaildArgs;
     }
 
