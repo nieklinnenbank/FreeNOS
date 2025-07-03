@@ -63,6 +63,8 @@ class ELF : public ExecutableFormat
      * @todo Rework executables to avoid giving all mapped regions read, write and execute permissions.
      */
     virtual Result regions(Region *regions, Size *count) const;
+    virtual Result regions32(Region *regions, Size *count) const;
+    virtual Result regions64(Region *regions, Size *count) const;
 
     /**
      * Lookup the program entry point.
