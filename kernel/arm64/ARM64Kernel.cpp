@@ -90,6 +90,11 @@ ARM64Kernel::ARM64Kernel(CoreInfo *info)
         for (Size i = 0; i < MegaByte(1); i += PAGESIZE)
             m_alloc->allocate(info->memory.phys + TMPSTACKOFF + i);
     }
+#else
+    if (m_coreInfo->coreId == 0) {
+        for (Size i = 0; i < (PAGESIZE*4); i += PAGESIZE)
+            m_alloc->allocate(TMPSTACKADDR + i);
+    }
 #endif
 }
 #if 0

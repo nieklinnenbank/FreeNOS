@@ -19,11 +19,7 @@
 #include <SplitAllocator.h>
 #include <MemoryBlock.h>
 #include <Log.h>
-#if 0
 #include "CoreInfo.h"
-#include "ARM64Core.h"
-#include "ARM64Control.h"
-#endif
 #include "ARM64Paging.h"
 #include "ARM64PageTable.h"
 #include "ARM64Control.h"
@@ -33,9 +29,7 @@ ARM64Paging::ARM64Paging(MemoryMap *map, SplitAllocator *alloc)
     , m_firstTable(0)
     , m_firstTableAddr(0)
     , m_pageStage(KernelStage)
-#if 0
     , m_kernelBaseAddr(coreInfo.memory.phys)
-#endif
 {
 }
 
@@ -69,7 +63,7 @@ MemoryContext::Result ARM64Paging::initialize()
         Allocator::Range phys, virt;
         phys.address = 0;
         phys.size = sizeof(ARM64PageTable);
-        phys.alignment = sizeof(ARM64PageTable);
+        phys.alignment = PAGESIZE;
 
         // Allocate page directory
         if (m_alloc->allocate(phys, virt) != Allocator::Success)
@@ -106,19 +100,14 @@ MemoryContext::Result ARM64Paging::initialize()
     kernelRange.phys = m_kernelBaseAddr;
     m_firstTable->mapBlock2(kernelRange, m_alloc);
 
-#if 0
-#ifndef BCM2835
     // Temporary stack is used for kernel initialization code
     // and for SMP the temporary stack is shared between cores.
     // This is needed in order to perform early-MMU enable.
     m_firstTable->unmap(TMPSTACKADDR, m_alloc);
-
     const Memory::Range tmpStackRange = {
-        TMPSTACKADDR, TMPSTACKADDR, MegaByte(1), Memory::Readable|Memory::Writable
+        TMPSTACKADDR, TMPSTACKADDR, MegaByte(2), Memory::Readable|Memory::Writable
     };
-    m_firstTable->mapLarge(tmpStackRange, m_alloc);
-#endif /* BCM2835 */
-#endif
+    m_firstTable->mapBlock2(tmpStackRange, m_alloc);
 
     // Unmap I/O zone
     for (Size i = 0; i < IO_SIZE; i += MegaByte(2))
@@ -214,20 +203,18 @@ MemoryContext::Result ARM64Paging::activate(bool initializeMMU)
 
 MemoryContext::Result ARM64Paging::map(Address virt, Address phys, Memory::Access acc)
 {
-#if 0
     // Modify page tables
     Result r = m_firstTable->map(virt, phys, acc, m_alloc);
 
+#if 0
     // Flush the TLB to refresh the mapping
     if (m_current == this)
         tlb_invalidate(virt);
+#endif
 
     // Synchronize execution stream.
     isb();
     return r;
-#else
-    return MemoryContext::Success;
-#endif
 }
 
 MemoryContext::Result ARM64Paging::unmap(Address virt)
@@ -250,6 +237,7 @@ MemoryContext::Result ARM64Paging::unmap(Address virt)
 #else
     // Modify page tables
     Result r = m_firstTable->unmap(virt, m_alloc);
+    isb();
     return r;
 #endif
 }

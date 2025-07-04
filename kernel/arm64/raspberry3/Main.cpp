@@ -82,8 +82,5 @@ extern C int kernel_main(void)
     NOTICE("Bootimg address " << (void *) coreInfo.bootImageAddress);
     NOTICE("Bootimg size " << (void *) coreInfo.bootImageSize);
 
-    // echo everything back
-    while(1) {
-    }
-    return 0;
+    return kernel.run();
 }

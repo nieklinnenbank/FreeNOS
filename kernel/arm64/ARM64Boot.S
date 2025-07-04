@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//#include <FreeNOS/Constant.h>
+#include <FreeNOS/Constant.h>
 
 #define STACKSIZE   (PAGESIZE * 4)
 
@@ -24,7 +24,7 @@
 .section ".text.boot"
 
 /* Make _start global. */
-.globl _start
+.globl _start, svcStack
 
 /* from https://github.com/bztsrc/raspi3-tutorial/blob/master/02_multicorec/start.S */
 
@@ -42,7 +42,9 @@ _start:
 2:  // cpu id == 0
 
     // set top of stack just before our code (stack grows to a lower address per AAPCS64)
-    ldr     x1, =_start
+    //ldr     x1, =_start
+    //use tmp stack instead
+    ldr     x1, =(TMPSTACKADDR + STACKSIZE)
 
     // set up EL1
     mrs     x0, CurrentEL
@@ -91,3 +93,9 @@ _start:
 4:  bl      kernel_main
     // for failsafe, halt this core too
     b       1b
+
+.section ".data"
+.align 8
+
+.fill STACKSIZE, 1, 0
+svcStack:

@@ -20,10 +20,10 @@
 #include <SplitAllocator.h>
 #include "ARM64Process.h"
 
-#define MEMALIGN8 8
+#define MEMALIGN16 16
 
 static bool firstProcess = true;
-//extern u8 svcStack[PAGESIZE * 4];
+extern u8 svcStack[PAGESIZE * 4];
 
 ARM64Process::ARM64Process(ProcessID id, Address entry, bool privileged, const MemoryMap &map)
     : Process(id, entry, privileged, map)
@@ -109,10 +109,11 @@ void ARM64Process::reset(const Address entry)
     const Memory::Range range = m_map.range(MemoryMap::UserStack);
 
     MemoryBlock::set(&m_cpuState, 0, sizeof(m_cpuState));
-    m_cpuState.sp = range.virt + range.size - MEMALIGN8;    // user stack pointer
+    m_cpuState.sp = range.virt + range.size - MEMALIGN16;    // user stack pointer
     m_cpuState.pc = entry;                                  // user program counter
     //FIXME: SYS_MODE and USR_MODE
-    m_cpuState.cpsr = (m_privileged ? 0x5 : 0x0); // current program status (CPSR)
+    m_cpuState.cpsr = (m_privileged ? 0x5 : 0x3c | 0x0); // current program status (CPSR)
+    NOTICE("process sp = " << (void *)m_cpuState.sp << ", pc = " << (void *)m_cpuState.pc);
 }
 
 void ARM64Process::execute(Process *previous)
@@ -124,17 +125,17 @@ void ARM64Process::execute(Process *previous)
     if (firstProcess)
     {
         firstProcess = false;
+        NOTICE("Reach here " << previous->getID());
 
-#if 0
         // Kernel stacks are currently 16KiB (see ARMBoot.S)
         CPUState *ptr = ((CPUState *) (svcStack + sizeof(svcStack))) - 1;
         MemoryBlock::copy(ptr, &m_cpuState, sizeof(*ptr));
 
         // Switch to the actual SVC stack and switch to usermode
-        asm volatile ("ldr sp, =(svcStack + (4096*4))\n"
+        asm volatile ("ldr x0, =(svcStack + (4096*4))\n"
+                      "mov sp, x0\n"
                       "sub sp, sp, %0\n"
-                      "ldr r0, =loadCoreState0\n"
-                      "bx r0\n" : : "i" (sizeof(m_cpuState) - sizeof(m_cpuState.padding)) );
-#endif
+                      "ldr x0, =returnFromCallSvc\n"
+                      "br x0\n" : : "i" (sizeof(m_cpuState)) );
     }
 }
