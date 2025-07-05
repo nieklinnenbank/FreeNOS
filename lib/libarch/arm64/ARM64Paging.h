@@ -169,6 +169,8 @@ class ARM64Paging : public MemoryContext
      */
     void setupPageTable(MemoryMap *map, Address firstTableAddress, Address kernelBaseAddress);
 
+    MemoryContext::Result allocPageTable(Allocator::Range &phys, Allocator::Range &virt);
+
     /**
      * Enable the MMU
      *

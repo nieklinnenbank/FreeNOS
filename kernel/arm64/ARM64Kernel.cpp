@@ -24,6 +24,8 @@
 #include <arm64/ARM64Control.h>
 #include "ARM64Kernel.h"
 
+extern Address __start;
+
 void ARM64Kernel::FatalHandler(struct CPUState state)
 {
     FATAL("This is a test");
@@ -70,6 +72,9 @@ ARM64Kernel::ARM64Kernel(CoreInfo *info)
     m_exception.install(ARM64Exception::FIQ_Lower_EL_AA32, FatalHandler);
     m_exception.install(ARM64Exception::SError_Lower_EL_AA32, FatalHandler);
 
+    // First page is reserved
+    for (Size i = 0; i < info->kernel.phys; i += PAGESIZE)
+        m_alloc->allocate(i);
 #if 0
     // First page is used for m_exception handlers
     m_alloc->allocate(info->memory.phys);

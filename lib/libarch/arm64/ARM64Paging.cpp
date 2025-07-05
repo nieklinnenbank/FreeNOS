@@ -56,42 +56,58 @@ ARM64Paging::ARM64Paging(MemoryMap *map,
     m_secondTableAddr[1] = secondTableAddress[1];
 }
 
+MemoryContext::Result ARM64Paging::allocPageTable(Allocator::Range &phys, Allocator::Range &virt)
+{
+    phys.address = 0;
+    phys.size = sizeof(ARM64PageTable);
+    phys.alignment = PAGESIZE;
+
+    // Allocate page directory
+    if (m_alloc->allocate(phys, virt) != Allocator::Success)
+    {
+        return MemoryContext::OutOfMemory;
+    }
+
+    return MemoryContext::Success;
+}
+
 MemoryContext::Result ARM64Paging::initialize()
 {
     // Allocate first page table if needed
     if (!m_firstTable) {
         Allocator::Range phys, virt;
-        phys.address = 0;
-        phys.size = sizeof(ARM64PageTable);
-        phys.alignment = PAGESIZE;
+        for (int i = 0; i < 3; i++) {
+            // Allocate page directory
+            if (allocPageTable(phys, virt) != Allocator::Success)
+            {
+                return MemoryContext::OutOfMemory;
+            }
 
-        // Allocate page directory
-        if (m_alloc->allocate(phys, virt) != Allocator::Success)
-        {
-            return MemoryContext::OutOfMemory;
+            if (i == 0) {
+                DEBUG("alloc firstTable virt = " << (void *)virt.address << " phy = " << (void *)phys.address);
+                m_firstTable = (ARM64PageTable *) virt.address;
+                m_firstTableAddr = phys.address;
+            } else {
+                DEBUG("alloc secondTable" << (i-1) << " virt = " << (void *)virt.address << " phy = " << (void *)phys.address);
+                m_secondTableAddr[i-1] = virt.address;
+            }
         }
-
-        m_firstTable = (ARM64PageTable *) virt.address;
-        m_firstTableAddr = phys.address;
-
-        //TODO: allocate for two more pageTable from 0 to 2GB, which is ugly code
     }
 
     // Initialize the page directory
     MemoryBlock::set(m_firstTable, 0, sizeof(ARM64PageTable));
     m_firstTable->m_level = 1;
 
-    if (m_pageStage == BootStage) {
-        ARM64PageTable *tbl = (ARM64PageTable *) m_secondTableAddr[0];
-        MemoryBlock::set(tbl, 0, sizeof(ARM64PageTable));
-        tbl->m_level = 2;
-        m_firstTable->setNextTable(0x0, (Address) tbl, m_alloc);
+    //FIXME: using correct phy and virt address
+    ARM64PageTable *tbl = (ARM64PageTable *) m_secondTableAddr[0];
+    MemoryBlock::set(tbl, 0, sizeof(ARM64PageTable));
+    tbl->m_level = 2;
+    m_firstTable->setNextTable(0x0, (Address) tbl, m_alloc);
 
-        tbl = (ARM64PageTable *) m_secondTableAddr[2];
-        MemoryBlock::set(tbl, 0, sizeof(ARM64PageTable));
-        tbl->m_level = 2;
-        m_firstTable->setNextTable((Address)L1_BLOCK_SIZE, (Address) tbl, m_alloc);
-    }
+    tbl = (ARM64PageTable *) m_secondTableAddr[1];
+    MemoryBlock::set(tbl, 0, sizeof(ARM64PageTable));
+    tbl->m_level = 2;
+    m_firstTable->setNextTable((Address)L1_BLOCK_SIZE, (Address) tbl, m_alloc);
 
     // Map the kernel. The kernel has permanently mapped 1GB of
     // physical memory. This 1GiB memory region starts at its physical
@@ -129,10 +145,7 @@ MemoryContext::Result ARM64Paging::enableMMU()
 {
     u64 r, b, level;
 
-    if (m_firstTable->m_level == 2)
-        level = 34LL;
-    else
-        level = 25LL;
+    level = 25LL;
 
     r = ARM64Control::read(ARM64Control::MemoryModelFeature);
     b = PA_RANGE(r);
@@ -166,7 +179,8 @@ MemoryContext::Result ARM64Paging::enableMMU()
     
 
     // tell the MMU where our translation tables are. TTBR_CNP bit not documented, but required
-    u64 tbl = (unsigned long)&m_firstTable->m_tables[0];
+    //u64 tbl = (unsigned long)&m_firstTable->m_tables[0];
+    u64 tbl = m_firstTableAddr;
     tbl += 0x1UL;
 
     ARM64Control::write(ARM64Control::TranslationTable0, tbl);
@@ -197,7 +211,23 @@ MemoryContext::Result ARM64Paging::activate(bool initializeMMU)
     if (initializeMMU)
     {
         enableMMU();
+    } else {
+        //m_cache.cleanInvalidate(Cache::Unified);
+        
+        u64 tbl = (unsigned long)&m_firstTable->m_tables[0];
+        tbl += 0x1UL;
+        ARM64Control::write(ARM64Control::TranslationTable0, tbl);
+
+        // Flush TLB caches
+        //tlb_flush_all();
+
+        // Synchronize execution stream
+        dsb(ish);
+        isb();
     }
+
+    // Done. Update currently active context pointer
+    m_current = this;
     return MemoryContext::Success;
 }
 

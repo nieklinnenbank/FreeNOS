@@ -111,9 +111,8 @@ void ARM64Process::reset(const Address entry)
     MemoryBlock::set(&m_cpuState, 0, sizeof(m_cpuState));
     m_cpuState.sp = range.virt + range.size - MEMALIGN16;    // user stack pointer
     m_cpuState.pc = entry;                                  // user program counter
-    //FIXME: SYS_MODE and USR_MODE
-    m_cpuState.cpsr = (m_privileged ? 0x5 : 0x3c | 0x0); // current program status (CPSR)
-    NOTICE("process sp = " << (void *)m_cpuState.sp << ", pc = " << (void *)m_cpuState.pc);
+    //FIXME: enable interrupt once implemented user mode
+    m_cpuState.cpsr = 0x3c0 | (m_privileged ? 0x5 : 0x0); // current program status (CPSR)
 }
 
 void ARM64Process::execute(Process *previous)
@@ -125,7 +124,6 @@ void ARM64Process::execute(Process *previous)
     if (firstProcess)
     {
         firstProcess = false;
-        NOTICE("Reach here " << previous->getID());
 
         // Kernel stacks are currently 16KiB (see ARMBoot.S)
         CPUState *ptr = ((CPUState *) (svcStack + sizeof(svcStack))) - 1;

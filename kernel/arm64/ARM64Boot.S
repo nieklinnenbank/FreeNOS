@@ -94,8 +94,6 @@ _start:
     // for failsafe, halt this core too
     b       1b
 
-.section ".data"
-.align 8
-
+.align 7
 .fill STACKSIZE, 1, 0
 svcStack:
