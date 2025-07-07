@@ -117,6 +117,7 @@ void ARM64Process::reset(const Address entry)
 
 void ARM64Process::execute(Process *previous)
 {
+    NOTICE("proc " << previous->getID()  << " switch to proc " << getID() );
     // Activates memory context of this process
     m_memoryContext->activate();
 
@@ -133,7 +134,7 @@ void ARM64Process::execute(Process *previous)
         asm volatile ("ldr x0, =(svcStack + (4096*4))\n"
                       "mov sp, x0\n"
                       "sub sp, sp, %0\n"
-                      "ldr x0, =returnFromCallSvc\n"
+                      "ldr x0, =returnFromEL0Call8\n"
                       "br x0\n" : : "i" (sizeof(m_cpuState)) );
     }
 }
