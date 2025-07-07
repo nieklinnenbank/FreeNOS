@@ -53,7 +53,7 @@ returnFromCall\index:
     ldp x14, x15, [sp, #112]
     ldp x16, x17, [sp, #128]
     ldp x18, x29, [sp, #144]
-    ldp x30, x0, [sp, #160]
+    ldp x30, xzr, [sp, #160]
 
     add sp, sp, #208
 

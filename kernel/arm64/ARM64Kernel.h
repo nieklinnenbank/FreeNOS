@@ -19,6 +19,7 @@
 #define __ARM64_KERNEL_H
 
 #include <FreeNOS/Kernel.h>
+#include <FreeNOS/Process.h>
 #include <arm64/ARM64Exception.h>
 #include <Types.h>
 
@@ -53,13 +54,14 @@ class ARM64Kernel : public Kernel
      */
     static void interrupt(CPUState state);
 
+#endif
     /**
      * Software trap routine
      *
      * @param state Saved CPU register state
      */
-    static void trap(CPUState state);
-
+    static void trap(volatile CPUState &state);
+#if 0
     /**
      * Undefined instruction routine
      *
@@ -88,8 +90,9 @@ class ARM64Kernel : public Kernel
      */
     static void reserved(CPUState state);
 #endif
-    static void SyncExceptionEL1(struct CPUState state);
-    static void FatalHandler(struct CPUState state);
+    static void SyncExceptionEL1(volatile CPUState state);
+    static void SyncExceptionEL0(volatile CPUState state);
+    static void FatalHandler(volatile CPUState state);
   protected:
 
     /** ARM64 exception handling subsystem. */

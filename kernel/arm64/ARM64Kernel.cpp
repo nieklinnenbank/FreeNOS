@@ -16,6 +16,7 @@
  */
 
 #include <FreeNOS/System.h>
+#include <FreeNOS/ProcessManager.h>
 #include <SplitAllocator.h>
 #include <CoreInfo.h>
 #include <Log.h>
@@ -26,12 +27,28 @@
 
 extern Address __start;
 
-void ARM64Kernel::FatalHandler(struct CPUState state)
+void ARM64Kernel::FatalHandler(volatile CPUState state)
 {
     FATAL("This is a test");
 }
 
-void ARM64Kernel::SyncExceptionEL1(struct CPUState state)
+void ARM64Kernel::SyncExceptionEL0(volatile CPUState state)
+{
+    u64 ec = exception_code(state.esr);
+
+    switch(ec) {
+        case 0x25: //Data Abort
+            ERROR("Failed to access " << (void *)state.far);
+            break;
+        case 0x15:
+            trap(state);
+        default:
+            //omitted
+            break;
+    }
+}
+
+void ARM64Kernel::SyncExceptionEL1(volatile CPUState state)
 {
     u64 ec = exception_code(state.esr);
     NOTICE("Unexpected m_exception in EL1 called from EL1 ec="<<(void *)ec);
@@ -46,6 +63,7 @@ void ARM64Kernel::SyncExceptionEL1(struct CPUState state)
             //omitted
             break;
     }
+    while(1) {};
 }
 
 ARM64Kernel::ARM64Kernel(CoreInfo *info)
@@ -63,7 +81,7 @@ ARM64Kernel::ARM64Kernel(CoreInfo *info)
     m_exception.install(ARM64Exception::IRQ_SP_ELx, FatalHandler);
     m_exception.install(ARM64Exception::FIQ_SP_ELx, FatalHandler);
     m_exception.install(ARM64Exception::SError_SP_ELx, FatalHandler);
-    m_exception.install(ARM64Exception::Sync_Lower_EL, FatalHandler);
+    m_exception.install(ARM64Exception::Sync_Lower_EL, SyncExceptionEL0);
     m_exception.install(ARM64Exception::IRQ_Lower_EL, FatalHandler);
     m_exception.install(ARM64Exception::FIQ_Lower_EL, FatalHandler);
     m_exception.install(ARM64Exception::SError_Lower_EL, FatalHandler);
@@ -149,22 +167,26 @@ void ARM64Kernel::reserved(CPUState state)
            Kernel::instance()->getProcessManager()->current()->getID());
 }
 
-void ARM64Kernel::trap(volatile CPUState state)
+#endif
+
+void ARM64Kernel::trap(volatile CPUState &state)
 {
     ProcessManager *mgr = Kernel::instance()->getProcessManager();
     ARM64Process *proc = (ARM64Process *) mgr->current(), *proc2;
     ProcessID procId = proc->getID();
 
-    DEBUG("coreId = " << coreInfo.coreId << " procId = " << procId << " api = " << state.r0);
+    NOTICE("coreId = " << coreInfo.coreId << " procId = " << procId << " api = " << (Address)state.x8);
+    NOTICE("args = " << (void *)state.x0 << ", " << (void *)state.x1 << ", " << (void *)state.x2
+            << ", " << (void *)state.x3 << "," << (void *)state.x4);
 
     // Execute the kernel call
     u32 r = Kernel::instance()->getAPI()->invoke(
-        (API::Number) state.r0,
-                      state.r1,
-                      state.r2,
-                      state.r3,
-                      state.r4,
-                      state.r5
+        (API::Number) state.x8,
+                      state.x0,
+                      state.x1,
+                      state.x2,
+                      state.x3,
+                      state.x4
     );
 
     // Did we change process?
@@ -176,12 +198,11 @@ void ARM64Kernel::trap(volatile CPUState state)
         // Only if the previous process still exists (not killed in API)
         if (mgr->get(procId) != NULL)
         {
-            state.r0 = r;
+            state.x0 = r;
             proc->setCpuState((const CPUState *)&state);
         }
         MemoryBlock::copy((void*)&state, proc2->cpuState(), sizeof(state));
     }
     else
-        state.r0 = r;
+        state.x0 = r;
 }
-#endif

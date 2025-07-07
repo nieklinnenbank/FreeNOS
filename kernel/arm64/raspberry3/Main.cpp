@@ -76,11 +76,5 @@ extern C int kernel_main(void)
 
     RaspberryKernel kernel(&coreInfo);
 
-    NOTICE("Before accessing memory");
-    u64 val = *(volatile u64 *)0xffffffffffffaaffull;
-    NOTICE("After accessing memory");
-    NOTICE("Bootimg address " << (void *) coreInfo.bootImageAddress);
-    NOTICE("Bootimg size " << (void *) coreInfo.bootImageSize);
-
     return kernel.run();
 }
