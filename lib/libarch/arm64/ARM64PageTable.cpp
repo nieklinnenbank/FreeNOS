@@ -418,13 +418,19 @@ u32 ARM64PageTable::flags(Memory::Access access) const
     if (!(access & Memory::Writable))   f |= PT_RO;
 
     // Cache
+#if 0
     if (access & Memory::Device)
         f |= PT_OSH | PT_DEV;
     else if (access & Memory::Uncached)
         f |= PT_OSH | PT_NC; /* FIXME: Is PT_OSH appropriate? */
     else
         f |= PT_ISH | PT_MEM;
-
+#else
+    if (access & Memory::Device)
+        f |= PT_OSH | PT_DEV;
+    else
+        f |= PT_ISH | PT_NC; /* FIXME: Is PT_OSH appropriate? */
+#endif
     return f;
 }
 

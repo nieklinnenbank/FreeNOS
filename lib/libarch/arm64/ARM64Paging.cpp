@@ -165,14 +165,14 @@ MemoryContext::Result ARM64Paging::enableMMU()
         (b << 32) |      // IPS=autodetected
         (0b10LL << 30) | // TG1=4k
         (0b11LL << 28) | // SH1=3 inner
-        (0b01LL << 26) | // ORGN1=1 write back
-        (0b01LL << 24) | // IRGN1=1 write back
+        (0b00LL << 26) | // ORGN1=1 write back
+        (0b00LL << 24) | // IRGN1=1 write back
         (0b0LL  << 23) | // EPD1 enable higher half
         (level  << 16) | // T1SZ=25, 3 levels (512G); 34, 2 levels (1G) FIXME: is it necessary?
         (0b00LL << 14) | // TG0=4k
         (0b11LL << 12) | // SH0=3 inner
-        (0b01LL << 10) | // ORGN0=1 write back
-        (0b01LL << 8) |  // IRGN0=1 write back
+        (0b00LL << 10) | // ORGN0=1 write back
+        (0b00LL << 8) |  // IRGN0=1 write back
         (0b0LL  << 7) |  // EPD0 enable lower half
         (level  << 0);   // T0SZ=25, 3 levels (512G); 34, 2 levels (1G)
     ARM64Control::write(ARM64Control::TranslationTableCtrl, r);
@@ -220,6 +220,8 @@ MemoryContext::Result ARM64Paging::activate(bool initializeMMU)
 
         // Flush TLB caches
         //tlb_flush_all();
+        //FIXME: check it again
+        asm volatile ("dsb ishst\ntlbi vmalle1is\n");
 
         // Synchronize execution stream
         dsb(ish);

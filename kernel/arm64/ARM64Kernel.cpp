@@ -175,8 +175,8 @@ void ARM64Kernel::trap(volatile CPUState &state)
     ARM64Process *proc = (ARM64Process *) mgr->current(), *proc2;
     ProcessID procId = proc->getID();
 
-    NOTICE("coreId = " << coreInfo.coreId << " procId = " << procId << " api = " << (Address)state.x8);
-    NOTICE("args = " << (void *)state.x0 << ", " << (void *)state.x1 << ", " << (void *)state.x2
+    DEBUG("coreId = " << coreInfo.coreId << " procId = " << procId << " api = " << (Address)state.x8);
+    DEBUG("args = " << (void *)state.x0 << ", " << (void *)state.x1 << ", " << (void *)state.x2
             << ", " << (void *)state.x3 << "," << (void *)state.x4);
 
     // Execute the kernel call
