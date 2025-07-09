@@ -68,7 +68,7 @@ extern C int kernel_main(void)
     constructors();
 
     // Open the serial console as default Log
-    PL011 pl011(25);
+    PL011 pl011(UART0_IRQ);
     pl011.initialize();
 
     DeviceLog console(pl011);

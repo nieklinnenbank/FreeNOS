@@ -52,7 +52,7 @@ RaspberryKernel::RaspberryKernel(CoreInfo *info)
         m_armTimer.setFrequency(100);
 
         // Setup IRQ routing
-        m_bcm.setCoreTimerIrq(Broadcom2836::NonSecurePhysicalTimer, true);
+        m_bcm.setCoreTimerIrq(Broadcom2836::NonSecurePhysicalTimer, false);
     }
 #endif /* BCM2836 */
 
@@ -72,10 +72,9 @@ void RaspberryKernel::interrupt(volatile CPUState state)
 {
     RaspberryKernel *kernel = (RaspberryKernel *) Kernel::instance();
     ARM64Process *proc = (ARM64Process *) Kernel::instance()->getProcessManager()->current(), *next;
-    bool tick;
+    bool tick, is_uart0 = false;
 
     DEBUG("procId = " << proc->getID());
-
 #ifdef BCM2836
     if (kernel->m_timer == &kernel->m_armTimer)
     {
@@ -92,15 +91,19 @@ void RaspberryKernel::interrupt(volatile CPUState state)
         kernel->m_timer->tick();
         kernel->getProcessManager()->schedule();
     }
-
     for (uint i = kernel->m_timerIrq + 1; i < 64; i++)
     {
         if (kernel->m_intControl->isTriggered(i))
         {
+            is_uart0 = i == UART0_IRQ;
             kernel->executeIntVector(i, (CPUState *)&state);
         }
     }
 
+    //FIXME: it is just a walkaround when timer interrupt doesn't work
+    if (is_uart0)
+        kernel->getProcessManager()->schedule();
+    
     next = (ARM64Process *) kernel->getProcessManager()->current();
     if (next != proc)
     {

@@ -38,9 +38,9 @@ Broadcom2836::Result Broadcom2836::setCoreTimerIrq(Broadcom2836::Timer timer,
     {
         case NonSecurePhysicalTimer:
             if (enable)
-                m_io.set32(reg, (1 << 1));
+                m_io.set(reg, (1 << 1));
             else
-                m_io.unset32(reg, (1 << 1));
+                m_io.unset(reg, (1 << 1));
 
             return Success;
 
@@ -53,7 +53,7 @@ Broadcom2836::Result Broadcom2836::setCoreTimerIrq(Broadcom2836::Timer timer,
 bool Broadcom2836::getCoreTimerIrqStatus(Broadcom2836::Timer timer) const
 {
     if (timer == NonSecurePhysicalTimer)
-        return (m_io.read32(CoreIrqRegister + (m_coreId * sizeof(u32))) & (1 << 1)) > 0;
+        return (m_io.read(CoreIrqRegister + (m_coreId * sizeof(u32))) & (1 << 1)) > 0;
     else
         return false;
 }

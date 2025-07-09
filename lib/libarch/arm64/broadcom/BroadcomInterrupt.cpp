@@ -37,8 +37,8 @@
 BroadcomInterrupt::BroadcomInterrupt() : IntController()
 {
     // disable all IRQ sources first, just to be "safe"
-    m_io.write32(INTERRUPT_DISABLEIRQ1, 0xFFFFFFFF);
-    m_io.write32(INTERRUPT_DISABLEIRQ2, 0xFFFFFFFF);
+    m_io.write(INTERRUPT_DISABLEIRQ1, 0xFFFFFFFF);
+    m_io.write(INTERRUPT_DISABLEIRQ2, 0xFFFFFFFF);
 }
 
 BroadcomInterrupt::Result BroadcomInterrupt::enable(uint vector)
@@ -48,17 +48,17 @@ BroadcomInterrupt::Result BroadcomInterrupt::enable(uint vector)
     {
         // only 1 bits are recognized when writing to the (en/dis)able regs.
         // using |= here could be problematic since it would likely be
-        // implemented as multiple instructions: at least a read32, an or,
-        // and a write32. if we interrupted _after_ the read32 instruction or
+        // implemented as multiple instructions: at least a read, an or,
+        // and a write. if we interrupted _after_ the read instruction or
         // the or instruction, and disabled certain bits in the IRQ
-        // routine, the |= would write32 back the old state of the enable
+        // routine, the |= would write back the old state of the enable
         // bits. This would effectively be re-enabling interrupts that we
         // wanted disabled.
-        m_io.write32(INTERRUPT_ENABLEIRQ1, (1<<vector));
+        m_io.write(INTERRUPT_ENABLEIRQ1, (1<<vector));
     }
     else
     {
-        m_io.write32(INTERRUPT_ENABLEIRQ2, (1<<(vector-32)));
+        m_io.write(INTERRUPT_ENABLEIRQ2, (1<<(vector-32)));
     }
     return Success;
 }
@@ -72,11 +72,11 @@ BroadcomInterrupt::Result BroadcomInterrupt::disable(uint vector)
     // which will put us in a never-ending IRQ loop.
     if(vector < 32)
     {
-        m_io.write32(INTERRUPT_DISABLEIRQ1, (1<<vector));
+        m_io.write(INTERRUPT_DISABLEIRQ1, (1<<vector));
     }
     else
     {
-        m_io.write32(INTERRUPT_DISABLEIRQ2, (1<<(vector-32)));
+        m_io.write(INTERRUPT_DISABLEIRQ2, (1<<(vector-32)));
     }
     return Success;
 }
@@ -102,14 +102,14 @@ BroadcomInterrupt::Result BroadcomInterrupt::nextPending(uint & irq)
 
 bool BroadcomInterrupt::isTriggered(u32 vector)
 {
-    u32 basic = m_io.read32(INTERRUPT_BASICPEND);
+    u32 basic = m_io.read(INTERRUPT_BASICPEND);
 
     switch (vector)
     {
         case 9: return (basic & (1 << 11));
     }
-    u32 pend1 = m_io.read32(INTERRUPT_IRQPEND1);
-    u32 pend2 = m_io.read32(INTERRUPT_IRQPEND2);
+    u32 pend1 = m_io.read(INTERRUPT_IRQPEND1);
+    u32 pend2 = m_io.read(INTERRUPT_IRQPEND2);
 
     if (vector < 32)
         return (pend1 & (1 << vector));

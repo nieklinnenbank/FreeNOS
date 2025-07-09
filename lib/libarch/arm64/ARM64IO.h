@@ -42,7 +42,7 @@ class ARM64IO : public IO
     /**
      * write to memory mapped I/O register
      */
-    inline void write32(u64 reg, u32 data)
+    inline void write(u64 reg, u32 data)
     {
         dmb();
         u64 addr = reg + m_base;
@@ -58,7 +58,7 @@ class ARM64IO : public IO
      *
      * @return 64-bit value
      */
-    inline u32 read32(u64 reg) const
+    inline u32 read(u64 reg) const
     {
         dmb();
         u64 addr = reg + m_base;
@@ -69,6 +69,37 @@ class ARM64IO : public IO
         return data;
     }
 
+    /**
+     * Read a number of 32-bit values.
+     *
+     * @param addr Address of the starting 32-bit value.
+     * @param count Number of bytes to read.
+     * @param buf Output buffer.
+     */
+    inline void read(Address addr, Size count, void *buf) const
+    {
+        for (Size i = 0; i < count; i+= sizeof(u32))
+        {
+            *(u32 *)(((u8 *)buf) + i) = read(addr + i);
+        }
+    }
+
+    /**
+     * Write a number of 32-bit values.
+     *
+     * @param addr Address of the starting 32-bit value.
+     * @param count Number of bytes to write.
+     * @param buf Input buffer.
+     */
+    inline void write(Address addr, Size count, const void *buf)
+    {
+        for (Size i = 0; i < count; i+= sizeof(u32))
+        {
+            write(addr + i, *(u32 *) (((u8 *)buf) + i));
+        }
+    }
+
+#if 0
     /**
      * write to memory mapped I/O register
      */
@@ -154,17 +185,18 @@ class ARM64IO : public IO
         current &= ~(data);
         write(addr, current);
     }
+#endif
     /**
      * Set bits in memory mapped register.
      *
      * @param addr Address of the register to write.
      * @param data 64-bit value containing the bits to set (bitwise or).
      */
-    inline void set32(Address addr, u32 data)
+    inline void set(Address addr, u32 data)
     {
-        volatile u32 current = read32(addr);
+        volatile u32 current = read(addr);
         current |= data;
-        write32(addr, current);
+        write(addr, current);
     }
 
     /**
@@ -173,11 +205,11 @@ class ARM64IO : public IO
      * @param addr Address of the register to write.
      * @param data 64-bit value containing the bits to set (bitwise or).
      */
-    inline void unset32(Address addr, u32 data)
+    inline void unset(Address addr, u32 data)
     {
         volatile u32 current = read(addr);
         current &= ~(data);
-        write32(addr, current);
+        write(addr, current);
     }
 };
 
