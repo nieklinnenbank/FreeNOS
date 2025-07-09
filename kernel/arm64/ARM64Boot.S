@@ -18,7 +18,7 @@
 
 #include <FreeNOS/Constant.h>
 
-#define STACKSIZE   (PAGESIZE * 4)
+#define STACKSIZE   (PAGESIZE * 16)
 
 /* To keep this in the first portion of the binary. */
 .section ".text.boot"
@@ -102,5 +102,5 @@ _start:
     b       1b
 
 .align 7
-.fill STACKSIZE, 1, 0
 svcStack:
+.fill STACKSIZE, 1, 0

@@ -23,7 +23,7 @@
 #define MEMALIGN16 16
 
 static bool firstProcess = true;
-extern u8 svcStack[PAGESIZE * 4];
+extern u8 svcStack[PAGESIZE * 16];
 
 ARM64Process::ARM64Process(ProcessID id, Address entry, bool privileged, const MemoryMap &map)
     : Process(id, entry, privileged, map)
@@ -111,7 +111,6 @@ void ARM64Process::reset(const Address entry)
     MemoryBlock::set(&m_cpuState, 0, sizeof(m_cpuState));
     m_cpuState.sp = range.virt + range.size - MEMALIGN16;    // user stack pointer
     m_cpuState.pc = entry;                                  // user program counter
-    //FIXME: enable interrupt once implemented user mode
     m_cpuState.cpsr = 0x3c0 | (m_privileged ? 0x5 : 0x0); // current program status (CPSR)
 }
 
@@ -129,9 +128,10 @@ void ARM64Process::execute(Process *previous)
         // Kernel stacks are currently 16KiB (see ARMBoot.S)
         CPUState *ptr = ((CPUState *) (svcStack + sizeof(svcStack))) - 1;
         MemoryBlock::copy(ptr, &m_cpuState, sizeof(*ptr));
+        NOTICE("svcStack " << (void *)svcStack);
 
         // Switch to the actual SVC stack and switch to usermode
-        asm volatile ("ldr x0, =(svcStack + (4096*4))\n"
+        asm volatile ("ldr x0, =(svcStack + (4096*16))\n"
                       "mov sp, x0\n"
                       "sub sp, sp, %0\n"
                       "ldr x0, =returnFromEL0Call8\n"

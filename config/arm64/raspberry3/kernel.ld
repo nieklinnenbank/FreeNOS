@@ -91,6 +91,7 @@ SECTIONS
         KEEP (*(.bootimg))
         LONG(0)
     }
+    . = ALIGN(4096); /* align to page size */
 
     .ARM.exidx.text :
     {

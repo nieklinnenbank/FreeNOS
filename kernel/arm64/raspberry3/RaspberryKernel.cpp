@@ -70,10 +70,8 @@ RaspberryKernel::RaspberryKernel(CoreInfo *info)
 
 void RaspberryKernel::interrupt(volatile CPUState state)
 {
-    FATAL("Interrupt enter");
-#if 0
     RaspberryKernel *kernel = (RaspberryKernel *) Kernel::instance();
-    ARMProcess *proc = (ARMProcess *) Kernel::instance()->getProcessManager()->current(), *next;
+    ARM64Process *proc = (ARM64Process *) Kernel::instance()->getProcessManager()->current(), *next;
     bool tick;
 
     DEBUG("procId = " << proc->getID());
@@ -81,7 +79,7 @@ void RaspberryKernel::interrupt(volatile CPUState state)
 #ifdef BCM2836
     if (kernel->m_timer == &kernel->m_armTimer)
     {
-        tick = kernel->m_bcm.getCoreTimerIrqStatus(Broadcom2836::PhysicalTimer1);
+        tick = kernel->m_bcm.getCoreTimerIrqStatus(Broadcom2836::NonSecurePhysicalTimer);
     }
     else
 #endif /* BCM2836 */
@@ -103,11 +101,10 @@ void RaspberryKernel::interrupt(volatile CPUState state)
         }
     }
 
-    next = (ARMProcess *) kernel->getProcessManager()->current();
+    next = (ARM64Process *) kernel->getProcessManager()->current();
     if (next != proc)
     {
         proc->setCpuState((const CPUState *)&state);
         MemoryBlock::copy((void *)&state, next->cpuState(), sizeof(state));
     }
-#endif
 }

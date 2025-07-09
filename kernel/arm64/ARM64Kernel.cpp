@@ -52,6 +52,7 @@ void ARM64Kernel::SyncExceptionEL1(volatile CPUState state)
 {
     u64 ec = exception_code(state.esr);
     NOTICE("Unexpected m_exception in EL1 called from EL1 ec="<<(void *)ec);
+    NOTICE("ESR_EL1 = "<<(void *)state.esr);
 
     switch(ec) {
         case 0x25: //Data Abort
@@ -115,7 +116,7 @@ ARM64Kernel::ARM64Kernel(CoreInfo *info)
     }
 #else
     if (m_coreInfo->coreId == 0) {
-        for (Size i = 0; i < (PAGESIZE*4); i += PAGESIZE)
+        for (Size i = 0; i < (PAGESIZE*16); i += PAGESIZE)
             m_alloc->allocate(TMPSTACKADDR + i);
     }
 #endif
