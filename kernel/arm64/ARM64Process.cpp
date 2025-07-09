@@ -117,7 +117,7 @@ void ARM64Process::reset(const Address entry)
 
 void ARM64Process::execute(Process *previous)
 {
-    NOTICE("proc " << previous->getID()  << " switch to proc " << getID() );
+    DEBUG("proc " << previous->getID()  << " switch to proc " << getID() );
     // Activates memory context of this process
     m_memoryContext->activate();
 

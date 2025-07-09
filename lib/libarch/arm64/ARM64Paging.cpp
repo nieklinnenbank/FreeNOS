@@ -238,11 +238,9 @@ MemoryContext::Result ARM64Paging::map(Address virt, Address phys, Memory::Acces
     // Modify page tables
     Result r = m_firstTable->map(virt, phys, acc, m_alloc);
 
-#if 0
     // Flush the TLB to refresh the mapping
     if (m_current == this)
         tlb_invalidate(virt);
-#endif
 
     // Synchronize execution stream.
     isb();
@@ -269,6 +267,9 @@ MemoryContext::Result ARM64Paging::unmap(Address virt)
 #else
     // Modify page tables
     Result r = m_firstTable->unmap(virt, m_alloc);
+    // Flush the TLB to refresh the mapping
+    if (m_current == this)
+        tlb_invalidate(virt);
     isb();
     return r;
 #endif

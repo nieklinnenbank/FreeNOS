@@ -35,7 +35,7 @@ SECTIONS
 	*(.eh_frame)
         *(.note.gnu.build-id)
 
-	. = ALIGN(4);
+	. = ALIGN(8);
         CTOR_LIST = .;
 	KEEP (*(SORT(.ctors.*)))
 	KEEP (*(.ctors))
@@ -56,7 +56,7 @@ SECTIONS
 
         isKernel = .;
         LONG(0);
-	. += 4;
+	. = ALIGN(8);
 
 	
 	initStart = .;

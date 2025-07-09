@@ -148,6 +148,14 @@ namespace ARM64Control
 #define PA_RANGE(r) ((r)&0xF)       //Physical Address range supported.
 #define TGRAN4(r)   (((r)>>28)&0xF) //Indicates support for 4KB memory translation granule size.
 
+#define tlb_invalidate(virt) \
+({ \
+    asm volatile ("dsb ishst\n"\
+                  "tlbi vaae1is, %0\n" \
+                  "dsb ish\n" \
+                  "isb" : : "r" (virt>>12UL) );\
+})
+
 /**
  * Instruction Synchronisation Barrier (ARMv7 and above)
  */
