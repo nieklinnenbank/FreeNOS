@@ -10,7 +10,7 @@ Visit the project website at http://www.FreeNOS.org for more information.
 Features
 ========
 
-* Intel x86 (PC) and ARMv6/ARMv7 architectures (Raspberry Pi 1,2,3, Allwinner H2+/H3)
+* Intel x86 (PC) and ARMv6/ARMv7/ARMv8 architectures (Raspberry Pi 1,2,3, Allwinner H2+/H3)
 * Virtual memory
 * Simple task scheduling
 * Inter Process Communication (IPC)
@@ -62,7 +62,11 @@ Alternatively, you can install the LLVM/Clang compiler as well:
 
 If you want to compile 32bit RaspberryPi 2b in Ubuntu24.04:
 
-    $ sudo apt-get install crossbuild-essential-armel
+    $ sudo apt-get install g++-arm-linux-gnueabi
+
+If you want to compile 64bit RaspberryPi 3b in Ubuntu24.04:
+
+    $ sudo apt-get install g++-aarch64-linux-gnu
 
 *FreeBSD*
 
@@ -700,3 +704,4 @@ People who contributed to FreeNOS are:
 * Coen Bijlsma (libparse, srv/time)
 * Ed Schouten (libteken)
 * Alexander Schrijver (OpenBSD patches)
+* Ivan Tan (aarch64)
