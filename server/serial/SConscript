@@ -24,7 +24,7 @@ env.UseLibraries([ 'libposix', 'liballoc', 'libstd', 'libarch',
 
 src = [ 'Main.cpp', 'SerialDevice.cpp' ]
 
-if env['ARCH'] == 'arm' and env['SYSTEM'].startswith('raspberry'):
+if (env['ARCH'] == 'arm' or env['ARCH'] == 'arm64') and env['SYSTEM'].startswith('raspberry'):
     src += [ 'PL011.cpp' ]
 elif env['SYSTEM'] == 'sunxi-h3':
     src += [ 'NS16550.cpp' ]
