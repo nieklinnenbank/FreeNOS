@@ -82,10 +82,42 @@
 #define L2_BLOCK_SIZE     0x200000UL
 #define L2_BLOCK_RANGE    (L2_BLOCK_SIZE-1)
 
+#define L1_IDX(va) (((va) >> L1_DIRSHIFT) & DIR_MASK)
+#define L2_IDX(va) (((va) >> L2_DIRSHIFT) & DIR_MASK)
+#define L3_IDX(va) (((va) >> L3_DIRSHIFT) & DIR_MASK)
+
 /** Memory address alignment. */
 #define MEMALIGN        4
 
-#define contain_flags(val, flags) (((val)&flags)==flags)
+// descriptor types
+#define PT_NONE         0
+#define PT_PAGE         0b11        //page/table descriptor
+#define PT_BLOCK        0b01        //block descriptor
+#define PT_TYPE_MASK    0b11
+#define GET_PT_TYPE(entry)          ((entry) & PT_TYPE_MASK)
+#define IS_PT_PAGE_TBL(entry)       (GET_PT_TYPE(entry) == PT_PAGE)
+#define IS_PT_BLOCK(entry)          (GET_PT_TYPE(entry) == PT_BLOCK)
+
+// accessibility
+#define PT_KERNEL       (0<<6)      // privileged, supervisor EL1 access only (default)
+#define PT_USER         (1<<6)      // unprivileged, EL0 access allowed
+#define PT_RW           (0<<7)      // read-write (default)
+#define PT_RO           (1<<7)      // read-only
+#define PT_AF           (1<<10)     // access flag
+#define PT_NX           (1UL<<54)   // no execute
+
+// shareability
+#define PT_OSH          (2<<8)      // outter shareable
+#define PT_ISH          (3<<8)      // inner shareable
+
+// define in MAIR register
+#define PT_MEM          (0<<2)      // normal memory
+#define PT_DEV          (1<<2)      // device MMIO
+#define PT_NC           (2<<2)      // non-cachable
+
+#define TTBR_CNP        1
+
+#define contain_flags(val, flags) (((val)&(flags))==(flags))
 
 /**
  * @}

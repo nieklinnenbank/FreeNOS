@@ -144,7 +144,7 @@ template<> uint TestInt<uint>::unique(Size count)
     {
         Size tmp = m_values[i];
 
-        Size idx = (::random() % (count - 1));
+        Size idx = ((unsigned)::random() % (count - 1));
         if (idx < offset)
             idx = offset;
 

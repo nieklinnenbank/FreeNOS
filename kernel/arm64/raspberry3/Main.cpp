@@ -24,7 +24,7 @@ extern Address __start, __end, __bootimg;
 #include <MemoryBlock.h>
 #include <arm64/ARM64Map.h>
 #include <arm64/ARM64Paging.h>
-#include <arm64/ARM64PageTable.h>
+#include <arm64/ARM64FirstTable.h>
 #include <arm64/ARM64Exception.h>
 #include <arm64/ARM64Control.h>
 #include <DeviceLog.h>
@@ -34,9 +34,7 @@ extern Address __start, __end, __bootimg;
 #include "Support.h"
 #include "PL011.h"
 
-static char ALIGN(16 * 1024) SECTION(".data") tmpPageDir[sizeof(ARM64PageTable)];
-static char ALIGN(16 * 1024) SECTION(".data") tmpPage1Dir[sizeof(ARM64PageTable)];
-static char ALIGN(16 * 1024) SECTION(".data") tmpPage2Dir[sizeof(ARM64PageTable)];
+static char ALIGN(16 * 1024) SECTION(".data") tmpPageDir[sizeof(ARM64FirstTable)];
 
 extern C int kernel_main(void)
 {
@@ -51,8 +49,7 @@ extern C int kernel_main(void)
     coreInfo.memory.size      = RAM_SIZE;
 
     Arch::MemoryMap mem;
-    Address tables[2] = { (Address) tmpPage1Dir, (Address) tmpPage2Dir };
-    ARM64Paging paging(&mem, (Address) &tmpPageDir, tables, RAM_ADDR);
+    ARM64Paging paging(&mem, (Address) &tmpPageDir, RAM_ADDR);
 
     // Activate MMU
     paging.initialize();

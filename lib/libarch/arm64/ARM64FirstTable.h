@@ -15,16 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LIBARCH_ARM64_PAGETABLE_H
-#define __LIBARCH_ARM64_PAGETABLE_H
+#ifndef __LIBARCH_ARM64_FIRSTTABLE_H
+#define __LIBARCH_ARM64_FIRSTTABLE_H
 
 #include <FreeNOS/System.h>
 #include <Types.h>
 #include <MemoryContext.h>
+#include "ARM64SecondTable.h"
 
 /** Forward declaration */
 class SplitAllocator;
-class ARM64Paging;
 
 /**
  * @addtogroup lib
@@ -38,9 +38,9 @@ class ARM64Paging;
  */
 
 /**
- * ARM64 page table
+ * ARM64 first level page table
  */
-class ARM64PageTable
+class ARM64FirstTable
 {
   public:
 
@@ -62,27 +62,14 @@ class ARM64PageTable
     /**
      * Map a contigous range of virtual memory to physical memory.
      *
-     * This function can map at the 1 block which depends on the level of table.
+     * This function can map at the granularity of 2 megabyte memory chunks.
      *
      * @param range Virtual to physical memory range.
      * @param alloc Physical memory allocator for extra page tables.
      *
      * @return Result code
      */
-    MemoryContext::Result mapBlock(Memory::Range range,
-                                   SplitAllocator *alloc);
-
-    /**
-     * Map a contigous range of virtual memory to physical memory, using next level table
-     *
-     * This function can map at the 1 block which depends on the level of table.
-     *
-     * @param range Virtual to physical memory range.
-     * @param alloc Physical memory allocator for extra page tables.
-     *
-     * @return Result code
-     */
-    MemoryContext::Result mapBlock2(Memory::Range range,
+    MemoryContext::Result mapLarge(Memory::Range range,
                                    SplitAllocator *alloc);
 
     /**
@@ -123,7 +110,7 @@ class ARM64PageTable
                                  SplitAllocator *alloc) const;
 
     /**
-     * Release memory blocks.
+     * Release memory sections.
      *
      * @param range Memory range of the sections to release
      * @param alloc Memory allocator to release memory from
@@ -131,7 +118,7 @@ class ARM64PageTable
      *
      * @return Result code.
      */
-    MemoryContext::Result releaseBlock(const Memory::Range range,
+    MemoryContext::Result releaseSection(const Memory::Range range,
                                          SplitAllocator *alloc,
                                          const bool tablesOnly);
 
@@ -146,6 +133,8 @@ class ARM64PageTable
     MemoryContext::Result releaseRange(const Memory::Range range,
                                        SplitAllocator *alloc);
 
+    static void initialize(ARM64FirstTable *firstTable);
+    
   private:
 
     /**
@@ -158,17 +147,15 @@ class ARM64PageTable
                                 const Address phys);
 
     /**
-     * Retrieve next level page table
+     * Retrieve second level page table
      *
      * @param virt Virtual address to fetch page table for
      * @param alloc Physical memory allocator
      *
-     * @return Next level page table
+     * @return Second level page table
      */
-    ARM64PageTable * getNextTable(Address virt,
+    ARM64SecondTable * getSecondTable(Address virt,
                                     SplitAllocator *alloc) const;
-
-    void setNextTable(Address virt, Address tbl, SplitAllocator *alloc);
 
     /**
      * Convert Memory::Access to first level page table flags.
@@ -179,16 +166,13 @@ class ARM64PageTable
      */
     u32 flags(Memory::Access access) const;
 
+    u64 get_l2_entry(Address virt, SplitAllocator *alloc, u64 **tbl_l2, unsigned int *l2_idx) const;
+
   private:
 
-    friend class ARM64Paging;
-
-    /** Array of page table entries. only support 4KB granule */
-    u64 m_tables[512];
-
-    /* Level of page table */
-    u8 m_level;
-    u8 padding[7];
+    /** Array of page table entries. */
+    u64 m_tables_l1[512];    /* level 1 table, only maps to 0 - 4G */
+    u64 m_tables_l2[4][512]; /* virtual address 0-1/1-2/2-3/3-4 G */
 };
 
 /**
@@ -197,4 +181,4 @@ class ARM64PageTable
  * @}
  */
 
-#endif /* __LIBARCH_ARM64_PAGETABLE_H */
+#endif /* __LIBARCH_ARM64_FIRSTTABLE_H */

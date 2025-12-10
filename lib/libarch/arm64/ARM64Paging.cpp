@@ -21,14 +21,13 @@
 #include <Log.h>
 #include "CoreInfo.h"
 #include "ARM64Paging.h"
-#include "ARM64PageTable.h"
+#include "ARM64FirstTable.h"
 #include "ARM64Control.h"
 
 ARM64Paging::ARM64Paging(MemoryMap *map, SplitAllocator *alloc)
     : MemoryContext(map, alloc)
     , m_firstTable(0)
     , m_firstTableAddr(0)
-    , m_pageStage(KernelStage)
     , m_kernelBaseAddr(coreInfo.memory.phys)
 {
 }
@@ -37,29 +36,25 @@ ARM64Paging::~ARM64Paging()
 {
     if (m_firstTableAddr != 0)
     {
-        for (Size i = 0; i < sizeof(ARM64PageTable); i += PAGESIZE)
+        for (Size i = 0; i < sizeof(ARM64FirstTable); i += PAGESIZE)
             m_alloc->release(m_firstTableAddr + i);
     }
 }
 
 ARM64Paging::ARM64Paging(MemoryMap *map,
                      Address firstTableAddress,
-                     Address secondTableAddress[2],
                      Address kernelBaseAddress)
     : MemoryContext(map, ZERO)
-    , m_firstTable((ARM64PageTable *) firstTableAddress)
+    , m_firstTable((ARM64FirstTable *) firstTableAddress)
     , m_firstTableAddr(firstTableAddress)
     , m_kernelBaseAddr(kernelBaseAddress)
-    , m_pageStage(BootStage)
 {
-    m_secondTableAddr[0] = secondTableAddress[0];
-    m_secondTableAddr[1] = secondTableAddress[1];
 }
 
 MemoryContext::Result ARM64Paging::allocPageTable(Allocator::Range &phys, Allocator::Range &virt)
 {
     phys.address = 0;
-    phys.size = sizeof(ARM64PageTable);
+    phys.size = sizeof(ARM64FirstTable);
     phys.alignment = PAGESIZE;
 
     // Allocate page directory
@@ -76,45 +71,25 @@ MemoryContext::Result ARM64Paging::initialize()
     // Allocate first page table if needed
     if (!m_firstTable) {
         Allocator::Range phys, virt;
-        for (int i = 0; i < 3; i++) {
             // Allocate page directory
-            if (allocPageTable(phys, virt) != Allocator::Success)
-            {
-                return MemoryContext::OutOfMemory;
-            }
-
-            if (i == 0) {
-                DEBUG("alloc firstTable virt = " << (void *)virt.address << " phy = " << (void *)phys.address);
-                m_firstTable = (ARM64PageTable *) virt.address;
-                m_firstTableAddr = phys.address;
-            } else {
-                DEBUG("alloc secondTable" << (i-1) << " virt = " << (void *)virt.address << " phy = " << (void *)phys.address);
-                m_secondTableAddr[i-1] = virt.address;
-            }
+        if (allocPageTable(phys, virt) != MemoryContext::Success)
+        {
+            return MemoryContext::OutOfMemory;
         }
+        m_firstTable = (ARM64FirstTable *) virt.address;
+        m_firstTableAddr = phys.address;
     }
 
     // Initialize the page directory
-    MemoryBlock::set(m_firstTable, 0, sizeof(ARM64PageTable));
-    m_firstTable->m_level = 1;
-
-    //FIXME: using correct phy and virt address
-    ARM64PageTable *tbl = (ARM64PageTable *) m_secondTableAddr[0];
-    MemoryBlock::set(tbl, 0, sizeof(ARM64PageTable));
-    tbl->m_level = 2;
-    m_firstTable->setNextTable(0x0, (Address) tbl, m_alloc);
-
-    tbl = (ARM64PageTable *) m_secondTableAddr[1];
-    MemoryBlock::set(tbl, 0, sizeof(ARM64PageTable));
-    tbl->m_level = 2;
-    m_firstTable->setNextTable((Address)L1_BLOCK_SIZE, (Address) tbl, m_alloc);
+    MemoryBlock::set(m_firstTable, 0, sizeof(ARM64FirstTable));
+    ARM64FirstTable::initialize(m_firstTable);
 
     // Map the kernel. The kernel has permanently mapped 1GB of
     // physical memory. This 1GiB memory region starts at its physical
     // base address offset which varies per core.
     Memory::Range kernelRange = m_map->range(MemoryMap::KernelData);
     kernelRange.phys = m_kernelBaseAddr;
-    m_firstTable->mapBlock2(kernelRange, m_alloc);
+    m_firstTable->mapLarge(kernelRange, m_alloc);
 
     // Temporary stack is used for kernel initialization code
     // and for SMP the temporary stack is shared between cores.
@@ -123,7 +98,7 @@ MemoryContext::Result ARM64Paging::initialize()
     const Memory::Range tmpStackRange = {
         TMPSTACKADDR, TMPSTACKADDR, MegaByte(2), Memory::Readable|Memory::Writable
     };
-    m_firstTable->mapBlock2(tmpStackRange, m_alloc);
+    m_firstTable->mapLarge(tmpStackRange, m_alloc);
 
     // Unmap I/O zone
     for (Size i = 0; i < IO_SIZE; i += MegaByte(2))
@@ -135,7 +110,7 @@ MemoryContext::Result ARM64Paging::initialize()
     io.virt = IO_BASE;
     io.size = IO_SIZE;
     io.access = Memory::Readable | Memory::Writable | Memory::Device;
-    m_firstTable->mapBlock2(io, m_alloc);
+    m_firstTable->mapLarge(io, m_alloc);
 
     return MemoryContext::Success;
 }
@@ -179,7 +154,6 @@ MemoryContext::Result ARM64Paging::enableMMU()
     
 
     // tell the MMU where our translation tables are. TTBR_CNP bit not documented, but required
-    //u64 tbl = (unsigned long)&m_firstTable->m_tables[0];
     u64 tbl = m_firstTableAddr;
     tbl += 0x1UL;
 
@@ -214,7 +188,7 @@ MemoryContext::Result ARM64Paging::activate(bool initializeMMU)
     } else {
         //m_cache.cleanInvalidate(Cache::Unified);
         
-        u64 tbl = (unsigned long)&m_firstTable->m_tables[0];
+        u64 tbl = m_firstTableAddr;
         tbl += 0x1UL;
         ARM64Control::write(ARM64Control::TranslationTable0, tbl);
 
@@ -249,22 +223,6 @@ MemoryContext::Result ARM64Paging::map(Address virt, Address phys, Memory::Acces
 
 MemoryContext::Result ARM64Paging::unmap(Address virt)
 {
-#if 0
-    // Clean the given data page in cache
-    if (m_current == this)
-        m_cache.cleanInvalidateAddress(Cache::Data, virt);
-
-    // Modify page tables
-    Result r = m_firstTable->unmap(virt, m_alloc);
-
-    // Flush TLB to refresh the mapping
-    if (m_current == this)
-        tlb_invalidate(virt);
-
-    // Synchronize execution stream
-    isb();
-    return r;
-#else
     // Modify page tables
     Result r = m_firstTable->unmap(virt, m_alloc);
     // Flush the TLB to refresh the mapping
@@ -272,7 +230,6 @@ MemoryContext::Result ARM64Paging::unmap(Address virt)
         tlb_invalidate(virt);
     isb();
     return r;
-#endif
 }
 
 MemoryContext::Result ARM64Paging::lookup(Address virt, Address *phys) const
@@ -288,7 +245,7 @@ MemoryContext::Result ARM64Paging::access(Address virt, Memory::Access *access) 
 MemoryContext::Result ARM64Paging::releaseSection(const Memory::Range & range,
                                                 const bool tablesOnly)
 {
-    return m_firstTable->releaseBlock(range, m_alloc, tablesOnly);
+    return m_firstTable->releaseSection(range, m_alloc, tablesOnly);
 }
 
 MemoryContext::Result ARM64Paging::releaseRange(Memory::Range *range)
