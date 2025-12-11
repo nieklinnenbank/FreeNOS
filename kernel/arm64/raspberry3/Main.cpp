@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2025 Ivan Tan
  * Copyright (C) 2015 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,6 +18,7 @@
 
 
 /* https://github.com/bztsrc/raspi3-tutorial/blob/master/03_uart1 */
+
 extern Address __start, __end, __bootimg;
 
 #include <FreeNOS/System.h>

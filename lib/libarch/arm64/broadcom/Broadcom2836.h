@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2025 Ivan Tan
  * Copyright (C) 2015 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
@@ -39,7 +40,6 @@ class Broadcom2836
 {
   private:
 
-    //FIXME: currently, kernel only maps from 0 to 1GB virtual memory
     /** Base address for the BCM2836 I/O configuration */
     static const Address IOBase = 0x40000000;
 

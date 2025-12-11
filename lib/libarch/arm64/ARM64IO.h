@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2025 Ivan Tan
  * Copyright (C) 2015 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
@@ -99,93 +100,6 @@ class ARM64IO : public IO
         }
     }
 
-#if 0
-    /**
-     * write to memory mapped I/O register
-     */
-    inline void write(u64 reg, u64 data)
-    {
-        dmb();
-        u64 addr = reg + m_base;
-        asm volatile("str %[data], [%[reg]]"
-                 : : [reg]"r"(addr), [data]"r"(data));
-        dmb();
-    }
-
-    /**
-     * read from memory mapped I/O register
-     *
-     * @param reg Address to read
-     *
-     * @return 64-bit value
-     */
-    inline u64 read(u64 reg) const
-    {
-        dmb();
-        u64 addr = reg + m_base;
-        u64 data;
-        asm volatile("ldr %[data], [%[reg]]"
-                 : [data]"=r"(data) : [reg]"r"(addr));
-        dmb();
-        return data;
-    }
-
-    /**
-     * Read a number of 64-bit values.
-     *
-     * @param addr Address of the starting 64-bit value.
-     * @param count Number of bytes to read.
-     * @param buf Output buffer.
-     */
-    inline void read(Address addr, Size count, void *buf) const
-    {
-        for (Size i = 0; i < count; i+= sizeof(u64))
-        {
-            *(u64 *)(((u8 *)buf) + i) = read(addr + i);
-        }
-    }
-
-    /**
-     * Write a number of 64-bit values.
-     *
-     * @param addr Address of the starting 64-bit value.
-     * @param count Number of bytes to write.
-     * @param buf Input buffer.
-     */
-    inline void write(Address addr, Size count, const void *buf)
-    {
-        for (Size i = 0; i < count; i+= sizeof(u64))
-        {
-            write(addr + i, *(u64 *) (((u8 *)buf) + i));
-        }
-    }
-
-    /**
-     * Set bits in memory mapped register.
-     *
-     * @param addr Address of the register to write.
-     * @param data 64-bit value containing the bits to set (bitwise or).
-     */
-    inline void set(Address addr, u64 data)
-    {
-        volatile u64 current = read(addr);
-        current |= data;
-        write(addr, current);
-    }
-
-    /**
-     * Unset bits in memory mapped register.
-     *
-     * @param addr Address of the register to write.
-     * @param data 64-bit value containing the bits to set (bitwise or).
-     */
-    inline void unset(Address addr, u64 data)
-    {
-        volatile u64 current = read(addr);
-        current &= ~(data);
-        write(addr, current);
-    }
-#endif
     /**
      * Set bits in memory mapped register.
      *

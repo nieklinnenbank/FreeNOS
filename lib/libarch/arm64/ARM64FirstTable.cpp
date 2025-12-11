@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2025 Ivan Tan
  * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -21,11 +22,6 @@
 #include "ARM64Constant.h"
 #include "ARM64FirstTable.h"
 
-
-extern C void uart_hex_u64(unsigned long d);
-extern C void uart_hex(unsigned int d);
-extern C void uart_puts(char *s);
-
 void ARM64FirstTable::initialize(ARM64FirstTable *firstTable)
 {
     for (Address virt = 0; virt < GigaByte(4UL); virt += L1_BLOCK_SIZE) {
@@ -46,7 +42,7 @@ u64 ARM64FirstTable::get_l2_entry(Address virt, SplitAllocator *alloc, u64 **tbl
     //if (!IS_PT_PAGE_TBL(entry_l1))
     //    return ZERO;
 
-    *tbl_l2 = (u64 *)alloc->toVirtual(entry_l1 & PAGEMASK);
+    *tbl_l2 = (u64 *)(entry_l1 & PAGEMASK);
     *l2_idx = L2_IDX(virt);
 
     return (*tbl_l2)[*l2_idx];

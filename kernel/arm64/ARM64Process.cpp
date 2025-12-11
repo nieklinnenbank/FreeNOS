@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2025 Ivan Tan
  * Copyright (C) 2015 Niek Linnenbank
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -109,10 +110,9 @@ void ARM64Process::reset(const Address entry)
     const Memory::Range range = m_map.range(MemoryMap::UserStack);
 
     MemoryBlock::set(&m_cpuState, 0, sizeof(m_cpuState));
-    m_cpuState.sp = range.virt + range.size - MEMALIGN16;    // user stack pointer
+    m_cpuState.sp = range.virt + range.size - MEMALIGN16;   // user stack pointer
     m_cpuState.pc = entry;                                  // user program counter
-    //m_cpuState.cpsr = 0x3c0 | (m_privileged ? 0x5 : 0x0); // current program status (CPSR)
-    m_cpuState.cpsr = (m_privileged ? 0x5 : 0x0); // current program status (CPSR)
+    m_cpuState.cpsr = (m_privileged ? 0x5 : 0x0);           // current program status (CPSR)
 }
 
 void ARM64Process::execute(Process *previous)

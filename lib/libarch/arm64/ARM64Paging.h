@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2025 Ivan Tan
  * Copyright (C) 2015 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
@@ -187,10 +188,6 @@ class ARM64Paging : public MemoryContext
 
     /** Kernel base address */
     Address m_kernelBaseAddr;
-#if 0
-    /** Caching implementation */
-    Arch::Cache m_cache;
-#endif
 };
 
 namespace Arch

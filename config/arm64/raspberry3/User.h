@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2025 Ivan Tan
  * Copyright (C) 2020 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __CONFIG_ARM_RASPBERRY2_USER_H
-#define __CONFIG_ARM_RASPBERRY2_USER_H
+#ifndef __CONFIG_ARM64_RASPBERRY3_USER_H
+#define __CONFIG_ARM64_RASPBERRY3_USER_H
 
 #include "Constant.h"
 #include <arm64/ARM64Traps.h>

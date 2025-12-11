@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2025 Ivan Tan
  * Copyright (C) 2015 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
@@ -115,7 +116,6 @@ MemoryContext::Result ARM64Paging::initialize()
     return MemoryContext::Success;
 }
 
-//TODO: enable MMU
 MemoryContext::Result ARM64Paging::enableMMU()
 {
     u64 r, b, level;

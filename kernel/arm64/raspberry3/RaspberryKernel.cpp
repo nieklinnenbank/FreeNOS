@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2025 Ivan Tan
  * Copyright (C) 2019 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
@@ -44,7 +45,7 @@ RaspberryKernel::RaspberryKernel(CoreInfo *info)
 #ifdef BCM2836
     u32 system_frequency = ARM64Control::read(ARM64Control::SystemFrequency);
     NOTICE("sysfreq = " << system_frequency);
-    if (system_frequency == 62500000)
+    //if (system_frequency == 62500000)
     {
         // Use ARM generic timer
         m_timer = &m_armTimer;
@@ -55,17 +56,7 @@ RaspberryKernel::RaspberryKernel(CoreInfo *info)
         m_bcm.setCoreTimerIrq(Broadcom2836::NonSecurePhysicalTimer, false);
     }
 #endif /* BCM2836 */
-
-#if 0
     /* Default to broadcom timer and interrupt handling */
-    if (m_timer == NULL)
-    {
-        m_timer = &m_bcmTimer;
-        m_timerIrq = BCM_IRQ_SYSTIMERM1;
-        m_bcmTimer.setFrequency( 250 ); /* trigger timer interrupts at 250Hz (clock runs at 1Mhz) */
-        m_intControl->enable(BCM_IRQ_SYSTIMERM1);
-    }
-#endif
 }
 
 void RaspberryKernel::interrupt(volatile CPUState state)

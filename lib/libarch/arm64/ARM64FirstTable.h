@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2025 Ivan Tan
  * Copyright (C) 2015 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
@@ -166,6 +167,16 @@ class ARM64FirstTable
      */
     u32 flags(Memory::Access access) const;
 
+    /**
+     * Get entry of Level 2 table
+     *
+     * @param virt Virtual address to fetch page table for
+     * @param alloc Physical memory allocator
+     * @param tbl_l2[out] ptr to Level 2 table
+     * @param l2_idx[out] index of entry
+     *
+     * @return entry of Virtual address
+     */
     u64 get_l2_entry(Address virt, SplitAllocator *alloc, u64 **tbl_l2, unsigned int *l2_idx) const;
 
   private:

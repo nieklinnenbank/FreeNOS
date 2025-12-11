@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2025 Ivan Tan
  * Copyright (C) 2015 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
@@ -94,81 +95,13 @@ ARM64Kernel::ARM64Kernel(CoreInfo *info)
     // First page is reserved
     for (Size i = 0; i < info->kernel.phys; i += PAGESIZE)
         m_alloc->allocate(i);
-#if 0
-    // First page is used for m_exception handlers
-    m_alloc->allocate(info->memory.phys);
 
     // Allocate physical memory for the temporary stack.
-    //
-    // This is an area of 1MiB which must not be used. It is re-mapped on the
-    // secondary cores to an identity-mapped area on the boot core and is currently
-    // required in order to enable the early MMU and perform full kernel startup
-    // until the first program starts.
-    //
-    // If this area is re-used after the kernel started, the SplitAllocator::toVirtual()
-    // function will not translate properly, resulting in memory corruption.
-    if (m_coreInfo->coreId == 0) {
-        for (Size i = 0; i < (PAGESIZE*4); i += PAGESIZE)
-            m_alloc->allocate(TMPSTACKADDR + i);
-    } else {
-        for (Size i = 0; i < MegaByte(1); i += PAGESIZE)
-            m_alloc->allocate(info->memory.phys + TMPSTACKOFF + i);
-    }
-#else
     if (m_coreInfo->coreId == 0) {
         for (Size i = 0; i < (PAGESIZE*16); i += PAGESIZE)
             m_alloc->allocate(TMPSTACKADDR + i);
     }
-#endif
 }
-#if 0
-void ARM64Kernel::interrupt(CPUState state)
-{
-    ARM64Core core;
-    core.logException(&state);
-
-    FATAL("core" << coreInfo.coreId << ": unhandled IRQ in procId = " <<
-           Kernel::instance()->getProcessManager()->current()->getID());
-}
-
-void ARM64Kernel::undefinedInstruction(CPUState state)
-{
-    ARM64Core core;
-    core.logException(&state);
-
-    FATAL("core" << coreInfo.coreId << ": procId = " <<
-           Kernel::instance()->getProcessManager()->current()->getID());
-}
-
-void ARM64Kernel::prefetchAbort(CPUState state)
-{
-    ARM64Core core;
-    core.logException(&state);
-
-    FATAL("core" << coreInfo.coreId << ": procId = " <<
-           Kernel::instance()->getProcessManager()->current()->getID());
-}
-
-void ARM64Kernel::dataAbort(CPUState state)
-{
-    ARM64Core core;
-    core.logException(&state);
-
-    FATAL("core" << coreInfo.coreId << ": procId = " <<
-           Kernel::instance()->getProcessManager()->current()->getID());
-}
-
-
-void ARM64Kernel::reserved(CPUState state)
-{
-    ARM64Core core;
-    core.logException(&state);
-
-    FATAL("core" << coreInfo.coreId << ": procId = " <<
-           Kernel::instance()->getProcessManager()->current()->getID());
-}
-
-#endif
 
 void ARM64Kernel::trap(volatile CPUState &state)
 {

@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2025 Ivan Tan
  * Copyright (C) 2019 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
@@ -22,9 +23,7 @@
 #include <arm64/broadcom/BroadcomInterrupt.h>
 #include <arm64/broadcom/Broadcom2836.h>
 #include <arm64/ARM64Timer.h>
-#if 0
-#include <arm/broadcom/BroadcomTimer.h>
-#endif
+
 /**
  * @addtogroup kernel
  * @{
@@ -66,10 +65,6 @@ class RaspberryKernel : public ARM64Kernel
     /** ARM generic timer. Only used for QEMU */
     ARM64Timer m_armTimer;
 
-#if 0
-    /** Broadcom specific timer module */
-    BroadcomTimer m_bcmTimer;
-#endif
     /** Interrupt number for the timer */
     u8 m_timerIrq;
 };

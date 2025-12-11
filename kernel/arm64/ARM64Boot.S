@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2025 Ivan Tan
  * Copyright (C) 2015 Niek Linnenbank
  * Copyright (C) 2013 Goswin von Brederlow <goswin-v-b@web.de>
  *

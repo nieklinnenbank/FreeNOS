@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2025 Ivan Tan
  * Copyright (C) 2015 Niek Linnenbank
  *
  * This program is free software: you can redistribute it and/or modify
@@ -46,52 +47,32 @@ class ARM64Kernel : public Kernel
     ARM64Kernel(CoreInfo *info);
 
   private:
-#if 0
-    /**
-     * Interrupt handler routine
-     *
-     * @param state Saved CPU register state
-     */
-    static void interrupt(CPUState state);
-
-#endif
     /**
      * Software trap routine
      *
      * @param state Saved CPU register state
      */
     static void trap(volatile CPUState &state);
-#if 0
-    /**
-     * Undefined instruction routine
-     *
-     * @param state Saved CPU register state
-     */
-    static void undefinedInstruction(CPUState state);
 
     /**
-     * Prefetch abort routine
+     * Synchronous exceptions from EL1
      *
      * @param state Saved CPU register state
      */
-    static void prefetchAbort(CPUState state);
-
-    /**
-     * Data abort routine
-     *
-     * @param state Saved CPU register state
-     */
-    static void dataAbort(CPUState state);
-
-    /**
-     * Reserved routine
-     *
-     * @param state Saved CPU register state
-     */
-    static void reserved(CPUState state);
-#endif
     static void SyncExceptionEL1(volatile CPUState state);
+    
+    /**
+     * Synchronous exceptions from EL0
+     *
+     * @param state Saved CPU register state
+     */
     static void SyncExceptionEL0(volatile CPUState state);
+    
+    /**
+     * Fatal errors
+     *
+     * @param state Saved CPU register state
+     */
     static void FatalHandler(volatile CPUState state);
   protected:
 
