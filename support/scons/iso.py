@@ -16,6 +16,7 @@
 #
 
 import os
+import os.path
 import tempfile
 import shutil
 
@@ -35,7 +36,7 @@ def iso_func(target, source, env):
         shutil.copy(str(s), temp + '/boot')
 
     # Generate the ISO.
-    if env.Detect('grub-mkrescue'):
+    if env.Detect('grub-mkrescue') and os.path.exists('/usr/lib/grub/i386-pc'):
         shutil.copy('config/intel/pc/grub.cfg', temp + '/boot/grub')
         iso_cmd = 'grub-mkrescue -d /usr/lib/grub/i386-pc -o ' + str(target[0]) + \
                   ' --modules="multiboot iso9660 biosdisk gzio" ' + temp
