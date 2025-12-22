@@ -10,7 +10,7 @@ Visit the project website at http://www.FreeNOS.org for more information.
 Features
 ========
 
-* Intel x86 (PC) and ARMv6/ARMv7 architectures (Raspberry Pi 1,2,3, Allwinner H2+/H3)
+* Intel x86 (PC) and ARMv6/ARMv7/ARMv8 architectures (Raspberry Pi 1,2,3, Allwinner H2+/H3)
 * Virtual memory
 * Simple task scheduling
 * Inter Process Communication (IPC)
@@ -59,6 +59,14 @@ to cross compile for the 32-bit architecture:
 Alternatively, you can install the LLVM/Clang compiler as well:
 
     $ sudo apt-get install clang
+
+If you want to compile 32bit RaspberryPi 2b in Ubuntu24.04:
+
+    $ sudo apt-get install g++-arm-linux-gnueabi
+
+If you want to compile 64bit RaspberryPi 3b in Ubuntu24.04:
+
+    $ sudo apt-get install g++-aarch64-linux-gnu
 
 *FreeBSD*
 
@@ -280,6 +288,28 @@ Additionally, for raspberry pi 2 and newer, add the following to the /boot/confi
 file to ensure the first UART is available on GPIO pins 8 and 10:
 
     dtoverlay=pi3-miniuart-bt
+    enable_uart=1
+
+arm/raspberry3b(64 bit)
+--------------
+
+Follow the same instructions as for the Raspberry Pi 1 above, but use the Raspberry Pi 3
+configuration file instead to build FreeNOS:
+
+    $ cp config/arm64/raspberry3/build.conf .
+    $ scons
+
+When copying the kernel executable to the SD card '/boot' partition, use the 'kernel8.img' filename
+to make sure the Raspberry Pi bootloader correctly starts the kernel (ARMv8):
+
+    $ cp build/arm64/raspberry3/kernel/arm64/raspberry3/kernel.img /media/boot/kernel8.img
+
+Additionally, for raspberry pi 3b(64 bit), use the following settings for the /boot/config.txt
+file to ensure the first UART is available on GPIO pins 8 and 10:
+
+    arm_64bit=1
+    dtoverlay=disable-bt
+    core_freq=250
     enable_uart=1
 
 arm/sunxi-h3
@@ -696,3 +726,4 @@ People who contributed to FreeNOS are:
 * Coen Bijlsma (libparse, srv/time)
 * Ed Schouten (libteken)
 * Alexander Schrijver (OpenBSD patches)
+* Ivan Tan (aarch64)

@@ -201,6 +201,21 @@
 /** Current version. */
 #define ELF_VERSION_CURRENT     1
 
+typedef struct ELFHeaderBasic
+{
+    /** Magic number and other info. */
+    u8  ident[ELF_INDEX_NIDENT];
+
+    /** Object file type. */
+    u16 type;
+
+    /** Physical machine architecture. */
+    u16 machine;
+
+    /** Object file version. */
+    u32 version;
+} ELFHeaderBasic;
+
 /**
  * @}
  */
@@ -254,6 +269,51 @@ typedef struct ELFHeader
 }
 ELFHeader;
 
+typedef struct ELF64Header
+{
+    /** Magic number and other info. */
+    u8  ident[ELF_INDEX_NIDENT];
+
+    /** Object file type. */
+    u16 type;
+
+    /** Physical machine architecture. */
+    u16 machine;
+
+    /** Object file version. */
+    u32 version;
+
+    /** Entry point virtual address. */
+    u64 entry;
+
+    /** Program header table file offset. */
+    u64 programHeaderOffset;
+
+    /* Section header table file offset */
+    u64 sectionHeaderOffset;
+
+    /* Processor-specific flags. */
+    u32 flags;
+
+    /** ELF header size in bytes. */
+    u16 headerSize;
+
+    /** Program header table entry size. */
+    u16 programHeaderEntrySize;
+
+    /** Program header table entry count. */
+    u16 programHeaderEntryCount;
+
+    /** Section header table entry size. */
+    u16 sectionHeaderEntrySize;
+
+    /** Section header table entry count. */
+    u16 sectionHeaderEntryCount;
+
+    /** Section header string table index. */
+    u16 sectionHeaderStringsIndex;
+}
+ELF64Header;
 /**
  * @name Segment types
  * @{
@@ -320,6 +380,34 @@ typedef struct ELFSegment
     u32 alignment;
 }
 ELFSegment;
+
+typedef struct ELF64Segment
+{
+    /** Segment type. */
+    u32 type;
+
+    /** Optional segment flags. */
+    u32 flags;
+
+    /** Offset in the file of this segment. */
+    u64 offset;
+
+    /** Virtual address start. */
+    u64 virtualAddress;
+
+    /** Physical address start. */
+    u64 physicalAddress;
+
+    /** Segment file image size. */
+    u64 fileSize;
+
+    /** Segment memory image size. */
+    u64 memorySize;
+
+    /** Memory alignment when loaded into memory. */
+    u64 alignment;
+}
+ELF64Segment;
 
 /**
  * @}
