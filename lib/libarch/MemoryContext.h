@@ -53,7 +53,7 @@ class MemoryContext
         InvalidSize,
         AlreadyExists,
         OutOfMemory,
-        InvaildArgs,
+        InvalidArgs,
     }
     Result;
 

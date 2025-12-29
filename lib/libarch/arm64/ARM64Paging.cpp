@@ -125,7 +125,7 @@ MemoryContext::Result ARM64Paging::enableMMU()
     r = ARM64Control::read(ARM64Control::MemoryModelFeature);
     b = PA_RANGE(r);
     if(TGRAN4(r)/*4k*/ || b<1/*36 bits*/) {
-        return MemoryContext::InvaildArgs;
+        return MemoryContext::InvalidArgs;
     }
 
     // first, set Memory Attributes array, indexed by PT_MEM, PT_DEV, PT_NC in our example
