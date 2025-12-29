@@ -15,9 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef __clang__
 #pragma clang optimize off
+#endif
+
+#ifdef __GNUC__
 #pragma GCC push_options
 #pragma GCC optimize ("O0")
+#endif
 
 #include <FreeNOS/System.h>
 #include <SplitAllocator.h>
