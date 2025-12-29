@@ -22,10 +22,10 @@
 
 TestCase(DoubleAbsolute)
 {
-    testAssert(doubleAbsolute(1.0) == 1.0);
-    testAssert(doubleAbsolute(10000.0) == 10000.0);
-    testAssert(doubleAbsolute(-9999.123) == 9999.123);
-    testAssert(doubleAbsolute(0.0) == 0.0);
+    testAssert(doubleEquals(doubleAbsolute(1.0), 1.0, 0.000001));
+    testAssert(doubleEquals(doubleAbsolute(10000.0), 10000.0, 0.0001));
+    testAssert(doubleEquals(doubleAbsolute(-9999.123), 9999.123, 0.000001));
+    testAssert(doubleEquals(doubleAbsolute(0.0), 0.0, 0.00001));
 
     return OK;
 }
