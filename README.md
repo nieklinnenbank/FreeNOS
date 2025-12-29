@@ -309,7 +309,6 @@ file to ensure the first UART is available on GPIO pins 8 and 10:
 
     arm_64bit=1
     dtoverlay=disable-bt
-    core_freq=250
     enable_uart=1
 
 arm/sunxi-h3
