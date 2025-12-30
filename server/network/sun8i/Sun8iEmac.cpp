@@ -601,7 +601,7 @@ FileSystem::Result Sun8iEmac::reset()
     DEBUG("");
 
     // Save the current MAC address (written by the bootloader)
-    Ethernet::Address mac;
+    ALIGN(sizeof(u32)) Ethernet::Address mac;
     const FileSystem::Result macRead = getAddress(&mac);
     if (macRead != FileSystem::Success)
     {
