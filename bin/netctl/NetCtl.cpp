@@ -98,7 +98,7 @@ NetCtl::Result NetCtl::showDevice(const char *deviceName)
     fd = open(*ether, O_RDONLY);
     if (fd != -1)
     {
-        Ethernet::Address etherAddress;
+        ALIGN(sizeof(u32)) Ethernet::Address etherAddress;
 
         r = read(fd, &etherAddress, sizeof(etherAddress));
         if (r != -1)
