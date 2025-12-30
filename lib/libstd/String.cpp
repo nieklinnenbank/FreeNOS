@@ -540,7 +540,7 @@ Size String::setUnsigned(const ulong number,
                          char *string,
                          const bool sign)
 {
-    char *p, *p1, *p2, *saved, tmp;
+    volatile char *p, *p1, *p2, *saved, tmp;
     unsigned long ud = number;
     int remainder, divisor = 10;
     Size written = 0;
