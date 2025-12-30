@@ -160,7 +160,7 @@ NetPing::Result NetPing::icmpPing(const char *dev, const char *host)
     }
 
     // Send an echo request
-    ICMP::Header msg;
+    volatile ICMP::Header msg;
     msg.type     = ICMP::EchoRequest;
     msg.code     = 0;
     msg.checksum = 0;
@@ -168,10 +168,10 @@ NetPing::Result NetPing::icmpPing(const char *dev, const char *host)
     msg.sequence = 1;
 
     // Generate checksum
-    msg.checksum = IPV4::checksum(&msg, sizeof(msg));
+    msg.checksum = IPV4::checksum((void *)&msg, sizeof(msg));
 
     // Send the packet
-    if (::write(sock, &msg, sizeof(msg)) <= 0)
+    if (::write(sock, (void *)&msg, sizeof(msg)) <= 0)
     {
         ERROR("failed to send ICMP request: " << strerror(errno));
         return IOError;
@@ -179,7 +179,7 @@ NetPing::Result NetPing::icmpPing(const char *dev, const char *host)
     printf("Sending ICMP request to %s\r\n", host);
 
     // Receive echo reply
-    if (::read(sock, &msg, sizeof(msg)) <= 0)
+    if (::read(sock, (void *)&msg, sizeof(msg)) <= 0)
     {
         ERROR("failed to receive ICMP response: " << strerror(errno));
         return IOError;
