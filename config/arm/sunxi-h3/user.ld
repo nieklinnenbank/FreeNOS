@@ -31,6 +31,8 @@ SECTIONS
         *(.text*)
 	*(.gnu.linkonce.*)
 	*(.data)
+        *(.data*)
+        *(.got*)
 	*(.rodata)
 	*(.rodata.*)
 	*(.eh_frame)

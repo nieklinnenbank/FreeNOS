@@ -40,6 +40,8 @@ SECTIONS
     .data :
     {
         *(.data)
+        *(.data.*)
+        *(.got*)
         *(.note.gnu.build-id)
 
         CTOR_LIST = .;

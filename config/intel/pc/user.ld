@@ -31,8 +31,10 @@ SECTIONS
         *(.text*)
         *(.gnu.linkonce.*)
         *(.data)
+        *(.data.*)
         *(.rodata)
         *(.rodata.*)
+        *(.got*)
         *(.eh_frame)
         *(.note.gnu.build-id)
 
