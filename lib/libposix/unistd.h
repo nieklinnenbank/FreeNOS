@@ -212,6 +212,37 @@ extern C int chdir(const char *path);
 extern C int unlink(const char *path);
 
 /**
+ * @brief Create a new kernel thread within the current process.
+ *
+ * The new thread shares the calling process's address space (code, heap, and
+ * data) but is independently scheduled. The thread begins execution at @p entry.
+ *
+ * @param entry  Function pointer for the thread entry point. The function must
+ *               not return — call thread_exit() when done.
+ * @param arg    Opaque argument passed to the entry function (passed via the
+ *               stack convention of the underlying architecture).
+ *
+ * @return New thread ID (kernel PID) on success, or -1 on failure.
+ *         errno is set with the appropriate error code on failure.
+ *
+ * @note This is a FreeNOS-specific API, not part of standard POSIX threads.
+ *       For a pthread-compatible API, link against the (future) libpthread.
+ *
+ * @see thread_exit
+ */
+extern C int thread_create(void (*entry)(void *arg), void *arg);
+
+/**
+ * @brief Terminate the calling kernel thread.
+ *
+ * Equivalent to calling exit() in the context of a thread created with
+ * thread_create(). Other threads in the same process continue to run.
+ *
+ * @param exit_code Exit code for this thread (available via waitpid).
+ */
+extern C void thread_exit(int exit_code);
+
+/**
  * Sleep for the specified number of seconds.
  *
  * @param seconds Number of seconds to sleep
@@ -219,6 +250,7 @@ extern C int unlink(const char *path);
  * @return Zero on success or number of seconds left when interrupted.
  */
 extern C unsigned int sleep(unsigned int seconds);
+
 
 /**
  * @}

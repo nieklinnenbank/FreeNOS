@@ -17,6 +17,7 @@
 
 #include <Types.h>
 #include <Assert.h>
+#include <PseudoFile.h>
 #include "LinnFileSystem.h"
 #include "LinnInode.h"
 #include "LinnFile.h"
@@ -78,6 +79,29 @@ LinnFileSystem::LinnFileSystem(const char *p, Storage *s)
 
     // Done.
     NOTICE("mounted at " << p);
+}
+
+File * LinnFileSystem::createFile(const FileSystem::FileType type)
+{
+    switch (type)
+    {
+        case FileSystem::RegularFile:
+        {
+            PseudoFile *file = new PseudoFile(getNextInode());
+            assert(file != NULL);
+            return file;
+        }
+
+        case FileSystem::DirectoryFile:
+        {
+            Directory *dir = new Directory(getNextInode());
+            assert(dir != NULL);
+            return dir;
+        }
+
+        default:
+            return ZERO;
+    }
 }
 
 LinnInode * LinnFileSystem::getInode(u32 inodeNum)

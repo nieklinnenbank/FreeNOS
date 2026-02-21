@@ -40,9 +40,9 @@
  */
 inline u64 timestamp()
 {
-    unsigned long long val;
-    asm volatile ("rdtsc\n" : "=A"(val));
-    return val;
+    u32 lo, hi;
+    asm volatile ("rdtsc\n" : "=a"(lo), "=d"(hi));
+    return ((u64)hi << 32) | lo;
 }
 
 /**
@@ -57,14 +57,20 @@ inline u64 timestamp()
 /**
  * Shutdown the machine via ACPI.
  *
- * @todo FreeNOS does not yet have a full ACPI implementation. Shutdown now has a bit naive implementation.
+ * Tries multiple known I/O port sequences for maximum emulator compatibility:
+ *  - 0x604, 0x2000  : QEMU >= 2.x (ACPI PM1a control block)
+ *  - 0xB004, 0x2000 : Old QEMU / Bochs legacy
+ *  - 0x8900 "Shutdown" : Bochs / Seabios
  *
- * @see http://forum.osdev.org/viewtopic.php?t=16990
+ * @see https://wiki.osdev.org/Shutdown
  */
 #define cpu_shutdown() \
 ({ \
     IntelIO io; \
-    io.outw(0xB004, 0x0 | 0x2000); \
+    io.outw(0x604, 0x2000); \
+    io.outw(0xB004, 0x2000); \
+    const char *s = "Shutdown"; \
+    for (const char *p = s; *p; p++) io.outb(0x8900, (u8)*p); \
 })
 
 /**

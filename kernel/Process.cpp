@@ -33,6 +33,7 @@ Process::Process(ProcessID id, Address entry, bool privileged, const MemoryMap &
     m_wakeups       = 0;
     m_entry         = entry;
     m_privileged    = privileged;
+    m_isThread      = false;
     m_memoryContext = ZERO;
     m_kernelChannel = ZERO;
     MemoryBlock::set(&m_sleepTimer, 0, sizeof(m_sleepTimer));
@@ -45,7 +46,9 @@ Process::~Process()
         delete m_kernelChannel;
     }
 
-    if (m_memoryContext)
+    // Threads share their parent's MemoryContext — only the parent Process
+    // (m_isThread == false) is responsible for freeing it.
+    if (m_memoryContext && !m_isThread)
     {
         m_memoryContext->releaseSection(m_map.range(MemoryMap::UserData));
         m_memoryContext->releaseSection(m_map.range(MemoryMap::UserHeap));
@@ -170,6 +173,14 @@ Process::Result Process::raiseEvent(const ProcessEvent *event)
 }
 
 Process::Result Process::initialize()
+{
+    // Perform architecture-specific Process initialization (MMU context, stacks, etc.)
+    // Then set up the kernel event channel.
+    const Result result = initializeKernelChannel();
+    return result;
+}
+
+Process::Result Process::initializeKernelChannel()
 {
     Memory::Range range;
     Arch::Cache cache;

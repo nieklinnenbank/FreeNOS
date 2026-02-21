@@ -65,7 +65,7 @@
  * static in size, i.e. 64-bytes. Those changes make it easier to program
  * the FileSystem implementation, thus easier to understand and learn from.
  *
- * @todo Currently the LinnFileSystem is read-only and does not support writing.
+ * @todo LinnFileSystem supports in-memory file creation (touch), but on-disk write (persistence) is not yet implemented.
  *
  * @see FileSystemServer
  * @see Ext2FileSystem
@@ -81,6 +81,17 @@ class LinnFileSystem : public FileSystemServer
      * @param storage Storage provider.
      */
     LinnFileSystem(const char *path, Storage *storage);
+
+    /**
+     * Create a new in-memory file (partial write support).
+     *
+     * @note New files are cached in memory only and are not persisted to disk.
+     *
+     * @param type Describes the type of file to create.
+     *
+     * @return Pointer to a new File on success or ZERO on failure.
+     */
+    virtual File * createFile(const FileSystem::FileType type);
 
     /**
      * Retrieve the superblock pointer.

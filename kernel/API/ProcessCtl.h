@@ -53,7 +53,8 @@ typedef enum ProcessOperation
     Wakeup,
     Stop,
     Resume,
-    Reset
+    Reset,
+    SpawnThread  /**< Create a new thread sharing parent's memory context */
 }
 ProcessOperation;
 

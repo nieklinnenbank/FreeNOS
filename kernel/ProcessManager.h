@@ -85,6 +85,23 @@ class ProcessManager
                      const bool privileged = false);
 
     /**
+     * Create a new Thread inside an existing Process.
+     *
+     * A thread shares the MemoryContext (address space) of the parent Process
+     * but gets its own kernel-event channel and scheduler slot. The thread
+     * starts executing at @p entry.
+     *
+     * @param parent   Process that owns the thread.
+     * @param entry    Thread entry point (virtual address in parent's address space).
+     * @param readyToRun True to immediately schedule the thread.
+     *
+     * @return New Process pointer acting as the thread, or ZERO on failure.
+     */
+    Process * createThread(Process *parent,
+                           const Address entry,
+                           const bool readyToRun = true);
+
+    /**
      * Retrieve a Process by it's ID.
      *
      * @param id ProcessID number.
