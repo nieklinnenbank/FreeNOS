@@ -26,7 +26,7 @@
 CreateFile::CreateFile(int argc, char **argv)
     : POSIXApplication(argc, argv)
 {
-    parser().setDescription("Create new files the filesystem");
+    parser().setDescription("Create new files in the filesystem");
     parser().registerPositional("FILE", "Name of the file(s) to create", 0);
 }
 

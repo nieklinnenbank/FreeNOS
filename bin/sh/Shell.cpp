@@ -160,7 +160,7 @@ Shell::Result Shell::runInteractive()
 
 int Shell::executeInput(const Size argc, const char **argv, const bool background)
 {
-    char tmp[128];
+    char tmp[256];
     ShellCommand *cmd;
     int pid, status;
 
@@ -168,6 +168,10 @@ int Shell::executeInput(const Size argc, const char **argv, const bool backgroun
     {
         DEBUG("argv[" << i << "] = " << argv[i]);
     }
+
+    // Guard: ignore empty input (e.g. trailing spaces before '&' in parse())
+    if (argc == 0 || argv[0] == ZERO || argv[0][0] == '\0')
+        return EXIT_SUCCESS;
 
     // Ignore comments
     if (argv[0][0] == '#')
@@ -187,8 +191,20 @@ int Shell::executeInput(const Size argc, const char **argv, const bool backgroun
                 return EXIT_SUCCESS;
         }
 
-        // Try to find it on the filesystem. (temporary hardcoded PATH)
+        // Try to find it on the filesystem via /bin/ prefix
         else if (argv[0][0] != '/' && snprintf(tmp, sizeof(tmp), "/bin/%s", argv[0]) &&
+                (pid = runProgram(tmp, argv)) != -1)
+        {
+            if (!background)
+            {
+                waitpid(pid, &status, 0);
+                return status;
+            } else
+                return EXIT_SUCCESS;
+        }
+
+        // Try to find it on the filesystem via /server/ prefix
+        else if (argv[0][0] != '/' && snprintf(tmp, sizeof(tmp), "/server/%s", argv[0]) &&
                 (pid = runProgram(tmp, argv)) != -1)
         {
             if (!background)
@@ -216,6 +232,7 @@ int Shell::executeInput(const Size argc, const char **argv, const bool backgroun
     // Not successful
     return EXIT_FAILURE;
 }
+
 
 int Shell::executeInput(char *command)
 {

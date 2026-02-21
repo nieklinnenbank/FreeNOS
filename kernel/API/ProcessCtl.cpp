@@ -38,7 +38,7 @@ API::Result ProcessCtlHandler(const ProcessID procID,
     DEBUG("#" << procs->current()->getID() << " " << action << " -> " << procID << " (" << addr << ")");
 
     // Does the target process exist?
-    if(action != GetPID && action != Spawn)
+    if(action != GetPID && action != Spawn && action != SpawnThread)
     {
         if (procID == SELF)
             proc = procs->current();
@@ -53,6 +53,16 @@ API::Result ProcessCtlHandler(const ProcessID procID,
         if (!proc)
         {
             ERROR("failed to create process");
+            return API::IOError;
+        }
+        return (API::Result) (API::Success | (proc->getID() << 16));
+
+    case SpawnThread:
+        // Create a thread sharing the current process's memory context
+        proc = procs->createThread(procs->current(), addr);
+        if (!proc)
+        {
+            ERROR("failed to create thread");
             return API::IOError;
         }
         return (API::Result) (API::Success | (proc->getID() << 16));
@@ -187,6 +197,7 @@ Log & operator << (Log &log, ProcessOperation op)
     switch (op)
     {
         case Spawn:     log.append("Spawn"); break;
+        case SpawnThread: log.append("SpawnThread"); break;
         case KillPID:   log.append("KillPID"); break;
         case GetPID:    log.append("GetPID"); break;
         case GetParent: log.append("GetParent"); break;

@@ -155,11 +155,22 @@ class Process
      * Initialize the Process.
      *
      * Allocates various (architecture specific) resources,
-     * creates MMU context and stacks.
+     * creates MMU context and stacks, and sets up the kernel event channel.
      *
      * @return Result code
      */
     virtual Result initialize();
+
+    /**
+     * Initialize only the kernel event channel.
+     *
+     * Used by createThread() to set up the per-thread kernel channel
+     * without allocating a new MemoryContext (which is shared with
+     * the parent process).
+     *
+     * @return Result code
+     */
+    Result initializeKernelChannel();
 
     /**
      * Restart execution at the given entry point.
@@ -272,6 +283,13 @@ class Process
 
     /** Number of wakeups received */
     Size m_wakeups;
+
+    /**
+     * True when this Process is a thread sharing a MemoryContext
+     * with a parent Process. The destructor will NOT free the
+     * MemoryContext when this flag is set.
+     */
+    bool m_isThread;
 
     /**
      * Sleep timer value.

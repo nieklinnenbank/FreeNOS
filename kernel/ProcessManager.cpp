@@ -92,6 +92,70 @@ Process * ProcessManager::create(const Address entry,
     return proc;
 }
 
+Process * ProcessManager::createThread(Process *parent,
+                                       const Address entry,
+                                       const bool readyToRun)
+{
+    if (!parent)
+    {
+        ERROR("createThread: parent is NULL");
+        return ZERO;
+    }
+
+    Size pid = 0;
+
+    // Reserve a PID slot
+    if (!m_procs.insert(pid, (Process *) ~ZERO))
+    {
+        ERROR("createThread: no free PID slots");
+        return ZERO;
+    }
+
+    // Create a new Process with the parent's memory map (shared address space).
+    // Pass the parent's memory map so the stack region is known; the actual
+    // MemoryContext will be overwritten below to share the parent's context.
+    Process *thread = new Arch::Process(pid, entry, parent->isPrivileged(), parent->m_map);
+    if (!thread)
+    {
+        ERROR("createThread: failed to allocate Process object");
+        m_procs.remove(pid);
+        return ZERO;
+    }
+
+    // Point the thread's memory context to the parent's — shared address space.
+    // NOTE: The parent owns the MemoryContext lifetime; threads must NOT delete it.
+    thread->m_memoryContext = parent->m_memoryContext;
+    thread->m_shares.setMemoryContext(thread->m_memoryContext);
+
+    // Initialize the kernel event channel (each thread gets its own channel).
+    const Process::Result result = thread->initializeKernelChannel();
+    if (result != Process::Success)
+    {
+        ERROR("createThread: failed to initialize kernel event channel: result = " << (int) result);
+        thread->m_memoryContext = ZERO;  // prevent destructor from freeing shared context
+        m_procs.remove(pid);
+        delete thread;
+        return ZERO;
+    }
+
+    // Mark as a thread (shares memory context — destructor must not free it)
+    thread->m_isThread = true;
+
+    // Set parent PID
+    thread->setParent(parent->getID());
+
+    // Register thread
+    m_procs.insertAt(pid, thread);
+
+    if (readyToRun)
+    {
+        resume(thread);
+    }
+
+    return thread;
+}
+
+
 Process * ProcessManager::get(const ProcessID id)
 {
     return m_procs.get(id);
